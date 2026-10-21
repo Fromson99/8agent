@@ -1,0 +1,28 @@
+{
+  "status": "SEALED",
+  "archive_sha256": "68177fbc40ae476d3d79babb8e57838c2d2904d0963c33250a8ad37e39033aea",
+  "validation": {
+    "status": "PASS",
+    "archive_sha256": "68177fbc40ae476d3d79babb8e57838c2d2904d0963c33250a8ad37e39033aea",
+    "commands": 52,
+    "expected_rejections": 7,
+    "code_files": 394,
+    "patch_files": 45,
+    "scenarios": [
+      "MAIN96 normal",
+      "MAIN96 + STABLE_COMMANDS + BASIS_FIXED_LOCAL + TEN_MINUTE interrupted",
+      "MAIN96 + previous overlays + READABLE_R2 upgrade"
+    ],
+    "installed_service_tests": 47,
+    "test_fixture_files": 39,
+    "model_calls": 0,
+    "known_old_transport_test_failure": 1,
+    "exact_rollback": true,
+    "existing_config_data_tools_preserved": true,
+    "max_child_rss_kib": 443784,
+    "GENOS_field_verified": false,
+    "generation_success_verified": false,
+    "selected_main_modified": false
+  },
+  "selected_main_unchanged": true
+}

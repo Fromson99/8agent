@@ -1,0 +1,2 @@
+MAIN81 전체 코드 반입 R2
+기존 full replacement 트랜잭션을 재사용한다. check/apply/status는 작은 generation manifest와 설정만 확인하고 DB·색인·선택표를 열거나 변경하지 않는다. 한 복구 담당(run.py)이 미완료 코드 트랜잭션을 원복한 뒤 같은 ZIP으로 재개하며 중복 적용은 동일 receipt를 반환한다. 원장 소실은 실제 백업에서 복구하고 코드/상태/설정 변조는 실패로 기록한다. gate-code는 committed checkout의 코드만 검사하고 gate는 별도로 같은 checkout+generation 전체 검증을 한다. 실패를 완료로 숨기지 않으며 STATUS와 LAST_FAILURE와 처음부터의 로그를 보존한다. 권한·참조·의미 판단 제품 동작은 검증된 MAIN81을 그대로 반입한다.

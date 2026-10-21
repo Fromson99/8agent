@@ -27,6 +27,9 @@ def main(argv=None):
     p.add_argument('--stage', choices=['raw', 'structure', 'index', 'all'], default='all')
     p.add_argument('--exclude-internal', action='store_true')
     p.add_argument('--only-internal', action='store_true', help='Select every supported format under RAW/internal, independently of the external document scope')
+    p.add_argument('--filename-exceptions', type=Path, help='Explicit single JSON selection policy')
+    p.add_argument('--latest-internal-versions', action='store_true', default=True,
+                   help='Within each internal folder/title select the largest valid (YYYYMMDD) filename version; preserve RAW')
     p.add_argument('--only-internal-pdf', action='store_true', help='Select RAW/internal PDFs without reading external source files')
     p.add_argument('--limit', type=int, help='Positive document limit; requires --only-internal-pdf')
     p.add_argument('--document-scope', type=Path, help='Hash-pinned selection; defaults to CATALOG/BUILD_SCOPE.json when configured')
@@ -69,6 +72,9 @@ def main(argv=None):
     scope_path = None if args.only_internal or team_layout else (args.document_scope or document_scope.configured(data))
     if scope_path and args.only_internal_pdf:
         p.error('--only-internal-pdf conflicts with the configured document scope')
+    if args.exclude_internal: args.latest_internal_versions = False
+    if args.latest_internal_versions and (scope_path or args.only_internal_pdf or args.limit):
+        p.error('--latest-internal-versions requires native RAW selection; explicit/configured document scope and PDF-only/exclude-internal are incompatible')
     raw = genos_stages.plain_path(data / 'RAW')
     if (raw / '.migration-in-progress').exists():
         p.error('원문 이동 미완료. migration receipt를 확인하세요.')
@@ -117,19 +123,38 @@ def main(argv=None):
                             emit=lambda message: (terminal.write(message + '\n'), terminal.flush(), progress.emit(message)))
                     plan, inventory = team_raw.collect(data, options.bindings, emit=progress.emit,
                         only_internal=args.only_internal, only_internal_pdf=args.only_internal_pdf, limit=args.limit,
-                        exclude_internal=args.exclude_internal, teams=args.team)
+                        exclude_internal=args.exclude_internal, teams=args.team,
+                        latest_internal_versions=args.latest_internal_versions, filename_exceptions=args.filename_exceptions)
                 elif scope_path:
                     plan, inventory = document_scope.collect(data, scope_path, options.bindings,
                         exclude_internal=args.exclude_internal, emit=progress.emit)
                 else:
                     plan, inventory = genos_corpus.collect(raw, options.bindings,
                         exclude_internal=args.exclude_internal, skip_invalid=True, emit=progress.emit,
-                        only_internal_pdf=args.only_internal_pdf, limit=args.limit, only_internal=args.only_internal)
+                        only_internal_pdf=args.only_internal_pdf, limit=args.limit, only_internal=args.only_internal,
+                        latest_internal_versions=args.latest_internal_versions, filename_exceptions=args.filename_exceptions)
                 genos_build.atomic(logs / ('inventory-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.json'), inventory)
+                version_selection = logs / 'filename-version-selection.json'
+                if args.latest_internal_versions or version_selection.exists():
+                    from semantic_runtime.contracts import digest
+                    binding = {'schema_version': 'filename-version-selection-v1',
+                               'policy': plan.get('internal_version_policy'),
+                               'inputs_sha256': digest(plan)}
+                    if version_selection.exists():
+                        if json.loads(version_selection.read_text()) != binding:
+                            raise ValueError('Filename version selection changed; use a new run ID')
+                    else:
+                        if (logs / 'structure-selection.json').exists():
+                            raise ValueError('Existing structure run has no filename version policy; use a new run ID')
+                        genos_build.atomic(version_selection, binding)
                 input_failed = sum(x.get('scope') == 'document' for x in inventory['errors'])
                 source_errors = [x for x in inventory['errors'] if x.get('scope') != 'document']
                 terminal.write(f'입력: 처리 대상 {len(plan["files"])}문서 | 입력 제외 {input_failed}문서 | 저장소 오류 {len(source_errors)}건\n')
                 terminal.flush()
+                if args.latest_internal_versions:
+                    count = sum(x.get('reason') == 'superseded_filename_version' for x in inventory['excluded'])
+                    terminal.write(f'최신 내규 판본 선택: 구버전 {count}파일 구조화 제외 (원본 보존)\n')
+                    terminal.flush()
                 status = Ledger(logs)
                 status.start([{**row, 'route': genos_build.route_summary(row)} for row in plan['files']],
                              args.stage if args.execute else 'raw',

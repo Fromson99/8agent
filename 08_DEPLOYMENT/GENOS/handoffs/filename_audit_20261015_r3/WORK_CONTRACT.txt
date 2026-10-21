@@ -1,0 +1,21 @@
+R3 작업 계약 — 내규 파일명 비교의 사용자 예외
+입력: 선택 generation의 읽기 전용 document 메타데이터 또는 명시 내규 RAW 이름 목록.
+진입점: GENOS_FILENAME_AUDIT_20261015_R3_RUN.txt compare. Python3 표준 라이브러리만 사용.
+소비자: 운영자 비교 HTML, 문서명+날짜 CSV, 원본별 감사 CSV/JSON. 제품 RAG는 이 산출물을 소비하지 않는다.
+설정 정본: RUN.txt 옆 FILENAME_EXCEPTIONS.json 한 파일. --exceptions로 명시 대체, --no-exceptions로 임시 예외 전체 해제.
+예외 종류: 지정 날짜, 정확한 파일명, 현재 자동 최신 확인, 전체 유지, 번호별 별첨 분리, 단일파일 폴더 최신 취급.
+선행 정체성 분리: 선물옵션 지정 제목/정확한 직계 폴더의 본문·별첨 번호를 분리한 뒤 가족별 날짜 비교.
+우선순위: 임시파일/실제 원문 보호 → 개별 지정/전체유지/자동 최신확인 → 단일파일 폴더 규칙 → 일반 날짜 비교.
+지정 판본 미발견: 가족 전체를 REVIEW로 보존, TARGET_NOT_FOUND 표시. 다른 판본을 자동 대체 선택하지 않음.
+월 단위 날짜: YYYY-MM 및 precision=month. 제공되지 않은 일자를 만들지 않음.
+단일파일 폴더: 현재 내규 입력 목록의 알려진 부모 경로별 고유 파일 수. 임시파일 제외, 경로 없는 대체 제목은 해당 없음.
+독립 설정 규칙 충돌/중복 JSON키/유효하지 않은 날짜/읽기 오류/동시 설정 변경: 단일 CLI에서 실패 종료, 자동 재시도0/모델0.
+서빙 manifest/hash/WAL/권한/원문 없음 보호는 예외로 우회하지 않음. 모든 별칭이 제외 후보일 때만 physical_exclusion_candidate=true.
+출력: COMPARE.html은 전체↔필터링 후 및 규칙별 결과. EXCEPTION_RESULTS/EXCEPTION_CHANGES는 적용·미발견·개수 차이와 변경 이력.
+재현: 설정 원본 SHA-256·revision과 적용 내용 사본, 코드 SHA-256, generation 경로/manifest, Python 기록.
+완료: COMPLETE / COMPLETE_WITH_REVIEW / FAILED. 미발견·원문없음·검토 필요를 성공 적용으로 표시하지 않음.
+쓰기: 현재 TRANSFER의 새 결과/로그 디렉터리. DEV 내부 TRANSFER 지원, 원본·임의 코드 경로·기존 결과 덮어쓰기 거부.
+재개: 반복 실행은 새 결과 폴더. 기존 R1/R2 발송본·실패 로그·원본 DB 보존.
+검증: 날짜·제목 기존 회귀, 사용자 예외별 기대, 별첨 버전 독립성, 단일파일 우선순위, 공유 별칭, 설정 수정/누락/오류/해제, 실제 봉인 TXT→DB→HTML/CSV/JSON.
+범위: 읽기 전용 진단. MAIN 승격·GENOS 코드 설치·commit/push·리비전·RAG 제외 설정은 하지 않음.
+현장: GENOS 전체 문서 목록은 이 외부 세션에 없음. 모의 입력 검증과 현장 전수 실행은 별개이며 후자는 미확인.

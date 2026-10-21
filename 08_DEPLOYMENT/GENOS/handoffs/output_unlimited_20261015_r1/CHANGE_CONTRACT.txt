@@ -1,0 +1,7 @@
+2026-10-15 사용자 지시: 우리 출력길이 제한 풀어버리자.
+범위: 현행 GENOS 법률 RAG의 전체 구조화/중간 판단/답변 스트리밍 및 AD 요청과 기존 GENOS provider.
+변경: GENOS 서비스의 effective max_output_tokens=null; 실제 요청에서 max_tokens/max_completion_tokens 미전송. 기존 GENOS_RAG_MAX_OUTPUT_TOKENS 환경변수는 폐기하며 무시한다. 모델 서버의 기본값/컨텍스트/출력 한도는 이 코드가 해제하지 않는다.
+실패: length는 OUTPUT_INCOMPLETE로 보존한다. 애플리케이션 한도가 없으므로 길이 확대 재호출을 하지 않는다. 일반 JSON/스키마 수정 담당, 최대 1회 수정, deadline/총 호출 예산/상태/근거/권한/발행 계약은 보존한다. 부분 스트림 후 실패는 최종 성공 및 성공 shortcut으로 저장하지 않는다.
+검증: nullable 요청/프로필, 실제 service 환경 binding, 단계별 cap 재삽입 방지, 정상/길이 종료/JSON 수정/예산/재개/중복/API/스트림 발행, 설치된 동일 코드의 engine pin과 service.service/generation gate.
+작업 분류: 사용자가 지정한 설정/전송 계약 변경과 합성 계약 검사. 실제 모델/프롬프트/검색 효과 비교 또는 품질/속도 측정은 하지 않으므로 새 실험 ADR 대상이 아니다.
+상태: GENOS 접근 불가. 현장 반입/commit/push/리비전/워크플로우 성공은 별도 미확인. 로컬 외부 모델 정책과 MAIN66은 유지한다.

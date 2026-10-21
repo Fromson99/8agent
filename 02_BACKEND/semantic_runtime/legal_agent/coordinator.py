@@ -3,12 +3,8 @@ from .errors import ContractError
 
 
 def system_request(question):
-    import re
-    from ..pipeline import route_question
-    from .tools_policy import metadata_only_request
-    text=route_question(question)[0]
-    return metadata_only_request(text) or bool(re.fullmatch(
-        r'\s*(안녕(?:하세요)?|반갑습니다|고마워(?:요)?|감사합니다|hello|hi|사용법|도움말)[.!?！？\s]*',text,re.IGNORECASE))
+    """Compatibility hook: natural language never authorizes a model bypass."""
+    return False
 
 
 def run_case(pipeline,body,principal,options,lease):

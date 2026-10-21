@@ -1,0 +1,11 @@
+<p>사진의 <b>QUERY_RECORD_KEY: invalid lookup field</b> 오류를 수정한 <b>CLEAN R2</b>입니다. 이번 작업에는 기존 CLEAN R1 ZIP/실행 TXT 대신 이 메일의 R2 ZIP과 새 실행 TXT를 사용하세요.</p>
+<p><b>적용 순서 — Dataiku Python 노트북</b></p>
+<ol><li><b>LEGAL_ORACLE_CLEAN_IMPORT_20261020_R2.zip</b>만 기존 Managed Folder <b>LEGAL_DATA_ZIP_IMPORT</b>에 추가 업로드합니다. 큰 데이터 ZIP·분할 파일은 다시 업로드하거나 병합할 필요가 없습니다. 코드 ZIP은 실행 TXT가 해시 확인 후 자동으로 풉니다.</li>
+<li>오류가 난 CLEAN 노트북의 <b>커널을 재시작</b>하고, 첨부 <b>DATAIKU_CLEAN_IMPORT_RUN.txt 전체</b>를 새 셀에 붙여 실행합니다. 이 TXT는 Python 코드이며 Bash/SQL용이 아닙니다. 기본값은 ACTION="plan", RECOVER_R1_PLAN=True입니다. FOLDER_ID="LEGAL_DATA_ZIP_IMPORT", ORACLE_CONNECTION="AIDP"를 유지하고, WORK_DIR 자동 탐색이 안 되면 기존 로그의 legal-existing-zip-r2-work 절대경로를 입력합니다.</li>
+<li><b>R1_PLAN_RECOVERY → CLEAN_PLAN_READY</b>를 확인합니다. 봉인된 R1 코드·데이터·연결과 쓰기 전 키 오류가 일치할 때만 기존 실패 기록·최초 기한·누적 호출을 이어갑니다. 원본 state는 state.r1-key-failure.json에 보존합니다. 새 작업이면 R1_PLAN_RECOVERY 없이 계획 완료가 나옵니다.</li>
+<li>계획의 삭제 대상·전후 건수를 확인한 뒤 <b>ACTION="replace"</b>로 바꿔 같은 TXT 전체를 실행합니다. 기존 CLEAN 방식대로 데이터 7테이블의 모든 버전을 삭제 후 재적재하며 ACTIVE/STATE는 보존합니다. 활성 포인터가 사용 중이면 삭제 전에 차단합니다.</li>
+<li>진행 확인은 첨부 <b>LOG_CLEAN_RUN.txt</b>를 별도 로그 노트북에 붙여 실행합니다. 기존 oracle-clean-r1 폴더의 기록을 계속 사용합니다. R2 적재 중단 후에는 같은 코드/WORK_DIR에서 ACTION="resume"을 사용합니다.</li></ol>
+<p><b>수정 내용</b><br>512바이트를 넘는 일반 자산의 보조 조회 키는 고정 길이 해시로 색인하고 원본 JSON과 행 식별값은 그대로 보존합니다. 조회는 같은 해시로 후보를 찾은 뒤 원래 값 전체로 대조합니다. 문서 접근권한 ID 검사는 유지하며 값을 자르거나 행을 건너뛰지 않습니다. R1에서 이미 계획 저장·삭제·INSERT에 진입한 작업은 이번 자동 복구 대상이 아닙니다.</p>
+<p><b>확인 결과와 범위</b><br>봉인된 R1의 동일 오류 재현, 전달 R2 TXT·Dataiku 어댑터의 모의 SQL 경계에서 계획→적재→상태 확인을 포함한 <b>122개 검사</b>가 통과했습니다. ZIP 51파일과 검증 코드의 일치 및 기존 R1 파일 보존을 확인했습니다. 실제 현장 Dataiku/JDBC/Oracle19 적재·전체 소요 시간은 아직 확인하지 않았습니다. 완료 표시는 CLEAN_LOAD_COUNTS_CONFIRMED이며 Oracle 전체 본문 재대조나 서빙 활성화 완료를 뜻하지 않습니다.</p>
+<p><b>서빙 연결</b><br>이 ZIP은 Dataiku 적재 수정본입니다. 새 긴 키의 GENOS 조회에는 함께 수정한 oracle_query_db.py·oracle_query_catalog.py를 별도 반입해야 합니다. MAIN92 누적본에 이 변경이 들어간 것으로 간주하지 마세요. 이번 코드가 ACTIVE/STATE 또는 GENOS 서빙을 자동 변경하지 않습니다. 자세한 계약은 SERVING_COMPATIBILITY.txt에 있습니다.</p>
+<p>첨부 GUIDE_UTF8.txt에 실행·중단·재개 방법을, VALIDATION.json에 검증 범위를 정리했습니다.</p>

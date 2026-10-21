@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# Run from the actual TRANSFER folder containing the existing R4 package.
+set -Eeuo pipefail
+umask 077
+
+usage() {
+  cat <<'HELP'
+TRANSFER 폴더에서 실행하세요. 기존 GENOS_BASIS_BATCH_20261020_R4 폴더가 필요합니다.
+
+  bash ./BASIS_RUN.txt new job1       새 계획(내규 3개)을 만들고 바로 조사
+  bash ./BASIS_RUN.txt new job2 5     다른 새 작업, 내규 5개
+  bash ./BASIS_RUN.txt plan job3      새 계획만 생성
+  bash ./BASIS_RUN.txt run job3       만든 계획 실행
+  bash ./BASIS_RUN.txt resume job1    job1 중단 지점부터 재개
+  bash ./BASIS_RUN.txt status job1    job1 상태 확인
+  bash ./BASIS_RUN.txt report job1    job1 HTML 생성
+  bash ./BASIS_RUN.txt export job1    job1 검토·이관 묶음 생성
+
+  bash ./BASIS_RUN.txt resume         사진의 기존 기본 작업 재개
+  bash ./BASIS_RUN.txt status         사진의 기존 기본 작업 상태
+  bash ./BASIS_RUN.txt report         사진의 기존 기본 작업 HTML
+
+새 작업마다 job1, job2, job3처럼 다른 이름을 쓰세요.
+새 계획은 새 조사·새 예산이며 이전 후보·확정 연결을 자동 복사하지 않습니다.
+중단 후에는 같은 이름으로 resume하세요. 작업 이름은 영문·숫자·밑줄·하이픈만 가능합니다.
+기존 폴더·계획·후보·실패 이력을 삭제하거나 이동하지 않습니다.
+조사 실행은 한 번에 하나만 진행하세요. 중단은 해당 실행 터미널에서 Ctrl+C입니다.
+HELP
+}
+
+TASK_ACTION="${1:-help}"
+TASK_NAME="${2:-}"
+TASK_COUNT="${3:-3}"
+case "$TASK_ACTION" in
+  help|-h|--help) usage; exit 0 ;;
+  new|plan|run|resume|status|report|export) ;;
+  *) usage; exit 1 ;;
+esac
+if (( $# > 3 )) || { (( $# == 3 )) && [[ "$TASK_ACTION" != new && "$TASK_ACTION" != plan ]]; }; then
+  echo "인자 수가 다릅니다. bash ./BASIS_RUN.txt help 를 확인하세요." >&2
+  exit 1
+fi
+if [[ "$TASK_ACTION" == new || "$TASK_ACTION" == plan ]]; then
+  [[ -n "$TASK_NAME" ]] || { echo "새 작업 이름이 필요합니다. 예: new job1" >&2; exit 1; }
+  [[ "$TASK_COUNT" =~ ^([1-9]|1[0-9]|20)$ ]] || { echo "문서 수는 1~20입니다." >&2; exit 1; }
+fi
+if [[ -n "$TASK_NAME" && ! "$TASK_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ ]]; then
+  echo "작업 이름은 영문·숫자로 시작하며 영문·숫자·밑줄·하이픈 1~64자만 허용합니다." >&2
+  exit 1
+fi
+
+TASK_LOG_DIR="$PWD/basis-quick-logs"
+[[ ! -L "$TASK_LOG_DIR" ]] || { echo "로그 폴더의 심볼릭 링크는 허용하지 않습니다." >&2; exit 1; }
+mkdir -p "$TASK_LOG_DIR"
+TASK_LOG="$TASK_LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"; printf "BASIS_QUICK_EXIT=%s LOG=%s\n" "$TASK_RC" "$TASK_LOG"' EXIT
+
+TASK_RUNNER="./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt"
+[[ -f "$TASK_RUNNER" ]] || {
+  echo "현재 위치에 기존 R4 폴더가 없습니다. 실제 업로드한 TRANSFER 폴더에서 실행하세요." >&2
+  exit 1
+}
+TASK_JOB_ARGS=()
+if [[ -n "$TASK_NAME" ]]; then
+  TASK_JOB="$(python3 - "$TASK_NAME" <<'PY'
+import json
+from pathlib import Path
+import sys
+root = (Path.home() / "DEV").resolve(strict=True)
+config = json.loads((root / "00_SYSTEM/GENOS_SERVING_PATHS.json").read_text("utf-8"))
+runtime = Path(config["runtime"])
+if not runtime.is_absolute():
+    raise SystemExit("GENOS_SERVING_PATHS.json의 runtime이 절대경로가 아닙니다.")
+print(runtime / "basis-batch" / ("pilot-review-user-" + sys.argv[1]))
+PY
+)"
+  TASK_JOB_ARGS=(--job "$TASK_JOB")
+  printf 'ACTION=%s NAME=%s JOB=%s\n' "$TASK_ACTION" "$TASK_NAME" "$TASK_JOB"
+  if [[ "$TASK_ACTION" == new || "$TASK_ACTION" == plan ]]; then
+    if [[ -e "$TASK_JOB/PLAN.json" ]]; then
+      echo "이미 있는 작업입니다. 이어하려면 resume $TASK_NAME, 새로 하려면 다른 이름을 쓰세요." >&2
+      exit 1
+    fi
+  fi
+else
+  printf 'ACTION=%s JOB=R4_DEFAULT(pilot-review-skip-20261020-r4)\n' "$TASK_ACTION"
+fi
+
+case "$TASK_ACTION" in
+  new)
+    bash "$TASK_RUNNER" plan --count "$TASK_COUNT" "${TASK_JOB_ARGS[@]}"
+    bash "$TASK_RUNNER" run "${TASK_JOB_ARGS[@]}"
+    ;;
+  plan)
+    bash "$TASK_RUNNER" plan --count "$TASK_COUNT" "${TASK_JOB_ARGS[@]}"
+    ;;
+  report)
+    bash "$TASK_RUNNER" report "${TASK_JOB_ARGS[@]}" --output "$PWD/basis-review-${TASK_NAME:-default}.html"
+    ;;
+  *)
+    bash "$TASK_RUNNER" "$TASK_ACTION" "${TASK_JOB_ARGS[@]}"
+    ;;
+esac

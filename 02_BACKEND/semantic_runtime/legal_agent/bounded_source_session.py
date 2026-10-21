@@ -15,12 +15,55 @@ from .repository import encoded
 from . import output_contract as output
 from .question_obligations import ObligationSession
 from .workflow_tiers_views import span_choices
-from .errors import BudgetExhausted, DeadlineExceeded, ProposalError, TransportError
+from .errors import BudgetExhausted, DeadlineExceeded, ProposalError, TransportError, ContractError
 from . import source_query_planning, source_selection, obligation_protocol
-from .tools_policy import metadata_only_request
 from .source_recall import SourceRecall
 from .structure_query import navigation_context, resolve as resolve_structure_query
 log = obs.get_logger('legal_agent.bounded_source')
+
+
+def compact_assessment_evidence(data, acquired):
+    """Bind only the exact option spans actually included in this assessment.
+
+    Compact source cards contain metadata; evidence_options carries the text.
+    Reused originals may have new request-local evidence IDs, so match their
+    immutable source/document/block coordinates and bytes, then verify again
+    against the current source session before storing a delivery receipt.
+    """
+    from .source_tools import canonical_evidence
+    from .repository import text_hash
+    offered = {}
+    for source in data.get('sources', []):
+        if 'text' not in source:
+            key = (source.get('source_id'), source.get('document_id'))
+            offered.setdefault(key, set()).update(source.get('evidence_refs', []))
+    if not offered:
+        return []
+    identities = ('source_id', 'document_id', 'block_id', 'start_cp', 'end_cp', 'evidence_id', 'text_hash')
+    result = {}
+    for option in data.get('evidence_options', []):
+        if (not isinstance(option, dict) or set(option) != set(identities) | {'id', 'text'}
+                or not isinstance(option['text'], str) or not option['text'].strip()
+                or type(option['start_cp']) is not int or type(option['end_cp']) is not int
+                or not 0 <= option['start_cp'] < option['end_cp']
+                or option['end_cp'] - option['start_cp'] != len(option['text'])
+                or option['text_hash'] != digest(option['text'])
+                or option['id'] != 'S' + digest({k: option[k] for k in identities})[:28]
+                or option['id'] not in offered.get((option['source_id'], option['document_id']), set())):
+            raise ContractError('compact assessment option identity or source binding differs')
+        matches = [(e, span) for e in acquired
+                   if (e['source_id'], e['document_id']) == (option['source_id'], option['document_id'])
+                   for span in e['spans'] if span['block_id'] == option['block_id']
+                   and span['start_cp'] <= option['start_cp'] < option['end_cp'] <= span['end_cp']
+                   and span['text'][option['start_cp']-span['start_cp']:option['end_cp']-span['start_cp']] == option['text']]
+        if not matches:
+            raise ContractError('compact assessment option was not acquired in this request')
+        origin, span = matches[0]
+        exact = {**span, 'start_cp': option['start_cp'], 'end_cp': option['end_cp'],
+                 'text': option['text'], 'span_hash': text_hash(option['text'])}
+        evidence = canonical_evidence(origin, [exact])
+        result[evidence['evidence_id']] = evidence
+    return list(result.values())
 
 
 class _Protocol:
@@ -44,18 +87,21 @@ class _Protocol:
 
 class _Gateway(ModelGateway):
     def request(self, phase, view, schema_name, *, references=None):
-        schema = genos_wire_schema(self.protocol.schema(schema_name))
+        schema = self.protocol.schema(schema_name)
         instructions=''
         if view.get('input_projection')=='compact-selection-source-v3':
             from .navigation_input import NavigationReferences, INSTRUCTIONS
             references=references or NavigationReferences(view)
             view,schema=references.view(view),references.schema(schema)
             instructions='\n'+INSTRUCTIONS+' text_ref는 sources의 text_id와 start/end 유니코드 문자 위치로 지정한 정확한 원문이다.'
+        self._generation_schema = deepcopy(schema)
+        schema = genos_wire_schema(schema)
         user = {'view': compact_wire_view(view, phase) if self.compact else view}
         if not self.compact:
             user['output_schema'] = schema
         return {'model': self.transport.binding['model'], 'temperature': 0,
-                'max_tokens': self.profile['max_output_tokens'], 'stream': False,
+                **({'max_tokens': self.profile['max_output_tokens']}
+                   if self.profile['max_output_tokens'] is not None else {}), 'stream': False,
                 'chat_template_kwargs': {'enable_thinking': False},
                 'messages': [{'role': 'system', 'content': self.system+instructions},
                              {'role': 'user', 'content': encoded(user)}],
@@ -77,31 +123,100 @@ class BoundedSourceSession(ObligationSession):
 
     def prepare_navigation_context(self):
         if self.navigation_context is None:
+            from . import definition_entry
             self.sources.question_matches = self.sources.matcher.starts(
                 self.context.request['question'], self.sources.scope)
-            self.navigation_context = navigation_context(
+            hints = navigation_context(
                 self.context.request['question'], self.sources.matcher, self.sources.scope,
                 matches=self.sources.question_matches)
+            # Reuse the original/span/scope verifier before the first planner.
+            # Its exact reference destinations are locations, never evidence or
+            # applicability decisions. Acquisition keeps its own shared budget.
+            definitions = [definition_entry.verified(self.sources, row)
+                           for row in definition_entry.matches(self.sources)]
+            hints['definitions'] = [{'definition_id': row['definition_id'], 'term': row['label'],
+                **row['definition'], 'question_span': row['question_span'],
+                'scope_status': row['scope_status'], 'scope_hint': row['scope_hint'],
+                'connections': row['connections'], 'verification': row['verification'],
+                'citation_eligible': False} for row in definitions]
+            locations = {}
+            for row in hints['definitions']:
+                locations.setdefault(row['term'], set()).add(
+                    (row['document_id'], row['unit_id'], row['source_id']))
+            hints['definition_candidates_ambiguous'] = any(len(rows) > 1 for rows in locations.values())
+            hints['location_counts'] = {key: len(hints[key])
+                                       for key in ('documents', 'structures', 'terms', 'definitions')}
+            hints['location_inventory_complete'] = True
+            self.navigation_context = hints
             self.work.event('QUESTION_NAVIGATION_CONTEXT', self.navigation_context)
         return self.navigation_context
 
     def plan_request_search(self):
         hints = self.prepare_navigation_context()
         names = sorted({name for did, name in self.sources.matcher.documents.items() if did in self.sources.scope})
+        from . import structure_selection as selection_sets, query_scope as qs
+        records = []
+        def validate_plan(value):
+            source_query_planning.validate_catalogue(value, names)
+            proposed = []
+            for row in value.get('structure_selections', []):
+                if row['user_quote'] not in self.context.request['question']:
+                    raise ValueError('structure selection quote outside current request')
+                docs = [did for did in self.sources.scope if self.sources.matcher.documents[did] == row['document']]
+                if len(docs) != 1:
+                    raise ValueError('structure selection document is ambiguous')
+                record = selection_sets.resolve(row['selection'], self.sources.matcher, docs[0], self.sources.scope)
+                if any(not qs.direct(self.sources, docs[0], uid) for uid in record['unit_ids']):
+                    raise ValueError('structure selection escaped the existing direct search scope')
+                proposed.append(record)
+            qs.check_selection_exclusions(self.sources.matcher,
+                [{'document_id':r['document_id'],'unit_id':uid} for r in proposed for uid in r['unit_ids']], proposed)
+            records[:] = proposed
         value = self.structured(source_query_planning.CATALOGUE_SYSTEM,
             {'question': self.context.request['question'], 'law_names': names,
              'capabilities': source_query_planning.CAPABILITIES,
              'navigation_context': hints},
-            source_query_planning.catalogue_schema(names),
+            source_query_planning.catalogue_schema(names, model=True),
             'source-query-plan', min(45, self.context.remaining()), 4096,
-            validator=lambda value: source_query_planning.validate_catalogue(value, names))
+            validator=validate_plan)
         routed = source_query_planning.validate_catalogue(value, names)
+        if records and not qs.active(self.sources):
+            scope = {'contract': qs.CONTRACT, 'targets': [], 'selections': records}
+            for record in records:
+                for uid in record['unit_ids']:
+                    target = qs.target(self.sources.matcher, record['document_id'], uid)
+                    if target not in scope['targets']: scope['targets'].append(target)
+            from ..contracts import digest
+            qs.attach(self.sources, {**scope, 'hash': digest(scope)})
+            self.work.event('MODEL_STRUCTURE_SCOPE_BOUND', {'scope': qs.active(self.sources)})
         routed['agent_required'] = routed['mode'] in ('BROWSE', 'SEARCH')
         return routed
 
     def structured(self, system, data, schema, phase, timeout, max_tokens=1536, *, validator=None):
-        if phase.startswith('source-reference-'):
+        # A provider-managed profile takes precedence over every stage-local
+        # default, including reference, planning and corrective calls.
+        if self.profile['max_output_tokens'] is None:
+            max_tokens = None
+        if phase.startswith('source-reference-') and max_tokens is not None:
             max_tokens=max(max_tokens,4096)
+        # The navigation owner gets one complete correction. A length failure
+        # uses a separate explicit profile ceiling; ordinary output caps and
+        # profiles without this opt-in retain their existing wire behavior.
+        navigation = phase.startswith('source-law-navigation-')
+        ceiling = self.profile.get('candidate_navigation', {}).get('length_recovery_max_tokens', 0)
+        validation = (data.get('repair_contract') or {}).get('validation') or {}
+        length_repair = (navigation and max_tokens is not None and ceiling > 0 and phase.endswith('-repair')
+            and validation.get('category') == 'OUTPUT_INCOMPLETE'
+            and any(row.get('code') == 'OUTPUT_LENGTH' for row in validation.get('issues', [])))
+        if length_repair:
+            original_max = max_tokens
+            max_tokens = max(max_tokens, ceiling)
+            self.work.event('LENGTH_RECOVERY_POLICY', {
+                'version':'navigation-length-recovery-v1', 'source_stage':phase,
+                'owner':'law-navigation', 'action':'FULL_DECISION',
+                'original_max_tokens':original_max, 'max_tokens':max_tokens,
+                'recovery_max_tokens':ceiling, 'max_corrections':1,
+                'shared_request_budget':True, 'context_limit_known':False})
         # A title inventory or excerpt is never a receipt for a full original.
         evidence_ids=[]
         if self.profile.get('candidate_navigation',{}).get('compact_input') and (phase.startswith('source-law-navigation-') or phase in ('memory-assess','memory-assess-repair')):
@@ -113,6 +228,24 @@ class BoundedSourceSession(ObligationSession):
             if evidence_ids:
                 data={**data,'exact_evidence':[{'evidence':ident,'text':self.work.evidence(ident)['text'],
                     'spans':self.work.evidence(ident)['spans']} for ident in evidence_ids]}
+            if phase in ('memory-assess', 'memory-assess-repair'):
+                projected = compact_assessment_evidence(data, self.work.evidence())
+                if projected:
+                    existing = {e['evidence_id'] for e in self.work.evidence()}
+                    new = [e for e in projected if e['evidence_id'] not in existing]
+                    for e in projected:
+                        self.sources.source.verify(e)
+                    if new:
+                        self.work.record_observation(
+                            {'tool': 'assessment_option_projection', 'args': {'options_hash': digest(data['evidence_options'])}},
+                            {'status': 'REUSED', 'kind': 'EXACT_ACQUIRED_SUBSPANS', 'model_delivery': 'NOT_YET_SENT'},
+                            new, verify=self.sources.source.verify)
+                    evidence_ids = list(dict.fromkeys(evidence_ids + [e['evidence_id'] for e in projected]))
+                    data = {**data, 'exact_evidence': [
+                        {'evidence': ident, 'text': self.work.evidence(ident)['text'],
+                         'source_id': self.work.evidence(ident)['source_id'],
+                         'document_id': self.work.evidence(ident)['document_id'],
+                         'spans': self.work.evidence(ident)['spans']} for ident in evidence_ids]}
         from .completion_contracts import enabled
         completion = enabled(self.profile)
         finalizing = completion and phase in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
@@ -136,7 +269,19 @@ class BoundedSourceSession(ObligationSession):
             choices = schema['properties']['choices']
             allowed = choices['items']['properties']['id']['enum']
             def validate_selection(value):
-                source_selection.checked_choices(value, allowed, choices['maxItems'])
+                checked_value = value
+                legacy_positive_choices = (
+                    not self.profile.get('candidate_navigation', {}).get('investigation_control', False)
+                    and 'status' not in choices['items']['properties']
+                    and 'status' not in choices['items']['required'])
+                if legacy_positive_choices:
+                    # The existing legacy wire lists positive selections only.
+                    # Validate that exact contract without changing the returned
+                    # proposal; source_selection.call owns its normalization.
+                    checked_value = deepcopy(value)
+                    for choice in checked_value['choices']:
+                        choice['status'] = 'ADOPT'
+                source_selection.checked_choices(checked_value, allowed, choices['maxItems'])
                 if any(not choice['reason'].strip() for choice in value['choices']):
                     raise ProposalError('source relevance reason must not be blank')
                 if validator is not None:
@@ -148,6 +293,21 @@ class BoundedSourceSession(ObligationSession):
         gateway = _Gateway(self.work, context, profile, self.gateway.domain,
                            self.gateway.transport, message_protocol=_Protocol(schema, checked),
                            system=system, prompts={phase: ''})
+        if phase == 'source-query-plan':
+            # Build the same read-only request as generate: include the actual
+            # saved view, scope notice and wire schema without reserving a call.
+            request = gateway.request(native_phase, view, 'BoundedSourceDecision')
+            chars = len(encoded(request))
+            limit = self.profile['max_context_chars']
+            exceeded = bool(limit and chars > limit)
+            self.work.event('QUESTION_NAVIGATION_CONTEXT_BUDGET', {
+                'view_id': view['view_id'], 'request_sha256': digest(request),
+                'binding_hash': self.context.binding_hash, 'actual_request_chars': chars,
+                'max_context_chars': limit, 'location_counts': data.get('navigation_context', {}).get('location_counts', {}),
+                'status': 'INCOMPLETE' if exceeded else 'WITHIN_BUDGET',
+                'omitted_locations': 0, 'source_absence_proven': False, 'model_calls': 0})
+            if exceeded:
+                raise BudgetExhausted('complete initial navigation input exceeds request context budget')
         from . import narrative_answer as narrative
         rich = narrative.enabled(profile) and phase == narrative.PHASE
         if rich:
@@ -157,7 +317,24 @@ class BoundedSourceSession(ObligationSession):
                 narrative.checked(value, data['answer_claim_ids'])
                 if prior_checked is not None:prior_checked(value)
             gateway.protocol.validator = check_answer
-        value = gateway.generate(native_phase, view, narrative.SCHEMA if rich else 'BoundedSourceDecision')
+        try:
+            value = gateway.generate(native_phase, view, narrative.SCHEMA if rich else 'BoundedSourceDecision')
+        except output.OutputContractError as exc:
+            if navigation and max_tokens is not None and ceiling > 0 and any(row.get('code') == 'OUTPUT_LENGTH' for row in exc.issues):
+                can_grow = not phase.endswith('-repair') and max_tokens < ceiling
+                self.work.event('LENGTH_RECOVERY_POLICY', {
+                    'version':'navigation-length-recovery-v1', 'source_stage':phase,
+                    'owner':'law-navigation', 'action':'OWNER_CORRECTION' if can_grow else 'STOP',
+                    'max_tokens':max_tokens, 'recovery_max_tokens':ceiling,
+                    'max_corrections':1, 'shared_request_budget':True,
+                    'context_limit_known':False})
+                if not can_grow:
+                    # Preserve the original typed cause and durable raw output.
+                    # A second request with the same exhausted cap is not repair.
+                    raise output.OutputContractError(str(exc),
+                        [{**row, 'repairable':False} for row in exc.issues],
+                        category=exc.category, repairable=False) from exc
+            raise
         self.selection_views[phase] = view['view_id']
         return value
 
@@ -239,7 +416,7 @@ class BoundedSourceSession(ObligationSession):
         self.commit_question_plan({'view_id': self.selection_views['bounded-question-plan']}, {'question_plan': value})
 
     def investigate(self):
-        if not self.context.request['use_llm'] or metadata_only_request(self.context.request['question']):
+        if not self.context.request['use_llm']:
             return super().investigate()
         if self.bounded_started:
             # Selection recovery is the second ADR0517 call, not a new graph walk.
@@ -251,19 +428,22 @@ class BoundedSourceSession(ObligationSession):
         started = time.monotonic()
         obs.event(log, 'bounded_source.started', run_id=self.context.run_id)
         try:
-            route = resolve_structure_query(self.context.request['question'], self.sources.matcher, self.sources.scope)
-            self.sources.structure_query_route = route
-            self.structure_first_record = {**route, 'fulltext_fallback': False}
-            self.work.event('STRUCTURE_QUERY_RESOLVED', route)
-            if route['status'] == 'MATCH':
-                routed = {'agent_required': True, 'mode': 'SEARCH', 'answer': '', 'reason': '문서·조문 구조의 명시 좌표 일치',
-                    'law_names': list(dict.fromkeys(p['document_name'] for p in route['pairs'])),
-                    'queries': [self.context.request['question']]}
-                self.request_route = {'agent_required': True, 'mode': 'SEARCH', 'reason': routed['reason'], 'owner': 'SYSTEM_POLICY'}
-            else:
-                routed = self.plan_request_search()
-                self.request_route = {'agent_required': routed['agent_required'], 'mode': routed['mode'], 'reason': routed['reason'],
-                                      'view_id': self.selection_views['source-query-plan']}
+            routed = self.plan_request_search()
+            self.request_route = {'agent_required': routed['agent_required'], 'mode': routed['mode'], 'reason': routed['reason'],
+                                  'view_id': self.selection_views['source-query-plan']}
+            if routed['mode']=='SEARCH':
+                # Resolve only coordinates in the model-selected search terms;
+                # a background or excluded coordinate in the question is not a command.
+                from . import query_scope as qs, structure_selection as ss
+                selected_sets = (qs.active(self.sources) or {}).get('selections', [])
+                if selected_sets:
+                    route = ss.route(selected_sets, self.sources.matcher, self.sources.scope)
+                else:
+                    route=resolve_structure_query(' '.join(routed['queries'] or routed['law_names']),
+                        self.sources.matcher,self.sources.scope)
+                self.sources.structure_query_route=route
+                self.structure_first_record={**route,'fulltext_fallback':False}
+                self.work.event('STRUCTURE_QUERY_RESOLVED',route)
             with self.work.transaction():
                 self.work.event('REQUEST_ROUTED', {**self.request_route, 'answer': routed['answer']})
             obs.event(log, 'bounded_source.query_plan.finished', run_id=self.context.run_id,
@@ -355,8 +535,10 @@ class BoundedSourceSession(ObligationSession):
                 break
         return items, receipts, cursor is None
 
-    def catalogue_observation(self, routed):
-        documents = [did for did in self.sources.scope if routed['document_category'] == 'all' or
+    def catalogue_observation(self, routed, *, document_scope=None):
+        scope=set(self.sources.scope)
+        if document_scope is not None:scope.intersection_update(document_scope)
+        documents = [did for did in sorted(scope) if routed['document_category'] == 'all' or
                      self.sources.matcher.document_catalogue[did]['category'] == routed['document_category']]
         target = self.sources.handle('R', {'documents': sorted(documents)})
         if routed['title_query']:
@@ -396,9 +578,9 @@ class BoundedSourceSession(ObligationSession):
             outlines.append({'document': next(i for i in docs if i['target'] == target), 'outline': rows, 'complete': done})
         names = sorted({i['name'] for i in docs})
         schema = {'type': 'object', 'properties': {
-            'search_required': {'type': 'boolean'}, 'answer': {'type': 'string', 'maxLength': 3000},
+            'search_required': {'type': 'boolean'}, 'answer': {'type': 'string'},
             'law_names': {'type': 'array', 'maxItems': 3, 'items': {'type': 'string', 'enum': names}},
-            'queries': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string', 'minLength': 2, 'maxLength': 250}}},
+            'queries': {'type': 'array', 'maxItems': 4, 'items': {'type': 'string', 'minLength': 2}}},
             'required': ['search_required', 'answer', 'law_names', 'queries'], 'additionalProperties': False}
         def validate_next_step(value):
             if value['search_required']:

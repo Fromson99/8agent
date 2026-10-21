@@ -1,0 +1,84 @@
+GENOS_IGNORE_TRANSFER_20261020_R1 — 휴지통·이관 임시 데이터 Git 제외
+
+용도
+- MAIN92 서버 기능은 그대로 두고 제외 규칙만 보완하는 추가 패치입니다.
+- 기존 GENOS_MAIN92_CUMULATIVE_20261020_R1 전체 코드 ZIP을 대체하지 않습니다.
+- updated-source/에는 수정한 .gitignore와 포장 규칙 6개의 전체 소스를 담았습니다.
+  설치기는 전체 파일을 덮어쓰지 않고 현장에 이미 있는 해당 파일에 규칙만 덧붙입니다.
+  현장에 없는 선택 포장 프로필은 생성하지 않습니다.
+- 실제 데이터·Git index·커밋·원격·리비전·Oracle·워크플로우 편집기는 바꾸지 않습니다.
+
+1. 실제 업로드한 TRANSFER 폴더에서 실행
+터미널의 현재 위치를 ZIP을 업로드한 TRANSFER 폴더로 둡니다.
+TRANSFER의 절대 경로를 추정하지 않습니다. --root /workspace는 사진에서 확인한
+기존 Git checkout 적용 대상이며, 실행 위치와 다릅니다.
+
+python3 -m zipfile -e ./GENOS_IGNORE_TRANSFER_20261020_R1.zip ./GENOS_IGNORE_TRANSFER_20261020_R1
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt check --root /workspace
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt apply --root /workspace
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt status --root /workspace
+
+각 명령이 성공한 뒤 다음 명령을 실행합니다.
+apply의 완료 문구는 IGNORE_APPLIED입니다.
+STATE.json에는 기존 파일과 적용 후 바이트/해시가 있어 같은 패키지로 재개·원복할 수 있습니다.
+실패는 LAST_FAILURE.json과 TRANSFER의 genos-ignore-r1-logs/*.log 및 *.log.exit에 남습니다.
+현재 Python 실행 경로·버전도 로그에 남깁니다. 패키지 폴더와 로그를 지우지 마세요.
+
+2. 사진의 기존 커밋은 별도 정리가 필요합니다
+사진에서 commit은 완료됐으며 push 전송 도중 중단했습니다.
+ignore는 이미 커밋된 QUERY_TRANSFER_20261020_R1을 소급 제거하지 않습니다.
+status의 tracked_transfer_files가 비어 있지 않으면 아직 Git 추적 중입니다.
+새 삭제 커밋만 추가해도 앞선 커밋에 DB가 남아 다음 push에서 계속 전송됩니다.
+
+우선 아래는 조회만 합니다. 원격 이름 risk_team은 사진의 push 명령 기준입니다.
+
+git -C /workspace log -1 --oneline
+git -C /workspace rev-parse HEAD
+git -C /workspace rev-parse HEAD^
+git -C /workspace ls-remote risk_team refs/heads/main
+git -C /workspace -c core.quotePath=false show --format=fuller --stat HEAD
+git -C /workspace -c core.quotePath=false log --oneline -- QUERY_TRANSFER_20261020_R1
+
+원격 조회가 실패하거나 출력이 비어 있으면 미반영으로 간주하지 않습니다.
+원격 main이 현재 HEAD면 이미 반영된 상태입니다. 자동 amend/force-push하지 않습니다.
+현재 HEAD가 문제의 마지막 커밋이고 원격 main이 HEAD^이며 이관 파일이 이 마지막
+커밋에서만 새로 추가됐다는 것이 확인된 경우에만, 아래처럼 미전송 커밋을 수정할 수 있습니다.
+다른 변경이 staging되어 있지 않은지도 git diff --cached --name-status로 확인합니다.
+
+git -C /workspace branch backup/main92-before-ignore-20261020 HEAD
+git -C /workspace rm -r --cached --ignore-unmatch -- QUERY_TRANSFER_20261020_R1
+git -C /workspace add -- .gitignore genosIgnore
+git -C /workspace -c core.quotePath=false diff --cached --stat
+git -C /workspace diff --cached --check
+git -C /workspace commit --amend --no-edit
+
+위 rm --cached는 디스크의 이관 파일을 보존합니다.
+backup 브랜치가 이미 있으면 덮어쓰지 말고 기존 기록을 확인합니다.
+현장에 다른 선택 포장 프로필도 있었다면 STATE.json의 files에 나온 파일만 추가로 add합니다.
+이 예시는 원격에 없는 마지막 단일 커밋에만 적용합니다. 이전 여러 커밋에 데이터가 있거나
+원격 상태가 다르면 이 명령을 그대로 실행하지 말고 조회 결과로 정리 범위를 먼저 확인합니다.
+백업 브랜치는 로컬 복구용입니다. git push --all/--mirror로 전송하지 않습니다.
+
+3. 커밋 정리 후 코드 대조
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt gate --root /workspace
+
+MAIN92_PLUS_IGNORE_CODE_MATCH는 기존 MAIN92 R1의 1306파일 및 필수 의존성을
+검토한 ignore 변경·기존 현장 설정과 결합하여 현재 committed checkout과 대조한 결과입니다.
+추적된 이관/휴지통 파일, 미커밋 변경, 다른 서버 코드 변경은 통과하지 않습니다.
+이 검사는 원격 이력과 모델 실행·새 리비전 성공을 검사하지 않습니다.
+기존 MAIN92 R1의 gate-code는 ignore 수정 전 해시를 검사하므로,
+이번 패치가 적용된 checkout에는 위 gate를 사용합니다. 기존 APPLIED_CODE.zip은 수정하지 않습니다.
+이후 push/새 리비전/워크플로우 테스트는 기존 MAIN92 안내를 따릅니다.
+다른 서빙 패치가 함께 들어가 gate가 실패하면 해시나 기준 목록을 임의로 바꾸지 않습니다.
+
+4. ignore 패치 원복
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt undo --root /workspace
+
+이 패치가 수정한 ignore 파일만 정확히 원래대로 복원합니다.
+적용 뒤 사용자가 다시 편집한 파일은 덮어쓰지 않고 중단합니다.
+Git 추적 제외·커밋 수정·원격 변경을 되돌리는 명령은 아닙니다.
+
+검증 범위
+실제 ZIP/TXT의 합성 Git checkout에서 적용·재실행·부분 적용 복구·원복·변조 거부와
+추적 데이터 감지, 미전송 커밋 정리 및 MAIN92 코드 해시 대조를 확인합니다.
+검사 결과의 정본은 VALIDATION.json입니다. GENOS 현장 실행은 아직 미확인입니다.

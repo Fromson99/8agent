@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "defect": "BASIS_IDENTITY before workflow/session routing with enabled shared SQLite",
+  "baseline_reproduced": true,
+  "functional_source": "02_BACKEND/semantic_runtime/app.py",
+  "app_sha256": "5b8ea1664445a0b644722a4af1c984fa49743716b48ca40c78b99bf944173d23",
+  "checks": {
+    "request_and_scope": 7,
+    "internal_concept_comparison_regression": 22,
+    "authority_acl_history_integrity": 9,
+    "installed_archive_service_and_rollback": 1,
+    "total": 39
+  },
+  "check_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261020-basis-entry-fix/validation-code",
+  "source_kind": "synthetic",
+  "model_transport": "scripted or disabled; no live calls",
+  "installed_service_without_app_injection": true,
+  "install_commands": 19,
+  "install_baseline": "GENOS_BASIS_BATCH_20261020_R4",
+  "patch_file_count": 32,
+  "bound_code_file_count": 394,
+  "unchanged": {
+    "approved_links_and_history": true,
+    "old_candidate_plan_state": true,
+    "source_generation": true,
+    "serving_config": true,
+    "local_MAIN": true
+  },
+  "active_MAIN_pointer_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506",
+  "GENOS_field_verified": false,
+  "GENOS_serving_revision": "NOT_VERIFIED",
+  "failed_fixture_logs_preserved": [
+    "contract-tests.log",
+    "contract-tests-r2.log",
+    "regression-tests.log",
+    "authority-tests.log",
+    "delivery-tests.log",
+    "delivery-tests-r2.log",
+    "delivery-tests-r3.log"
+  ],
+  "fixture_corrections": "Full source-read scripted transport; approved-history vs DB byte comparison; external pytest fixture registration; uppercase service API_TYPE; temporary NFS mount simulation. No product guard relaxed for tests.",
+  "limitations": [
+    "No actual GENOS deployment, internal model or NFS concurrency verification",
+    "No legal-answer quality certification",
+    "MAIN92 selected release remains unchanged",
+    "Legacy R4 code-bound plans retained; new batch plan has separate identity and budget"
+  ]
+}

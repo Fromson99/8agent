@@ -1,0 +1,285 @@
+#!/usr/bin/env bash
+# Run from the actual TRANSFER directory. No installation or code replacement.
+set -Eeuo pipefail
+umask 077
+delivery_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+mkdir -p -- "$delivery_dir/term-release-storage-r1-logs"
+storage_log="$delivery_dir/term-release-storage-r1-logs/$(date -u +%Y%m%dT%H%M%S)-$$.log"
+exec > >(tee -a "$storage_log") 2>&1
+trap 'storage_rc=$?; printf "STORAGE_EXIT=%s LOG=%s\n" "$storage_rc" "$storage_log"' EXIT
+python3 -u - "$delivery_dir" "$@" <<'STORAGE_PY'
+"""Metadata-only release isolation. No database reads, recursive scans, or data deletion."""
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import time
+import uuid
+
+DELIVERY = Path(sys.argv.pop(1))
+KEEP = 'financial-risk-success-20261005-schema-r2'
+CONFIG = '00_SYSTEM/GENOS_SERVING_PATHS.json'
+VERSION = 'term-release-isolation-metadata-v1'
+READ_BYTES = 0
+MAX_READ_BYTES = 2 * 1024 * 1024
+PREFIXES = ('full-80k-002-no-llm-', 'fulltext-repair-', 'pecab-workflow-smoke-', 'smoke-')
+STATE = DELIVERY / 'term-release-storage-r1-state'
+
+
+def require(ok, reason):
+    if not ok:
+        raise ValueError(reason)
+
+
+def small_bytes(path, limit=1024 * 1024):
+    global READ_BYTES
+    require(not path.is_symlink(), 'Small metadata file must not be a symlink: ' + str(path))
+    size = path.stat().st_size
+    require(size <= limit and READ_BYTES + size <= MAX_READ_BYTES,
+            'Metadata read budget exceeded; no large file will be read: ' + str(path))
+    with path.open('rb') as stream:
+        raw = stream.read(min(limit, MAX_READ_BYTES - READ_BYTES) + 1)
+    READ_BYTES += len(raw)
+    require(len(raw) == size and READ_BYTES <= MAX_READ_BYTES, 'Metadata changed during bounded read')
+    return raw
+
+
+def read(path):
+    return json.loads(small_bytes(path))
+
+
+def save(path, value):
+    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+    with temporary.open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, ensure_ascii=False, indent=2)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, path)
+    with open_directory(path.parent) as descriptor:
+        os.fsync(descriptor)
+
+
+from contextlib import contextmanager
+@contextmanager
+def open_directory(path):
+    descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        yield descriptor
+    finally:
+        os.close(descriptor)
+
+
+def event(kind, **fields):
+    value = {'time_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+             'event': kind, **fields}
+    with (STATE / 'events.jsonl').open('a', encoding='utf-8') as stream:
+        stream.write(json.dumps(value, ensure_ascii=False) + '\n')
+        stream.flush()
+        os.fsync(stream.fileno())
+    print(json.dumps(value, ensure_ascii=False), flush=True)
+
+
+def directory(path):
+    require(path.is_absolute() and path.resolve(strict=True) == path,
+            'Directory must be absolute with no symlink components: ' + str(path))
+    require(path.is_dir(), 'Not a directory: ' + str(path))
+    info = path.stat()
+    return [info.st_dev, info.st_ino]
+
+
+def metadata(path):
+    require(not path.is_symlink(), 'Bound file/directory must not be a symlink: ' + str(path))
+    info = path.stat()
+    return [info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns]
+
+
+def binding(base, dev):
+    directory(base)
+    active = base / KEEP
+    active_id = directory(active)
+    gen = active / 'generation'
+    directory(gen)
+    config = dev / CONFIG
+    require(config.is_file() and not config.is_symlink(), 'Fixed serving configuration missing: ' + str(config))
+    config_raw = small_bytes(config, 65536)
+    value = json.loads(config_raw)
+    require(value.get('schema_version') == 'genos-serving-paths-v1' and value.get('selection') == 'operator-fixed',
+            'Unsupported fixed serving configuration')
+    require(value.get('generation') == str(gen), 'Fixed config selects another generation; no move permitted')
+    manifest_raw = small_bytes(gen / 'manifest.json')
+    manifest_sha = hashlib.sha256(manifest_raw).hexdigest()
+    require(manifest_sha == value.get('generation_manifest_sha256'), 'Active generation manifest hash mismatch')
+    require(value.get('state') is None, 'Unexpected separate state override')
+    runtime = Path(value.get('runtime', ''))
+    require(runtime.is_absolute() and not runtime.resolve().is_relative_to(base),
+            'Runtime must remain outside term-releases')
+    manifest = json.loads(manifest_raw)
+    selected_paths = [manifest.get('navigation', {}).get('path'), manifest.get('fulltext', {}).get('path')]
+    selected_paths += [manifest.get('glossary', {}).get(k) for k in ('bundle', 'dictionary', 'cache')]
+    asset_metadata = {'store.sqlite': metadata(gen / 'store.sqlite')}
+    for selected in selected_paths:
+        require(isinstance(selected, str) and selected, 'Missing serving asset binding')
+        require((gen / selected).resolve(strict=True).is_relative_to(gen), 'Serving asset outside retained generation')
+        asset_metadata[selected] = metadata(gen / selected)
+    paths = [dev / 'service.py', dev / 'main_router.py', dev / '00_SYSTEM/PIPELINE.json']
+    code = {str(p.relative_to(dev)): metadata(p) for p in paths}
+    selection = active / 'SEARCH_SELECTION/generation.json'
+    return {'base': str(base), 'dev': str(dev), 'active_identity': active_id,
+            'generation': str(gen), 'manifest_sha256': manifest_sha,
+            'search_selection_metadata': metadata(selection) if os.path.lexists(selection) else None,
+            'asset_metadata': asset_metadata, 'code_metadata': code,
+            'config_sha256': hashlib.sha256(config_raw).hexdigest(),
+            'validation_level': 'METADATA_ONLY', 'payload_content_verified': False}
+
+
+def candidates(base):
+    rows = []
+    for path in sorted(base.iterdir()):
+        if path.name == KEEP:
+            continue
+        if path.is_file() and not path.is_symlink():
+            print('PRESERVE_ROOT_FILE', path.name)
+            continue
+        require(path.name.startswith(PREFIXES), 'Unexpected release; inspect before continuing: ' + path.name)
+        require(not path.is_mount(), 'Mounted directory cannot be isolated: ' + str(path))
+        rows.append({'name': path.name, 'identity': directory(path)})
+    require(rows, 'No old release directories found')
+    return rows
+
+
+def locations(plan):
+    """Recover move completion from filesystem identities after interrupted receipt writes."""
+    base, quarantine = Path(plan['binding']['base']), Path(plan['quarantine'])
+    found = []
+    for row in plan['candidates']:
+        original, moved = base / row['name'], quarantine / row['name']
+        exists = [os.path.lexists(original), os.path.lexists(moved)]
+        require(sum(exists) == 1, 'Missing or conflicting directory; preserve both locations: ' + row['name'])
+        selected = original if exists[0] else moved
+        require(directory(selected) == row['identity'], 'Directory identity changed: ' + str(selected))
+        found.append((row, original, moved, bool(exists[1])))
+    return found
+
+
+def validate_plan(plan, base, dev):
+    require(plan.get('schema_version') == VERSION, 'Unsupported plan')
+    require(plan['binding']['base'] == str(base) and plan['binding']['dev'] == str(dev), 'Plan root mismatch')
+    require(plan['quarantine'] == str(base.parent / 'term-releases-quarantine-20261016-r1'), 'Quarantine path mismatch')
+    names = [row['name'] for row in plan['candidates']]
+    require(names and len(names) == len(set(names)), 'Empty or duplicate candidate list')
+    for name in names:
+        require(Path(name).name == name and name != KEEP and name.startswith(PREFIXES), 'Invalid candidate name')
+
+
+def move(plan, restore=False):
+    quarantine = Path(plan['quarantine'])
+    if not quarantine.exists():
+        require(not restore, 'Quarantine is missing; no restoration performed')
+        quarantine.mkdir(mode=0o700)
+    require(directory(quarantine)[0] == directory(Path(plan['binding']['base']))[0], 'Cross-filesystem movement refused')
+    require({p.name for p in quarantine.iterdir()} <= {r['name'] for r in plan['candidates']}, 'Unknown files in quarantine')
+    pending = locations(plan)
+    for row, original, moved, isolated in pending:
+        if isolated == (not restore):
+            continue
+        source, target = (moved, original) if restore else (original, moved)
+        require(directory(source) == row['identity'] and not os.path.lexists(target), 'Move conflict: ' + row['name'])
+        event('RESTORE_INTENT' if restore else 'ISOLATE_INTENT', name=row['name'])
+        # Atomic same-filesystem rename. Never fall back to copy/delete.
+        rename_without_replacement(source, target)
+        for parent in (source.parent, target.parent):
+            with open_directory(parent) as descriptor:
+                os.fsync(descriptor)
+        event('RESTORED_ONE' if restore else 'ISOLATED_ONE', name=row['name'])
+    require(all(isolated == (not restore) for _, _, _, isolated in locations(plan)), 'Move incomplete')
+    event('RESTORED' if restore else 'ISOLATED', data_deleted=False, space_reclaimed=False)
+
+
+def rename_without_replacement(source, target):
+    import ctypes
+    libc = ctypes.CDLL(None, use_errno=True)
+    rename = getattr(libc, 'renameat2', None)
+    require(rename is not None, 'renameat2 unavailable; no copying or overwriting fallback')
+    rename.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint]
+    rename.restype = ctypes.c_int
+    if rename(-100, os.fsencode(source), -100, os.fsencode(target), 1) != 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), str(source) + ' -> ' + str(target))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('command', choices=['check', 'isolate', 'verify', 'restore', 'status'])
+    parser.add_argument('--base', type=Path, default=Path('/nfs-root/diamo/8-agent/term-releases'))
+    parser.add_argument('--dev', type=Path, default=Path(os.environ.get('GENOS_DEV_ROOT', str(Path.home() / 'DEV'))))
+    args = parser.parse_args()
+    base, dev = args.base.absolute(), args.dev.resolve(strict=True)
+    require(not DELIVERY.resolve().is_relative_to(base) and not dev.is_relative_to(base),
+            'Run the delivery and DEV outside term-releases')
+    print('PYTHON', sys.executable, sys.version.split()[0], 'COMMAND', args.command)
+    STATE.mkdir(exist_ok=True)
+    directory(STATE)
+    with (STATE / 'operation.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        event('START', command=args.command)
+        plan_path = STATE / 'PLAN.json'
+        if args.command == 'check':
+            require(not plan_path.exists(), 'Existing plan preserved. Use status/isolate/verify/restore; do not overwrite it')
+            pin = binding(base, dev)
+            rows = candidates(base)
+            quarantine = base.parent / 'term-releases-quarantine-20261016-r1'
+            require(not os.path.lexists(quarantine), 'Existing quarantine must be inspected first')
+            print('KEEP', KEEP, '\nCANDIDATES', json.dumps([r['name'] for r in rows]))
+            print('CHECK_BINDING', json.dumps(pin, ensure_ascii=False))
+            require(candidates(base) == rows, 'Candidate set changed during check')
+            save(plan_path, {'schema_version': VERSION, 'binding': pin, 'candidates': rows, 'quarantine': str(quarantine)})
+            event('METADATA_CHECK_PASS', plan=str(plan_path), metadata_bytes_read=READ_BYTES,
+                  payload_content_verified=False, data_deleted=False)
+            return
+        require(plan_path.is_file() and not plan_path.is_symlink(), 'Run check successfully first')
+        plan = read(plan_path)
+        validate_plan(plan, base, dev)
+        if args.command == 'status':
+            print('KEEP', KEEP, '\nQUARANTINE', plan['quarantine'])
+            for row, _, _, isolated in locations(plan):
+                print('ISOLATED' if isolated else 'ORIGINAL', row['name'])
+            print('DATA_DELETED=False WORKFLOW_RESULT=NOT_AUTOMATICALLY_VERIFIED')
+            return
+        if args.command == 'restore':
+            # Recovery must remain possible even if the serving config/code has changed.
+            move(plan, restore=True)
+            return
+        require(binding(base, dev) == plan['binding'], 'Code/config/selected data changed since check')
+        allowed = {KEEP, *[r['name'] for r in plan['candidates']]}
+        require(all(p.name in allowed or (p.is_file() and not p.is_symlink()) for p in base.iterdir()),
+                'Unexpected new release directory; do not isolate concurrently with a build')
+        if args.command == 'isolate':
+            move(plan)
+            print('NEXT: metadata verify. Do not restart/warm up now; that can cause large data reads.')
+            return
+        require(all(isolated for _, _, _, isolated in locations(plan)), 'All candidates must be isolated before verify')
+        require(all(isolated for _, _, _, isolated in locations(plan)), 'Isolation changed during verification')
+        save(STATE / ('VERIFY-' + uuid.uuid4().hex + '.json'),
+             {'status': 'METADATA_PASS', 'binding': plan['binding'], 'workflow': 'UNVERIFIED', 'data_deleted': False})
+        event('ISOLATED_METADATA_PASS', metadata_bytes_read=READ_BYTES, workflow='UNVERIFIED',
+              payload_content_verified=False, deletion_ready=False)
+        print('No server restart, warmup, DB open, full hashing, or recursive scan was performed.')
+        print('Keep quarantine. A cached response does not prove operation after permanent deletion.')
+
+
+try:
+    main()
+except (Exception, KeyboardInterrupt) as exc:
+    # A process boundary: log the real failure, keep partial move state, never report success.
+    import traceback
+    traceback.print_exc()
+    if STATE.exists():
+        try:
+            event('FAILED', error_type=type(exc).__name__, detail=str(exc), recovery='status then restore if needed')
+        except OSError:
+            print('Failed to append event; preserve shell log and inspect both locations.', file=sys.stderr)
+    sys.exit(1)
+STORAGE_PY

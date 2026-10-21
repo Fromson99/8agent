@@ -1,0 +1,160 @@
+--- before/02_BACKEND/semantic_runtime/oracle_dp.py
++++ after/02_BACKEND/semantic_runtime/oracle_dp.py
+@@ -18,6 +18,7 @@
+ from .oracle_dp_io import (DPError, SQL, OWNER, TABLES, COLUMNS, KEYS, atomic_json,
+                           canonical, digest, file_sha, read_rows, check_source_tables)
+ from .oracle_dp_assets import get_release, get_part, checked_path, PART_BYTES
++from .preparation_progress import current as preparation
+ 
+ SCHEMA = 'oracle-dp-cache-v1'
+ CHAIN_START = '0'*64
+@@ -89,6 +90,8 @@
+     try:
+         for kind in TABLES:
+             progress=state.setdefault('source',{}).setdefault(kind,{'cursor':None,'rows':0,'chain':CHAIN_START})
++            preparation.update('source.download', table=kind, rows_done=progress['rows'],
++                               rows_total=release['source_rows'][kind]['rows'])
+             columns=[c for c in COLUMNS[kind] if c!='DATASET_VERSION']
+             physical=['json' if c=='SOURCE_JSON' else c.lower() for c in columns]
+             keys=[c for c in KEYS[kind] if c!='DATASET_VERSION']
+@@ -102,30 +105,39 @@
+                 db.commit()  # A crash before the JSON checkpoint rechecks these same immutable rows.
+                 for row in rows:progress['chain']=digest([progress['chain'],row])
+                 progress['rows']+=len(rows);progress['cursor']=[rows[-1][c] for c in keys];save()
++                preparation.update(rows_done=progress['rows'])
+             expected=release['source_rows'][kind]
+             if progress['rows']!=expected['rows'] or progress['chain']!=expected['chain']:
+                 raise DPError('ORACLE_SOURCE_HASH: incomplete/changed version; not published as a cache')
+             if db.execute(f'SELECT COUNT(*) FROM {kind}').fetchone()[0]!=expected['rows']:
+                 raise DPError('CACHE_SOURCE_COUNT: cache contains unexpected rows')
+             # A checkpoint is progress, not proof that a partially built local file stayed intact.
++            preparation.update('source.verify', table=kind, rows_done=0, rows_total=expected['rows'])
+             chain=CHAIN_START
+-            for record in db.execute(f'SELECT * FROM {kind} ORDER BY '+','.join(c.lower() for c in keys)):
++            for checked,record in enumerate(db.execute(f'SELECT * FROM {kind} ORDER BY '+','.join(c.lower() for c in keys)),1):
+                 row={c:release['dataset_version'] if c=='DATASET_VERSION' else
+                      record['json' if c=='SOURCE_JSON' else c.lower()] for c in COLUMNS[kind]}
+                 chain=digest([chain,row])
++                if checked % 1000 == 0:
++                    preparation.update(rows_done=checked)
+             if chain!=expected['chain']:
+                 raise DPError('CACHE_SOURCE_HASH: local source rows differ from the published logical digest')
++            preparation.update(rows_done=expected['rows'], force=True)
++        preparation.update('source.integrity')
+         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':
+             raise DPError('CACHE_SQLITE: reconstructed source failed integrity check')
+     finally:db.close()
+ 
+ 
+ def download_assets(sql, release, work, state, save):
+-    for asset in release['assets']:
++    for asset_index,asset in enumerate(release['assets'],1):
+         target=checked_path(work,asset['path']);target.parent.mkdir(parents=True,exist_ok=True)
+         progress=state.setdefault('assets',{}).setdefault(asset['path'],{'next_part':0})
+         completed=progress['next_part']
+         expected_size=min(completed*PART_BYTES,asset['bytes'])
++        preparation.update('assets.download', force=True, asset_index=asset_index,
++                           assets_total=len(release['assets']), parts_done=completed,
++                           parts_total=asset['parts'], bytes_done=expected_size, bytes_total=asset['bytes'])
+         if target.exists() and target.stat().st_size<expected_size:
+             raise DPError('CACHE_PARTIAL: file is shorter than durable checkpoint')
+         if not target.exists() and completed:
+@@ -139,6 +151,8 @@
+                 if raw is None or len(raw)!=length:raise DPError('ASSET_MISSING: pinned Oracle asset part missing')
+                 f.write(raw);f.flush();os.fsync(f.fileno())
+                 progress['next_part']=number+1;save()
++                preparation.update(parts_done=number+1, bytes_done=min((number+1)*PART_BYTES,asset['bytes']))
++        preparation.update('assets.verify', asset_index=asset_index, assets_total=len(release['assets']))
+         if target.stat().st_size!=asset['bytes'] or file_sha(target)!=asset['sha256']:
+             raise DPError('CACHE_ASSET_HASH: downloaded asset differs from pinned release')
+ 
+@@ -194,6 +208,7 @@
+ 
+ 
+ def prepare(sql, release_id, directory, *, verifier=verify_runtime):
++    preparation.update('release.lookup')
+     release=get_release(sql,release_id)
+     folder=Path(directory).resolve()/release_id
+     folder.mkdir(parents=True,exist_ok=True)
+@@ -203,17 +218,21 @@
+         complete=folder/'complete'
+         ready=complete/'READY.json';generation=complete/'generation'
+         if ready.exists():
++            preparation.update('cache.verify', cache_hit=True)
+             proof=json.loads(ready.read_text())
+             if proof['release_id']!=release_id or proof['target_binding']!=sql.binding:
+                 raise DPError('CACHE_BINDING: cached target differs')
+-            for name,sha in proof['files'].items():
++            for checked,(name,sha) in enumerate(proof['files'].items(),1):
+                 path=checked_path(complete,name)
+                 stat=path.stat();signature=(stat.st_dev,stat.st_ino,stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns)
+                 key=(str(path),signature,sha)
+                 if key not in _VERIFIED:
+                     if file_sha(path)!=sha:raise DPError('CACHE_HASH: completed cache changed')
+                     _VERIFIED[key]=True
++                preparation.update(files_done=checked, files_total=len(proof['files']))
++            preparation.update('runtime.verify', cache_hit=True)
+             verifier(generation)
++            preparation.update('cache.ready', cache_hit=True)
+             return generation,{'cache_hit':True,'release_id':release_id,'dataset_version':release['dataset_version']}
+         if complete.exists():raise DPError('CACHE_PUBLISH: final cache lacks its atomic completion receipt')
+         workroot=folder/'partial';work=workroot/'generation';work.mkdir(parents=True,exist_ok=True)
+@@ -226,6 +245,7 @@
+         save=lambda:atomic_json(checkpoint,state)
+         save()
+         try:
++            preparation.update('source.schema')
+             check_source_tables(sql)
+             download_source(sql,release,work,state,save)
+             download_assets(sql,release,originals,state,save)
+@@ -235,14 +255,22 @@
+                 # All objects here belong to this incomplete build. Original downloads remain immutable.
+                 if dst.exists():dst.unlink()
+                 os.link(src,dst)
++            preparation.update('cache.binding')
+             bind_cache_generation(release,work,release_id)
++            preparation.update('runtime.verify', cache_hit=False)
+             verifier(work)
+-            files={str(p.relative_to(workroot)):file_sha(p) for p in work.rglob('*') if p.is_file()}
++            preparation.update('cache.seal')
++            files={}
++            for p in work.rglob('*'):
++                if p.is_file():
++                    files[str(p.relative_to(workroot))]=file_sha(p)
++                    preparation.update(files_done=len(files))
+             selection=workroot/'SEARCH_SELECTION'/'generation.json'
+             if selection.exists():files['SEARCH_SELECTION/generation.json']=file_sha(selection)
+             atomic_json(workroot/'READY.json',{'schema_version':SCHEMA,'release_id':release_id,'target_binding':sql.binding,'files':files})
+             # Generation, selection and completion receipt become visible in a single directory rename.
+             os.rename(workroot,complete)
++            preparation.update('cache.ready', cache_hit=False)
+             return generation,{'cache_hit':False,'release_id':release_id,'dataset_version':release['dataset_version']}
+         except Exception as exc:
+             sql.event('CACHE_FAILED',error=str(exc) if isinstance(exc,DPError) else type(exc).__name__)
+@@ -250,8 +278,12 @@
+ 
+ 
+ def resolve(root):
++    preparation.clear()
++    preparation.update('configuration')
+     release_id=os.environ.get('DP_RELEASE_ID','').strip()
+     if not release_id:raise DPError('DP_CONFIG: DP_RELEASE_ID from completed Oracle publication is required')
++    if len(release_id)==64 and all(c in '0123456789abcdef' for c in release_id):
++        preparation.update(release_id=release_id)
+     cache=Path(os.environ.get('DP_CACHE_DIR','/var/tmp/8-agent-oracle-dp')).expanduser().resolve()
+     cache.mkdir(parents=True,exist_ok=True)
+     from .observability import environment_facts
+@@ -261,9 +293,12 @@
+     os.environ.setdefault('GENOS_RESIDENT_DATA','off')
+     target=environment_binding()
+     directory=cache/target[:24];directory.mkdir(parents=True,exist_ok=True)
++    preparation.update('oracle.connect')
+     client=client_from_environment()
+-    sql=SQL(client,journal=directory/(release_id+'.jsonl'),binding=target,seconds=3600)
++    preparation.update('journal.recover')
++    sql=SQL(client,journal=directory/(release_id+'.jsonl'),binding=target,seconds=3600,progress=preparation)
+     generation,receipt=prepare(sql,release_id,directory)
++    preparation.update('runtime.bootstrap')
+     return Path(root),generation,{'mode':'oracle-dp','data_provider':'oracle','dp_environment_binding':target,
+         'generation_id':json.loads((generation/'manifest.json').read_text())['generation_id'],
+         'data_manifest_sha256':file_sha(generation/'manifest.json'),'nfs_source_used':False,**receipt}

@@ -1,0 +1,24 @@
+{
+  "backend": "genos",
+  "batch_id": "risk-reviewed-20261020-r1",
+  "principal": {
+    "user_id": "SET_OPERATOR_ID",
+    "team_id": "risk_team",
+    "document_ids": [],
+    "basis_review": true
+  },
+  "query_release_id": null,
+  "query_channel": null,
+  "table_map": {
+    "basis_head": "SIDDA.LEGAL_BASIS_HEAD_A",
+    "basis_revision": "SIDDA.LEGAL_BASIS_REVISION_A",
+    "basis_binding": "SIDDA.LEGAL_BASIS_BINDING_A",
+    "basis_event": "SIDDA.LEGAL_BASIS_EVENT_A",
+    "basis_receipt": "SIDDA.LEGAL_BASIS_RECEIPT_A",
+    "basis_lineage": "SIDDA.LEGAL_BASIS_LINEAGE_A",
+    "basis_migration": "SIDDA.LEGAL_BASIS_MIGRATION_A",
+    "basis_view_head": "SIDDA.LEGAL_BASIS_VIEW_HEAD_A"
+  },
+  "max_sql_calls": 10000,
+  "seconds": 86400
+}

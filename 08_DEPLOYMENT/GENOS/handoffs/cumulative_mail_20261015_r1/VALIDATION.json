@@ -1,0 +1,58 @@
+{
+  "status": "VERIFIED_LOCAL_SYNTHETIC",
+  "version": "GENOS_CUMULATIVE_MAIL_20261015_R1",
+  "zip_sha256": "b28458f9b141dcb2d7932443989b02a64f5b54e96d3338df89b5ec2ab3a1f34c",
+  "run_sha256": "395cc906e883cf8ebdd7292b8cc4494910656af59b06acbcc4e921bb4f15da8d",
+  "known_complete_predecessors": 4840,
+  "final_code_inventories": 440,
+  "source_artifact_specs_verified": 16,
+  "mail_search_messages_reviewed": 168,
+  "service_gate_integrations": 2,
+  "postwrite_failure_exact_rollback_test": 1,
+  "installed_contracts": {
+    "INSTALLED_field_fact": 96,
+    "INSTALLED_early_r4": 96
+  },
+  "installed_passes": 192,
+  "actual_commands": 47,
+  "same_committed_checkout_generation_gates": 2,
+  "actual_service_entrypoint_loopback_tls_boots": 2,
+  "original_CURRENT_failure_reproduced": 2,
+  "stale_deployment_hash_rejected": 2,
+  "explicit_generation_conflict_rejected": 2,
+  "reapplication_preserves_backup": true,
+  "unknown_edit_and_undo_refused": true,
+  "all_original_generation_bytes_preserved": true,
+  "search_api_modes": [
+    "legacy",
+    "compact-v2"
+  ],
+  "search_old_versions_excluded": true,
+  "fixture_building": "isolated workspace subprocess; all semantic_runtime imports pinned to installed checkout",
+  "separate_workflow_editor_sha256": "f505a5a4e0a43e691d1f741238397bad059246d29dbb29a78c516dcb0852ad62",
+  "workflow_editor": "identical to last mailed PUBLIC_FAILURE_GUIDANCE R1; manual apply/compare required",
+  "python_executed": "3.14.4 local WSL",
+  "field_python": "3.11.15 from photo; 111 shipped/source module variants plus editor parsed under Python 3.11 grammar",
+  "genos_connection_attempts": 0,
+  "external_model_inference_calls": 0,
+  "local_MAIN66_pointer_sha256": "3aba4052dd6ccd521dd4fb50cb95354f6f1a677a39bef269450c2d7f121b511e",
+  "old_sent_artifacts_preserved": true,
+  "initial_test_fixture_failures_preserved": [
+    "INITIAL_TEST_PATH_ERROR.log",
+    "INITIAL_FIXTURE_ROOT_ERROR.log",
+    "INITIAL_TEST_IMPORT_ERROR.log",
+    "INITIAL_BUILDER_FIXTURE_ERROR.log"
+  ],
+  "field": {
+    "cumulative_applied": false,
+    "commit": null,
+    "code_serving_revision": null,
+    "workflow_editor_saved": null,
+    "workflow_test": "NOT_RUN"
+  },
+  "limitations": [
+    "targets the existing resident-cache R4/CM code line shown in the photo",
+    "does not rerun historical raw data rebuild/transfer/CM registration/diagnostics",
+    "no automatic Git push/revision deployment or workflow editor mutation"
+  ]
+}

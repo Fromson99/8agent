@@ -1,0 +1,13 @@
+<!doctype html><html><body>
+<p><strong>현재 GENOS 코드에 빠진 변경을 한 번에 채우는 통합본입니다.</strong> 이전 메일을 하나씩 다시 실행하지 말고 이번 통합본을 사용해 주세요.</p>
+<p>사진과 발송 내역을 대조했습니다. FACT_REASON R2는 코드 적용 성공입니다. 출력 상한 제거 R1은 사진의 코드 구성에 포함되지 않았으며, SEARCH_LATEST R1은 없는 CURRENT.json 경로를 읽다가 코드 적용 전에 실패했습니다. 이 검색 오류는 설치기가 서비스의 고정 NFS 경로를 반영하지 못한 문제였습니다.</p>
+<p>기존 복구·로그·스트리밍·판단/사실 안내와 출력 상한 제거, 구버전 검색 제외를 현재 현장 코드 계열에 맞춰 하나로 합쳤습니다. 알려진 전체 코드 해시를 검사하고 이미 있는 변경은 보존합니다. 운영 예산·설정·원문·SQLite·색인을 유지하고, 누락된 코드와 검색 선택만 적용합니다. 과거 진단/원복/데이터 재구축 명령은 무조건 다시 실행하지 않습니다.</p>
+<p><strong>실제 첨부파일을 올린 TRANSFER 폴더에서 두 줄만 실행하세요.</strong></p>
+<pre>python3 -m zipfile -e ./GENOS_CUMULATIVE_MAIL_20261015_R1.zip ./GENOS_CUMULATIVE_MAIL_20261015_R1
+bash ./GENOS_CUMULATIVE_MAIL_20261015_R1/GENOS_CUMULATIVE_MAIL_20261015_R1_RUN.txt install</pre>
+<p>별도 첨부 RUN.txt에도 전체 코드가 들어 있습니다. 그 파일만 올린 경우에는 <code>bash ./GENOS_CUMULATIVE_MAIL_20261015_R1_RUN.txt install</code> 한 줄로도 같은 작업이 실행됩니다.</p>
+<p>대상은 기존 ~/DEV입니다. 실제 실행 위치의 cumulative-mail-r1-logs에 로그, cumulative-mail-r1-state/STATUS.json에 결과를 남깁니다. <strong>ALL_CODE_APPLIED 및 CUMULATIVE_EXIT=0</strong>을 확인하세요. 실패하면 중단하고 원인을 남기며, 같은 install로 재실행할 수 있습니다. 코드 쓰기 후 검증 실패는 원본으로 복원합니다.</p>
+<p><strong>마지막으로 필요한 별도 단계</strong><br>같은 checkout에서 변경 검토·commit 후 RUN.txt의 gate를 실행하고, 기존 원격 push → 새 코드서빙 리비전 → SSE 재시작을 진행합니다. 상세 명령과 undo는 GUIDE_UTF8.txt에 있습니다.<br>WORKFLOW_PASTE_ALL.txt는 마지막 발송한 PUBLIC_FAILURE_GUIDANCE R1 전체 편집기 코드입니다. 기존 워크플로우 Python 편집기에 같은 코드가 저장되어 있는지 확인하고, 다르면 기존 내용을 보관한 뒤 전체 교체·저장하세요. Git push만으로 편집기는 바뀌지 않습니다. 이후 워크플로우 테스트 화면에서 질의를 확인합니다.</p>
+<p>검증: 알려진 입력 구성4,840개를 봉인 출력에 결속했고, 사진의 FACT_REASON 적용 후 구성 및 이전 R4 구성에서 설치 계약/API192개, 실제 명령47회, 동일 committed checkout 배포 게이트2회, 실제 service.service TLS부팅2회, 재실행·변조 거부·원복을 확인했습니다. 테스트는 로컬 합성 환경이며 실제 GENOS 리비전/편집기/내부 모델 질의 성공은 현장 확인이 남아 있습니다.</p>
+<p>첨부: 통합 ZIP, 완전한 실행 TXT, 편집기 전체 교체 TXT, 안내, 검증 요약, 검증 JSON, SHA-256 목록. ZIP 안에도 실행 파일·편집기 코드·안내·메일 분류표가 들어 있습니다.</p>
+</body></html>

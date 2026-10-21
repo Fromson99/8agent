@@ -1,0 +1,42 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test-code",
+    "05_TESTS/CONTRACTS/test_team_session_identity.py",
+    "05_TESTS/CONTRACTS/test_memory_runtime_v2.py",
+    "05_TESTS/CONTRACTS/test_memory_adapters_v2.py",
+    "05_TESTS/REGRESSION/core/test_genos_rag_chat.py",
+    "05_TESTS/CONTRACTS/test_genos_main_chat.py",
+    "06_TOOLS/EXPERIMENTS/adr_0849/test_wiring.py",
+    "06_TOOLS/EXPERIMENTS/adr_0844/test_sources.py",
+    "--show-capture=all"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 18.020248701999662,
+  "peak_group_rss_bytes": 463622144,
+  "min_available_bytes": 13648277504,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/tests-005-resources.json",
+    "rss_gib": 3.0,
+    "as_gib": 5.0,
+    "min_available_gib": 3.0,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test-code",
+      "05_TESTS/CONTRACTS/test_team_session_identity.py",
+      "05_TESTS/CONTRACTS/test_memory_runtime_v2.py",
+      "05_TESTS/CONTRACTS/test_memory_adapters_v2.py",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py",
+      "05_TESTS/CONTRACTS/test_genos_main_chat.py",
+      "06_TOOLS/EXPERIMENTS/adr_0849/test_wiring.py",
+      "06_TOOLS/EXPERIMENTS/adr_0844/test_sources.py",
+      "--show-capture=all"
+    ]
+  },
+  "samples_sha256": "9996a06c15c0e4045092ae5167780c4924731f7cb4440df79a7ea3a94caf79d4"
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "filename-audit-exceptions-v1",
+  "revision": "user-20261015-r1",
+  "description": "사용자가 지정한 임시 판본 예외. 이 파일 하나에서 관리하며 --no-exceptions로 전체 해제할 수 있다. 원본 및 RAG는 변경하지 않는다.",
+  "single_file_folder_is_latest": true,
+  "rules": [
+    {
+      "id": "group-risk-confirm",
+      "titles": ["그룹위험관리 세칙", "그룹위험관리기준시행세칙", "그룹위험관리시행세칙"],
+      "action": "confirm_auto_latest",
+      "reason": "사용자 확인: 현재 최신 판정 유지. 특정 날짜는 제공되지 않았으므로 새 날짜를 추정하지 않음."
+    },
+    {
+      "id": "stock-lending-20260504",
+      "titles": ["대차업무준칙"],
+      "action": "select_date",
+      "date": "2026-05-04",
+      "reason": "사용자 지정: _2026.05.04 판본을 최신으로 선택."
+    },
+    {
+      "id": "samsung-pop-golden-wrap-202305",
+      "titles": ["삼성POP골든랩 관리준칙"],
+      "action": "select_filename",
+      "filename_stem": "삼성POP골든랩 관리준칙_2023년 5월 개정(최종)",
+      "date": "2023-05",
+      "reason": "사용자 지정 파일명. 날짜는 월 단위이며 일자는 생성하지 않음."
+    },
+    {
+      "id": "futures-options-attachments",
+      "titles": ["선물옵션 리스크관리 관리준칙", "선물옵션 리스크관리준칙"],
+      "action": "separate_attachments",
+      "match_parent_folder": true,
+      "reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급."
+    },
+    {
+      "id": "margin-collection-keep-both",
+      "titles": ["위탁증거금 징수지침"],
+      "action": "keep_all",
+      "expected_locations": 2,
+      "reason": "사용자 지정: 두 문서 모두 유지. 예상 개수와 다르더라도 임의로 삭제하지 않고 보고."
+    },
+    {
+      "id": "index-book-20260529",
+      "titles": ["인덱스북"],
+      "action": "select_date",
+      "date": "2026-05-29",
+      "reason": "사용자 지정: 20260529 판본 선택."
+    },
+    {
+      "id": "equity-management-20210723",
+      "titles": ["주식운용준칙"],
+      "action": "select_date",
+      "date": "2021-07-23",
+      "reason": "사용자 지정: 20210723 판본 선택."
+    },
+    {
+      "id": "investment-risk-20160111",
+      "titles": ["투자리스크관리준칙"],
+      "action": "select_date",
+      "date": "2016-01-11",
+      "reason": "사용자 지정: 20160111 판본 선택."
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "status": "PASS",
+  "final_zip_sha256": "fcf4abadf66ebc743094a3ac24bf41f1fefb0e5a628bd1c11445c170989276d8",
+  "final_zip_bytes": 16193,
+  "zip_members": [
+    "audit_internal_links.py",
+    "RUN_INTERNAL_LINK_AUDIT.txt",
+    "GUIDE_UTF8.txt",
+    "PACKAGE_MANIFEST.json"
+  ],
+  "shell_commands": [
+    {
+      "command": [
+        "bash",
+        "-n",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "check"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--output",
+        "$TEST/report"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--output",
+        "$TEST/report"
+      ],
+      "expected_exit": 2,
+      "actual_exit": 2
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--document-contains",
+        "표현 없는 내규",
+        "--output",
+        "$TEST/zero"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--generation",
+        "$TEST/wrong",
+        "--output",
+        "$TEST/mismatch"
+      ],
+      "expected_exit": 2,
+      "actual_exit": 2
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--max-seconds",
+        "0",
+        "--output",
+        "$TEST/budget"
+      ],
+      "expected_exit": 2,
+      "actual_exit": 2
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--team",
+        "none",
+        "--output",
+        "$TEST/scope"
+      ],
+      "expected_exit": 2,
+      "actual_exit": 2
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "run",
+        "--code-root",
+        "$TEST/DEV",
+        "--output",
+        "$TEST/generation/overlap"
+      ],
+      "expected_exit": 2,
+      "actual_exit": 2
+    },
+    {
+      "command": [
+        "bash",
+        "$TEST/GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt",
+        "check"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1
+    }
+  ],
+  "python311_parse": "PASS",
+  "original_data": "synthetic only",
+  "runtime_product_changes": false
+}

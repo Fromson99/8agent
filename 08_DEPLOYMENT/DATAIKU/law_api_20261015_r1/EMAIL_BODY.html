@@ -1,0 +1,8 @@
+<p>Dataiku에서 법제처 API를 확인할 <b>Jupyter Notebook과 클릭 순서별 실행 가이드</b>를 보냅니다.</p>
+<p>외부에서 실제 자본시장법·금융투자업규정 XML 본문을 받았고, 인계 코드의 법령/행정규칙 확인 5개도 모두 성공했습니다. 사내 Dataiku와 삼성 중계 연결은 첨부 Notebook을 사내에서 실행해 확인해야 합니다.</p>
+<p><b>실행 순서</b><br>1. ZIP 압축 해제<br>2. Dataiku 프로젝트 Flow → New dataset → Folder에서 결과 폴더 생성<br>3. Code → Notebooks에서 ZIP 안 .ipynb 가져오기<br>4. 셀 1의 중계 주소·Managed Folder ID 확인<br>5. 셀 1~8 실행, 등록 OC는 입력창에 입력<br>6. 결과표와 폴더 저장 완료 확인</p>
+<p>가져오기 버튼이 없으면 New Notebook → Python으로 빈 Notebook을 만들고, 별도 첨부 RUN.txt 전체를 첫 코드 셀에 붙여 넣으면 됩니다. RUN.txt는 <b>Python 코드</b>이며 bash 파일이 아닙니다. Word/TXT 가이드 4~8절에 상세 버튼 순서를 적었습니다.</p>
+<p><b>확인할 차이:</b> 사진의 “현행법령” curl 샘플은 실제로 행정예고 주소입니다. 현재 수집 코드가 쓰는 시행일 기준 <code>target=eflaw</code>는 사진의 명시 지원 목록에 보이지 않아 별도 확인하도록 했습니다. 법령 <code>law</code> 본문 성공과 <code>eflaw</code> 성공은 결과표에서 구분됩니다.</p>
+<p>기본은 Python requests로 curl과 같은 HTTP 요청을 보냅니다. curl 자체 재현이 필요하면 ZIP의 CURL_EQUIVALENT.txt를 별도 셀에서 추가 1회 실행할 수 있습니다. 개발계/운영 주소, CA, 인증, 예고 확인, 오류별 조치도 가이드에 포함했습니다.</p>
+<p>사진의 OC·세션 쿠키는 복사하지 않았습니다. 본인/과제에 등록된 인증값을 입력하세요. 내부 LLM 호출, GENOS 코드 교체, MAIN 변경은 없습니다.</p>
+<p>첨부: ZIP(Notebook 포함), 완전 실행 Python TXT, Word 가이드, 동일 내용 TXT 가이드, 검증 요약, SHA-256 목록.</p>

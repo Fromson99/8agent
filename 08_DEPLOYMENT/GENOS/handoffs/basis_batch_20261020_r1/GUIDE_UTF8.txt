@@ -1,0 +1,124 @@
+GENOS 최신 내규 일부 사전 연결 — 2026-10-20 R1
+
+목적
+RAG가 사용하는 최신 판본 선택과 risk_team 범위를 그대로 적용해 내규를 고릅니다.
+기본은 분량이 작은 내규 3개이며 문서 ID로 직접 선택할 수도 있습니다.
+기존 RAG와 GENOS 내부 모델로 외규를 조사하고, 성공한 연결은 바로 기존
+공유 runtime/basis-links/authority.sqlite에 증분 추가합니다.
+원문 store.sqlite, 용어/navigation/fulltext 색인, CURRENT를 재작성하지 않습니다.
+기존 authority.sqlite가 없으면 같은 위치에 관계 원장만 처음 생성합니다.
+기존 관계·승인·실패 이력을 보존하고, 관계 조회용 작은 보조 색인만 추가합니다.
+
+적용 전제
+- 앞서 받은 GENOS_MAIN92_CUMULATIVE_20261020_R1을 적용한 기존 ~/DEV checkout.
+  알려진 MAIN92/직전 작업 코드 외 차이는 보존하고 중단하며 덮어쓰지 않습니다.
+- Python 3.11 이상 및 MAIN92의 기존 의존성. 새 pip 설치는 없습니다.
+- 기존 00_SYSTEM/GENOS_SERVING_PATHS.json의 generation/runtime 설정.
+  runtime은 코드스페이스와 워크플로우가 같이 사용하는 외부 NFS/CIFS여야 합니다.
+- 기존 GENOS 내부 LLM 접속 환경. 외부 모델 자동 대체는 없습니다.
+- 이 배치 프로세스는 사용자가 요청한 SQLite 원문 세대를 명시적으로 사용합니다.
+  서빙의 DP 환경변수를 수정하지 않습니다. Oracle 데이터를 내려받아 복원하지 않습니다.
+  다른 원문 세대의 관계를 억지로 재사용하지 않습니다.
+
+1. 실제 업로드한 TRANSFER 폴더에서 압축 해제
+TRANSFER의 절대 위치를 가정하지 않습니다. 먼저 DEV로 이동하지 마세요.
+
+python3 -m zipfile -e ./GENOS_BASIS_BATCH_20261020_R1.zip ./GENOS_BASIS_BATCH_20261020_R1
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt check
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt apply
+
+check는 파일/기준 코드만 검사합니다. apply는 ~/DEV의 필요한 코드만 백업 후 적용하고
+모든 엔진·워크플로우 pin을 검사합니다. 별도 후보 코드 폴더에서만 실행하지 않습니다.
+~/DEV 외 실제 checkout을 사용하면 각 명령 끝에 --root /실제/checkout 을 추가하세요.
+패키지의 backup/와 INSTALL_STATE.json을 보존하세요. 재실행은 적용된 파일을 확인합니다.
+일부 적용 후 중단돼도 같은 apply로 재개하며 다른 변경이 있으면 중단합니다.
+
+2. 최신 내규 목록과 선택 계획 확인
+
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt list
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt plan --count 3
+
+list/plan은 생성 모델 조사를 실행하지 않습니다. 다만 서비스 준비 과정의 모델 ID 확인,
+선택 원문·기존 색인의 무결성 검사/읽기는 실행합니다. 최초 해시 확인은 시간이 걸릴 수 있습니다.
+목록은 LATEST_INTERNAL.csv, 확정 선택은 PLAN.json입니다.
+plan에 담긴 문서명, ID, 문자 수, 병합 후 조사 범위 수를 먼저 확인할 수 있습니다.
+직접 고르려면 plan --ids 문서ID1 문서ID2 형태로 실행합니다.
+이미 저장된 PLAN.json을 덮어쓰지 않습니다. 다른 선택은 --job /외부공유경로/새작업 을
+각 명령에 동일하게 붙여 만드세요. 새 job은 새로운 조사 예산을 가진 별도 실행입니다.
+기본 job은 기존 runtime/basis-batch/pilot-20261020-r1 입니다.
+
+3. 순차 조사와 SQLite 즉시 적용
+
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt run
+
+문서/조사 범위를 하나씩 처리합니다. 생성한 연결은 매번 원문·권한·세대를 검사한 후 commit합니다.
+별도 전체 색인 명령이나 generation 생성이 없습니다. 원문·임베딩은 다시 만들지 않습니다.
+한 문서의 최소 구조 단위에서 바로 상위 단위를 고르고, 원문 범위가 겹치면 합칩니다.
+서로 떨어진 범위를 문서 전체로 무조건 합치지 않습니다. 미분류 본문/별표도 목록에 남깁니다.
+읽기 자체는 기존 페이지/cursor 계약을 사용합니다. 범위가 모델 입력 한도보다 크면
+기존 예산/입력 제한에 따라 부분 결과와 미처리 범위를 보존하며 내용을 잘라 완료 처리하지 않습니다.
+
+관계는 PROPOSED(미승인 모델 후보)로 저장됩니다. 사람 승인을 자동 생성하지 않습니다.
+이 배치가 등록한 후보는 다음 대사의 외규 조사에서 즉시 원문 읽기 단서로 사용합니다.
+대사의 LLM은 실제 내규·외규 원문을 다시 보고 연결의 타당성·적용·예외를 판단합니다.
+관계 종류는 BASIS/IMPLEMENTS/RELATED입니다. 이미 반려·취소한 같은 관계를 부활시키지 않습니다.
+‘조사 완료’는 모든 관련 외규를 찾았다는 뜻이 아닙니다. 미확보와 미처리를 따로 보세요.
+
+4. 로그, 결과, 재개
+
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt status
+
+실행 시작부터 현재 TRANSFER/basis-batch-r1-logs/에 .log와 .log.exit를 기록합니다.
+문서 시작/범위 시작/범위 완료/후보 수/문서 완료 이벤트와 15초 heartbeat가 나옵니다.
+모델 호출 내부 진행과 실제 오류는 기존 RAG 로그·workflow journal에도 보존합니다.
+STATE.json: 문서별 상태, run_id, 호출 사용량, 처리/미처리 수.
+*.report.txt: 문서별 조사 범위·후보·미확인 보고서.
+LINKS.csv: 내규 문서/조항/실제 원문, 외규 문서/조항/실제 원문, 관계·이유·상태·ID.
+CSV는 선택 문서의 기존 관계도 포함합니다. 정본은 SQLite 원장입니다.
+
+프로세스가 중단되었다면 원래 job으로:
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt resume
+
+같은 request/session, 코드·판본·선택 정책·권한, 누적 사용량과 최초 deadline을 유지합니다.
+한 번 완료/부분 완료된 문서는 다시 호출하지 않습니다. 반복 실행으로 후보를 중복 추가하지 않습니다.
+run/resume 종료 코드 0은 배치 완료, 2는 부분 완료입니다. 그 외는 오류 로그를 확인하세요.
+예산 소진/부분 완료를 resume으로 새 예산처럼 다시 돌리지 않습니다.
+미처리 범위를 추가로 조사하려면 별도 후속 실행 계획이 필요합니다.
+
+CSV를 재생성할 때:
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt export
+
+5. 대사 워크플로우에서 사용
+이번 코드는 내규 개념 기반 대사 workflow1.20.0도 포함합니다.
+코드스페이스 apply와 코드서빙 리비전 변경은 별개입니다.
+기존 ~/DEV에서 변경 파일 검토·commit 후 같은 ZIP의 gate를 실행하고,
+그 commit을 push하여 새 코드서빙 리비전에 반영하세요.
+
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt gate
+
+동봉 GENOS_BASIS_BATCH_20261020_R1_WORKFLOW_PASTE_ALL.txt 전체를
+워크플로우 Python 단계 편집기에 별도로 반영·저장하세요.
+이번 코드가 배포된 뒤에는 동일한 원문 세대·공유 runtime의 새 연결 commit을
+다음 새 대사 요청이 읽습니다. 연결 추가마다 코드 배포나 전체 재색인은 필요 없습니다.
+진행 중인 대사의 이미 고정한 snapshot은 바꾸지 않습니다.
+현재 코드가 아직 배포되지 않았다면 SQLite 추가만으로 구 코드의 탐색이 바뀌지는 않습니다.
+현장 확인은 워크플로우 테스트 화면의 새 대사에서 수행합니다.
+코드서빙 직접 테스트 UI/API는 요구하지 않습니다.
+Oracle 서빙에서 재사용하려면 원문 ID·판본·해시가 SQLite 조사 세대와 같은지 확인해야 합니다.
+다른 판본은 그대로 재사용하지 않으며 실제 Oracle 현장 소비는 이번 로컬 검증 범위 밖입니다.
+
+6. 원복과 보존
+bash ./GENOS_BASIS_BATCH_20261020_R1/GENOS_BASIS_BATCH_20261020_R1_RUN.txt rollback
+
+원복은 이 패치의 코드만 대상으로 하고 이후 수정이 있으면 중단합니다.
+관계 DB/사용자 승인/실패·조사 이력과 데이터는 삭제하지 않습니다.
+원복한 코드의 이전 승인 전용 조회는 이번 미승인 후보를 자동 사용하지 않습니다.
+데이터는 삭제 대신 기존 관계 검토 화면/API에서 대상 행을 반려/취소할 수 있습니다.
+진행 중인 새 workflow를 구 코드로 강제 재개하지 마세요.
+
+검증과 한계
+동봉 VALIDATION.json을 참고하세요. 합성 원문·모의 모델로 API/SQLite/대사 소비자,
+중복·재개·권한·해시·판본·예산 및 실제 전달 ZIP/TXT를 검증합니다.
+외부 모델 호출 0, 실제 GENOS 내부 모델 호출 0입니다.
+현장 전체 연결 정확도·모델 지연·NFS locking/fsync·리비전 배포 성공은 미확인입니다.
+연결 정확도와 처리시간은 첫 3개 문서의 현장 결과로 확인하세요.

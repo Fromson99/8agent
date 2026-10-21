@@ -1,0 +1,6 @@
+<!doctype html><html lang="ko"><body><p><strong>적용한 MAIN96 위에 명령 추가 ZIP을 한 번 설치하세요.</strong></p><p>실제 업로드한 TRANSFER 폴더에서:</p><pre>python3 -m zipfile -e ./GENOS_STABLE_COMMANDS_20261021_R1.zip ./GENOS_STABLE_COMMANDS_20261021_R1
+bash ./GENOS_STABLE_COMMANDS_20261021_R1/GENOS_STABLE_COMMANDS_RUN.txt check --root /workspace
+bash ./GENOS_STABLE_COMMANDS_20261021_R1/GENOS_STABLE_COMMANDS_RUN.txt apply --root /workspace</pre><p><strong>기존 구조화·색인 데이터로 전체 연결 조사 → 지정 4건 확정 연결 추가 → export:</strong></p><pre>python3 /workspace/06_TOOLS/pipeline.py basis-work plan-all links-001
+python3 /workspace/06_TOOLS/pipeline.py basis-work fixed-stage links-001
+python3 /workspace/06_TOOLS/pipeline.py basis-work all links-001
+python3 /workspace/06_TOOLS/pipeline.py basis-work export links-001</pre><p>예전에 조사한 all 결과만 export할 때:</p><pre>python3 /workspace/06_TOOLS/pipeline.py basis-work export all</pre><p>새 원문 구조화부터 시작하는 전체 순서는 ZIP 안 COMMANDS.txt에 있습니다. 그 안내의 ~/DEV는 이번 현장 checkout인 /workspace로 바꾸어 사용하세요.</p><p>MAIN96 적용본의 로컬 설치·재설치·코드검사·원복 6명령 확인 완료. 실제 GENOS 실행은 별도입니다.</p></body></html>

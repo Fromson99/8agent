@@ -1,0 +1,372 @@
+{
+  "revision": "GENOS_TOOL_RECOVERY_20261014_R1",
+  "local_main": {
+    "status": "PASS",
+    "environment": "fresh WSL local service.service",
+    "pointer": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "tool-recovery-20261014-r1",
+      "generation": 63,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/tool-recovery-20261014-r1/release.json",
+      "release_manifest_sha256": "746070358038491167183684640b0c0366a4ba2db36d2fc79d49f3b9b9f800b0",
+      "activated_at": "2026-10-14T14:13:27.665358+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "7c68658c7f4484ee5440587a557972319af45f07ef6d1733b12aeebec73276ba",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0779-tool-recovery-main/실험/manifest.json",
+          "sha256": "2e1d5e9184fdd663a986dc4f80e1ee7a0a90a66a3b0134a019a0bc250775269b"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0779-tool-recovery-main/README.md",
+          "sha256": "851717db546289a750605fdc7ab5b9898293994d178a16bb2fb11223226c715c"
+        },
+        "arm": "recovery",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0779-tool-recovery-main/artifacts/run-001/result.json",
+          "sha256": "0f4c2562c79ebdaa8a1c7dcb381e7530fbcab2cd9071311e9f066e2e74513658"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0779-tool-recovery-main/artifacts/design/release-rebase.json",
+          "sha256": "b58ca382fb8a28c7be3b126726171a182853be0e0222ffe26cdba023b3739e3c"
+        }
+      }
+    },
+    "execution_binding": {
+      "mode": "local-release",
+      "release_id": "tool-recovery-20261014-r1",
+      "generation": 63,
+      "release_manifest_sha256": "746070358038491167183684640b0c0366a4ba2db36d2fc79d49f3b9b9f800b0",
+      "code_sha256": "a51cd763088625918d84b2eaf36a3c17b7876019d8c75de65f693358bc2c9f75",
+      "profile_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+      "source_generation_id": "term-source-8729f978a28924cb8c5b",
+      "fulltext_manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+      "search_policy_sha256": "949c449188a1bb1f25c289f2be0a137137c94f04dce6851be521821c825bbe79",
+      "schema_sha256": "c80ecb2f73c797b0d42136520eb83b4beacc557251a289fb3f9b156d6fb0d34a",
+      "process_instance_id": "fcba56d7f0b341a2b729ed545a520ab2",
+      "process_id": 592164,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "3d74971f2f1e0f4051439486a243e295b8cc46679c354e14e2af4ca2e98ed1f4",
+      "service_entry_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c"
+    },
+    "health_search_catalogue_statuses": [
+      200,
+      200,
+      200
+    ],
+    "failed_response_status": 500,
+    "selected_output_contract": "08_DEPLOYMENT/RELEASES/tool-recovery-20261014-r1/code/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+    "selected_files_verified": 306,
+    "data_unchanged": true,
+    "model_calls": 0,
+    "genos_deployed": false,
+    "selected_tool_policy": "tool-policy-v1",
+    "selected_tool_policy_hash": "b2518a68f0f0c7493c3f84a5e157a44c53e33aa009d219900892dd030cfc0c79",
+    "selected_tool_outcome": "tool-outcome-v1"
+  },
+  "qualification": {
+    "strict_success": true,
+    "checks": {
+      "all_5994_new_finite_contracts": true,
+      "known_842_regressions_pass": true,
+      "only_same_four_preexisting_failures": true,
+      "no_skipped_or_error_tests": true,
+      "runtime_from_frozen_candidate": true,
+      "main62_pointer_unchanged": true,
+      "frozen_inputs_unchanged": true,
+      "serving_files_equal_working": true,
+      "no_real_model_calls": true
+    },
+    "contracts_passed": 842,
+    "preexisting_failures": {
+      "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_nonretryable_auth_error_and_actual_model_mismatch": "semantic_runtime.legal_agent.errors.ContractError: previous model decision outcome is unknown; no automatic replay",
+      "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_candidate_manifest_topology_and_code_pins_are_valid": "jsonschema.exceptions.ValidationError: Additional properties are not allowed ('ad_management', 'document_build', 'genos_operator_paths', 'shortcut_v4' were unexpected)",
+      "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_admission_limit_returns_503_without_hidden_queue": "KeyError: 'run_id'",
+      "05_TESTS/CONTRACTS/test_tool_exploration_v3.py::test_explicit_v3_remains_available_alongside_v5_main": "AssertionError: assert 'legal-agent-unified-v6' == 'legal-agent-tools-v5'"
+    },
+    "by_arm": {
+      "baseline": {
+        "status": "complete",
+        "supported": false,
+        "cases_evaluated": 0,
+        "reason": "Legacy MAIN62 has no typed policy/outcome API; absence is not scored as failed legal answer"
+      },
+      "recovery": {
+        "status": "complete",
+        "matrix_cases": 5994,
+        "contract_correct": 5994
+      }
+    },
+    "usage": {
+      "model_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "limitations": [
+      "Finite synthetic host protocol audit, not legal accuracy or real model effectiveness",
+      "Existing 842 known regression cases are supplemental, not new holdout",
+      "Four preexisting failures remain open and were not converted to passes",
+      "GENOS field deployment/internal model/workflow result unverified",
+      "P4/P7/P5 and output compression deferred"
+    ]
+  },
+  "installed_contracts": {
+    "INSTALLED_query_latency_20261007_r3.xml": {
+      "tests": 549,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r4.xml": {
+      "tests": 549,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_total": 1096,
+  "installed_known_display_failures": 2,
+  "legacy_display_baselines": {
+    "query_latency_20261007_r3": {
+      "preexisting": true,
+      "fixture": {
+        "kind": "query_latency_20261007_r3",
+        "label": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/focused-r3/narrative-r2/stream-fix-r1/success/guidance/metrics/tls/schema-recovery-r1",
+        "path": "fixtures/predecessor-query_latency_20261007_r3.zip",
+        "sha256": "b5bb837966e1b597f85c69ce97450481fd7cd7bc2c76fcbc44cd40bf9dc21563"
+      },
+      "test": {
+        "classname": "05_TESTS.CONTRACTS.test_investigation_diagnostics",
+        "name": "test_complete_scoped_diagnostics_remain_internal",
+        "time": "0.027"
+      },
+      "message": "AssertionError",
+      "evidence": "failures/legacy-display-baseline-query_latency_20261007_r3.xml",
+      "cause": "Legacy full progress UI deliberately emits in-scope diagnostics. New compact-public default expectation does not match this unchanged older policy. Private cross-document records remain filtered.",
+      "code_changed": false
+    },
+    "query_latency_20261007_r4": {
+      "preexisting": true,
+      "fixture": {
+        "kind": "query_latency_20261007_r4",
+        "label": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r5/focused-r3/narrative-r2/stream-fix-r1/success/guidance/metrics/tls/schema-recovery-r1/tool-availability-r1",
+        "path": "fixtures/predecessor-query_latency_20261007_r4.zip",
+        "sha256": "7b73440f6b27cc6c14e8384dcb4fec4533b1f3a08dfa67fcc01701df0a63e7b6"
+      },
+      "test": {
+        "classname": "05_TESTS.CONTRACTS.test_investigation_diagnostics",
+        "name": "test_complete_scoped_diagnostics_remain_internal",
+        "time": "0.025"
+      },
+      "message": "AssertionError",
+      "evidence": "failures/legacy-display-baseline-query_latency_20261007_r4.xml",
+      "cause": "Legacy full progress UI deliberately emits in-scope diagnostics. New compact-public default expectation does not match this unchanged older policy. Private cross-document records remain filtered.",
+      "code_changed": false
+    }
+  },
+  "delivery_tests": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installer_checks": {
+    "commands": 32,
+    "generation_gates": 2,
+    "tls_boots": 2,
+    "undo": 2,
+    "tamper_rejections": 4
+  },
+  "known_predecessors": 990,
+  "changed_product_files": 21,
+  "source_binding": {
+    "source_files": {
+      "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+      "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+      "02_BACKEND/semantic_runtime/legal_agent/errors.py": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca",
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+      "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": "2476d84568d8649cd95d7370e15f4b3130fb7d6314d758255ad94304831be12a",
+      "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+      "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+      "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837"
+    },
+    "working_source_files": {
+      "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+      "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+      "02_BACKEND/semantic_runtime/legal_agent/errors.py": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca",
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+      "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": "2476d84568d8649cd95d7370e15f4b3130fb7d6314d758255ad94304831be12a",
+      "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+      "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+      "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837"
+    },
+    "field_variants": {
+      "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": {
+        "253747b10e3997b5527ec6e7b3e1c182627a286ce265f00cdf9466cba4de7ddc": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+        "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": {
+        "083d30588a602dc45fa4b6bf6f8983a85ce98a74fdb95609b8b3d74bf128b6b6": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+        "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/errors.py": {
+        "a7134f7673a92a60f26468bd35259877c72f6ebd975a8faf7ed26b238914369e": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": {
+        "da4c121572957961ab926d7df78f88ee5828e4941d4d84cbbc82378e3f4348d1": "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243",
+        "e84e118a23453a68b02251dc806b5fca17a2fc40d5065f98526668eaf6786975": "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243",
+        "d9712fa822820f3138a3ef020c09d2e5149c5a942af8cf60d72da3aa05e2c39e": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py": {
+        "73c6e21c0c34a286691119b105ebedbf430376db9cb8c892c018b89aca7db3f1": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+        "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": {
+        "b94578cb4d7d325117c7c1cfd14baece810e5ae098949c37082046890277b25c": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+        "8d2f681179d5cdc0ad78339002441c271de5272a4acf85f395de628af0807e85": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+        "e788e25584338a5a2e1956c940452a6877f338bc7009bb1344835b9d5ee4b6f4": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": {
+        "c8c82f538459f3c194bdb6a46f47c2c91f5e0fcfd9fb3b4d82919c0d1b1d5ea4": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+        "e11189043917eabca5d13526115f07b48e268f2eeec7a27f37efc09fecb3f6b7": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": {
+        "180215d1dde6578322463561a675fff4a041b37cd9df8070e17421bfd209636e": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+        "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": {
+        "bfc4cdd3a8c7e7ea19c8e01f1a0d87ce688327d561e35b98da36f4ecf9643d42": "9282534313a1c522e04dac3324cdbbd0e9922e81f41c9ed9b866d2eee9480163",
+        "8a75b3693d94b14b647e6f84dccfb3e60e9df64a3e6e14cc2d59178bc913ed7b": "82cbd33daea466254d8a04cf65c7ac8310c8d7bd680dc088f34e7cd105daeefb",
+        "6b4c99e3499d73d45ecb47ac383eb3ee3a942ade25efd22824c63b58d9bb22df": "5046bdf62aa6f4322de494713122355740667d7542826c2c058fc94f5eb284e7",
+        "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": {
+        "6a6252cf219070b256d83b141ee24831aa6405cf82e5b46fe5a6fafadacbf9ae": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": {
+        "d1c2cb73de886b2a151e33eb75d7080523fd119a57e34547a345feaf6c43cc7b": "6ffa2da31a39cf888ffc3cb7945a0037ce864415b7fd5f16029081162b71a063"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": {
+        "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+        "cbce8a429fc27481982f873d602cae6088dfdcfd56781e89cfc51ef431ed300f": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": {
+        "f9ec457d35c1d3dc4a6db378c0e5f4d525d76a0bd58c2793958dd5e0fba5f632": "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd",
+        "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd": "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd",
+        "c053146db39ff857dff19847d9f428bd64e582cc6d07994c015e31754348844c": "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0",
+        "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0": "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0",
+        "b3ab8472cbf83a879ca1df06a670c16ed9d11bddccd32a01401f6f35dbccaa28": "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598",
+        "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598": "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": {
+        "70a8cd6c092abb236797aabb836ad022f4ce035703db8988c4c1a504a4e75c70": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py": {
+        "ABSENT": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+        "4396f765c779c07aa49ec58370d4a4ab8dac1217b3d75a3a2dca0358eb586c06": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py": {
+        "ABSENT": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py": {
+        "ABSENT": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py": {
+        "ABSENT": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": {
+        "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": {
+        "b1fe0e8de84e1440d7f0f9be806dce1369691c0258a408c11dbbf4df52ba91cf": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+        "6ad853336f54b3d0daeed554f1609655d1421ecd08a666e933e137503b81225f": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069"
+      },
+      "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+        "171bbed93f04233005c75b496164c14a79d6da099e4cd548c8ef42307b74e33c": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837"
+      }
+    },
+    "known_predecessors": 990,
+    "prerequisite": [
+      "GENOS_SCHEMA_RECOVERY_20261014_R1",
+      "GENOS_DEPENDENCY_RECOVERY_20261014_R1",
+      "GENOS_TOOL_AVAILABILITY_20261014_R1"
+    ],
+    "cumulative_prior_fixes": true,
+    "field_policy_variants_preserved": true,
+    "unshipped_working_change": {
+      "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py": "Existing field inventory omits this module and disables wiki recall; preserve that policy, do not activate it"
+    },
+    "genos_field_status": "NOT_VERIFIED"
+  },
+  "verified_installed_roots": [
+    "/tmp/pytest-of-jin/pytest-261/test_install_service_api_repea0/DEV",
+    "/tmp/pytest-of-jin/pytest-261/test_install_service_api_repea1/DEV"
+  ],
+  "generation_type": "synthetic fixture; unchanged through install/undo",
+  "model_inference_calls": 0,
+  "real_genos_or_external_network_calls": 0,
+  "tls_test": "Loopback synthetic model discovery only",
+  "sys_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "python": "3.14.4",
+  "packages": {
+    "jsonschema": "4.26.0",
+    "requests": "2.34.2",
+    "fastapi": "0.141.1",
+    "pytest": "9.1.1"
+  },
+  "field_checkout": null,
+  "field_commit": null,
+  "field_generation_path": null,
+  "field_generation_manifest_sha256": null,
+  "field_serving_revision": null,
+  "field_workflow_test": null,
+  "field_status": "NOT_VERIFIED",
+  "limits": [
+    "Finite synthetic host protocol audit, not legal accuracy or real model effectiveness",
+    "Existing 842 known regression cases are supplemental, not new holdout",
+    "Four preexisting failures remain open and were not converted to passes",
+    "GENOS field deployment/internal model/workflow result unverified",
+    "P4/P7/P5 and output compression deferred",
+    "Eight historical graph errors unchanged; new0",
+    "Existing wiki recall disabled in field; not enabled or newly shipped",
+    "Unknown code inventories are rejected"
+  ]
+}

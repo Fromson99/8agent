@@ -1,5 +1,7 @@
 # 용어집 우선 증분 정합성
 
+2026-10-15 기존 navigation SQLite의 명명 정의 보강은 `pipeline.py document-release augment-definitions`로 실행한다. 전체 용어집 재구축 없이 명시 구절과 기존 참조를 연결하며, 의미/적용 정본 승인은 하지 않는다. 기존 definition 조회에서 사용 가능하고 일반 검색 우선 회수는 별도다. [635건 증분 결과와 검증](../../../09_ARTIFACTS/AUDITS/20261015-naming-definition-append/RESULT.txt).
+
 2026-09-29 공통 용어 generation 생성은 검색 navigation과 구축 근거 원장을 분리한다.
 등록 용어·정의·명시 참조·최종 occurrence는 검색 DB에 유지하고 후보/held 근거는
 별도 `audit/navigation` snapshot에 보존한다. reviewed/unreviewed release·재개·publish도

@@ -1,0 +1,8 @@
+<p>FACT_REASON R1 설치 오류를 수정한 <b>R2 교체본</b>입니다. 설명에서 멈추지 않고, 사진에 나온 코드 구성으로 수정·검증했습니다.</p>
+<p><b>기존 FACT_REASON R1 대신 이 R2를 사용해 주세요.</b> LENGTH_RECOVERY R2를 다시 설치하거나 진단 코드를 다시 실행할 필요는 없습니다. 누락된 검증 구성660개를 추가했고 기존 문구·예산·설정·데이터는 보존합니다.</p>
+<p>첨부 ZIP을 실제 업로드한 <b>TRANSFER 폴더에서 아래 두 줄을 실행</b>해 주세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_FACT_REASON_20261015_R2.zip ./GENOS_FACT_REASON_20261015_R2
+bash ./GENOS_FACT_REASON_20261015_R2/GENOS_FACT_REASON_20261015_R2_RUN.txt install</pre>
+<p>install 한 번으로 기존 ~/DEV의 사전 검사·백업·적용·검증을 진행합니다. 별도 첨부 TXT와 ZIP 안의 TXT는 동일합니다. 성공하면 <b>CODE_APPLIED</b>와 <b>FACT_REASON_EXIT=0</b>이 출력되며, BACKUP 및 APPLIED_CODE_ZIP 경로를 보관해 주세요.</p>
+<p>적용 후에는 안내서의 같은 DEV commit → generation gate → push → 새 코드서빙 리비전/SSE 재시작 순서로 반영합니다. 원문 재구축·추가 워크플로우 편집기 교체는 없습니다. 최종 확인은 워크플로우 테스트 화면에서 새 요청으로 합니다.</p>
+<p>사진과 동일한 코드 지문에서 R1 차단을 재현하고 R2의 설치·재실행·변조 거부·원복, 실제 로컬 service.service와 같은 committed checkout의 generation gate를 검증했습니다. GENOS 현장 적용·배포 성공은 실행 결과로 별도 확인해야 합니다.</p>

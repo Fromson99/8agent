@@ -1,0 +1,261 @@
+[
+  {
+    "scenario": "missing",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "check"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "status"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "rollback"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "rollback"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "missing",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "was rolled back"
+  },
+  {
+    "scenario": "legacy",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "legacy",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "legacy",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "rollback"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "already_latest",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "already_latest",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "already_latest",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "rollback"
+    ],
+    "exit": 1,
+    "expected_failure": "no owned apply receipt"
+  },
+  {
+    "scenario": "code_drift",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "differs from tested code"
+  },
+  {
+    "scenario": "wrong_selection",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "differs from current DEV serving selection"
+  },
+  {
+    "scenario": "zip_traversal",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "zip_traversal",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "unexpected ZIP members"
+  },
+  {
+    "scenario": "zip_hash",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "zip_hash",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "ZIP hash/version mismatch"
+  },
+  {
+    "scenario": "nfs_drift",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "nfs_drift",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "NFS selection changed"
+  },
+  {
+    "scenario": "symlink",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "symlink path refused"
+  },
+  {
+    "scenario": "package_drift",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "Package file differs"
+  },
+  {
+    "scenario": "concurrent",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "BlockingIOError"
+  },
+  {
+    "scenario": "concurrent",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "different_dev_path",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "different_dev_path",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "different_dev_path",
+    "script": "RESTORE_NFS.txt",
+    "action": [
+      "rollback"
+    ],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "metadata_changed",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "scenario": "metadata_changed",
+    "script": "RESTORE_NFS.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "does not match current metadata"
+  },
+  {
+    "scenario": "stale_selection",
+    "script": "BUILD_DEV_ZIP.txt",
+    "action": [],
+    "exit": 1,
+    "expected_failure": "stale or invalid search selection binding"
+  }
+]

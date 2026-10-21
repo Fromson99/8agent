@@ -1,0 +1,22 @@
+사진 2와 같은 GET 요청 확인
+
+아래 코드 셀 하나만 실행하세요. 기존 노트북의 설정·공통 코드·HEAD 실행은 필요 없습니다.
+
+사진의 `/law/making`과 `target_url` 및 조회 조건을 사용합니다. OC는 입법센터 등록값, Cookie는 필요한 경우 현재 유효한 값을 입력합니다. 사진의 과거 Cookie는 내장하지 않았습니다. `admRulNm`은 기존 사진 전사 기록의 `지주`입니다. 담당자가 준 원문과 다르면 FILTERS에서 정정하세요.
+
+실행할 때마다 GET 1회이며 이전 실패 결과를 재사용하지 않습니다. 자동 재시도와 리디렉션 추적은 하지 않습니다. 3xx는 이동 응답으로 그대로 표시합니다. 연결 8초·읽기 무수신 20초 timeout이며 전체 실행 28초 보장은 아닙니다. 본문은 최대 8KiB만 읽고 4,000자까지 표시합니다.
+
+HTTP 200이어도 오류 XML·로그인 HTML인지 본문을 확인해야 합니다. 이 요청은 행정예고 API이며 현행 법령 본문 조회 성공과는 별도입니다. 결과는 커널 폴더의 `dataiku_photo_get_results`에 저장됩니다. 사내 실제 응답은 현장 실행 후 확인할 수 있습니다.
+
+로컬 검증과 사내 실호출은 별도입니다. MAIN/원본 노트북은 변경하지 않았습니다.
+
+메일 첨부 사용법
+1. DATAIKU_PHOTO_GET_20261019_R1.zip을 실제 업로드/다운로드한 TRANSFER 폴더에 둡니다.
+2. 해당 폴더의 Linux 터미널에서 아래 명령으로 풉니다.
+python3 -m zipfile -e ./DATAIKU_PHOTO_GET_20261019_R1.zip ./DATAIKU_PHOTO_GET_20261019_R1
+3. 압축 해제된 DATAIKU_PHOTO_GET_20261019_R1.ipynb를 Dataiku Python Notebook으로 가져와 코드 셀 1개를 실행합니다. 별도 첨부한 동일 ipynb를 직접 가져와도 됩니다.
+4. ipynb 가져오기가 불가능하면 DATAIKU_PHOTO_GET_20261019_R1_CELL.txt 전체를 새 Python Notebook Code 셀에 붙여 넣고 실행합니다. 이 TXT는 Python 코드이며 bash로 실행하는 파일이 아닙니다.
+5. 입법센터에 등록된 OC와 필요한 경우 현재 중계 Cookie를 입력합니다. 사내 인증서가 필요한 경우 CA_PEM을 실제 커널의 PEM 경로로 설정합니다.
+6. HTTP, error_class, body_preview를 확인합니다. result.json은 dataiku_photo_get_results 아래에 저장됩니다.
+
+기존 DATAIKU_RELAY_LAW_20261019_R1은 /law/DRF HEAD 이후 법령 본문을 조회합니다. 이번 사진 2 재현에는 새 DATAIKU_PHOTO_GET_20261019_R1을 사용하세요. 기존 노트북의 공통 코드나 run_id 설정은 필요 없습니다. 기존 결과를 삭제하지 않습니다.

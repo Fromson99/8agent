@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/archive_tests.py", line 15, in <module>
+    assert not any(any(v.startswith(root+'/') or v==root for root in roots) for v in paths),proc.name
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 166688

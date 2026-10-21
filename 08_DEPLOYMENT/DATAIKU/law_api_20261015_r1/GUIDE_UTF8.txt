@@ -1,0 +1,199 @@
+DATAIKU 법령 중계 API 실행 가이드
+2026-10-15 / R1 / 대상: 사내 Dataiku의 Python Jupyter Notebook
+
+빠른 실행 순서
+① ZIP 압축 해제 → ② Dataiku 프로젝트의 Flow > New dataset > Folder로 결과 폴더 생성 → ③ Code > Notebooks에서 ipynb 가져오기(없으면 New > Python에 RUN.txt 전체 붙여 넣기) → ④ 셀 1에서 중계 주소·폴더 ID 확인 → ⑤ 셀 1~8을 Shift+Enter로 실행하며 등록 OC 입력 → ⑥ BODY_OK와 Managed Folder 저장 완료 확인. 자세한 클릭 순서는 4~8절입니다.
+
+1. 먼저 알아둘 결과와 실행 목표
+외부 WSL에서 현재 8-AGENT 수집 코드와 같은 국가법령정보센터 API를 실제 호출하여 자본시장과 금융투자업에 관한 법률 및 금융투자업규정의 XML 본문 수신을 확인했습니다. 이후 인계 노트북의 공통 요청/검증 코드로도 공개 API를 직접 호출해 확인했습니다. 상세 결과는 SAME_CODE_EXTERNAL_CHECK.json에 있습니다.
+사내 Dataiku, 삼성 중계서버, GENOS에는 이 세션에서 접근할 수 없습니다. 따라서 “법제처에서 실제 자료를 준다”는 확인과 “사내 Dataiku에서 중계서버를 통해 들어온다”는 현장 확인을 구분합니다. 아래 노트북을 사내에서 실행하면 후자를 판정할 수 있습니다.
+
+사진의 curl은 HTTP GET 요청을 적은 명령입니다. 노트북은 Python requests로 같은 URL·헤더·쿼리를 전송합니다. curl 설치나 터미널 권한 없이도 호출할 수 있습니다. 담당자가 curl 원형 자체를 요구하면 ZIP 안 CURL_EQUIVALENT.txt를 별도 Notebook 셀에서 실행할 수 있습니다. 이 파일도 Python 코드이며 내부에서 curl을 정확히 1회 실행합니다. 기본 진단과 독립된 추가 1회이므로 필요할 때만 사용하고, 결과는 커널 폴더에 저장됩니다. 기본 노트북의 Managed Folder 업로드에는 포함되지 않습니다.
+처음에는 설정을 확인한 뒤 기본 5회만 호출합니다. 법령 본문, 법령 목록, 행정규칙 목록·본문, 시행일 기준 법령 본문을 각각 확인합니다. 입법/행정예고와 운영 IP 조회는 선택 기능입니다.
+
+2. 사진과 현재 코드에서 확인한 연결
+[표] 중계 요청의 구성
+Dataiku 실행 서버 → HTTPS 삼성 중계서버 → 법제처 원본 API → XML 응답 → 응답 검증 → Dataiku 결과 폴더
+접속 주소(국가법령정보센터): https://45.101.64.86:8443/law/DRF
+접속 주소(국민참여입법센터): https://45.101.64.86:8443/law/making
+두 주소는 사용자 사진의 개발계 샘플입니다. 운영 주소로 확정된 값이 아닙니다.
+헤더 이름: target_url (밑줄 포함). 값은 실제 법제처/입법센터 API의 원본 URL입니다.
+일반 조회의 OC, ID, query, type 등은 중계 접속 URL의 GET 쿼리입니다. JSON POST 본문으로 바꾸지 않습니다. 운영 IP 조회만 별도 POST JSON입니다.
+노트북은 target_url=http://www.law.go.kr/DRF/lawService.do?target=law, GET 쿼리=OC·ID·type으로 나눕니다. target을 중복 전송하지 않습니다.
+사진2의 URL은 http://www.law.go.kr이고 현재 외부 수집 코드 BASE는 https://www.law.go.kr입니다. 기본값은 사진의 등록 원본 URL을 따릅니다. 담당자가 HTTPS 원본 URL로 등록했다고 확인하면 law_origin을 https://www.law.go.kr로 바꿉니다.
+중계 명세에서 target도 쿼리로 요구할 때만 target_in_header=False로 바꾸면, 헤더에는 lawService.do까지 넣고 target을 GET 쿼리로 보냅니다. 자동 변경·자동 재시도는 없습니다.
+
+[표] 실제 현재 수집 코드와 사진의 차이
+① 법령 검색: lawSearch.do?target=law. 현재 LawGoAdapter.discover가 사용합니다. 사진2의 명시 목록에는 법령 검색 항목이 보이지 않으므로 중계 등록 확인이 필요합니다.
+② 현행 시행일 본문: lawService.do?target=eflaw&ID=법령ID. 현재 serial을 고정하지 않은 법령 수집이 사용하는 경로입니다. 사진 목록에는 target=law만 있고 eflaw는 보이지 않습니다. 이번 노트북이 eflaw를 별도 확인합니다.
+③ 공포일 본문: lawService.do?target=law&ID=법령ID 또는 MST=법령일련번호. 사진2에 있는 경로입니다. law 성공만으로 eflaw 지원을 판단하지 않습니다.
+④ 행정규칙 검색/본문: lawSearch.do?target=admrul → 목록의 행정규칙일련번호 → lawService.do?target=admrul&ID=그 일련번호. 행정규칙ID와 행정규칙일련번호를 혼동하지 않습니다.
+⑤ 별표·서식: 현재 어댑터는 본문의 /LSW/flDownload.do?flSeq=... 링크도 사용합니다. 사진에는 이 다운로드 경로 지원이 없습니다. 이번 작업은 링크 개수만 확인하며 파일 다운로드까지 성공했다고 처리하지 않습니다.
+⑥ KOFIA·KRX, 판례·법령해석, 용어 API는 각기 별도 경로입니다. 법령 본문 성공이 이들까지 사용할 수 있다는 뜻은 아닙니다.
+코드 근거: 02_BACKEND/lawrag/sources/lawgo.py의 LawGoAdapter.discover / parse_search / parse_body_meta / parse_annexes, 02_BACKEND/lawrag/sources/__init__.py의 law 등록, 02_BACKEND/lawrag/pipeline/collect.py의 수집 진입점. SOURCE_BINDING.json에 확인 파일의 해시를 기록했습니다.
+
+사진1의 제목은 “현행법령(시행일) 목록”이지만 실제 target_url은 /rest/ptcpAdmPp.xml, 즉 행정예고입니다. 이 샘플을 실행해 받는 자료를 현행 법령으로 분류하면 안 됩니다. 사진2는 www.lawmaking.go.kr, 사진1 샘플은 opinion.lawmaking.go.kr이므로 노트북 예고 기본 호스트는 사진1을 따르되 담당자의 등록 호스트와 대조합니다.
+사진의 Cookie/JSESSIONID와 다른 사람의 OC는 첨부 코드에 복사하지 않았습니다. 본인/과제에 등록된 OC를 입력합니다. 입법센터 OC의 사용 권한은 별도로 확인합니다.
+
+3. 첨부파일과 준비할 값
+DATAIKU_LAW_API_20261015_R1.zip: 아래 실행물과 가이드·검증 기록 전체.
+DATAIKU_LAW_API_20261015_R1.ipynb: Dataiku에 가져올 Notebook. 필요한 공통 코드가 내부에 모두 들어 있어 별도 Python 모듈 업로드가 필요하지 않습니다.
+DATAIKU_LAW_API_20261015_R1_RUN.txt: 같은 코드를 Python TXT로 제공한 완전 실행본. 빈 Notebook의 코드 셀 하나에 전체를 붙여 넣어도 됩니다. bash 파일이 아닙니다.
+DATAIKU_LAW_API_20261015_R1_GUIDE.docx / GUIDE_UTF8.txt: 이 가이드.
+CURL_EQUIVALENT.txt: curl과 노트북의 요청 대응 예시.
+SAME_CODE_EXTERNAL_CHECK.json / VALIDATION.json / SOURCE_BINDING.json / SHA256SUMS.txt: 외부 실수신·로컬 검증·코드 해시 기록.
+
+필수 준비: Dataiku 프로젝트 접근 및 Notebook 실행 권한, requests가 있는 Python 3.9 이상 코드 환경, 과제에 등록된 LAW_OC, 실제 사용 중인 개발/운영 중계 주소.
+결과 보존: Managed Folder 생성/쓰기/읽기 권한과 해당 폴더 ID.
+조건부 준비: 사내 CA 인증서 PEM 파일 경로, 담당자가 필요하다고 확인한 현재 중계 인증 Cookie, 입법센터 등록 OC, 운영 IP 조회 명세.
+중계 인증은 사진만으로 확정할 수 없습니다. OC는 법제처 인증값이며 삼성 중계 인증을 대신하지 않습니다.
+Dataiku 버전과 실제 화면은 제공되지 않았습니다. 아래는 공식 DSS 문서의 Notebook/Folder 기능에 따른 순서이며 메뉴 명칭은 버전·권한에 따라 달라질 수 있습니다. Dataiku 현장 화면을 직접 확인한 가이드로 보지 않습니다.
+
+4. Dataiku에서 결과 폴더부터 만들기
+(1) 사내 Dataiku에 로그인하고 이번 연결을 확인할 프로젝트를 엽니다. 프로젝트가 없으면 사용할 프로젝트를 담당자에게 지정받습니다.
+(2) 프로젝트의 Flow 화면으로 이동합니다.
+(3) + NEW DATASET 또는 New dataset 메뉴를 클릭하고 Folder를 선택합니다.
+(4) 관리 폴더를 만들 수 있는 승인된 Connection을 선택합니다. 기본 환경에는 managed_folders가 있지만 사내 이름은 다를 수 있습니다.
+(5) 이름을 law_api_check_results로 입력하고 Create를 누릅니다. 기존 운영 데이터를 담은 폴더와 구분할 수 있는 이름입니다.
+(6) 생성된 폴더를 열고 Settings 또는 폴더 URL에서 고유 ID를 확인합니다. URL의 /managedfolder/ 다음 식별자, 또는 화면/샘플 Python 코드의 dataiku.Folder("...") 안 값입니다. 폴더 표시 이름과 ID를 구분합니다.
+(7) 이 ID를 Notebook 셀 1의 MANAGED_FOLDER_ID = "..." 안에 붙여 넣습니다.
+Folder 메뉴가 없거나 Connection을 선택할 수 없으면 Dataiku 관리자에게 해당 프로젝트의 Managed Folder 생성·읽기·쓰기 권한을 요청합니다. 권한 해결 전에도 로컬 커널 폴더에는 결과가 저장되지만, 컨테이너 종료 후 보존을 보장할 수 없으므로 8번 셀의 저장 완료까지 확인합니다.
+근거: https://doc.dataiku.com/dss/latest/connecting/managed_folders.html
+
+5. Notebook을 넣는 방법 — 화면에서 누르는 순서
+방법 A: .ipynb 가져오기
+(1) 메일의 ZIP을 로컬 PC의 실제 다운로드 폴더에서 압축 해제합니다.
+(2) Dataiku 프로젝트 상단 메뉴에서 Code > Notebooks로 이동합니다. 버전에 따라 Notebooks가 직접 표시될 수 있습니다.
+(3) + NEW NOTEBOOK 메뉴에서 파일 가져오기 항목을 선택합니다. 표시 이름은 Import notebook / Import from file / Upload 등 버전에 따라 확인합니다.
+(4) 압축 해제한 DATAIKU_LAW_API_20261015_R1.ipynb를 선택해 Import/Upload를 누릅니다. ZIP이나 DOCX를 Notebook 파일로 넣지 않습니다.
+(5) 생성된 Notebook을 클릭해 엽니다.
+(6) 커널 선택 화면이 나오거나 Kernel > Change kernel 메뉴가 있으면 승인된 Python 3 환경을 선택합니다. requests가 포함되고 Jupyter 지원이 켜진 환경이어야 합니다. 가져온 python3 커널 이름이 없으면 Dataiku가 제공하는 Python 코드 환경 커널로 다시 선택합니다.
+(7) 제목 아래 설명과 “1. 실행 설정” 셀이 보이면 준비 완료입니다.
+
+방법 B: 가져오기 버튼이 없을 때 TXT 전체 붙여 넣기
+(1) 같은 Notebooks 목록에서 + NEW NOTEBOOK > Python을 클릭합니다.
+(2) 빈 Notebook 템플릿을 선택하고 이름을 law_api_relay_check로 지정합니다. 빈 템플릿이 없으면 기본 템플릿을 열어 기본 샘플 코드를 지웁니다.
+(3) 첫 셀의 유형이 Markdown이 아닌 Code인지 확인합니다.
+(4) DATAIKU_LAW_API_20261015_R1_RUN.txt를 텍스트 편집기로 열고 전체 내용을 복사해 첫 Code 셀에 붙여 넣습니다.
+(5) 코드 맨 위 CONFIG와 MANAGED_FOLDER_ID를 수정한 뒤 Shift+Enter 또는 ▶ Run을 누릅니다. 인증 입력창이 뜨면 등록 OC를 넣고 Enter를 누릅니다.
+(6) 실행 결과표와 Managed Folder 저장 완료 문구를 확인합니다. RUN.txt는 전체 실행본이므로 별도 import relay_check 작업이 필요하지 않습니다.
+
+공식 Python Notebook 생성 문서: https://doc.dataiku.com/dss/latest/notebooks/python.html
+UI에서 .ipynb를 직접 가져오는 기능의 공식 기록: https://doc.dataiku.com/dss/12/release_notes/8.0.html
+코드 환경 관리 문서: https://knowledge.dataiku.com/latest/admin-configuring/code-environments/how-to-create-code-env.html
+requests가 없으면 관리자에게 승인된 코드 환경에 추가해 달라고 요청합니다. 사내 Notebook에서 인터넷 pip 설치가 가능하다고 가정하지 않습니다.
+
+6. 셀 1의 설정값을 실제 환경에 맞추기
+relay_origin: 개발계는 사진의 https://45.101.64.86:8443. 운영은 담당자에게 확인한 주소/도메인으로 교체합니다. 뒤에 /law/DRF를 붙이지 않습니다. 코드는 경로를 붙여 호출합니다.
+law_origin: 사진과 동일한 http://www.law.go.kr. 중계 등록 명세가 HTTPS라면 담당자 확인 후 변경합니다.
+target_in_header: 기본 True. target=law/eflaw/admrul이 target_url 헤더 안에 들어갑니다. 중계 명세가 target도 바깥 쿼리로 요구할 때만 False로 변경합니다.
+ca_bundle: 기본 빈 문자열은 requests의 정상 인증서 검증을 사용합니다. 자체 CA가 필요하면 Dataiku의 실행 서버/컨테이너에서 읽을 수 있는 PEM 경로를 적습니다. PC의 C:\ 경로를 넣지 않습니다. verify=False 또는 curl -k로 바꾸지 않습니다.
+law_id: 기본 010513은 외부에서 확인한 자본시장법의 법령ID입니다. 이것은 MST(법령일련번호)가 아닙니다. 다른 법을 확인하려면 law_name과 law_id를 함께 실제 API 값으로 바꿉니다.
+admrul_name: 기본 금융투자업규정. 목록의 정확한 이름·현행 표기를 확인한 한 항목에서 ID를 얻습니다. 자동으로 첫 검색 결과를 고르지 않습니다.
+MANAGED_FOLDER_ID: 4절에서 만든 결과 폴더 ID.
+USE_RELAY_COOKIE: 기본 False. 중계 담당자가 세션 쿠키가 필수라고 확인한 경우만 True로 변경합니다. 실행 중 입력창에 현재 값을 입력합니다. 사진의 오래된 JSESSIONID를 복사하지 않습니다.
+RUN_IP_LOOKUP / RUN_NOTICES: 처음에는 둘 다 False로 둡니다.
+mode: 사내 Dataiku에서는 relay를 유지합니다. direct_public은 첨부 코드의 외부 검증에만 사용했으며 중계 실패 시 자동 우회하지 않습니다.
+
+7. 셀을 실행하고 무엇을 확인하는지
+.ipynb 방식에서는 각 Code 셀을 클릭하고 Shift+Enter로 1~8 순서대로 실행합니다. 첫 실행은 Run All보다 순서대로 확인하는 편이 설정 오류를 찾기 쉽습니다.
+셀 1: 설정만 읽습니다. 네트워크 호출 없음.
+셀 2: 공통 함수를 정의합니다. 긴 코드이지만 수정할 부분은 없습니다. 네트워크 호출 없음.
+셀 3: LAW_OC 입력창에 등록값 입력 → Enter. 쿠키/예고 OC는 켠 경우에만 추가 입력. 진단 run_id가 표시됩니다. 인증값은 출력하지 않습니다.
+셀 4: 기본은 “IP 조회 건너뜀”. 운영 주소 조회가 필요한 경우는 9절을 따릅니다.
+셀 5: 기본 5개 요청을 최대 한 번씩 실행합니다. 보통 잠시 기다리면 종료 문구가 표시됩니다. 연결 제한은 8초, 읽기 대기는 20초, 응답 누적 확인 한도는 45초입니다. 예외/네트워크 상황에 따라 실제 종료 시점은 조금 늦을 수 있습니다.
+셀 6: 기본은 “예고 API 건너뜀”. 예고 확인이 필요하면 10절을 따릅니다.
+셀 7: 결과표와 results.csv를 만듭니다. name, status, http_status, received_bytes, effective_date, reason을 확인합니다.
+셀 8: 결과를 Managed Folder의 run_id 하위에 저장하고 재읽기 해시를 비교합니다. “Managed Folder 저장 및 재읽기 검증: N 파일”이 나와야 저장 완료입니다.
+Notebook은 Ctrl+S로 저장합니다. 결과 폴더를 다시 열고 새로고침하면 run_id 하위 파일을 볼 수 있습니다.
+
+[표] 기본 5개 확인 행
+law_published_body / target=law / 공포일 기준 본문 수신 확인.
+law_search / target=law / 현재 코드의 법령 검색 경로 지원 확인.
+admrul_search / target=admrul / 정확한 현행 행정규칙 식별.
+admrul_body / target=admrul / 목록에서 얻은 행정규칙일련번호의 본문 수신 확인.
+law_effective_body / target=eflaw / 현재 코드가 쓰는 시행일 기준 본문 경로 지원 확인.
+
+[표] 상태를 읽는 법
+BODY_OK: HTTP 200, 예상 XML 루트, 문서명·식별자 일치, 비어 있지 않은 조문까지 확인했습니다. 모든 별표·첨부 수집, 법률 해석 정확성, MAIN 반영을 의미하지 않습니다.
+LIST_OK: 목록 형식과 행 수신을 확인했습니다. 본문 성공은 별도 행입니다.
+EMPTY_LIST: 정상 목록 형식에서 0건입니다. 오류 응답을 0건으로 처리한 것이 아닙니다.
+SKIPPED_NO_UNIQUE_CURRENT_ID: 정확한 현행 행정규칙 한 건을 확정하지 못해 본문 호출을 생략했습니다. 검색어/목록 결과를 먼저 확인합니다.
+REJECTED / PARSE_ERROR: 응답 형식, ID, 본문, HTTP 상태 등이 기대와 다릅니다. reason과 응답 파일을 확인합니다.
+NOTICE_XML_REVIEW_REQUIRED / IP_RESPONSE_REVIEW_REQUIRED: 형식 수신 단계까지의 결과입니다. 아직 예고 데이터 또는 운영 주소의 의미 검증을 통과한 상태가 아닙니다.
+BLOCKED_OR_BUDGET_EXHAUSTED: 앞선 인증/연결 장애 또는 최대 호출/시간 한도로 이후 요청을 생략했습니다. 이 행만 보고 해당 법령이 없다고 판단하지 않습니다.
+IN_FLIGHT: 실행 중 중단되어 완료 여부가 확인되지 않았습니다. 성공 상태로 취급하지 않습니다.
+
+같은 진단에서 셀 5를 다시 눌러도 이미 실행한 성공/실패 요청은 재호출하지 않습니다. 첫 실패 원인과 예산을 보존합니다. 설정/인증을 바꾼 재확인은 결과를 먼저 저장한 뒤 Kernel > Restart, 모든 셀을 처음부터 실행하여 새 run_id로 남깁니다. 이는 이전 요청의 자동 재개가 아닌 새 수동 진단입니다.
+RUN.txt 전체를 같은 커널에서 재실행해도 기존 check 객체가 있으면 사용합니다. 설정 변경을 적용할 때는 커널을 재시작합니다. MANAGED_FOLDER_ID만 보완해 저장할 때는 셀 1과 8만 다시 실행하면 됩니다.
+한 run은 최대 8회, 자동 재시도 0회, 준비 후 15분까지 호출을 허용합니다. 인증/CA/연결 문제가 나면 원인을 먼저 해결합니다.
+
+8. 성공 확인 후 파일을 찾고 전달하는 방법
+Dataiku Flow → law_api_check_results 폴더 → 최신 run_id 폴더를 엽니다.
+summary.json: 환경·호출 수·각 상태·해시·메타데이터를 모은 결과입니다.
+results.csv: 담당자가 표로 볼 수 있는 진단 요약입니다.
+*.receipt.json: 요청별 target·쿼리(인증 제외)·원본 API·HTTP·실패 원인·해시입니다.
+*.response.gz: 실제 받은 응답을 무손실 gzip으로 압축했습니다. OC/쿠키가 응답에 되돌아온 경우 그 값만 REDACTED로 바꾸고 credential_redacted=true, wire_sha256와 saved_sha256를 따로 남깁니다. 보존 파일이 원래 바이트와 같은지는 이 필드로 확인합니다.
+본문 파일을 확인하려면 승인된 내부 환경에서 gzip을 풉니다. 응답 안에는 오류/로그인 문서가 들어 있을 수도 있으므로 BODY_OK 여부를 먼저 확인합니다. gzip 복원 예: python3 -c 'import gzip,pathlib; p=pathlib.Path("law_effective_body.response.gz"); pathlib.Path("law_effective_body.xml").write_bytes(gzip.decompress(p.read_bytes()))'
+사진/화면 캡처만 남기기보다 summary.json과 results.csv, 문제 요청의 receipt를 담당자에게 전달하면 target 지원 문제와 네트워크 문제를 구분할 수 있습니다. 원문 응답은 사내 권한 범위에서 검토합니다.
+Managed Folder 저장 실패 시 커널을 종료하지 말고 폴더 ID/권한을 바로잡아 셀 8만 다시 실행합니다. 같은 파일을 같은 run_id 경로로 올리며 API를 재호출하지 않습니다. 일부 업로드 후 실패하면 남은 파일도 같은 방식으로 재업로드·재검증합니다.
+완료 후 Notebook 저장, File > Close and Halt 또는 Dataiku의 Unload로 커널을 종료합니다. 재접속 후 결과를 볼 위치는 Managed Folder입니다.
+
+9. 운영계 IP 조회가 필요한 경우
+사진3에 제공된 조회 API는 POST https://45.1.81.80:8443/oap/common/query/ip, JSON {"EXTR_INSN_SECT_CODE":"0"}입니다. 사진의 0은 개발계 예시이므로 운영 값을 임의로 정하지 않습니다.
+(1) 담당자에게 실제 조회 주소, 환경 코드, 성공 응답 구조, 사용해야 할 활성 IP/도메인 선택 규칙을 확인합니다.
+(2) CONFIG의 ip_lookup_url과 EXTR_INSN_SECT_CODE를 그 명세로 설정하고 RUN_IP_LOOKUP=True로 둡니다.
+(3) 새 커널에서 셀 1~4, 7~8을 실행합니다. 조회 모드에서는 5·6번이 실제 법령 호출을 건너뜁니다.
+(4) ip_lookup.response.gz를 사내에서 확인합니다. JSON이 왔다는 사실만으로 운영 주소 조회 성공이라고 판단하지 않습니다. 성공 코드/활성 여부/주소 필드를 명세와 대조합니다. 응답의 첫 IP를 자동 채택하지 않습니다.
+(5) 확인한 주소를 relay_origin에 반영하고 RUN_IP_LOOKUP=False로 바꿉니다. 결과 저장 후 새 커널에서 법령 진단을 실행합니다.
+도메인 인증서인데 IP로 호출해 hostname mismatch가 나면 승인된 도메인/내부 DNS 설정을 담당자에게 확인합니다. hosts 등록이나 인증서 변경을 이 코드가 자동 수행하지 않습니다.
+
+10. 입법예고·행정예고까지 확인하려면
+RUN_NOTICES=True로 설정하고 별도로 등록된 입법센터 OC를 준비합니다. 새 커널에서 실행하면 인증 입력창이 추가됩니다.
+셀 6은 사진1 샘플과 같은 행정예고 /rest/ptcpAdmPp.xml을 lsClsCd=BA0103, closing=Y, asndOfiNm=금융위원회, admRulNm=지주로 1회 호출하고, /rest/ogLmPp.xml 입법예고 목록도 1회 호출합니다. pageIndex=1, pageSize=10으로 소량만 요청합니다. 이 필터로 자료가 0건일 수 있으며 전체 데이터 부재의 증거가 아닙니다. 실제 중계/원본 명세와 결과 필드를 대조합니다.
+현장 예고 응답 샘플·정식 스키마가 없으므로 XML 수신까지만 표시합니다. 행 목록, 총 건수, 예고 ID, 제목, 기간, 상세 URL을 확인한 뒤 추가 파싱을 연결해야 합니다. 임의 필드를 추측해 자료 확보 성공으로 표시하지 않습니다.
+
+[표] 사진2에 전달된 추가 지원 경로 — 이번 기본 진단의 실행 범위와 구분
+법령 공포일 본문: /DRF/lawService.do?target=law (기본 실행)
+법령 신구법 본문: /DRF/lawService.do?target=oldAndNew (목록만 정리, 미실행)
+법령 체계도: /DRF/lawService.do?target=lsStmd (목록만 정리, 미실행)
+행정규칙 본문: /DRF/lawService.do?target=admrul (기본 실행)
+행정규칙 신구법 비교 목록: /DRF/lawSearch.do?target=admrulOldAndNew (미실행)
+행정규칙 신구법 비교 본문: /DRF/lawService.do?target=admrulOldAndNew (미실행)
+입법예고 목록: /rest/ogLmPp.xml (선택 실행)
+입법예고 수정일 목록: /rest/ogLmPpMod.xml (미실행)
+행정예고 목록: /rest/ptcpAdmPp.xml (선택 실행)
+입법예고 상세: /rest/ogLmPp/{ogLmPpSeq}/{mappingLbicId}/{announceType}.xml (미실행)
+입법예고 수정일 상세: /rest/ogLmPpMod/{ogLmPpSeq}/{mappingLbicId}/{announceType}.xml (미실행)
+행정예고 상세: /rest/ptcpAdmPp/{ogAdmPpSeq}/{mappingAdmRulSeq}/{announceType}.xml (미실행)
+상세 ID 세 값은 실제 목록 응답에서 얻어야 합니다. 첨부파일 링크 다운로드 경로는 별도 중계 등록 대상인지 확인해야 합니다. 예고안을 현행 법령 원문과 합치지 않습니다.
+
+11. 오류별 확인 순서
+TLS_ERROR: 사내 CA PEM 경로/인증서 만료/접속 호스트명 확인. CA는 Notebook을 실행하는 서버·컨테이너에서 읽혀야 합니다. 중계 담당자와 Dataiku 관리자가 해결합니다.
+CONNECTION_ERROR 또는 TIMEOUT: Dataiku Notebook 실행 노드/컨테이너에서 중계 호스트의 8443 포트로 나갈 수 있는지, DNS/방화벽/네트워크 프록시가 맞는지 확인합니다. 사용자 PC 브라우저가 연결되는 것과 다릅니다.
+HTTP_401 / HTTP_403: 중계 인증, 과제 OC, 접근 허용 IP, API 대상 등록 범위를 확인합니다. 법제처가 보는 출발 IP는 중계서버일 수 있으므로 등록 IP도 담당자와 확인합니다. 다른 사람의 쿠키나 test OC로 우회하지 않습니다.
+HTTP_404: 중계 /law/DRF 또는 /law/making 경로와 target_url이 정확한지, target=eflaw 또는 lawSearch.do가 등록됐는지 확인합니다. 404만으로 법제처 데이터가 없다고 판정하지 않습니다.
+HTTP_429 / HTTP_5xx: 제한 또는 상위 서버 장애일 수 있습니다. 자동 재시도하지 않으므로 실패 기록을 보존하고 담당자가 안내한 시점에 새 진단으로 확인합니다.
+REDIRECT_BLOCKED: Location을 자동 따라가지 않습니다. 중계가 로그인/다른 호스트로 보내는지 담당자에게 확인합니다. 인증값을 다른 주소로 재전송하지 않습니다.
+PARSE_ERROR / HTML_OR_API_ERROR: HTTP 200이어도 로그인 HTML·오류 페이지일 수 있습니다. JSON으로 포장된 XML이면 실제 포장 명세를 확인한 뒤 명시적으로 해제하는 처리가 필요합니다. 임의 JSON 필드 추측은 하지 않습니다.
+BODY_NAME_MISMATCH / BODY_ID_MISMATCH: 요청 문서와 실제 받은 문서가 다릅니다. 요청 ID·중계 쿼리 전달·캐시를 확인합니다.
+법령 law는 BODY_OK이고 eflaw는 실패: 공포일 본문 수신만 확인된 상태입니다. 현재 8-AGENT 현행 시행일 경로를 쓰려면 eflaw 등록/전달을 해결해야 합니다.
+Managed Folder 저장 오류: 폴더 ID, 같은 프로젝트 접근, 쓰기/읽기 권한을 확인합니다. API 성공을 저장 성공으로 보고하지 않습니다.
+모듈 requests 없음 / Kernel 시작 실패: Dataiku 관리자에게 Python 코드 환경과 Jupyter 지원 설치 여부를 확인받습니다.
+
+12. 현재 파이프라인에 반영되는 범위
+이번 ZIP은 Dataiku 연결 진단 도구입니다. GENOS ~/DEV에 설치하는 코드 패치가 아니며 기존 Git checkout, 활성 릴리스, NFS CURRENT를 변경하지 않습니다.
+기본 입력은 공개 법령명·법령ID와 등록 OC입니다. 내부 질문·계약서·증거자료나 LLM 호출은 필요하지 않습니다.
+산출물은 수신 응답·검증 receipt·summary·CSV이고, 소비자는 사용자의 Dataiku 결과 폴더와 연결 담당자입니다. 실제 문서 구축은 후속 RAW 반입·검증 절차를 거쳐 기존 파이프라인에 연결합니다. 연결 진단 파일을 정식 DatasetPackage나 RAG 색인 완료로 취급하지 않습니다.
+현재 collect 진입점은 lawrag.sources의 law 어댑터를 통해 법령 검색·본문·별표를 수집합니다. 이번 현장 검증이 끝나면 확인된 중계 규격을 그 기존 전송 경로에 연결하고, RAW 출처·문서 ID·버전·원문 해시·접근 구분을 보존해야 합니다. 법령 JSON/XML 수신, 구조화, 용어 연결, MAIN 승격, GENOS 배포는 각각 별도 완료 상태입니다.
+현 시점 미확인: 사내 Dataiku 설치 버전/권한/네트워크/CA/중계 인증, lawSearch와 eflaw의 중계 등록, 예고 응답 의미·상세·첨부, GENOS 반입/서빙.
+
+13. 근거와 검증 기록
+2026-10-15 외부 실수신: 자본시장법 시행일 기준 본문 약 2.19MB, 시행일 2026-10-02; 금융투자업규정 본문 약 1.76MB, 시행일 2026-09-15. 실제 값과 해시는 JSON 기록을 따릅니다. 이후 법령 개정이나 호출 시점에 따라 달라질 수 있습니다.
+로컬 검사는 모의 중계 응답과 실제 공개 본문 fixture를 사용합니다. 인증 오류·HTML 200·잘린 응답·ID 불일치·중복 실행·예산·부분 성공·저장 무결성을 검사합니다. 동일 노트북 코드의 공개 API 직접 호출 결과도 별도로 기록합니다. 사내 중계에 접속한 결과는 아닙니다.
+공식 법령 목록: https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsNwListGuide
+공식 공포일 본문: https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsNwInfoGuide
+공식 시행일 본문: https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsEfYdInfoGuide
+공식 행정규칙 목록/본문: https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=admrulListGuide / https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=admrulInfoGuide
+Dataiku 폴더 Python API: https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
+중계 주소와 헤더, 운영 IP 조회 API, 예고 목록: 사용자 제공 사진 1~4. 내부 위키/중계서버에는 외부 접근을 시도하지 않았습니다.

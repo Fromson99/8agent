@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Execute from the actual uploaded TRANSFER folder.
+set -Eeuo pipefail
+umask 077
+TASK_TRANSFER="$PWD"
+TASK_LOG_DIR="$TASK_TRANSFER/natural-language-routing-r1-logs"
+if [[ -L "$TASK_LOG_DIR" ]]; then echo "Refuse symlink log folder" >&2; exit 1; fi
+mkdir -p "$TASK_LOG_DIR"
+TASK_LOG="$TASK_LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"; echo "NATURAL_LANGUAGE_ROUTING_EXIT=$TASK_RC LOG=$TASK_LOG"' EXIT
+TASK_PACKAGE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+if [[ ! -f "$TASK_PACKAGE/PACKAGE.json" ]]; then
+  TASK_PACKAGE="$TASK_TRANSFER/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1"
+fi
+if [[ ! -f "$TASK_PACKAGE/PACKAGE.json" ]]; then
+  echo "First extract from TRANSFER:"
+  echo "python3 -m zipfile -e ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1.zip ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1"
+  exit 1
+fi
+printf 'TRANSFER=%s\nPACKAGE=%s\n' "$TASK_TRANSFER" "$TASK_PACKAGE"
+python3 -u "$TASK_PACKAGE/runner.py" "$@"

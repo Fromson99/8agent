@@ -26,6 +26,12 @@ def open_cases(pipeline,runtime,body,principal,*,lease=None,run_id=None,release=
         if not state['shortcut']:flags['capture']=False;shortcut_disabled=True
         if not state['wiki']:
             for name in ('hint','procedure','judgment','core_evidence_route','bounded_recall'):flags[name]=False
+    from .source_handoff import enabled as source_mode
+    if source_mode():
+        flags['capture']=False;shortcut_disabled=True
+        for name in ('hint','procedure','judgment','core_evidence_route','bounded_recall'):flags[name]=False
+    from ..basis_links.native import has_approvals
+    flags['basis_live']=has_approvals(pipeline,principal)
     if flags.get('capture'):
         from .shortcut_cases import ShortcutCases
         from .shortcut_store import selected_store
@@ -55,6 +61,9 @@ def result_port(pipeline,session,cases,result):
     pipeline.contracts.validate_port('legal.case-binding-v1',case)
     query=session.context.query
     meta={'case':case,'final':True,'unified':True,'ontology_legal_coverage':cases.executor.domain.value.get('legal_coverage')}
+    from .knowledge_bridge import public_metadata
+    knowledge_usage=public_metadata(session.work)
+    if knowledge_usage is not None:meta['legal_knowledge']=knowledge_usage
     investigation=parts.get('SELECT',{}).get('payload',{})
     if investigation.get('investigation_chain'):
         meta.update(investigation_chain=investigation['investigation_chain'],return_points=investigation.get('return_points',[]))
@@ -78,6 +87,9 @@ def result_port(pipeline,session,cases,result):
         meta.update(completion_contract=investigation['completion_contract'],
             stop_reason=parts['ASSESS']['payload'].get('stop_reason'),
             text_integrity=('SOURCE_BOUND_NARRATIVE' if composition.get('composition_plan',{}).get('presentation') == 'grounded-narrative-v1' else 'ACCEPTED_CLAIMS_RENDERED'),citation_integrity='ORIGINAL_SPANS')
+        if composition.get('source_excerpt_reply'):
+            meta['text_integrity'] = 'VERIFIED_SOURCE_EXCERPTS'
+            meta['source_reply_contract'] = composition['source_excerpt_reply']['schema_version']
         if composition.get('composition_plan',{}).get('presentation'):
             meta['narrative_presentation']={'version':composition['composition_plan']['presentation'],
                 'streaming':'text-deltas-during-generation', 'semantic_quality_certified':False}
@@ -88,7 +100,10 @@ def result_port(pipeline,session,cases,result):
             'stop_reason':assessment.get('stop_reason'),'semantic_quality_certified':False}
     if investigation.get('law_navigation'):
         meta.update({key:investigation[key] for key in ('law_navigation','completion_policy','completed_with_unresolved_connections','reference_navigation')})
-        limits=list(dict.fromkeys(raw.get('limitations',[])+investigation.get('completion_limitations',[])))
+        # A completion has already committed its exact limitations with its text.
+        # Preserve old duplicate-bearing commits too; normalization belongs before commit.
+        limits=(list(raw.get('limitations',[])) if investigation.get('completion_contract') else
+                list(dict.fromkeys(raw.get('limitations',[])+investigation.get('completion_limitations',[]))))
         missing=[] if investigation.get('completion_contract') else [value for value in investigation.get('completion_limitations',[]) if value not in raw['text']]
         raw={**raw,'limitations':limits,'text':raw['text']+('\n\n'+'\n'.join(missing) if missing else '')}
     view=None
@@ -143,6 +158,9 @@ def execute(pipeline,body,principal,options,cases):
     runtime=Path(options['runtime'])
     result=cases.execute(body,principal)
     cases.validate_response(result,principal,body['session_id'])
+    if result.get('kind')=='SOURCE_HANDOFF':
+        from .source_handoff import publish
+        return publish(cases,result,body,principal,runtime)
     if result.get('public_run_id'):
         # Repeated requests return the durable response only after the same
         # currentness checks as a new publication. No new model session.
@@ -158,7 +176,8 @@ def execute(pipeline,body,principal,options,cases):
                 envelope=export(repo,runtime/'runs')
                 finish_shortcut(cases,result,principal,envelope,repo)
                 project(cases,result,principal,runtime)
-                return envelope
+                from ..basis_links.native import finish
+                return finish(pipeline,cases,result,principal,body,envelope,repo)
             finally:repo.close()
     session=cases.model_resource.ensure()
     gid=result.get('goal_id')
@@ -196,7 +215,8 @@ def execute(pipeline,body,principal,options,cases):
     if (hasattr(cases,'procedure') and result.get('status')=='READY' and not cases.flags.get('core_evidence_route')
             and procedure_replayable(cases,result)):cases.procedure.activate()
     project(cases,result,principal,runtime)
-    return envelope
+    from ..basis_links.native import finish
+    return finish(pipeline,cases,result,principal,body,envelope,session.work)
 
 
 def finish_shortcut(cases,result,principal,envelope,work):

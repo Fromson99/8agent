@@ -1,0 +1,15 @@
+{
+  "observed": "R2 CHECK_PASS, CODE_GATE_PASS files394, APPLIED, then list fails in service.application line465 unsupported GENOS_RAG_IMPLEMENTATION",
+  "field_checkout": "/workspace",
+  "field_requested_checkout": "/home/genos/DEV",
+  "exact_inherited_env_literal": "not established from image",
+  "reproduced_example": "quoted unified-v6 value; also tested retired/empty/canonical values",
+  "cause": "R2 child launch inherited implementation override instead of selecting the verified checkout profile",
+  "fix": "R3 child process pins implementation from hash-verified PIPELINE; existing service allowlist stays",
+  "previous_test_gap": "installer/status tests did not run list/plan service initialization; feature tests injected synthetic apps",
+  "new_evidence": "exact ZIP/TXT -> pipeline -> service -> real app/store on synthetic data, without application injection",
+  "model_calls": 0,
+  "field_actual_generation_path": null,
+  "field_git_commit": null,
+  "field_revision": null
+}

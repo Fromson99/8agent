@@ -1,0 +1,61 @@
+{
+  "source_package": "GENOS_SEARCH_LATEST_20261015_R1",
+  "source_zip_sha256": "bcb536b0032c698d58b82f362075157f250b4fd59e633d526b927d0174118f5f",
+  "field_fixture_sha256": "356167f36bb8121959098381ea52a690838d970b98dbd1a98c52494336886861",
+  "field_inventory_sha256": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686",
+  "files": [
+    {
+      "path": "02_BACKEND/semantic_runtime/storage.py",
+      "before": [
+        "6a9dfbd4f6770a8407275649c18766e900837594ba5434569a69ee30c541d5d7"
+      ],
+      "after": "3f98097938533528338c78af3f02ae5924aaa20f73892f625985b08bfffa0419"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "before": [
+        "1b34031188a277a5bf7d19ec737c0428923643bbd25d282c3621aab598f3eaf8"
+      ],
+      "after": "fe59106b031a6b8b01241f63a5b79df34103d4c97fdaf7ffe04b85bd21947cfb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "before": [
+        "8657bbad0a7ecbc809df7175d7489d3025bae84214927503a5bd9fc6c3ff26a1"
+      ],
+      "after": "ccc33c9f12afdb277141ac35b4a8cfa199f8ff0a372181b10dd20a3abad4d5bd"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+      "before": [
+        "60001bb91824b46820de871a162a19d72faf8f518e8b1e5297ac0378f07fa648"
+      ],
+      "after": "583503b45b039618846dbb504fa7e3e3b00b64e190fbb1efa9620184ef223157"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/search_selection.py",
+      "before": [
+        null
+      ],
+      "after": "965494cd9acbd7316a30f89f323f954a7a8c1e1e253ef286c8f88a0ee3fcd8a6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/search_selection.py",
+      "before": [
+        null
+      ],
+      "after": "3b2dcbc282a79a51323d47cf247895f6353abfc769c69fa7ddc56627adfa30d5"
+    }
+  ],
+  "preserved": {
+    "02_BACKEND/semantic_runtime/team_scope.py": "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7",
+    "02_BACKEND/semantic_runtime/pipeline.py": "9096f1b436a3ad4e42fc053665e6646b3b59548a78327f720a0b8a88f35cd4dc",
+    "service.py": "89f5b9dc94bcc3fa68628c72822f51c63c07a17759d97fecde3bfe9a2b262ef4"
+  },
+  "excluded_from_R1": [
+    "local build tools",
+    "latest_internal rebuilding changes",
+    "projected team changes absent in this field version"
+  ],
+  "reason": "Apply existing runtime visibility changes to documented GENOS serving code; preserve unrelated field features."
+}

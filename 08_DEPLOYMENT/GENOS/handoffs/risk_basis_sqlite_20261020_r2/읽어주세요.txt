@@ -1,0 +1,119 @@
+위험관리기준시행세칙 지정 관계 4건 — 기존 공유 SQLite 증분 추가 R2
+
+정정
+앞서 보낸 GENOS_RISK_BASIS_APPEND_20261020_R1.zip은 저장 대상을 Oracle로 잘못
+설정한 패키지입니다. 그 ZIP/TXT를 사용하지 말고 이번 SQLITE R2를 사용하십시오.
+별도 사전 연결 배치 GENOS_BASIS_BATCH의 최신 실행기 R3는 유지합니다.
+그 배치의 기능 코드 R1/R2/R3는 동일하며, 이번 R2는 그 공유 SQLite에 4건을 추가합니다.
+이번 R2는 그 배치와 동일한 authority.sqlite에 지정한 4관계를 추가하는 보완 코드입니다.
+
+실제 저장 위치
+기존 ~/DEV/00_SYSTEM/GENOS_SERVING_PATHS.json의 generation/runtime을 그대로 읽습니다.
+원문: 해당 generation의 기존 SQLite 원문 세대 (기존 RAG 판본 필터/risk_team 적용)
+관계: 해당 runtime/basis-links/authority.sqlite
+연결 표시: 해당 runtime/basis-links/SQLITE_ENABLED.json
+기존 DB·연결 표시·관계 조회 색인이 없으면 멈춥니다. 새 빈 DB를 만들지 않습니다.
+GENOS runtime은 기존 배치와 같은 NFS/CIFS 공유 경로여야 합니다.
+Oracle 접속·테이블·ORDS 설정은 이 실행에 사용하지 않습니다. 서빙 DP도 바꾸지 않습니다.
+
+관계 목록
+1. 내규 제6-4조제1항 → 금융투자업규정 제3-24조의4제2항
+2. 내규 제6-4조제2항 → 금융투자업규정시행세칙 별표10의 유동성비율(3개월),
+   조정유동성비율(3개월), 유동성비율 산정 원칙
+3. 내규 제1-4조제1항제3호 → 금융투자업규정 제3-6조제4호
+4. 내규 제2-1조제1항제3호 → 금융투자업규정 제3-6조제4호,
+   제3-24조의4제1항, 제3-26조제7항
+4관계/8연결선/중복 제거한 외규 범위7개입니다. 현장 문서 ID와 조항을 다시 찾습니다.
+위험관리기준시행세칙이 필터 후 한 문서로 결정되지 않거나 원문 단서가 다르면 멈춥니다.
+전체 문서 자동 연결이나 새 모델 조사는 실행하지 않습니다.
+
+최근 배치가 만든 기존 연결과 만나는 경우
+- 같은 내규/외규 선택 범위와 BASIS 관계가 APPROVED이면 기존 ID 그대로 재사용.
+- 정확히 일치하는 PROPOSED이면 기존 ID·발견 출처·이력을 유지하고 승인 revision 추가.
+  이번 사용자 지정 4건에 한정한 처리이며 일반 모델 후보를 자동 승인하는 기능이 아닙니다.
+- REJECTED/REVOKED이면 중단. 자동으로 되살리지 않습니다.
+- 정확히 같은 기존 관계가 여러 건이면 중단. 임의로 하나를 고르거나 병합하지 않습니다.
+- 서로 다른 외규/인용 범위/관계 종류는 별도 관계로 보존합니다.
+  의미상 중복 정리나 범위 병합은 이번 범위에 없습니다.
+
+1. 업로드한 TRANSFER 폴더에서 압축 해제와 코드 적용
+TRANSFER의 절대 위치를 추정하지 않습니다. 먼저 DEV로 이동하지 않습니다.
+
+python3 -m zipfile -e ./GENOS_RISK_BASIS_SQLITE_20261020_R2.zip ./GENOS_RISK_BASIS_SQLITE_20261020_R2
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt check
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt install
+
+check/install은 코드만 확인·백업·적용합니다. DB 연결 추가는 아직 없습니다.
+기존 ~/DEV에 오프라인 연결 도구 4파일만 적용합니다.
+R1 코드가 이미 설치된 경우도 알려진 해시를 확인해 R2로 바꿉니다.
+원본·최근 배치의 코드·이력을 전체 덮어쓰지 않습니다.
+다른 checkout이면 RISK_BASIS_DEV_ROOT에 실제 경로를 지정하십시오.
+알려지지 않은 수정 파일은 덮어쓰지 않고 종료합니다.
+
+2. 문서/기존 관계 확인 후 SQL 생성 (DB 쓰기 없음)
+
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt inspect
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt plan
+
+실행자는 현재 OS 계정입니다. 필요하면 각 명령에 --operator 실제실행자ID를 붙입니다.
+현재 TRANSFER/GENOS_RISK_BASIS_SQLITE_20261020_R2_STATE/db 아래에 저장됩니다.
+- documents.json, resolved.json: 필터 후 문서·조항·원문·고정 연결
+- plan-summary.json: 각 관계의 create/reuse/approve_existing와 실제 관계 ID
+- plan.json: 실행자·원문·경로·판본·기존 관계 상태·변경 이력·계획 해시
+- APPEND_ONLY.sql: 별도로 분리한 SQLite DB문
+- REVERT_THIS_BATCH.sql: 이번 신규 연결 취소 및 기존 후보 상태 복원 DB문
+
+SQL은 실제 SQLite 문장이며 Oracle SQL이 아닙니다.
+SQL 파일만 떼어 임의 DB에서 실행하지 않습니다. 같은 plan.json과 검증 코드를 함께
+보관하여 아래 apply로 실행합니다. apply는 분리된 SQL 파일이 계획과 같은지 확인하고,
+원문·최종 판본·설정 경로를 확인한 다음 같은 authority.sqlite에 실행합니다.
+운영계의 문서 ID/판본/runtime이 다르면 운영계에서 inspect/plan을 다시 수행합니다.
+
+3. 같은 공유 SQLite에 적용하고 기존 대사 소비자로 확인
+
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt apply
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt verify
+
+출력 authority가 기존 배치의 runtime/basis-links/authority.sqlite인지 확인하십시오.
+성공 결과는 APPEND_VERIFIED, external_endpoint_count=7입니다.
+신규 관계·승인 revision·binding·이력·receipt와 관계 조회 행만 갱신합니다.
+원문 store, 용어/navigation/fulltext 색인, CURRENT/MAIN은 변경하지 않습니다.
+기존 배치에서 배포한 대사 코드가 같은 generation/runtime을 사용하면 다음 새 대사가
+같은 DB의 관계를 읽습니다. 진행 중 대사의 이미 확정된 snapshot은 바꾸지 않습니다.
+이 도구는 기존 대사 Service/resolver로 조회되는 것까지 검사하며 새 LLM 답변을 생성하지 않습니다.
+실제 GENOS 질문 확인은 워크플로우 테스트 화면에서 합니다.
+
+실패/동시 실행/재실행
+- SQL은 BEGIN IMMEDIATE 한 트랜잭션입니다. 자동 쓰기 재시도는 없습니다.
+- 계획 후 해당 내규의 관계가 추가/수정되면 apply는 전체 rollback합니다.
+  기존 plan/실패 기록을 보존하고 새 출력 작업 폴더에서 최신 상태로 plan을 만드십시오.
+- 같은 계획 재실행은 receipt로 중복 추가를 막습니다.
+- 전송/터미널 중단 후에는 원래 plan의 verify로 확인합니다.
+  출력 receipt를 잃어도 DB의 commit receipt로 확인할 수 있습니다.
+- 반려·취소·중복 기존 행·원문/판본/경로 변경을 임의 보정하지 않습니다.
+- 일반 조사 배치의 다른 job까지 전역 의미 관계 UNIQUE 제약을 추가한 것은 아닙니다.
+  이번 고정 추가는 다른 조사 작업이 해당 문서를 갱신하지 않는 시점에 실행하십시오.
+- 대기 한도는 기존 SQLite busy_timeout 30초입니다. 실패와 원래 계획을 보존합니다.
+
+4. 이번 변경 취소와 코드 복원
+
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt revoke
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt verify-revoked
+
+새로 만든 관계는 REVOKED revision을 추가합니다.
+기존 PROPOSED를 이번에 승인했다면 같은 ID에 새 PROPOSED revision을 추가해 후보로 복원합니다.
+기존 APPROVED를 재사용한 것은 변경하지 않습니다. 과거 revision/이력은 삭제하지 않습니다.
+적용 뒤 누군가 관계를 수정했다면 취소를 강행하지 않고 rollback합니다.
+
+bash ./GENOS_RISK_BASIS_SQLITE_20261020_R2/GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt rollback-code
+
+rollback-code는 코드만 복원합니다. DB 취소와 별개입니다.
+첫 시작부터 TRANSFER/GENOS_RISK_BASIS_SQLITE_20261020_R2.log에 기록하며
+STATE 폴더의 코드 백업·plan·events·receipt·실패 파일을 보존하십시오.
+
+검증 범위
+실제 로컬 SQLite 파일에서 증분 SQL/중복/기존 후보 승인/후속 취소/원복/실패 rollback,
+기존 API·대사 Service/resolver, R2 ZIP/TXT를 검사합니다. 상세 결과는 LOCAL_VALIDATION.json.
+현장 GENOS/NFS locking·fsync·실제 모델 응답은 미검증이며 로컬 MAIN도 변경하지 않았습니다.
+사진 시험 데이터의 4관계 회수 성공과 법률상 적용·충돌 정답 인증은 구분합니다.
+이번 수정에서 Oracle 접속/적용은 실행하지 않았습니다.

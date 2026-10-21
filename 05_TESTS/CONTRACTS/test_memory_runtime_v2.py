@@ -34,7 +34,13 @@ class Wire:
         if phase.endswith('check'):return {'valid':True,'reason':'synthetic contract response'}
         raise AssertionError(phase)
 def command(method,**kw):
-    return {'method_id':method,'document_scope_mode':'KEEP','target':None,'knowledge_id':None,'stage':'NONE','task':None,'source_category':'KEEP','document_ids':None,'facts':None,'queries':None,'restore_event':None,'restore_fields':[],'format':'prose','reason':'모의 계약',**kw}
+    value={'method_id':method,'document_scope_mode':'KEEP','target':None,'knowledge_id':None,'stage':'NONE','task':None,'source_category':'KEEP','document_ids':None,'facts':None,'queries':None,'restore_event':None,'restore_fields':[],'format':'prose','reason':'모의 계약',
+           'search_scope_change':{'operation':'KEEP','targets':[],'user_quote':''},**kw}
+    # Scripted current-model proposals use the current wire contract. Tests of
+    # persisted legacy commands build those deliberately without these fields.
+    value=copy.deepcopy(value)
+    for target in value['search_scope_change']['targets']:target.setdefault('selection',None)
+    return value
 @pytest.fixture
 def memory(tmp_path):
     f=Fake();w=Wire();mem=m.Memory(tmp_path/'memory.sqlite',f,w);n=0
@@ -113,18 +119,21 @@ def session_body():
 
 def test_unsigned_session_and_envelope_normalization():
     body=session_body()
-    assert memory_identity.validate_session(body)=={'user_id':'u','team_id':'risk_team'}
+    expected=memory_identity.validate_session(body)
+    assert expected['user_id'].startswith('session:') and expected['team_id']=='risk_team'
     normalized={k:v for k,v in {'API_TYPE':'LEGAL_AGENT','channel':'genos-chat',**body}.items() if k not in ('API_TYPE','channel')}
-    assert memory_identity.validate_session(normalized)=={'user_id':'u','team_id':'risk_team'}
+    assert memory_identity.validate_session(normalized)==expected
+    assert memory_identity.validate_session({k:v for k,v in body.items() if k!='user_id'})==expected
 
-@pytest.mark.parametrize('field,value',[('user_id',''),('team_id',None),('session_id','anonymous'),('request_id',''),('expected_revision',0)])
+@pytest.mark.parametrize('field,value',[('team_id',None),('session_id','anonymous'),('request_id',''),('expected_revision',0)])
 def test_unsigned_session_rejects_invalid_selectors(field,value):
     with pytest.raises(m.MemoryError):memory_identity.validate_session({**session_body(),field:value})
 
 @pytest.mark.parametrize('key',['','obsolete-key'])
 def test_signing_environment_has_no_runtime_dependency(monkeypatch,key):
     monkeypatch.setenv('GENOS_MEMORY_SIGNING_KEY',key)
-    assert memory_identity.validate_session(session_body())=={'user_id':'u','team_id':'risk_team'}
+    value=memory_identity.validate_session(session_body())
+    assert value['team_id']=='risk_team' and value['user_id'].startswith('session:')
 
 def test_native_selection_consumes_fallback(monkeypatch):
     source=S(force_fulltext_recall=False,profile={})
@@ -142,7 +151,7 @@ def test_model_calls_share_native_budget_and_cleanup():
     def open_session(*args,**kwargs):
         opened.append(1)
         try:
-            yield S(work=S(event=lambda *x:None),context=S(remaining=lambda:99),profile={'max_output_tokens':6400},
+            yield S(work=S(event=lambda *x:None),sources=S(source=S()),context=S(remaining=lambda:99),profile={'max_output_tokens':6400},
                     structured=lambda *x:calls.append(x) or {'ok':True})
         finally:closed.append(1)
     p=S(plan=lambda *a:{},term_agent=S(open_session=open_session))

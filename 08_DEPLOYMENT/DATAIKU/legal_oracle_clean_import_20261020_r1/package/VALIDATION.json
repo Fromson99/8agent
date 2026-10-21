@@ -1,0 +1,47 @@
+{
+  "revision": "oracle-clean-import-preserve-controls-v1",
+  "environment": "WSL local synthetic database + delivered notebook + real Dataiku adapter boundary; no remote Oracle",
+  "tests": {
+    "passed": 54,
+    "failed": 0,
+    "seconds": 11.35,
+    "max_rss_kib": 385820,
+    "log": "09_ARTIFACTS/AUDITS/20261020-dataiku-clean/TEST_04.txt",
+    "files": [
+      "test_oracle_clean_import.py",
+      "test_oracle_dp.py",
+      "test_oracle_dataiku_types.py"
+    ]
+  },
+  "checks": [
+    "seven-table reset only",
+    "ACTIVE/STATE preserved; active use blocks reset",
+    "100-row / 512KiB bounded inserts",
+    "numeric-looking string IDs, NULL and empty CLOB",
+    "ambiguous INSERT commit recovery without duplicates",
+    "ambiguous DELETE blocks repeat reset",
+    "pre-delete lock rejection permits explicit retry",
+    "input/target/code/checkpoint binding",
+    "trigger/external FK guard",
+    "real pidfd TERM/KILL targeting own test child; unrelated process survives",
+    "delivered TXT with pinned runtime through real DataikuClient against simulated SQL boundary",
+    "old R4 checkpoint bytes preserved"
+  ],
+  "fixed_during_validation": {
+    "TEST_02": "11 failures: canonical plan serialization changed projection order. Explicit projection_order fixed it. TEST_03 and TEST_04 passed."
+  },
+  "completion": "CLEAN_LOAD_COUNTS_CONFIRMED",
+  "full_body_readback": false,
+  "field_execution": false,
+  "not_verified": [
+    "Actual Oracle SQL engine/JDBC execution and permissions",
+    "Dataiku container /proc visibility and pidfd availability",
+    "real dataset throughput and total runtime",
+    "server-side cancellation after notebook kill",
+    "automatic recovery of an uncertain reset commit (blocked for manual transaction resolution)"
+  ],
+  "serving_activation": false,
+  "state_modified": false,
+  "active_modified": false,
+  "handoff": "ZIP and full Python TXT prepared; not sent or applied by this work"
+}

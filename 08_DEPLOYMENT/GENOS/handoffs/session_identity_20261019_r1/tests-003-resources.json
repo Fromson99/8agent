@@ -1,0 +1,30 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test-code",
+    "05_TESTS/CONTRACTS/test_team_session_identity.py",
+    "--show-capture=all"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 4.004587663000166,
+  "peak_group_rss_bytes": 211513344,
+  "min_available_bytes": 14012747776,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/tests-003-resources.json",
+    "rss_gib": 3.0,
+    "as_gib": 5.0,
+    "min_available_gib": 3.0,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test-code",
+      "05_TESTS/CONTRACTS/test_team_session_identity.py",
+      "--show-capture=all"
+    ]
+  },
+  "samples_sha256": "901440f8c1277229b7262815c77c078a1f5361a994d9fe41fa5ea1aac4002794"
+}

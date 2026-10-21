@@ -1,0 +1,152 @@
+사진 입력값을 채운 Jupyter 실행본 — 2026-10-15 R1
+
+1. 이번에 받은 화면의 의미
+
+화면의 EVIDENCE_COLLECTED는 진단 프로그램이 결과 기록을 끝냈다는 뜻입니다.
+법제처/중계 서버의 HTTP 응답을 받았다는 뜻이 아닙니다.
+
+사진에서 확인한 현장 기록(원본 JSON과 문자 단위 대조 전):
+  TCP 출발지: 172.27.43.182:49822
+  TCP 목적지: 45.101.64.86:8443
+  TCP 시각: 2026-10-15 14:23:04.435~14:23:12.443 KST
+  TCP 결과: TCP_TIMEOUT, 8.008초
+  curl 시각: 2026-10-15 14:23:12.445~14:23:20.461 KST
+  curl 결과: CURL_CONNECT_PHASE_TIMEOUT, 종료코드 28
+  HTTP: 000 (실제 HTTP 상태 응답을 받지 못함)
+  time_connect: 0.000000, time_appconnect: 0.000000
+  size_download: 0, num_connects: 0
+  http_request_sent_observed: False
+  Cookie 포함: False, 실효 프록시 사용: False
+
+TCP와 curl은 별도 시각의 별도 소켓입니다.
+49822를 curl 요청의 출발지 포트라고 사용하면 안 됩니다. curl 쪽 포트는 화면에서 확인되지 않습니다.
+172.27.43.182는 실행 네임스페이스의 주소입니다. NAT 이후 실제 출발지는 방화벽 담당자가 확인해야 합니다.
+사용자 PC의 IP가 아니라 Dataiku Notebook 실행 노드/컨테이너의 흐름을 확인해야 합니다.
+
+이 기록은 OC·Cookie·target_url을 보내기 전 독립 TCP 검사도 실패했다는 구체적인 근거입니다.
+방화벽 DROP, 라우팅/반환 경로, 서버 무응답/개발 주소의 유효성은 아직 구분되지 않았습니다.
+방화벽 차단 확정에는 해당 흐름과 시각에 맞는 DENY/DROP 로그 및 적용 정책 ID가 필요합니다.
+
+2. 이번 파일에 미리 넣은 입력값
+
+사용자 요청에 따라 최초 curl 사진에서 읽은 값을 미리 채웠습니다.
+새 셀에서 OC나 Cookie를 물어보는 입력창은 뜨지 않습니다.
+
+  method = GET
+  relay_origin = https://45.101.64.86:8443
+  요청 경로 = /law/making
+  OC = 사진의 값 입력 완료
+  lsClsCd = BA0103
+  closing = Y
+  asndOfiNm = 금융위원회
+  admRulNm = 지주
+  target_url = https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml
+  Cookie = 사진의 JSESSIONID와 elevisor_for_j2ee_uid 모두 입력 완료
+
+전체 실제 값은 실행 파일 맨 위 PHOTO_INPUTS에 들어 있습니다.
+기존 Notebook의 LAW_OC/Cookie를 가져오는 방식이 아니라 이번 사진 전사값을 사용합니다.
+사진의 긴 세션 문자열은 이미지에서 전사한 값입니다. 원본 텍스트와 문자 단위 일치는 미검증이며
+I/l, 0/O 같은 문자가 영향을 줄 수 있습니다. 세션 만료·권한 유효성도 아직 확인되지 않았습니다.
+HTTP 연결 실패를 Cookie가 틀렸다는 판정으로 사용하지 않습니다.
+
+이번 파일은 사용자 요청에 따라 인증값을 소스에 포함합니다.
+네트워크 담당자에게 공유할 진단 결과 JSON에는 OC/Cookie 값을 기록하지 않습니다.
+
+3. 가장 간단한 실행 방법: 기존 Notebook에 추가
+
+1) 기존 DATAIKU_LAW_API_20261015_R1 Notebook을 그대로 엽니다.
+2) 맨 아래 셀을 클릭합니다.
+3) 상단 Insert > Insert Cell Below 또는 + 버튼으로 아래 셀을 추가합니다.
+4) 셀 종류 드롭다운을 Code로 설정합니다.
+5) 이번 메일의 DATAIKU_PHOTO_INPUTS_20261015_R1_CELL.txt를 열어 전체를 복사합니다.
+6) 새 Code 셀에 붙여 넣고 Shift+Enter를 한 번 누릅니다.
+7) 별도 입력 없이 사진의 OC/Cookie를 포함한 curl 요청 1회가 실행됩니다.
+8) 출력에서 '사진 OC 포함: True', '사진 Cookie 포함: True', curl 상태를 확인합니다.
+9) 기존 8번 Managed Folder 저장 셀만 실행하면 photo_sample_replay_r1.json이 기존 run 폴더에 추가됩니다.
+
+기존 R1/timeout/network evidence 결과는 보존합니다. Kernel Restart/Run All은 필요 없습니다.
+이번 TXT는 Python 셀용입니다. bash 명령으로 실행하지 마세요.
+같은 결과 폴더에서 재실행하면 저장된 결과만 표시하며 새 요청을 보내지 않습니다.
+OC/Cookie를 편집한 뒤에도 같은 폴더에서는 자동 재호출하지 않습니다.
+
+4. 별도 Jupyter Notebook 파일도 제공
+
+ZIP을 풀면 DATAIKU_PHOTO_INPUTS_20261015_R1.ipynb가 있습니다.
+Dataiku 프로젝트의 Notebooks 화면에서 Import notebook / Import an existing notebook을 선택해
+해당 .ipynb를 올리고 Python 3 코드 환경을 선택합니다. 버전에 따라 메뉴 이름은 다를 수 있습니다.
+이 경로가 보이지 않으면 위 3번의 기존 Notebook 새 Code 셀 방법을 사용하면 됩니다.
+
+Notebook에는 1번 코드 셀에 입력값, 2번 코드 셀에 실행 코드가 들어 있습니다.
+위에서 아래로 두 셀을 실행합니다. 추가 값 입력이나 프롬프트가 필요하지 않습니다.
+독립 Notebook에서는 law_api_photo_replay_20261015_r1/photo_sample_replay_r1.json에 저장합니다.
+기존 check 객체가 없으므로 기존 Managed Folder에 자동 연결되지는 않습니다.
+현장 결과를 기존 폴더에 모으려면 3번 방식이 가장 간단합니다.
+
+5. 사진의 curl과 비교할 때 남는 차이
+
+조회 경로·파라미터·OC·두 Cookie·target_url은 사진 전사값으로 채웠습니다.
+다만 아래 진단 제어는 추가했습니다.
+  - 한글 검색어는 URL 인코딩합니다. 검색 조건의 의미는 같습니다.
+  - --location을 포함하되 --max-redirs 0으로 최초 응답 뒤 추가 요청은 중단합니다.
+  - 연결 8초, 전체 20초 한도, 자동 재시도 0입니다.
+  - .curlrc를 자동 로드하지 않고 실행 환경의 실효 프록시/CA를 사용합니다.
+  - 인증값은 curl 프로세스 인자 대신 표준입력으로 전달합니다.
+  - 결과에는 연결 지표를 기록하며 응답 본문은 저장하지 않습니다.
+따라서 이 파일은 최초 사진 요청의 입력값을 채운 연결 확인용입니다.
+사진의 제한 없는 리다이렉트 동작이나 전체 예고 본문 수집까지 똑같이 수행한 검사는 아닙니다.
+
+6. 결과에 따른 다음 단계
+
+CURL_CONNECT_PHASE_TIMEOUT / exit 28 / HTTP 000
+  사진의 인증값을 채운 시도도 연결 단계에서 끝난 것입니다.
+  지금 확보한 TCP 증거와 함께 네트워크/중계 담당자에게 전달합니다.
+  Cookie를 바꾸며 반복 호출하는 대신 아래 로그 확인으로 넘어갑니다.
+
+HTTP_RESPONSE_401 / HTTP_RESPONSE_403
+  이번 경로에서는 HTTP 응답을 받았습니다.
+  API 인증/세션/접근 정책 또는 프록시/WAF의 응답인지 담당 로그로 구분합니다.
+  이때 사진 전사 문자열과 현재 유효한 인증값을 대조할 필요가 생깁니다.
+
+HTTP_RESPONSE_200
+  HTTP 응답 수신까지 확인한 것입니다.
+  응답 본문은 이 진단에서 보존/검증하지 않으므로 실제 예고/법령 데이터 수신 성공은 별도 확인합니다.
+
+HTTP_RESPONSE_302 + curl exit 47
+  최초 HTTP 응답을 받았고 추가 리다이렉트를 중단했다는 뜻입니다.
+  TCP 시간초과가 아닙니다.
+
+CURL_TLS_ERROR
+  인증서 신뢰 또는 TLS 설정을 확인합니다. 인증서 검증을 끄지 않습니다.
+
+7. 지금 담당자에게 전달할 구체적인 요청문
+
+Dataiku AI Data Hub (DEV DESIGN) Notebook에서 아래 흐름이 실패했습니다.
+
+  시각: 2026-10-15 14:23:04.435~14:23:12.443 KST
+  실행 소켓: 172.27.43.182:49822 → 45.101.64.86:8443 TCP
+  결과: TCP_TIMEOUT, 8.008초
+  이어진 curl: 14:23:12.445~14:23:20.461 KST, exit 28, HTTP 000,
+             time_connect=0, time_appconnect=0, 수신 0바이트
+
+Notebook 실행 노드/컨테이너와 NAT 변환 후 출발지 IP·port를 식별하고,
+해당 시각의 목적지 TCP 8443 흐름에 대한 DENY/DROP/ALLOW 로그 및 정책 ID를 확인해 주세요.
+중계 서버에서 SYN 수신 여부, TCP 8443 리스너 상태와 반환 경로도 확인 부탁드립니다.
+172.27.43.182:49822는 독립 TCP 검사의 소켓이며 curl 요청은 별도 소켓입니다.
+최초 사진 샘플의 OC/Cookie까지 넣은 추가 요청 결과는 photo_sample_replay_r1.json으로 별도 첨부합니다.
+현재 차단 장비를 특정하거나 방화벽 차단을 확정한 상태는 아닙니다.
+
+첨부할 결과: network_evidence_r1.json, photo_sample_replay_r1.json.
+위 값은 화면에서 전사했으므로 최종 로그 조회에는 다운로드한 원본 JSON의 시각/포트를 우선합니다.
+
+8. 검증 및 적용 상태
+
+개발 환경의 localhost HTTPS와 가상 인증값으로 실제 curl 전송, 입력값 자동 주입,
+기존 LAW_OC 대신 사진 OC 선택, Cookie 두 값 포함, 재실행 호출 방지,
+중단/오류 보존, 기존 Managed Folder 저장 연결, TXT와 ipynb 코드 동등성을 검사했습니다.
+실제 삼성 주소에 개발 환경에서 접속하지 않았고 사진 인증값으로 외부 서버를 호출하지 않았습니다.
+사진 인증값의 정확성/유효성과 현장 방화벽 원인은 미확인 상태입니다.
+기존 패키지, MAIN 및 GENOS 배포는 변경하지 않았습니다.
+
+curl 연결 시간/종료코드 공식 설명:
+https://curl.se/docs/manpage.html#--write-out
+https://curl.se/docs/manpage.html#EXITCODES

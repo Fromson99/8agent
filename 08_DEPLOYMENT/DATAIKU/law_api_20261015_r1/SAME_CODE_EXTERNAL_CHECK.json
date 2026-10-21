@@ -1,0 +1,201 @@
+{
+  "version": "dataiku-law-api-20261015-r1",
+  "run_id": "20261015T035945Z_954c971b",
+  "transport": "direct_public",
+  "python": "3.14.4",
+  "executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "requests_version": "2.34.2",
+  "physical_calls": 5,
+  "max_calls": 8,
+  "automatic_retries": 0,
+  "resume_available": false,
+  "records": [
+    {
+      "name": "law_published_body",
+      "request_signature": "21e9b4de3c246368058ac5fe3d9e14888674c92dc84647e812c50613b15f03be",
+      "target": "law",
+      "params": {
+        "ID": "010513",
+        "type": "XML"
+      },
+      "transport": "direct_public",
+      "status": "BODY_OK",
+      "started_utc": "2026-10-15T03:59:45Z",
+      "original_url": "http://www.law.go.kr/DRF/lawService.do?target=law",
+      "physical_call": 1,
+      "http_status": 200,
+      "content_type": "text/xml;charset=UTF-8",
+      "root": "법령",
+      "document_name": "자본시장과 금융투자업에 관한 법률",
+      "id": "010513",
+      "effective_date": "20261002",
+      "promulgated_date": "20260804",
+      "article_blocks": 685,
+      "article_characters": 26302,
+      "annex_links": 17,
+      "sample": "제1편 총칙",
+      "elapsed_seconds": 0.514,
+      "received_bytes": 2150981,
+      "wire_sha256": "9b11088c02b9e52e9fb00a314f3daffdbb2e880b3a57d7fcea3d9de26aa19d0d",
+      "credential_redacted": false,
+      "saved_sha256": "9b11088c02b9e52e9fb00a314f3daffdbb2e880b3a57d7fcea3d9de26aa19d0d",
+      "response_file": "law_published_body.response.gz"
+    },
+    {
+      "name": "law_search",
+      "request_signature": "fd4ecaac41e4730cd97b627d1c1b1f020901435a9f5339bc51c20b11c19fad61",
+      "target": "law",
+      "params": {
+        "query": "자본시장과 금융투자업에 관한 법률",
+        "type": "XML",
+        "display": "50",
+        "page": "1"
+      },
+      "transport": "direct_public",
+      "status": "LIST_OK",
+      "started_utc": "2026-10-15T03:59:45Z",
+      "original_url": "http://www.law.go.kr/DRF/lawSearch.do?target=law",
+      "physical_call": 2,
+      "http_status": 200,
+      "content_type": "text/xml;charset=UTF-8",
+      "root": "LawSearch",
+      "total_count": 3,
+      "rows": [
+        {
+          "name": "자본시장과 금융투자업에 관한 법률",
+          "id": "010513",
+          "serial": "288615",
+          "current": "현행",
+          "effective_date": "20261002"
+        },
+        {
+          "name": "자본시장과 금융투자업에 관한 법률 시행령",
+          "id": "010817",
+          "serial": "291081",
+          "current": "현행",
+          "effective_date": "20261013"
+        },
+        {
+          "name": "자본시장과 금융투자업에 관한 법률 시행규칙",
+          "id": "010820",
+          "serial": "271489",
+          "current": "현행",
+          "effective_date": "20250602"
+        }
+      ],
+      "note": "목록 수신은 본문 수신/전체 수집 성공과 별개",
+      "elapsed_seconds": 0.118,
+      "received_bytes": 2835,
+      "wire_sha256": "0fd9e7253e0d09ee4689cabdd942757ee223f929e2db6516dc09a460d17b265e",
+      "credential_redacted": true,
+      "saved_sha256": "2de36845acd121631b18d9ab1963a738dee211b691b232fa3704c529d212cbb2",
+      "response_file": "law_search.response.gz"
+    },
+    {
+      "name": "admrul_search",
+      "request_signature": "f2aa1009218fd84c5b333c65ea25cb13774f9ad439b2ea5cccff12fe0620ff89",
+      "target": "admrul",
+      "params": {
+        "query": "금융투자업규정",
+        "type": "XML",
+        "display": "50",
+        "page": "1"
+      },
+      "transport": "direct_public",
+      "status": "LIST_OK",
+      "started_utc": "2026-10-15T03:59:46Z",
+      "original_url": "http://www.law.go.kr/DRF/lawSearch.do?target=admrul",
+      "physical_call": 3,
+      "http_status": 200,
+      "content_type": "text/xml;charset=UTF-8",
+      "root": "AdmRulSearch",
+      "total_count": 2,
+      "rows": [
+        {
+          "name": "금융투자업규정",
+          "id": "36022",
+          "serial": "2100000285020",
+          "current": "현행",
+          "effective_date": "20260915"
+        },
+        {
+          "name": "금융투자업규정시행세칙",
+          "id": "2034226",
+          "serial": "2200000108855",
+          "current": "현행",
+          "effective_date": "20260708"
+        }
+      ],
+      "note": "목록 수신은 본문 수신/전체 수집 성공과 별개",
+      "elapsed_seconds": 0.091,
+      "received_bytes": 1784,
+      "wire_sha256": "5c1a467b69990dd0077897a7ef65b1c3cc1103e2c83ec671ce2380a14504a166",
+      "credential_redacted": true,
+      "saved_sha256": "92c95fbb73aeb50226e0f5b69d1654c0a292b2769582d68f3db746134eaecd6b",
+      "response_file": "admrul_search.response.gz"
+    },
+    {
+      "name": "admrul_body",
+      "request_signature": "6fabb822d8f7009b92591ba1790b77fcd1c016bcb8e63198cfa7fbc953778095",
+      "target": "admrul",
+      "params": {
+        "ID": "2100000285020",
+        "type": "XML"
+      },
+      "transport": "direct_public",
+      "status": "BODY_OK",
+      "started_utc": "2026-10-15T03:59:47Z",
+      "original_url": "http://www.law.go.kr/DRF/lawService.do?target=admrul",
+      "physical_call": 4,
+      "http_status": 200,
+      "content_type": "text/xml;charset=UTF-8",
+      "root": "AdmRulService",
+      "document_name": "금융투자업규정",
+      "id": "2100000285020",
+      "effective_date": "20260915",
+      "promulgated_date": "20260909",
+      "article_blocks": 1,
+      "article_characters": 367381,
+      "annex_links": 81,
+      "sample": "제1편 총칙\n제1-1조(목적) 이 규정은 「자본시장과 금융투자업에 관한 법률」(이하 \"법\"이라 한다), 「자본시장과 금융투자업에 관한 법률 시행령」(이하 \"영\"이라 한다), 「자본시장과 금융투자업에 관한 법률 시행규칙」(이하 \"규칙\"이라 한다), 「금융산업의 구조개선에 관한 법률」, 「금융산업의 구조개선에 관한 법률 시행령」, 「외국환거래법」, 「외국환거래법 시행령」, 그 밖의 관련법령에서 금융위원회에 위임한 사항과 그 시행에",
+      "elapsed_seconds": 0.789,
+      "received_bytes": 1758451,
+      "wire_sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982",
+      "credential_redacted": false,
+      "saved_sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982",
+      "response_file": "admrul_body.response.gz"
+    },
+    {
+      "name": "law_effective_body",
+      "request_signature": "c7faa873b846f8f31807009673881f34ce554b689968e00f6744afa4584da634",
+      "target": "eflaw",
+      "params": {
+        "ID": "010513",
+        "type": "XML"
+      },
+      "transport": "direct_public",
+      "status": "BODY_OK",
+      "started_utc": "2026-10-15T03:59:48Z",
+      "original_url": "http://www.law.go.kr/DRF/lawService.do?target=eflaw",
+      "physical_call": 5,
+      "http_status": 200,
+      "content_type": "text/xml;charset=UTF-8",
+      "root": "법령",
+      "document_name": "자본시장과 금융투자업에 관한 법률",
+      "id": "010513",
+      "effective_date": "20261002",
+      "promulgated_date": "20260804",
+      "article_blocks": 682,
+      "article_characters": 25939,
+      "annex_links": 17,
+      "sample": "제1편 총칙",
+      "elapsed_seconds": 0.451,
+      "received_bytes": 2185564,
+      "wire_sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460",
+      "credential_redacted": false,
+      "saved_sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460",
+      "response_file": "law_effective_body.response.gz"
+    }
+  ],
+  "scope": "소량 API 연결 진단. RAW 반입/MAIN/GENOS 배포는 수행하지 않음"
+}

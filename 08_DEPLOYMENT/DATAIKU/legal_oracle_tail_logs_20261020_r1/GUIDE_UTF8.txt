@@ -1,0 +1,40 @@
+Dataiku Oracle 이관 실시간 로그 보기 / 2026-10-20 R1
+
+1. 실행 위치
+이관 노트북이 사용하는 파일 경로에 접근할 수 있는, 같은 Dataiku 서버의 새 터미널에서 실행합니다.
+GENOS 코드스페이스 터미널과 Dataiku 서버는 다릅니다.
+노트북의 실행 셀이나 커널을 중단하거나 재시작할 필요가 없습니다.
+터미널을 열 수 없거나 같은 경로에 접근할 수 없으면 기존 별도 노트북의 LOG_READER_RUN.txt로 조회하세요.
+
+2. 별도 TXT로 실행
+첨부 TAIL_LOGS_RUN.txt를 해당 서버에 올린 실제 폴더에서:
+
+bash ./TAIL_LOGS_RUN.txt
+
+3. ZIP으로 실행하는 경우
+ZIP을 올린 실제 폴더에서:
+
+python3 -m zipfile -e ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1.zip ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1
+bash ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1/TAIL_LOGS_RUN.txt
+
+ZIP과 별도 TXT는 같은 코드입니다. 한 가지 방법만 사용하세요.
+이 묶음은 로그 조회 전용입니다. R4 이관 코드 ZIP을 교체하는 파일이 아닙니다.
+현재 R4 이관도 기존 legal-existing-zip-r2-work/oracle-import-r3 기록을 사용하므로 이름을 R4로 바꾸지 마세요.
+
+4. 출력 해석
+events.jsonl: 전체 단계와 주기적 PROGRESS.
+source/*/calls.jsonl: SQL 호출 STARTED/ACKNOWLEDGED, 배치 BATCH_VERIFIED.
+ACKNOWLEDGED는 해당 SQL 응답을 받았다는 뜻이며 전체 이관 완료를 뜻하지 않습니다.
+BATCH_VERIFIED는 해당 배치의 대조 완료입니다.
+PROGRESS의 시간 증가만으로 실제 데이터 처리가 진전했다고 판단하지 않습니다.
+source 단계는 별도 state.json의 대조 완료 행과 BATCH_VERIFIED도 함께 보세요.
+시작할 때 존재하는 source 호출 로그를 추적합니다. 나중에 생기는 다른 단계의 호출 로그는 자동 추가하지 않으며 전체 단계 변경은 events.jsonl에서 봅니다.
+
+5. 종료 / 오류
+새 로그 조회 터미널에서 Ctrl+C: tail 조회만 종료합니다. 별도 노트북에서 실행 중인 이관은 중단하지 않습니다.
+로그 폴더가 0개 또는 여러 개면 자동 선택하지 않고 종료합니다.
+0개는 완료의 증거가 아닙니다. 서버, 파일 경로, 권한을 확인하고 오류 출력을 공유하세요.
+로그 조회가 안 된다는 이유로 이관 publish 셀을 다시 실행하지 마세요.
+
+이 스크립트는 파일을 읽기만 하며 Oracle 연결이나 데이터 변경을 수행하지 않습니다.
+로컬 Bash 구문을 검사했습니다. 현장 터미널 접근 가능 여부는 별도 확인이 필요합니다.

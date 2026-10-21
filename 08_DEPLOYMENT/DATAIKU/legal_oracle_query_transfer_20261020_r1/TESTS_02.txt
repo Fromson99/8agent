@@ -1,0 +1,31 @@
+..............................                                           [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+30 passed, 1 warning in 12.92s
+	Command being timed: ".venv/bin/python -m pytest -q --tb=short --basetemp=09_ARTIFACTS/AUDITS/20261020-oracle-query-handoff/pytest-r2 05_TESTS/CONTRACTS/test_oracle_query_handoff_20261020.py 05_TESTS/CONTRACTS/test_oracle_query_schema.py 05_TESTS/CONTRACTS/test_oracle_query_catalog.py"
+	User time (seconds): 4.70
+	System time (seconds): 1.10
+	Percent of CPU this job got: 42%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:13.67
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 289604
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1019
+	Minor (reclaiming a frame) page faults: 215396
+	Voluntary context switches: 20283
+	Involuntary context switches: 39
+	Swaps: 0
+	File system inputs: 251976
+	File system outputs: 135544
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

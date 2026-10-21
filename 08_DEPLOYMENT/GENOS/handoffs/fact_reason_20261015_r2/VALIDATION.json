@@ -1,0 +1,74 @@
+{
+  "revision": "GENOS_FACT_REASON_20261015_R2",
+  "installer_contracts": {
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "delivery_integrations": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed_contracts": {
+    "INSTALLED_schema_r3": {
+      "tests": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_field_signature": {
+      "tests": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_passes": 154,
+  "actual_commands": 33,
+  "same_checkout_generation_gates": 2,
+  "localhost_service_boots": 2,
+  "rollbacks": 2,
+  "r1_failure_reproduced_on_field_fingerprint": 1,
+  "field_inventory_sha256": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686",
+  "known_predecessors": 2310,
+  "added_predecessors": 660,
+  "sealed_transitions_fully_covered": {
+    "tool_availability_20261014_r1": {
+      "inputs": 660,
+      "outputs": 330,
+      "missing_outputs": 0
+    },
+    "tool_recovery_20261014_r1": {
+      "inputs": 990,
+      "outputs": 330,
+      "missing_outputs": 0
+    },
+    "length_recovery_20261015_r2": {
+      "inputs": 1320,
+      "outputs": 990,
+      "missing_outputs": 0
+    }
+  },
+  "original_1650_entries_unchanged": true,
+  "product_blob_identical_to_r1": true,
+  "r1_artifacts_preserved": {
+    "GENOS_FACT_REASON_20261015_R1.zip": "ab8b1d9091381d3b086f2621988648c692b7ec0257d78fdcecff39c71855e0c8",
+    "GENOS_FACT_REASON_20261015_R1_RUN.txt": "7a3be892510cabfa4c684cf073b44bb317ee68a420cadafc237aa786153668ed",
+    "GUIDE_UTF8.txt": "d8ba7742730b81e885a8aa49c5ac65e4227aed72efc3624d71a78c42165f237e",
+    "VALIDATION_SUMMARY.txt": "ab2e23d9fe3218212c599b441f80ee55a9057ed80e4b773d27eba7964ed8980d",
+    "VALIDATION.json": "2e11781c69ade51e5b7929dff401fdc898c956218ba625913ef5b7efeac42304"
+  },
+  "local_release": "length-recovery-20261015-r1",
+  "local_pointer_generation": 66,
+  "local_main_changed": false,
+  "genos_connections": 0,
+  "external_model_calls": 0,
+  "field_generation_verified": false,
+  "field_commit_verified": false,
+  "field_serving_revision_verified": false,
+  "field_workflow_verified": false,
+  "genos_field_status": "NOT_VERIFIED"
+}

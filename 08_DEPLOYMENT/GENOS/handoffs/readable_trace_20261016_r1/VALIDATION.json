@@ -1,0 +1,55 @@
+{
+  "recorded_at": "2026-10-16T01:11:08.250536+00:00",
+  "revision": "GENOS_READABLE_TRACE_20261016_R1",
+  "prerequisite": "GENOS_MAIN_FULL_20261016_R1",
+  "source_binding": "SOURCE_BINDING.json",
+  "working_tests": {
+    "passed": 106,
+    "record": "WORKING_VALIDATION.json"
+  },
+  "delivery_tests": {
+    "zip": {
+      "installation_sequence": "PASS",
+      "installed_contracts_passed": 33,
+      "installed_runtime_imports": 220,
+      "same_committed_checkout_release_gate": "PASS",
+      "actual_service_boot": "PASS; synthetic TLS model discovery only",
+      "source_test_transcript_sha256": "3cb214fbcc6699a070afa117e1fb700ee96259e6b5c2e7087e441d243c5bdad4"
+    },
+    "standalone": {
+      "installation_sequence": "PASS",
+      "installed_contracts_passed": 33,
+      "installed_runtime_imports": 220,
+      "same_committed_checkout_release_gate": "PASS",
+      "actual_service_boot": "PASS; synthetic TLS model discovery only",
+      "source_test_transcript_sha256": "b386b507fdd5304dcb8fc2ddbf72f254dd13b31b981911ed4fa6fdef058a9cae"
+    }
+  },
+  "interrupted_install_recovery": "PASS; hard exit after first code write, exact preimage restore and reapply",
+  "preservation": "PASS; NFS generation/selection, field configuration, output/budget overlays, unrelated files",
+  "drift_and_later_edit_rejection": "PASS; both check and undo refuse unknown changes",
+  "repeat_and_rollback": "PASS; identical install replay and exact original byte restoration",
+  "python311": {
+    "status": "PASS",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "compiled_modules": 6
+  },
+  "no_external_or_genos_model_calls": true,
+  "local_main_activation_changed": false,
+  "known_baseline_tests": "3 pre-existing gateway fixture failures documented in WORKING_VALIDATION.json",
+  "limits": [
+    "The approximately 180-second model timeout in the photos is not fixed.",
+    "AD trace writes after completion; RAG trace appends during execution.",
+    "Shared storage failure, forced termination or existing report limits may leave partial logs.",
+    "Ingestion/build model logs are outside this request-report path."
+  ],
+  "genos": {
+    "package_created": true,
+    "field_applied": false,
+    "field_commit": null,
+    "field_generation": null,
+    "code_serving_revision": null,
+    "internal_model_workflow_test": "NOT_RUN"
+  }
+}

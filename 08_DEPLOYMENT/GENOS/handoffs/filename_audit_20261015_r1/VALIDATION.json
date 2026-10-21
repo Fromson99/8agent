@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "contract_tests": 37,
+  "actual_txt_commands": 9,
+  "checks": [
+    "sealed ZIP member hashes equal source files; no JavaScript attachments",
+    "ZIP TXT 37 contract tests",
+    "ZIP TXT structured generation comparison with fixed NFS-style binding over stale environment",
+    "standalone TXT comparison matches ZIP TXT",
+    "existing output refused and preserved",
+    "missing DEV fails with durable console log",
+    "all generation and DEV bytes unchanged by diagnostics",
+    "explicit RAW name-only inventory",
+    "corrupt metadata fails and saves RUN_STATUS",
+    "manifest pin mismatch fails before reading inventory",
+    "unknown apply action is rejected",
+    "every actual TXT command saved durable log and exit status"
+  ],
+  "scanner_sha256": "459af051d22904e6bcde3779aa65b7416cdba036eb33732c2d368d3ac42ffd24",
+  "code_manifest_sha256": "224ea2d13d06874a8b04a50b97ae85b88fc1f75bcbef6a899014aa0c596c99a6",
+  "environment": "WSL local synthetic generation; python3 resolves repository .venv Python",
+  "field_genos_execution": "NOT_RUN",
+  "rag_activation": false,
+  "known_limits": [
+    "filename dates are not effective dates",
+    "renamed titles remain separate",
+    "unknown date/title families preserved for review",
+    "whole source DB hash not recomputed; metadata and manifest binding recorded"
+  ]
+}

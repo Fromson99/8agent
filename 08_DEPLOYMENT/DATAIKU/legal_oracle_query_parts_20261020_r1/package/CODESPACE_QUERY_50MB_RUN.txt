@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Run from your actual uploaded TRANSFER directory. No cd to DEV is necessary.
+set -Eeuo pipefail
+umask 077
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+log_dir="./query-transfer-command-logs"
+mkdir -p -- "$log_dir"
+log_file="$(mktemp "$log_dir/run-XXXXXXXX.log")"
+exec > >(tee -a "$log_file") 2>&1
+trap 'code=$?; printf "EXIT_CODE=%s\nLOG=%s\n" "$code" "$log_file"; exit "$code"' EXIT
+printf 'Started UTC: '; date -u +%FT%TZ
+printf 'Working directory: %s\n' "$PWD"
+python3 -c 'import sys; print("Python:",sys.executable,sys.version)'
+if [[ ! -f "$script_dir/entry.py" ]]; then
+  printf '%s\n' 'First extract ./LEGAL_ORACLE_QUERY_PARTS_20261020_R1.zip, then run the TXT INSIDE its package directory.' >&2
+  exit 2
+fi
+# Set a 6GiB address-space ceiling only for this data process, never for serving.
+# Python handles MemoryError as failure; completed batches and originals remain.
+python3 - "$script_dir/entry.py" "$@" <<'PY'
+import resource,runpy,sys
+cap=6*1024**3
+old=resource.getrlimit(resource.RLIMIT_AS)
+resource.setrlimit(resource.RLIMIT_AS,(min(cap,old[0]) if old[0]>0 else cap,old[1]))
+sys.argv=sys.argv[1:]
+runpy.run_path(sys.argv[0],run_name='__main__')
+PY

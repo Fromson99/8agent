@@ -4,7 +4,6 @@ from pathlib import Path
 import uuid
 from .shortcut_repository import ShortcutRepository
 from .corrected_memory import encoded
-from .coordinator import system_request
 
 
 def capture(pipeline, question, documents, use_llm, scope, options, team_id, lease):
@@ -32,15 +31,20 @@ def capture(pipeline, question, documents, use_llm, scope, options, team_id, lea
               'public_question':options.get('external_public_question') is True}
     principal=options.get('principal') or {'user_id':'ephemeral:'+body['session_id'],
         'team_id':team_id or 'request','document_ids':body['document_ids'],'authenticated':False}
+    from ..team_scope import prepared_catalogue
+    if not set(body['document_ids']) <= prepared_catalogue(pipeline.store)['ids']:
+        raise ValueError('request includes unavailable or excluded document versions')
+    selection = getattr(getattr(pipeline.store, 'selection', None), 'fingerprint', None)
     options.update(case_body=body,principal=principal,_shortcut_ingress=True)
     from .shortcut_store import selected_store
     repo=ShortcutRepository(selected_store(options['runtime']))
     try:
         intake=repo.intake(body,principal)
-        noncase=not use_llm or system_request(question)
+        noncase=not use_llm
         if noncase and intake['status']=='COMPLETED' and intake['response']:
             saved=json.loads(intake['response'])
-            if saved.get('generation')==pipeline.store.manifest['store_sha256']:
+            if (saved.get('generation')==pipeline.store.manifest['store_sha256'] and
+                    saved.get('search_selection')==selection):
                 # System results contain no adopted legal judgment. Document ACL is
                 # still checked on every replay, and a new source generation misses.
                 if set(body['document_ids'])<=set(principal['document_ids']):return saved['envelope']
@@ -57,6 +61,7 @@ def capture(pipeline, question, documents, use_llm, scope, options, team_id, lea
                     {'intake_id':intake['id'],'run_id':value.get('run_id'),'legal_judgment':False},session=body['session_id'])
                 value={**value,'intake_id':intake['id'],'investigation_id':case['id']}
                 repo.db.execute("UPDATE sw_intake SET status='COMPLETED',response=? WHERE id=?",(
-                    encoded({'envelope':value,'generation':pipeline.store.manifest['store_sha256']}),intake['id']))
+                    encoded({'envelope':value,'generation':pipeline.store.manifest['store_sha256'],
+                             'search_selection':selection}),intake['id']))
         return value
     finally:repo.close()

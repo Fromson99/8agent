@@ -1,0 +1,40 @@
+# 별도 로그 조회 Dataiku Python 노트북에서 실행. 이관 셀과 다른 커널 사용.
+WORK_DIR = ""  # 빈 값은 정확히 한 기존 작업 폴더만 자동 선택
+WATCH = True   # False면 한 번 출력
+import json
+import time
+from pathlib import Path
+from IPython.display import clear_output
+if WORK_DIR:
+    work = Path(WORK_DIR).resolve(strict=True)
+else:
+    paths = [p for p in Path("/data/dataiku/design/jupyter-run/dku-workdirs/LEGAL_RAG").glob("*/legal-existing-zip-r2-work") if (p/"oracle-clean-r1/state.json").is_file()]
+    if len(paths) != 1:
+        print("후보:", [str(p) for p in paths])
+        raise RuntimeError("WORK_DIR에 기존 작업 폴더 절대경로를 입력하세요.")
+    work = paths[0]
+logs = work/"oracle-clean-r1"
+try:
+    while True:
+        clear_output(wait=True)
+        print("로그 위치:", str(logs), flush=True)
+        state_path = logs/"state.json"
+        if state_path.is_file():
+            if state_path.stat().st_size > 32*1024**2: raise RuntimeError("상태 파일 크기 오류")
+            state = json.loads(state_path.read_text())
+            print("상태:", state.get("status"), "오류:", state.get("error"))
+            print("진행:", json.dumps(state.get("phases", {}), ensure_ascii=False, indent=2))
+            print("미확정 묶음:", state.get("pending"))
+        for name in ("events.jsonl", "calls.jsonl"):
+            path = logs/name
+            if not path.is_file(): continue
+            with path.open("rb") as f:
+                f.seek(0, 2); size = f.tell(); offset = max(0, size-16384); f.seek(offset)
+                if offset: f.readline()
+                lines = f.read(16384).decode("utf-8", errors="replace").splitlines()[-5:]
+            print("최근 로그:", name)
+            for line in lines: print(line)
+        if not WATCH: break
+        time.sleep(10)
+except KeyboardInterrupt:
+    print("로그 조회만 종료했습니다.")

@@ -1,0 +1,9 @@
+<p>요청하신 <strong>Oracle 전체 9테이블 생성 SQL 통합본</strong>을 보냅니다.</p>
+<p>기존 원문 3개 + 자산/원문 릴리스 2개 + 직접 조회 4개, 총 9개입니다. 조회 인덱스 4개와 생성 전후 확인 SQL도 포함했습니다. 이전에 전달한 추가 2개/4개만의 SQL을 조합하는 대신 이번 <strong>LEGAL_ORACLE_ALL_9_TABLES_20261019_R1</strong> 전체본을 사용하시면 됩니다.</p>
+<ul><li>ZIP: SQL, 동일 내용 TXT, 실행 안내, 검증 기록, SHA-256 목록</li><li>SQL: 전체 생성문</li><li>TXT: SQL과 바이트가 같은 전체 생성문 별도 첨부</li></ul>
+<p><strong>실행 위치는 Dataiku의 AIDP SQL 노트북</strong>입니다. SIDDA 소유자 또는 해당 스키마 생성 권한을 가진 계정으로, 먼저 00번을 실행하여 기존 객체를 확인하세요. 없다고 확인한 객체의 생성문만 번호 순서대로 <strong>각각 별도 Query</strong>로 실행합니다. 이미 있는 테이블/인덱스는 구조를 대조한 뒤 해당 생성문을 건너뜁니다. 전체 파일을 하나의 Query로 실행하지 않습니다.</p>
+<p>테이블 owner는 <strong>SIDDA</strong>이고, ORDS 접속 별칭 <strong>b04</strong>와 다릅니다. 권한 GRANT 예시는 파일 끝에 주석으로 두었습니다. 권한 담당자가 실제 작업 계정을 확인한 후 필요한 문장만 실행합니다.</p>
+<p>ZIP을 GENOS Linux 코드스페이스에서 풀 경우, 실제 업로드한 TRANSFER 폴더에서 아래 명령을 사용합니다.</p>
+<pre>python3 -m zipfile -e ./LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.zip ./legal-oracle-all-9-20261019-r1</pre>
+<p>압축 해제 후 SQL 또는 TXT를 열어 Dataiku SQL 노트북에서 실행하세요. <strong>SQL/TXT를 bash로 실행하거나 Python 셀에 붙여넣는 파일이 아닙니다.</strong></p>
+<p>현재 코드의 DDL 계약과 대조했고 SQL/TXT 동일성 및 ZIP 파일 목록을 확인했습니다. 현장 Oracle/ORDS 실행은 미확인입니다. 테이블 생성 후 데이터 이관, 조회 데이터 게시, main 채널 활성화, GENOS 배포는 별도로 진행합니다. QUERY_STATE 테이블을 생성해도 기존 NFS 대화/대사 이력이 자동 이전되지는 않습니다.</p>

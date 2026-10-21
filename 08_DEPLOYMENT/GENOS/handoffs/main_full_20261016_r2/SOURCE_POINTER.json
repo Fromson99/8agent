@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "source-return-comparison-20261016-r1",
+  "generation": 81,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/source-return-comparison-20261016-r1/release.json",
+  "release_manifest_sha256": "0cc86ab9cf524f035e5e44fd7c7b50d27d5cecee5b7e8808cb503a0f5393991a",
+  "activated_at": "2026-10-16T08:18:46.085178+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "d6d553f5455f11f11adde56166139b53a6e94f6ee3b4e47e3b2363c558ad5bf0",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0846-source-return-boundary/실험/manifest.json",
+      "sha256": "a0b87f31df80a3b686b78f827497a43d4ce0788d9db6769e23ad83c7c93af719"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0846-source-return-boundary/README.md",
+      "sha256": "5544892ccb54c5fda152686b76e7fe3867b8fdd117e053485dd45ee894f4c590"
+    },
+    "arm": "qualified",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0846-source-return-boundary/artifacts/run-001/result.json",
+      "sha256": "558b0cee548dd84d0ac350354dcf0645ee16c547ec3da5ad22f260c623ae2899"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0846-source-return-boundary/artifacts/design/release-rebase.json",
+      "sha256": "54062e5bbef0749c674b143a9d8c7301879108767c73f123d72541bf6a528cef"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+# 이 TXT 전체를 현재 GENOS 터미널에 한 번에 붙여넣으세요.
+# 사진에서 완료한 add/rm/amend는 반복하지 않습니다.
+# 기존 ignore 패치 검사 → 원격 확인 → 수정된 main 커밋 하나 push 순서입니다.
+# Git 사용자명/비밀번호를 물으면 평소처럼 입력하세요.
+(
+set -Eeuo pipefail
+umask 077
+TASK_ROOT="${GENOS_CODE_ROOT:-/workspace}"
+TASK_GIT_DIR="$(git -C "$TASK_ROOT" rev-parse --absolute-git-dir)"
+TASK_LOG_DIR="$TASK_GIT_DIR/genos-push-records"
+[[ ! -L "$TASK_LOG_DIR" ]]
+mkdir -p "$TASK_LOG_DIR"
+TASK_LOG="$TASK_LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"; echo "종료코드=$TASK_RC 로그=$TASK_LOG"' EXIT
+export GENOS_NEXT_CODE_ROOT="$TASK_ROOT"
+TASK_PACKAGE="$(python3 - <<'PY'
+import hashlib, json, os
+from pathlib import Path
+root = Path(os.environ["GENOS_NEXT_CODE_ROOT"]).resolve(strict=True)
+name = "GENOS_IGNORE_TRANSFER_20261020_R1"
+spec_pin = "b340cff395a775a350c59569b86eec2f4946fd9d8868e91e9656c7c22e17e19c"
+runner_pin = "7ec8917f064e8bb153f80cd0096437ab2512e04e28051bd5330873a2169a0b99"
+bases = {Path.cwd(), root, Path.home()}
+# TRANSFER 경로를 추정하지 않고 현재 위치·checkout·홈의 바로 아래에서 찾습니다.
+for base in list(bases):
+    try:
+        bases.update(p for p in base.iterdir()
+                     if p.name.lower() == "transfer" and p.is_dir() and not p.is_symlink())
+    except OSError:
+        pass
+candidates = {p for base in bases for p in (base, base / name)
+              if p.name == name and not p.is_symlink()}
+valid = set()
+for package in candidates:
+    try:
+        if any(p.is_symlink() for p in [package, *package.parents]):
+            continue
+        for filename, pin in (("PATCH_SPEC.json", spec_pin), ("apply_ignore.py", runner_pin)):
+            path = package / filename
+            if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != pin:
+                raise ValueError("수정된 패키지")
+        state_path = package / "STATE.json"
+        if state_path.is_symlink():
+            continue
+        state = json.loads(state_path.read_bytes())
+        if (Path(state["root"]).resolve() == root and state["phase"] == "APPLIED"
+                and state["spec_sha256"] == spec_pin):
+            valid.add(package.resolve())
+    except (OSError, ValueError, KeyError):
+        continue
+if len(valid) != 1:
+    raise SystemExit("중단: 적용된 ignore 패키지를 하나로 확인하지 못했습니다. 기존 패키지와 STATE.json을 보존하고 이 로그를 확인하세요.")
+print(next(iter(valid)))
+PY
+)"
+echo "검증할 패키지: $TASK_PACKAGE"
+[[ "$(git -C "$TASK_ROOT" branch --show-current)" == "main" ]]
+TASK_HEAD="$(git -C "$TASK_ROOT" rev-parse HEAD)"
+python3 "$TASK_PACKAGE/apply_ignore.py" gate --root "$TASK_ROOT"
+
+TASK_REMOTE="$(git -C "$TASK_ROOT" remote | awk '$0=="risk_team" || $0=="risk-team" {print}')"
+if [[ -z "$TASK_REMOTE" || "$TASK_REMOTE" == *$'\n'* ]]; then
+  echo "중단: risk_team 또는 risk-team 원격을 하나로 확인하지 못했습니다."
+  exit 1
+fi
+TASK_PARENT="$(git -C "$TASK_ROOT" rev-parse HEAD^)"
+TASK_REMOTE_HEAD="$(git -C "$TASK_ROOT" ls-remote --exit-code "$TASK_REMOTE" refs/heads/main | awk 'NR==1 {print $1}')"
+if [[ "$TASK_REMOTE_HEAD" == "$TASK_HEAD" ]]; then
+  echo "이미 원격 main과 일치합니다. 다시 push하지 않습니다."
+else
+  if [[ "$TASK_REMOTE_HEAD" != "$TASK_PARENT" ]]; then
+    echo "중단: 원격 main 상태가 마지막 사진과 다릅니다. 강제 push하지 않습니다."
+    exit 1
+  fi
+  [[ "$(git -C "$TASK_ROOT" rev-parse HEAD)" == "$TASK_HEAD" ]]
+  [[ -z "$(git -C "$TASK_ROOT" status --porcelain=v1 --untracked-files=no)" ]]
+  git -C "$TASK_ROOT" push --no-follow-tags "$TASK_REMOTE" "$TASK_HEAD:refs/heads/main"
+fi
+TASK_VERIFIED="$(git -C "$TASK_ROOT" ls-remote --exit-code "$TASK_REMOTE" refs/heads/main | awk 'NR==1 {print $1}')"
+[[ "$TASK_VERIFIED" == "$TASK_HEAD" ]]
+printf 'PUSH_CONFIRMED=%s\n' "$TASK_HEAD"
+echo "Git 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다."
+echo "MAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요."
+)

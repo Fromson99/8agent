@@ -101,6 +101,10 @@ def validate_saved(repo,result):
             if result['answer']['text']!=expected_text or result['answer']['unresolved']!=[{'reason':v} for v in assessment['limitations']]:
                 raise ContractError('public answer differs from verified rendering')
             for claim in assessment['claims']:verify_span_claim(claim,list(originals.values()))
+            if assessment.get('source_excerpt_reply'):
+                from .completion_contracts import verify_source_excerpt_reply
+                verify_source_excerpt_reply(assessment,
+                    [s for s in originals.values() if s['source_id'] in selection['final_ids']])
         selected=set(json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['SELECT'],)).fetchone()[0])['final_ids'])
         for claim in [e for c in assessment['claims'] for e in claim_evidence(c)]:
             if claim['source_id'] not in selected or claim['source_id'] not in originals or not claim['quote'].strip() or claim['quote'] not in originals[claim['source_id']]['text']:
@@ -120,7 +124,10 @@ def _ref(db,ref,stage):
             not set(choice['concept_ids'])<={c['id'] for c in offer['concepts']} or
             not set(choice['relation_ids'])<={r['id'] for r in offer['relations']}):raise ContractError('unoffered domain selection')
     if stage=='ASSESS':
-        for claim in [e for c in json.loads(row[0])['claims'] for e in claim_evidence(c)]:
+        assessment = json.loads(row[0])
+        references = [e for c in assessment['claims'] for e in claim_evidence(c)]
+        references += assessment.get('source_excerpt_reply', {}).get('sources', [])
+        for claim in references:
             presented=db.execute('''SELECT 1 FROM evidence_dependency d JOIN evidence_unit e USING(evidence_id)
               JOIN presentation p USING(evidence_id) JOIN model_attempt a USING(view_id)
               WHERE d.kind=? AND d.entity_id=? AND d.version=? AND e.source_id=? AND a.status='SUCCEEDED' LIMIT 1''',
@@ -130,13 +137,19 @@ def _ref(db,ref,stage):
 
 def validate_current(repo,result,store,*,allowed_documents=None):
     validate_saved(repo,result)
+    from .knowledge_bridge import validate_publication
+    validate_publication(result,store)
     from ..storage import verify_store_binding
-    current=json.loads((store.path/'manifest.json').read_text())
+    oracle=getattr(store,'is_oracle_query',False)
+    if oracle: store.check_unchanged()
+    current=store.manifest if oracle else json.loads((store.path/'manifest.json').read_text())
     for key in ('generation_id','store_sha256','export_allowed'):
         if current[key]!=repo.binding[key]:raise ContractError('unified source generation changed')
-    try:verify_store_binding(store.path/'store.sqlite',current['store_sha256'])
+    try:
+        if not oracle: verify_store_binding(store.path/'store.sqlite',current['store_sha256'])
     except ValueError as exc:raise ContractError('unified source store changed') from exc
     allowed=set(current['scope']['document_version_ids'])
+    if oracle: allowed &= store.oracle_request.sources.allowed
     c=_commit(repo);principal=json.loads(c['principal_json'])
     if principal.get('team_scope_bound') is True:
         from ..team_scope import select_documents

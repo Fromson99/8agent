@@ -1,0 +1,117 @@
+# Dataiku의 새 Python 노트북에 전체를 붙여 실행합니다. SQL 노트북/b​​ash용이 아닙니다.
+# Managed Folder에 코드 ZIP + download 폴더 안의 모든 part 파일 + parts-manifest.json을 업로드합니다.
+# 각 파일을 폴더 최상위에 올리고 아래 ID/연결명을 설정하세요.
+ACTION = "restore"                   # restore → check → publish → status
+FOLDER_ID = "여기에_Managed_Folder_ID"
+ORACLE_CONNECTION = "여기에_Oracle_연결_이름"  # SQL 노트북에서 선택한 연결의 정확한 이름
+WORK_DIR = "./legal-query-transfer-r2-work"     # 재실행/커널 재시작에도 같은 영속 폴더 사용
+PUBLISH_SECONDS = 3600                # 1회 1시간, 최초 7일/누적100만 SQL 한도 유지
+
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+import zipfile
+import dataiku
+
+_CODE_ZIP = "LEGAL_ORACLE_QUERY_PARTS_20261020_R2.zip"
+_CODE_PREFIX = "LEGAL_ORACLE_QUERY_PARTS_20261020_R2/"
+_PINS_HASH = "__PINS_HASH__"
+
+def _download(folder,name,destination,*,expected_sha=None,max_bytes=None):
+    if destination.is_symlink():raise RuntimeError('입력 경로가 링크입니다: '+str(destination))
+    if destination.exists():
+        h=hashlib.sha256()
+        with destination.open('rb') as f:
+            while b:=f.read(1024**2):h.update(b)
+        if expected_sha is not None and h.hexdigest()==expected_sha:return
+        if expected_sha is None:return  # Code ZIP is independently checked against pinned executable members.
+        raise RuntimeError('기존 파일 해시가 다릅니다. 기록을 보존하고 원본 파일을 확인하세요: '+name)
+    temporary=destination.with_name(destination.name+'.partial')
+    if temporary.exists():
+        # Preserve prior interrupted bytes; never use them as completed input.
+        temporary=destination.with_name(destination.name+'.partial-'+os.urandom(6).hex())
+    h=hashlib.sha256();count=0
+    with folder.get_download_stream('/'+name) as source,temporary.open('xb') as target:
+        while b:=source.read(1024**2):
+            count+=len(b)
+            if max_bytes is not None and count>max_bytes:raise RuntimeError('파일 크기 제한 초과: '+name)
+            if shutil.disk_usage(destination.parent).free<512*1024**2:raise RuntimeError('가용 디스크 512MiB 미만. 부분 파일은 보존합니다.')
+            h.update(b);target.write(b)
+        target.flush();os.fsync(target.fileno())
+    if expected_sha is not None and h.hexdigest()!=expected_sha:raise RuntimeError('다운로드 해시 불일치: '+name)
+    temporary.rename(destination)
+
+
+def _prepare(folder,work):
+    work.mkdir(parents=True,exist_ok=True)
+    _download(folder,_CODE_ZIP,work/_CODE_ZIP,max_bytes=4*1024**2)
+    code=work/'code';code.mkdir(exist_ok=True)
+    with zipfile.ZipFile(work/_CODE_ZIP) as z:
+        member=_CODE_PREFIX+'CODE_PINS.json'
+        if z.getinfo(member).file_size>1024**2:raise RuntimeError('코드 목록 크기 오류')
+        raw=z.read(member)
+        if hashlib.sha256(raw).hexdigest()!=_PINS_HASH:raise RuntimeError('코드 ZIP 버전/해시 불일치')
+        pins=json.loads(raw)
+        for relative,sha in pins.items():
+            rel=Path(relative)
+            if rel.is_absolute() or '..' in rel.parts or rel.suffix!='.py':raise RuntimeError('코드 경로 오류')
+            info=z.getinfo(_CODE_PREFIX+relative)
+            if info.file_size>4*1024**2:raise RuntimeError('코드 파일 크기 오류')
+            data=z.read(info)
+            if hashlib.sha256(data).hexdigest()!=sha:raise RuntimeError('코드 파일 해시 오류: '+relative)
+            target=code/relative;target.parent.mkdir(parents=True,exist_ok=True)
+            if target.is_symlink() or not target.resolve().is_relative_to(code.resolve()):raise RuntimeError('코드 경로 링크 오류')
+            if target.exists():
+                if target.read_bytes()!=data:raise RuntimeError('기존 실행 코드가 다릅니다: '+relative)
+            else:target.write_bytes(data)
+        (code/'CODE_PINS.json').write_bytes(raw)
+    spec=importlib.util.spec_from_file_location('query_transport_entry',code/'entry.py')
+    entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
+    return entry.load()
+
+
+def _run():
+    if ACTION not in {'restore','check','publish','status'}:raise RuntimeError('ACTION: restore / check / publish / status')
+    if not FOLDER_ID or FOLDER_ID.startswith('여기에_'):raise RuntimeError('FOLDER_ID를 설정하세요.')
+    folder=dataiku.Folder(FOLDER_ID);work=Path(WORK_DIR).resolve()
+    pack=_prepare(folder,work)
+    if ACTION=='restore':
+        parts=work/'parts';parts.mkdir(exist_ok=True)
+        _download(folder,'parts-manifest.json',parts/'parts-manifest.json',max_bytes=32*1024**2)
+        info=pack.bounded_json(parts/'parts-manifest.json')
+        if info.get('format')!=pack.FORMAT:raise RuntimeError('데이터 묶음 형식 오류')
+        entries=info.get('parts',[])
+        if not 1<=len(entries)<=100000:raise RuntimeError('조각 목록 오류')
+        for i,item in enumerate(entries,1):
+            if item['name']!=f'query-data.zip.part{i:06d}' or not 0<item['bytes']<=pack.CHUNK_BYTES:raise RuntimeError('조각 이름/크기 오류')
+            pack.q.pin(item['sha256'])
+            _download(folder,item['name'],parts/item['name'],expected_sha=item['sha256'],max_bytes=item['bytes'])
+            print('다운로드 확인:',i,'/',len(entries),flush=True)
+        restored=pack.restore(parts,work/'restored')
+        return {'status':'RESTORED_AND_VERIFIED','db':restored}
+    if not ORACLE_CONNECTION or ORACLE_CONNECTION.startswith('여기에_'):raise RuntimeError('ORACLE_CONNECTION을 설정하세요.')
+    from lawrag.pipeline.oracle_query_dataiku import DataikuClient
+    client=DataikuClient(dataiku.SQLExecutor2(connection=ORACLE_CONNECTION),ORACLE_CONNECTION,dataiku.default_project_key())
+    binding,target=client.identity();print('Oracle 연결 대상:',json.dumps(target,ensure_ascii=False))
+    path=work/'restored'/pack.DB_NAME
+    if not path.is_file():raise RuntimeError('먼저 ACTION="restore"를 완료하세요.')
+    meta=pack.verify_db(path)
+    logs=work/'oracle-import'/meta['query_manifest']['source_release_id']
+    print('실행 기록:',str(logs),flush=True)
+    return pack.import_db(client,path,target_binding=binding,directory=logs,action=ACTION,seconds=PUBLISH_SECONDS)
+
+QUERY_TRANSFER_RESULT = None
+try:
+    QUERY_TRANSFER_RESULT = _run()
+    print(json.dumps(QUERY_TRANSFER_RESULT,ensure_ascii=False,indent=2))
+    print('이번 작업은 QUERY_ROW/QUERY_RELEASE 적재입니다. ACTIVE 전환·STATE 이력 이관·서빙 배포는 별도입니다.')
+except Exception as exc:
+    # Dataiku platform exceptions may contain connection details. Package exceptions are already sanitized.
+    known=isinstance(exc,RuntimeError)
+    message=str(exc) if known else type(exc).__name__
+    print('중단:',message)
+    raise RuntimeError(message) from None

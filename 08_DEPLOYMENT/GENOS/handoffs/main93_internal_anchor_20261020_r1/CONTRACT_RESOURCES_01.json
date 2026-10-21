@@ -1,0 +1,26 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/checks.py"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 28.02600700399489,
+  "peak_group_rss_bytes": 696324096,
+  "min_available_bytes": 13050417152,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/CONTRACT_RESOURCES_01.json",
+    "rss_gib": 6.0,
+    "as_gib": 8.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-B",
+      "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/checks.py"
+    ]
+  },
+  "samples_sha256": "fd523e3eaeed916c37e4068164c212ad2b10c08d119e9a5b4d25eb495a7d2d84"
+}

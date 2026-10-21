@@ -18,7 +18,7 @@ class WikiExecution(UnifiedExecution):
             ids=result.pop('history_ids',[])
             if values:wiki_recall.choose(self.host,ids,self.s.work.event)
             return result
-        if self.host.shortcut_flags.get('core_evidence_route'):
+        if self.host.shortcut_flags.get('core_evidence_route') or self.host.shortcut_flags.get('basis_live'):
             # Core routes replace replaying every historical exploration choice.
             return super().invoke(system,data,schema,phase,timeout=timeout)
         memory=getattr(self.host,'procedure',None)
@@ -54,7 +54,7 @@ class WikiExecution(UnifiedExecution):
 
     def plans(self):
         repo=self.host.shortcut
-        if not self.principal.get('authenticated'):return []
+        if not self.principal.get('authenticated') or self.host.shortcut_flags.get('basis_live'):return []
         # Use this goal's effective facts only. Predicates in another branch of
         # the same investigation cannot supply an unstated current precondition.
         import re
@@ -85,11 +85,12 @@ class WikiExecution(UnifiedExecution):
             old=self.host.shortcut.db.execute('SELECT parent FROM node WHERE id=?',(parts['SELECT']['id'],)).fetchone()
             if old and old['parent']!=parts['READ']['id']:
                 previous=dict(parts['SELECT']['payload'])
-                previous.pop('investigation_state',None)
+                from .workflow_execution import has_reentry
+                if not has_reentry():previous.pop('investigation_state',None)
                 parts={**parts,'SELECT':{**parts['SELECT'],'payload':previous}}
                 self.s.work.event('CORE_ROUTE_CURRENT_SELECTION',{'reason':'current READ replaces older completed selection',
                     'read_node':parts['READ']['id']})
-        if stage=='RECALL' and self.host.shortcut_flags.get('core_evidence_route'):
+        if stage=='RECALL' and self.host.shortcut_flags.get('core_evidence_route') and not self.host.shortcut_flags.get('basis_live'):
             from .core_evidence_route import lookup
             path=lookup(self.host,state,self.principal,question=utterance)
             from . import wiki_recall

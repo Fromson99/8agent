@@ -22,6 +22,10 @@ def start_worker(runtime, application):
     path=selected_store(runtime)
     if not path.exists() or os.environ.get('AD_WORKER_ENABLED','1')=='0':return
     def compile_item(job,item,guard):
+        from .oracle_query_service import request_context
+        with request_context():
+            return _compile_item(job,item,guard)
+    def _compile_item(job,item,guard):
         state=Store(path)
         try:
             row=state.db.execute('SELECT revision FROM sw_investigation WHERE id=?',(item['investigation'],)).fetchone()
@@ -59,6 +63,12 @@ def intercept(data,runtime,application):
     if not chat and q.strip()!='[AD모드 시작]':return None
     if not (os.environ.get('TEAM_ID') or os.environ.get('AD_WORKSPACE')) and os.environ.get('GENOS_RUNTIME_DIR') and q.strip()!='[AD모드 시작]':return None
     try:
+        from .basis_links.chat import active_context
+        if q.strip() in ('근거 관계 목록','근거 연결 목록','basis_link 목록') or active_context(selected_store(runtime),workspace(),str(channel),str(chat or '')):
+            app=application()
+            if getattr(app.state,'basis_chat',None):
+                basis=app.state.basis_chat(body)
+                if basis is not None:return {'status':200,'body':basis}
         result=handle(selected_store(runtime),workspace(),str(channel),str(chat or ''),q,
                       str(body.get('request_id') or uuid.uuid4().hex),interpret=interpret)
         if result is not None:

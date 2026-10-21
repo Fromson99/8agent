@@ -1,0 +1,50 @@
+GENOS 최신 문서 선택 — 2026-10-15 R1
+
+이번 패키지는 파일명 비교용 R3에서 확정한 예외를 실제 RAG와 신규 데이터 파이프라인에 연결합니다.
+새로 전달하는 GENOS_LATEST_SELECTION_20261015_R1.zip을 사용하세요.
+구버전 원본/기존 DB는 보존합니다. 현재 세대에는 서명된 선택표를 만들고 런타임에서 최신 표시와 검색 제한을 함께 적용합니다.
+신규 구조화는 최신 선택을 먼저 수행하고 is_latest=true를 구조화 결과와 문서 DB에 저장합니다.
+
+1. 실제 업로드한 TRANSFER 폴더를 현재 위치로 둡니다. 아래 명령의 경로는 그 위치 기준입니다.
+python3 -m zipfile -e ./GENOS_LATEST_SELECTION_20261015_R1.zip ./GENOS_LATEST_SELECTION_20261015_R1
+bash ./GENOS_LATEST_SELECTION_20261015_R1/GENOS_LATEST_SELECTION_20261015_R1_RUN.txt check
+bash ./GENOS_LATEST_SELECTION_20261015_R1/GENOS_LATEST_SELECTION_20261015_R1_RUN.txt install
+
+코드 적용 대상은 기존 ~/DEV Git checkout입니다. 다른 경로면 GENOS_DEV_ROOT를 실제 checkout으로 지정합니다.
+현재 GENOS_SERVING_PATHS와 세대 manifest 해시를 우선 확인합니다. NFS 세대를 추정하거나 CURRENT를 임의 변경하지 않습니다.
+실행 Python 경로/버전, 로그, 종료코드는 TRANSFER/latest-selection-r1-logs에 남습니다.
+전체 내규/남은 내규 비교는 로그의 COMPARE= 경로에 생성하는 COMPARE.html에서 양쪽으로 볼 수 있습니다. 같은 폴더의 CSV는 문서명+날짜만 담습니다.
+실행 상태/원본 백업/선택 계획/영수증은 TRANSFER/latest-selection-r1-state에 남습니다. 같은 위치에서 install 재실행할 수 있습니다.
+
+2. 상태 확인과 커밋
+bash ./GENOS_LATEST_SELECTION_20261015_R1/GENOS_LATEST_SELECTION_20261015_R1_RUN.txt status
+코드가 바뀐 파일 목록은 latest-selection-r1-state/STATUS.json의 backup 경로 안 receipt.json에 있습니다.
+기존 DEV에서 그 파일들만 검토·git add·commit 합니다. 다른 미완성 작업을 통째로 커밋하지 않습니다.
+다시 TRANSFER로 돌아와 아래를 실행합니다.
+bash ./GENOS_LATEST_SELECTION_20261015_R1/GENOS_LATEST_SELECTION_20261015_R1_RUN.txt gate
+
+3. gate 통과 뒤 해당 커밋을 Git push하고 GENOS 코드서빙 새 리비전을 배포합니다.
+코드서빙의 SSE 설정은 기존 배포 지침을 유지합니다. 최신 선택 적용 때문에 워크플로우 Python을 새로 붙여넣을 필요는 없습니다.
+검증은 워크플로우 테스트 화면에서 합니다. 코드 적용, 선택표 적용, Git push, 리비전 배포, 현장 테스트는 서로 다른 상태입니다.
+구버전 이름 검색/폴더 탐색/문서 직접 조회가 제외되는지, 남은 문서가 검색되는지 확인합니다.
+이미 실행 중이던 서버는 선택표 변경 감지 시 재시작을 요구합니다. 새 리비전으로 재시작하세요.
+
+예외는 FILENAME_EXCEPTIONS.json 한 파일로 관리합니다.
+- 붙여쓴 인덱스북운용준칙: 2026-05-29 선택. 띄어쓴 인덱스북 운용준칙: 모두 유지.
+- 대차업무준칙 2026-05-04, 주식운용준칙 2021-07-23, 투자리스크관리준칙 2016-01-11.
+- 삼성POP골든랩 관리준칙 2023년 5월 개정(최종).
+- 위탁증거금 징수지침 둘 다 유지. 별첨 번호는 별도 문서. 폴더 내 한 파일은 유지.
+- 그룹위험관리 세칙은 기존 자동 최신 판단을 유지합니다.
+- 날짜가 불명확해 비교표에서 검토 보존된 문서도 검색용 is_latest=true로 유지하고 검토 사유를 함께 기록합니다.
+이 표시는 RAG의 선택 상태입니다. 법률상 시행일이 확인됐다는 뜻은 아닙니다.
+예외 파일을 바꾸면 새 plan/check를 거쳐 install합니다. 예외를 삭제해도 일반 날짜/문서명 규칙은 남습니다.
+이번 예외 파일은 신규 구축 시 --filename-exceptions 옵션에도 동일하게 전달하세요. 기본은 DEV/00_SYSTEM/FILENAME_EXCEPTIONS.json입니다.
+GENOS의 전체 RAW 구축 진입점은 python3 06_TOOLS/pipeline.py build-all --run-id <새실행ID>이며 최신 선택이 기본입니다.
+기존 구버전을 담은 base-generation 합치기는 거부합니다. 기존 RAW와 완료 세대는 삭제하지 않습니다.
+
+원복
+bash ./GENOS_LATEST_SELECTION_20261015_R1/GENOS_LATEST_SELECTION_20261015_R1_RUN.txt undo
+선택표와 DEV 변경을 영수증으로 원복한 뒤 기존 커밋/코드서빙 리비전으로 재배포합니다.
+알 수 없는 코드 변경이나 세대/선택표 해시 변경은 덮어쓰지 않고 실패로 남습니다.
+
+로컬 검증은 모의 원문과 기존 로컬 세대에서 수행합니다. 현재 세션은 GENOS 망에 접근할 수 없으므로 현장 문서 수와 배포 성공은 현장 로그로 확인해야 합니다.

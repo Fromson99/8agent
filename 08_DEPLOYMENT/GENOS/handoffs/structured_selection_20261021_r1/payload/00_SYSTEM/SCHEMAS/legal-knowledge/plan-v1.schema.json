@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-knowledge:plan-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "review-plan-v1"
+    },
+    "binding": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "FIELD",
+                  "METHOD",
+                  "APPLICATION",
+                  "WIKI_LINK",
+                  "SHORTCUT_LINK",
+                  "WIKI",
+                  "SHORTCUT",
+                  "CONCEPT",
+                  "DEFINITION"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "content_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "revision",
+              "content_hash"
+            ],
+            "additionalProperties": false
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "kind": {
+            "enum": [
+              "FIELD",
+              "METHOD",
+              "APPLICATION",
+              "WIKI_LINK",
+              "SHORTCUT_LINK"
+            ]
+          },
+          "application_status": {
+            "enum": [
+              "MATCHED",
+              "PARTIAL",
+              "NOT_APPLICABLE",
+              "UNRESOLVED"
+            ]
+          },
+          "semantic_status": {
+            "const": "UNASSESSED"
+          },
+          "execution_status": {
+            "enum": [
+              "READY",
+              "PARTIAL"
+            ]
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "maxItems": 64
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "capability": {
+                  "enum": [
+                    "LOCATE_SOURCE",
+                    "READ_SOURCE",
+                    "FOLLOW_EXPLICIT_REFERENCE",
+                    "ENUMERATE_SCOPE",
+                    "READ_VERSION_CHAIN",
+                    "EVALUATE_TYPED_EXPRESSION"
+                  ]
+                },
+                "after": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+                  },
+                  "maxItems": 32
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "capability",
+                "after"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "document_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+                },
+                "version": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "content_hash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "document_id",
+                "version",
+                "locator",
+                "content_hash"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "wiki_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "FIELD",
+                    "METHOD",
+                    "APPLICATION",
+                    "WIKI_LINK",
+                    "SHORTCUT_LINK",
+                    "WIKI",
+                    "SHORTCUT",
+                    "CONCEPT",
+                    "DEFINITION"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "content_hash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "kind",
+                "id",
+                "revision",
+                "content_hash"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "policies": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "maxItems": 32
+          },
+          "decision_receipts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "maxItems": 32
+          },
+          "role": {
+            "const": "REVIEW_GUIDANCE_NOT_EVIDENCE"
+          }
+        },
+        "required": [
+          "ref",
+          "title",
+          "description",
+          "kind",
+          "application_status",
+          "semantic_status",
+          "execution_status",
+          "missing",
+          "steps",
+          "source_refs",
+          "wiki_refs",
+          "policies",
+          "decision_receipts",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 12
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "maxItems": 64
+    },
+    "fallback_owner": {
+      "const": "EXISTING_RESEARCH_EXECUTOR"
+    },
+    "model_calls": {
+      "const": 0
+    },
+    "plan_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "binding",
+    "items",
+    "unresolved",
+    "fallback_owner",
+    "model_calls"
+  ],
+  "additionalProperties": false
+}

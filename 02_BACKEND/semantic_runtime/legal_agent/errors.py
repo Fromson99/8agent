@@ -13,6 +13,10 @@ class ContractError(LegalAgentError):
 class ToolExecutionError(LegalAgentError):
     code = 'SOURCE_TOOL_ERROR'
 
+    def __init__(self, message, *, outcome=None):
+        super().__init__(message)
+        self.tool_outcome = outcome
+
 
 class ProposalError(LegalAgentError):
     code = 'MODEL_PROPOSAL_INVALID'

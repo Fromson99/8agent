@@ -28,13 +28,13 @@ def accepted(value, options):
     ('신고할 수 있다.', 'PERMISSION', 'OBLIGATION'),
     ('보고하여야 한다.', 'OBLIGATION', 'PROHIBITION'),
     ('양도하여서는 아니 된다.', 'PROHIBITION', 'PERMISSION')])
-def test_source_id_binds_original_and_corrects_only_label(quote, actual, wrong):
+def test_source_id_binds_original_without_replacing_model_label(quote, actual, wrong):
     options = [{'id': 'S1', 'source_id': 's', 'text': quote}]
     p = proposal(quote, wrong); original = deepcopy(p)
     out = accepted(p, options); claim = out['claims'][0]
     norm = claim['answer_content']['rule']['norms'][0]
-    assert norm['source_quote'] == quote and norm['kind'] == actual and norm['text'] == quote
-    assert p == original and out['model_proposal']['norm_label_corrections'][0]['model_kind'] == wrong
+    assert norm['source_quote'] == quote and norm['kind'] == wrong and norm['text'] == quote
+    assert p == original and out['model_proposal']['norm_label_corrections'] == []
     rendered = cc.compose(out, cc.default_plan(out)); cc.verify_composition(out, rendered)
     v5.verify_content(rendered['claims'][0])
     p['claims'][0]['rule']['norms'][0]['source_quote'] = quote
@@ -57,9 +57,9 @@ def test_bound_original_receipt_cannot_be_substituted():
     bad = deepcopy(out['claims'][0]); bad['span_receipts'][0]['text'] = '다른 원문'
     with pytest.raises(ContractError, match='receipt'): v5.verify_content(bad)
 
-def test_same_source_role_is_written_once_even_after_label_correction():
+def test_exact_duplicate_source_role_is_written_once():
     p = proposal(kind='OBLIGATION'); second = deepcopy(p['claims'][0]); second['claim_id'] = 'C2'
-    second['rule']['norms'][0]['kind'] = 'PERMISSION'; p['claims'].append(second)
+    p['claims'].append(second)
     with pytest.raises(ProposalError, match='Repeated source clause'):
         accepted(p, [{'id': 'S1', 'source_id': 's', 'text': '신고할 수 있다.'}])
 
@@ -71,10 +71,12 @@ def test_different_effects_may_share_a_mixed_original_paragraph():
     p['claims'].append(second)
     assert len(accepted(p, [{'id': 'S1', 'source_id': 's', 'text': quote}])['claims']) == 2
 
-def test_authored_text_reversal_is_not_silently_corrected():
-    with pytest.raises(ProposalError, match='wording reverses'):
-        accepted(proposal('신고하여야 한다.', 'OBLIGATION'),
-                 [{'id': 'S1', 'source_id': 's', 'text': '신고할 수 있다.'}])
+def test_authored_interpretation_and_original_remain_separate():
+    out = accepted(proposal('신고하여야 한다.', 'OBLIGATION'),
+                   [{'id': 'S1', 'source_id': 's', 'text': '신고할 수 있다.'}])
+    norm = out['claims'][0]['answer_content']['rule']['norms'][0]
+    assert norm['text'] == '신고하여야 한다.' and norm['source_quote'] == '신고할 수 있다.'
+    assert out['model_proposal']['norm_label_corrections'] == []
 
 class SpanTransport(SingleTransport):
     def send_once(self, *, body, ticket):

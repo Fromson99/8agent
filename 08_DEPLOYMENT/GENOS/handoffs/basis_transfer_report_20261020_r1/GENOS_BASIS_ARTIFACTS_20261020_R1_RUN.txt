@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -uo pipefail
+HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p ./basis-artifacts-logs || exit 1
+LOG="./basis-artifacts-logs/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+trap 'RC=$?; printf "%s\n" "$RC" > "$LOG.exit"; printf "BASIS_ARTIFACT_EXIT=%s LOG=%s\n" "$RC" "$LOG"' EXIT
+exec > >(tee -a "$LOG") 2>&1
+python3 "$HERE/runner.py" "${1:-report}" "${@:2}"

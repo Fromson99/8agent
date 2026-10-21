@@ -1,0 +1,6 @@
+{
+  "finding": "After renaming its index.lock to index, the previous finally block could unlink a new lock created by a following Git process.",
+  "fix": "Release flag prevents removing any later owner lock.",
+  "action": "Full8scenarios repeated on changed product; add deterministic concurrent-lock reproduction.",
+  "old_delivery_sent": false
+}

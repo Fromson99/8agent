@@ -1,0 +1,89 @@
+{
+  "status": "PASS",
+  "scope": "Technical delivery verification of selected MAIN82 plus its qualified non-serving dependencies.",
+  "main_release": "basis-link-lifecycle-20261016-r1",
+  "main_generation": 82,
+  "main_pointer_changed": false,
+  "selected_main_files": 370,
+  "selected_main_files_unchanged": 370,
+  "workflow_versions": {
+    "risk_team_compare_workflow": "1.9.0",
+    "internal_basis_discovery_workflow": "1.0.0"
+  },
+  "payload_files": 1284,
+  "installed_contracts_passed": 247,
+  "replacement_gate_contracts_passed": 17,
+  "installation_scenarios": {
+    "prior_main81": {
+      "commands": 22,
+      "transcript_sha256": "1777c7b19142198b216d0cc60e2df8e9c57e5c43561dce786ca4d15625732694",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "01a79242bf0f26b929319fb809ba66e95ee9176165e62d45fdb0141b05eb2fe3",
+      "code_root": "/tmp/pytest-of-jin/pytest-93/test_actual_delivery_prior_mai0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "legacy_interrupted": {
+      "commands": 23,
+      "transcript_sha256": "ac11d6a2451bff8d96ac0ccabaa0e928a17654ee6b9386c1d887cc2c02de012d",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "9bb96cdfb0e333be0f9da53a040fa435911c3320244c26b772988a4d82645d70",
+      "code_root": "/tmp/pytest-of-jin/pytest-89/test_actual_delivery_legacy_in0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "oracle_dp": {
+      "commands": 21,
+      "transcript_sha256": "44c7d4562ebbcb3e61d94e67f508a196e620ac1eb08386715379bdb01bbdb52c",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "f9fff14248bc39d4fce8a9c108681c7497f9f31d618b566f21f592fe77f10091",
+      "code_root": "/tmp/pytest-of-jin/pytest-89/test_actual_delivery_oracle_dp0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    }
+  },
+  "python311": {
+    "status": "PASS",
+    "compiled_modules": 733,
+    "workflow_editor": true,
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11"
+  },
+  "actual_local_service": {
+    "checks": 10,
+    "code_root": "08_DEPLOYMENT/RELEASES/basis-link-lifecycle-20261016-r1/code",
+    "service_entry": "service.py",
+    "service_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+    "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+    "record_sha256": "1e4bc2d0ae7330c68c3a3311ad3179c11858833d32a30a3b5e8612775b9d90cb"
+  },
+  "actual_model_calls": 0,
+  "genos_field_deployment": "NOT_VERIFIED",
+  "default_install_data_access": "Existing fixed path config and small generation manifest only; no DB/index/selection mutation.",
+  "oracle_dp": "Selected Oracle serving code and qualified publishing helpers retained; runtime tested with simulated Oracle, not internal Oracle.",
+  "test_harness_sha256": {
+    "test_delivery.py": "5c60a0b89319a33a9134ad14fe0c0dc590d54b79197f0f4284e2bcce7a1da142",
+    "installed_contract_runner.py": "83716baa120e7dd9528672b00926f2d1eeb53e01ab67afad9081e60d7be3fb88",
+    "code_smoke.py": "98cd97c85364c725dbfbfaa297a6c177c5f763e7d67738359e5c2d9226130ce1",
+    "active_consumer.py": "621c13c6525adaa6b437d264b117f6333f44b90f3c4e5bc4e7de12b31c56441e"
+  },
+  "failures_preserved": [
+    "preliminary-1/FAILURE.json",
+    "preliminary-2/FAILURE.json",
+    "preliminary-3/FAILURE.json"
+  ],
+  "limitations": [
+    "No GENOS network, internal model, production push, revision or workflow editor access.",
+    "Synthetic protocol tests do not certify legal correctness, speed improvement or field timeout resolution.",
+    "Existing GENOS_SERVING_PATHS binding is required by the full-code installer.",
+    "Full generation gate verifies the existing generation; Oracle provider/release must also be checked in the field workflow.",
+    "Final transfer archive execution is recorded separately in FINAL_VERIFICATION.json."
+  ]
+}

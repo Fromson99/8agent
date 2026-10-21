@@ -1,0 +1,204 @@
+{
+  "revision": "GENOS_LENGTH_RECOVERY_20261015_R2",
+  "parent": "GENOS_LENGTH_RECOVERY_20261014_R1",
+  "parent_patch_spec_sha256": "617106a442213e35499df93f2acf99bbf0aa99941f2a29291a393f6a56cd43d4",
+  "parent_source_binding_sha256": "2050d9733d450a6128813fd9e1f0818f051ae86f465525342f7193c9d22e3462",
+  "source_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+    "02_BACKEND/semantic_runtime/legal_agent/errors.py": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca",
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+    "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+    "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+    "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": "2476d84568d8649cd95d7370e15f4b3130fb7d6314d758255ad94304831be12a",
+    "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+    "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+    "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+    "02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5",
+    "02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+    "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": "404d999c2778152100ac80d7c1ddf71cf3f7bb33f42c722e5473b718a33be10e",
+    "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "219ce8f367963717297ac412ae540338e73b6822ebba9dd7033e00d29599011f",
+    "02_BACKEND/PIPELINE/engine_host.py": "3d1c620068183e738b750015e41d16ea5640b3c954e3629074ccc4f4b04f702a",
+    "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json": "68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26",
+    "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+    "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": "a6e1f227755a15e8d5972745c41c6863d92723e6fb77f39800fb6c5dd7dd2d91"
+  },
+  "field_variants": {
+    "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": {
+      "253747b10e3997b5527ec6e7b3e1c182627a286ce265f00cdf9466cba4de7ddc": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+      "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": {
+      "083d30588a602dc45fa4b6bf6f8983a85ce98a74fdb95609b8b3d74bf128b6b6": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+      "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/errors.py": {
+      "a7134f7673a92a60f26468bd35259877c72f6ebd975a8faf7ed26b238914369e": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": {
+      "da4c121572957961ab926d7df78f88ee5828e4941d4d84cbbc82378e3f4348d1": "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243",
+      "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243": "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243",
+      "e84e118a23453a68b02251dc806b5fca17a2fc40d5065f98526668eaf6786975": "13139a43341757cc50cd19aa3362464c183d462f528be31005c9633659ffd243",
+      "d9712fa822820f3138a3ef020c09d2e5149c5a942af8cf60d72da3aa05e2c39e": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca",
+      "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py": {
+      "73c6e21c0c34a286691119b105ebedbf430376db9cb8c892c018b89aca7db3f1": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+      "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": {
+      "b94578cb4d7d325117c7c1cfd14baece810e5ae098949c37082046890277b25c": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "8d2f681179d5cdc0ad78339002441c271de5272a4acf85f395de628af0807e85": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "e788e25584338a5a2e1956c940452a6877f338bc7009bb1344835b9d5ee4b6f4": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": {
+      "c8c82f538459f3c194bdb6a46f47c2c91f5e0fcfd9fb3b4d82919c0d1b1d5ea4": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+      "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+      "e11189043917eabca5d13526115f07b48e268f2eeec7a27f37efc09fecb3f6b7": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": {
+      "180215d1dde6578322463561a675fff4a041b37cd9df8070e17421bfd209636e": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": {
+      "bfc4cdd3a8c7e7ea19c8e01f1a0d87ce688327d561e35b98da36f4ecf9643d42": "9282534313a1c522e04dac3324cdbbd0e9922e81f41c9ed9b866d2eee9480163",
+      "9282534313a1c522e04dac3324cdbbd0e9922e81f41c9ed9b866d2eee9480163": "9282534313a1c522e04dac3324cdbbd0e9922e81f41c9ed9b866d2eee9480163",
+      "8a75b3693d94b14b647e6f84dccfb3e60e9df64a3e6e14cc2d59178bc913ed7b": "82cbd33daea466254d8a04cf65c7ac8310c8d7bd680dc088f34e7cd105daeefb",
+      "82cbd33daea466254d8a04cf65c7ac8310c8d7bd680dc088f34e7cd105daeefb": "82cbd33daea466254d8a04cf65c7ac8310c8d7bd680dc088f34e7cd105daeefb",
+      "6b4c99e3499d73d45ecb47ac383eb3ee3a942ade25efd22824c63b58d9bb22df": "5046bdf62aa6f4322de494713122355740667d7542826c2c058fc94f5eb284e7",
+      "5046bdf62aa6f4322de494713122355740667d7542826c2c058fc94f5eb284e7": "5046bdf62aa6f4322de494713122355740667d7542826c2c058fc94f5eb284e7",
+      "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": {
+      "6a6252cf219070b256d83b141ee24831aa6405cf82e5b46fe5a6fafadacbf9ae": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": {
+      "d1c2cb73de886b2a151e33eb75d7080523fd119a57e34547a345feaf6c43cc7b": "6ffa2da31a39cf888ffc3cb7945a0037ce864415b7fd5f16029081162b71a063",
+      "6ffa2da31a39cf888ffc3cb7945a0037ce864415b7fd5f16029081162b71a063": "6ffa2da31a39cf888ffc3cb7945a0037ce864415b7fd5f16029081162b71a063"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": {
+      "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+      "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+      "cbce8a429fc27481982f873d602cae6088dfdcfd56781e89cfc51ef431ed300f": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": {
+      "f9ec457d35c1d3dc4a6db378c0e5f4d525d76a0bd58c2793958dd5e0fba5f632": "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd",
+      "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd": "a110fe1724274c578dddfebe768ebf868a7e54526785e6c3134b7f938062f7fd",
+      "c053146db39ff857dff19847d9f428bd64e582cc6d07994c015e31754348844c": "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0",
+      "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0": "3f8b741517c05224f937f6ccbeb25f7a1cb387cec33da6ece19ad65c742d5eb0",
+      "b3ab8472cbf83a879ca1df06a670c16ed9d11bddccd32a01401f6f35dbccaa28": "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598",
+      "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598": "14d71574c51d8cbfb17ae8d67f739d92d82a562cd29e5b73fd60fdffceec4598"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": {
+      "70a8cd6c092abb236797aabb836ad022f4ce035703db8988c4c1a504a4e75c70": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py": {
+      "ABSENT": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+      "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+      "4396f765c779c07aa49ec58370d4a4ab8dac1217b3d75a3a2dca0358eb586c06": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py": {
+      "ABSENT": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5",
+      "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py": {
+      "ABSENT": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py": {
+      "ABSENT": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b",
+      "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": {
+      "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631",
+      "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": {
+      "b1fe0e8de84e1440d7f0f9be806dce1369691c0258a408c11dbbf4df52ba91cf": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+      "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+      "6ad853336f54b3d0daeed554f1609655d1421ecd08a666e933e137503b81225f": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "171bbed93f04233005c75b496164c14a79d6da099e4cd548c8ef42307b74e33c": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837",
+      "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": {
+      "96271cf17b178c01a1042f02082cead338e2d38243fe00d00d45b5d8192213e1": "404d999c2778152100ac80d7c1ddf71cf3f7bb33f42c722e5473b718a33be10e"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": {
+      "b2548b95303dd6eda836ab0cf92ef9dedcb47fdab144a27082edc38419262ae8": "60e2bc8bf49e8125e514d64428026ca5ad906a0cdc1fed49e89f45df0cfe5172",
+      "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea": "219ce8f367963717297ac412ae540338e73b6822ebba9dd7033e00d29599011f"
+    },
+    "02_BACKEND/PIPELINE/engine_host.py": {
+      "4e827fc06caf459e98d8322e77eeb68380d9bd2b3ba5a5fbd1cfdc23dad9c6c2": "3d1c620068183e738b750015e41d16ea5640b3c954e3629074ccc4f4b04f702a"
+    },
+    "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json": {
+      "ABSENT": "68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26"
+    },
+    "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json": {
+      "ABSENT": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc"
+    },
+    "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": {
+      "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2": "a6e1f227755a15e8d5972745c41c6863d92723e6fb77f39800fb6c5dd7dd2d91"
+    }
+  },
+  "known_predecessors": 1320,
+  "product_blobs_unchanged": true,
+  "input_and_output_signatures_unchanged": true,
+  "prerequisite": [
+    "GENOS_SCHEMA_RECOVERY_20261014_R1 or supported later cumulative inventory"
+  ],
+  "schema_preimages": [
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json",
+      "sha256": "8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755",
+      "bytes": 6216,
+      "origin": {
+        "git_commit": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+        "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json"
+      }
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json",
+      "sha256": "68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26",
+      "bytes": 19721,
+      "origin": {
+        "sealed_delivery": "GENOS_LENGTH_RECOVERY_20261014_R1",
+        "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json"
+      }
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json",
+      "sha256": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+      "bytes": 4791,
+      "origin": {
+        "git_commit": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+        "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json"
+      }
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json",
+      "sha256": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+      "bytes": 4791,
+      "origin": {
+        "sealed_delivery": "GENOS_LENGTH_RECOVERY_20261014_R1",
+        "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json"
+      }
+    }
+  ],
+  "field_status": "NOT_VERIFIED"
+}

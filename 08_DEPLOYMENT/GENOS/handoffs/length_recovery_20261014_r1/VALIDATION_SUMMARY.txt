@@ -1,0 +1,13 @@
+길이 복구·계약 실패 수정 누적 R1 검증 — 2026-10-14
+로컬 MAIN66 / length-recovery-20261015-r1 반영 및 실제 service.service 확인 완료.
+작업/검증 후보/선택 릴리스308파일 동일; 원문·모델·검색 설정 유지.
+사전 동결296계약 및896회귀 모두 통과. 기존4실패 해결, 실패/skip0.
+정상 출력6400 유지, 법령 탐색length 수정1회만12800. 원래296계약은 길이192·host경로64·해석된별칭경로8·실제로컬어댑터32조합.
+ADR0784 final validation 통과. 전체 graph는 과거8오류 그대로·추가0.
+현장 설치 모의2구성: 계약/API 1148개 통과, 각 구성에서 기존 표시 정책 기대 차이1실패(패치 전 동일 재현), 새 회귀/skip0.
+실제 실행 TXT32명령: check/apply/reapply/verify/undo 및 변조거부4회.
+실제 service.service localhost TLS부팅2회, 같은 committed checkout의 generation gate2회 통과.
+지원 코드 inventory 1320개. 제품파일27개와 기존 코드 pin만 갱신.
+현장 숏컷/진단/로그 변형은 보존하며 wiki recall을 켜지 않음.
+모델 추론0회·GENOS접속0회. 현장 commit/push/리비전/워크플로우 재질의는 미확인.
+길이 복구는 코드/합성API로 확인. 사진의 실제내부모델 재질의는 미확인. 현장 구형PIPELINE의 없는위키/공통카탈로그 선언은 필수로 요구하지 않으며 존재하는 필드타입/알수없는 필드 차단은 유지.

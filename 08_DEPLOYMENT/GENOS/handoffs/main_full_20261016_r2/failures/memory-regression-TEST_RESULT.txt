@@ -1,0 +1,89 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________________ test_actual_delivery[prior_main76] ______________________
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py:85: in test_actual_delivery
+    run([R/'.venv/bin/python',H/'installed_contract_runner.py',root,
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py:49: in run
+    assert (out.returncode==0)==ok,out.stdout+out.stderr
+E   AssertionError: ........................................................F.F.F.F......... [ 76%]
+E     F.....................                                                   [100%]
+E     =================================== FAILURES ===================================
+E     _ test_u01_u02_full_question_correction_restore_confirmation_legal_wiki_new_session _
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:157: in test_u01_u02_full_question_correction_restore_confirmation_legal_wiki_new_session
+E         history=ok(client.post('/v1/rag/memory/query',json=body))['events']
+E                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:102: in ok
+E         assert response.status_code==200,response.text
+E     E   AssertionError: {"request_id":"3ba95b7e56c748b09f21f08d19c5f0ee","answer_status":"failed","message":"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)","failure_reason":"technical","display_policy_revision":"public-display-v4","error_code":"422"}
+E     E   assert 422 == 200
+E     E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E     ________________ test_u05_presentation_keeps_confirmed_judgment ________________
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:200: in test_u05_presentation_keeps_confirmed_judgment
+E         before=ok(client.post('/v1/rag/memory/query',json={'query_kind':'experience','experience_id':kid}))
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:102: in ok
+E         assert response.status_code==200,response.text
+E     E   AssertionError: {"request_id":"6788d195927c4ca7b907cd2767706b2d","answer_status":"failed","message":"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)","failure_reason":"technical","display_policy_revision":"public-display-v4","error_code":"422"}
+E     E   assert 422 == 200
+E     E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E     ___ test_u04_relink_reassesses_current_case_and_preserves_source_experience ____
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:227: in test_u04_relink_reassesses_current_case_and_preserves_source_experience
+E         assert ok(client.post('/v1/rag/memory/query',json={'query_kind':'experience','experience_id':kid}))['experience_id']==kid
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:102: in ok
+E         assert response.status_code==200,response.text
+E     E   AssertionError: {"request_id":"9d9d1b7b86264292a3a9fc8be31959f3","answer_status":"failed","message":"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)","failure_reason":"technical","display_policy_revision":"public-display-v4","error_code":"422"}
+E     E   assert 422 == 200
+E     E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E     _____________ test_u07_wiki_failure_retains_authority_and_rebuilds _____________
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:254: in test_u07_wiki_failure_retains_authority_and_rebuilds
+E         assert ok(client.post('/v1/rag/memory/query',json={'query_kind':kind}))['pages'][0]['experience_id']==kid
+E                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:102: in ok
+E         assert response.status_code==200,response.text
+E     E   AssertionError: {"request_id":"cee2b83faa834ddf914236b4d5c78822","answer_status":"failed","message":"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)","failure_reason":"technical","display_policy_revision":"public-display-v4","error_code":"422"}
+E     E   assert 422 == 200
+E     E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E     ____ test_u01_source_scope_correction_recorrection_restores_original_event _____
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:333: in test_u01_source_scope_correction_recorrection_restores_original_event
+E         history=ok(client.post('/v1/rag/memory/query',json={'query_kind':'history','question_id':gid,'session_id':'s'}))['events']
+E                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     /home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py:102: in ok
+E         assert response.status_code==200,response.text
+E     E   AssertionError: {"request_id":"9df0d2b158994d1bb3c4b8ee19ca139c","answer_status":"failed","message":"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)","failure_reason":"technical","display_policy_revision":"public-display-v4","error_code":"422"}
+E     E   assert 422 == 200
+E     E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E     =============================== warnings summary ===============================
+E     ../../../../../home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345
+E       /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+E         self._mark_plugins_for_rewrite(hook, disable_autoload)
+E     
+E     ../../../../../home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+E       /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+E         from starlette.testclient import TestClient as TestClient  # noqa
+E     
+E     06_TOOLS/EXPERIMENTS/adr_0846/test_boundaries.py::test_empty_partial_bounded_and_interrupted_sources[boundary-01]
+E       /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/pecab/_tokenizer.py:265: RuntimeWarning: overflow encountered in scalar add
+E         from_pos_data.costs[idx]
+E     
+E     -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+E     =========================== short test summary info ============================
+E     FAILED ../../../../../home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u01_u02_full_question_correction_restore_confirmation_legal_wiki_new_session
+E     FAILED ../../../../../home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u05_presentation_keeps_confirmed_judgment
+E     FAILED ../../../../../home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u04_relink_reassesses_current_case_and_preserves_source_experience
+E     FAILED ../../../../../home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u07_wiki_failure_retains_authority_and_rebuilds
+E     FAILED ../../../../../home/jin/8-AGENT/05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u01_source_scope_correction_recorrection_restores_original_event
+E     5 failed, 89 passed, 1 deselected, 3 warnings in 50.89s
+E     INSTALLED_CONTRACT_IMPORTS PASS; modules=227
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['/home/jin/8-AGENT/.venv/bin/python', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main_full...t\n5 failed, 89 passed, 1 deselected, 3 warnings in 50.89s\nINSTALLED_CONTRACT_IMPORTS PASS; modules=227\n', stderr='').returncode
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py::test_actual_delivery[prior_main76]
+1 failed, 1 warning in 88.29s (0:01:28)

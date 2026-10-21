@@ -95,6 +95,10 @@ class ShortcutCases(CaseRepository):
             command=super().resolve(context)
             if not context['goals'] and command['action']=='START' and not self.flags.get('core_evidence_route'):
                 self.procedure.save('command',context['utterance'],data,command,decision='MODEL_AND_COMMAND_VALIDATOR')
+        # The resolver's exhausted-repair result is a terminal clarification,
+        # not a full executable command. Match Memory._execute's consumer.
+        if command['action']=='CLARIFY':
+            return {'status':'CLARIFY','answer':None,'reason':command['reason']}
         self.admit(command,context)
         if command['action']=='START' and context['goals'] and not body.get('investigation_id'):
             # The new-case decision is semantic, but the relink and provenance are transactional.

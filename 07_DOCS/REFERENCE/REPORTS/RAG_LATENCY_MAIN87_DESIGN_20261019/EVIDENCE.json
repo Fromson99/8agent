@@ -1,0 +1,408 @@
+{
+  "schema_version": "rag-latency-design-evidence-v1",
+  "created_at": "2026-10-19T02:57:28.061602+00:00",
+  "scope": "Read-only extraction of existing observations; no new model calls, replay, scoring, or product changes.",
+  "active_release": "cm-read-continuity-20261019-r1",
+  "active_generation": 87,
+  "sources": [
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "bytes": 1445,
+      "sha256": "00c14e392c4c4947972fe7d5ff22ee7a7dd7026acf475c97f32e2fede55138a2"
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/release.json",
+      "bytes": 70226,
+      "sha256": "b3e22f04193a2084d22684ce3339df5920cdb956343bf5594faac8b72a9a1d85"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/result.json",
+      "bytes": 13048,
+      "sha256": "b4e295a5ac43e4a2f848445736ca6bf8ac97623097d7402b70f51ac1b99068ac"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/call-summary.json",
+      "bytes": 23021,
+      "sha256": "9fa94a00f6a911ca14a83d46117afa2c92fbd365f976d5eb9c273a4f6767b127"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/canonical/001-output.json.gz",
+      "bytes": 546,
+      "sha256": "d0cd6898e63ec8ecaef6096e1130cdeed8865bc4bf0e8b1d118158ae70e925aa"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/canonical/002.json.gz",
+      "bytes": 2814,
+      "sha256": "f5aa8f9315fa1df3ee268f4af77edc637f3b154bed24429d6866a3fb96f54d6b"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/canonical/003.json.gz",
+      "bytes": 3436,
+      "sha256": "6e190a1b3df1672f2a4e689fc90923cba3238ab562152889d6c3cbf658291996"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/canonical/003-output.json.gz",
+      "bytes": 300,
+      "sha256": "d29d34fb5d01bad05834d230e59c41414ee1b20b19aba82e359f3a232376d875"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/canonical/011.json.gz",
+      "bytes": 5900,
+      "sha256": "a5de0bdac5ce894619adbf55e3b55799110eeee26847951b977edb20ec1e3952"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/run-001/charter-quorum/audit.json",
+      "bytes": 58192,
+      "sha256": "34233bdc84e96cac30a5728306f53d1437e20a6ede35c2bb8150c21612a31f1e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0900-main87-charter-stateless-trace/artifacts/resource-live.json",
+      "bytes": 702,
+      "sha256": "c5422d4cf8c8624c31de3f5eff3d320754a4c70dece38494d2a0b35ea9ea96e4"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-040/request.json",
+      "bytes": 1852,
+      "sha256": "117e2fa773b0731eedd1b3fdf7bbc2c26be53713821a3afe2508e3ca286be6c2"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-040/result.json",
+      "bytes": 433451,
+      "sha256": "3d3fffa9d063565141a5c62f4ce57d061f3a4cf6a97a2a30604e3ba105a59ab9"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-040/raw.tar.gz",
+      "bytes": 4052681,
+      "sha256": "6021e9a5c7e94322eee7280e985f42921ccc68f4d058486b224e10252ff0f090"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/observations/cm-040.json",
+      "bytes": 26132,
+      "sha256": "48e53ea78334a1dd3d3e209a7c3d5cddcfcd8006d3229b89f8300ed850bfb28d"
+    },
+    {
+      "path": "06_TOOLS/EXPERIMENTS/adr_0900/live.py",
+      "bytes": 12398,
+      "sha256": "fc6c073d844bbcd335dde03c3f1ca73502fdddf84566f3f0bd671485c1bfafe3"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "bytes": 1902,
+      "sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "bytes": 32798,
+      "sha256": "db0b28306ef61df22b50527e148741b027a26036b5c0a5445f5699e36add44b2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py",
+      "bytes": 43961,
+      "sha256": "217386350bdd26b0b3ba80f1e3d3e0a19c592a9338e74eb73ac6840cde14ea2e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "bytes": 174214,
+      "sha256": "39e020e96866e648a9ab4aa8f42685e7bf6e7cc57ecc2ea9671d8158128a088d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "bytes": 16424,
+      "sha256": "57e160842f7e309f64f8ffbb15dd3e426e8ae4527e8a6660941b9b1a4ea17ef3"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "bytes": 30456,
+      "sha256": "da2875fcff8d3d70b76315d1e18546f167731d368370efac2e0483ff4b1380be"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "bytes": 16559,
+      "sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "bytes": 37986,
+      "sha256": "97dd9351a945e71cc00bada11cc8641e590b81e16abae4f65ad4521c70e534a5"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "bytes": 40801,
+      "sha256": "edb52ef33ce7c9f31ca6ab01ea58ccda64b9dd7a48e6bf2dac1efc0048ee0914"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/execution_metrics.py",
+      "bytes": 4002,
+      "sha256": "23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/query_latency.py",
+      "bytes": 898,
+      "sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "bytes": 66913,
+      "sha256": "75736b29c30337433301329479d8e664d1fa10ea0894af18e9ed3a25905ab5b0"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "bytes": 114394,
+      "sha256": "7ac611bb55dac65a3ef1cf7d333316bcb77beff24bb17dfc723ae3e13542e297"
+    }
+  ],
+  "working_frozen_manifest_checks": [
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "working_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+      "frozen_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+      "manifest_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "working_sha256": "db0b28306ef61df22b50527e148741b027a26036b5c0a5445f5699e36add44b2",
+      "frozen_sha256": "db0b28306ef61df22b50527e148741b027a26036b5c0a5445f5699e36add44b2",
+      "manifest_sha256": "db0b28306ef61df22b50527e148741b027a26036b5c0a5445f5699e36add44b2",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py",
+      "working_sha256": "217386350bdd26b0b3ba80f1e3d3e0a19c592a9338e74eb73ac6840cde14ea2e",
+      "frozen_sha256": "217386350bdd26b0b3ba80f1e3d3e0a19c592a9338e74eb73ac6840cde14ea2e",
+      "manifest_sha256": "217386350bdd26b0b3ba80f1e3d3e0a19c592a9338e74eb73ac6840cde14ea2e",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working_sha256": "39e020e96866e648a9ab4aa8f42685e7bf6e7cc57ecc2ea9671d8158128a088d",
+      "frozen_sha256": "39e020e96866e648a9ab4aa8f42685e7bf6e7cc57ecc2ea9671d8158128a088d",
+      "manifest_sha256": "39e020e96866e648a9ab4aa8f42685e7bf6e7cc57ecc2ea9671d8158128a088d",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "57e160842f7e309f64f8ffbb15dd3e426e8ae4527e8a6660941b9b1a4ea17ef3",
+      "frozen_sha256": "57e160842f7e309f64f8ffbb15dd3e426e8ae4527e8a6660941b9b1a4ea17ef3",
+      "manifest_sha256": "57e160842f7e309f64f8ffbb15dd3e426e8ae4527e8a6660941b9b1a4ea17ef3",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "working_sha256": "da2875fcff8d3d70b76315d1e18546f167731d368370efac2e0483ff4b1380be",
+      "frozen_sha256": "da2875fcff8d3d70b76315d1e18546f167731d368370efac2e0483ff4b1380be",
+      "manifest_sha256": "da2875fcff8d3d70b76315d1e18546f167731d368370efac2e0483ff4b1380be",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "working_sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "frozen_sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "manifest_sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "working_sha256": "97dd9351a945e71cc00bada11cc8641e590b81e16abae4f65ad4521c70e534a5",
+      "frozen_sha256": "97dd9351a945e71cc00bada11cc8641e590b81e16abae4f65ad4521c70e534a5",
+      "manifest_sha256": "97dd9351a945e71cc00bada11cc8641e590b81e16abae4f65ad4521c70e534a5",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "working_sha256": "edb52ef33ce7c9f31ca6ab01ea58ccda64b9dd7a48e6bf2dac1efc0048ee0914",
+      "frozen_sha256": "edb52ef33ce7c9f31ca6ab01ea58ccda64b9dd7a48e6bf2dac1efc0048ee0914",
+      "manifest_sha256": "edb52ef33ce7c9f31ca6ab01ea58ccda64b9dd7a48e6bf2dac1efc0048ee0914",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/execution_metrics.py",
+      "working_sha256": "23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784",
+      "frozen_sha256": "23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784",
+      "manifest_sha256": "23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/query_latency.py",
+      "working_sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+      "frozen_sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+      "manifest_sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "working_sha256": "75736b29c30337433301329479d8e664d1fa10ea0894af18e9ed3a25905ab5b0",
+      "frozen_sha256": "75736b29c30337433301329479d8e664d1fa10ea0894af18e9ed3a25905ab5b0",
+      "manifest_sha256": "75736b29c30337433301329479d8e664d1fa10ea0894af18e9ed3a25905ab5b0",
+      "all_equal": true
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "working_sha256": "7ac611bb55dac65a3ef1cf7d333316bcb77beff24bb17dfc723ae3e13542e297",
+      "frozen_sha256": "7ac611bb55dac65a3ef1cf7d333316bcb77beff24bb17dfc723ae3e13542e297",
+      "manifest_sha256": "7ac611bb55dac65a3ef1cf7d333316bcb77beff24bb17dfc723ae3e13542e297",
+      "all_equal": true
+    }
+  ],
+  "observations": {
+    "old": {
+      "request_question": "정관 변경의 결의요건은?\n(업무 문맥: 주주총회와 이사회의 권한 배분)",
+      "request_seconds": 82.5414909430001,
+      "model_calls": 7,
+      "model_transport_seconds": 72.39402881800015,
+      "residual_seconds": 10.147462124999947,
+      "http_status": 200,
+      "first_433_candidates": [
+        {
+          "article": "제433조 정관변경의 방법",
+          "preview": "①정관의 변경은 주주총회의 결의에 의하여야 한다.",
+          "read_action": "Tc4c25406b4e24de5060f7bfa1e62"
+        }
+      ]
+    },
+    "current": {
+      "request_seconds": 129.927367302,
+      "model_calls": 12,
+      "model_transport_seconds": 52.24517201800029,
+      "residual_seconds": 77.6821952839997,
+      "http_status": 422,
+      "worker_peak_rss_gib": 3.207660675048828,
+      "sampled_group_peak_rss_gib": 3.1980667114257812,
+      "min_system_available_gib": 10.357013702392578,
+      "guard_stop_reason": null,
+      "entry_search": {
+        "mode": "STRUCTURE",
+        "title_hint_ids": [],
+        "reason": "상법 내 정관 변경 및 주주총회 결의 관련 조문 위치를 먼저 확인한다."
+      },
+      "entry_queries": [
+        "상법 정관 변경 주주총회 결의 요건",
+        "상법 제368조 정관 변경 결의"
+      ],
+      "initial_read_candidates": [
+        {
+          "target": "Tbf09a2ab68d72b7b27ac3fdb8915",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제368조"
+        },
+        {
+          "target": "Ta1e60ab37b6ea8da84b90e0f89c4",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제204조"
+        },
+        {
+          "target": "T57f2363b13391079e00b2dd8c6a7",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제287조의16"
+        },
+        {
+          "target": "Tb3b9ce59e84cecf5836cd8312373",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제433조"
+        },
+        {
+          "target": "T925aa63c4f1730b1f0080b32ca61",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제434조"
+        },
+        {
+          "target": "Tdd79587468d956ec53d85cae9d44",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제435조"
+        },
+        {
+          "target": "T6bab06c59d3e2a2b06d56fffa52b",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제584조"
+        },
+        {
+          "target": "T7ec1f49437174e4bb42e326250b9",
+          "document": "external > financial_team > law > 상법",
+          "coordinate": "제585조"
+        }
+      ],
+      "read_selection_max": 4,
+      "actual_selected_ranges": 3,
+      "phases": [
+        {
+          "call": 1,
+          "phase": "request-entry",
+          "choice": null,
+          "seconds": 7.3530881379999755
+        },
+        {
+          "call": 2,
+          "phase": "source-law-navigation-1-read-choice",
+          "choice": "BROWSE_STRUCTURE",
+          "seconds": 3.658888255000079
+        },
+        {
+          "call": 3,
+          "phase": "source-law-navigation-2-read-choice",
+          "choice": "READ",
+          "seconds": 2.335466475999965
+        },
+        {
+          "call": 4,
+          "phase": "source-law-navigation-3-read-choice",
+          "choice": "BROWSE_STRUCTURE",
+          "seconds": 2.1318859830000747
+        },
+        {
+          "call": 5,
+          "phase": "source-law-navigation-4-read-choice",
+          "choice": "LOCATE",
+          "seconds": 4.06756178500018
+        },
+        {
+          "call": 6,
+          "phase": "source-law-navigation-5-read-choice",
+          "choice": "LOCATE",
+          "seconds": 2.1137519179999344
+        },
+        {
+          "call": 7,
+          "phase": "source-law-navigation-6-read-choice",
+          "choice": "READ",
+          "seconds": 14.66557651800008
+        },
+        {
+          "call": 8,
+          "phase": "source-law-navigation-7-read-choice",
+          "choice": "LOCATE",
+          "seconds": 2.99006674799989
+        },
+        {
+          "call": 9,
+          "phase": "source-law-navigation-8-read-choice",
+          "choice": "LOCATE",
+          "seconds": 2.170141817000058
+        },
+        {
+          "call": 10,
+          "phase": "source-law-navigation-9-read-choice",
+          "choice": "LOCATE",
+          "seconds": 2.378250535999996
+        },
+        {
+          "call": 11,
+          "phase": "source-law-navigation-9-read-choice-repair",
+          "choice": "LOCATE",
+          "seconds": 2.4715993580000486
+        },
+        {
+          "call": 12,
+          "phase": "memory-assess",
+          "choice": null,
+          "seconds": 5.908894486000008
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Different input wording/context, code, data, observation date and harness; not a controlled A/B.",
+    "Current generation hook runs gc.collect and malloc_trim after each generation; their time was not separately measured.",
+    "GENOS code revision, configuration, raw call trace and host memory are unavailable.",
+    "Title omission is proven by code and wire input; its causal share in navigation errors requires a frozen follow-up experiment."
+  ]
+}

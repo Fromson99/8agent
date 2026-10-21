@@ -283,8 +283,10 @@ def rollback(data, *, apply=False):
 
 
 def collect(data, bindings=None, *, only_internal=False, exclude_internal=False, teams=None, emit=print,
-            only_internal_pdf=False, limit=None):
+            only_internal_pdf=False, limit=None, latest_internal_versions=False, filename_exceptions=None):
     """Pair native/PDF inputs and keep origin/team/category names in source.sqlite."""
+    if latest_internal_versions and (only_internal_pdf or limit or exclude_internal):
+        raise ValueError('Latest internal versions require the full native internal input scope')
     cfg = config(data) or {'files': {}}
     exclusion_binding, exclusions = build_exclusions(data)
     from . import union_file
@@ -346,6 +348,10 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
     # and security contract; they cannot silently become independent documents.
     from .raw_preprocess import attach_derivatives
     rows = attach_derivatives(data, rows)
+    if latest_internal_versions:
+        from .document_representations import select_latest_internal
+        rows, versions = select_latest_internal(rows, filename_exceptions)
+        ignored.extend(versions)
     rows, alternatives = builder.select_representations(rows)
     ignored.extend(alternatives)
     unique = {}
@@ -382,6 +388,9 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
             'representation_policy': builder.REPRESENTATION_POLICY, 'all_corpus': True}
     report = {'files': rows, 'errors': errors, 'excluded': ignored, 'sources': {}, 'warnings': [],
               'aliases': [], 'manifest_hashes': {}, 'ok': bool(rows) and not errors, 'unique_documents': len(rows)}
+    if latest_internal_versions:
+        from .document_representations import LATEST_INTERNAL_POLICY
+        plan['internal_version_policy'] = report['internal_version_policy'] = LATEST_INTERNAL_POLICY
     if exclusion_binding:
         plan['input_exclusions'] = exclusion_binding
         report['input_exclusions'] = exclusion_binding

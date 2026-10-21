@@ -200,6 +200,10 @@ def test_related_originals_reach_shared_assessment_after_confirmation(connected,
     class Transport(ScriptedTransport):
         def send_once(self, *, body, ticket):
             v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
+            if phase in ('memory-resolve','memory-resolve-repair') and self.command.get('method_id')=='EXPERIENCE_REUSE' and 'EXPERIENCE_REUSE' not in v.get('offered_methods',{}):
+                # Shortcut v4 deliberately does not expose legacy experience
+                # candidates. Continue through normal investigation there.
+                self.command=command('CASE_START',document_scope_mode='AUTHORIZED',task='긴급 승인 예외',queries=['긴급 승인'],facts=[])
             if phase in ('source-unit-triage','source-unit-review'):
                 self.phases.append(phase)
                 if phase==self.fail:raise RuntimeError('injected source selection failure')

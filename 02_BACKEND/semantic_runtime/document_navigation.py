@@ -112,10 +112,10 @@ class EntityRegistry(previous.TypeRegistry):
 def interpretation_schema(registry):
     handles=sorted(registry.offered);h={'type':'string','enum':handles}
     scope_handles=[x for x in handles if registry.entities[x]['type'] in ('folder','document')]
-    binding=legal.obj({'expression':{'type':'string','minLength':1,'maxLength':120},'handle':h},['expression','handle'])
+    binding=legal.obj({'expression':{'type':'string','minLength':1},'handle':h},['expression','handle'])
     scope={'anyOf':[legal.enum('all','current'),{'type':'array','items':{'type':'string','enum':scope_handles},'minItems':1,'maxItems':16,'uniqueItems':True}]}
-    args=legal.obj({'intent':legal.enum('catalogue','tree','outline','content','mapping','clarify'),'scope':scope,'bindings':{'type':'array','items':binding,'maxItems':16},'title_query':{'type':'string','maxLength':500},'clarification':{'type':'string','maxLength':1000}},['intent','scope','bindings','title_query','clarification'])
-    lookup=legal.obj({'type':legal.enum('folder','document','term'),'query':{'type':'string','minLength':1,'maxLength':120},'offset':{'type':'integer','minimum':0}},['type','query'])
+    args=legal.obj({'intent':legal.enum('catalogue','tree','outline','content','mapping','clarify'),'scope':scope,'bindings':{'type':'array','items':binding,'maxItems':16},'title_query':{'type':'string'},'clarification':{'type':'string'}},['intent','scope','bindings','title_query','clarification'])
+    lookup=legal.obj({'type':legal.enum('folder','document','term'),'query':{'type':'string','minLength':1},'offset':{'type':'integer','minimum':0}},['type','query'])
     return legal.obj({'action':{'anyOf':[legal.action_schema('INTERPRET_QUERY',args),legal.action_schema('LOOKUP_ENTITIES',lookup)]}},['action'])
 
 def normalized_scope(args):
@@ -172,7 +172,9 @@ class MappedAgent(previous.TypedAgent):
                         scope=sorted({d for e in chosen for d in e['document_ids']} & set(authorized))
                     elif chosen:raise ValueError('scope handles require selected mode')
                     elif args['scope_mode']=='all':
-                        if not any(w in folders.normalized(q) for w in ('전체','모든','전부','우리db','데이터베이스전체')):raise ValueError('명시적인 전체 목록 요청이 아닙니다. 범위를 지정하지 않은 내용 질문이면 scope=current로 기존 허용 범위를 유지하세요. 폴더·문서를 명시했다면 해당 handle 배열을 선택하세요.')
+                        # The model chose the requested breadth. "all" is still
+                        # bounded by the authenticated authorized document set.
+                        scope=list(authorized)
                     elif args['intent'] in ('catalogue','tree','outline'):raise ValueError('목록 요청의 범위가 미확인입니다. 폴더·문서를 선택해 주세요.')
                     # A named folder/document binds a listing request. A content question may need
                     # other documents (a rule and its enforcement decree), so the mention becomes a

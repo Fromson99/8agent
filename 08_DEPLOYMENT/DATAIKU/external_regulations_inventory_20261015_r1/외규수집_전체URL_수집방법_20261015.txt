@@ -1,0 +1,459 @@
+외규 수집: 공식 API / 웹 수집 방식과 전체 URL (2026-10-15)
+
+공식 Open API 확인: 국가법령정보센터 DRF.
+기존 코드에서 확인한 웹 수집 경로: 금투협, 한국거래소, 금융위 회신사례. 공개 Open API 계약이 확인된 것은 아닙니다.
+기관 게시판/파일 제공 방식 추가 확인: 금융위·금감원 기관 자료, FIU, 한국은행, 국세청, 개인정보위, 예탁결제원.
+국민참여입법센터 REST는 사용자가 제공한 사진 목록 근거이며 현행 운영·인증 계약은 미확인입니다.
+
+수집 방식
+1. 공식 API: 목록 전체 페이지 → 문서/버전 ID → 본문 → 부칙·별표·첨부.
+2. 웹 수집: 목록 HTML 또는 웹사이트 조회용 JSON → 문서 링크/ID → 상세 HTML → HWP/HWPX/PDF 원본 다운로드.
+3. 세션이 필요한 사이트: 같은 원천 사이트 세션의 Cookie/Set-Cookie를 유지하고 페이지의 CSRF 토큰을 취득·갱신합니다. 사진의 고정 Cookie를 계속 재사용하는 방식으로 운영하지 않습니다.
+4. Dataiku에서 실행하려면 중계가 대상 URL·GET/POST form·헤더·원천별 세션·파일 응답을 지원해야 합니다. Dataiku의 requests.Session만으로 중계 뒤 원천 사이트의 세션 처리가 자동 해결되는 것은 아닙니다.
+5. 중계가 이 기능을 지원하지 않으면 외부 접근이 가능한 승인된 중계/수집 구간에서 크롤러를 실행하고 수집 파일·메타데이터를 내부로 전달하는 방식이 대안입니다. 해당 실행 기능/반입 방식은 담당자와 계약해야 합니다.
+6. 동적 화면은 먼저 실제 조회 요청을 확인합니다. 브라우저 실행이 꼭 필요한 경우에만 실행 환경을 추가하고, 비공개 자료는 승인된 접근/파일 공급 방식으로 확보합니다.
+
+URL 읽는 법
+- 아래는 도메인을 포함한 요청 주소입니다. {값}은 실제 조회 응답이나 승인된 설정으로 치환하는 자리표시자입니다.
+- POST 주소는 브라우저 주소창에 붙이는 것만으로 조회되지 않습니다. 각 항목의 요청값을 form 본문으로 보내야 합니다.
+- 첨부 ID·규정 버전 ID는 목록/상세에서 얻으므로 모든 파일의 최종 URL을 사전에 고정 나열할 수 없습니다.
+- 확인 수준이 사진/현재 코드인 경로는 현장 통신 성공이나 사이트의 공식 지원 보장을 뜻하지 않습니다.
+
+전체 요청 경로·용도 52개
+
+E01 | 법제처 | 법령 목록
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawSearch.do?target=law&OC={LAW_OC}&type=XML&query={검색어}&display=100&page={페이지}
+요청값: OC=<승인된 인증값>; target=law; type=XML; query=<정확한 명칭/검색어>; display=100; page=<페이지>
+응답: XML 목록
+확인 수준: 공식 문서+현행 코드
+방법/제한: 사진에는 일반 law/admrul/expc/prec 목록이 명시되지 않음. 명칭·유형·현행 여부·페이지 총수 검증; OC를 코드/로그에 노출하지 않음
+
+E02 | 법제처 | 행정규칙 목록
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawSearch.do?target=admrul&OC={LAW_OC}&type=XML&query={검색어}&display=100&page={페이지}
+요청값: OC=<승인된 인증값>; target=admrul; type=XML; query=<정확한 명칭/검색어>; display=100; page=<페이지>
+응답: XML 목록
+확인 수준: 공식 문서+현행 코드
+방법/제한: 사진에는 일반 law/admrul/expc/prec 목록이 명시되지 않음. 명칭·유형·현행 여부·페이지 총수 검증; OC를 코드/로그에 노출하지 않음
+
+E03 | 법제처 | 법령해석례 목록
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawSearch.do?target=expc&OC={LAW_OC}&type=XML&query={검색어}&display=100&page={페이지}
+요청값: OC=<승인된 인증값>; target=expc; type=XML; query=<정확한 명칭/검색어>; display=100; page=<페이지>
+응답: XML 목록
+확인 수준: 공식 문서+현행 코드
+방법/제한: 사진에는 일반 law/admrul/expc/prec 목록이 명시되지 않음. 명칭·유형·현행 여부·페이지 총수 검증; OC를 코드/로그에 노출하지 않음
+
+E04 | 법제처 | 판례 목록
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawSearch.do?target=prec&OC={LAW_OC}&type=XML&query={검색어}&display=100&page={페이지}
+요청값: OC=<승인된 인증값>; target=prec; type=XML; query=<정확한 명칭/검색어>; display=100; page=<페이지>
+응답: XML 목록
+확인 수준: 공식 문서+현행 코드
+방법/제한: 사진에는 일반 law/admrul/expc/prec 목록이 명시되지 않음. 명칭·유형·현행 여부·페이지 총수 검증; OC를 코드/로그에 노출하지 않음
+
+E05 | 법제처 | 시행일 기준 법령 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=eflaw&OC={LAW_OC}&type=XML&ID={법령ID}
+요청값: OC; target=eflaw; type=XML; ID=<법령ID> 또는 MST=<일련번호>&efYd=YYYYMMDD
+응답: XML 조문·부칙·별표
+확인 수준: 공식 문서+현행 코드
+방법/제한: ID는 현행 본문, 특정 버전은 MST+efYd. 미래 시행·조문별 시행일과 공포일을 구분
+
+E06 | 법제처 | 공포일 기준 법령 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=law&OC={LAW_OC}&type=XML&MST={법령일련번호}
+요청값: OC; target=law; type=XML; MST=<검색 결과의 법령일련번호>
+응답: XML
+확인 수준: 사진+현행 코드
+방법/제한: 공포본과 현재 시행본은 다를 수 있음; 사진 중계 target_url은 http 스킴. 코드의 https와 허용 URL 일치 확인
+
+E07 | 법제처 | 행정규칙 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=admrul&OC={LAW_OC}&type=XML&ID={해당목록의일련번호}
+요청값: OC; target=admrul; type=XML; ID=<행정규칙일련번호>
+응답: XML 조문·부칙·별표·첨부
+확인 수준: 공식 문서+사진+현행 코드
+방법/제한: 현재 어댑터는 ID에 일련번호 사용. 행정규칙ID와 혼동하지 않음; 공식 API에는 LID도 별도 존재
+
+E08 | 법제처 | 법령해석례 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=expc&OC={LAW_OC}&type=XML&ID={해당목록의일련번호}
+요청값: OC; target=expc; type=XML; ID=<목록에서 받은 일련번호>
+응답: XML
+확인 수준: 공식 문서+현행 코드
+방법/제한: 회신 당시 법령 버전과 현재 버전을 구분
+
+E09 | 법제처 | 판례 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=prec&OC={LAW_OC}&type=XML&ID={해당목록의일련번호}
+요청값: OC; target=prec; type=XML; ID=<목록에서 받은 일련번호>
+응답: XML
+확인 수준: 공식 문서+현행 코드
+방법/제한: 원문·일자·관련 조문 보존. 일부 국세청 판례는 공식 안내상 HTML만 지원하므로 형식별 예외 확인
+
+E10 | 법제처 | 별표·서식·첨부 파일
+방식: GET
+전체 URL: https://www.law.go.kr/LSW/flDownload.do
+요청값: 본문 XML의 실제 파일 링크 그대로 사용; flSeq 등 반환 값
+응답: HWP/PDF 등 바이너리
+확인 수준: 공식 본문 응답 필드+현행 코드
+방법/제한: 다운로드 URL을 추정 생성하지 않음. 다른 반환 경로/호스트는 별도 허용 확인. 파일명·크기·SHA-256 보존
+
+E11 | 법제처 | 법령 신구법 비교
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=oldAndNew
+요청값: OC; target=oldAndNew; 나머지 식별자·형식은 해당 공식 명세 확인
+응답: XML 등 명세 확인
+확인 수준: 사진에 포함
+방법/제한: 법령 본문·현행 목록·별표 수집을 대체하지 않음. 체계도는 하위 법령/위임 규정 누락 점검에 사용
+
+E12 | 법제처 | 법령 체계도
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=lsStmd
+요청값: OC; target=lsStmd; 나머지 식별자·형식은 해당 공식 명세 확인
+응답: XML 등 명세 확인
+확인 수준: 사진에 포함
+방법/제한: 법령 본문·현행 목록·별표 수집을 대체하지 않음. 체계도는 하위 법령/위임 규정 누락 점검에 사용
+
+E13 | 법제처 | 행정규칙 신구법 비교 목록
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawSearch.do?target=admrulOldAndNew
+요청값: OC; target=admrulOldAndNew; 나머지 식별자·형식은 해당 공식 명세 확인
+응답: XML 등 명세 확인
+확인 수준: 사진에 포함
+방법/제한: 법령 본문·현행 목록·별표 수집을 대체하지 않음. 체계도는 하위 법령/위임 규정 누락 점검에 사용
+
+E14 | 법제처 | 행정규칙 신구법 비교 본문
+방식: GET
+전체 URL: https://www.law.go.kr/DRF/lawService.do?target=admrulOldAndNew
+요청값: OC; target=admrulOldAndNew; 나머지 식별자·형식은 해당 공식 명세 확인
+응답: XML 등 명세 확인
+확인 수준: 사진에 포함
+방법/제한: 법령 본문·현행 목록·별표 수집을 대체하지 않음. 체계도는 하위 법령/위임 규정 누락 점검에 사용
+
+E15 | 금투협 | 현행 규정 트리
+방식: GET
+전체 URL: https://law.kofia.or.kr/service/law/lawCurrentPartTree.do
+요청값: 없음
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: seq/lawType/historySeq 추출; 현재 어댑터는 lawType=1 대상
+
+E16 | 금투협 | 분류별 목록
+방식: POST form
+전체 URL: https://law.kofia.or.kr/service/law/lawPartCurrentList.do
+요청값: page; selectedSeq=<분류ID>
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 모범규준 분류 3을 코드에서 전개. 모든 페이지 순회
+
+E17 | 금투협 | 현행 버전 식별
+방식: GET
+전체 URL: https://law.kofia.or.kr/service/law/lawView.do?seq={규정ID}&historySeq=0&gubun=cur&tree=part
+요청값: seq; historySeq=0; gubun=cur; tree=part
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 현재 historySeq 추출
+
+E18 | 금투협 | 규정 본문
+방식: GET
+전체 URL: https://law.kofia.or.kr/service/law/lawFullScreenContent.do?seq={규정ID}&historySeq={버전ID}
+요청값: seq; historySeq
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 조문·부칙·별표 링크 추출
+
+E19 | 금투협 | 전문 파일
+방식: GET
+전체 URL: https://law.kofia.or.kr/download.do?gubun=101&seq={버전ID}
+요청값: gubun=101; seq=<historySeq>
+응답: HWP
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 규정 고유 seq와 버전 historySeq 구분
+
+E20 | 금투협 | 별표 파일
+방식: GET
+전체 URL: https://law.kofia.or.kr/download.do?gubun=102&seq={첨부ID}
+요청값: gubun=102; seq=<본문 링크의 첨부ID>
+응답: HWP 등
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 첨부ID는 본문에서 취득; historySeq로 대체하지 않음
+
+E21 | 금투협 | 개정 이력 목록
+방식: POST form
+전체 URL: https://law.kofia.or.kr/service/revision/revisionlist.do
+요청값: page; searchValue=<규정명>
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 기준 버전과 모든 필요한 개정 이력 연결
+
+E22 | 금투협 | 개정 이력 상세
+방식: GET
+전체 URL: https://law.kofia.or.kr/service/revision/revisionView.do?historySeq={버전ID}
+요청값: historySeq
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 실제 버튼에서 개정문/신구대비표 링크 추출
+
+E23 | 금투협 | 개정문/신구대비표
+방식: GET
+전체 URL: https://law.kofia.or.kr/download.do
+요청값: gubun=104 또는 105; seq=<상세에서 받은 값>
+응답: HWP 등
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 개정 건별 가용 여부 확인
+
+E24 | 금투협 | 개정 메타정보
+방식: GET
+전체 URL: https://law.kofia.or.kr/service/law/revisionInfo.do?historySeq={버전ID}
+요청값: historySeq
+응답: HTML
+확인 수준: 현행 kofia.py의 웹 경로
+방법/제한: 코드는 개정일/부서 기록. 개정일을 시행일로 치환하지 않음
+
+E25 | 거래소 | 세션/토큰 생성
+방식: GET
+전체 URL: https://rule.krx.co.kr/out/index.do
+요청값: 없음
+응답: HTML + Cookie
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 같은 세션 유지; 중계가 Set-Cookie를 처리하는 방식 확인
+
+E26 | 거래소 | 규정 화면 초기화
+방식: POST form
+전체 URL: https://rule.krx.co.kr/out/regulation/regulationMain.do
+요청값: Menucd=BYLAW; index=law_rule; gbn=out; _csrf
+응답: HTML
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 상세 조회 전에 초기화
+
+E27 | 거래소 | 규정 트리
+방식: POST form
+전체 URL: https://rule.krx.co.kr/out/regulation/getTreeNode.do
+요청값: node=<0 또는 하위 노드>; statecd=현행; mtype=htree; Menucd=BYLAW; webgbn=OUT; gbnid=0; gbn2=out
+응답: JSON
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: X-CSRF-TOKEN/Referer/세션; bookid 얻음
+
+E28 | 거래소 | 규정 본문
+방식: POST form
+전체 URL: https://rule.krx.co.kr/out/regulation/regulationView.do
+요청값: bookid; noformyn=N; gbnid=0; mtype=htree; searchForm=; Menucd=BYLAW; _csrf
+응답: HTML
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: statehistoryid 추출
+
+E29 | 거래소 | 전문/개정문/신구대비표 파일정보
+방식: POST form
+전체 URL: https://rule.krx.co.kr/web/regulation/downloadRuleFile.do
+요청값: bookid; statehistoryid; filecd=JUN/GAE/SIN
+응답: JSON fileMap
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 실제 SERVERFILE/PCFILENAME을 다운로드에 사용
+
+E30 | 거래소 | 별표 화면 초기화
+방식: POST form
+전체 URL: https://rule.krx.co.kr/out/regulation/regulationList.do
+요청값: Menucd=BYLAW; mtype=byul; gbnid=BYUL; smType=byul; index=law_rule; gbn=out; _csrf
+응답: HTML
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 현재 코드가 먼저 여는 화면
+
+E31 | 거래소 | 별표/별지 등 목록
+방식: POST form
+전체 URL: https://rule.krx.co.kr/web/regulation/regulationListData.do
+요청값: start; limit=100; mtype=byul; Menucd=BYLAW; stit=규정; gbnid=BYUL/BYULSEO/BYULCH/BYULBU/BYULJI; gbn2=out
+응답: JSON
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 규정명/버전 정확히 대조; 현재 코드의 분류별 성공률은 별도 검증
+
+E32 | 거래소 | 다운로드 토큰 갱신
+방식: POST form
+전체 URL: https://rule.krx.co.kr/login/getData.do
+요청값: _csrf; X-CSRF-TOKEN 헤더
+응답: 토큰 응답
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: 현행 코드상 파일마다 새 토큰 취득; Cookie 세션 유지
+
+E33 | 거래소 | 실제 파일 다운로드
+방식: POST form
+전체 URL: https://rule.krx.co.kr/Download.do
+요청값: Serverfile; Pcfilename; folder=ATTACH; _csrf=<새 토큰>
+응답: HWP 등 바이너리
+확인 수준: 현행 krx.py의 웹 경로
+방법/제한: Referer 유지. HTTP 200이어도 HTML 오류이면 파일 수집 실패
+
+E34 | 금융위 해석 | 회신사례 목록
+방식: POST form
+전체 URL: https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do
+요청값: draw=1; start; length=100; searchCondition=all; searchKeyword=<법규명>
+응답: JSON recordsTotal/data
+확인 수준: 현행 fsc.py의 웹 경로
+방법/제한: 목록의 dataIdx/pastreqType을 상세 요청에 사용; 전체 페이지와 관련성 점검
+
+E35 | 금융위 해석 | 법령해석
+방식: POST form
+전체 URL: https://better.fsc.go.kr/fsc_new/replyCase/LawreqDetail.do
+요청값: lawreqIdx=<dataIdx>; muNo=117; stNo=11; actCd=R
+응답: HTML
+확인 수준: 현행 fsc.py의 웹 경로
+방법/제한: 첨부 파일 전량 다운로드는 현재 수집 코드에 별도 구현 필요
+
+E36 | 금융위 해석 | 비조치의견서
+방식: POST form
+전체 URL: https://better.fsc.go.kr/fsc_new/replyCase/OpinionDetail.do
+요청값: opinionIdx=<dataIdx>; muNo=117; stNo=11; actCd=R
+응답: HTML
+확인 수준: 현행 fsc.py의 웹 경로
+방법/제한: 첨부 파일 전량 다운로드는 현재 수집 코드에 별도 구현 필요
+
+E37 | 금융위 해석 | 2014년 이전 회신
+방식: POST form
+전체 URL: https://better.fsc.go.kr/fsc_new/replyCase/PastReqDetail.do
+요청값: pastreqIdx=<dataIdx>; muNo=117; stNo=11; actCd=R
+응답: HTML
+확인 수준: 현행 fsc.py의 웹 경로
+방법/제한: 첨부 파일 전량 다운로드는 현재 수집 코드에 별도 구현 필요
+
+E38 | 금융위 행정지도 | 시행 중 행정지도
+방식: GET (화면)
+전체 URL: https://better.fsc.go.kr/fsc_new/status/adminMap/OpertnList.do?muNo=127&stNo=11&tab1=0&tab2=1
+요청값: 실제 목록 AJAX·상세·첨부 요청 명세는 추가 조사
+응답: 웹 화면
+확인 수준: 공식 페이지 확인; 수집기 연결 미확인
+방법/제한: 시행일·존속기간·종료/연장 상태 보존. 예고와 시행 분리
+
+E39 | 금융위 행정지도 | 행정지도 예고
+방식: GET (화면)
+전체 URL: https://better.fsc.go.kr/fsc_new/status/adminMap/PrvntcList.do?muNo=127&stNo=11&tab1=0&tab2=0
+요청값: 실제 목록 AJAX·상세·첨부 요청 명세는 추가 조사
+응답: 웹 화면
+확인 수준: 공식 페이지 확인; 수집기 연결 미확인
+방법/제한: 시행일·존속기간·종료/연장 상태 보존. 예고와 시행 분리
+
+E40 | 입법센터 | 입법예고 목록
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ogLmPp.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E41 | 입법센터 | 입법예고 목록(수정일 기준)
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ogLmPpMod.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E42 | 입법센터 | 행정예고 목록
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ptcpAdmPp.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E43 | 입법센터 | 입법예고 상세
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ogLmPp/{ogLmPpSeq}/{mappingLbicId}/{announceType}.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E44 | 입법센터 | 입법예고 상세(수정일 기준)
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ogLmPpMod/{ogLmPpSeq}/{mappingLbicId}/{announceType}.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E45 | 입법센터 | 행정예고 상세
+방식: GET
+전체 URL: https://www.lawmaking.go.kr/rest/ptcpAdmPp/{ogAdmPpSeq}/{mappingAdmRulSeq}/{announceType}.xml
+요청값: 제공 사진 기준; 목록/상세 필수값·페이지·인증·첨부 명세는 담당자 확인
+응답: XML
+확인 수준: 사진의 제공 목록; 현행 운영 미검증
+방법/제한: 사진 예시는 opinion.lawmaking.go.kr 호스트 사용. www/opinion 동등성이나 리디렉션 허용을 추정하지 않음
+
+E46 | 금융위 | 규정·고시·공고·훈령
+방식: GET (페이지)
+전체 URL: https://www.fsc.go.kr/po040200
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: 목록→상세→첨부 실제 링크를 추출; 별도 Open API 계약 미확인
+
+E47 | 금감원 | 법규·시행세칙
+방식: GET (페이지)
+전체 URL: https://law.fss.or.kr/
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 접속 확인 실패
+방법/제한: 이번 웹 조회 실패. 현행 목록/상세/다운로드 주소를 기관 또는 중계 담당자에게 요청
+
+E48 | FIU | 감독규정 고시 예시
+방식: GET (페이지)
+전체 URL: https://www.kofiu.go.kr/kor/law/announce_view.do?lawordInfoOrdrNo=90&seCd=001
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: 공식 고시 페이지 확인. 이것은 단일 게시물이며 전체 목록 주소/첨부 요청은 별도 확인
+
+E49 | 한국은행 | 외국환 법규 진입
+방식: GET (페이지)
+전체 URL: https://www.bok.or.kr/portal/singl/law/view.do?lawId=&menuNo=200200
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: lawseq/hseq로 법규·버전 식별. 전체 조회/첨부 요청 명세는 현장 연계 전 확인
+
+E50 | 국세청 | 세법 목록
+방식: GET (페이지)
+전체 URL: https://taxlaw.nts.go.kr/st/USESTA001M.do
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: 법령 원문 중복보다는 해석/예규 보완; 목록·상세 데이터 계약 추가 확인
+
+E51 | 개인정보위 | 안전성 확보조치 기준 고시 게시 예시
+방식: GET (페이지)
+전체 URL: https://pipc.go.kr/np/cop/bbs/selectBoardArticle.do?bbsId=BS074&mCode=C020010000&nttId=11531
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: 단일 고시 게시물; 현행 버전 보장은 아님. 목록/개정 이력 추적 필요
+
+E52 | 예탁결제원 | 공식 홈페이지
+방식: GET (페이지)
+전체 URL: https://www.ksd.or.kr/
+요청값: 사이트별 상세 계약 확인
+응답: HTML/첨부
+확인 수준: 공식 페이지 확인
+방법/제한: 규정 목록·상세·첨부·인증 계약 미확인. 이 홈페이지 주소를 API로 취급하지 않음
+
+보충 URL
+시행일 특정 법령 본문: https://www.law.go.kr/DRF/lawService.do?target=eflaw&OC={LAW_OC}&type=XML&MST={법령일련번호}&efYd={YYYYMMDD}
+금투협 개정문: https://law.kofia.or.kr/download.do?gubun=104&seq={개정상세에서받은값}
+금투협 신구대비표: https://law.kofia.or.kr/download.do?gubun=105&seq={개정상세에서받은값}
+사용자 사진의 행정예고 원천: https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml
+주의: www.lawmaking.go.kr과 opinion.lawmaking.go.kr의 동일성/리디렉션 지원은 확인 필요.
+
+사진으로 확인된 개발계 중계 주소 (외부 원천 주소와 구분)
+국가법령정보센터 중계: https://45.101.64.86:8443/law/DRF
+국민참여입법센터 중계: https://45.101.64.86:8443/law/making
+헤더 target_url에 중계할 원천 URL 전달. 다른 기관을 이 경로로 호출할 수 있는지는 확인되지 않았습니다.
+개발 예시 IP 조회: https://45.1.81.80:8443/oap/common/query/ip (POST JSON, 운영 계약 미확인)
+최신 사진에서 담당자는 45.101.64.86:8443을 개발계 IP로 확인했습니다. 8443은 포트이며 운영 주소라는 확인은 아닙니다.
+
+근거
+공식 법령 본문 명세: https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsEfYdInfoGuide
+Python 세션의 쿠키 유지 설명: https://requests.readthedocs.io/en/latest/user/advanced/#session-objects
+현행 코드: 02_BACKEND/lawrag/sources/lawgo.py, kofia.py, krx.py, fsc.py, expc.py, prec.py
+전체 출처와 코드 SHA-256: 같은 폴더의 기존 외규수집_주소_API_법규매핑_20261015_R1.xlsx
+삼성 내부 서버 접속 또는 수집을 새로 실행하지 않았습니다.

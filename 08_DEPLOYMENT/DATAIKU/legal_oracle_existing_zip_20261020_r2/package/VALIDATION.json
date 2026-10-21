@@ -1,0 +1,29 @@
+{
+  "status": "LOCAL_VERIFIED_FIELD_PENDING",
+  "tests": 46,
+  "test_log": "09_ARTIFACTS/AUDITS/20261020-legacy-parts/TEST_02.txt",
+  "elapsed_seconds": 9.89,
+  "max_rss_kib": 331380,
+  "swaps": 0,
+  "specific_tests": 16,
+  "initial_tests": "16 passed; no failures",
+  "cases": [
+    "exact shipped notebook inspect/merge/restore",
+    "nonseekable short-read streaming without local part copies",
+    "zero-based contiguous original checksum list",
+    "same-content renamed checksum copies including UTF16 BOM",
+    "explicit checksum choice on ambiguity",
+    "single appended tail byte only with part AND whole SHA match",
+    "missing/extra/gap/duplicate/traversal/ambiguous metadata before part reads",
+    "middle corruption/two tail bytes/two altered parts/whole SHA refusal",
+    "interrupted merge preserves old partial and original deadline; restart from first part",
+    "complete ZIP reuse/target conflict/binding/deadline",
+    "joined legacy archive to previous full importer with existing source/assets and missing query rows"
+  ],
+  "dataiku_stream_api_reference": "https://developer.dataiku.com/latest/concepts-and-examples/managed-folders.html",
+  "source_field_parts_available": false,
+  "field_dataiku_oracle19_verified": false,
+  "oracle_tests": "synthetic SQL boundary",
+  "remote_uploaded_files_modified": false,
+  "main_or_serving_changed": false
+}

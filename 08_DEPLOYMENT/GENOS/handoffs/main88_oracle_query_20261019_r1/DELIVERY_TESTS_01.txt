@@ -1,0 +1,42 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________________ test_transfer[preserved-config-interruption] _________________
+08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py:45: in test_transfer
+    run([*cmd,'deps']);run([*cmd,'check'])
+                       ^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py:34: in run
+    assert (out.returncode==0)==ok,out.stdout+out.stderr
+E   AssertionError: TRANSFER=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_preserved_config0/uploaded TRANSFER files
+E     CODE_ROOT=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_preserved_config0/actual checkout PYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]
+E     FULL_CODE_SYNTAX current=746 frozen_preserved=3
+E     Traceback (most recent call last):
+E       File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_preserved_config0/uploaded TRANSFER files/GENOS_MAIN88_ORACLE_QUERY_20261019_R1/code_smoke.py", line 20, in <module>
+E         import semantic_runtime.oracle_query_service,semantic_runtime.oracle_query_native
+E     ModuleNotFoundError: No module named 'semantic_runtime.oracle_query_native'
+E     MAIN88_ORACLE_QUERY_APPLY_FAILED: Command failed; exit=1
+E     MAIN88_ORACLE_QUERY_EXIT=1 LOG=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_preserved_config0/uploaded TRANSFER files/main88-oracle-query-r1-logs/20261019T073647Z-162730.log
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['bash', './GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt'...ansfer_preserved_config0/uploaded TRANSFER files/main88-oracle-query-r1-logs/20261019T073647Z-162730.log\n', stderr='').returncode
+_____________________ test_transfer[no-config-standalone] ______________________
+08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py:45: in test_transfer
+    run([*cmd,'deps']);run([*cmd,'check'])
+                       ^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py:34: in run
+    assert (out.returncode==0)==ok,out.stdout+out.stderr
+E   AssertionError: TRANSFER=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_no_config_standa0/uploaded TRANSFER files
+E     CODE_ROOT=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_no_config_standa0/actual checkout PYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]
+E     FULL_CODE_SYNTAX current=746 frozen_preserved=3
+E     Traceback (most recent call last):
+E       File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_no_config_standa0/uploaded TRANSFER files/GENOS_MAIN88_ORACLE_QUERY_20261019_R1/code_smoke.py", line 20, in <module>
+E         import semantic_runtime.oracle_query_service,semantic_runtime.oracle_query_native
+E     ModuleNotFoundError: No module named 'semantic_runtime.oracle_query_native'
+E     MAIN88_ORACLE_QUERY_APPLY_FAILED: Command failed; exit=1
+E     MAIN88_ORACLE_QUERY_EXIT=1 LOG=/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-01/test_transfer_no_config_standa0/uploaded TRANSFER files/main88-oracle-query-r1-logs/20261019T073652Z-162783.log
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['bash', './GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt', 'check'], returncode=1, stdout='TRAN...ansfer_no_config_standa0/uploaded TRANSFER files/main88-oracle-query-r1-logs/20261019T073652Z-162783.log\n', stderr='').returncode
+=========================== short test summary info ============================
+FAILED 08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py::test_transfer[preserved-config-interruption]
+FAILED 08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/test_delivery.py::test_transfer[no-config-standalone]
+2 failed in 11.18s

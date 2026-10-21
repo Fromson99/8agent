@@ -374,7 +374,7 @@ ARGS.update({
  'LEGAL_SEARCH':obj({'query':STR,'mode':enum('phrase','tokens'),'document_id':STR,'offset':INT},['query','mode']),
  'FIND_ARTICLE':obj({'locator':STR,'document_id':STR,'branch':enum('body','appendix','any'),'offset':INT},['locator','branch'])})
 SCHEMA=obj({'issues':{'type':'array','maxItems':6,'items':obj({'id':STR,'text':STR},['id','text'])},'actions':{'type':'array','minItems':1,'maxItems':1,'items':{'anyOf':[action_schema(k,v) for k,v in ARGS.items()]}}},['issues','actions'])
-SYSTEM+='''\n요청 제약 request_contract는 서버 검사 대상이다. 먼저 확인할 문서가 있으면 그 문서 원문 READ를 완료한 뒤 다른 문서를 읽는다. 지정 전문검색은 SEARCH fulltext를 실제 실행해야 한다. next_actions는 현재 사용 가능한 실제 ID/인자를 가진 호출 제안이다. 검색 0건이면 이를 참고해 질의나 도구를 바꾼다. BACK은 제시된 이름 또는 빈 문자열(ROOT)만 쓴다.\n한국어 LEGAL_SEARCH가 제공되면 붙여쓰기/조사 때문에 정확 문자열 검색이 실패한 경우 사용한다. 여러 단어는 mode=tokens, 붙여쓰기 문구는 phrase다. FIND_ARTICLE이 제공되면 조문 번호 질문은 문서와 본문/부칙 구분을 유지해 조회한다. 이 도구가 반환하는 일치 구간은 읽기 근거가 아니며 READ/JUDGE가 필요하다. 변형 검색은 법률 개념의 동일성이나 부정의 삭제를 허용하지 않는다.'''
+SYSTEM+='''\n질문 전체에서 검색 방식·먼저 읽을 문서·제외 범위를 판단하고 도구 선택에 반영한다. 단어 출현만으로 요구를 확정하지 않는다. request_contract에는 서버가 명시적으로 결속한 제약만 있다. next_actions는 현재 사용 가능한 실제 ID/인자를 가진 호출 제안이다. 검색 0건이면 이를 참고해 질의나 도구를 바꾼다. BACK은 제시된 이름 또는 빈 문자열(ROOT)만 쓴다.\n한국어 LEGAL_SEARCH가 제공되면 붙여쓰기/조사 때문에 정확 문자열 검색이 실패한 경우 사용한다. 여러 단어는 mode=tokens, 붙여쓰기 문구는 phrase다. FIND_ARTICLE이 제공되면 조문 번호 질문은 문서와 본문/부칙 구분을 유지해 조회한다. 이 도구가 반환하는 일치 구간은 읽기 근거가 아니며 READ/JUDGE가 필요하다. 변형 검색은 법률 개념의 동일성이나 부정의 삭제를 허용하지 않는다.'''
 
 def normalized(text):
     chars=[];offsets=[]
@@ -389,16 +389,9 @@ def coordinate(text):
     return (int(m[1]),int(m[2] or 0)) if m else None
 
 def request_contract(question,documents,scope):
-    # Conservative explicit phrases only; this is not a semantic intent classifier.
-    mode='fulltext' if re.search(r'전문\s*검색',question) and not re.search(r'전문\s*검색(?:은|을)?\s*(?:하지|말고|제외)',question) else None
-    first=None;ambiguous=[]
-    m=re.search(r'먼저\s+(.{1,70}?)(?:을|를)?\s*(?:확인|읽|살펴)',question)
-    if m:
-        words=[w for w in re.findall(r'[가-힣A-Za-z0-9]+',m[1]) if w not in {'모의','규정','문서','법률','을','를'}]
-        candidates=[d for d in scope if words and all(w in normalized(documents[d])[0] for w in words)]
-        if len(candidates)==1:first=candidates[0]
-        elif candidates:ambiguous=candidates
-    return {'search_mode':mode,'first_document_id':first,'ambiguous_first_document_ids':ambiguous,'extraction':'explicit_surface_v1'}
+    # Tool order and search intent belong to the model reading the full request.
+    return {'search_mode':None,'first_document_id':None,
+            'ambiguous_first_document_ids':[],'extraction':'model_owned'}
 
 class RoutedSession(StructuredSession):
     korean=False
@@ -474,7 +467,7 @@ class RoutedSession(StructuredSession):
                 if isinstance(item,dict) and item.get('read_action'):next_actions.append(item['read_action'])
         if self.korean and coordinate(self.question):
             docs=[d for d in self.scope if normalized(self.m.documents[d])[0] in normalized(self.question)[0]]
-            next_actions.append({'tool':'FIND_ARTICLE','args':{'locator':self.question,'document_id':docs[0] if len(docs)==1 else '', 'branch':'appendix' if '부칙' in self.question else 'body' if '본문' in self.question else 'any'}})
+            next_actions.append({'tool':'FIND_ARTICLE','args':{'locator':self.question,'document_id':docs[0] if len(docs)==1 else '', 'branch':'any'}})
         data['next_actions']=next_actions[:12]
         if len(json.dumps(data,ensure_ascii=False))>self.limits['context_chars']:raise ValueError('request metadata exceeds context budget')
         return data

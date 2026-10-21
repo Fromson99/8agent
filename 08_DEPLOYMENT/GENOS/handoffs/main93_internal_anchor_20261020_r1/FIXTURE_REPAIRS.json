@@ -1,0 +1,8 @@
+{
+  "initial_failure": "The baseline fixture tried ordinary git add on intentionally untracked source/history and CODE_MANIFEST, not product execution.",
+  "changes": [
+    "Exclude fixture preserved data/history/manifest from git add",
+    "Keep exact 393 runtime bytes; use included field documentation path instead of adding ignored audit text"
+  ],
+  "product_guards_relaxed": false
+}

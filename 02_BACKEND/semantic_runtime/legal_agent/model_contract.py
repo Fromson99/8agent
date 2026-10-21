@@ -5,11 +5,40 @@ retain their original schemas and validate the decoded value before using it.
 """
 from copy import deepcopy
 import json
-from .errors import ProposalError
+from .errors import ContractError, ProposalError
 from .output_contract import strict_json, OutputContractError, issue
 
 REVISION = 'genos-structured-contract-20261013-r1'
 INPUT_METRICS_REVISION = 'model-input-metrics-20261014-r1'
+RESPONSE_MODEL_POLICY = 'genos-serving-model-metadata-v1'
+
+
+def response_model_metadata(binding, body):
+    """Keep request identity and server-reported metadata distinct.
+
+    GENOS routes to the authenticated serving endpoint. Its response model name
+    is diagnostic metadata, not a second routing/authentication gate. External
+    model policies retain exact identity checks. Never rewrite the raw response.
+    """
+    actual = body.get('model') if isinstance(body, dict) else None
+    status = ('missing' if actual is None or actual == '' else
+              'invalid' if not isinstance(actual, str) else
+              'match' if actual == binding['model'] else 'different')
+    genos = (binding.get('provider') == 'genos'
+             and binding.get('trust_zone') == 'internal'
+             and binding.get('adapter_version') == 'genos-single-send-v1')
+    return {'requested_model': binding['model'],
+            'actual_response_model': actual if isinstance(actual, str) else None,
+            'response_model_status': status,
+            'response_model_policy': RESPONSE_MODEL_POLICY if genos else 'exact-model-v1'}
+
+
+def validate_response_model(binding, body):
+    metadata = response_model_metadata(binding, body)
+    if (metadata['response_model_policy'] == 'exact-model-v1'
+            and metadata['response_model_status'] != 'match'):
+        raise ContractError('actual response model differs from pinned model')
+    return metadata
 
 
 def request_metrics(request):
@@ -74,8 +103,15 @@ def genos_wire_schema(value):
     for key, child in value.items():
         if key == 'uniqueItems':
             continue
+        # JSON Schema pattern searches within text; grammar engines may full-match.
+        # Spell the same nonblank language explicitly without narrowing to one char.
+        if key == 'pattern' and child == r'\S':
+            result[key] = r'[\s\S]*\S[\s\S]*'
+            continue
         if key in maps and isinstance(child, dict):
-            result[key] = {name: genos_wire_schema(schema) for name, schema in child.items()}
+            result[key] = {name: genos_wire_schema(schema) for name, schema in child.items()
+                if not (key=='properties' and isinstance(schema,dict) and schema.get('readOnly') is True
+                        and name not in value.get('required',[]))}
         elif key in single:
             result[key] = ([genos_wire_schema(schema) for schema in child]
                            if isinstance(child, list) else genos_wire_schema(child))
@@ -87,24 +123,24 @@ def genos_wire_schema(value):
 
 
 def structured_request(*, model, max_tokens, messages, schema_name, schema):
-    return {'model': model, 'max_tokens': max_tokens, 'temperature': 0,
+    return {'model': model, **({'max_tokens': max_tokens} if max_tokens is not None else {}), 'temperature': 0,
             'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
             'messages': messages,
             'response_format': {'type': 'json_schema', 'json_schema': {
                 'name': schema_name, 'strict': True, 'schema': genos_wire_schema(schema)}}}
 
 
-def structured_content(body, *, require_complete=True):
+def structured_content(body, *, require_complete=True, allow_length_repair=True):
     if (not isinstance(body, dict) or not isinstance(body.get('choices'), list)
             or len(body['choices']) != 1 or not isinstance(body['choices'][0], dict)):
         raise ProposalError('expected one structured choice')
     choice = body['choices'][0]
     if require_complete and choice.get('finish_reason') in ('length', 'content_filter', 'refusal'):
         reason = choice['finish_reason']
-        can_repair = reason == 'length'
+        can_repair = reason == 'length' and allow_length_repair
         raise OutputContractError('model response did not complete normally: '+reason,
             [issue('OUTPUT_'+reason.upper(), repairable=can_repair)],
-            category='OUTPUT_INCOMPLETE' if can_repair else 'OUTPUT_REFUSED', repairable=can_repair)
+            category='OUTPUT_INCOMPLETE' if reason == 'length' else 'OUTPUT_REFUSED', repairable=can_repair)
     message = choice.get('message')
     if not isinstance(message, dict):
         raise ProposalError('expected a structured message')
@@ -119,6 +155,6 @@ def structured_content(body, *, require_complete=True):
     return content
 
 
-def structured_value(body, *, require_complete=True):
-    content = structured_content(body, require_complete=require_complete)
+def structured_value(body, *, require_complete=True, allow_length_repair=True):
+    content = structured_content(body, require_complete=require_complete, allow_length_repair=allow_length_repair)
     return strict_json(content)

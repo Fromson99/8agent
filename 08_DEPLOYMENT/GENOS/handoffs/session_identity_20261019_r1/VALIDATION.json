@@ -1,0 +1,96 @@
+{
+  "version": "GENOS_SESSION_IDENTITY_20261019_R1",
+  "status": "PASS_WITH_KNOWN_BASELINE_TEST_FAILURES",
+  "identity_policy": "team-session-v1",
+  "code_zip_sha256": "724f36cc59b20794abd63ff1b6b36e94fbcc9852a03adb23e239112e5733c897",
+  "baseline_code_zip_sha256": "aa6d0eec355ebd7a6eaf39ab5a8aa06d1c6546032658a3baec955570346811d1",
+  "payload_files": 1285,
+  "python_modules": 734,
+  "changed_files": 41,
+  "code_changes": 8,
+  "repinned_manifests": 33,
+  "contracts": {
+    "passed": 100,
+    "deselected_known_baseline_failures": 8,
+    "log_sha256": "5392d499d04513d8f76548d7c6d2c1bd2a6b4e66bfc8526098e72bb3453b9b86",
+    "baseline_failure_evidence": "baseline-001.log and baseline-001-resources.json; all eight also fail on unmodified sealed MAIN87; no frozen ADR tests changed"
+  },
+  "installations": {
+    "prior_main87": {
+      "status": "PASS",
+      "commands": 22,
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installation-002-fixtures/test_actual_delivery_prior_mai0/DEV",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "model_calls": 0,
+      "installed_archive": "fd4b707dd3947bdf7189e1f57e77b5e958df601de211abffbb9b4b18fccc5d94",
+      "transcript_sha256": "93edd036ad7a5cf56b96fdb875dddadc2110f37668432abe50311b1971beb8f3",
+      "installed_contract_summary": [
+        "25 passed, 2 warnings in 4.99s",
+        "INSTALLED_CONTRACT_IMPORTS PASS; modules=229"
+      ]
+    },
+    "interrupted_main87": {
+      "status": "PASS",
+      "commands": 23,
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installation-002-fixtures/test_actual_delivery_interrupt0/DEV",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "model_calls": 0,
+      "installed_archive": "2d87e90462dabb4466599b9a7115b8b4b92fdb6d1d86d7cbe792f501b3a700cc",
+      "transcript_sha256": "5fba4bf82b610e84b8eefdd3726f2cbc6ec291121caf28ccb29a00075bd4aeff"
+    }
+  },
+  "python311": {
+    "status": "PASS",
+    "compiled_modules": 734,
+    "workflow_editor": true,
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "code_zip_sha256": "724f36cc59b20794abd63ff1b6b36e94fbcc9852a03adb23e239112e5733c897"
+  },
+  "resources": {
+    "contracts-final": {
+      "returncode": 0,
+      "seconds": 18.014444954999817,
+      "peak_group_rss_bytes": 438726656,
+      "min_available_bytes": 13651460096,
+      "stop_reason": null
+    },
+    "installation-002": {
+      "returncode": 0,
+      "seconds": 150.1344433659997,
+      "peak_group_rss_bytes": 538247168,
+      "min_available_bytes": 13593436160,
+      "stop_reason": null
+    }
+  },
+  "coverage": [
+    "no user ID: workflow run/save/status/resume and normal v5/v6 multi-turn",
+    "stable team/session namespacing; same request dedup across user metadata changes",
+    "session isolation, cross-team isolation, trusted authority and document scope",
+    "checkpoint interruption, exhausted budget resume, unchanged deadline and monotonic usage",
+    "stale revision, request/body mismatch and saved-state hash tamper",
+    "legacy records preserved without budget reset or automatic migration",
+    "exact installed service entry and separate workflow editor consumer",
+    "interrupted install/reapply, changed-file rejection, same committed checkout gate, exact rollback"
+  ],
+  "limits": [
+    "synthetic scripted model and local TLS fixture only; zero external/GENOS model calls",
+    "old user-owned chats require new session or original revision; no automatic migration",
+    "no new cross-run natural-language comparison follow-up feature",
+    "GENOS field import, workflow editor save, Git push, revision deployment and internal model execution not verified"
+  ],
+  "local_main_pointer_changed": false,
+  "local_main_release": "cm-read-continuity-20261019-r1",
+  "local_main_generation": 87,
+  "working_code_updated": true,
+  "genos_field_verified": false,
+  "external_model_calls": 0,
+  "failure_records_preserved": [
+    "tests-001 through tests-005",
+    "regression-001",
+    "baseline-001",
+    "installation.log (fixture import setup error)"
+  ]
+}

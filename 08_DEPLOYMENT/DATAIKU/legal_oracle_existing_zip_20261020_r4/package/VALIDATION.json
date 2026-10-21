@@ -1,0 +1,32 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "tests_passed": 42,
+  "test_seconds": 10.78,
+  "peak_rss_kib": 391532,
+  "workers": 1,
+  "test_log": "09_ARTIFACTS/AUDITS/20261020-dataiku-types/TEST_02.txt",
+  "scope": [
+    "real pandas inference simulation for zero/leading-zero/scientific-notation/large string IDs",
+    "actual R3 adapter source-unit readback failure after committed batch",
+    "pinned R4 adapter resumes same checkpoint and deadline, prior source values preserved",
+    "exact delivered read-only diagnose helper confirms injected type difference without writes or receipt changes",
+    "exact delivered R4 notebook pin/startup/check/publish path",
+    "source/full migration tamper/conflict/readback/budget and duplicate regressions",
+    "unsupported schema keyword fails without automatic fallback"
+  ],
+  "initial_failure": {
+    "log": "09_ARTIFACTS/AUDITS/20261020-dataiku-types/TEST_01.txt",
+    "passed": 41,
+    "failed": 1,
+    "cause": "Historical QUERY_PARTS R2 test incorrectly required identical release hash to current R3 publisher. Inspected manifests: only publisher_sha256 differed. Test now checks each actual code fingerprint and exact equality of all other manifest fields; sealed package untouched."
+  },
+  "runtime_change": "oracle_query_dataiku.py SELECT infer_from_schema=True, parse_dates=False",
+  "engine_and_release_publisher_equal_r3": true,
+  "source_checkpoint_directory": "oracle-import-r3",
+  "field_evidence": "All five SQLite key columns valid; document checkpoint 2121 and source_unit 0. Actual Oracle returned type not yet observed.",
+  "field_cause_confirmed": false,
+  "field_execution_verified": false,
+  "speed_optimized": false,
+  "main_changed": false,
+  "source": "https://developer.dataiku.com/latest/api-reference/python/sql.html"
+}

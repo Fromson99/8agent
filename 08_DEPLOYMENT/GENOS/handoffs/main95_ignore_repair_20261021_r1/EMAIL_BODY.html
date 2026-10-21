@@ -1,0 +1,11 @@
+<html lang="ko"><body>
+<p><strong>MAIN95 ignore 재발 원인을 확인해 작은 복구 패치를 보냅니다.</strong><br>
+제가 만든 누적 ZIP에 이전 ignore 수정이 빠져 설치 시 옛 규칙으로 되돌아간 결함입니다. 사진의 CRLF는 줄바꿈 경고이며, 핵심은 휴지통이 git add에 포함된 것입니다.</p>
+<p>기존 제외 규칙을 복구하고 Git 로컬 info/exclude에도 남깁니다. <strong>원문·DB는 삭제하지 않고, 새로 staging된 휴지통·이관 파일만 제외</strong>합니다. 다른 staged 코드 변경은 보존하며, 현재 커밋에 이미 포함된 데이터는 자동으로 이력을 바꾸지 않고 중단합니다.</p>
+<p>업로드한 <strong>실제 TRANSFER 폴더</strong>에서 실행하세요. /workspace는 사진의 기존 checkout입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1.zip ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1
+bash ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1/GENOS_MAIN95_IGNORE_REPAIR_20261021_R1_RUN.txt repair --root /workspace</pre>
+<p>repair는 check → apply → staging 정리 → status를 순서대로 수행합니다. 이후 staged 변경을 검토해 commit하고, <strong>기존 MAIN95 gate 대신 첨부 안내의 새 gate</strong>를 사용하세요. 현재 SQLite/NFS 운영이면 같은 선택 세대의 gate-sqlite 검사도 유지합니다. commit·push·리비전 배포는 자동 실행하지 않습니다.</p>
+<p>이전 IGNORE/NEXT 실행기 대신 이번 MAIN95 전용 패치를 사용하세요. MAIN95 본체를 다시 설치할 필요는 없습니다.<br>
+첨부3개: 약128KB ZIP, 완전한 실행 TXT, 짧은 패치노트(검증·원복 명령 포함). 로컬8시나리오100명령과 최종 ZIP/TXT14명령을 확인했으며 <strong>GENOS 현장 적용은 미확인</strong>입니다.</p>
+</body></html>

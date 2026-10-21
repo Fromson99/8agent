@@ -1,0 +1,3507 @@
+{
+  "schema_version": "latest-selection-delivery-v1",
+  "code_root": "02_BACKEND/lawrag/research/candidates/adr_0796/selected/revisions/rev-005/snapshot",
+  "candidate": {
+    "manifest_path": "02_BACKEND/lawrag/research/candidates/adr_0796/selected/candidate.json",
+    "manifest_sha256": "f82f07dc2111425a95c42dd6ac86cbbcda786751a363d5be11c3da90769e4f37",
+    "revision_id": "rev-005",
+    "revision_sha256": "7636a0a68b7fb5eb8e536c3ae3ea22a40eef928d4a0b699aa819f24b85edb7b3"
+  },
+  "files": {
+    "02_BACKEND/lawrag/pipeline/golden_authoring.py": {
+      "sha256": "987315482d60418522fa9009d735d7eeaef553c13528ef14f6a5fd9e6c137cc6",
+      "bytes": 13727
+    },
+    "02_BACKEND/lawrag/pipeline/genos_staged.py": {
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "bytes": 342
+    },
+    "02_BACKEND/lawrag/pipeline/generation_build_steps.py": {
+      "sha256": "1bb872259834a684aabfcab51d77ccac2f8137a3655953af66eb87a46f348b6c",
+      "bytes": 8075
+    },
+    "02_BACKEND/lawrag/pipeline/collect_moleg.py": {
+      "sha256": "281376fc94b3f5213d4d3596ef5089cfeb1b438ac4d117aa525f1435a53dae40",
+      "bytes": 5793
+    },
+    "02_BACKEND/lawrag/pipeline/team_raw.py": {
+      "sha256": "56fa1da5177136261a92ed99de27b6151fdb70726dc5b26d97753403a395f573",
+      "bytes": 22044
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_document_update.py": {
+      "sha256": "203160cd71deefef6c6b2a5ca40363d781e0449a3d1279083a845c77dd4fca9b",
+      "bytes": 12536
+    },
+    "02_BACKEND/lawrag/pipeline/collect_public_glossaries.py": {
+      "sha256": "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9",
+      "bytes": 11944
+    },
+    "02_BACKEND/lawrag/pipeline/__init__.py": {
+      "sha256": "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953",
+      "bytes": 1985
+    },
+    "02_BACKEND/lawrag/pipeline/batch.py": {
+      "sha256": "7bf3e3b6ced2d191ea174059e29027c7bd06aafdd84a1927f40ca9c42028847e",
+      "bytes": 3760
+    },
+    "02_BACKEND/lawrag/pipeline/wiki_proposal.py": {
+      "sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "bytes": 8643
+    },
+    "02_BACKEND/lawrag/pipeline/task_harness.py": {
+      "sha256": "4d29d7b36991dc913ee26cc0649f73023631e5297ec92a923f4817ba8ee3a892",
+      "bytes": 3149
+    },
+    "02_BACKEND/lawrag/pipeline/reference_model.py": {
+      "sha256": "f1e53155d93d80b9bd2b1709d5a5e105f336dbd225761e4c7a54e888c1ffbe91",
+      "bytes": 5285
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_files.py": {
+      "sha256": "331bb1405283a6f9bb596cc690ac2d7f10ee84f7a4ea907731f7820a00c9f27f",
+      "bytes": 6323
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_assembly.py": {
+      "sha256": "ee1684148a14a1ceb0fdf734e0ca50b79abab851fa6bc596be8a4a985124c784",
+      "bytes": 25779
+    },
+    "02_BACKEND/lawrag/pipeline/genos_stages.py": {
+      "sha256": "f6e292309d14fdeb1edfc0bece26fd07456e305221c46ba31c31dd4a493c7f60",
+      "bytes": 15923
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_lawxml.py": {
+      "sha256": "a61d428d750e8122b21915bb25c1553bc0dfc85afbe418b9a8e38b52bec8cc50",
+      "bytes": 5470
+    },
+    "02_BACKEND/lawrag/pipeline/ontology.py": {
+      "sha256": "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825",
+      "bytes": 6226
+    },
+    "02_BACKEND/lawrag/pipeline/collect.py": {
+      "sha256": "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c",
+      "bytes": 23505
+    },
+    "02_BACKEND/lawrag/pipeline/retry_adoption.py": {
+      "sha256": "3cb91db3f052aca9c4dcaa9dff3f2819c198b04f19927f91c724631fb8bd26aa",
+      "bytes": 4970
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_knowledge.py": {
+      "sha256": "94d666ad1262249dbd4b95886fab3b66cd316ced6cde80fb723280c36b9e0e25",
+      "bytes": 16083
+    },
+    "02_BACKEND/lawrag/pipeline/native_trace.py": {
+      "sha256": "380670240508d8baf9b88608c1f73fbbe939e9e803da01576c0d87f4eefbf173",
+      "bytes": 17531
+    },
+    "02_BACKEND/lawrag/pipeline/document_scope.py": {
+      "sha256": "d6c507287fa575176051cc07b0b3b496eacd3dbf09623f45b51c48ca558fc7ca",
+      "bytes": 5199
+    },
+    "02_BACKEND/lawrag/pipeline/term_generation.py": {
+      "sha256": "5e6d36ed18f3bf34e44c9e6d36e1d495b40cbd14ef27b5539d715ad2c7b49a6f",
+      "bytes": 12197
+    },
+    "02_BACKEND/lawrag/pipeline/wiki_triage.py": {
+      "sha256": "efba2e4a27f37202d61c365e8c668b0796d3c9d2f6fd4154346060c7b4d52d77",
+      "bytes": 9972
+    },
+    "02_BACKEND/lawrag/pipeline/genos_progress.py": {
+      "sha256": "f6e2dfaf8315ab6f35e16bf5649abd951fa56f1d0bff50dae40c6b0734d1a944",
+      "bytes": 17778
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_expc.py": {
+      "sha256": "acdf671750dcee30c0c94616d48541fdbaf377ae7f5e1433cd9f545195c09449",
+      "bytes": 6810
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_definitions.py": {
+      "sha256": "a2ff73376af23a0397031a801f46d077da238cb6f44f8c7ec1b9697fa7b59cc2",
+      "bytes": 6468
+    },
+    "02_BACKEND/lawrag/pipeline/knowledge_transfer.py": {
+      "sha256": "65543ead2c1049500e6dcdf70f4d51ccddc422a6798a4288b172b8210838dd2d",
+      "bytes": 13955
+    },
+    "02_BACKEND/lawrag/pipeline/genos_raw_move.py": {
+      "sha256": "93bf3e31d81e7fc091cdae0616b43a60eb8de51d4a50d397c503e0b316af0493",
+      "bytes": 6563
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_senses.py": {
+      "sha256": "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4",
+      "bytes": 15101
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_linking.py": {
+      "sha256": "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde",
+      "bytes": 12569
+    },
+    "02_BACKEND/lawrag/pipeline/genos_corpus.py": {
+      "sha256": "b7ae745bc7ced65be8ec04a29893b2f22d7cb939d41542e28c76d71cda2ad13f",
+      "bytes": 19177
+    },
+    "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py": {
+      "sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "bytes": 26332
+    },
+    "02_BACKEND/lawrag/pipeline/team_raw_refresh.py": {
+      "sha256": "9cc6f235f01b281e8a02f885722350ae373c93684eab6001ba4fe58a9efe0aab",
+      "bytes": 5995
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_naegyu.py": {
+      "sha256": "650493313c1bc9f9afab36c86daac10affd93038f28dbc8800a22ec9bf6cf94f",
+      "bytes": 3471
+    },
+    "02_BACKEND/lawrag/pipeline/naming_definition_append.py": {
+      "sha256": "ff000afb1c7c1b8b137296d5575c7d054d3c125d6acf1bf4e18e46870c7aa4ef",
+      "bytes": 22274
+    },
+    "02_BACKEND/lawrag/pipeline/shortcut_package.py": {
+      "sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64",
+      "bytes": 22389
+    },
+    "02_BACKEND/lawrag/pipeline/document_append.py": {
+      "sha256": "26fd28569dc46843f9e3e3027df83005219b3df33f52473d86652a2238a40923",
+      "bytes": 20319
+    },
+    "02_BACKEND/lawrag/pipeline/onsite.py": {
+      "sha256": "6fc5739cf6979de0aba44d59b0cc1940974d2c366f4d7f86e759db76e3601242",
+      "bytes": 11210
+    },
+    "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py": {
+      "sha256": "2824135ebc0867e533f7b44f492cdb2c7246d00e3c7f5c5686fb04a705a90339",
+      "bytes": 12482
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_learning.py": {
+      "sha256": "d7664076161e8a4444cae936de74ff7243de6f96c4791864c4fbcc70a88390f4",
+      "bytes": 4309
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_alignment.py": {
+      "sha256": "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b",
+      "bytes": 25266
+    },
+    "02_BACKEND/lawrag/pipeline/document_representations.py": {
+      "sha256": "89ca13fa87daf3a79bb5cd7dacc291a452d20df55fc734c50dff6e7af79c1776",
+      "bytes": 7435
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_review.py": {
+      "sha256": "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69",
+      "bytes": 36189
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_fsc.py": {
+      "sha256": "d28b779bd0d67f4a7ed4d5ff89313fff9c858322107c348bee1ff1adc72ef46b",
+      "bytes": 3136
+    },
+    "02_BACKEND/lawrag/pipeline/genos_status.py": {
+      "sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a",
+      "bytes": 26132
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_rulehtml.py": {
+      "sha256": "af97b9dfa3f1985c50f288fda81cafebde6c56592912c85057f16dae5658aaab",
+      "bytes": 3860
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_serving.py": {
+      "sha256": "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e",
+      "bytes": 3733
+    },
+    "02_BACKEND/lawrag/pipeline/unified_memory.py": {
+      "sha256": "588f43b82148f54b34944d681be0d686e24f57f32f986e3a648284fd3a2094ac",
+      "bytes": 15751
+    },
+    "02_BACKEND/lawrag/pipeline/golden_registry.py": {
+      "sha256": "15db1bf183ab355134e02cce431214afa1727c3716e52cc207f7ccc5edbbce72",
+      "bytes": 9200
+    },
+    "02_BACKEND/lawrag/pipeline/shortcut_operations.py": {
+      "sha256": "8a378ce34b1e9015e88a67d4d6efabe7bedf28f29c1b665bf122646c24209ae9",
+      "bytes": 21322
+    },
+    "02_BACKEND/lawrag/pipeline/fulltext_stage.py": {
+      "sha256": "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c",
+      "bytes": 8982
+    },
+    "02_BACKEND/lawrag/pipeline/structure_selection.py": {
+      "sha256": "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6",
+      "bytes": 7905
+    },
+    "02_BACKEND/lawrag/pipeline/convert.py": {
+      "sha256": "7a89684052327d81fed091ef83c6ef3045f9ff4b45479b132c0c595381c2da6c",
+      "bytes": 402
+    },
+    "02_BACKEND/lawrag/pipeline/genos_authoring_runtime.py": {
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "bytes": 342
+    },
+    "02_BACKEND/lawrag/pipeline/genos_unified.py": {
+      "sha256": "dffcfb9312ab2afaf84a5b8f3bda9fdb91fc2d3f39bd222fdaf38dfe19c94cd2",
+      "bytes": 24557
+    },
+    "02_BACKEND/lawrag/pipeline/genos_e2e.py": {
+      "sha256": "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b",
+      "bytes": 17680
+    },
+    "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py": {
+      "sha256": "8526f83120c16b62b642e99162d4975f36bf95b0ad1b32b85498ae28e6a69fa4",
+      "bytes": 18539
+    },
+    "02_BACKEND/lawrag/pipeline/raw_preprocess.py": {
+      "sha256": "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d",
+      "bytes": 26350
+    },
+    "02_BACKEND/lawrag/pipeline/action_memory.py": {
+      "sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "bytes": 18194
+    },
+    "02_BACKEND/lawrag/pipeline/genos_structure_report.py": {
+      "sha256": "8e0957cab35a3a85d4513a6489f6d510f984aafc1776bad623e7f46165e8b855",
+      "bytes": 10069
+    },
+    "02_BACKEND/lawrag/pipeline/collect_prec.py": {
+      "sha256": "3a7502b7f466f3f479ac6a7c720c6346af6754f4ea662fbc065b58d3a6856917",
+      "bytes": 6648
+    },
+    "02_BACKEND/lawrag/pipeline/ingest_prec.py": {
+      "sha256": "a53935f91946cde8850a07e7f9a167183f37976fedb8cf5a18afa3531535788a",
+      "bytes": 3630
+    },
+    "02_BACKEND/lawrag/pipeline/term_serving_bundle.py": {
+      "sha256": "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+      "bytes": 5259
+    },
+    "02_BACKEND/lawrag/pipeline/genos_all_pipeline.py": {
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "bytes": 342
+    },
+    "02_BACKEND/lawrag/pipeline/genos_moleg_compile.py": {
+      "sha256": "95a83edf7316b5caeda9413e2aadcb8650dca039b99e6d752c3ca621b9ac9641",
+      "bytes": 11321
+    },
+    "02_BACKEND/lawrag/pipeline/document_release.py": {
+      "sha256": "a9e37a4e04ab7cbdb2d69e87f84f642f202f5352efb8d87a007f002d358ada7f",
+      "bytes": 62408
+    },
+    "02_BACKEND/lawrag/pipeline/genos_build.py": {
+      "sha256": "366b7776a5155615d54960c47e5db4258499a92d695a011af19c169d51f0090a",
+      "bytes": 26596
+    },
+    "02_BACKEND/lawrag/pipeline/collect_fsc.py": {
+      "sha256": "2f0366d8c88d2c7b685126fe509893ef9c59d12d3324b7fd0f928d757a82d64b",
+      "bytes": 7074
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_abbreviation.py": {
+      "sha256": "2a9ab38e3e5310f8205e83cb38afc81f3362883a4e4bea0ef8bf0f34018a418b",
+      "bytes": 26238
+    },
+    "02_BACKEND/lawrag/pipeline/genos_internal_replace.py": {
+      "sha256": "decbfff36437cc7dc0227ee17a0cbeeca68379052f969ff4fa9c3a330e83fd71",
+      "bytes": 5129
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_scope.py": {
+      "sha256": "8c7c8c2bbaf0335f2b2a2a699f4ae6e61cd472989e48872c0d05ab63fa091f80",
+      "bytes": 8128
+    },
+    "02_BACKEND/lawrag/pipeline/search_selection.py": {
+      "sha256": "735aa7970eb3c10be34e29ab93f0f6330942b9e3a4626239c7aeec425af74c29",
+      "bytes": 15808
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_legal_relations.py": {
+      "sha256": "49cc597517fd1eaa8747b531fb3ab2e151d94f4c4882d50a10311dc055dd1654",
+      "bytes": 25937
+    },
+    "02_BACKEND/lawrag/pipeline/raw_prepare.py": {
+      "sha256": "9af3bc3a30240d453b896eeae88f6d4a8fcb5d1f9dd56fefbad1b599dc5f20e6",
+      "bytes": 10838
+    },
+    "02_BACKEND/lawrag/pipeline/collect_expc.py": {
+      "sha256": "d2fdb1e828a7ecf3dd04151a6d14797d23f560f8c5c8b095e5681d8e86a6ec95",
+      "bytes": 8552
+    },
+    "02_BACKEND/lawrag/pipeline/genos_admission.py": {
+      "sha256": "8a92da7a57e46e0d02cbf4152511e0e63bd8908bb3e61b16a89b1eece5d8b46f",
+      "bytes": 13187
+    },
+    "02_BACKEND/lawrag/pipeline/union_file.py": {
+      "sha256": "376836a6e8fa5adad4a21654804f44099597a61bd669e697b0d332faf7056bfd",
+      "bytes": 4441
+    },
+    "02_BACKEND/lawrag/pipeline/reference_resolution.py": {
+      "sha256": "a93f5ddf31973fb355a9e70d62f28e934801e91b43f8c7009b07c5a31227e7a7",
+      "bytes": 30344
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_enrichment.py": {
+      "sha256": "361b9a383f123e8b3b362d61794f9caa48b93892d01fbdd30787b5e0a2e5c414",
+      "bytes": 31589
+    },
+    "02_BACKEND/lawrag/pipeline/genos_batch.py": {
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "bytes": 342
+    },
+    "02_BACKEND/lawrag/pipeline/golden_exchange.py": {
+      "sha256": "cf3b30926b61ba9f59d567b998b62079cf7506e6253bb8c5cc5c521964212e3c",
+      "bytes": 10483
+    },
+    "02_BACKEND/lawrag/pipeline/glossary_v1.py": {
+      "sha256": "bbd100d339aaecd79521e0f5c93d478bb41ef150b5bc19f029fc2519d6bd1092",
+      "bytes": 25312
+    },
+    "02_BACKEND/lawrag/pipeline/failure_improvement.py": {
+      "sha256": "9bd503647d31c0d92cef21ec9400af4741217e7e5f3918b2c32e453181e02307",
+      "bytes": 18210
+    },
+    "02_BACKEND/lawrag/pipeline/genos_doc.py": {
+      "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203",
+      "bytes": 450
+    },
+    "02_BACKEND/lawrag/pipeline/golden_run.py": {
+      "sha256": "680884a2b474e4606574c9a3662ce815955189aa8deb20569225830829d0aed6",
+      "bytes": 8905
+    },
+    "02_BACKEND/lawrag/pipeline/golden.py": {
+      "sha256": "74e60bc983abc91491524560e541bf8047f98e35bf7f15ec471ee34ac9c08a89",
+      "bytes": 25178
+    },
+    "02_BACKEND/lawrag/core/parse_adapter.py": {
+      "sha256": "2f814cf26af493dab1a788b46eff55afa388c00c83b6c76a85d050492c601c93",
+      "bytes": 48745
+    },
+    "02_BACKEND/lawrag/core/__init__.py": {
+      "sha256": "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2",
+      "bytes": 1137
+    },
+    "02_BACKEND/lawrag/core/batch.py": {
+      "sha256": "a45e9471885ed86cb9e94d2feea803f907eb73d8f1a8db496f115bd2cedce86b",
+      "bytes": 41583
+    },
+    "02_BACKEND/lawrag/core/reference_coordinate.py": {
+      "sha256": "513fda6c756e77f1f40c939d3e6d783d5b825decd9ccb0e972fedcaaa3d96002",
+      "bytes": 2462
+    },
+    "02_BACKEND/lawrag/core/registry.yaml": {
+      "sha256": "a03e49e01ea078496099e89e4328acebec3f38da5eeef8426b2baf64c897dd47",
+      "bytes": 2995
+    },
+    "02_BACKEND/lawrag/core/genos_preprocessor.py": {
+      "sha256": "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24",
+      "bytes": 11303
+    },
+    "02_BACKEND/lawrag/core/review.py": {
+      "sha256": "0c39638c30e4f06025cb2defe09ef55df93418cfb59819b40d6225cd8c26459c",
+      "bytes": 4694
+    },
+    "02_BACKEND/lawrag/core/logbook.py": {
+      "sha256": "25d4cc99e0289ba579ea68c810f0e0ab91250716a774c27dcd3d0962ce79b245",
+      "bytes": 8387
+    },
+    "02_BACKEND/lawrag/core/geometry.py": {
+      "sha256": "48ce163f2fb707df6be598507fa80cc7d5b792d8a3a8c8f40a2f46776d593f5b",
+      "bytes": 2535
+    },
+    "02_BACKEND/lawrag/core/format_model.py": {
+      "sha256": "2d367c5ffea2b9b5284a6753f5033fc2dc2b5b74e67de452aaf504cbddead5db",
+      "bytes": 7277
+    },
+    "02_BACKEND/lawrag/core/internal_rules.py": {
+      "sha256": "658f44242ecf4248e3ad67265dfa4a1feb4627e91ed6516258c47ffffe761bda",
+      "bytes": 7671
+    },
+    "02_BACKEND/lawrag/core/router.py": {
+      "sha256": "9d34d971d323cf4f07e15feaab7526085f324d1b2066e265f2ac97405df2bc13",
+      "bytes": 13798
+    },
+    "02_BACKEND/lawrag/core/ingest.py": {
+      "sha256": "2ab9953446480fa46c7a3b2f471793326a82ad0cc95f4cb551ef228b7d677666",
+      "bytes": 34902
+    },
+    "02_BACKEND/lawrag/core/format_induce.py": {
+      "sha256": "a07d0fc560bbc9cd52137e012e3a594e28d04a3603b5009aace6100fd8839f6b",
+      "bytes": 16712
+    },
+    "02_BACKEND/lawrag/core/reading_order.py": {
+      "sha256": "d82f0b63b2355982cd121c7b86ef57b05b374f537267f78ec54a726b3b55234e",
+      "bytes": 7465
+    },
+    "02_BACKEND/lawrag/core/structure_fixes.py": {
+      "sha256": "62a1c71b79f1379b60ccdec6ba2536f96b14f0f643de1f08c63e42a8ec35fc22",
+      "bytes": 5673
+    },
+    "02_BACKEND/lawrag/core/defpatterns.py": {
+      "sha256": "c98bb05ef33f6e6572758b65402e6bbf2f77603cde374d001c0319d855dd91ec",
+      "bytes": 2151
+    },
+    "02_BACKEND/lawrag/core/holdout_check.py": {
+      "sha256": "acb262a27146c37e5e21c6f74e453dba232aa7058d6c7a3e573193d2d5530393",
+      "bytes": 4133
+    },
+    "02_BACKEND/lawrag/core/fitness_gate.py": {
+      "sha256": "9c1ec4c2f1d763cdf14d02fe5baade6027c397d15ce3e72d9841054039737519",
+      "bytes": 7366
+    },
+    "02_BACKEND/lawrag/core/lawnet.py": {
+      "sha256": "2469d9cfea83dfb81d0e7cff5a32536874cddbeb7b027b709f02ce6ba72b4d0a",
+      "bytes": 18672
+    },
+    "02_BACKEND/lawrag/core/grid_recover.py": {
+      "sha256": "322117f295b1a15c32d95d8612ac75b77c6a44bbc8e5528d91eb0353948a49e1",
+      "bytes": 12194
+    },
+    "02_BACKEND/lawrag/core/normalize.py": {
+      "sha256": "3101a5c6c4b874151e2c1bee74f5933d548873f2c2ead30020e13a5defe13ab9",
+      "bytes": 14898
+    },
+    "02_BACKEND/lawrag/core/cli.py": {
+      "sha256": "998f7fd1b19d7da7debc9b2b5d68af296a261b3c61860de03d428f59f6e39d2b",
+      "bytes": 17513
+    },
+    "02_BACKEND/lawrag/core/embedding.py": {
+      "sha256": "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c",
+      "bytes": 21212
+    },
+    "02_BACKEND/lawrag/core/hwpx_parse.py": {
+      "sha256": "2bec3a352dae5c7a739c401c865b76f0ae2584c11005b5e4a5d38b7465b8f376",
+      "bytes": 9443
+    },
+    "02_BACKEND/lawrag/core/legal_generation.py": {
+      "sha256": "49a9021f5bb3e843c086ccd0c3f0fcc29ff39232a36746538ba271a1d4fc7008",
+      "bytes": 7105
+    },
+    "02_BACKEND/lawrag/core/action_memory.py": {
+      "sha256": "015c565c6c1f9647c8594a29297362ea9661ea0b51487d32d4b84e15f4faf5ec",
+      "bytes": 268
+    },
+    "02_BACKEND/lawrag/core/hwpx_md.py": {
+      "sha256": "e06abd8b4a3ec0ca0f4eeaa9d5603ed50d6cbe34d15e2f6e50a828d9fc720658",
+      "bytes": 7137
+    },
+    "02_BACKEND/lawrag/core/llm.py": {
+      "sha256": "457438c519946812d5ecf34b6cfe88228b17a903669ffe4c7fcb259123f302d7",
+      "bytes": 31272
+    },
+    "02_BACKEND/lawrag/core/rawstore.py": {
+      "sha256": "faef4606824ea68889baa92d14c1be0f1321f2c810428eaa7df2ace8c3b31e10",
+      "bytes": 10536
+    },
+    "02_BACKEND/lawrag/core/docx_native.py": {
+      "sha256": "2ce658ad7ed1bb07d9e8f51da55127cae3f5d02d9224d1cf9366107ac2801ca1",
+      "bytes": 8397
+    },
+    "02_BACKEND/lawrag/core/genos_chunks.py": {
+      "sha256": "d79c7494c87a57fc7989a624c3af37ef9d38df8684f13c69b65856e2f60f0bc5",
+      "bytes": 6145
+    },
+    "02_BACKEND/lawrag/core/glossary.py": {
+      "sha256": "75be89328a4adf2f01583c6dd9cdaa799486d2e63d12654c7cc35c4493a9d835",
+      "bytes": 8580
+    },
+    "02_BACKEND/lawrag/core/hwp5_md.py": {
+      "sha256": "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d",
+      "bytes": 30118
+    },
+    "02_BACKEND/lawrag/core/term_marker.py": {
+      "sha256": "a7ce935509444dd063e1ff74721f6a1fbfba963b58d220d40c5a10f008905e7e",
+      "bytes": 5362
+    },
+    "02_BACKEND/lawrag/core/typography.py": {
+      "sha256": "2a4d67eefbf089b6f710edf9dc742828db83df0718da4a59a6b98a58137f58cb",
+      "bytes": 13090
+    },
+    "02_BACKEND/lawrag/core/reconcile.py": {
+      "sha256": "e59e494c6cff621c8f1753aec455b2cdb6988547d155ef5a913f7454c87af7c2",
+      "bytes": 9986
+    },
+    "02_BACKEND/lawrag/core/legal_coordinate.py": {
+      "sha256": "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822",
+      "bytes": 10821
+    },
+    "02_BACKEND/lawrag/core/structurize.py": {
+      "sha256": "7ffab3a20c3a1b88dd97b3cc16006d4dbf94aef3c4df5af568ac7791a47c348c",
+      "bytes": 23685
+    },
+    "02_BACKEND/lawrag/core/docx_ooxml.py": {
+      "sha256": "7e5b26e68b6de3aa2e043a9497f0cdd20d2601fb1364e8d92bc575aad6522971",
+      "bytes": 20759
+    },
+    "02_BACKEND/lawrag/core/lineage.py": {
+      "sha256": "f1dad6a728adbad4300703391901a90d0817fa7c54dd5b3f660b9b93cd4f2172",
+      "bytes": 10891
+    },
+    "02_BACKEND/lawrag/core/casereview/__init__.py": {
+      "sha256": "2ce0eb2ff5da3385fa274d710a1dd768b160bea549e34fed3bf4657beb3f8221",
+      "bytes": 278
+    },
+    "02_BACKEND/lawrag/core/casereview/binding.py": {
+      "sha256": "61b106a309f3c458395d961f7291f923c90fb0fc5b103137f4689208bf55869e",
+      "bytes": 5030
+    },
+    "02_BACKEND/lawrag/core/casereview/model.py": {
+      "sha256": "961c7b0ebc957e25678dd0117e4ffff3a762d0479b5e59b96937314dc2e55e14",
+      "bytes": 11624
+    },
+    "02_BACKEND/lawrag/core/casereview/pipeline.py": {
+      "sha256": "e64bf1a7f9d7029fe0ae495e6db38eea173e89513eb2ae563ce5749b0a7a0bd8",
+      "bytes": 86849
+    },
+    "02_BACKEND/lawrag/core/domain_graph/canonical.py": {
+      "sha256": "c52a94db83c79b2a4de0a3e398e57eff2c52b2e5d6ba895b6064efb5407018fe",
+      "bytes": 4343
+    },
+    "02_BACKEND/lawrag/core/domain_graph/__init__.py": {
+      "sha256": "17bb0d686019fce5b9a26d33f4e7005f46600c3bfc4f62c118e077edd69d2a40",
+      "bytes": 373
+    },
+    "02_BACKEND/lawrag/core/domain_graph/oql_patterns.yaml": {
+      "sha256": "53a5dfe429e7fa19c45c0cd282698d6e49c169711b1242ebdada77148a421896",
+      "bytes": 2391
+    },
+    "02_BACKEND/lawrag/core/domain_graph/uncertainty.py": {
+      "sha256": "7ed7fd16b28c6fc2ebd7dae9035217cad4f78ce32500cc58fb544007f7610105",
+      "bytes": 2795
+    },
+    "02_BACKEND/lawrag/core/domain_graph/builder.py": {
+      "sha256": "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a",
+      "bytes": 35026
+    },
+    "02_BACKEND/lawrag/core/domain_graph/normative.py": {
+      "sha256": "fa30b02560709c7699faa752da3b76b6ea4b24e80fc1e22b5b0a04ab60b03adb",
+      "bytes": 9268
+    },
+    "02_BACKEND/lawrag/core/domain_graph/requirements.py": {
+      "sha256": "70f31a9b977f1625714b22c150e1254fee38ed1297cd4b13938091efa504173a",
+      "bytes": 4351
+    },
+    "02_BACKEND/lawrag/core/domain_graph/approval.py": {
+      "sha256": "961686173d85dc7616886c9db7ad39741655ed5ee3c8f256c5e82525a1a26e44",
+      "bytes": 19229
+    },
+    "02_BACKEND/lawrag/core/domain_graph/freshness.py": {
+      "sha256": "e78c29356905cb8775cf1b6483b587e3088e743e75033785e7c0ccd2c4edd1af",
+      "bytes": 3824
+    },
+    "02_BACKEND/lawrag/core/domain_graph/cli.py": {
+      "sha256": "41d3b1a7cd69086059f9da26633cc2a4bcb1f22588eb8de2cb67bbae9ec831e6",
+      "bytes": 13213
+    },
+    "02_BACKEND/lawrag/core/domain_graph/tier1.py": {
+      "sha256": "337bce138fc0bec195e39e951702c577098dbad12a94da7fc3768a034fd7bd2e",
+      "bytes": 11699
+    },
+    "02_BACKEND/lawrag/core/domain_graph/spanparts.py": {
+      "sha256": "832f9f54032e344eb63cf6e436a8a46bf039b637d7148846d4a112de0ddef1de",
+      "bytes": 56774
+    },
+    "02_BACKEND/lawrag/core/domain_graph/store.py": {
+      "sha256": "c696612b566ecd82db8317dbb8e73a8620e4559bb175c5d8b33aa9df86f3130d",
+      "bytes": 6228
+    },
+    "02_BACKEND/lawrag/core/domain_graph/candidates.py": {
+      "sha256": "376bfb41725cf26590c23adc68c8b5da47a85561813c51623975d402f30cf069",
+      "bytes": 23847
+    },
+    "02_BACKEND/lawrag/core/domain_graph/model.py": {
+      "sha256": "08796b7b5ae0b5662adae69c40eeeeaebb5a49dac7ab5ce6bbdad379f3d29de2",
+      "bytes": 1240
+    },
+    "02_BACKEND/lawrag/core/domain_graph/grounding.py": {
+      "sha256": "ba2a0826fb5b4d42a57081a97fdb326981eca51a98c19c0044e7bf2fc8abb531",
+      "bytes": 9097
+    },
+    "02_BACKEND/lawrag/core/domain_graph/alignment.py": {
+      "sha256": "fd6262f35fd0367eea9aca3119eff67e1903560432b0630c101177721b5c322e",
+      "bytes": 12597
+    },
+    "02_BACKEND/lawrag/core/domain_graph/__main__.py": {
+      "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "bytes": 48
+    },
+    "02_BACKEND/lawrag/core/domain_graph/oql.py": {
+      "sha256": "59467bfa3e343b09f28f6266baa2db84a1e67a88e4c904cb49637af856ead8e9",
+      "bytes": 11942
+    },
+    "02_BACKEND/lawrag/core/terms/embed_sections.py": {
+      "sha256": "258b9aa078cd00d8804150193786b093751fe9cf1b960903c2301502a58aa754",
+      "bytes": 8808
+    },
+    "02_BACKEND/lawrag/core/terms/hierarchy.py": {
+      "sha256": "6f6ec2bdc21596ffaf557b1ffabd0a3b04e20077cbb3bfe4b61e53adbe9077ae",
+      "bytes": 5269
+    },
+    "02_BACKEND/lawrag/core/terms/__init__.py": {
+      "sha256": "065b0eb601855abd2b90f2b7378af8cbf145e5a0aae66fd982ea1f16945e1a0c",
+      "bytes": 584
+    },
+    "02_BACKEND/lawrag/core/terms/gate.py": {
+      "sha256": "e0381dc4c162fe42355fdce37d6d72b04a882004d117463ea89e67e66d77c62b",
+      "bytes": 9505
+    },
+    "02_BACKEND/lawrag/core/terms/judge.py": {
+      "sha256": "4fb45a9da5542aa64a5adfd43ba6d0cece39092925758fd35fd9bf2fa0f9050a",
+      "bytes": 5296
+    },
+    "02_BACKEND/lawrag/core/terms/stats.py": {
+      "sha256": "faa1d27829b09c96c09f5f51e16f7d6d3cb4a023d38a6fbb82d02c2cbd92a9f0",
+      "bytes": 5948
+    },
+    "02_BACKEND/lawrag/core/terms/candidates.py": {
+      "sha256": "dea11a3d685dc456c9425fb206d8972ac310b2c61547ca0eadce87096532dba8",
+      "bytes": 9716
+    },
+    "02_BACKEND/lawrag/core/terms/build.py": {
+      "sha256": "dab9e4a66e0b325c9fba29efa99b95a0f6fe316a6c813b4d6cb2666da4619543",
+      "bytes": 8393
+    },
+    "02_BACKEND/lawrag/core/terms/suggest.py": {
+      "sha256": "09c357ad53eebd727a42837f444748e86fd935cecb949f79dff299a004e5565b",
+      "bytes": 8921
+    },
+    "02_BACKEND/lawrag/core/terms/transcribe.py": {
+      "sha256": "2d5fbd0b862fd13d4ffbe4df55a2ca5c926ed0427ee6ab0be1db934ca8c1d7c2",
+      "bytes": 13830
+    },
+    "02_BACKEND/lawrag/core/terms/relations.py": {
+      "sha256": "3270882f9dd374a0442199042bde8e612c532715dc60e44cd0d36bccd468d79b",
+      "bytes": 4327
+    },
+    "02_BACKEND/lawrag/core/terms/embed.py": {
+      "sha256": "28527e39220a2b014454ea178ab279dd0996319eba52716e372b3c7c68e7991d",
+      "bytes": 2453
+    },
+    "02_BACKEND/lawrag/core/terms/__main__.py": {
+      "sha256": "d86ef300172a35d919debef2e6c93e2a5f94ddfeba6451eb7d9995f7e0d7d578",
+      "bytes": 1337
+    },
+    "02_BACKEND/lawrag/core/terms/cluster.py": {
+      "sha256": "93bc18d02d0c25e1e2c7a15ee267fcd08d0e074d535d12e78a98f301940a7f00",
+      "bytes": 1288
+    },
+    "02_BACKEND/lawrag/core/rag/relation_navigation.py": {
+      "sha256": "6ad3b54e25a45efc83cede097b75b85521d935669ecabfeb44fe02ca038f1968",
+      "bytes": 7919
+    },
+    "02_BACKEND/lawrag/core/rag/lexicon.py": {
+      "sha256": "9cf3a6067a1132a63c633ebd7dadbf31d3bec1896461acfcd4c0564411f22bc1",
+      "bytes": 13404
+    },
+    "02_BACKEND/lawrag/core/rag/recover.py": {
+      "sha256": "30ee00a680fb6958d3eb64682a834c9344a920ba70d54872686c96d09f6a0262",
+      "bytes": 25862
+    },
+    "02_BACKEND/lawrag/core/rag/bench.py": {
+      "sha256": "de9f2cb8e0993a8228ff7636d7b0063fb423fe926bd82f1e5ad2f6219977f982",
+      "bytes": 2784
+    },
+    "02_BACKEND/lawrag/core/rag/__init__.py": {
+      "sha256": "1a69316bf921871f0737e8f1b6d0a314ee6c3396715173c16561ed1717cae571",
+      "bytes": 1819
+    },
+    "02_BACKEND/lawrag/core/rag/evidence_slot_nondropping.py": {
+      "sha256": "0df5141de0c62f63ddd5d320f8bd285237e6a8c0cc5c5d400e8d2e5c3d72c78f",
+      "bytes": 11488
+    },
+    "02_BACKEND/lawrag/core/rag/exploration.py": {
+      "sha256": "9969e11cfd090c150621eb44d52b643c66a7111d8ec3d82951885cbfb115eaf3",
+      "bytes": 24920
+    },
+    "02_BACKEND/lawrag/core/rag/grounded_witness.py": {
+      "sha256": "0f0ef30d1f6087befba07e18d4b3f5fc3986ceaefe6db17b6cfca49894676bc6",
+      "bytes": 16798
+    },
+    "02_BACKEND/lawrag/core/rag/source_registry_admission.py": {
+      "sha256": "db56dd9628455e447eb1be961bca8cc0c91bdeae4d1e7afcce3f4d4f8837f151",
+      "bytes": 6564
+    },
+    "02_BACKEND/lawrag/core/rag/controls.py": {
+      "sha256": "e3ebe09a678c7cfaa01fd2815513c473a2eeccf849f999ca3a2eb3616c51f0f3",
+      "bytes": 32626
+    },
+    "02_BACKEND/lawrag/core/rag/query_grounding.py": {
+      "sha256": "7e79b18c6e345d1df82b469daf22e17bafb9469759393f296c994bce707620f2",
+      "bytes": 59142
+    },
+    "02_BACKEND/lawrag/core/rag/legal_validity.py": {
+      "sha256": "50887e17bccea1c389547c069d2b1515bb1362c2fbe696450a11994f1e50c5b5",
+      "bytes": 4783
+    },
+    "02_BACKEND/lawrag/core/rag/recall_first_feedback.py": {
+      "sha256": "1e88e58676d67f013b9fa3fc6fd1410d984c3d6710f2695dfe9ceddcbea6582a",
+      "bytes": 14773
+    },
+    "02_BACKEND/lawrag/core/rag/proof_boundary_feedback.py": {
+      "sha256": "baab7f8374996ce7ddedb7cda956de7bbae8bf4240c3085dbec70a6eda1fdb83",
+      "bytes": 27042
+    },
+    "02_BACKEND/lawrag/core/rag/combinations.py": {
+      "sha256": "a2d575b8cc77124e40e09b5c80104cc3f812fb5a213f83a9b6bc7ce22e0fa125",
+      "bytes": 30940
+    },
+    "02_BACKEND/lawrag/core/rag/evaluation.py": {
+      "sha256": "539be89936700571f923612a73e5f0b23898f0f08badc919013001b2f09969a4",
+      "bytes": 45404
+    },
+    "02_BACKEND/lawrag/core/rag/termretrieve.py": {
+      "sha256": "82a0cdd9759f94e6f6cbd5bbccc40600a43157c045f11cc109548166ca87f132",
+      "bytes": 19011
+    },
+    "02_BACKEND/lawrag/core/rag/selective_legal_guide.py": {
+      "sha256": "0fefb640e960443320e1beff53606b17426f7a6ce8fcbfba4fbe7b896eed9b28",
+      "bytes": 12824
+    },
+    "02_BACKEND/lawrag/core/rag/switches.py": {
+      "sha256": "9414316590132d43b499224b2a645773592308faa3e39e62e028be608c726071",
+      "bytes": 20728
+    },
+    "02_BACKEND/lawrag/core/rag/landings.py": {
+      "sha256": "fcd6b2740e3711b05fa753b4ccafdba057d273beda5d559285b7be85593e67f6",
+      "bytes": 55051
+    },
+    "02_BACKEND/lawrag/core/rag/recover_domains.py": {
+      "sha256": "796e541e0deffe39b9fa4be3f9aac2b2b55350962309bc480d9873bd3d6f2f8e",
+      "bytes": 18495
+    },
+    "02_BACKEND/lawrag/core/rag/provider_compatible_span_selector.py": {
+      "sha256": "2f47a85a3eae6f5c842cbd78dd79f64dfbc802bb5b96158b7d4a99866e02c0f4",
+      "bytes": 4660
+    },
+    "02_BACKEND/lawrag/core/rag/audit.py": {
+      "sha256": "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae",
+      "bytes": 10479
+    },
+    "02_BACKEND/lawrag/core/rag/judge.py": {
+      "sha256": "dd1382de07e236bb1c1a7f48512203ac2d23431e862c951f0908a80ee451d180",
+      "bytes": 7595
+    },
+    "02_BACKEND/lawrag/core/rag/search_trace.py": {
+      "sha256": "da10c85abf1df75b6655b8e81e9147d3ba06dd9f0c17671cfe33fa69b4b5a64f",
+      "bytes": 25005
+    },
+    "02_BACKEND/lawrag/core/rag/claimwise_nondestructive_compiler.py": {
+      "sha256": "a2a050756fd1b90721b13cab92d60308866a58dae34ffae069ab66249519bcf8",
+      "bytes": 17609
+    },
+    "02_BACKEND/lawrag/core/rag/legal_coordinates.py": {
+      "sha256": "bbdb1480d3ed6780d1cad41bede46c524b36604554ed2d6ea0ee4c22c2e059df",
+      "bytes": 4274
+    },
+    "02_BACKEND/lawrag/core/rag/search.py": {
+      "sha256": "cb11068131815d152a06dea2876d7dfaa72fb40f9b68dd644813bfda78344914",
+      "bytes": 16068
+    },
+    "02_BACKEND/lawrag/core/rag/article_reachability.py": {
+      "sha256": "0d3e10bd38dc86040d7eb7b51cb1df60a7c73f54f8a3a758a4a24820be1d156b",
+      "bytes": 17170
+    },
+    "02_BACKEND/lawrag/core/rag/raw_evidence_selection.py": {
+      "sha256": "9f4a24cba7bbaa245ec2bfa830220c1b3ac6c9b7467f474e7cbed449e5599eae",
+      "bytes": 5010
+    },
+    "02_BACKEND/lawrag/core/rag/legal_conditional_closure.py": {
+      "sha256": "0b8d641281f032415e9ddfda10ecd28bb5e96c8c66c8afbdb2386e0d1f7c89c4",
+      "bytes": 5992
+    },
+    "02_BACKEND/lawrag/core/rag/patterns.yaml": {
+      "sha256": "5b815d582a086de1a397987e9656c1db751d3a7de851809cd682bc6a40b4870b",
+      "bytes": 3973
+    },
+    "02_BACKEND/lawrag/core/rag/replay.py": {
+      "sha256": "982e961af83b7c47b2acb3128a898fcf5a76544862b81f7c5afa78b0e4c1bf88",
+      "bytes": 5064
+    },
+    "02_BACKEND/lawrag/core/rag/tuples.py": {
+      "sha256": "07926a0e60341c304f956e7ff0eb4ff13b8954b560e6aa159ac1da09a0017875",
+      "bytes": 34700
+    },
+    "02_BACKEND/lawrag/core/rag/proof_basis_augmenting.py": {
+      "sha256": "9109dbd736945986aaa0fa5f41f03350bcba390c7c5007030cb66a5b3d716691",
+      "bytes": 45073
+    },
+    "02_BACKEND/lawrag/core/rag/verified_span_selector.py": {
+      "sha256": "259b24054393a360c2706883bd0f5c40a162baa26af2abdaa41be5825542f2b0",
+      "bytes": 10903
+    },
+    "02_BACKEND/lawrag/core/rag/legal_proposition_compiler.py": {
+      "sha256": "fa9812dd3e1aa24c5c8ead9a933084f19a8cb08c5fb79a9009eb6b53f4a0fcd4",
+      "bytes": 34259
+    },
+    "02_BACKEND/lawrag/core/rag/legal_evidence.py": {
+      "sha256": "8b7accba150e6acedfb50384c348b7b636eebec51a6272e80889338eb3bc7ef8",
+      "bytes": 3406
+    },
+    "02_BACKEND/lawrag/core/rag/evidence_confusion.py": {
+      "sha256": "4eff99c9ba087eb3629b89aed6b9acd07e7274871d87af3f73b6237ca93fb056",
+      "bytes": 4803
+    },
+    "02_BACKEND/lawrag/core/rag/legalclosure_runtime.py": {
+      "sha256": "639f61d7e3b585e6b1e49e09cf890f78baab330ae33c88f79c96554023cfe3af",
+      "bytes": 22682
+    },
+    "02_BACKEND/lawrag/core/rag/answer.py": {
+      "sha256": "fb9ececbcfb37eaf4736ceb3ee346d6e8ab0c0d6d431637b9b8465824a722a81",
+      "bytes": 45884
+    },
+    "02_BACKEND/lawrag/core/rag/_boundary.py": {
+      "sha256": "5a00094f9e3a434e9401efae30cb381bddb31de27c25d44361aaa8afb2a3a9b4",
+      "bytes": 2422
+    },
+    "02_BACKEND/lawrag/core/rag/promote.py": {
+      "sha256": "9a4ba2b930db7227be2d340097dc7c87424bae7bfe517cf1dce60686df7e0872",
+      "bytes": 10341
+    },
+    "02_BACKEND/lawrag/core/rag/wikiledger.py": {
+      "sha256": "1e812bceab7d548bbd38794844f4855f4af0877d6a9b59453957365dbca0dbe0",
+      "bytes": 4333
+    },
+    "02_BACKEND/lawrag/core/rag/approvals.py": {
+      "sha256": "b96cb9496986853bd2b4463c6941937055f900a6778282729ca1f1cc93d7cc12",
+      "bytes": 10248
+    },
+    "02_BACKEND/lawrag/core/rag/refs.py": {
+      "sha256": "0c5f944aeecd611dca755e643bcac1e748c3cae9bb08bf9dfb936fe88379d981",
+      "bytes": 33722
+    },
+    "02_BACKEND/lawrag/core/rag/general_search.py": {
+      "sha256": "7312ee904afde9b214c003f23ab4b93ba2178c958bae50ba38f352fdee3110be",
+      "bytes": 20521
+    },
+    "02_BACKEND/lawrag/core/rag/framequery.py": {
+      "sha256": "468b68fff3729ed42df0da2f7c6d098d2305605d1690f696a1d6a37926cb1d6b",
+      "bytes": 21344
+    },
+    "02_BACKEND/lawrag/core/rag/legal_answer_checklists.py": {
+      "sha256": "37b3360d7e89a3792bdbca54cded0a6822db29b22ad63b78e8deb61359b20899",
+      "bytes": 11653
+    },
+    "02_BACKEND/lawrag/core/rag/term_proposals.py": {
+      "sha256": "6710571d5608b71412210bf0a03f6e727d6d46c1929ca852fa9407370ca45473",
+      "bytes": 9252
+    },
+    "02_BACKEND/lawrag/core/rag/assertionfirst.py": {
+      "sha256": "0bd55843d268f8ae9a2283a48300dad0222d36bd8d4af6fcdec1637beb78be58",
+      "bytes": 33559
+    },
+    "02_BACKEND/lawrag/core/rag/companion_recovery.py": {
+      "sha256": "4010006aae3e5fc7976b3eca33087b380f79f92bae97be7f5ad4ac8c29bc2f36",
+      "bytes": 19813
+    },
+    "02_BACKEND/lawrag/core/rag/tags.py": {
+      "sha256": "0f14f1a0822c638f6bf20cec5191a8d1dd6b918acbb02c11fd9705477f13044a",
+      "bytes": 15152
+    },
+    "02_BACKEND/lawrag/core/rag/claim_citation_selector.py": {
+      "sha256": "6b8a1b8f9eecdf73b63d1c67a081008784637def736de5e9dfa8d44bba19034f",
+      "bytes": 9848
+    },
+    "02_BACKEND/lawrag/core/rag/rules.py": {
+      "sha256": "993e75b8fa917617fe46303a5694d6e9c8885a263d1c72f0f1614b787baf5eb6",
+      "bytes": 27711
+    },
+    "02_BACKEND/lawrag/core/rag/conceptfirst.py": {
+      "sha256": "7fcaf592e4268d0c25de0979f77b85599ca036ff09b1d4a98d9f1f5e5758d14c",
+      "bytes": 18220
+    },
+    "02_BACKEND/lawrag/core/rag/termexplore.py": {
+      "sha256": "b57a8d8216a51ca6318e1dca3a666e158993a203e2fe59a75c260f54c11241b2",
+      "bytes": 35751
+    },
+    "02_BACKEND/lawrag/core/rag/verdicts.py": {
+      "sha256": "88aa3f626120403e95c9c7fb8de55432580c5d6493cf88bff049d533f0124326",
+      "bytes": 35210
+    },
+    "02_BACKEND/lawrag/core/rag/wikictx.py": {
+      "sha256": "2dc766d2403b5d456ac243b2a33445541ed96ffa07fc7db5916916420a8862a2",
+      "bytes": 25869
+    },
+    "02_BACKEND/lawrag/core/rag/delegation.py": {
+      "sha256": "a1e82697a0924e200b4a282a10aec9f0a9664175e5d17df172db802b655e99ea",
+      "bytes": 3845
+    },
+    "02_BACKEND/lawrag/core/rag/induce.py": {
+      "sha256": "33337f22ebca56dfa1766970a9270577120ac2491f95a8b13fd0dea9480d4548",
+      "bytes": 10067
+    },
+    "02_BACKEND/lawrag/core/rag/query_family_runtime.py": {
+      "sha256": "606fc1822ae31bd8c0821f9358b9ae5a67b00a07836cd3ab1f06b1d907da7d78",
+      "bytes": 34735
+    },
+    "02_BACKEND/lawrag/core/rag/vecfirst.py": {
+      "sha256": "39709c1865d56da08fab748dd4f6930950e0a99b1bd69e4544c28e68dadd1b27",
+      "bytes": 20228
+    },
+    "02_BACKEND/lawrag/core/rag/vector.py": {
+      "sha256": "366bc18eee3722e18f44e808841f704d95ea6dd1d30064e8efc272678e6557a4",
+      "bytes": 21650
+    },
+    "02_BACKEND/lawrag/core/rag/compare.py": {
+      "sha256": "f59b26cb9b359c14e4d67ca4bc42404ce0623a83f366be648cca30810fbe83ed",
+      "bytes": 29995
+    },
+    "02_BACKEND/lawrag/core/rag/internal_compliance.py": {
+      "sha256": "08e30b941b404d9f060700b5358fd6c28d9ea9b3deb4f000aaa3e506b81abf3e",
+      "bytes": 15244
+    },
+    "02_BACKEND/lawrag/core/rag/graph.py": {
+      "sha256": "43b897de695ead6581a6896c56c3e0f6e1edcf81425a2af5cd52b98c51550468",
+      "bytes": 7039
+    },
+    "02_BACKEND/lawrag/core/rag/scopes.py": {
+      "sha256": "e86598c2533c476a8bea7e7538ab6bbb97611e45c4f0cbf4cb5975dcd7ddcd42",
+      "bytes": 10731
+    },
+    "02_BACKEND/lawrag/core/rag/proposition_assessment_shadow.py": {
+      "sha256": "88b20279ad199298b979d121b6946f183d1d18ef142730f2910c92c9747f6e8e",
+      "bytes": 16623
+    },
+    "02_BACKEND/lawrag/core/rag/span_feedback.py": {
+      "sha256": "abc149f42ed226782335a5ad283e43580b0d45decfa964bcc4e21b233ed67163",
+      "bytes": 47756
+    },
+    "02_BACKEND/lawrag/core/rag/wikilife.py": {
+      "sha256": "5584e003758c8bcfefcc2dc6356d53a9a2aa7b3620e8174ed776b7ba627fe014",
+      "bytes": 6509
+    },
+    "02_BACKEND/lawrag/core/rag/qdrant_store.py": {
+      "sha256": "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f",
+      "bytes": 22382
+    },
+    "02_BACKEND/lawrag/core/rag/queryguide.py": {
+      "sha256": "ee32f8b86f231c216a3a12811ad36ee668b6942f439d6dc3d1360805dc6c67a0",
+      "bytes": 21535
+    },
+    "02_BACKEND/lawrag/core/rag/index.py": {
+      "sha256": "51b25bc80c136dd1ff80683e14ccc19659db67594c7a9629c1e6a584a3845e64",
+      "bytes": 65639
+    },
+    "02_BACKEND/lawrag/core/rag/proof_basis_exchange.py": {
+      "sha256": "05c07753d51b0c62569c437a9bcc2ff9a5b3e8a3925bbefe11f8b76b29c81255",
+      "bytes": 23986
+    },
+    "02_BACKEND/lawrag/core/rag/latent_discovery_pool.py": {
+      "sha256": "4c8b451cf65db12898ece9d31f2565c5e7b08eebac6d3b578d26abc6985d8ba7",
+      "bytes": 21022
+    },
+    "02_BACKEND/lawrag/core/rag/verified_span_coverage_gate.py": {
+      "sha256": "2f9bf26dff6707f4c0781d42703de316ec6d4e81bf509491c7a9145860950084",
+      "bytes": 11399
+    },
+    "02_BACKEND/lawrag/core/rag/assertion_shortcuts.py": {
+      "sha256": "13e8e3de47e47c9b95868fb463d5ab38aafd17cc29a5238babc63b5f337449d1",
+      "bytes": 12125
+    },
+    "02_BACKEND/lawrag/core/rag/legal_graph_closure.py": {
+      "sha256": "486d934fb072667675e024680e419d4bb628a098626bd787afaafe93e4715b49",
+      "bytes": 37432
+    },
+    "02_BACKEND/lawrag/core/rag/relations.py": {
+      "sha256": "04cd80e6f46c37c7236845120ce30ea903ab76b4b4a072f4e950b209ac637bbf",
+      "bytes": 24626
+    },
+    "02_BACKEND/lawrag/core/rag/expand.py": {
+      "sha256": "4266e39f788a3a3272293b2624d65ec78d90f88aff354f8640cb85da6b40cd26",
+      "bytes": 23448
+    },
+    "02_BACKEND/lawrag/core/rag/retrieval_feedback.py": {
+      "sha256": "f5f4faacf46c4aea1a60c0b0aecbc3990963979640c16454f80827c38c348d5d",
+      "bytes": 18154
+    },
+    "02_BACKEND/lawrag/core/rag/legalclosure.py": {
+      "sha256": "caf36821e7f78a123e169f9cc5474c1c84eaf45785a0432f6092e12b88021cf8",
+      "bytes": 44650
+    },
+    "02_BACKEND/lawrag/core/rag/frames.py": {
+      "sha256": "902e252238515f6bc470ddc71469b1f33ca88dfffaedfb51379cfc98715fc981",
+      "bytes": 15649
+    },
+    "02_BACKEND/lawrag/core/rag/taxonomy.py": {
+      "sha256": "4a03de565ea29c2e699921646d878b777a304e1aa24be9da31d479451c40020f",
+      "bytes": 11163
+    },
+    "02_BACKEND/lawrag/core/rag/legal_graph_store.py": {
+      "sha256": "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6",
+      "bytes": 40750
+    },
+    "02_BACKEND/lawrag/core/rag/legal_semantic_search.py": {
+      "sha256": "bb9df648c5fa3e6a6301c7cf3779c82f0fbaf978336c68bc447d2f7737c58d0c",
+      "bytes": 37427
+    },
+    "02_BACKEND/lawrag/core/rag/legalissue.py": {
+      "sha256": "23184734a7774a7d968bdeac993dc7c62f7654e3c321aabd910df47fd479f29c",
+      "bytes": 33082
+    },
+    "02_BACKEND/lawrag/core/rag/definitions.py": {
+      "sha256": "4d1c2ad87fcdff4257984e8feec802d5a550eb67651be6157987fb30df3679bb",
+      "bytes": 23018
+    },
+    "02_BACKEND/lawrag/core/rag/legal_references.py": {
+      "sha256": "8680d0676939b0a357af4adaa552f79275035f4e2794607c9a401ed59a2a8966",
+      "bytes": 5381
+    },
+    "02_BACKEND/lawrag/core/rag/oql.py": {
+      "sha256": "ebf7c858102ef4c6f123f41750bf15e7c744873dafe28876750027395ab8d5d2",
+      "bytes": 10806
+    },
+    "02_BACKEND/lawrag/core/legal_graph/__init__.py": {
+      "sha256": "5d472a493e1f028a1a5f6357d62a793162a4e86803cf03db1759c60d88784da4",
+      "bytes": 1950
+    },
+    "02_BACKEND/lawrag/core/legal_graph/behavior.py": {
+      "sha256": "4bd9f6ed52e7235d5c13092b80cb11c7f4964daaadc45667ea0c24e24a29038e",
+      "bytes": 18024
+    },
+    "02_BACKEND/lawrag/core/legal_graph/model.py": {
+      "sha256": "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4",
+      "bytes": 39052
+    },
+    "02_BACKEND/lawrag/core/legal_graph/ids.py": {
+      "sha256": "c989c6e425b38dc50272e4fda21da88c96f987a749fcf6067a53d6b4611f6a45",
+      "bytes": 3948
+    },
+    "02_BACKEND/lawrag/core/legal_graph/compiler.py": {
+      "sha256": "3430c5049a342ce58c7fd7263e9e724deb8196f9e9c139271ce5ea613ffa6405",
+      "bytes": 87172
+    },
+    "02_BACKEND/lawrag/core/legal_graph/validation.py": {
+      "sha256": "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599",
+      "bytes": 67072
+    },
+    "02_BACKEND/lawrag/core/structure/lexicon.py": {
+      "sha256": "72777dee666f6a2910a78721fa21763eb303f82135d3088c352e1b199e4f9586",
+      "bytes": 4707
+    },
+    "02_BACKEND/lawrag/core/structure/synthpdf.py": {
+      "sha256": "a3c7914e555848444c32d915185f5ba8301e2c072542c26a063c973fd59720b6",
+      "bytes": 5327
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_rules.py": {
+      "sha256": "f3106a95f736bb9191586c1f5c89ef08f44152a11fcabc55d7fe64b0f466db2c",
+      "bytes": 7253
+    },
+    "02_BACKEND/lawrag/core/structure/vlm_heading.py": {
+      "sha256": "c86d9abd71b61163062ab89cdc47a2c3dcb0e0641d58cea86b8ea3d0de5b2f1f",
+      "bytes": 22661
+    },
+    "02_BACKEND/lawrag/core/structure/__init__.py": {
+      "sha256": "78c686f8b90b4e5ae140318956252f7efde137a3a806e967e6879b657eaca232",
+      "bytes": 2160
+    },
+    "02_BACKEND/lawrag/core/structure/from_format.py": {
+      "sha256": "20fe978f32c60916dfe59e4f33c11de705f0a2f323a7bb273ca9c574fef6317f",
+      "bytes": 5974
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_regions.py": {
+      "sha256": "73a3a9a55cb40709e2bdf778a0aef424d0df9c724b58bdc1464b780ae16eb299",
+      "bytes": 34101
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_runtime.py": {
+      "sha256": "8cb2d8404e57b077e6c2a94ece325186119ff7facfa956a077a9471d481d21e5",
+      "bytes": 31049
+    },
+    "02_BACKEND/lawrag/core/structure/source_lines.py": {
+      "sha256": "4f843849530423a8219b407e439f5d224256f0d8feae434a6d31d7322bf0e663",
+      "bytes": 1623
+    },
+    "02_BACKEND/lawrag/core/structure/anchors.py": {
+      "sha256": "9414bad408d3c605a912971ec52194d62ebff353fb2c1b20730e1ce6969554dd",
+      "bytes": 7801
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_template.py": {
+      "sha256": "3dd3d965b1bbc274c3399bf63e0df85c2205ebe5d8a406e4e72b099d5d2b677c",
+      "bytes": 13900
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_compact.py": {
+      "sha256": "77a75dbf25f1da253b331efddebb693cb353fa4037bd904fc83dca886f543e35",
+      "bytes": 15737
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_patch.py": {
+      "sha256": "88a68b5cf977621ad5175f9a6a243bfd00d4904c2ea57825529641a99a80978a",
+      "bytes": 1038
+    },
+    "02_BACKEND/lawrag/core/structure/rulehtml.py": {
+      "sha256": "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70",
+      "bytes": 17768
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_pages.py": {
+      "sha256": "e452377a805aa73c5b8c107afa4bdf809916389ac864a51fd4871083d0bc10f6",
+      "bytes": 30006
+    },
+    "02_BACKEND/lawrag/core/structure/viewer.py": {
+      "sha256": "d7bbaa39b13e682f812a7cd7c6a7687c7db145e83b69f0c139a31406859e75f5",
+      "bytes": 17646
+    },
+    "02_BACKEND/lawrag/core/structure/resolve.py": {
+      "sha256": "bdb52ccb6421ee8c724d445c1cbc8be9e72f21d8a484960f3773347e5f892ee9",
+      "bytes": 8289
+    },
+    "02_BACKEND/lawrag/core/structure/dp.py": {
+      "sha256": "1155fad73e8582b60cffb81930caa750f1e2abd7250ebd8ee1eabea215c1b370",
+      "bytes": 15170
+    },
+    "02_BACKEND/lawrag/core/structure/cli.py": {
+      "sha256": "7c9437a41b2fd21e32a76167031729e6f70b18e1ff02e4fe196d5d7adce43721",
+      "bytes": 6712
+    },
+    "02_BACKEND/lawrag/core/structure/fingerprint.py": {
+      "sha256": "3f665489f2846882c6cefe1d7877a11e5f1d29591c2d5c8faee9274f171ba0f1",
+      "bytes": 4050
+    },
+    "02_BACKEND/lawrag/core/structure/from_styles.py": {
+      "sha256": "ccfbb1df3d1efbaac75bd4e354875e0e5c905f768543d104b7c47e3839df72c6",
+      "bytes": 7672
+    },
+    "02_BACKEND/lawrag/core/structure/model.py": {
+      "sha256": "f18d13ef8f55ae86bf79513032c1f2ca1c82c6e0c1f60e01e608a2efce007df0",
+      "bytes": 23013
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_evidence.py": {
+      "sha256": "ae1bcc359ec23503bbfefaaf4d6891a8c215dfb009611acfa195cad2479966cf",
+      "bytes": 13296
+    },
+    "02_BACKEND/lawrag/core/structure/lawxml.py": {
+      "sha256": "d4022de3d982b4d415faa0e08f4ab6373071533ddace859f369828d7ad0c121b",
+      "bytes": 21297
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_visual_loop.py": {
+      "sha256": "5b1f6ee42765ab7a2de9fa1cd032348c97f7a6c0fb922c83d36aa305496852c2",
+      "bytes": 30190
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_basic.py": {
+      "sha256": "d366988c5a814853580d45ff57fb1453e8dcc27c5f39836cf808b376199e42fc",
+      "bytes": 23543
+    },
+    "02_BACKEND/lawrag/core/structure/scoring.py": {
+      "sha256": "7f884a28c0d1cbd2e8590b650eeb65e7982ffe75e510ae68f33d9ade74f6d213",
+      "bytes": 9561
+    },
+    "02_BACKEND/lawrag/core/structure/title.py": {
+      "sha256": "084684ceb4103dd72a0bbc1a385d88b910ac5d6dd6176f73544edbb872efba9c",
+      "bytes": 8714
+    },
+    "02_BACKEND/lawrag/core/structure/recipe_output.py": {
+      "sha256": "0768a81cf5758505e422620e86b3b86ea084b1a88109df2796bd0d1d959f1ff4",
+      "bytes": 9185
+    },
+    "02_BACKEND/lawrag/core/structure/pipeline.py": {
+      "sha256": "5c352adad46b2a172693f8a1f0dc1fce8b8ed5276ea4529ac50c828a7a93bc4c",
+      "bytes": 40496
+    },
+    "02_BACKEND/lawrag/core/structure/registry.py": {
+      "sha256": "2e6a1fc0fa2a531bc4a03bfaa23748803d53077c651cd2e250aea9104c185027",
+      "bytes": 5778
+    },
+    "02_BACKEND/lawrag/core/structure/global_inner/__init__.py": {
+      "sha256": "435f6785955746abd94781a8ac750454296c67eef21ef93fc15f2c3c7ec3f734",
+      "bytes": 567
+    },
+    "02_BACKEND/lawrag/core/structure/global_inner/nesting.py": {
+      "sha256": "cd9aae1df9ce38fdb89f9530928b5a7bb37d00259d42b8b407ee45316f69e32d",
+      "bytes": 3821
+    },
+    "02_BACKEND/lawrag/core/structure/global_inner/ordinal.py": {
+      "sha256": "c313b9e7681725d9fef9141a61e0f27126a5e8dd1b88553d808343bb446f2e0a",
+      "bytes": 2286
+    },
+    "02_BACKEND/lawrag/core/structure/guards/particle_ko.py": {
+      "sha256": "774c125360af6ab1b03d892b535df7521bb97e092399b3d2af352d3eb6c2e3f6",
+      "bytes": 2648
+    },
+    "02_BACKEND/lawrag/core/structure/guards/__init__.py": {
+      "sha256": "56283604e05b7d442ff05007eddd0b676047488935eed1e3c29a905d41aac66a",
+      "bytes": 1145
+    },
+    "02_BACKEND/lawrag/core/structure/guards/block_pos.py": {
+      "sha256": "b049887e56c764060dc4e839a20dc4dc971a98cdb10db0a92d56885e2b7c5adc",
+      "bytes": 1314
+    },
+    "02_BACKEND/lawrag/core/structure/guards/construction.py": {
+      "sha256": "8e1894a109d2b6a505aa4246df94c30f2065d09331d8f794d6a0807f9c185131",
+      "bytes": 1370
+    },
+    "02_BACKEND/lawrag/core/structure/family/__init__.py": {
+      "sha256": "413f6c564cfe9ca349cfed8db5822280bb62d64718166de39ad6d576f0f7d525",
+      "bytes": 4714
+    },
+    "02_BACKEND/lawrag/core/structure/family/anchor.py": {
+      "sha256": "2838fe1ac668b5bfddbc4df38ef8efd9d74b788930d932c998a4042bb91334d5",
+      "bytes": 3656
+    },
+    "02_BACKEND/lawrag/core/structure/family/run.py": {
+      "sha256": "57a36e93ad3bab595beffd4874af336f034744e6cc291765294da5c746250749",
+      "bytes": 4283
+    },
+    "02_BACKEND/lawrag/core/structure/family/succession.py": {
+      "sha256": "5196b1048c55ffd6c532f5e00b42d45d55f54ee5aeb4c2a99ee74e0b6e33cebe",
+      "bytes": 3437
+    },
+    "02_BACKEND/lawrag/core/structure/global_outer/__init__.py": {
+      "sha256": "b8cf182e08c84b468cdfa8f9b24e01e240a04a5218e8362ef54d2e28fca40fbb",
+      "bytes": 832
+    },
+    "02_BACKEND/lawrag/core/structure/global_outer/indent.py": {
+      "sha256": "1b6a359a620c59c24e25422b2324690875e900e55d5b21eb58497b9cdcde0164",
+      "bytes": 9531
+    },
+    "02_BACKEND/lawrag/core/structure/global_outer/reg_score.py": {
+      "sha256": "99083ab0fe2d33d26163e946239a60c8a2841e7a189264d9a64a685cc6c775e6",
+      "bytes": 3284
+    },
+    "02_BACKEND/lawrag/core/structure/global_outer/ladder.py": {
+      "sha256": "055534102712a0e6fbba4185eb07f4cb45a741c640266ed97f8b99f3603ff2af",
+      "bytes": 21357
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/__init__.py": {
+      "sha256": "45236bcec87795d66a523f55be3eb00777d8b4dce5603a0fc847d7ab8edb477e",
+      "bytes": 3549
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/dot_number.py": {
+      "sha256": "3b4357c90ce745a72ae7bade812fb40afdb3bcbc8317877c1fc59ee587421ceb",
+      "bytes": 2877
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/style_heading.py": {
+      "sha256": "0118633b455f8dc841696af17793c6c09a12b966b06b18bada65879de13a87e9",
+      "bytes": 3455
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/bullet.py": {
+      "sha256": "f513bc83f903e064af9a74cf5bb45e6f8819412568e3c519bfe6464058bdfbf7",
+      "bytes": 4017
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/paren_number.py": {
+      "sha256": "45c38687b5c159a594dbd8976fee195081c06912cd262103ca0a55500ecfdb47",
+      "bytes": 2528
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/circled.py": {
+      "sha256": "270efb6aeaf32f0e6393bc8e8b3a70b765e7e31a19de8a61dc80d4c45e417fc4",
+      "bytes": 1020
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/hangul_jamo.py": {
+      "sha256": "4bfb9674bcd99ca922a45d8581b80b86fda8c0406fd44cbae55302916e098241",
+      "bytes": 1223
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/kr_article.py": {
+      "sha256": "e2f9002a1c347b7de650ed8ff7518998deaad8f7c0cac3529c4006a76f6552c5",
+      "bytes": 1305
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/roman.py": {
+      "sha256": "0b29066a40dfb4ec42497e10b58e27ac32e23bd34103f267b2dec529c5aef70a",
+      "bytes": 1855
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/kr_division.py": {
+      "sha256": "e24ebbf15a981f4e419840ba2582652703b6294bcf5be71678d8fd693c19d02e",
+      "bytes": 1395
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/annex.py": {
+      "sha256": "64dd834206bf8e4862a4bbc51b83ed3106e93f57cac8b49aa4e4e479fdd688f2",
+      "bytes": 3086
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/writing_guidance.py": {
+      "sha256": "0c189c39900b4ac489180c34d6c69cb8daf9b82580e497942878987348b4c1ed",
+      "bytes": 793
+    },
+    "02_BACKEND/lawrag/core/structure/proposers/custom.py": {
+      "sha256": "a9c1e6671806339f4cdcd0666c1af7d71911c3f79b3f5b6f57889af800478be6",
+      "bytes": 6487
+    },
+    "02_BACKEND/lawrag/core/structure/templates/basic_v1.json": {
+      "sha256": "8d639633e84088e34dbad57b1de659073f4116f6ab27fdac3b2f8386100ecb87",
+      "bytes": 2045
+    },
+    "02_BACKEND/lawrag/core/structure/templates/disclosure_v1.json": {
+      "sha256": "53c4e44f916fcd720a23a3a71b806f0fdf8a263a91cc66e05febbdc0d80890fa",
+      "bytes": 444
+    },
+    "02_BACKEND/lawrag/core/structure/lexicon/josa.yaml": {
+      "sha256": "33dbdda8cf821ae9a81b1c8daa4779cb066a42b5985cdab20d7c3fc405f79e3f",
+      "bytes": 1474
+    },
+    "02_BACKEND/lawrag/core/structure/lexicon/reference_predicates.yaml": {
+      "sha256": "4d15e0d795fcd56246439a18f61e71fd3cb914bb6343627e9804c7a0fbc32f24",
+      "bytes": 818
+    },
+    "02_BACKEND/lawrag/core/structure/lexicon/numerals.yaml": {
+      "sha256": "f188d0998685555dfc9b4014023013fcadb4b5616ec67ca918b074b77a2291bf",
+      "bytes": 1903
+    },
+    "02_BACKEND/lawrag/core/rag/knowledge/__init__.py": {
+      "sha256": "5c37d2569c3d216fb7494ece83bf2b8d9f257166e0fb2bfacd6b32509d8b61eb",
+      "bytes": 266
+    },
+    "02_BACKEND/lawrag/core/rag/evidence/__init__.py": {
+      "sha256": "68fe41c9637ad62f6501da378e347acdc09b1f65c56399fb7ef08ca6f8199896",
+      "bytes": 264
+    },
+    "02_BACKEND/lawrag/core/rag/reasoning/__init__.py": {
+      "sha256": "b602dae631888e345a8bc772e228c58e71a3406f083b761bb4df37cb4bde2966",
+      "bytes": 262
+    },
+    "02_BACKEND/lawrag/core/rag/retrieval/__init__.py": {
+      "sha256": "d3a1e95f15f091a4eaa8f92dd45d24c262eb984620a45b01adc7e637e5f6b965",
+      "bytes": 265
+    },
+    "02_BACKEND/lawrag/sources/__init__.py": {
+      "sha256": "3d0e71cc882a8aab47e54e44c4ee433523fe4671679a295688efdd205b887037",
+      "bytes": 246
+    },
+    "02_BACKEND/lawrag/sources/cite.py": {
+      "sha256": "548d970fa0c264f5a80204f58b4438896b31920776e3434ea798ccef87623092",
+      "bytes": 1753
+    },
+    "02_BACKEND/lawrag/sources/moleg_knowledge.py": {
+      "sha256": "613e80f7b4092943bb1547e5cf713b05c9f60265f550ee25e5b4f9760b696412",
+      "bytes": 13803
+    },
+    "02_BACKEND/lawrag/sources/lawgo.py": {
+      "sha256": "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d",
+      "bytes": 10258
+    },
+    "02_BACKEND/lawrag/sources/krx.py": {
+      "sha256": "2c7eaf42810d0790e4185408f6dc94d38470bca052264b48e73ff9044616e85c",
+      "bytes": 14041
+    },
+    "02_BACKEND/lawrag/sources/fsc.py": {
+      "sha256": "10060f64e08accb1829fe0428c3e511ccc263ef3f932f9da6f1e8112f1a3be0e",
+      "bytes": 5346
+    },
+    "02_BACKEND/lawrag/sources/expc.py": {
+      "sha256": "034a78c5943a5d6416663a2903fef496b108b2ea2727639281b21f1b4e39b195",
+      "bytes": 6458
+    },
+    "02_BACKEND/lawrag/sources/base.py": {
+      "sha256": "7518b1929fb311a70ebf9914a7d4a9ddc0e39839fe266b37e812115a4b311f0a",
+      "bytes": 2232
+    },
+    "02_BACKEND/lawrag/sources/prec.py": {
+      "sha256": "113dd1f16d2fd1e00e85fada4cfe8eaf10587d8187cab259d9bf3af045182afa",
+      "bytes": 4123
+    },
+    "02_BACKEND/lawrag/sources/kofia.py": {
+      "sha256": "ed38eccd88b14e8e50c593d6c91578e7e19f13f06ba6b0a7162a09db69ce3e13",
+      "bytes": 10916
+    },
+    "02_BACKEND/lawrag/sources/common.py": {
+      "sha256": "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b",
+      "bytes": 9214
+    },
+    "02_BACKEND/lawrag/platform/__init__.py": {
+      "sha256": "295d22a04149e41831464b41ad15b329034149ec1420c23091685b9b908370ca",
+      "bytes": 1333
+    },
+    "02_BACKEND/lawrag/platform/stored_paths.py": {
+      "sha256": "255b27bbb9a1745499a87901bae6e392158bc335ae7a9db6f401d5e84e817ebc",
+      "bytes": 4278
+    },
+    "02_BACKEND/lawrag/platform/workspace.py": {
+      "sha256": "fd2c528d8a9f4175eeb49719cd460df58d950821b9f64b11d22e0ac17776b814",
+      "bytes": 123571
+    },
+    "02_BACKEND/lawrag/platform/main_promotion.py": {
+      "sha256": "d9c9c753aab1844e6abb1e62d9b094aacf8f7f6e226cb027a0b32e8eae049e21",
+      "bytes": 61574
+    },
+    "02_BACKEND/lawrag/platform/active_data.py": {
+      "sha256": "980cebc3039e5c26bddb9553e27968b7c008f25e6b14e6905e69bae4e0ab10cb",
+      "bytes": 1539
+    },
+    "02_BACKEND/lawrag/platform/runtime_services.py": {
+      "sha256": "2e69a0478b7f948bea6f9f9df54c21bbab47449bbebaf43cb7a9845c7ea89ccd",
+      "bytes": 13353
+    },
+    "02_BACKEND/lawrag/platform/experiment_store.py": {
+      "sha256": "8068900464716ecf28361afbea03c1e8fbefa92840148cbfa47d4a6f71e39eeb",
+      "bytes": 5546
+    },
+    "02_BACKEND/lawrag/platform/paths.py": {
+      "sha256": "473da4dbd00a729768444900a47e9f176e9fcb09deb12fa0e5713e0bfb989f8b",
+      "bytes": 2667
+    },
+    "02_BACKEND/lawrag/platform/release.py": {
+      "sha256": "c97488deaa2eb9fe68c0ec81072719587e06c91a27ec181adf22de6d9bbab1ba",
+      "bytes": 142235
+    },
+    "06_TOOLS/pipeline.py": {
+      "sha256": "981778a20be9ed90272579b36a119341bd8016ff5a89786c0ee6296331476cac",
+      "bytes": 4874
+    },
+    "06_TOOLS/COMMANDS/composed_build.py": {
+      "sha256": "4c5ad7c4aa2ba329a4bb39b303bb5af95be6b8dc4f7f9894c811fd9a84019b7a",
+      "bytes": 9862
+    },
+    "06_TOOLS/COMMANDS/genos_data_stages.py": {
+      "sha256": "4b0b5b2ee9ebc33255f8bab598f295cd8615bb3cbbac99f7366ea22a90b1a26b",
+      "bytes": 15557
+    },
+    "02_BACKEND/semantic_runtime/search_selection.py": {
+      "sha256": "3d6febfedf60384d87142a480e31809c1a6b233cc2fd95b454e559bb3709c013",
+      "bytes": 9695
+    },
+    "02_BACKEND/semantic_runtime/filename_versions.py": {
+      "sha256": "8690cc81ae287be5300edd46b8baafa238c27b0ecf5417dbe9dfb778bea5a777",
+      "bytes": 23183
+    },
+    "00_SYSTEM/FILENAME_EXCEPTIONS.json": {
+      "sha256": "818586217131955cd107094ec581a0737893dbd5fafc3caf9065011fdd96bcea",
+      "bytes": 3039
+    },
+    "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json": {
+      "sha256": "013ba7ca3dfa79632641785bc972bbb8daa2677544aa5c9946e07e4bbdcfa04d",
+      "bytes": 21831
+    },
+    "02_BACKEND/semantic_runtime/factorized_audit.py": {
+      "sha256": "ba5c776719cf98c4b45d2dda1708e180fe1b45e4d1ec438a31d91c8f5fbb2d35",
+      "bytes": 5118
+    },
+    "06_TOOLS/COMMANDS/genos_data_stages.sh": {
+      "sha256": "f1a69abc82cfba82cac8cd2739caf34743bd559cfa41e6643b32bec28d430b3d",
+      "bytes": 346
+    },
+    "06_TOOLS/COMMANDS/prepare_data.py": {
+      "sha256": "4efcafa21be1cc8dc6a5545d0ed609004e1c6d0a51698709b826be68326ffd04",
+      "bytes": 4471
+    },
+    "02_BACKEND/lawrag/agents/agent6/__init__.py": {
+      "sha256": "f6c71199714afea3f1bfdd0a0dd9eed4d58baeb3263bbbecc14e93b67bd78ace",
+      "bytes": 413
+    },
+    "02_BACKEND/lawrag/agents/agent6/formats/decree.format.json": {
+      "sha256": "379fb3e9e74336587728fe647060683caf89ad7cca5b135aafb3ed7cfd53b5c4",
+      "bytes": 3262
+    },
+    "02_BACKEND/lawrag/agents/agent6/formats/kofia_rule.format.json": {
+      "sha256": "da1871dcc00a8d11c7ce762c8167af0423adc5eb3b32f18bc0dc8fa940c356e4",
+      "bytes": 5089
+    },
+    "02_BACKEND/lawrag/agents/agent6/formats/transcript.format.json": {
+      "sha256": "1c872a574a533868d2bd1a85b4a416cd6f28de3989f3637edb144f78b7bcba02",
+      "bytes": 1534
+    },
+    "02_BACKEND/lawrag/agents/agent6/formats/statute.format.json": {
+      "sha256": "720699fdcef2ef717802d35862136f98a305153943e8a964365d0e0529c75404",
+      "bytes": 3813
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/llm_cache.py": {
+      "sha256": "91482c830175074f9a9a19891bffff9ed94ed4c15dea8be38a060de7757eaace",
+      "bytes": 13133
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/corpus_build.py": {
+      "sha256": "67cc3a89a1070a58382520f3ce976f1643b53d42595551b0881dec2bac9155de",
+      "bytes": 50086
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/schema.py": {
+      "sha256": "7072e6b1c7db241c970c13130748e7f203c3f6464af9c2a9517f319f1650ff39",
+      "bytes": 32914
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/judge.py": {
+      "sha256": "ed07316e89e763bd8613968ac69c47c57cb89a4602254447c2542ebd098ee77d",
+      "bytes": 26267
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/aggregate.py": {
+      "sha256": "6863d8df89b655cbcd970c7d5cf7b990b1d3fe03ef1385740918652859529a84",
+      "bytes": 13402
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/transcript.py": {
+      "sha256": "d202d6bd9aac05e86119311768d580d67c0a1f7ff18eff6a23bdb77aa243dd03",
+      "bytes": 15340
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/when.py": {
+      "sha256": "7d9e83b34f7a0bda292dcc23b2e39702c660bb944cb051d4c0cc4f56a6cde504",
+      "bytes": 15712
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/preprocess.py": {
+      "sha256": "01ba2daf65fa942cd26b4f9e00dbee04567b84b13daef3dd89ec989e6db35204",
+      "bytes": 26376
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/report.py": {
+      "sha256": "c60636bb280c05cea20b480f3635c06af693d56a110166e259e79a43b9bfdaf6",
+      "bytes": 18772
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/cli.py": {
+      "sha256": "c249c458f90ca8b0a036d99431d59f6d0ff1f4a283133b35ab6f612ddb503b49",
+      "bytes": 12339
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/basis.py": {
+      "sha256": "257fad5db8bfc4987cb10f7797750e89f28a4aac4dc4d4c4b33b98e7387ded00",
+      "bytes": 26549
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/harvest.py": {
+      "sha256": "3581c01bb26e08197ddcc27ed4732d21b528c66eab387507fcf910fbd69582a3",
+      "bytes": 12023
+    },
+    "02_BACKEND/lawrag/agents/agent6/src/context_asm.py": {
+      "sha256": "64af75b35ee793c093fee5ec73a23e804bfa85092cfa0e114e801f067969be9b",
+      "bytes": 23114
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/manifest.json": {
+      "sha256": "e09936dd0c4388e04fe9ff63d07b2f30cbec4202a99bb163aff9898fe746bf44",
+      "bytes": 30931
+    },
+    "02_BACKEND/lawrag/agents/agent6/glossary/transcript.glossary.yaml": {
+      "sha256": "6cf6199a6b7859abbc321275355bf7b52feed9a2c1db819d3459db577f423bb7",
+      "bytes": 934
+    },
+    "02_BACKEND/lawrag/agents/agent6/glossary/decree.glossary.yaml": {
+      "sha256": "5b49f4a2f9c5e4d4fbb1aac1140f03f5ff9d5e960a6344a8aaedb17b688b767a",
+      "bytes": 4640
+    },
+    "02_BACKEND/lawrag/agents/agent6/glossary/kofia_rule.glossary.yaml": {
+      "sha256": "1222726ad3d7e430f109469c3eb396346db6ebaf352c7da03100cefc6d149865",
+      "bytes": 9321
+    },
+    "02_BACKEND/lawrag/agents/agent6/glossary/statute.glossary.yaml": {
+      "sha256": "d4d8c433d726d4f6b502a91c0c9dee4d7e31d958f65c9f6b4ce6c254737229c7",
+      "bytes": 7606
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json": {
+      "sha256": "b8127ad0f83490e7b5ad88379507d3e847c74339522f5fe0e4dc2aa14751a38e",
+      "bytes": 1221776
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json": {
+      "sha256": "b5357853a99b5debbd6abd22603ed36cb0eb25d10eb6e538692377261115dd09",
+      "bytes": 320939
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml": {
+      "sha256": "c7782cb82f5d5c5837d7d0a61d3fb620315f95cf34272cabeacdc6b15c0019e6",
+      "bytes": 4055
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml": {
+      "sha256": "18e42559a1fe6eedd2c8f76930681ea4a30362c646d6e3873c0df030a95b7338",
+      "bytes": 3019
+    },
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml": {
+      "sha256": "190fbb50d3b45e8cbdd9645bde8f13fab9eab2baa860e66b0c30b221011da951",
+      "bytes": 5325
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-21.yaml": {
+      "sha256": "8ec8d66b9e30df2dab4c1b9421fe6a94143b6baa56e46c9963dddf5564672852",
+      "bytes": 2873
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-14.yaml": {
+      "sha256": "fb5873d6153126bc8604082d8a74ff2a81b212bc9b482849f08564072da0be0b",
+      "bytes": 2843
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-17.yaml": {
+      "sha256": "17b1feaa52b26c08628ae4c89b5925e7b11124095b24d4cd3873ffe561cfce9f",
+      "bytes": 2701
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-04.yaml": {
+      "sha256": "188bc2634b9939dcf920d82533718e5c0fe5648f14531c32c9fc3d99e494d270",
+      "bytes": 3050
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-22.yaml": {
+      "sha256": "18047c5d7495754a8cc50efd28fa8d0ca8cf2e6f2497a61136f813de42096444",
+      "bytes": 2664
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-25.yaml": {
+      "sha256": "d530a973ee25ba2caba35ac585c4818f3a827bd3aa5f55ea166d3fe966f3c2a8",
+      "bytes": 3373
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-03.yaml": {
+      "sha256": "fa059dbb074cdeae7538b4b0d9f033d3e02437d960b068031934298e8a54b7db",
+      "bytes": 2713
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-19.yaml": {
+      "sha256": "c176ec081804a439010149b26b059675b26e0b59fdd7e5676c707b21289944b3",
+      "bytes": 2356
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-05.yaml": {
+      "sha256": "dd19e96dee1fd29e43ffedb297721a612b129a6dc3a9e70c02920fd64b5ea74a",
+      "bytes": 2694
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-23.yaml": {
+      "sha256": "645c5b5cca3b0df4b735ee371a74bbaa61d42e826f78c866ca67f4a17d30248e",
+      "bytes": 2843
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-15.yaml": {
+      "sha256": "91ca816deddab0703dd478c94154362210930c9c9b07de8b1a8ac835719c76ee",
+      "bytes": 2181
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-06.yaml": {
+      "sha256": "9d16ccd45c72bfe1e560a9c2e749809fb3d81509f3f8c64df19d28b482c397f7",
+      "bytes": 2168
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-01.yaml": {
+      "sha256": "d2c0997d6dac69b7781610f0192f15780df143b6e5a394f397ff31d34fbeb996",
+      "bytes": 2888
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-28.yaml": {
+      "sha256": "a3b9fb3eda0166e83d1d2bdd352095e7d069d2e953ade77f692a8b0ffaf922f8",
+      "bytes": 2936
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-29.yaml": {
+      "sha256": "c8537c0791a4967dcedda9f78e33d124735f10da5137e4a4862e0305d09ae06c",
+      "bytes": 1229
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-12.yaml": {
+      "sha256": "f246b73014df9b16060987a2884ace18b673daaffa6afeffcadb37a5d689c885",
+      "bytes": 2518
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-10.yaml": {
+      "sha256": "dcb9dd5fd063db7ced47a03ed13307e6d6bd914d33782c42b40bc3553e1867a8",
+      "bytes": 2801
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-16.yaml": {
+      "sha256": "d8836f1527604d4910be0e9cf8eb3656a0b924fab5329d6516f3098b22305754",
+      "bytes": 2683
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-18.yaml": {
+      "sha256": "33bb9b368453d23d0e72c26fcda72f3ab111428f9885de8a7a898ef3b889361c",
+      "bytes": 3231
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-24.yaml": {
+      "sha256": "b4ae933f83057338b91d3aadd5cd8767201aa357d4130c949a3dfe1b49a46f94",
+      "bytes": 2630
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-11.yaml": {
+      "sha256": "6806b05284ea520a83e893deb755200bcb1f88941821903407a6f71cb981f7c7",
+      "bytes": 2534
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/E-27.yaml": {
+      "sha256": "e1f9750366a913fff0802e8ce515cabc94dbad56536e8e4b240707b7280a5600",
+      "bytes": 3392
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-08.yaml": {
+      "sha256": "bd1484ed0c0ddbd750e7a1bfff4c7b8a4cce5c7a6cb8caf9e9a3a483a532a9d7",
+      "bytes": 2343
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-30.yaml": {
+      "sha256": "9455ac8d366761ca1fcddbe1d07a07831b9bc083ad3aba7881a57ce7e9461435",
+      "bytes": 3775
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-07.yaml": {
+      "sha256": "a80d46853e14835e8b46c35b5439353191a7d1f9d852388c30f9026c97dc5643",
+      "bytes": 2984
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/E-26.yaml": {
+      "sha256": "661dfe9f49b051ae9efe5c322cfea3f167714f23534febaeb607b831a4b94f65",
+      "bytes": 3595
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-02.yaml": {
+      "sha256": "e6e10fc5a9b553b1effb3adef13e54295bd13ec0824cf9d8e0460560a8106528",
+      "bytes": 2992
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-20.yaml": {
+      "sha256": "b18d51c522aa5f4de723c64a357942565ce32755cd8bb6ee540815268b0340c0",
+      "bytes": 3564
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-13.yaml": {
+      "sha256": "dec0996fad6ebb59ea16b48ced169112cf8a71da1f56ab3f31be832b6ff4c593",
+      "bytes": 2878
+    },
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-09.yaml": {
+      "sha256": "658413361cdc183c43c4a70f0b3daa62fad22f2337c5ea51d17fe0ca0613596f",
+      "bytes": 2477
+    },
+    "00_SYSTEM/GLOSSARY_SCHEMA.json": {
+      "sha256": "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf",
+      "bytes": 581
+    },
+    "00_SYSTEM/GLOSSARY_PIPELINE.json": {
+      "sha256": "ecae8af63ba66579ba380f235bf2e2cd650c4a87c46a644eefbc944ac9a9f588",
+      "bytes": 17288
+    },
+    "00_SYSTEM/INTERNAL_LAYOUT.json": {
+      "sha256": "3b7eafe6047a98548090af4b01e2d3bec30017d641b490cb29b68c6414567dba",
+      "bytes": 2794
+    },
+    "02_BACKEND/lawrag/agents/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json": {
+      "sha256": "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118",
+      "bytes": 2632
+    },
+    "02_BACKEND/semantic_runtime/term_index.py": {
+      "sha256": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+      "bytes": 38335
+    },
+    "02_BACKEND/semantic_runtime/term_links.py": {
+      "sha256": "9e23ec101eb9fb0078171ee3c05f96d71c758ab80312414f2c197bee06288740",
+      "bytes": 19423
+    },
+    "02_BACKEND/semantic_runtime/navigation_build.py": {
+      "sha256": "9af07e850b70aff48c8d7cb639d68d0ce1e36721ca8d330fcfa93db9adc7f8e2",
+      "bytes": 6501
+    },
+    "02_BACKEND/semantic_runtime/navigation_storage.py": {
+      "sha256": "93eb882773bd4d7ec5bfa176592e9975146a6d9b322c3529c1285abcb126bc14",
+      "bytes": 21035
+    },
+    "02_BACKEND/semantic_runtime/reference_build.py": {
+      "sha256": "945cf6166a59b8277db79fc8300b69fbcadedc02f88954c033dd7abb5f5b73e9",
+      "bytes": 8305
+    }
+  },
+  "allowed_existing_build_hashes": {
+    "02_BACKEND/lawrag/pipeline/golden_authoring.py": [
+      "987315482d60418522fa9009d735d7eeaef553c13528ef14f6a5fd9e6c137cc6",
+      "987315482d60418522fa9009d735d7eeaef553c13528ef14f6a5fd9e6c137cc6"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_staged.py": [
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    ],
+    "02_BACKEND/lawrag/pipeline/generation_build_steps.py": [
+      "1bb872259834a684aabfcab51d77ccac2f8137a3655953af66eb87a46f348b6c",
+      "1bb872259834a684aabfcab51d77ccac2f8137a3655953af66eb87a46f348b6c"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_moleg.py": [
+      "281376fc94b3f5213d4d3596ef5089cfeb1b438ac4d117aa525f1435a53dae40",
+      "281376fc94b3f5213d4d3596ef5089cfeb1b438ac4d117aa525f1435a53dae40"
+    ],
+    "02_BACKEND/lawrag/pipeline/team_raw.py": [
+      "56fa1da5177136261a92ed99de27b6151fdb70726dc5b26d97753403a395f573",
+      "56fa1da5177136261a92ed99de27b6151fdb70726dc5b26d97753403a395f573",
+      "72f1ea7be16866291ea63e02d26326b457d4f215e0b12311eb88df7ab033489d",
+      "3035a298f88ccc9350f3f65137b98cc696765e8d6062be7635397baad3d2b9ca"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_document_update.py": [
+      "203160cd71deefef6c6b2a5ca40363d781e0449a3d1279083a845c77dd4fca9b",
+      "203160cd71deefef6c6b2a5ca40363d781e0449a3d1279083a845c77dd4fca9b"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_public_glossaries.py": [
+      "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9",
+      "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9"
+    ],
+    "02_BACKEND/lawrag/pipeline/__init__.py": [
+      "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953",
+      "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953"
+    ],
+    "02_BACKEND/lawrag/pipeline/batch.py": [
+      "7bf3e3b6ced2d191ea174059e29027c7bd06aafdd84a1927f40ca9c42028847e",
+      "7bf3e3b6ced2d191ea174059e29027c7bd06aafdd84a1927f40ca9c42028847e"
+    ],
+    "02_BACKEND/lawrag/pipeline/wiki_proposal.py": [
+      "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005"
+    ],
+    "02_BACKEND/lawrag/pipeline/task_harness.py": [
+      "4d29d7b36991dc913ee26cc0649f73023631e5297ec92a923f4817ba8ee3a892",
+      "4d29d7b36991dc913ee26cc0649f73023631e5297ec92a923f4817ba8ee3a892"
+    ],
+    "02_BACKEND/lawrag/pipeline/reference_model.py": [
+      "f1e53155d93d80b9bd2b1709d5a5e105f336dbd225761e4c7a54e888c1ffbe91",
+      "f1e53155d93d80b9bd2b1709d5a5e105f336dbd225761e4c7a54e888c1ffbe91"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_files.py": [
+      "331bb1405283a6f9bb596cc690ac2d7f10ee84f7a4ea907731f7820a00c9f27f",
+      "331bb1405283a6f9bb596cc690ac2d7f10ee84f7a4ea907731f7820a00c9f27f"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_assembly.py": [
+      "ee1684148a14a1ceb0fdf734e0ca50b79abab851fa6bc596be8a4a985124c784",
+      "ee1684148a14a1ceb0fdf734e0ca50b79abab851fa6bc596be8a4a985124c784"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_stages.py": [
+      "f6e292309d14fdeb1edfc0bece26fd07456e305221c46ba31c31dd4a493c7f60",
+      "f6e292309d14fdeb1edfc0bece26fd07456e305221c46ba31c31dd4a493c7f60"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_lawxml.py": [
+      "a61d428d750e8122b21915bb25c1553bc0dfc85afbe418b9a8e38b52bec8cc50",
+      "a61d428d750e8122b21915bb25c1553bc0dfc85afbe418b9a8e38b52bec8cc50"
+    ],
+    "02_BACKEND/lawrag/pipeline/ontology.py": [
+      "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825",
+      "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect.py": [
+      "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c",
+      "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c"
+    ],
+    "02_BACKEND/lawrag/pipeline/retry_adoption.py": [
+      "3cb91db3f052aca9c4dcaa9dff3f2819c198b04f19927f91c724631fb8bd26aa",
+      "3cb91db3f052aca9c4dcaa9dff3f2819c198b04f19927f91c724631fb8bd26aa"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_knowledge.py": [
+      "94d666ad1262249dbd4b95886fab3b66cd316ced6cde80fb723280c36b9e0e25",
+      "94d666ad1262249dbd4b95886fab3b66cd316ced6cde80fb723280c36b9e0e25"
+    ],
+    "02_BACKEND/lawrag/pipeline/native_trace.py": [
+      "380670240508d8baf9b88608c1f73fbbe939e9e803da01576c0d87f4eefbf173",
+      "380670240508d8baf9b88608c1f73fbbe939e9e803da01576c0d87f4eefbf173"
+    ],
+    "02_BACKEND/lawrag/pipeline/document_scope.py": [
+      "d6c507287fa575176051cc07b0b3b496eacd3dbf09623f45b51c48ca558fc7ca",
+      "d6c507287fa575176051cc07b0b3b496eacd3dbf09623f45b51c48ca558fc7ca"
+    ],
+    "02_BACKEND/lawrag/pipeline/term_generation.py": [
+      "5e6d36ed18f3bf34e44c9e6d36e1d495b40cbd14ef27b5539d715ad2c7b49a6f",
+      "5e6d36ed18f3bf34e44c9e6d36e1d495b40cbd14ef27b5539d715ad2c7b49a6f"
+    ],
+    "02_BACKEND/lawrag/pipeline/wiki_triage.py": [
+      "efba2e4a27f37202d61c365e8c668b0796d3c9d2f6fd4154346060c7b4d52d77",
+      "efba2e4a27f37202d61c365e8c668b0796d3c9d2f6fd4154346060c7b4d52d77"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_progress.py": [
+      "f6e2dfaf8315ab6f35e16bf5649abd951fa56f1d0bff50dae40c6b0734d1a944",
+      "f6e2dfaf8315ab6f35e16bf5649abd951fa56f1d0bff50dae40c6b0734d1a944"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_expc.py": [
+      "acdf671750dcee30c0c94616d48541fdbaf377ae7f5e1433cd9f545195c09449",
+      "acdf671750dcee30c0c94616d48541fdbaf377ae7f5e1433cd9f545195c09449"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_definitions.py": [
+      "a2ff73376af23a0397031a801f46d077da238cb6f44f8c7ec1b9697fa7b59cc2",
+      "a2ff73376af23a0397031a801f46d077da238cb6f44f8c7ec1b9697fa7b59cc2"
+    ],
+    "02_BACKEND/lawrag/pipeline/knowledge_transfer.py": [
+      "65543ead2c1049500e6dcdf70f4d51ccddc422a6798a4288b172b8210838dd2d",
+      "65543ead2c1049500e6dcdf70f4d51ccddc422a6798a4288b172b8210838dd2d"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_raw_move.py": [
+      "93bf3e31d81e7fc091cdae0616b43a60eb8de51d4a50d397c503e0b316af0493",
+      "93bf3e31d81e7fc091cdae0616b43a60eb8de51d4a50d397c503e0b316af0493"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_senses.py": [
+      "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4",
+      "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_linking.py": [
+      "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde",
+      "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_corpus.py": [
+      "b7ae745bc7ced65be8ec04a29893b2f22d7cb939d41542e28c76d71cda2ad13f",
+      "b7ae745bc7ced65be8ec04a29893b2f22d7cb939d41542e28c76d71cda2ad13f",
+      "2c8afc9cdd00942a8b2539f02ceccd68a10ad944fbae4ec98eba9828d5eb78a7",
+      "1cc7632e99af63c8e57fab9a27853885154fa5916a0553d6afe309aee45f7b52"
+    ],
+    "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py": [
+      "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d"
+    ],
+    "02_BACKEND/lawrag/pipeline/team_raw_refresh.py": [
+      "9cc6f235f01b281e8a02f885722350ae373c93684eab6001ba4fe58a9efe0aab",
+      "9cc6f235f01b281e8a02f885722350ae373c93684eab6001ba4fe58a9efe0aab"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_naegyu.py": [
+      "650493313c1bc9f9afab36c86daac10affd93038f28dbc8800a22ec9bf6cf94f",
+      "650493313c1bc9f9afab36c86daac10affd93038f28dbc8800a22ec9bf6cf94f"
+    ],
+    "02_BACKEND/lawrag/pipeline/naming_definition_append.py": [
+      "ff000afb1c7c1b8b137296d5575c7d054d3c125d6acf1bf4e18e46870c7aa4ef",
+      "ff000afb1c7c1b8b137296d5575c7d054d3c125d6acf1bf4e18e46870c7aa4ef"
+    ],
+    "02_BACKEND/lawrag/pipeline/shortcut_package.py": [
+      "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64",
+      "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    ],
+    "02_BACKEND/lawrag/pipeline/document_append.py": [
+      "26fd28569dc46843f9e3e3027df83005219b3df33f52473d86652a2238a40923",
+      "26fd28569dc46843f9e3e3027df83005219b3df33f52473d86652a2238a40923"
+    ],
+    "02_BACKEND/lawrag/pipeline/onsite.py": [
+      "6fc5739cf6979de0aba44d59b0cc1940974d2c366f4d7f86e759db76e3601242",
+      "6fc5739cf6979de0aba44d59b0cc1940974d2c366f4d7f86e759db76e3601242"
+    ],
+    "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py": [
+      "2824135ebc0867e533f7b44f492cdb2c7246d00e3c7f5c5686fb04a705a90339",
+      "2824135ebc0867e533f7b44f492cdb2c7246d00e3c7f5c5686fb04a705a90339"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_learning.py": [
+      "d7664076161e8a4444cae936de74ff7243de6f96c4791864c4fbcc70a88390f4",
+      "d7664076161e8a4444cae936de74ff7243de6f96c4791864c4fbcc70a88390f4"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_alignment.py": [
+      "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b",
+      "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b"
+    ],
+    "02_BACKEND/lawrag/pipeline/document_representations.py": [
+      "89ca13fa87daf3a79bb5cd7dacc291a452d20df55fc734c50dff6e7af79c1776",
+      "89ca13fa87daf3a79bb5cd7dacc291a452d20df55fc734c50dff6e7af79c1776",
+      "b9ffc28afc457f2e854ee86d1a8fab396cb85947e066298c0ebfd23f3d277f09",
+      "f910ae9e4eb3df983bd8a26056272b405c0aaa9d7c50b7b15ae3e254845928db"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_review.py": [
+      "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69",
+      "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_fsc.py": [
+      "d28b779bd0d67f4a7ed4d5ff89313fff9c858322107c348bee1ff1adc72ef46b",
+      "d28b779bd0d67f4a7ed4d5ff89313fff9c858322107c348bee1ff1adc72ef46b"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_status.py": [
+      "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a",
+      "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_rulehtml.py": [
+      "af97b9dfa3f1985c50f288fda81cafebde6c56592912c85057f16dae5658aaab",
+      "af97b9dfa3f1985c50f288fda81cafebde6c56592912c85057f16dae5658aaab"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_serving.py": [
+      "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e",
+      "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e"
+    ],
+    "02_BACKEND/lawrag/pipeline/unified_memory.py": [
+      "588f43b82148f54b34944d681be0d686e24f57f32f986e3a648284fd3a2094ac",
+      "588f43b82148f54b34944d681be0d686e24f57f32f986e3a648284fd3a2094ac"
+    ],
+    "02_BACKEND/lawrag/pipeline/golden_registry.py": [
+      "15db1bf183ab355134e02cce431214afa1727c3716e52cc207f7ccc5edbbce72",
+      "15db1bf183ab355134e02cce431214afa1727c3716e52cc207f7ccc5edbbce72"
+    ],
+    "02_BACKEND/lawrag/pipeline/shortcut_operations.py": [
+      "8a378ce34b1e9015e88a67d4d6efabe7bedf28f29c1b665bf122646c24209ae9",
+      "8a378ce34b1e9015e88a67d4d6efabe7bedf28f29c1b665bf122646c24209ae9"
+    ],
+    "02_BACKEND/lawrag/pipeline/fulltext_stage.py": [
+      "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c",
+      "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c"
+    ],
+    "02_BACKEND/lawrag/pipeline/structure_selection.py": [
+      "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6",
+      "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6"
+    ],
+    "02_BACKEND/lawrag/pipeline/convert.py": [
+      "7a89684052327d81fed091ef83c6ef3045f9ff4b45479b132c0c595381c2da6c",
+      "7a89684052327d81fed091ef83c6ef3045f9ff4b45479b132c0c595381c2da6c"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_authoring_runtime.py": [
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_unified.py": [
+      "dffcfb9312ab2afaf84a5b8f3bda9fdb91fc2d3f39bd222fdaf38dfe19c94cd2",
+      "dffcfb9312ab2afaf84a5b8f3bda9fdb91fc2d3f39bd222fdaf38dfe19c94cd2"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_e2e.py": [
+      "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b",
+      "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py": [
+      "8526f83120c16b62b642e99162d4975f36bf95b0ad1b32b85498ae28e6a69fa4",
+      "8526f83120c16b62b642e99162d4975f36bf95b0ad1b32b85498ae28e6a69fa4"
+    ],
+    "02_BACKEND/lawrag/pipeline/raw_preprocess.py": [
+      "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d",
+      "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d"
+    ],
+    "02_BACKEND/lawrag/pipeline/action_memory.py": [
+      "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_structure_report.py": [
+      "8e0957cab35a3a85d4513a6489f6d510f984aafc1776bad623e7f46165e8b855",
+      "8e0957cab35a3a85d4513a6489f6d510f984aafc1776bad623e7f46165e8b855"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_prec.py": [
+      "3a7502b7f466f3f479ac6a7c720c6346af6754f4ea662fbc065b58d3a6856917",
+      "3a7502b7f466f3f479ac6a7c720c6346af6754f4ea662fbc065b58d3a6856917"
+    ],
+    "02_BACKEND/lawrag/pipeline/ingest_prec.py": [
+      "a53935f91946cde8850a07e7f9a167183f37976fedb8cf5a18afa3531535788a",
+      "a53935f91946cde8850a07e7f9a167183f37976fedb8cf5a18afa3531535788a"
+    ],
+    "02_BACKEND/lawrag/pipeline/term_serving_bundle.py": [
+      "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+      "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_all_pipeline.py": [
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_moleg_compile.py": [
+      "95a83edf7316b5caeda9413e2aadcb8650dca039b99e6d752c3ca621b9ac9641",
+      "95a83edf7316b5caeda9413e2aadcb8650dca039b99e6d752c3ca621b9ac9641"
+    ],
+    "02_BACKEND/lawrag/pipeline/document_release.py": [
+      "a9e37a4e04ab7cbdb2d69e87f84f642f202f5352efb8d87a007f002d358ada7f",
+      "a9e37a4e04ab7cbdb2d69e87f84f642f202f5352efb8d87a007f002d358ada7f",
+      "2d0080b16c4cb92914465ce3e53f78e4ff9ce06cf9def795ecb26188b1a2604b",
+      "dc30466233e540978e3685c27d9ee6e2acc8aeea048e67e43eba4b945bbdc8ed"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_build.py": [
+      "366b7776a5155615d54960c47e5db4258499a92d695a011af19c169d51f0090a",
+      "366b7776a5155615d54960c47e5db4258499a92d695a011af19c169d51f0090a",
+      "8508f0496980256c279e1b01f9a79ee1ca913b5943cb4f8ac4293a7cdeea23f0",
+      "a641f0cdf0c1fc87b70a71ba4c7fd9fb411a0e655305f9d4fe265b3e833746c5",
+      "b079e8a3d8a4f0c53c6063158d0a98dc050ed4cee5b62f6cd94989f23d449a73"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_fsc.py": [
+      "2f0366d8c88d2c7b685126fe509893ef9c59d12d3324b7fd0f928d757a82d64b",
+      "2f0366d8c88d2c7b685126fe509893ef9c59d12d3324b7fd0f928d757a82d64b"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_abbreviation.py": [
+      "2a9ab38e3e5310f8205e83cb38afc81f3362883a4e4bea0ef8bf0f34018a418b",
+      "2a9ab38e3e5310f8205e83cb38afc81f3362883a4e4bea0ef8bf0f34018a418b"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_internal_replace.py": [
+      "decbfff36437cc7dc0227ee17a0cbeeca68379052f969ff4fa9c3a330e83fd71",
+      "decbfff36437cc7dc0227ee17a0cbeeca68379052f969ff4fa9c3a330e83fd71"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_scope.py": [
+      "8c7c8c2bbaf0335f2b2a2a699f4ae6e61cd472989e48872c0d05ab63fa091f80",
+      "8c7c8c2bbaf0335f2b2a2a699f4ae6e61cd472989e48872c0d05ab63fa091f80"
+    ],
+    "02_BACKEND/lawrag/pipeline/search_selection.py": [
+      "735aa7970eb3c10be34e29ab93f0f6330942b9e3a4626239c7aeec425af74c29",
+      "735aa7970eb3c10be34e29ab93f0f6330942b9e3a4626239c7aeec425af74c29"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_legal_relations.py": [
+      "49cc597517fd1eaa8747b531fb3ab2e151d94f4c4882d50a10311dc055dd1654",
+      "49cc597517fd1eaa8747b531fb3ab2e151d94f4c4882d50a10311dc055dd1654"
+    ],
+    "02_BACKEND/lawrag/pipeline/raw_prepare.py": [
+      "9af3bc3a30240d453b896eeae88f6d4a8fcb5d1f9dd56fefbad1b599dc5f20e6",
+      "9af3bc3a30240d453b896eeae88f6d4a8fcb5d1f9dd56fefbad1b599dc5f20e6"
+    ],
+    "02_BACKEND/lawrag/pipeline/collect_expc.py": [
+      "d2fdb1e828a7ecf3dd04151a6d14797d23f560f8c5c8b095e5681d8e86a6ec95",
+      "d2fdb1e828a7ecf3dd04151a6d14797d23f560f8c5c8b095e5681d8e86a6ec95"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_admission.py": [
+      "8a92da7a57e46e0d02cbf4152511e0e63bd8908bb3e61b16a89b1eece5d8b46f",
+      "8a92da7a57e46e0d02cbf4152511e0e63bd8908bb3e61b16a89b1eece5d8b46f"
+    ],
+    "02_BACKEND/lawrag/pipeline/union_file.py": [
+      "376836a6e8fa5adad4a21654804f44099597a61bd669e697b0d332faf7056bfd",
+      "376836a6e8fa5adad4a21654804f44099597a61bd669e697b0d332faf7056bfd"
+    ],
+    "02_BACKEND/lawrag/pipeline/reference_resolution.py": [
+      "a93f5ddf31973fb355a9e70d62f28e934801e91b43f8c7009b07c5a31227e7a7",
+      "a93f5ddf31973fb355a9e70d62f28e934801e91b43f8c7009b07c5a31227e7a7"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_enrichment.py": [
+      "361b9a383f123e8b3b362d61794f9caa48b93892d01fbdd30787b5e0a2e5c414",
+      "361b9a383f123e8b3b362d61794f9caa48b93892d01fbdd30787b5e0a2e5c414"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_batch.py": [
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+      "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    ],
+    "02_BACKEND/lawrag/pipeline/golden_exchange.py": [
+      "cf3b30926b61ba9f59d567b998b62079cf7506e6253bb8c5cc5c521964212e3c",
+      "cf3b30926b61ba9f59d567b998b62079cf7506e6253bb8c5cc5c521964212e3c"
+    ],
+    "02_BACKEND/lawrag/pipeline/glossary_v1.py": [
+      "bbd100d339aaecd79521e0f5c93d478bb41ef150b5bc19f029fc2519d6bd1092",
+      "bbd100d339aaecd79521e0f5c93d478bb41ef150b5bc19f029fc2519d6bd1092"
+    ],
+    "02_BACKEND/lawrag/pipeline/failure_improvement.py": [
+      "9bd503647d31c0d92cef21ec9400af4741217e7e5f3918b2c32e453181e02307",
+      "9bd503647d31c0d92cef21ec9400af4741217e7e5f3918b2c32e453181e02307"
+    ],
+    "02_BACKEND/lawrag/pipeline/genos_doc.py": [
+      "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203",
+      "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203"
+    ],
+    "02_BACKEND/lawrag/pipeline/golden_run.py": [
+      "680884a2b474e4606574c9a3662ce815955189aa8deb20569225830829d0aed6",
+      "680884a2b474e4606574c9a3662ce815955189aa8deb20569225830829d0aed6"
+    ],
+    "02_BACKEND/lawrag/pipeline/golden.py": [
+      "74e60bc983abc91491524560e541bf8047f98e35bf7f15ec471ee34ac9c08a89",
+      "74e60bc983abc91491524560e541bf8047f98e35bf7f15ec471ee34ac9c08a89"
+    ],
+    "02_BACKEND/lawrag/core/parse_adapter.py": [
+      "2f814cf26af493dab1a788b46eff55afa388c00c83b6c76a85d050492c601c93",
+      "2f814cf26af493dab1a788b46eff55afa388c00c83b6c76a85d050492c601c93"
+    ],
+    "02_BACKEND/lawrag/core/__init__.py": [
+      "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2",
+      "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2"
+    ],
+    "02_BACKEND/lawrag/core/batch.py": [
+      "a45e9471885ed86cb9e94d2feea803f907eb73d8f1a8db496f115bd2cedce86b",
+      "a45e9471885ed86cb9e94d2feea803f907eb73d8f1a8db496f115bd2cedce86b"
+    ],
+    "02_BACKEND/lawrag/core/reference_coordinate.py": [
+      "513fda6c756e77f1f40c939d3e6d783d5b825decd9ccb0e972fedcaaa3d96002",
+      "513fda6c756e77f1f40c939d3e6d783d5b825decd9ccb0e972fedcaaa3d96002"
+    ],
+    "02_BACKEND/lawrag/core/registry.yaml": [
+      "a03e49e01ea078496099e89e4328acebec3f38da5eeef8426b2baf64c897dd47",
+      "a03e49e01ea078496099e89e4328acebec3f38da5eeef8426b2baf64c897dd47"
+    ],
+    "02_BACKEND/lawrag/core/genos_preprocessor.py": [
+      "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24",
+      "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24"
+    ],
+    "02_BACKEND/lawrag/core/review.py": [
+      "0c39638c30e4f06025cb2defe09ef55df93418cfb59819b40d6225cd8c26459c",
+      "0c39638c30e4f06025cb2defe09ef55df93418cfb59819b40d6225cd8c26459c"
+    ],
+    "02_BACKEND/lawrag/core/logbook.py": [
+      "25d4cc99e0289ba579ea68c810f0e0ab91250716a774c27dcd3d0962ce79b245",
+      "25d4cc99e0289ba579ea68c810f0e0ab91250716a774c27dcd3d0962ce79b245"
+    ],
+    "02_BACKEND/lawrag/core/geometry.py": [
+      "48ce163f2fb707df6be598507fa80cc7d5b792d8a3a8c8f40a2f46776d593f5b",
+      "48ce163f2fb707df6be598507fa80cc7d5b792d8a3a8c8f40a2f46776d593f5b"
+    ],
+    "02_BACKEND/lawrag/core/format_model.py": [
+      "2d367c5ffea2b9b5284a6753f5033fc2dc2b5b74e67de452aaf504cbddead5db",
+      "2d367c5ffea2b9b5284a6753f5033fc2dc2b5b74e67de452aaf504cbddead5db"
+    ],
+    "02_BACKEND/lawrag/core/internal_rules.py": [
+      "658f44242ecf4248e3ad67265dfa4a1feb4627e91ed6516258c47ffffe761bda",
+      "658f44242ecf4248e3ad67265dfa4a1feb4627e91ed6516258c47ffffe761bda"
+    ],
+    "02_BACKEND/lawrag/core/router.py": [
+      "9d34d971d323cf4f07e15feaab7526085f324d1b2066e265f2ac97405df2bc13",
+      "9d34d971d323cf4f07e15feaab7526085f324d1b2066e265f2ac97405df2bc13"
+    ],
+    "02_BACKEND/lawrag/core/ingest.py": [
+      "2ab9953446480fa46c7a3b2f471793326a82ad0cc95f4cb551ef228b7d677666",
+      "2ab9953446480fa46c7a3b2f471793326a82ad0cc95f4cb551ef228b7d677666",
+      "36fc154274ff1f172181f7ac0c6881f534e7f31d119cc46bf8168cbd7fb35634"
+    ],
+    "02_BACKEND/lawrag/core/format_induce.py": [
+      "a07d0fc560bbc9cd52137e012e3a594e28d04a3603b5009aace6100fd8839f6b",
+      "a07d0fc560bbc9cd52137e012e3a594e28d04a3603b5009aace6100fd8839f6b"
+    ],
+    "02_BACKEND/lawrag/core/reading_order.py": [
+      "d82f0b63b2355982cd121c7b86ef57b05b374f537267f78ec54a726b3b55234e",
+      "d82f0b63b2355982cd121c7b86ef57b05b374f537267f78ec54a726b3b55234e"
+    ],
+    "02_BACKEND/lawrag/core/structure_fixes.py": [
+      "62a1c71b79f1379b60ccdec6ba2536f96b14f0f643de1f08c63e42a8ec35fc22",
+      "62a1c71b79f1379b60ccdec6ba2536f96b14f0f643de1f08c63e42a8ec35fc22"
+    ],
+    "02_BACKEND/lawrag/core/defpatterns.py": [
+      "c98bb05ef33f6e6572758b65402e6bbf2f77603cde374d001c0319d855dd91ec",
+      "c98bb05ef33f6e6572758b65402e6bbf2f77603cde374d001c0319d855dd91ec"
+    ],
+    "02_BACKEND/lawrag/core/holdout_check.py": [
+      "acb262a27146c37e5e21c6f74e453dba232aa7058d6c7a3e573193d2d5530393",
+      "acb262a27146c37e5e21c6f74e453dba232aa7058d6c7a3e573193d2d5530393"
+    ],
+    "02_BACKEND/lawrag/core/fitness_gate.py": [
+      "9c1ec4c2f1d763cdf14d02fe5baade6027c397d15ce3e72d9841054039737519",
+      "9c1ec4c2f1d763cdf14d02fe5baade6027c397d15ce3e72d9841054039737519"
+    ],
+    "02_BACKEND/lawrag/core/lawnet.py": [
+      "2469d9cfea83dfb81d0e7cff5a32536874cddbeb7b027b709f02ce6ba72b4d0a",
+      "2469d9cfea83dfb81d0e7cff5a32536874cddbeb7b027b709f02ce6ba72b4d0a"
+    ],
+    "02_BACKEND/lawrag/core/grid_recover.py": [
+      "322117f295b1a15c32d95d8612ac75b77c6a44bbc8e5528d91eb0353948a49e1",
+      "322117f295b1a15c32d95d8612ac75b77c6a44bbc8e5528d91eb0353948a49e1"
+    ],
+    "02_BACKEND/lawrag/core/normalize.py": [
+      "3101a5c6c4b874151e2c1bee74f5933d548873f2c2ead30020e13a5defe13ab9",
+      "3101a5c6c4b874151e2c1bee74f5933d548873f2c2ead30020e13a5defe13ab9"
+    ],
+    "02_BACKEND/lawrag/core/cli.py": [
+      "998f7fd1b19d7da7debc9b2b5d68af296a261b3c61860de03d428f59f6e39d2b",
+      "998f7fd1b19d7da7debc9b2b5d68af296a261b3c61860de03d428f59f6e39d2b"
+    ],
+    "02_BACKEND/lawrag/core/embedding.py": [
+      "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c",
+      "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c"
+    ],
+    "02_BACKEND/lawrag/core/hwpx_parse.py": [
+      "2bec3a352dae5c7a739c401c865b76f0ae2584c11005b5e4a5d38b7465b8f376",
+      "2bec3a352dae5c7a739c401c865b76f0ae2584c11005b5e4a5d38b7465b8f376"
+    ],
+    "02_BACKEND/lawrag/core/legal_generation.py": [
+      "49a9021f5bb3e843c086ccd0c3f0fcc29ff39232a36746538ba271a1d4fc7008",
+      "49a9021f5bb3e843c086ccd0c3f0fcc29ff39232a36746538ba271a1d4fc7008"
+    ],
+    "02_BACKEND/lawrag/core/action_memory.py": [
+      "015c565c6c1f9647c8594a29297362ea9661ea0b51487d32d4b84e15f4faf5ec",
+      "015c565c6c1f9647c8594a29297362ea9661ea0b51487d32d4b84e15f4faf5ec"
+    ],
+    "02_BACKEND/lawrag/core/hwpx_md.py": [
+      "e06abd8b4a3ec0ca0f4eeaa9d5603ed50d6cbe34d15e2f6e50a828d9fc720658",
+      "e06abd8b4a3ec0ca0f4eeaa9d5603ed50d6cbe34d15e2f6e50a828d9fc720658"
+    ],
+    "02_BACKEND/lawrag/core/llm.py": [
+      "457438c519946812d5ecf34b6cfe88228b17a903669ffe4c7fcb259123f302d7",
+      "457438c519946812d5ecf34b6cfe88228b17a903669ffe4c7fcb259123f302d7"
+    ],
+    "02_BACKEND/lawrag/core/rawstore.py": [
+      "faef4606824ea68889baa92d14c1be0f1321f2c810428eaa7df2ace8c3b31e10",
+      "faef4606824ea68889baa92d14c1be0f1321f2c810428eaa7df2ace8c3b31e10"
+    ],
+    "02_BACKEND/lawrag/core/docx_native.py": [
+      "2ce658ad7ed1bb07d9e8f51da55127cae3f5d02d9224d1cf9366107ac2801ca1",
+      "2ce658ad7ed1bb07d9e8f51da55127cae3f5d02d9224d1cf9366107ac2801ca1"
+    ],
+    "02_BACKEND/lawrag/core/genos_chunks.py": [
+      "d79c7494c87a57fc7989a624c3af37ef9d38df8684f13c69b65856e2f60f0bc5",
+      "d79c7494c87a57fc7989a624c3af37ef9d38df8684f13c69b65856e2f60f0bc5"
+    ],
+    "02_BACKEND/lawrag/core/glossary.py": [
+      "75be89328a4adf2f01583c6dd9cdaa799486d2e63d12654c7cc35c4493a9d835",
+      "75be89328a4adf2f01583c6dd9cdaa799486d2e63d12654c7cc35c4493a9d835"
+    ],
+    "02_BACKEND/lawrag/core/hwp5_md.py": [
+      "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d",
+      "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d"
+    ],
+    "02_BACKEND/lawrag/core/term_marker.py": [
+      "a7ce935509444dd063e1ff74721f6a1fbfba963b58d220d40c5a10f008905e7e",
+      "a7ce935509444dd063e1ff74721f6a1fbfba963b58d220d40c5a10f008905e7e"
+    ],
+    "02_BACKEND/lawrag/core/typography.py": [
+      "2a4d67eefbf089b6f710edf9dc742828db83df0718da4a59a6b98a58137f58cb",
+      "2a4d67eefbf089b6f710edf9dc742828db83df0718da4a59a6b98a58137f58cb"
+    ],
+    "02_BACKEND/lawrag/core/reconcile.py": [
+      "e59e494c6cff621c8f1753aec455b2cdb6988547d155ef5a913f7454c87af7c2",
+      "e59e494c6cff621c8f1753aec455b2cdb6988547d155ef5a913f7454c87af7c2"
+    ],
+    "02_BACKEND/lawrag/core/legal_coordinate.py": [
+      "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822",
+      "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822"
+    ],
+    "02_BACKEND/lawrag/core/structurize.py": [
+      "7ffab3a20c3a1b88dd97b3cc16006d4dbf94aef3c4df5af568ac7791a47c348c",
+      "7ffab3a20c3a1b88dd97b3cc16006d4dbf94aef3c4df5af568ac7791a47c348c"
+    ],
+    "02_BACKEND/lawrag/core/docx_ooxml.py": [
+      "7e5b26e68b6de3aa2e043a9497f0cdd20d2601fb1364e8d92bc575aad6522971",
+      "7e5b26e68b6de3aa2e043a9497f0cdd20d2601fb1364e8d92bc575aad6522971"
+    ],
+    "02_BACKEND/lawrag/core/lineage.py": [
+      "f1dad6a728adbad4300703391901a90d0817fa7c54dd5b3f660b9b93cd4f2172",
+      "f1dad6a728adbad4300703391901a90d0817fa7c54dd5b3f660b9b93cd4f2172"
+    ],
+    "02_BACKEND/lawrag/core/casereview/__init__.py": [
+      "2ce0eb2ff5da3385fa274d710a1dd768b160bea549e34fed3bf4657beb3f8221",
+      "2ce0eb2ff5da3385fa274d710a1dd768b160bea549e34fed3bf4657beb3f8221"
+    ],
+    "02_BACKEND/lawrag/core/casereview/binding.py": [
+      "61b106a309f3c458395d961f7291f923c90fb0fc5b103137f4689208bf55869e",
+      "61b106a309f3c458395d961f7291f923c90fb0fc5b103137f4689208bf55869e"
+    ],
+    "02_BACKEND/lawrag/core/casereview/model.py": [
+      "961c7b0ebc957e25678dd0117e4ffff3a762d0479b5e59b96937314dc2e55e14",
+      "961c7b0ebc957e25678dd0117e4ffff3a762d0479b5e59b96937314dc2e55e14"
+    ],
+    "02_BACKEND/lawrag/core/casereview/pipeline.py": [
+      "e64bf1a7f9d7029fe0ae495e6db38eea173e89513eb2ae563ce5749b0a7a0bd8",
+      "e64bf1a7f9d7029fe0ae495e6db38eea173e89513eb2ae563ce5749b0a7a0bd8"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/canonical.py": [
+      "c52a94db83c79b2a4de0a3e398e57eff2c52b2e5d6ba895b6064efb5407018fe",
+      "c52a94db83c79b2a4de0a3e398e57eff2c52b2e5d6ba895b6064efb5407018fe"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/__init__.py": [
+      "17bb0d686019fce5b9a26d33f4e7005f46600c3bfc4f62c118e077edd69d2a40",
+      "17bb0d686019fce5b9a26d33f4e7005f46600c3bfc4f62c118e077edd69d2a40"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/oql_patterns.yaml": [
+      "53a5dfe429e7fa19c45c0cd282698d6e49c169711b1242ebdada77148a421896",
+      "53a5dfe429e7fa19c45c0cd282698d6e49c169711b1242ebdada77148a421896"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/uncertainty.py": [
+      "7ed7fd16b28c6fc2ebd7dae9035217cad4f78ce32500cc58fb544007f7610105",
+      "7ed7fd16b28c6fc2ebd7dae9035217cad4f78ce32500cc58fb544007f7610105"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/builder.py": [
+      "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a",
+      "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/normative.py": [
+      "fa30b02560709c7699faa752da3b76b6ea4b24e80fc1e22b5b0a04ab60b03adb",
+      "fa30b02560709c7699faa752da3b76b6ea4b24e80fc1e22b5b0a04ab60b03adb"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/requirements.py": [
+      "70f31a9b977f1625714b22c150e1254fee38ed1297cd4b13938091efa504173a",
+      "70f31a9b977f1625714b22c150e1254fee38ed1297cd4b13938091efa504173a"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/approval.py": [
+      "961686173d85dc7616886c9db7ad39741655ed5ee3c8f256c5e82525a1a26e44",
+      "961686173d85dc7616886c9db7ad39741655ed5ee3c8f256c5e82525a1a26e44"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/freshness.py": [
+      "e78c29356905cb8775cf1b6483b587e3088e743e75033785e7c0ccd2c4edd1af",
+      "e78c29356905cb8775cf1b6483b587e3088e743e75033785e7c0ccd2c4edd1af"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/cli.py": [
+      "41d3b1a7cd69086059f9da26633cc2a4bcb1f22588eb8de2cb67bbae9ec831e6",
+      "41d3b1a7cd69086059f9da26633cc2a4bcb1f22588eb8de2cb67bbae9ec831e6"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/tier1.py": [
+      "337bce138fc0bec195e39e951702c577098dbad12a94da7fc3768a034fd7bd2e",
+      "337bce138fc0bec195e39e951702c577098dbad12a94da7fc3768a034fd7bd2e"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/spanparts.py": [
+      "832f9f54032e344eb63cf6e436a8a46bf039b637d7148846d4a112de0ddef1de",
+      "832f9f54032e344eb63cf6e436a8a46bf039b637d7148846d4a112de0ddef1de"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/store.py": [
+      "c696612b566ecd82db8317dbb8e73a8620e4559bb175c5d8b33aa9df86f3130d",
+      "c696612b566ecd82db8317dbb8e73a8620e4559bb175c5d8b33aa9df86f3130d"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/candidates.py": [
+      "376bfb41725cf26590c23adc68c8b5da47a85561813c51623975d402f30cf069",
+      "376bfb41725cf26590c23adc68c8b5da47a85561813c51623975d402f30cf069"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/model.py": [
+      "08796b7b5ae0b5662adae69c40eeeeaebb5a49dac7ab5ce6bbdad379f3d29de2",
+      "08796b7b5ae0b5662adae69c40eeeeaebb5a49dac7ab5ce6bbdad379f3d29de2"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/grounding.py": [
+      "ba2a0826fb5b4d42a57081a97fdb326981eca51a98c19c0044e7bf2fc8abb531",
+      "ba2a0826fb5b4d42a57081a97fdb326981eca51a98c19c0044e7bf2fc8abb531"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/alignment.py": [
+      "fd6262f35fd0367eea9aca3119eff67e1903560432b0630c101177721b5c322e",
+      "fd6262f35fd0367eea9aca3119eff67e1903560432b0630c101177721b5c322e"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/__main__.py": [
+      "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d"
+    ],
+    "02_BACKEND/lawrag/core/domain_graph/oql.py": [
+      "59467bfa3e343b09f28f6266baa2db84a1e67a88e4c904cb49637af856ead8e9",
+      "59467bfa3e343b09f28f6266baa2db84a1e67a88e4c904cb49637af856ead8e9"
+    ],
+    "02_BACKEND/lawrag/core/terms/embed_sections.py": [
+      "258b9aa078cd00d8804150193786b093751fe9cf1b960903c2301502a58aa754",
+      "258b9aa078cd00d8804150193786b093751fe9cf1b960903c2301502a58aa754"
+    ],
+    "02_BACKEND/lawrag/core/terms/hierarchy.py": [
+      "6f6ec2bdc21596ffaf557b1ffabd0a3b04e20077cbb3bfe4b61e53adbe9077ae",
+      "6f6ec2bdc21596ffaf557b1ffabd0a3b04e20077cbb3bfe4b61e53adbe9077ae"
+    ],
+    "02_BACKEND/lawrag/core/terms/__init__.py": [
+      "065b0eb601855abd2b90f2b7378af8cbf145e5a0aae66fd982ea1f16945e1a0c",
+      "065b0eb601855abd2b90f2b7378af8cbf145e5a0aae66fd982ea1f16945e1a0c"
+    ],
+    "02_BACKEND/lawrag/core/terms/gate.py": [
+      "e0381dc4c162fe42355fdce37d6d72b04a882004d117463ea89e67e66d77c62b",
+      "e0381dc4c162fe42355fdce37d6d72b04a882004d117463ea89e67e66d77c62b"
+    ],
+    "02_BACKEND/lawrag/core/terms/judge.py": [
+      "4fb45a9da5542aa64a5adfd43ba6d0cece39092925758fd35fd9bf2fa0f9050a",
+      "4fb45a9da5542aa64a5adfd43ba6d0cece39092925758fd35fd9bf2fa0f9050a"
+    ],
+    "02_BACKEND/lawrag/core/terms/stats.py": [
+      "faa1d27829b09c96c09f5f51e16f7d6d3cb4a023d38a6fbb82d02c2cbd92a9f0",
+      "faa1d27829b09c96c09f5f51e16f7d6d3cb4a023d38a6fbb82d02c2cbd92a9f0"
+    ],
+    "02_BACKEND/lawrag/core/terms/candidates.py": [
+      "dea11a3d685dc456c9425fb206d8972ac310b2c61547ca0eadce87096532dba8",
+      "dea11a3d685dc456c9425fb206d8972ac310b2c61547ca0eadce87096532dba8"
+    ],
+    "02_BACKEND/lawrag/core/terms/build.py": [
+      "dab9e4a66e0b325c9fba29efa99b95a0f6fe316a6c813b4d6cb2666da4619543",
+      "dab9e4a66e0b325c9fba29efa99b95a0f6fe316a6c813b4d6cb2666da4619543"
+    ],
+    "02_BACKEND/lawrag/core/terms/suggest.py": [
+      "09c357ad53eebd727a42837f444748e86fd935cecb949f79dff299a004e5565b",
+      "09c357ad53eebd727a42837f444748e86fd935cecb949f79dff299a004e5565b"
+    ],
+    "02_BACKEND/lawrag/core/terms/transcribe.py": [
+      "2d5fbd0b862fd13d4ffbe4df55a2ca5c926ed0427ee6ab0be1db934ca8c1d7c2",
+      "2d5fbd0b862fd13d4ffbe4df55a2ca5c926ed0427ee6ab0be1db934ca8c1d7c2"
+    ],
+    "02_BACKEND/lawrag/core/terms/relations.py": [
+      "3270882f9dd374a0442199042bde8e612c532715dc60e44cd0d36bccd468d79b",
+      "3270882f9dd374a0442199042bde8e612c532715dc60e44cd0d36bccd468d79b"
+    ],
+    "02_BACKEND/lawrag/core/terms/embed.py": [
+      "28527e39220a2b014454ea178ab279dd0996319eba52716e372b3c7c68e7991d",
+      "28527e39220a2b014454ea178ab279dd0996319eba52716e372b3c7c68e7991d"
+    ],
+    "02_BACKEND/lawrag/core/terms/__main__.py": [
+      "d86ef300172a35d919debef2e6c93e2a5f94ddfeba6451eb7d9995f7e0d7d578",
+      "d86ef300172a35d919debef2e6c93e2a5f94ddfeba6451eb7d9995f7e0d7d578"
+    ],
+    "02_BACKEND/lawrag/core/terms/cluster.py": [
+      "93bc18d02d0c25e1e2c7a15ee267fcd08d0e074d535d12e78a98f301940a7f00",
+      "93bc18d02d0c25e1e2c7a15ee267fcd08d0e074d535d12e78a98f301940a7f00"
+    ],
+    "02_BACKEND/lawrag/core/rag/relation_navigation.py": [
+      "6ad3b54e25a45efc83cede097b75b85521d935669ecabfeb44fe02ca038f1968",
+      "6ad3b54e25a45efc83cede097b75b85521d935669ecabfeb44fe02ca038f1968"
+    ],
+    "02_BACKEND/lawrag/core/rag/lexicon.py": [
+      "9cf3a6067a1132a63c633ebd7dadbf31d3bec1896461acfcd4c0564411f22bc1",
+      "9cf3a6067a1132a63c633ebd7dadbf31d3bec1896461acfcd4c0564411f22bc1"
+    ],
+    "02_BACKEND/lawrag/core/rag/recover.py": [
+      "30ee00a680fb6958d3eb64682a834c9344a920ba70d54872686c96d09f6a0262",
+      "30ee00a680fb6958d3eb64682a834c9344a920ba70d54872686c96d09f6a0262"
+    ],
+    "02_BACKEND/lawrag/core/rag/bench.py": [
+      "de9f2cb8e0993a8228ff7636d7b0063fb423fe926bd82f1e5ad2f6219977f982",
+      "de9f2cb8e0993a8228ff7636d7b0063fb423fe926bd82f1e5ad2f6219977f982"
+    ],
+    "02_BACKEND/lawrag/core/rag/__init__.py": [
+      "1a69316bf921871f0737e8f1b6d0a314ee6c3396715173c16561ed1717cae571",
+      "1a69316bf921871f0737e8f1b6d0a314ee6c3396715173c16561ed1717cae571"
+    ],
+    "02_BACKEND/lawrag/core/rag/evidence_slot_nondropping.py": [
+      "0df5141de0c62f63ddd5d320f8bd285237e6a8c0cc5c5d400e8d2e5c3d72c78f",
+      "0df5141de0c62f63ddd5d320f8bd285237e6a8c0cc5c5d400e8d2e5c3d72c78f"
+    ],
+    "02_BACKEND/lawrag/core/rag/exploration.py": [
+      "9969e11cfd090c150621eb44d52b643c66a7111d8ec3d82951885cbfb115eaf3",
+      "9969e11cfd090c150621eb44d52b643c66a7111d8ec3d82951885cbfb115eaf3"
+    ],
+    "02_BACKEND/lawrag/core/rag/grounded_witness.py": [
+      "0f0ef30d1f6087befba07e18d4b3f5fc3986ceaefe6db17b6cfca49894676bc6",
+      "0f0ef30d1f6087befba07e18d4b3f5fc3986ceaefe6db17b6cfca49894676bc6"
+    ],
+    "02_BACKEND/lawrag/core/rag/source_registry_admission.py": [
+      "db56dd9628455e447eb1be961bca8cc0c91bdeae4d1e7afcce3f4d4f8837f151",
+      "db56dd9628455e447eb1be961bca8cc0c91bdeae4d1e7afcce3f4d4f8837f151"
+    ],
+    "02_BACKEND/lawrag/core/rag/controls.py": [
+      "e3ebe09a678c7cfaa01fd2815513c473a2eeccf849f999ca3a2eb3616c51f0f3",
+      "e3ebe09a678c7cfaa01fd2815513c473a2eeccf849f999ca3a2eb3616c51f0f3"
+    ],
+    "02_BACKEND/lawrag/core/rag/query_grounding.py": [
+      "7e79b18c6e345d1df82b469daf22e17bafb9469759393f296c994bce707620f2",
+      "7e79b18c6e345d1df82b469daf22e17bafb9469759393f296c994bce707620f2"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_validity.py": [
+      "50887e17bccea1c389547c069d2b1515bb1362c2fbe696450a11994f1e50c5b5",
+      "50887e17bccea1c389547c069d2b1515bb1362c2fbe696450a11994f1e50c5b5"
+    ],
+    "02_BACKEND/lawrag/core/rag/recall_first_feedback.py": [
+      "1e88e58676d67f013b9fa3fc6fd1410d984c3d6710f2695dfe9ceddcbea6582a",
+      "1e88e58676d67f013b9fa3fc6fd1410d984c3d6710f2695dfe9ceddcbea6582a"
+    ],
+    "02_BACKEND/lawrag/core/rag/proof_boundary_feedback.py": [
+      "baab7f8374996ce7ddedb7cda956de7bbae8bf4240c3085dbec70a6eda1fdb83",
+      "baab7f8374996ce7ddedb7cda956de7bbae8bf4240c3085dbec70a6eda1fdb83"
+    ],
+    "02_BACKEND/lawrag/core/rag/combinations.py": [
+      "a2d575b8cc77124e40e09b5c80104cc3f812fb5a213f83a9b6bc7ce22e0fa125",
+      "a2d575b8cc77124e40e09b5c80104cc3f812fb5a213f83a9b6bc7ce22e0fa125"
+    ],
+    "02_BACKEND/lawrag/core/rag/evaluation.py": [
+      "539be89936700571f923612a73e5f0b23898f0f08badc919013001b2f09969a4",
+      "539be89936700571f923612a73e5f0b23898f0f08badc919013001b2f09969a4"
+    ],
+    "02_BACKEND/lawrag/core/rag/termretrieve.py": [
+      "82a0cdd9759f94e6f6cbd5bbccc40600a43157c045f11cc109548166ca87f132",
+      "82a0cdd9759f94e6f6cbd5bbccc40600a43157c045f11cc109548166ca87f132"
+    ],
+    "02_BACKEND/lawrag/core/rag/selective_legal_guide.py": [
+      "0fefb640e960443320e1beff53606b17426f7a6ce8fcbfba4fbe7b896eed9b28",
+      "0fefb640e960443320e1beff53606b17426f7a6ce8fcbfba4fbe7b896eed9b28"
+    ],
+    "02_BACKEND/lawrag/core/rag/switches.py": [
+      "9414316590132d43b499224b2a645773592308faa3e39e62e028be608c726071",
+      "9414316590132d43b499224b2a645773592308faa3e39e62e028be608c726071"
+    ],
+    "02_BACKEND/lawrag/core/rag/landings.py": [
+      "fcd6b2740e3711b05fa753b4ccafdba057d273beda5d559285b7be85593e67f6",
+      "fcd6b2740e3711b05fa753b4ccafdba057d273beda5d559285b7be85593e67f6"
+    ],
+    "02_BACKEND/lawrag/core/rag/recover_domains.py": [
+      "796e541e0deffe39b9fa4be3f9aac2b2b55350962309bc480d9873bd3d6f2f8e",
+      "796e541e0deffe39b9fa4be3f9aac2b2b55350962309bc480d9873bd3d6f2f8e"
+    ],
+    "02_BACKEND/lawrag/core/rag/provider_compatible_span_selector.py": [
+      "2f47a85a3eae6f5c842cbd78dd79f64dfbc802bb5b96158b7d4a99866e02c0f4",
+      "2f47a85a3eae6f5c842cbd78dd79f64dfbc802bb5b96158b7d4a99866e02c0f4"
+    ],
+    "02_BACKEND/lawrag/core/rag/audit.py": [
+      "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae",
+      "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae"
+    ],
+    "02_BACKEND/lawrag/core/rag/judge.py": [
+      "dd1382de07e236bb1c1a7f48512203ac2d23431e862c951f0908a80ee451d180",
+      "dd1382de07e236bb1c1a7f48512203ac2d23431e862c951f0908a80ee451d180"
+    ],
+    "02_BACKEND/lawrag/core/rag/search_trace.py": [
+      "da10c85abf1df75b6655b8e81e9147d3ba06dd9f0c17671cfe33fa69b4b5a64f",
+      "da10c85abf1df75b6655b8e81e9147d3ba06dd9f0c17671cfe33fa69b4b5a64f"
+    ],
+    "02_BACKEND/lawrag/core/rag/claimwise_nondestructive_compiler.py": [
+      "a2a050756fd1b90721b13cab92d60308866a58dae34ffae069ab66249519bcf8",
+      "a2a050756fd1b90721b13cab92d60308866a58dae34ffae069ab66249519bcf8"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_coordinates.py": [
+      "bbdb1480d3ed6780d1cad41bede46c524b36604554ed2d6ea0ee4c22c2e059df",
+      "bbdb1480d3ed6780d1cad41bede46c524b36604554ed2d6ea0ee4c22c2e059df"
+    ],
+    "02_BACKEND/lawrag/core/rag/search.py": [
+      "cb11068131815d152a06dea2876d7dfaa72fb40f9b68dd644813bfda78344914",
+      "cb11068131815d152a06dea2876d7dfaa72fb40f9b68dd644813bfda78344914"
+    ],
+    "02_BACKEND/lawrag/core/rag/article_reachability.py": [
+      "0d3e10bd38dc86040d7eb7b51cb1df60a7c73f54f8a3a758a4a24820be1d156b",
+      "0d3e10bd38dc86040d7eb7b51cb1df60a7c73f54f8a3a758a4a24820be1d156b"
+    ],
+    "02_BACKEND/lawrag/core/rag/raw_evidence_selection.py": [
+      "9f4a24cba7bbaa245ec2bfa830220c1b3ac6c9b7467f474e7cbed449e5599eae",
+      "9f4a24cba7bbaa245ec2bfa830220c1b3ac6c9b7467f474e7cbed449e5599eae"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_conditional_closure.py": [
+      "0b8d641281f032415e9ddfda10ecd28bb5e96c8c66c8afbdb2386e0d1f7c89c4",
+      "0b8d641281f032415e9ddfda10ecd28bb5e96c8c66c8afbdb2386e0d1f7c89c4"
+    ],
+    "02_BACKEND/lawrag/core/rag/patterns.yaml": [
+      "5b815d582a086de1a397987e9656c1db751d3a7de851809cd682bc6a40b4870b",
+      "5b815d582a086de1a397987e9656c1db751d3a7de851809cd682bc6a40b4870b"
+    ],
+    "02_BACKEND/lawrag/core/rag/replay.py": [
+      "982e961af83b7c47b2acb3128a898fcf5a76544862b81f7c5afa78b0e4c1bf88",
+      "982e961af83b7c47b2acb3128a898fcf5a76544862b81f7c5afa78b0e4c1bf88"
+    ],
+    "02_BACKEND/lawrag/core/rag/tuples.py": [
+      "07926a0e60341c304f956e7ff0eb4ff13b8954b560e6aa159ac1da09a0017875",
+      "07926a0e60341c304f956e7ff0eb4ff13b8954b560e6aa159ac1da09a0017875"
+    ],
+    "02_BACKEND/lawrag/core/rag/proof_basis_augmenting.py": [
+      "9109dbd736945986aaa0fa5f41f03350bcba390c7c5007030cb66a5b3d716691",
+      "9109dbd736945986aaa0fa5f41f03350bcba390c7c5007030cb66a5b3d716691"
+    ],
+    "02_BACKEND/lawrag/core/rag/verified_span_selector.py": [
+      "259b24054393a360c2706883bd0f5c40a162baa26af2abdaa41be5825542f2b0",
+      "259b24054393a360c2706883bd0f5c40a162baa26af2abdaa41be5825542f2b0"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_proposition_compiler.py": [
+      "fa9812dd3e1aa24c5c8ead9a933084f19a8cb08c5fb79a9009eb6b53f4a0fcd4",
+      "fa9812dd3e1aa24c5c8ead9a933084f19a8cb08c5fb79a9009eb6b53f4a0fcd4"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_evidence.py": [
+      "8b7accba150e6acedfb50384c348b7b636eebec51a6272e80889338eb3bc7ef8",
+      "8b7accba150e6acedfb50384c348b7b636eebec51a6272e80889338eb3bc7ef8"
+    ],
+    "02_BACKEND/lawrag/core/rag/evidence_confusion.py": [
+      "4eff99c9ba087eb3629b89aed6b9acd07e7274871d87af3f73b6237ca93fb056",
+      "4eff99c9ba087eb3629b89aed6b9acd07e7274871d87af3f73b6237ca93fb056"
+    ],
+    "02_BACKEND/lawrag/core/rag/legalclosure_runtime.py": [
+      "639f61d7e3b585e6b1e49e09cf890f78baab330ae33c88f79c96554023cfe3af",
+      "639f61d7e3b585e6b1e49e09cf890f78baab330ae33c88f79c96554023cfe3af"
+    ],
+    "02_BACKEND/lawrag/core/rag/answer.py": [
+      "fb9ececbcfb37eaf4736ceb3ee346d6e8ab0c0d6d431637b9b8465824a722a81",
+      "fb9ececbcfb37eaf4736ceb3ee346d6e8ab0c0d6d431637b9b8465824a722a81"
+    ],
+    "02_BACKEND/lawrag/core/rag/_boundary.py": [
+      "5a00094f9e3a434e9401efae30cb381bddb31de27c25d44361aaa8afb2a3a9b4",
+      "5a00094f9e3a434e9401efae30cb381bddb31de27c25d44361aaa8afb2a3a9b4"
+    ],
+    "02_BACKEND/lawrag/core/rag/promote.py": [
+      "9a4ba2b930db7227be2d340097dc7c87424bae7bfe517cf1dce60686df7e0872",
+      "9a4ba2b930db7227be2d340097dc7c87424bae7bfe517cf1dce60686df7e0872"
+    ],
+    "02_BACKEND/lawrag/core/rag/wikiledger.py": [
+      "1e812bceab7d548bbd38794844f4855f4af0877d6a9b59453957365dbca0dbe0",
+      "1e812bceab7d548bbd38794844f4855f4af0877d6a9b59453957365dbca0dbe0"
+    ],
+    "02_BACKEND/lawrag/core/rag/approvals.py": [
+      "b96cb9496986853bd2b4463c6941937055f900a6778282729ca1f1cc93d7cc12",
+      "b96cb9496986853bd2b4463c6941937055f900a6778282729ca1f1cc93d7cc12"
+    ],
+    "02_BACKEND/lawrag/core/rag/refs.py": [
+      "0c5f944aeecd611dca755e643bcac1e748c3cae9bb08bf9dfb936fe88379d981",
+      "0c5f944aeecd611dca755e643bcac1e748c3cae9bb08bf9dfb936fe88379d981"
+    ],
+    "02_BACKEND/lawrag/core/rag/general_search.py": [
+      "7312ee904afde9b214c003f23ab4b93ba2178c958bae50ba38f352fdee3110be",
+      "7312ee904afde9b214c003f23ab4b93ba2178c958bae50ba38f352fdee3110be"
+    ],
+    "02_BACKEND/lawrag/core/rag/framequery.py": [
+      "468b68fff3729ed42df0da2f7c6d098d2305605d1690f696a1d6a37926cb1d6b",
+      "468b68fff3729ed42df0da2f7c6d098d2305605d1690f696a1d6a37926cb1d6b"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_answer_checklists.py": [
+      "37b3360d7e89a3792bdbca54cded0a6822db29b22ad63b78e8deb61359b20899",
+      "37b3360d7e89a3792bdbca54cded0a6822db29b22ad63b78e8deb61359b20899"
+    ],
+    "02_BACKEND/lawrag/core/rag/term_proposals.py": [
+      "6710571d5608b71412210bf0a03f6e727d6d46c1929ca852fa9407370ca45473",
+      "6710571d5608b71412210bf0a03f6e727d6d46c1929ca852fa9407370ca45473"
+    ],
+    "02_BACKEND/lawrag/core/rag/assertionfirst.py": [
+      "0bd55843d268f8ae9a2283a48300dad0222d36bd8d4af6fcdec1637beb78be58",
+      "0bd55843d268f8ae9a2283a48300dad0222d36bd8d4af6fcdec1637beb78be58"
+    ],
+    "02_BACKEND/lawrag/core/rag/companion_recovery.py": [
+      "4010006aae3e5fc7976b3eca33087b380f79f92bae97be7f5ad4ac8c29bc2f36",
+      "4010006aae3e5fc7976b3eca33087b380f79f92bae97be7f5ad4ac8c29bc2f36"
+    ],
+    "02_BACKEND/lawrag/core/rag/tags.py": [
+      "0f14f1a0822c638f6bf20cec5191a8d1dd6b918acbb02c11fd9705477f13044a",
+      "0f14f1a0822c638f6bf20cec5191a8d1dd6b918acbb02c11fd9705477f13044a"
+    ],
+    "02_BACKEND/lawrag/core/rag/claim_citation_selector.py": [
+      "6b8a1b8f9eecdf73b63d1c67a081008784637def736de5e9dfa8d44bba19034f",
+      "6b8a1b8f9eecdf73b63d1c67a081008784637def736de5e9dfa8d44bba19034f"
+    ],
+    "02_BACKEND/lawrag/core/rag/rules.py": [
+      "993e75b8fa917617fe46303a5694d6e9c8885a263d1c72f0f1614b787baf5eb6",
+      "993e75b8fa917617fe46303a5694d6e9c8885a263d1c72f0f1614b787baf5eb6"
+    ],
+    "02_BACKEND/lawrag/core/rag/conceptfirst.py": [
+      "7fcaf592e4268d0c25de0979f77b85599ca036ff09b1d4a98d9f1f5e5758d14c",
+      "7fcaf592e4268d0c25de0979f77b85599ca036ff09b1d4a98d9f1f5e5758d14c"
+    ],
+    "02_BACKEND/lawrag/core/rag/termexplore.py": [
+      "b57a8d8216a51ca6318e1dca3a666e158993a203e2fe59a75c260f54c11241b2",
+      "b57a8d8216a51ca6318e1dca3a666e158993a203e2fe59a75c260f54c11241b2"
+    ],
+    "02_BACKEND/lawrag/core/rag/verdicts.py": [
+      "88aa3f626120403e95c9c7fb8de55432580c5d6493cf88bff049d533f0124326",
+      "88aa3f626120403e95c9c7fb8de55432580c5d6493cf88bff049d533f0124326"
+    ],
+    "02_BACKEND/lawrag/core/rag/wikictx.py": [
+      "2dc766d2403b5d456ac243b2a33445541ed96ffa07fc7db5916916420a8862a2",
+      "2dc766d2403b5d456ac243b2a33445541ed96ffa07fc7db5916916420a8862a2"
+    ],
+    "02_BACKEND/lawrag/core/rag/delegation.py": [
+      "a1e82697a0924e200b4a282a10aec9f0a9664175e5d17df172db802b655e99ea",
+      "a1e82697a0924e200b4a282a10aec9f0a9664175e5d17df172db802b655e99ea"
+    ],
+    "02_BACKEND/lawrag/core/rag/induce.py": [
+      "33337f22ebca56dfa1766970a9270577120ac2491f95a8b13fd0dea9480d4548",
+      "33337f22ebca56dfa1766970a9270577120ac2491f95a8b13fd0dea9480d4548"
+    ],
+    "02_BACKEND/lawrag/core/rag/query_family_runtime.py": [
+      "606fc1822ae31bd8c0821f9358b9ae5a67b00a07836cd3ab1f06b1d907da7d78",
+      "606fc1822ae31bd8c0821f9358b9ae5a67b00a07836cd3ab1f06b1d907da7d78"
+    ],
+    "02_BACKEND/lawrag/core/rag/vecfirst.py": [
+      "39709c1865d56da08fab748dd4f6930950e0a99b1bd69e4544c28e68dadd1b27",
+      "39709c1865d56da08fab748dd4f6930950e0a99b1bd69e4544c28e68dadd1b27"
+    ],
+    "02_BACKEND/lawrag/core/rag/vector.py": [
+      "366bc18eee3722e18f44e808841f704d95ea6dd1d30064e8efc272678e6557a4",
+      "366bc18eee3722e18f44e808841f704d95ea6dd1d30064e8efc272678e6557a4"
+    ],
+    "02_BACKEND/lawrag/core/rag/compare.py": [
+      "f59b26cb9b359c14e4d67ca4bc42404ce0623a83f366be648cca30810fbe83ed",
+      "f59b26cb9b359c14e4d67ca4bc42404ce0623a83f366be648cca30810fbe83ed"
+    ],
+    "02_BACKEND/lawrag/core/rag/internal_compliance.py": [
+      "08e30b941b404d9f060700b5358fd6c28d9ea9b3deb4f000aaa3e506b81abf3e",
+      "08e30b941b404d9f060700b5358fd6c28d9ea9b3deb4f000aaa3e506b81abf3e"
+    ],
+    "02_BACKEND/lawrag/core/rag/graph.py": [
+      "43b897de695ead6581a6896c56c3e0f6e1edcf81425a2af5cd52b98c51550468",
+      "43b897de695ead6581a6896c56c3e0f6e1edcf81425a2af5cd52b98c51550468"
+    ],
+    "02_BACKEND/lawrag/core/rag/scopes.py": [
+      "e86598c2533c476a8bea7e7538ab6bbb97611e45c4f0cbf4cb5975dcd7ddcd42",
+      "e86598c2533c476a8bea7e7538ab6bbb97611e45c4f0cbf4cb5975dcd7ddcd42"
+    ],
+    "02_BACKEND/lawrag/core/rag/proposition_assessment_shadow.py": [
+      "88b20279ad199298b979d121b6946f183d1d18ef142730f2910c92c9747f6e8e",
+      "88b20279ad199298b979d121b6946f183d1d18ef142730f2910c92c9747f6e8e"
+    ],
+    "02_BACKEND/lawrag/core/rag/span_feedback.py": [
+      "abc149f42ed226782335a5ad283e43580b0d45decfa964bcc4e21b233ed67163",
+      "abc149f42ed226782335a5ad283e43580b0d45decfa964bcc4e21b233ed67163"
+    ],
+    "02_BACKEND/lawrag/core/rag/wikilife.py": [
+      "5584e003758c8bcfefcc2dc6356d53a9a2aa7b3620e8174ed776b7ba627fe014",
+      "5584e003758c8bcfefcc2dc6356d53a9a2aa7b3620e8174ed776b7ba627fe014"
+    ],
+    "02_BACKEND/lawrag/core/rag/qdrant_store.py": [
+      "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f",
+      "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f"
+    ],
+    "02_BACKEND/lawrag/core/rag/queryguide.py": [
+      "ee32f8b86f231c216a3a12811ad36ee668b6942f439d6dc3d1360805dc6c67a0",
+      "ee32f8b86f231c216a3a12811ad36ee668b6942f439d6dc3d1360805dc6c67a0"
+    ],
+    "02_BACKEND/lawrag/core/rag/index.py": [
+      "51b25bc80c136dd1ff80683e14ccc19659db67594c7a9629c1e6a584a3845e64",
+      "51b25bc80c136dd1ff80683e14ccc19659db67594c7a9629c1e6a584a3845e64"
+    ],
+    "02_BACKEND/lawrag/core/rag/proof_basis_exchange.py": [
+      "05c07753d51b0c62569c437a9bcc2ff9a5b3e8a3925bbefe11f8b76b29c81255",
+      "05c07753d51b0c62569c437a9bcc2ff9a5b3e8a3925bbefe11f8b76b29c81255"
+    ],
+    "02_BACKEND/lawrag/core/rag/latent_discovery_pool.py": [
+      "4c8b451cf65db12898ece9d31f2565c5e7b08eebac6d3b578d26abc6985d8ba7",
+      "4c8b451cf65db12898ece9d31f2565c5e7b08eebac6d3b578d26abc6985d8ba7"
+    ],
+    "02_BACKEND/lawrag/core/rag/verified_span_coverage_gate.py": [
+      "2f9bf26dff6707f4c0781d42703de316ec6d4e81bf509491c7a9145860950084",
+      "2f9bf26dff6707f4c0781d42703de316ec6d4e81bf509491c7a9145860950084"
+    ],
+    "02_BACKEND/lawrag/core/rag/assertion_shortcuts.py": [
+      "13e8e3de47e47c9b95868fb463d5ab38aafd17cc29a5238babc63b5f337449d1",
+      "13e8e3de47e47c9b95868fb463d5ab38aafd17cc29a5238babc63b5f337449d1"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_graph_closure.py": [
+      "486d934fb072667675e024680e419d4bb628a098626bd787afaafe93e4715b49",
+      "486d934fb072667675e024680e419d4bb628a098626bd787afaafe93e4715b49"
+    ],
+    "02_BACKEND/lawrag/core/rag/relations.py": [
+      "04cd80e6f46c37c7236845120ce30ea903ab76b4b4a072f4e950b209ac637bbf",
+      "04cd80e6f46c37c7236845120ce30ea903ab76b4b4a072f4e950b209ac637bbf"
+    ],
+    "02_BACKEND/lawrag/core/rag/expand.py": [
+      "4266e39f788a3a3272293b2624d65ec78d90f88aff354f8640cb85da6b40cd26",
+      "4266e39f788a3a3272293b2624d65ec78d90f88aff354f8640cb85da6b40cd26"
+    ],
+    "02_BACKEND/lawrag/core/rag/retrieval_feedback.py": [
+      "f5f4faacf46c4aea1a60c0b0aecbc3990963979640c16454f80827c38c348d5d",
+      "f5f4faacf46c4aea1a60c0b0aecbc3990963979640c16454f80827c38c348d5d"
+    ],
+    "02_BACKEND/lawrag/core/rag/legalclosure.py": [
+      "caf36821e7f78a123e169f9cc5474c1c84eaf45785a0432f6092e12b88021cf8",
+      "caf36821e7f78a123e169f9cc5474c1c84eaf45785a0432f6092e12b88021cf8"
+    ],
+    "02_BACKEND/lawrag/core/rag/frames.py": [
+      "902e252238515f6bc470ddc71469b1f33ca88dfffaedfb51379cfc98715fc981",
+      "902e252238515f6bc470ddc71469b1f33ca88dfffaedfb51379cfc98715fc981"
+    ],
+    "02_BACKEND/lawrag/core/rag/taxonomy.py": [
+      "4a03de565ea29c2e699921646d878b777a304e1aa24be9da31d479451c40020f",
+      "4a03de565ea29c2e699921646d878b777a304e1aa24be9da31d479451c40020f"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_graph_store.py": [
+      "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6",
+      "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_semantic_search.py": [
+      "bb9df648c5fa3e6a6301c7cf3779c82f0fbaf978336c68bc447d2f7737c58d0c",
+      "bb9df648c5fa3e6a6301c7cf3779c82f0fbaf978336c68bc447d2f7737c58d0c"
+    ],
+    "02_BACKEND/lawrag/core/rag/legalissue.py": [
+      "23184734a7774a7d968bdeac993dc7c62f7654e3c321aabd910df47fd479f29c",
+      "23184734a7774a7d968bdeac993dc7c62f7654e3c321aabd910df47fd479f29c"
+    ],
+    "02_BACKEND/lawrag/core/rag/definitions.py": [
+      "4d1c2ad87fcdff4257984e8feec802d5a550eb67651be6157987fb30df3679bb",
+      "4d1c2ad87fcdff4257984e8feec802d5a550eb67651be6157987fb30df3679bb"
+    ],
+    "02_BACKEND/lawrag/core/rag/legal_references.py": [
+      "8680d0676939b0a357af4adaa552f79275035f4e2794607c9a401ed59a2a8966",
+      "8680d0676939b0a357af4adaa552f79275035f4e2794607c9a401ed59a2a8966"
+    ],
+    "02_BACKEND/lawrag/core/rag/oql.py": [
+      "ebf7c858102ef4c6f123f41750bf15e7c744873dafe28876750027395ab8d5d2",
+      "ebf7c858102ef4c6f123f41750bf15e7c744873dafe28876750027395ab8d5d2"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/__init__.py": [
+      "5d472a493e1f028a1a5f6357d62a793162a4e86803cf03db1759c60d88784da4",
+      "5d472a493e1f028a1a5f6357d62a793162a4e86803cf03db1759c60d88784da4"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/behavior.py": [
+      "4bd9f6ed52e7235d5c13092b80cb11c7f4964daaadc45667ea0c24e24a29038e",
+      "4bd9f6ed52e7235d5c13092b80cb11c7f4964daaadc45667ea0c24e24a29038e"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/model.py": [
+      "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4",
+      "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/ids.py": [
+      "c989c6e425b38dc50272e4fda21da88c96f987a749fcf6067a53d6b4611f6a45",
+      "c989c6e425b38dc50272e4fda21da88c96f987a749fcf6067a53d6b4611f6a45"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/compiler.py": [
+      "3430c5049a342ce58c7fd7263e9e724deb8196f9e9c139271ce5ea613ffa6405",
+      "3430c5049a342ce58c7fd7263e9e724deb8196f9e9c139271ce5ea613ffa6405"
+    ],
+    "02_BACKEND/lawrag/core/legal_graph/validation.py": [
+      "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599",
+      "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599"
+    ],
+    "02_BACKEND/lawrag/core/structure/lexicon.py": [
+      "72777dee666f6a2910a78721fa21763eb303f82135d3088c352e1b199e4f9586",
+      "72777dee666f6a2910a78721fa21763eb303f82135d3088c352e1b199e4f9586"
+    ],
+    "02_BACKEND/lawrag/core/structure/synthpdf.py": [
+      "a3c7914e555848444c32d915185f5ba8301e2c072542c26a063c973fd59720b6",
+      "a3c7914e555848444c32d915185f5ba8301e2c072542c26a063c973fd59720b6"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_rules.py": [
+      "f3106a95f736bb9191586c1f5c89ef08f44152a11fcabc55d7fe64b0f466db2c",
+      "f3106a95f736bb9191586c1f5c89ef08f44152a11fcabc55d7fe64b0f466db2c"
+    ],
+    "02_BACKEND/lawrag/core/structure/vlm_heading.py": [
+      "c86d9abd71b61163062ab89cdc47a2c3dcb0e0641d58cea86b8ea3d0de5b2f1f",
+      "c86d9abd71b61163062ab89cdc47a2c3dcb0e0641d58cea86b8ea3d0de5b2f1f"
+    ],
+    "02_BACKEND/lawrag/core/structure/__init__.py": [
+      "78c686f8b90b4e5ae140318956252f7efde137a3a806e967e6879b657eaca232",
+      "78c686f8b90b4e5ae140318956252f7efde137a3a806e967e6879b657eaca232"
+    ],
+    "02_BACKEND/lawrag/core/structure/from_format.py": [
+      "20fe978f32c60916dfe59e4f33c11de705f0a2f323a7bb273ca9c574fef6317f",
+      "20fe978f32c60916dfe59e4f33c11de705f0a2f323a7bb273ca9c574fef6317f"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_regions.py": [
+      "73a3a9a55cb40709e2bdf778a0aef424d0df9c724b58bdc1464b780ae16eb299",
+      "73a3a9a55cb40709e2bdf778a0aef424d0df9c724b58bdc1464b780ae16eb299"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_runtime.py": [
+      "8cb2d8404e57b077e6c2a94ece325186119ff7facfa956a077a9471d481d21e5",
+      "8cb2d8404e57b077e6c2a94ece325186119ff7facfa956a077a9471d481d21e5"
+    ],
+    "02_BACKEND/lawrag/core/structure/source_lines.py": [
+      "4f843849530423a8219b407e439f5d224256f0d8feae434a6d31d7322bf0e663",
+      "4f843849530423a8219b407e439f5d224256f0d8feae434a6d31d7322bf0e663"
+    ],
+    "02_BACKEND/lawrag/core/structure/anchors.py": [
+      "9414bad408d3c605a912971ec52194d62ebff353fb2c1b20730e1ce6969554dd",
+      "9414bad408d3c605a912971ec52194d62ebff353fb2c1b20730e1ce6969554dd"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_template.py": [
+      "3dd3d965b1bbc274c3399bf63e0df85c2205ebe5d8a406e4e72b099d5d2b677c",
+      "3dd3d965b1bbc274c3399bf63e0df85c2205ebe5d8a406e4e72b099d5d2b677c"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_compact.py": [
+      "77a75dbf25f1da253b331efddebb693cb353fa4037bd904fc83dca886f543e35",
+      "77a75dbf25f1da253b331efddebb693cb353fa4037bd904fc83dca886f543e35"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_patch.py": [
+      "88a68b5cf977621ad5175f9a6a243bfd00d4904c2ea57825529641a99a80978a",
+      "88a68b5cf977621ad5175f9a6a243bfd00d4904c2ea57825529641a99a80978a"
+    ],
+    "02_BACKEND/lawrag/core/structure/rulehtml.py": [
+      "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70",
+      "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_pages.py": [
+      "e452377a805aa73c5b8c107afa4bdf809916389ac864a51fd4871083d0bc10f6",
+      "e452377a805aa73c5b8c107afa4bdf809916389ac864a51fd4871083d0bc10f6"
+    ],
+    "02_BACKEND/lawrag/core/structure/viewer.py": [
+      "d7bbaa39b13e682f812a7cd7c6a7687c7db145e83b69f0c139a31406859e75f5",
+      "d7bbaa39b13e682f812a7cd7c6a7687c7db145e83b69f0c139a31406859e75f5"
+    ],
+    "02_BACKEND/lawrag/core/structure/resolve.py": [
+      "bdb52ccb6421ee8c724d445c1cbc8be9e72f21d8a484960f3773347e5f892ee9",
+      "bdb52ccb6421ee8c724d445c1cbc8be9e72f21d8a484960f3773347e5f892ee9"
+    ],
+    "02_BACKEND/lawrag/core/structure/dp.py": [
+      "1155fad73e8582b60cffb81930caa750f1e2abd7250ebd8ee1eabea215c1b370",
+      "1155fad73e8582b60cffb81930caa750f1e2abd7250ebd8ee1eabea215c1b370"
+    ],
+    "02_BACKEND/lawrag/core/structure/cli.py": [
+      "7c9437a41b2fd21e32a76167031729e6f70b18e1ff02e4fe196d5d7adce43721",
+      "7c9437a41b2fd21e32a76167031729e6f70b18e1ff02e4fe196d5d7adce43721"
+    ],
+    "02_BACKEND/lawrag/core/structure/fingerprint.py": [
+      "3f665489f2846882c6cefe1d7877a11e5f1d29591c2d5c8faee9274f171ba0f1",
+      "3f665489f2846882c6cefe1d7877a11e5f1d29591c2d5c8faee9274f171ba0f1"
+    ],
+    "02_BACKEND/lawrag/core/structure/from_styles.py": [
+      "ccfbb1df3d1efbaac75bd4e354875e0e5c905f768543d104b7c47e3839df72c6",
+      "ccfbb1df3d1efbaac75bd4e354875e0e5c905f768543d104b7c47e3839df72c6"
+    ],
+    "02_BACKEND/lawrag/core/structure/model.py": [
+      "f18d13ef8f55ae86bf79513032c1f2ca1c82c6e0c1f60e01e608a2efce007df0",
+      "f18d13ef8f55ae86bf79513032c1f2ca1c82c6e0c1f60e01e608a2efce007df0"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_evidence.py": [
+      "ae1bcc359ec23503bbfefaaf4d6891a8c215dfb009611acfa195cad2479966cf",
+      "ae1bcc359ec23503bbfefaaf4d6891a8c215dfb009611acfa195cad2479966cf"
+    ],
+    "02_BACKEND/lawrag/core/structure/lawxml.py": [
+      "d4022de3d982b4d415faa0e08f4ab6373071533ddace859f369828d7ad0c121b",
+      "d4022de3d982b4d415faa0e08f4ab6373071533ddace859f369828d7ad0c121b"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_visual_loop.py": [
+      "5b1f6ee42765ab7a2de9fa1cd032348c97f7a6c0fb922c83d36aa305496852c2",
+      "5b1f6ee42765ab7a2de9fa1cd032348c97f7a6c0fb922c83d36aa305496852c2"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_basic.py": [
+      "d366988c5a814853580d45ff57fb1453e8dcc27c5f39836cf808b376199e42fc",
+      "d366988c5a814853580d45ff57fb1453e8dcc27c5f39836cf808b376199e42fc"
+    ],
+    "02_BACKEND/lawrag/core/structure/scoring.py": [
+      "7f884a28c0d1cbd2e8590b650eeb65e7982ffe75e510ae68f33d9ade74f6d213",
+      "7f884a28c0d1cbd2e8590b650eeb65e7982ffe75e510ae68f33d9ade74f6d213"
+    ],
+    "02_BACKEND/lawrag/core/structure/title.py": [
+      "084684ceb4103dd72a0bbc1a385d88b910ac5d6dd6176f73544edbb872efba9c",
+      "084684ceb4103dd72a0bbc1a385d88b910ac5d6dd6176f73544edbb872efba9c"
+    ],
+    "02_BACKEND/lawrag/core/structure/recipe_output.py": [
+      "0768a81cf5758505e422620e86b3b86ea084b1a88109df2796bd0d1d959f1ff4",
+      "0768a81cf5758505e422620e86b3b86ea084b1a88109df2796bd0d1d959f1ff4"
+    ],
+    "02_BACKEND/lawrag/core/structure/pipeline.py": [
+      "5c352adad46b2a172693f8a1f0dc1fce8b8ed5276ea4529ac50c828a7a93bc4c",
+      "5c352adad46b2a172693f8a1f0dc1fce8b8ed5276ea4529ac50c828a7a93bc4c"
+    ],
+    "02_BACKEND/lawrag/core/structure/registry.py": [
+      "2e6a1fc0fa2a531bc4a03bfaa23748803d53077c651cd2e250aea9104c185027",
+      "2e6a1fc0fa2a531bc4a03bfaa23748803d53077c651cd2e250aea9104c185027"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_inner/__init__.py": [
+      "435f6785955746abd94781a8ac750454296c67eef21ef93fc15f2c3c7ec3f734",
+      "435f6785955746abd94781a8ac750454296c67eef21ef93fc15f2c3c7ec3f734"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_inner/nesting.py": [
+      "cd9aae1df9ce38fdb89f9530928b5a7bb37d00259d42b8b407ee45316f69e32d",
+      "cd9aae1df9ce38fdb89f9530928b5a7bb37d00259d42b8b407ee45316f69e32d"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_inner/ordinal.py": [
+      "c313b9e7681725d9fef9141a61e0f27126a5e8dd1b88553d808343bb446f2e0a",
+      "c313b9e7681725d9fef9141a61e0f27126a5e8dd1b88553d808343bb446f2e0a"
+    ],
+    "02_BACKEND/lawrag/core/structure/guards/particle_ko.py": [
+      "774c125360af6ab1b03d892b535df7521bb97e092399b3d2af352d3eb6c2e3f6",
+      "774c125360af6ab1b03d892b535df7521bb97e092399b3d2af352d3eb6c2e3f6"
+    ],
+    "02_BACKEND/lawrag/core/structure/guards/__init__.py": [
+      "56283604e05b7d442ff05007eddd0b676047488935eed1e3c29a905d41aac66a",
+      "56283604e05b7d442ff05007eddd0b676047488935eed1e3c29a905d41aac66a"
+    ],
+    "02_BACKEND/lawrag/core/structure/guards/block_pos.py": [
+      "b049887e56c764060dc4e839a20dc4dc971a98cdb10db0a92d56885e2b7c5adc",
+      "b049887e56c764060dc4e839a20dc4dc971a98cdb10db0a92d56885e2b7c5adc"
+    ],
+    "02_BACKEND/lawrag/core/structure/guards/construction.py": [
+      "8e1894a109d2b6a505aa4246df94c30f2065d09331d8f794d6a0807f9c185131",
+      "8e1894a109d2b6a505aa4246df94c30f2065d09331d8f794d6a0807f9c185131"
+    ],
+    "02_BACKEND/lawrag/core/structure/family/__init__.py": [
+      "413f6c564cfe9ca349cfed8db5822280bb62d64718166de39ad6d576f0f7d525",
+      "413f6c564cfe9ca349cfed8db5822280bb62d64718166de39ad6d576f0f7d525"
+    ],
+    "02_BACKEND/lawrag/core/structure/family/anchor.py": [
+      "2838fe1ac668b5bfddbc4df38ef8efd9d74b788930d932c998a4042bb91334d5",
+      "2838fe1ac668b5bfddbc4df38ef8efd9d74b788930d932c998a4042bb91334d5"
+    ],
+    "02_BACKEND/lawrag/core/structure/family/run.py": [
+      "57a36e93ad3bab595beffd4874af336f034744e6cc291765294da5c746250749",
+      "57a36e93ad3bab595beffd4874af336f034744e6cc291765294da5c746250749"
+    ],
+    "02_BACKEND/lawrag/core/structure/family/succession.py": [
+      "5196b1048c55ffd6c532f5e00b42d45d55f54ee5aeb4c2a99ee74e0b6e33cebe",
+      "5196b1048c55ffd6c532f5e00b42d45d55f54ee5aeb4c2a99ee74e0b6e33cebe"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_outer/__init__.py": [
+      "b8cf182e08c84b468cdfa8f9b24e01e240a04a5218e8362ef54d2e28fca40fbb",
+      "b8cf182e08c84b468cdfa8f9b24e01e240a04a5218e8362ef54d2e28fca40fbb"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_outer/indent.py": [
+      "1b6a359a620c59c24e25422b2324690875e900e55d5b21eb58497b9cdcde0164",
+      "1b6a359a620c59c24e25422b2324690875e900e55d5b21eb58497b9cdcde0164"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_outer/reg_score.py": [
+      "99083ab0fe2d33d26163e946239a60c8a2841e7a189264d9a64a685cc6c775e6",
+      "99083ab0fe2d33d26163e946239a60c8a2841e7a189264d9a64a685cc6c775e6"
+    ],
+    "02_BACKEND/lawrag/core/structure/global_outer/ladder.py": [
+      "055534102712a0e6fbba4185eb07f4cb45a741c640266ed97f8b99f3603ff2af",
+      "055534102712a0e6fbba4185eb07f4cb45a741c640266ed97f8b99f3603ff2af"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/__init__.py": [
+      "45236bcec87795d66a523f55be3eb00777d8b4dce5603a0fc847d7ab8edb477e",
+      "45236bcec87795d66a523f55be3eb00777d8b4dce5603a0fc847d7ab8edb477e"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/dot_number.py": [
+      "3b4357c90ce745a72ae7bade812fb40afdb3bcbc8317877c1fc59ee587421ceb",
+      "3b4357c90ce745a72ae7bade812fb40afdb3bcbc8317877c1fc59ee587421ceb"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/style_heading.py": [
+      "0118633b455f8dc841696af17793c6c09a12b966b06b18bada65879de13a87e9",
+      "0118633b455f8dc841696af17793c6c09a12b966b06b18bada65879de13a87e9"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/bullet.py": [
+      "f513bc83f903e064af9a74cf5bb45e6f8819412568e3c519bfe6464058bdfbf7",
+      "f513bc83f903e064af9a74cf5bb45e6f8819412568e3c519bfe6464058bdfbf7"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/paren_number.py": [
+      "45c38687b5c159a594dbd8976fee195081c06912cd262103ca0a55500ecfdb47",
+      "45c38687b5c159a594dbd8976fee195081c06912cd262103ca0a55500ecfdb47"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/circled.py": [
+      "270efb6aeaf32f0e6393bc8e8b3a70b765e7e31a19de8a61dc80d4c45e417fc4",
+      "270efb6aeaf32f0e6393bc8e8b3a70b765e7e31a19de8a61dc80d4c45e417fc4"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/hangul_jamo.py": [
+      "4bfb9674bcd99ca922a45d8581b80b86fda8c0406fd44cbae55302916e098241",
+      "4bfb9674bcd99ca922a45d8581b80b86fda8c0406fd44cbae55302916e098241"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/kr_article.py": [
+      "e2f9002a1c347b7de650ed8ff7518998deaad8f7c0cac3529c4006a76f6552c5",
+      "e2f9002a1c347b7de650ed8ff7518998deaad8f7c0cac3529c4006a76f6552c5"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/roman.py": [
+      "0b29066a40dfb4ec42497e10b58e27ac32e23bd34103f267b2dec529c5aef70a",
+      "0b29066a40dfb4ec42497e10b58e27ac32e23bd34103f267b2dec529c5aef70a"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/kr_division.py": [
+      "e24ebbf15a981f4e419840ba2582652703b6294bcf5be71678d8fd693c19d02e",
+      "e24ebbf15a981f4e419840ba2582652703b6294bcf5be71678d8fd693c19d02e"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/annex.py": [
+      "64dd834206bf8e4862a4bbc51b83ed3106e93f57cac8b49aa4e4e479fdd688f2",
+      "64dd834206bf8e4862a4bbc51b83ed3106e93f57cac8b49aa4e4e479fdd688f2"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/writing_guidance.py": [
+      "0c189c39900b4ac489180c34d6c69cb8daf9b82580e497942878987348b4c1ed",
+      "0c189c39900b4ac489180c34d6c69cb8daf9b82580e497942878987348b4c1ed"
+    ],
+    "02_BACKEND/lawrag/core/structure/proposers/custom.py": [
+      "a9c1e6671806339f4cdcd0666c1af7d71911c3f79b3f5b6f57889af800478be6",
+      "a9c1e6671806339f4cdcd0666c1af7d71911c3f79b3f5b6f57889af800478be6"
+    ],
+    "02_BACKEND/lawrag/core/structure/templates/basic_v1.json": [
+      "8d639633e84088e34dbad57b1de659073f4116f6ab27fdac3b2f8386100ecb87",
+      "8d639633e84088e34dbad57b1de659073f4116f6ab27fdac3b2f8386100ecb87"
+    ],
+    "02_BACKEND/lawrag/core/structure/templates/disclosure_v1.json": [
+      "53c4e44f916fcd720a23a3a71b806f0fdf8a263a91cc66e05febbdc0d80890fa",
+      "53c4e44f916fcd720a23a3a71b806f0fdf8a263a91cc66e05febbdc0d80890fa"
+    ],
+    "02_BACKEND/lawrag/core/structure/lexicon/josa.yaml": [
+      "33dbdda8cf821ae9a81b1c8daa4779cb066a42b5985cdab20d7c3fc405f79e3f",
+      "33dbdda8cf821ae9a81b1c8daa4779cb066a42b5985cdab20d7c3fc405f79e3f"
+    ],
+    "02_BACKEND/lawrag/core/structure/lexicon/reference_predicates.yaml": [
+      "4d15e0d795fcd56246439a18f61e71fd3cb914bb6343627e9804c7a0fbc32f24",
+      "4d15e0d795fcd56246439a18f61e71fd3cb914bb6343627e9804c7a0fbc32f24"
+    ],
+    "02_BACKEND/lawrag/core/structure/lexicon/numerals.yaml": [
+      "f188d0998685555dfc9b4014023013fcadb4b5616ec67ca918b074b77a2291bf",
+      "f188d0998685555dfc9b4014023013fcadb4b5616ec67ca918b074b77a2291bf"
+    ],
+    "02_BACKEND/lawrag/core/rag/knowledge/__init__.py": [
+      "5c37d2569c3d216fb7494ece83bf2b8d9f257166e0fb2bfacd6b32509d8b61eb",
+      "5c37d2569c3d216fb7494ece83bf2b8d9f257166e0fb2bfacd6b32509d8b61eb"
+    ],
+    "02_BACKEND/lawrag/core/rag/evidence/__init__.py": [
+      "68fe41c9637ad62f6501da378e347acdc09b1f65c56399fb7ef08ca6f8199896",
+      "68fe41c9637ad62f6501da378e347acdc09b1f65c56399fb7ef08ca6f8199896"
+    ],
+    "02_BACKEND/lawrag/core/rag/reasoning/__init__.py": [
+      "b602dae631888e345a8bc772e228c58e71a3406f083b761bb4df37cb4bde2966",
+      "b602dae631888e345a8bc772e228c58e71a3406f083b761bb4df37cb4bde2966"
+    ],
+    "02_BACKEND/lawrag/core/rag/retrieval/__init__.py": [
+      "d3a1e95f15f091a4eaa8f92dd45d24c262eb984620a45b01adc7e637e5f6b965",
+      "d3a1e95f15f091a4eaa8f92dd45d24c262eb984620a45b01adc7e637e5f6b965"
+    ],
+    "02_BACKEND/lawrag/sources/__init__.py": [
+      "3d0e71cc882a8aab47e54e44c4ee433523fe4671679a295688efdd205b887037",
+      "3d0e71cc882a8aab47e54e44c4ee433523fe4671679a295688efdd205b887037"
+    ],
+    "02_BACKEND/lawrag/sources/cite.py": [
+      "548d970fa0c264f5a80204f58b4438896b31920776e3434ea798ccef87623092",
+      "548d970fa0c264f5a80204f58b4438896b31920776e3434ea798ccef87623092"
+    ],
+    "02_BACKEND/lawrag/sources/moleg_knowledge.py": [
+      "613e80f7b4092943bb1547e5cf713b05c9f60265f550ee25e5b4f9760b696412",
+      "613e80f7b4092943bb1547e5cf713b05c9f60265f550ee25e5b4f9760b696412"
+    ],
+    "02_BACKEND/lawrag/sources/lawgo.py": [
+      "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d",
+      "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d"
+    ],
+    "02_BACKEND/lawrag/sources/krx.py": [
+      "2c7eaf42810d0790e4185408f6dc94d38470bca052264b48e73ff9044616e85c",
+      "2c7eaf42810d0790e4185408f6dc94d38470bca052264b48e73ff9044616e85c"
+    ],
+    "02_BACKEND/lawrag/sources/fsc.py": [
+      "10060f64e08accb1829fe0428c3e511ccc263ef3f932f9da6f1e8112f1a3be0e",
+      "10060f64e08accb1829fe0428c3e511ccc263ef3f932f9da6f1e8112f1a3be0e"
+    ],
+    "02_BACKEND/lawrag/sources/expc.py": [
+      "034a78c5943a5d6416663a2903fef496b108b2ea2727639281b21f1b4e39b195",
+      "034a78c5943a5d6416663a2903fef496b108b2ea2727639281b21f1b4e39b195"
+    ],
+    "02_BACKEND/lawrag/sources/base.py": [
+      "7518b1929fb311a70ebf9914a7d4a9ddc0e39839fe266b37e812115a4b311f0a",
+      "7518b1929fb311a70ebf9914a7d4a9ddc0e39839fe266b37e812115a4b311f0a"
+    ],
+    "02_BACKEND/lawrag/sources/prec.py": [
+      "113dd1f16d2fd1e00e85fada4cfe8eaf10587d8187cab259d9bf3af045182afa",
+      "113dd1f16d2fd1e00e85fada4cfe8eaf10587d8187cab259d9bf3af045182afa"
+    ],
+    "02_BACKEND/lawrag/sources/kofia.py": [
+      "ed38eccd88b14e8e50c593d6c91578e7e19f13f06ba6b0a7162a09db69ce3e13",
+      "ed38eccd88b14e8e50c593d6c91578e7e19f13f06ba6b0a7162a09db69ce3e13"
+    ],
+    "02_BACKEND/lawrag/sources/common.py": [
+      "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b",
+      "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b"
+    ],
+    "02_BACKEND/lawrag/platform/__init__.py": [
+      "295d22a04149e41831464b41ad15b329034149ec1420c23091685b9b908370ca",
+      "295d22a04149e41831464b41ad15b329034149ec1420c23091685b9b908370ca"
+    ],
+    "02_BACKEND/lawrag/platform/stored_paths.py": [
+      "255b27bbb9a1745499a87901bae6e392158bc335ae7a9db6f401d5e84e817ebc",
+      "255b27bbb9a1745499a87901bae6e392158bc335ae7a9db6f401d5e84e817ebc"
+    ],
+    "02_BACKEND/lawrag/platform/workspace.py": [
+      "fd2c528d8a9f4175eeb49719cd460df58d950821b9f64b11d22e0ac17776b814",
+      "fd2c528d8a9f4175eeb49719cd460df58d950821b9f64b11d22e0ac17776b814"
+    ],
+    "02_BACKEND/lawrag/platform/main_promotion.py": [
+      "d9c9c753aab1844e6abb1e62d9b094aacf8f7f6e226cb027a0b32e8eae049e21",
+      "d9c9c753aab1844e6abb1e62d9b094aacf8f7f6e226cb027a0b32e8eae049e21"
+    ],
+    "02_BACKEND/lawrag/platform/active_data.py": [
+      "980cebc3039e5c26bddb9553e27968b7c008f25e6b14e6905e69bae4e0ab10cb",
+      "980cebc3039e5c26bddb9553e27968b7c008f25e6b14e6905e69bae4e0ab10cb"
+    ],
+    "02_BACKEND/lawrag/platform/runtime_services.py": [
+      "2e69a0478b7f948bea6f9f9df54c21bbab47449bbebaf43cb7a9845c7ea89ccd",
+      "2e69a0478b7f948bea6f9f9df54c21bbab47449bbebaf43cb7a9845c7ea89ccd"
+    ],
+    "02_BACKEND/lawrag/platform/experiment_store.py": [
+      "8068900464716ecf28361afbea03c1e8fbefa92840148cbfa47d4a6f71e39eeb",
+      "8068900464716ecf28361afbea03c1e8fbefa92840148cbfa47d4a6f71e39eeb"
+    ],
+    "02_BACKEND/lawrag/platform/paths.py": [
+      "473da4dbd00a729768444900a47e9f176e9fcb09deb12fa0e5713e0bfb989f8b",
+      "473da4dbd00a729768444900a47e9f176e9fcb09deb12fa0e5713e0bfb989f8b"
+    ],
+    "02_BACKEND/lawrag/platform/release.py": [
+      "c97488deaa2eb9fe68c0ec81072719587e06c91a27ec181adf22de6d9bbab1ba",
+      "c97488deaa2eb9fe68c0ec81072719587e06c91a27ec181adf22de6d9bbab1ba"
+    ],
+    "06_TOOLS/pipeline.py": [
+      "981778a20be9ed90272579b36a119341bd8016ff5a89786c0ee6296331476cac",
+      "981778a20be9ed90272579b36a119341bd8016ff5a89786c0ee6296331476cac"
+    ],
+    "06_TOOLS/COMMANDS/composed_build.py": [
+      "4c5ad7c4aa2ba329a4bb39b303bb5af95be6b8dc4f7f9894c811fd9a84019b7a",
+      "4c5ad7c4aa2ba329a4bb39b303bb5af95be6b8dc4f7f9894c811fd9a84019b7a",
+      "f58787817707fbbfd25d24f8b9e3dc7342423cdd320f08956d32cd8b9dc82eea",
+      "096028b896cb3cf4d6c3db4be7830e3ad4c4bcbb1e1dd68782aac000c7b9de7d"
+    ],
+    "06_TOOLS/COMMANDS/genos_data_stages.py": [
+      "4b0b5b2ee9ebc33255f8bab598f295cd8615bb3cbbac99f7366ea22a90b1a26b",
+      "4b0b5b2ee9ebc33255f8bab598f295cd8615bb3cbbac99f7366ea22a90b1a26b",
+      "d8d264288bd08fec54fd19eaec56c5f236bef801a310e99ac39a26ed6ad0c8d4",
+      "b1d17e8703bdf391d51df65d52eeddeca0833be84f99ad7cbe53d1078aacda86"
+    ],
+    "02_BACKEND/semantic_runtime/search_selection.py": [
+      "3d6febfedf60384d87142a480e31809c1a6b233cc2fd95b454e559bb3709c013",
+      "3d6febfedf60384d87142a480e31809c1a6b233cc2fd95b454e559bb3709c013"
+    ],
+    "02_BACKEND/semantic_runtime/filename_versions.py": [
+      "8690cc81ae287be5300edd46b8baafa238c27b0ecf5417dbe9dfb778bea5a777",
+      "8690cc81ae287be5300edd46b8baafa238c27b0ecf5417dbe9dfb778bea5a777"
+    ],
+    "00_SYSTEM/FILENAME_EXCEPTIONS.json": [
+      "818586217131955cd107094ec581a0737893dbd5fafc3caf9065011fdd96bcea",
+      "818586217131955cd107094ec581a0737893dbd5fafc3caf9065011fdd96bcea"
+    ],
+    "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json": [
+      "013ba7ca3dfa79632641785bc972bbb8daa2677544aa5c9946e07e4bbdcfa04d",
+      "cc39e621b10a1fc51e581207dc63ec7a65c36b7ff778f2f389883ea0fff2bc3e"
+    ],
+    "02_BACKEND/semantic_runtime/factorized_audit.py": [
+      "ba5c776719cf98c4b45d2dda1708e180fe1b45e4d1ec438a31d91c8f5fbb2d35",
+      "ba5c776719cf98c4b45d2dda1708e180fe1b45e4d1ec438a31d91c8f5fbb2d35"
+    ],
+    "06_TOOLS/COMMANDS/genos_data_stages.sh": [
+      "f1a69abc82cfba82cac8cd2739caf34743bd559cfa41e6643b32bec28d430b3d",
+      "f1a69abc82cfba82cac8cd2739caf34743bd559cfa41e6643b32bec28d430b3d"
+    ],
+    "06_TOOLS/COMMANDS/prepare_data.py": [
+      "4efcafa21be1cc8dc6a5545d0ed609004e1c6d0a51698709b826be68326ffd04",
+      "4efcafa21be1cc8dc6a5545d0ed609004e1c6d0a51698709b826be68326ffd04"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/__init__.py": [
+      "f6c71199714afea3f1bfdd0a0dd9eed4d58baeb3263bbbecc14e93b67bd78ace",
+      "f6c71199714afea3f1bfdd0a0dd9eed4d58baeb3263bbbecc14e93b67bd78ace"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/formats/decree.format.json": [
+      "379fb3e9e74336587728fe647060683caf89ad7cca5b135aafb3ed7cfd53b5c4",
+      "379fb3e9e74336587728fe647060683caf89ad7cca5b135aafb3ed7cfd53b5c4"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/formats/kofia_rule.format.json": [
+      "da1871dcc00a8d11c7ce762c8167af0423adc5eb3b32f18bc0dc8fa940c356e4",
+      "da1871dcc00a8d11c7ce762c8167af0423adc5eb3b32f18bc0dc8fa940c356e4"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/formats/transcript.format.json": [
+      "1c872a574a533868d2bd1a85b4a416cd6f28de3989f3637edb144f78b7bcba02",
+      "1c872a574a533868d2bd1a85b4a416cd6f28de3989f3637edb144f78b7bcba02"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/formats/statute.format.json": [
+      "720699fdcef2ef717802d35862136f98a305153943e8a964365d0e0529c75404",
+      "720699fdcef2ef717802d35862136f98a305153943e8a964365d0e0529c75404"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/llm_cache.py": [
+      "91482c830175074f9a9a19891bffff9ed94ed4c15dea8be38a060de7757eaace",
+      "91482c830175074f9a9a19891bffff9ed94ed4c15dea8be38a060de7757eaace"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/corpus_build.py": [
+      "67cc3a89a1070a58382520f3ce976f1643b53d42595551b0881dec2bac9155de",
+      "67cc3a89a1070a58382520f3ce976f1643b53d42595551b0881dec2bac9155de"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/schema.py": [
+      "7072e6b1c7db241c970c13130748e7f203c3f6464af9c2a9517f319f1650ff39",
+      "7072e6b1c7db241c970c13130748e7f203c3f6464af9c2a9517f319f1650ff39"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/judge.py": [
+      "ed07316e89e763bd8613968ac69c47c57cb89a4602254447c2542ebd098ee77d",
+      "ed07316e89e763bd8613968ac69c47c57cb89a4602254447c2542ebd098ee77d"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/aggregate.py": [
+      "6863d8df89b655cbcd970c7d5cf7b990b1d3fe03ef1385740918652859529a84",
+      "6863d8df89b655cbcd970c7d5cf7b990b1d3fe03ef1385740918652859529a84"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/transcript.py": [
+      "d202d6bd9aac05e86119311768d580d67c0a1f7ff18eff6a23bdb77aa243dd03",
+      "d202d6bd9aac05e86119311768d580d67c0a1f7ff18eff6a23bdb77aa243dd03"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/when.py": [
+      "7d9e83b34f7a0bda292dcc23b2e39702c660bb944cb051d4c0cc4f56a6cde504",
+      "7d9e83b34f7a0bda292dcc23b2e39702c660bb944cb051d4c0cc4f56a6cde504"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/preprocess.py": [
+      "01ba2daf65fa942cd26b4f9e00dbee04567b84b13daef3dd89ec989e6db35204",
+      "01ba2daf65fa942cd26b4f9e00dbee04567b84b13daef3dd89ec989e6db35204"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/report.py": [
+      "c60636bb280c05cea20b480f3635c06af693d56a110166e259e79a43b9bfdaf6",
+      "c60636bb280c05cea20b480f3635c06af693d56a110166e259e79a43b9bfdaf6"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/cli.py": [
+      "c249c458f90ca8b0a036d99431d59f6d0ff1f4a283133b35ab6f612ddb503b49",
+      "c249c458f90ca8b0a036d99431d59f6d0ff1f4a283133b35ab6f612ddb503b49"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/basis.py": [
+      "257fad5db8bfc4987cb10f7797750e89f28a4aac4dc4d4c4b33b98e7387ded00",
+      "257fad5db8bfc4987cb10f7797750e89f28a4aac4dc4d4c4b33b98e7387ded00"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/harvest.py": [
+      "3581c01bb26e08197ddcc27ed4732d21b528c66eab387507fcf910fbd69582a3",
+      "3581c01bb26e08197ddcc27ed4732d21b528c66eab387507fcf910fbd69582a3"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/src/context_asm.py": [
+      "64af75b35ee793c093fee5ec73a23e804bfa85092cfa0e114e801f067969be9b",
+      "64af75b35ee793c093fee5ec73a23e804bfa85092cfa0e114e801f067969be9b"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/manifest.json": [
+      "e09936dd0c4388e04fe9ff63d07b2f30cbec4202a99bb163aff9898fe746bf44",
+      "e09936dd0c4388e04fe9ff63d07b2f30cbec4202a99bb163aff9898fe746bf44"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/glossary/transcript.glossary.yaml": [
+      "6cf6199a6b7859abbc321275355bf7b52feed9a2c1db819d3459db577f423bb7",
+      "6cf6199a6b7859abbc321275355bf7b52feed9a2c1db819d3459db577f423bb7"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/glossary/decree.glossary.yaml": [
+      "5b49f4a2f9c5e4d4fbb1aac1140f03f5ff9d5e960a6344a8aaedb17b688b767a",
+      "5b49f4a2f9c5e4d4fbb1aac1140f03f5ff9d5e960a6344a8aaedb17b688b767a"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/glossary/kofia_rule.glossary.yaml": [
+      "1222726ad3d7e430f109469c3eb396346db6ebaf352c7da03100cefc6d149865",
+      "1222726ad3d7e430f109469c3eb396346db6ebaf352c7da03100cefc6d149865"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/glossary/statute.glossary.yaml": [
+      "d4d8c433d726d4f6b502a91c0c9dee4d7e31d958f65c9f6b4ce6c254737229c7",
+      "d4d8c433d726d4f6b502a91c0c9dee4d7e31d958f65c9f6b4ce6c254737229c7"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json": [
+      "b8127ad0f83490e7b5ad88379507d3e847c74339522f5fe0e4dc2aa14751a38e",
+      "b8127ad0f83490e7b5ad88379507d3e847c74339522f5fe0e4dc2aa14751a38e"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json": [
+      "b5357853a99b5debbd6abd22603ed36cb0eb25d10eb6e538692377261115dd09",
+      "b5357853a99b5debbd6abd22603ed36cb0eb25d10eb6e538692377261115dd09"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml": [
+      "c7782cb82f5d5c5837d7d0a61d3fb620315f95cf34272cabeacdc6b15c0019e6",
+      "c7782cb82f5d5c5837d7d0a61d3fb620315f95cf34272cabeacdc6b15c0019e6"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml": [
+      "18e42559a1fe6eedd2c8f76930681ea4a30362c646d6e3873c0df030a95b7338",
+      "18e42559a1fe6eedd2c8f76930681ea4a30362c646d6e3873c0df030a95b7338"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml": [
+      "190fbb50d3b45e8cbdd9645bde8f13fab9eab2baa860e66b0c30b221011da951",
+      "190fbb50d3b45e8cbdd9645bde8f13fab9eab2baa860e66b0c30b221011da951"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-21.yaml": [
+      "8ec8d66b9e30df2dab4c1b9421fe6a94143b6baa56e46c9963dddf5564672852",
+      "8ec8d66b9e30df2dab4c1b9421fe6a94143b6baa56e46c9963dddf5564672852"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-14.yaml": [
+      "fb5873d6153126bc8604082d8a74ff2a81b212bc9b482849f08564072da0be0b",
+      "fb5873d6153126bc8604082d8a74ff2a81b212bc9b482849f08564072da0be0b"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-17.yaml": [
+      "17b1feaa52b26c08628ae4c89b5925e7b11124095b24d4cd3873ffe561cfce9f",
+      "17b1feaa52b26c08628ae4c89b5925e7b11124095b24d4cd3873ffe561cfce9f"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-04.yaml": [
+      "188bc2634b9939dcf920d82533718e5c0fe5648f14531c32c9fc3d99e494d270",
+      "188bc2634b9939dcf920d82533718e5c0fe5648f14531c32c9fc3d99e494d270"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-22.yaml": [
+      "18047c5d7495754a8cc50efd28fa8d0ca8cf2e6f2497a61136f813de42096444",
+      "18047c5d7495754a8cc50efd28fa8d0ca8cf2e6f2497a61136f813de42096444"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-25.yaml": [
+      "d530a973ee25ba2caba35ac585c4818f3a827bd3aa5f55ea166d3fe966f3c2a8",
+      "d530a973ee25ba2caba35ac585c4818f3a827bd3aa5f55ea166d3fe966f3c2a8"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-03.yaml": [
+      "fa059dbb074cdeae7538b4b0d9f033d3e02437d960b068031934298e8a54b7db",
+      "fa059dbb074cdeae7538b4b0d9f033d3e02437d960b068031934298e8a54b7db"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-19.yaml": [
+      "c176ec081804a439010149b26b059675b26e0b59fdd7e5676c707b21289944b3",
+      "c176ec081804a439010149b26b059675b26e0b59fdd7e5676c707b21289944b3"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-05.yaml": [
+      "dd19e96dee1fd29e43ffedb297721a612b129a6dc3a9e70c02920fd64b5ea74a",
+      "dd19e96dee1fd29e43ffedb297721a612b129a6dc3a9e70c02920fd64b5ea74a"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-23.yaml": [
+      "645c5b5cca3b0df4b735ee371a74bbaa61d42e826f78c866ca67f4a17d30248e",
+      "645c5b5cca3b0df4b735ee371a74bbaa61d42e826f78c866ca67f4a17d30248e"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-15.yaml": [
+      "91ca816deddab0703dd478c94154362210930c9c9b07de8b1a8ac835719c76ee",
+      "91ca816deddab0703dd478c94154362210930c9c9b07de8b1a8ac835719c76ee"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-06.yaml": [
+      "9d16ccd45c72bfe1e560a9c2e749809fb3d81509f3f8c64df19d28b482c397f7",
+      "9d16ccd45c72bfe1e560a9c2e749809fb3d81509f3f8c64df19d28b482c397f7"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-01.yaml": [
+      "d2c0997d6dac69b7781610f0192f15780df143b6e5a394f397ff31d34fbeb996",
+      "d2c0997d6dac69b7781610f0192f15780df143b6e5a394f397ff31d34fbeb996"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-28.yaml": [
+      "a3b9fb3eda0166e83d1d2bdd352095e7d069d2e953ade77f692a8b0ffaf922f8",
+      "a3b9fb3eda0166e83d1d2bdd352095e7d069d2e953ade77f692a8b0ffaf922f8"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-29.yaml": [
+      "c8537c0791a4967dcedda9f78e33d124735f10da5137e4a4862e0305d09ae06c",
+      "c8537c0791a4967dcedda9f78e33d124735f10da5137e4a4862e0305d09ae06c"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-12.yaml": [
+      "f246b73014df9b16060987a2884ace18b673daaffa6afeffcadb37a5d689c885",
+      "f246b73014df9b16060987a2884ace18b673daaffa6afeffcadb37a5d689c885"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-10.yaml": [
+      "dcb9dd5fd063db7ced47a03ed13307e6d6bd914d33782c42b40bc3553e1867a8",
+      "dcb9dd5fd063db7ced47a03ed13307e6d6bd914d33782c42b40bc3553e1867a8"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-16.yaml": [
+      "d8836f1527604d4910be0e9cf8eb3656a0b924fab5329d6516f3098b22305754",
+      "d8836f1527604d4910be0e9cf8eb3656a0b924fab5329d6516f3098b22305754"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/C-18.yaml": [
+      "33bb9b368453d23d0e72c26fcda72f3ab111428f9885de8a7a898ef3b889361c",
+      "33bb9b368453d23d0e72c26fcda72f3ab111428f9885de8a7a898ef3b889361c"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-24.yaml": [
+      "b4ae933f83057338b91d3aadd5cd8767201aa357d4130c949a3dfe1b49a46f94",
+      "b4ae933f83057338b91d3aadd5cd8767201aa357d4130c949a3dfe1b49a46f94"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-11.yaml": [
+      "6806b05284ea520a83e893deb755200bcb1f88941821903407a6f71cb981f7c7",
+      "6806b05284ea520a83e893deb755200bcb1f88941821903407a6f71cb981f7c7"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/E-27.yaml": [
+      "e1f9750366a913fff0802e8ce515cabc94dbad56536e8e4b240707b7280a5600",
+      "e1f9750366a913fff0802e8ce515cabc94dbad56536e8e4b240707b7280a5600"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-08.yaml": [
+      "bd1484ed0c0ddbd750e7a1bfff4c7b8a4cce5c7a6cb8caf9e9a3a483a532a9d7",
+      "bd1484ed0c0ddbd750e7a1bfff4c7b8a4cce5c7a6cb8caf9e9a3a483a532a9d7"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/F-30.yaml": [
+      "9455ac8d366761ca1fcddbe1d07a07831b9bc083ad3aba7881a57ce7e9461435",
+      "9455ac8d366761ca1fcddbe1d07a07831b9bc083ad3aba7881a57ce7e9461435"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-07.yaml": [
+      "a80d46853e14835e8b46c35b5439353191a7d1f9d852388c30f9026c97dc5643",
+      "a80d46853e14835e8b46c35b5439353191a7d1f9d852388c30f9026c97dc5643"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/E-26.yaml": [
+      "661dfe9f49b051ae9efe5c322cfea3f167714f23534febaeb607b831a4b94f65",
+      "661dfe9f49b051ae9efe5c322cfea3f167714f23534febaeb607b831a4b94f65"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/A-02.yaml": [
+      "e6e10fc5a9b553b1effb3adef13e54295bd13ec0824cf9d8e0460560a8106528",
+      "e6e10fc5a9b553b1effb3adef13e54295bd13ec0824cf9d8e0460560a8106528"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/D-20.yaml": [
+      "b18d51c522aa5f4de723c64a357942565ce32755cd8bb6ee540815268b0340c0",
+      "b18d51c522aa5f4de723c64a357942565ce32755cd8bb6ee540815268b0340c0"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-13.yaml": [
+      "dec0996fad6ebb59ea16b48ced169112cf8a71da1f56ab3f31be832b6ff4c593",
+      "dec0996fad6ebb59ea16b48ced169112cf8a71da1f56ab3f31be832b6ff4c593"
+    ],
+    "02_BACKEND/lawrag/agents/agent6/checklist/items/B-09.yaml": [
+      "658413361cdc183c43c4a70f0b3daa62fad22f2337c5ea51d17fe0ca0613596f",
+      "658413361cdc183c43c4a70f0b3daa62fad22f2337c5ea51d17fe0ca0613596f"
+    ],
+    "00_SYSTEM/GLOSSARY_SCHEMA.json": [
+      "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf",
+      "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf"
+    ],
+    "00_SYSTEM/GLOSSARY_PIPELINE.json": [
+      "ecae8af63ba66579ba380f235bf2e2cd650c4a87c46a644eefbc944ac9a9f588",
+      "ecae8af63ba66579ba380f235bf2e2cd650c4a87c46a644eefbc944ac9a9f588"
+    ],
+    "00_SYSTEM/INTERNAL_LAYOUT.json": [
+      "3b7eafe6047a98548090af4b01e2d3bec30017d641b490cb29b68c6414567dba",
+      "3b7eafe6047a98548090af4b01e2d3bec30017d641b490cb29b68c6414567dba"
+    ],
+    "02_BACKEND/lawrag/agents/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json": [
+      "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118",
+      "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118"
+    ],
+    "02_BACKEND/semantic_runtime/term_index.py": [
+      "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+      "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0"
+    ],
+    "02_BACKEND/semantic_runtime/term_links.py": [
+      "9e23ec101eb9fb0078171ee3c05f96d71c758ab80312414f2c197bee06288740",
+      "9e23ec101eb9fb0078171ee3c05f96d71c758ab80312414f2c197bee06288740"
+    ],
+    "02_BACKEND/semantic_runtime/navigation_build.py": [
+      "9af07e850b70aff48c8d7cb639d68d0ce1e36721ca8d330fcfa93db9adc7f8e2",
+      "9af07e850b70aff48c8d7cb639d68d0ce1e36721ca8d330fcfa93db9adc7f8e2"
+    ],
+    "02_BACKEND/semantic_runtime/navigation_storage.py": [
+      "93eb882773bd4d7ec5bfa176592e9975146a6d9b322c3529c1285abcb126bc14",
+      "93eb882773bd4d7ec5bfa176592e9975146a6d9b322c3529c1285abcb126bc14"
+    ],
+    "02_BACKEND/semantic_runtime/reference_build.py": [
+      "945cf6166a59b8277db79fc8300b69fbcadedc02f88954c033dd7abb5f5b73e9",
+      "945cf6166a59b8277db79fc8300b69fbcadedc02f88954c033dd7abb5f5b73e9"
+    ]
+  },
+  "document_build": {
+    "schema_version": "document-build-policy-v1",
+    "default_mode": "native-no-models",
+    "entrypoint": "06_TOOLS/pipeline.py build-all",
+    "raw_selection": "Common filename_versions policy before structure; only is_latest internal rows admitted",
+    "structure": {
+      "entrypoint": "build-data-stages --stage structure --structure-vlm off --pdf-conversion off --pdf-parser local",
+      "method": "native XML/HTML/HWPX/DOCX/HWP parsers; preserve PDF source parser contracts",
+      "llm_vlm_calls": 0
+    },
+    "source_merge": "document-release prepare; default glossary-corpus-policy=replace; no review execution",
+    "connections_index": {
+      "entrypoint": "document-release reindex --from-run-id PREPARED --run-id NEW",
+      "implementation": "06_TOOLS/OFFLINE/genos_reindex_only.py",
+      "handoff": "08_DEPLOYMENT/GENOS/handoffs/reference_build_20261003_r1/GENOS_REFERENCE_BUILD_GUIDE_UTF8.txt",
+      "handoff_sha256": "5655d990588f33f4471a62faac6ca1ccf45939412353312add7855c4f98f5c48",
+      "policy": "prepared-reuse-serving-v1",
+      "model_calls": 0,
+      "serving_packaged": true,
+      "activated": false,
+      "storage_profile": "compact-v2",
+      "fulltext_granularity": "unit",
+      "navigation_schema": "term-navigation-index-v7",
+      "navigation_storage_schema": "term-navigation-storage-v4",
+      "audit_profile": "factorized-v1",
+      "navigation_audit_generation": "retain validated spans and catalogue candidates; replay evidence product; integer legacy origins",
+      "navigation_audit_storage": "lossless-gzip-after-verified-build; transient SQLite restore for offline checks"
+    },
+    "reviewed_mode": "explicit --with-model-review preserves previous build",
+    "genos_field_validation": "NOT_RUN",
+    "latest_internal_versions": true,
+    "require_latest_selection": true
+  },
+  "runtime_replacements": [
+    "02_BACKEND/semantic_runtime/search_selection.py",
+    "02_BACKEND/lawrag/pipeline/search_selection.py",
+    "02_BACKEND/semantic_runtime/term_index.py",
+    "02_BACKEND/semantic_runtime/term_links.py",
+    "02_BACKEND/semantic_runtime/navigation_build.py",
+    "02_BACKEND/semantic_runtime/navigation_storage.py",
+    "02_BACKEND/semantic_runtime/reference_build.py",
+    "02_BACKEND/semantic_runtime/factorized_audit.py"
+  ],
+  "base_spec_sha256": "5708b4a344b90a784b930888311b76d7b3ca54690a80179e14df60b032a65545",
+  "payload_sha256": "84f8b294bcae44d7d875d84a3815911ef895b24ff33f4d6b8c25b506b08f7f70"
+}

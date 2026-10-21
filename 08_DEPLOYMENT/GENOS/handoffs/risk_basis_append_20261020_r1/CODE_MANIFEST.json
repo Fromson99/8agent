@@ -1,0 +1,137 @@
+{
+  "schema_version": "risk-basis-offline-patch-v1",
+  "package_id": "GENOS_RISK_BASIS_APPEND_20261020_R1",
+  "scope": "One RAG-visible 위험관리기준시행세칙 document; four reviewed links only",
+  "payload": {
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": {
+      "sha256": "07649b5cdf2b541e058e1ce34c82a1be66de7a1b72f73cc30b407e9b5582b882",
+      "allowed_before": [
+        null
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": {
+      "sha256": "95078c11fe65aea564b07d3c042f3231090ab4ad699bcfdb75ca52847bc2f437",
+      "allowed_before": [
+        null
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_sql.py": {
+      "sha256": "7dad25bee90690eaf0a4981f2113898bf944eb890e46fa58315be9d8a9122b1b",
+      "allowed_before": [
+        null
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/basis_lifecycle.py": {
+      "sha256": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+      "allowed_before": [
+        null,
+        "c40de99a4c3a1687d338bbfdc2bc27faf45104ef2a563fa5fada5a777eb8108c"
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py": {
+      "sha256": "165f7729702029dd6d3e838392be77e4dd74a0a0232bb8c22a4b1264ca2eb849",
+      "allowed_before": [
+        null,
+        "165f7729702029dd6d3e838392be77e4dd74a0a0232bb8c22a4b1264ca2eb849"
+      ]
+    }
+  },
+  "dependencies": {
+    "02_BACKEND/semantic_runtime/__init__.py": [
+      "ce7278ea23a9ecc8c076c977c7dce1bf2ed04f9ff0d855d8a43b249235a897ba"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/__init__.py": [
+      "091407c3acc90302147499e1277dd426f0c6f3d37c40037b4c52aca470b76912"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/contracts.py": [
+      "5da8e6a5f115a7a46d95349a82fabad436672799549b40780d205cd1fc64ef86"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/oracle.py": [
+      "c6b906d04bf282122532439627982348abff90c0da121b72be939b6fa0d0d8b2"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/repository.py": [
+      "36397609b163ec921793d5a567caf89331eae6083a4d48e339ea9ad0ca203916",
+      "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/resolver.py": [
+      "d3d52ec7938f0e677f6b9fa35c7f91ebd5e89c72246b6f10ea48f78dec472622",
+      "de6e478205ac16313694d5cc1fb0eb24594a0cbe9eddd24f45b6e41de25cd2ad"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/service.py": [
+      "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc",
+      "33cfd7b0081c4452e3c8d77d332c705f6230f69465f3e1104dd4e6784f78b834"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/sources.py": [
+      "b1efda1b357beebe50f0d35ae9d11ffc64d18842942123b383d4552bbd149062"
+    ],
+    "02_BACKEND/semantic_runtime/contracts.py": [
+      "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f"
+    ],
+    "02_BACKEND/semantic_runtime/observability.py": [
+      "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_dp.py": [
+      "3eb9da4a6f072b89426c78fb73c0e747804d22a56df9a45f886d0e337348c650"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_dp_assets.py": [
+      "0bcf4747da8ba613f08ae8d0c79b8a1450a292ef5210420180e211169eea0528"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": [
+      "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query.py": [
+      "2cd75468758b95a0e4d0930466b51c16567c7befed7d24c45ed99fe7242ace28"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": [
+      "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5",
+      "bd0cdcd295a209694c2692602b1310f1050b817ebe39ed8bddf1fe87759b400c"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_db.py": [
+      "63a9ba9ae70999069dc00f05d469d7efdeedcf63d62989e16925c4e9ac0d4d25",
+      "9769af6307ab43bc9605e51f3c3b32c968ce31234da891003550a32410b57f2c"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_request.py": [
+      "18f4bf345e0d7b3afdd1fcb97ca9b6057be5cb562590ce8def7355cda1ae1270"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_service.py": [
+      "5c0374fc490547d01ed9e0cdbd6487252f3fb6ab9c55dfd50ca7f2f0afb82dc1"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_state.py": [
+      "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff"
+    ],
+    "02_BACKEND/semantic_runtime/oracle_query_store.py": [
+      "d140ea9655ad28fe722af626bab11e3c7af07db867363403f8bda8d0e21c23ee"
+    ],
+    "02_BACKEND/semantic_runtime/preparation_progress.py": [
+      "a913aec24cb3791b0ddf13eaa298c12ca8744531206106cbba5c33fea1b21bf3"
+    ],
+    "02_BACKEND/semantic_runtime/state_sqlite.py": [
+      "2229d464d3a3d52da1def657f05ab1506cdeeef8164ce28cbf9378727f443608"
+    ],
+    "02_BACKEND/semantic_runtime/team_scope.py": [
+      "2152c1ff0e96946995181d72edc1a19a571993026ebe88e2999156a0a59a6999"
+    ]
+  },
+  "package_files": {
+    "GENOS_RISK_BASIS_APPEND_20261020_R1_RUN.txt": "6b18ab1d745cdc6a895736d6d3837748f4244e98d73e0803d9ca744b5485c6ce",
+    "LOCAL_VALIDATION.json": "6281def049d1fe8d559cf4a2f73f76ed1ec5d379002e1d0ef929c899da3204dc",
+    "OPTIONAL_BASIS_SCHEMA.sql": "9af9501d848229455e4defefcc81bfed0eec260997d22a77b179dcd030597d36",
+    "RISK_BASIS_APPEND_20261020.txt": "45cb569fb9bfbee0117b0d1569d3fbcd97959c45faee08a60b817f35b8023fbd",
+    "install.py": "064928e1810015d6d752702d64f33b1b6ab0f00d6535d70ab4fb96beb758c292",
+    "payload/02_BACKEND/lawrag/pipeline/basis_lifecycle.py": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+    "payload/02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py": "165f7729702029dd6d3e838392be77e4dd74a0a0232bb8c22a4b1264ca2eb849",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_seed.py": "07649b5cdf2b541e058e1ce34c82a1be66de7a1b72f73cc30b407e9b5582b882",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": "95078c11fe65aea564b07d3c042f3231090ab4ad699bcfdb75ca52847bc2f437",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_sql.py": "7dad25bee90690eaf0a4981f2113898bf944eb890e46fa58315be9d8a9122b1b",
+    "읽어주세요.txt": "9b9cf951aa0945d5ec7f1160c2fe6194d3ef4b28e6267d5f90d80892cc429aef"
+  },
+  "mutable_operator_config": "config.json",
+  "local_selected_release": "genos-model-metadata-20261020-r1",
+  "source_fixture_generation": "term-source-696ba4030ea5f1a19ccf",
+  "deployment_target": "~/DEV",
+  "genos_serving_revision": "NOT_VERIFIED",
+  "oracle_engine_execution": "NOT_RUN",
+  "data_reindex": false,
+  "main_changed": false,
+  "git_push": false
+}

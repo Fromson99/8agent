@@ -1,0 +1,735 @@
+{
+  "summary": {
+    "policy": "internal-filename-audit-v2",
+    "status": "COMPLETE",
+    "counts_by_location": {
+      "OLDER": 2,
+      "LATEST": 10,
+      "EXCLUDED": 5,
+      "KEEP": 2
+    },
+    "all_locations": 19,
+    "retained_locations": 12,
+    "latest_title_date_pairs": 10,
+    "internal_physical_documents": 19,
+    "physical_exclusion_candidates": 7,
+    "binding": {
+      "mode": "USER_NAMED_CASES_WITH_SYNTHETIC_PRIOR_VERSIONS",
+      "field_inventory": false,
+      "exceptions": {
+        "sha256": "bebe4f339b1aa8e99358e370781b262b4d8e54eecc9abff72dbbb078e3a0cea8",
+        "revision": "user-20261015-r1",
+        "enabled": true
+      }
+    },
+    "model_calls": 0,
+    "source_modified": false,
+    "rag_applied": false,
+    "exception_warning_count": 0,
+    "exception_changed_locations": 12,
+    "before_exception_counts": {
+      "OLDER": 9,
+      "LATEST": 7,
+      "REVIEW": 3
+    },
+    "date_century_rule": "00..69 => 2000..2069; 70..99 => 1970..1999",
+    "filename_date_is_effective_date": false
+  },
+  "rows": [
+    {
+      "document_id": "group-0",
+      "filename": "그룹위험관리 세칙_20200101.docx",
+      "path": "internal/group/그룹위험관리 세칙_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "그룹위험관리 세칙",
+      "title_key": "그룹위험관리세칙",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "OLDER",
+      "reason": "older_filename_date",
+      "latest_date": "2026-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "그룹위험관리 세칙",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "group-risk-confirm"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 확인: 현재 최신 판정 유지. 특정 날짜는 제공되지 않았으므로 새 날짜를 추정하지 않음.",
+      "exception_changed": false,
+      "exception_ids_text": "group-risk-confirm",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "group-1",
+      "filename": "그룹위험관리 세칙_20260101.docx",
+      "path": "internal/group/그룹위험관리 세칙_20260101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "그룹위험관리 세칙",
+      "title_key": "그룹위험관리세칙",
+      "date": "2026-01-01",
+      "date_candidates": [
+        "2026-01-01"
+      ],
+      "date_tokens": [
+        "20260101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "latest_filename_date",
+      "latest_date": "2026-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "그룹위험관리 세칙",
+      "before_exception_date": "2026-01-01",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "group-risk-confirm"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 확인: 현재 최신 판정 유지. 특정 날짜는 제공되지 않았으므로 새 날짜를 추정하지 않음.",
+      "exception_changed": false,
+      "exception_ids_text": "group-risk-confirm",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20260101"
+    },
+    {
+      "document_id": "lending-0",
+      "filename": "대차업무준칙_20250101.docx",
+      "path": "internal/lending/대차업무준칙_20250101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "대차업무준칙",
+      "title_key": "대차업무준칙",
+      "date": "2025-01-01",
+      "date_candidates": [
+        "2025-01-01"
+      ],
+      "date_tokens": [
+        "20250101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "EXCLUDED",
+      "reason": "not_user_selected_version",
+      "latest_date": "2026-05-04",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "대차업무준칙",
+      "before_exception_date": "2025-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "stock-lending-20260504"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: _2026.05.04 판본을 최신으로 선택.",
+      "exception_changed": true,
+      "exception_ids_text": "stock-lending-20260504",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20250101"
+    },
+    {
+      "document_id": "lending-1",
+      "filename": "대차업무준칙_2026.05.04.docx",
+      "path": "internal/lending/대차업무준칙_2026.05.04.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "대차업무준칙",
+      "title_key": "대차업무준칙",
+      "date": "2026-05-04",
+      "date_candidates": [
+        "2026-05-04"
+      ],
+      "date_tokens": [
+        "2026.05.04"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "user_selected_version",
+      "latest_date": "2026-05-04",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "대차업무준칙",
+      "before_exception_date": "2026-05-04",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "stock-lending-20260504"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: _2026.05.04 판본을 최신으로 선택.",
+      "exception_changed": false,
+      "exception_ids_text": "stock-lending-20260504",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "2026.05.04"
+    },
+    {
+      "document_id": "singleton-0",
+      "filename": "모의단독문서.docx",
+      "path": "internal/singleton/모의단독문서.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "모의단독문서",
+      "title_key": "모의단독문서",
+      "date": "",
+      "date_candidates": [],
+      "date_tokens": [],
+      "invalid_date_tokens": [],
+      "title_rule": "single_name",
+      "parse_issues": [
+        "missing_date"
+      ],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "single_file_in_folder_user_rule",
+      "before_exception_status": "REVIEW",
+      "before_exception_title": "모의단독문서",
+      "before_exception_date": "",
+      "before_exception_reason": "missing_date",
+      "exception_ids": [
+        "single-file-folder"
+      ],
+      "date_precision": null,
+      "exception_reason": "사용자 지정: 현재 입력 목록에서 폴더에 문서 파일이 하나이면 최신으로 취급",
+      "exception_changed": true,
+      "exception_ids_text": "single-file-folder",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": ""
+    },
+    {
+      "document_id": "golden-0",
+      "filename": "삼성POP골든랩 관리준칙_20200101.docx",
+      "path": "internal/golden/삼성POP골든랩 관리준칙_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "삼성POP골든랩 관리준칙",
+      "title_key": "삼성pop골든랩관리준칙",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "EXCLUDED",
+      "reason": "not_user_selected_version",
+      "latest_date": "2023-05",
+      "before_exception_status": "REVIEW",
+      "before_exception_title": "삼성POP골든랩 관리준칙",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "family_contains_unresolved_filename",
+      "exception_ids": [
+        "samsung-pop-golden-wrap-202305"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정 파일명. 날짜는 월 단위이며 일자는 생성하지 않음.",
+      "exception_changed": true,
+      "exception_ids_text": "samsung-pop-golden-wrap-202305",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "golden-1",
+      "filename": "삼성POP골든랩 관리준칙_2023년 5월 개정(최종).docx",
+      "path": "internal/golden/삼성POP골든랩 관리준칙_2023년 5월 개정(최종).docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "삼성POP골든랩 관리준칙",
+      "title_key": "삼성pop골든랩관리준칙",
+      "date": "2023-05",
+      "date_candidates": [],
+      "date_tokens": [],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [
+        "missing_date"
+      ],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "user_selected_version",
+      "latest_date": "2023-05",
+      "before_exception_status": "REVIEW",
+      "before_exception_title": "삼성POP골든랩 관리준칙",
+      "before_exception_date": "",
+      "before_exception_reason": "missing_date",
+      "exception_ids": [
+        "samsung-pop-golden-wrap-202305"
+      ],
+      "date_precision": "month",
+      "exception_reason": "사용자 지정 파일명. 날짜는 월 단위이며 일자는 생성하지 않음.",
+      "exception_changed": true,
+      "exception_ids_text": "samsung-pop-golden-wrap-202305",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": ""
+    },
+    {
+      "document_id": "futures-0",
+      "filename": "선물옵션 리스크관리 관리준칙_20260101.docx",
+      "path": "internal/futures/선물옵션 리스크관리 관리준칙_20260101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "선물옵션 리스크관리 관리준칙",
+      "title_key": "선물옵션리스크관리관리준칙",
+      "date": "2026-01-01",
+      "date_candidates": [
+        "2026-01-01"
+      ],
+      "date_tokens": [
+        "20260101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "latest_filename_date",
+      "latest_date": "2026-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "선물옵션 리스크관리 관리준칙",
+      "before_exception_date": "2026-01-01",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "futures-options-attachments"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급.",
+      "exception_changed": false,
+      "exception_ids_text": "futures-options-attachments",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20260101"
+    },
+    {
+      "document_id": "futures-1",
+      "filename": "선물옵션 리스크관리 관리준칙_[별첨1]_20200101.docx",
+      "path": "internal/futures/선물옵션 리스크관리 관리준칙_[별첨1]_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "선물옵션 리스크관리 관리준칙 [별첨1]",
+      "title_key": "선물옵션리스크관리관리준칙::attachment:1",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "OLDER",
+      "reason": "older_filename_date",
+      "latest_date": "2022-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "선물옵션 리스크관리 관리준칙",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "futures-options-attachments"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급.",
+      "exception_changed": true,
+      "exception_ids_text": "futures-options-attachments",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "futures-2",
+      "filename": "선물옵션 리스크관리 관리준칙_[별첨1]_20220101.docx",
+      "path": "internal/futures/선물옵션 리스크관리 관리준칙_[별첨1]_20220101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "선물옵션 리스크관리 관리준칙 [별첨1]",
+      "title_key": "선물옵션리스크관리관리준칙::attachment:1",
+      "date": "2022-01-01",
+      "date_candidates": [
+        "2022-01-01"
+      ],
+      "date_tokens": [
+        "20220101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "latest_filename_date",
+      "latest_date": "2022-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "선물옵션 리스크관리 관리준칙",
+      "before_exception_date": "2022-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "futures-options-attachments"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급.",
+      "exception_changed": true,
+      "exception_ids_text": "futures-options-attachments",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20220101"
+    },
+    {
+      "document_id": "futures-3",
+      "filename": "선물옵션 리스크관리 관리준칙_[별첨2]_20210101.docx",
+      "path": "internal/futures/선물옵션 리스크관리 관리준칙_[별첨2]_20210101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "선물옵션 리스크관리 관리준칙 [별첨2]",
+      "title_key": "선물옵션리스크관리관리준칙::attachment:2",
+      "date": "2021-01-01",
+      "date_candidates": [
+        "2021-01-01"
+      ],
+      "date_tokens": [
+        "20210101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "latest_filename_date",
+      "latest_date": "2021-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "선물옵션 리스크관리 관리준칙",
+      "before_exception_date": "2021-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "futures-options-attachments"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급.",
+      "exception_changed": true,
+      "exception_ids_text": "futures-options-attachments",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20210101"
+    },
+    {
+      "document_id": "margin-0",
+      "filename": "위탁증거금 징수지침_20200101.docx",
+      "path": "internal/margin/위탁증거금 징수지침_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "위탁증거금 징수지침",
+      "title_key": "위탁증거금징수지침",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "KEEP",
+      "reason": "user_keep_all_versions",
+      "latest_date": "2026-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "위탁증거금 징수지침",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "margin-collection-keep-both"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 두 문서 모두 유지. 예상 개수와 다르더라도 임의로 삭제하지 않고 보고.",
+      "exception_changed": true,
+      "exception_ids_text": "margin-collection-keep-both",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "margin-1",
+      "filename": "위탁증거금 징수지침_20260101.docx",
+      "path": "internal/margin/위탁증거금 징수지침_20260101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "위탁증거금 징수지침",
+      "title_key": "위탁증거금징수지침",
+      "date": "2026-01-01",
+      "date_candidates": [
+        "2026-01-01"
+      ],
+      "date_tokens": [
+        "20260101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "KEEP",
+      "reason": "user_keep_all_versions",
+      "latest_date": "2026-01-01",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "위탁증거금 징수지침",
+      "before_exception_date": "2026-01-01",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "margin-collection-keep-both"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 두 문서 모두 유지. 예상 개수와 다르더라도 임의로 삭제하지 않고 보고.",
+      "exception_changed": true,
+      "exception_ids_text": "margin-collection-keep-both",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20260101"
+    },
+    {
+      "document_id": "index-0",
+      "filename": "인덱스북_20200101.docx",
+      "path": "internal/index/인덱스북_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "인덱스북",
+      "title_key": "인덱스북",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "single_name",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "EXCLUDED",
+      "reason": "not_user_selected_version",
+      "latest_date": "2026-05-29",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "인덱스북",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "index-book-20260529"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20260529 판본 선택.",
+      "exception_changed": true,
+      "exception_ids_text": "index-book-20260529",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "index-1",
+      "filename": "인덱스북_20260529.docx",
+      "path": "internal/index/인덱스북_20260529.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "인덱스북",
+      "title_key": "인덱스북",
+      "date": "2026-05-29",
+      "date_candidates": [
+        "2026-05-29"
+      ],
+      "date_tokens": [
+        "20260529"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "single_name",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "user_selected_version",
+      "latest_date": "2026-05-29",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "인덱스북",
+      "before_exception_date": "2026-05-29",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "index-book-20260529"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20260529 판본 선택.",
+      "exception_changed": false,
+      "exception_ids_text": "index-book-20260529",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20260529"
+    },
+    {
+      "document_id": "stock-0",
+      "filename": "주식운용준칙_20200101.docx",
+      "path": "internal/stock/주식운용준칙_20200101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "주식운용준칙",
+      "title_key": "주식운용준칙",
+      "date": "2020-01-01",
+      "date_candidates": [
+        "2020-01-01"
+      ],
+      "date_tokens": [
+        "20200101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "EXCLUDED",
+      "reason": "not_user_selected_version",
+      "latest_date": "2021-07-23",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "주식운용준칙",
+      "before_exception_date": "2020-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "equity-management-20210723"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20210723 판본 선택.",
+      "exception_changed": true,
+      "exception_ids_text": "equity-management-20210723",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20200101"
+    },
+    {
+      "document_id": "stock-1",
+      "filename": "주식운용준칙_20210723.docx",
+      "path": "internal/stock/주식운용준칙_20210723.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "주식운용준칙",
+      "title_key": "주식운용준칙",
+      "date": "2021-07-23",
+      "date_candidates": [
+        "2021-07-23"
+      ],
+      "date_tokens": [
+        "20210723"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "user_selected_version",
+      "latest_date": "2021-07-23",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "주식운용준칙",
+      "before_exception_date": "2021-07-23",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "equity-management-20210723"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20210723 판본 선택.",
+      "exception_changed": false,
+      "exception_ids_text": "equity-management-20210723",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20210723"
+    },
+    {
+      "document_id": "investment-0",
+      "filename": "투자리스크관리준칙_20100101.docx",
+      "path": "internal/investment/투자리스크관리준칙_20100101.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "투자리스크관리준칙",
+      "title_key": "투자리스크관리준칙",
+      "date": "2010-01-01",
+      "date_candidates": [
+        "2010-01-01"
+      ],
+      "date_tokens": [
+        "20100101"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "EXCLUDED",
+      "reason": "not_user_selected_version",
+      "latest_date": "2016-01-11",
+      "cross_folder_family": false,
+      "before_exception_status": "OLDER",
+      "before_exception_title": "투자리스크관리준칙",
+      "before_exception_date": "2010-01-01",
+      "before_exception_reason": "older_filename_date",
+      "exception_ids": [
+        "investment-risk-20160111"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20160111 판본 선택.",
+      "exception_changed": true,
+      "exception_ids_text": "investment-risk-20160111",
+      "physical_exclusion_candidate": true,
+      "date_tokens_text": "20100101"
+    },
+    {
+      "document_id": "investment-1",
+      "filename": "투자리스크관리준칙_20160111.docx",
+      "path": "internal/investment/투자리스크관리준칙_20160111.docx",
+      "filename_source": "relative_path",
+      "has_original": true,
+      "title": "투자리스크관리준칙",
+      "title_key": "투자리스크관리준칙",
+      "date": "2016-01-11",
+      "date_candidates": [
+        "2016-01-11"
+      ],
+      "date_tokens": [
+        "20160111"
+      ],
+      "invalid_date_tokens": [],
+      "title_rule": "document_suffix",
+      "parse_issues": [],
+      "temporary": false,
+      "status": "LATEST",
+      "reason": "user_selected_version",
+      "latest_date": "2016-01-11",
+      "cross_folder_family": false,
+      "before_exception_status": "LATEST",
+      "before_exception_title": "투자리스크관리준칙",
+      "before_exception_date": "2016-01-11",
+      "before_exception_reason": "latest_filename_date",
+      "exception_ids": [
+        "investment-risk-20160111"
+      ],
+      "date_precision": "day",
+      "exception_reason": "사용자 지정: 20160111 판본 선택.",
+      "exception_changed": false,
+      "exception_ids_text": "investment-risk-20160111",
+      "physical_exclusion_candidate": false,
+      "date_tokens_text": "20160111"
+    }
+  ]
+}

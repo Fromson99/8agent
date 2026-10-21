@@ -1,0 +1,63 @@
+--- before/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py
++++ after/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py
+@@ -369,6 +369,9 @@
+ 
+ def _post_code_serving(request_body):
+     endpoint, token, timeout = _settings()
++    if request_body.get('API_TYPE') in {'WARMUP', 'WARMUP_STATUS'}:
++        # Controls do not run a model or wait for cache completion. No retry.
++        timeout = min(timeout, 30.0) if timeout > 0 else 30.0
+     request_id = request_body["request_id"]
+     encoded = json.dumps(request_body, ensure_ascii=False).encode("utf-8")
+     request = urllib.request.Request(endpoint, data=encoded, method="POST")
+@@ -416,6 +419,26 @@
+         text = messages[state] + '\nworker_id: ' + str(body.get('worker_id', ''))
+         if body.get('generation_path'):
+             text += '\ngeneration: ' + str(body['generation_path'])
++        progress = body.get('progress') or {}
++        if progress:
++            text += '\n준비 단계: ' + str(progress.get('phase', '미확인'))
++            text += '\n경과: ' + str(progress.get('elapsed_seconds', 0)) + '초'
++            text += '\n마지막 진행 이후: ' + str(progress.get('last_progress_age_seconds', 0)) + '초'
++            if 'rows_done' in progress:
++                text += '\n원문 행: ' + str(progress['rows_done']) + '/' + str(progress.get('rows_total', '?'))
++            if 'parts_done' in progress:
++                text += '\n자산 분할: ' + str(progress['parts_done']) + '/' + str(progress.get('parts_total', '?'))
++            if progress.get('sql_in_flight'):
++                text += '\nOracle 응답 대기: ' + str(progress.get('sql_elapsed_seconds', 0)) + '초'
++        if body.get('data_provider'):
++            text += '\ndata_provider: ' + str(body['data_provider'])
++        if body.get('dp_release_id'):
++            text += '\ndp_release_id: ' + str(body['dp_release_id'])
++        if 'nfs_source_used' in body:
++            text += '\nnfs_source_used: ' + str(body['nfs_source_used'])
++        recovery = body.get('ad_worker_recovery') or {}
++        if recovery.get('state') in {'RUNNING', 'FAILED'}:
++            text += '\n예약 작업 복구: ' + str(recovery['state'])
+         _log_event('workflow.warmup.finished', request_id=request_id,
+                    operation=operation, state=state, worker_id=body.get('worker_id'))
+         return {'text': text, 'answer_status': 'warmup', 'request_id': request_id,
+@@ -423,6 +446,12 @@
+     except Exception as exc:
+         _log_event('workflow.warmup.failed', level='ERROR', request_id=request_id,
+                    operation=operation, error_type=type(exc).__name__, error_message=str(exc),traceback=traceback.format_exc())
++        if isinstance(exc, TimeoutError) or (isinstance(exc, urllib.error.URLError) and isinstance(exc.reason, TimeoutError)):
++            return {'text': '준비 상태 조회가 제한 시간(최대 30초) 안에 응답하지 않았습니다. '
++                    '워크플로우의 code_serving.request.started와 코드서빙의 http.request.started를 대조해 주세요. '
++                    '백그라운드 준비 작업의 종료 여부는 확인되지 않았습니다.\nrequest_id: ' + request_id,
++                    'answer_status': 'failed', 'request_id': request_id,
++                    'failure_kind': 'warmup_status_transport_timeout'}
+         return {'text': render_error({'request_id':request_id,'error_type':type(exc).__name__,
+                    'detail':str(exc),'traceback':traceback.format_exc()}, exc=exc),
+                 'answer_status': 'failed', 'request_id': request_id}
+@@ -2083,6 +2112,10 @@
+     최종 워크플로우 결과로 해석하지 않는다. 기준 브랜치처럼 단일
+     dictionary를 반환해 코드 서빙이 준 검증된 답변을 그대로 전달한다.
+     """
++    data = dict(data) if isinstance(data, dict) else {}
++    data['request_id'] = str(data.get('request_id') or data.get('messageId') or uuid.uuid4().hex)
++    _log_event('workflow.entry.received', request_id=data['request_id'],
++               input_keys=sorted(str(key) for key in data))
+     try:
+         return await _run_once(data)
+     except Exception as exc:

@@ -5,6 +5,7 @@ shared by both source sessions and the durable legal_agent selector.
 """
 import json
 import time
+from jsonschema import ValidationError
 from copy import deepcopy
 from . import output_contract as output
 from collections import OrderedDict
@@ -56,7 +57,38 @@ def hit_for(s, sid, uid):
     return hit
 
 
-def catalog(s, anchors, selected, handled, *, after_by_anchor=None):
+def delivered_blocks(session, spans_by_source):
+    """Exact current-authorized delivery across windows, never model adoption."""
+    from .evidence_inventory import covers, expected
+    result={};raw_cache={}
+    for sid,spans in spans_by_source.items():
+        source=session.tools.sources.get(sid)
+        if not source or source['document_id'] not in session.scope:
+            raise ContractError('delivered reference source outside current scope')
+        did=source['document_id'];allowed={str(b['block_id']) for b in source['blocks']};blocks=set()
+        for span in spans:
+            bid=str(span['block_id'])
+            if bid not in allowed:raise ContractError('delivered reference block outside source')
+            key=(did,bid)
+            if key not in raw_cache:raw_cache[key]=session.store.source(did,bid)['text']
+            text=raw_cache[key];lo=span['start_cp'];hi=span['end_cp']
+            if (type(lo) is not int or type(hi) is not int or not 0<=lo<=hi<=len(text)
+                    or span.get('text')!=text[lo:hi]
+                    or 'block_hash' in span and span['block_hash']!=text_hash(text)
+                    or 'span_hash' in span and span['span_hash']!=text_hash(text[lo:hi])):
+                raise ContractError('delivered reference original span changed')
+            blocks.add(bid)
+        result[sid]={bid for bid in blocks if covers(expected(session,did,[bid]),spans)}
+    return result
+
+
+def bounded_reference_completion(session):
+    from . import completion_contracts as cc
+    p=session.profile.get('candidate_navigation',{})
+    return bool(p.get('completion_contract') and p.get('completion_policy_version') in (cc.V5,cc.V6,cc.V7,cc.V8))
+
+
+def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None):
     """Validate both ends before exposing closed READ offers; read no target body."""
     groups = OrderedDict()
     statuses, limits, unresolved = [], [], []
@@ -74,17 +106,17 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None):
         if hasattr(s,'investigation_delivered_spans'):
             evidence_spans = s.investigation_delivered_spans
         # Partial codepoint reads cannot declare an entire target block read.
-        evidence_blocks = {sid:{bid for bid in blocks if covers(
-            expected(s,s.tools.sources[sid]['document_id'],[bid]),evidence_spans.get(sid,[]))}
-            for sid,blocks in evidence_blocks.items()}
+        evidence_blocks = delivered_blocks(s,evidence_spans)
     for anchor in anchors[:LIMITS['anchors_per_round']]:
         if anchor not in s.tools.sources or s.tools.sources[anchor]['document_id'] not in s.scope:
             raise ContractError('reference anchor outside request scope')
         found = 0
         after=(after_by_anchor or {}).get(anchor,'')
-        rows = s.tools.db.execute('''SELECT DISTINCT r.json FROM reference r
-            JOIN reference_end e ON e.reference_id=r.id WHERE e.source_id=? AND r.id>?
-            ORDER BY r.id LIMIT ?''', (anchor, after, LIMITS['edges_per_anchor'] + 1)).fetchall()
+        clause=' AND r.id IN (SELECT value FROM json_each(?))' if only_references is not None else ''
+        params=(anchor,after,*([json.dumps(sorted(only_references))] if only_references is not None else []),LIMITS['edges_per_anchor']+1)
+        rows = s.tools.db.execute('SELECT DISTINCT r.json FROM reference r '
+            'JOIN reference_end e ON e.reference_id=r.id WHERE e.source_id=? AND r.id>?'+clause+
+            ' ORDER BY r.id LIMIT ?', params).fetchall()
         if len(rows) > LIMITS['edges_per_anchor']:
             limits.append({'kind': 'edge_scan_limit', 'anchor': anchor,
                            'more_available': True,
@@ -150,7 +182,13 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None):
                 known = {str(b['block_id']) for b in src['blocks']}
                 if set(map(str, end.get('block_ids', []))) - known:
                     raise ContractError('reference target extent outside canonical source')
+                from . import query_scope as qs
+                if qs.active(s) and not evidence_blocks.get(anchor,set()) & qs.permitted_blocks(s,anchor):continue
                 hit = hit_for(s, target, end.get('unit_id'))
+                from .query_scope import grant
+                grant(s,target,end.get('block_ids') or known,witness={
+                    'anchor_source_id':anchor,'reference_id':ref['id'],'direction':direction,
+                    'witness_sha256':expected,'target_unit_id':end.get('unit_id')})
                 try:
                     opts, blocked = offer_plan(s, hit)
                 except KeyError as exc:
@@ -226,9 +264,9 @@ def schema(offered):
             'action': {'type': 'string', 'enum': ['FOLLOW', 'SKIP', 'DEFER']},
             'scopes': {'type': 'array', 'maxItems': LIMITS['scopes_per_group'],
                 'uniqueItems': True, 'items': {'type': 'string', **({'enum': scopes} if scopes else {})}},
-            'reason': {'type': 'string', 'minLength': 1, 'maxLength': 512},
+            'reason': {'type': 'string', 'minLength': 1},
             'applicability': {'type': 'string', 'enum': ['APPLIES', 'DOES_NOT_APPLY', 'UNDETERMINED']},
-            'applicability_reason': {'type': 'string', 'minLength': 1, 'maxLength': 512}}}
+            'applicability_reason': {'type': 'string', 'minLength': 1}}}
     alternatives = []
     # Every provider alternative contains all six required fields. Partial
     # conditional properties caused actual first-pass responses to omit reason.
@@ -246,7 +284,7 @@ def schema(offered):
             id={'type': 'string', 'const': label},
             action={'type': 'string', 'const': 'FOLLOW'},
             applicability={'type': 'string', 'enum': ['APPLIES', 'UNDETERMINED']},
-            scopes={'type': 'array', 'minItems': 1, 'maxItems': LIMITS['scopes_per_group'],
+            scopes={'type': 'array', 'minItems': 1, 'maxItems': group.get('scope_limit',LIMITS['scopes_per_group']),
                 'uniqueItems': True, 'items': {'type': 'string', 'enum': sorted(group['offers'])}})
         alternatives.append(branch)
     return {'type': 'object', 'additionalProperties': False,
@@ -257,11 +295,13 @@ def schema(offered):
 
 
 def validate(value, offered):
+    from .tool_policy import require_registered
     output.validate_shape(value, schema(offered))
     output.validate_decisions(value)
     seen = set()
     followed = 0
     for d in value['decisions']:
+        require_registered('reference',d['action'])
         if d['id'] not in offered or d['id'] in seen or not d['reason'].strip():
             raise output.DecisionConflict('unoffered/duplicate reference decision')
         seen.add(d['id'])
@@ -297,6 +337,21 @@ def group_signature(question, g):
             'required_block_ids','endpoint_block_ids')} for c in g['connections']]})
 
 
+def closed_decision(question, group, decisions, known_blocks):
+    """Project only a valid exact-witness decision whose chosen reads completed.
+
+    The caller must first check the question/scope/generation binding and obtain
+    the group from the current authorized catalog. This is not a legal verdict.
+    """
+    cached=decisions.get(group_signature(question,group))
+    if not isinstance(cached,dict) or cached.get('action') not in ('SKIP','FOLLOW'):return None
+    try:validate({'decisions':[{**cached,'id':'cached'}],'needs_more':False},{'cached':group})
+    except (ContractError,ProposalError):return None
+    if cached['action']=='FOLLOW' and not all(
+        set(group['offers'][scope][1]['block_ids'])<=known_blocks for scope in cached['scopes']):return None
+    return deepcopy(cached)
+
+
 def navigate(question, session, selected, invoke, *, read_state, seconds_left, max_context_chars,
              initial_anchors=None, phase_prefix='source-reference-batch-', state=None, on_checkpoint=None,
              max_model_batches=None, replay_menu=None):
@@ -330,6 +385,8 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
     binding=digest({'question':question,'scope':sorted(session.scope),
                     'generation':session.context.query['generation_id']})
     if state.get('binding') not in (None,binding):raise ContractError('reference navigation binding changed')
+    from .tool_policy import bind_checkpoint, require_registered
+    bind_checkpoint(state,binding,legacy=bool(state))
     state.update(binding=binding)
     for key,default in (('scanned',{}),('cursors',{}),('decisions',{}),('deferred',{}),
                         ('queue',[]),('unresolved',{}),('depths',{}),('accepted',{})):
@@ -347,12 +404,15 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
         return result
     def covered(g):
         known=blocks_read().get(g['target']['source_id'],set())
+        if session.profile.get('candidate_navigation',{}).get('investigation_control') and hasattr(session,'investigation_delivered_spans'):
+            known=known | delivered_blocks(session,session.investigation_delivered_spans).get(g['target']['source_id'],set())
         return all(set(c.get('required_block_ids') or c.get('endpoint_block_ids') or [])<=known
                    and bool(c.get('required_block_ids') or c.get('endpoint_block_ids')) for c in g['connections'])
     def refresh_pending():
         for key,g in list(state['deferred'].items()):
             if covered(g):del state['deferred'][key]
     def apply_decision(g,d):
+        require_registered('reference',d['action'])
         signature=group_signature(question,g)
         from .investigation_diagnostics import group_detail
         session.repo.event('REFERENCE_GROUP_DECISION',{'key':g['key'],'anchor':g['anchor'],
@@ -366,6 +426,11 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
                 current,_,_,_=catalog(session,[g['anchor']['source_id']],selected,set(),**kwargs)
                 fresh=next((x for x in current if x['key']==g['key']),None)
                 if not fresh or fresh['offers'].get(scope)!=(hit,o):raise ContractError('stale reference READ choice')
+                from .tool_availability import read_reason
+                reason=read_reason(session,hit,o,read_state)
+                if reason:
+                    error=BudgetExhausted if reason in ('READ_CHARACTER_LIMIT','READ_ACTION_LIMIT','TOOL_ACTION_LIMIT') else ContractError
+                    raise error('reference READ no longer available: '+reason)
                 r=read(session,hit,o,action_state=read_state)
                 if not r['complete']:raise ContractError('selected reference not fully read')
                 selected['REF:'+g['key']+':'+scope]=r;actions.extend(r['actions'])
@@ -376,7 +441,8 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
         if d['action']=='DEFER':state['deferred'][signature]=g
         else:state['deferred'].pop(signature,None)
         state['accepted'].pop(signature,None)
-        queue.remove(g);refresh_pending();save()
+        queue[:]=[pending for pending in queue if pending['key']!=g['key']]
+        refresh_pending();save()
     save()
     batch_limit=LIMITS['batches'] if max_model_batches is None else min(LIMITS['batches'],max_model_batches)
     if type(batch_limit) is not int or batch_limit<1:raise ContractError('invalid reference step budget')
@@ -418,16 +484,26 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
                 if not changed[len(anchors):]:break
                 continue
         if not queue and replay_pending is None:break
-        offered={};rows=[];reused=[];restored_data=None
+        offered={};rows=[];reused=[];restored_data=None;replay_labels={}
         if replay_pending is not None:
-            from copy import deepcopy
-            restored_data=deepcopy(replay_pending['data']);offered=deepcopy(replay_pending['offered'])
-            rows=restored_data['groups']
-            for g in offered.values():
+            restored_data=deepcopy(replay_pending['data'])
+            # Frames are immutable presentation history, not current authority.
+            # Rebuild their groups before applying the same closure checks used
+            # on an ordinary menu. Changed witnesses get new signatures.
+            pages={};replay_groups=[]
+            for label,archived in replay_pending['offered'].items():
+                anchor=archived['anchor']['source_id'];after=archived.get('page_after')
+                page=(anchor,after)
+                if page not in pages:
+                    kwargs={'after_by_anchor':{anchor:after}} if after else {}
+                    pages[page]=catalog(session,[anchor],selected,set(),**kwargs)[0]
+                g=next((g for g in pages[page] if g['key']==archived['key']),None)
+                if g is None:raise ContractError('stale reference replay group')
+                replay_groups.append(g);replay_labels[g['key']]=label
                 queue[:]=[old for old in queue if old['key']!=g['key']]
                 queue.append(g)
             replay_pending=None
-        for g in ([] if restored_data is not None else list(queue)):
+        for g in (replay_groups if restored_data is not None else list(queue)):
             signature=group_signature(question,g)
             cached=state['decisions'].get(signature)
             accepted=state['accepted'].get(signature)
@@ -440,22 +516,18 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
                 queue.remove(g);state['deferred'].pop(signature,None)
                 session.repo.event('REFERENCE_GROUP_ALREADY_COVERED',{'key':g['key'],'signature':signature})
                 continue
-            if cached and cached['action']!='DEFER':
-                # Accepted FOLLOW scopes were acquired before the receipt was saved.
-                # Revalidate the closed decision; new witnesses change the signature.
-                try:validate({'decisions':[{**cached,'id':'cached'}],'needs_more':False},{'cached':g})
-                except ContractError:cached=None
-                if cached:
-                    if cached['action']=='SKIP' or all(set(g['offers'][scope][1]['block_ids'])<=blocks_read().get(g['target']['source_id'],set()) for scope in cached['scopes']):
-                        queue.remove(g);reused.append(signature);continue
-            if cached and cached['action']=='DEFER':
+            if closed_decision(question,g,state['decisions'],blocks_read().get(g['target']['source_id'],set())):
+                queue.remove(g);reused.append(signature);continue
+            if cached and cached.get('action')=='DEFER' and restored_data is None:
                 queue.remove(g);state['deferred'][signature]=g;continue
-            label='R'+str(round_number+1)+'-'+str(len(rows)+1).zfill(3)
+            label=replay_labels.get(g['key'],'R'+str(round_number+1)+'-'+str(len(rows)+1).zfill(3))
             row=menu(g,label)
-            if len(rows)>=LIMITS['groups_per_batch'] or len(json.dumps(rows+[row],ensure_ascii=False))>LIMITS['relation_context_chars']:break
+            if len(rows)>=min(LIMITS['groups_per_batch'],LIMITS['follow_groups']) or len(json.dumps(rows+[row],ensure_ascii=False))>LIMITS['relation_context_chars']:break
             rows.append(row);offered[label]=g
         if reused:session.repo.event('REFERENCE_DECISIONS_REUSED',{'signatures':reused})
         if not rows:
+            if restored_data is not None and queue and not any(g in queue for g in replay_groups):
+                refresh_pending();save();continue
             if queue:
                 limits.append({'kind':'reference_item_context_limit','unexamined_groups':[g['key'] for g in queue],
                     'context_chars_limit':LIMITS['relation_context_chars'],
@@ -463,6 +535,36 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
                     'groups_per_batch_limit':LIMITS['groups_per_batch']})
                 break
             refresh_pending();save();continue
+        # Menus restored from an earlier frame obey the current read budget too.
+        # Keep the complete queued plan for receipts/resume; project only its
+        # currently executable choices into the model-facing menu.
+        from .tool_availability import read_reason,sequence_cost,context_plans,budget_reason
+        evidence=session.repo.evidence()
+        for label,g in list(offered.items()):
+            visible=deepcopy(g);visible['offers']={}
+            for scope,(hit,option) in g['offers'].items():
+                reason=read_reason(session,hit,option,read_state,evidence=evidence)
+                if reason:
+                    visible['unavailable'].append({'unit_id':option['unit_id'],'extent':option['extent'],'reason':reason})
+                else:visible['offers'][scope]=(hit,option)
+            offered[label]=visible
+        # A batch must fit even when the model follows every offered group.
+        # Split the menu rather than offering combinations that must fail.
+        bounded={};batch_chars=batch_calls=0
+        for label,g in offered.items():
+            costs=[sequence_cost(session,[(h,o),*context_plans(session,h,o)],evidence)
+                   for h,o in g['offers'].values()]
+            scope_limit=0;cost=(0,0)
+            for count in range(1,min(LIMITS['scopes_per_group'],len(costs))+1):
+                proposed=(sum(sorted((c[0] for c in costs),reverse=True)[:count]),
+                          sum(sorted((c[1] for c in costs),reverse=True)[:count]))
+                if budget_reason(session,*proposed,read_state):break
+                scope_limit=count;cost=proposed
+            if bounded and budget_reason(session,batch_chars+cost[0],batch_calls+cost[1],read_state):break
+            g['scope_limit']=scope_limit or LIMITS['scopes_per_group']
+            bounded[label]=g;batch_chars+=cost[0];batch_calls+=cost[1]
+        offered=bounded
+        rows=[menu(offered[row['id']],row['id']) for row in rows if row['id'] in offered]
         round_number+=1
         data={'question':question,'round':round_number,'groups':rows,
             'sources':[o for sid,o in original_map(selected.values()).items() if sid in {g['anchor']['source_id'] for g in offered.values()}],
@@ -476,7 +578,9 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
             'unresolved_references':[{k:v for k,v in row.items() if k in
                 ('anchor','reference_id','reason','locator','reading_policy')} for row in state['unresolved'].values()],
             'task':'미제시 연결은 다음 메뉴로 이어진다. 현재 연결의 적용 여부와 필요한 범위를 판단한다.'}
-        if restored_data is not None:data=restored_data
+        if restored_data is not None:
+            # Preserve presentation identity, but use current source/limit data.
+            data={**restored_data,**data}
         hook=getattr(session,'investigation_menu_hook',None)
         if hook:data=hook(data,offered)
         if len(json.dumps(data,ensure_ascii=False))>max_context_chars:
@@ -494,10 +598,29 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
                 'source-reference-choice-repair' if phase_prefix == 'source-reference-batch-'
                 else phase_prefix+'choice-repair')
             return invoke(SYSTEM,payload,schema(offered),call_phase,min(180,remaining))
-        decision=output.bounded_decision(session.repo,'reference-navigation',data,schema(offered),
-            invoke_decision,lambda value:validate(value,offered),
-            identity={'binding':binding,'menu':{k:v for k,v in data.items() if k!='round'}},
-            can_repair=lambda:seconds_left()>1)
+        menu_key=digest({'binding':binding,'groups':sorted(group_signature(question,g) for g in offered.values())})
+        blocked=state.get('unresolved_decision_menus',{}).get(menu_key)
+        if blocked:
+            payload={k:blocked.get(k) for k in ('failure','groups')}
+            if blocked.get('hash')!=digest(payload):raise ContractError('unresolved reference decision changed')
+            limits.append({'kind':'reference_decision_unresolved','menu_key':menu_key,'failure':blocked['failure'],'reused':True})
+            batches.append({'round':round_number,'phase':phase,'data':data,'decision':None,'model_called':False,'unresolved':True})
+            save();break
+        try:
+            decision=output.bounded_decision(session.repo,'reference-navigation',data,schema(offered),
+                invoke_decision,lambda value:validate(value,offered),
+                identity={'binding':binding,'menu':{k:v for k,v in data.items() if k!='round'}},
+                can_repair=lambda:seconds_left()>1)
+        except (ProposalError,ValidationError) as error:
+            if not bounded_reference_completion(session):raise
+            failure={'failure':output.diagnostics(error),'groups':sorted(group_signature(question,g) for g in offered.values())}
+            state.setdefault('unresolved_decision_menus',{})[menu_key]={**failure,'hash':digest(failure)}
+            limits.append({'kind':'reference_decision_unresolved','menu_key':menu_key,'failure':failure['failure'],'reused':False})
+            batches.append({'round':round_number,'phase':phase,'data':data,'decision':None,'model_called':True,'unresolved':True})
+            session.repo.event('REFERENCE_DECISION_UNRESOLVED',{'menu_key':menu_key,**failure,'adopted':False,'counter_reset':False})
+            # Keep the exact original queue and reads. The investigation owner
+            # may select another route or answer from confirmed originals.
+            save();break
         hook=getattr(session,'investigation_decision_hook',None)
         if hook:hook(data,decision)
         batches.append({'round':round_number,'phase':phase,'data':data,'decision':decision,'model_called':True})

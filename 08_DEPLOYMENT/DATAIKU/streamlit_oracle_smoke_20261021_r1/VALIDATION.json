@@ -1,0 +1,20 @@
+{
+  "status": "LOCAL_MOCK_CHECKS_PASSED",
+  "checks": [
+    "initial_render_no_db_call",
+    "connection_button_one_select",
+    "table_list_bound_to_connection",
+    "preview_two_selects_row_limit_text_limit_blob_skip",
+    "literal_and_identifier_quoting",
+    "connection_change_invalidates_catalog",
+    "invalid_schema_stops_before_sql",
+    "query_failure_no_retry_no_stale_catalog_private_details_backend_only",
+    "manual_retry_after_failure",
+    "empty_catalog_is_not_query_failure",
+    "python_txt_byte_identity_and_python39_syntax"
+  ],
+  "code_sha256": "f686f7c289a7dfa5cfed9eb23a42cec0fca821e82a7f3a5a9bc090ce72f1d989",
+  "dataiku_oracle_live_test": false,
+  "streamlit_browser_test": false,
+  "note": "Actual source executed with mocked Streamlit/Dataiku and real pandas. Local environment has no Streamlit or Dataiku installation. No DB/model call or MAIN change."
+}

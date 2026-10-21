@@ -1,0 +1,12 @@
+<p>사진의 <strong>소괄호 C번호와 출처·표 펼치기</strong>를 수정한 <strong>READABLE R3</strong>입니다.</p>
+<p><strong>이전 READABLE R1/R2 또는 NAVIGATION_DELIVERY R1 대신 이번 GENOS_COMPARISON_READABLE_20261021_R3.zip을 사용해 주세요.</strong> 직전 원문 전달 수정과 10분 제한을 포함하며, 기존 적용본 위에 추가할 수 있습니다.</p>
+<ul><li>본문의 (C25), (C42)와 대괄호 임시 인용 번호를 제거합니다. 실제 원문·질문 속 문자는 보존합니다.</li><li>일반 질문의 법령지식그래프와 같은 독립 접기·펼치기 형식을 사용합니다. 출처를 펼치면 내규 출처·원문 / 외규 출처·원문 / 검토 의견이 같은 행에 보입니다.</li><li>표 안 원문은 추가 클릭 없이 표시되며, ‘함께 확인한 원문’과 ‘추가 확인 사항’도 접고 펼칩니다.</li></ul>
+<p><strong>실제 업로드한 TRANSFER 폴더에서</strong> 아래 순서로 실행하세요. 코드 적용 대상은 기존 Git checkout <code>~/DEV</code>입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_COMPARISON_READABLE_20261021_R3.zip ./GENOS_COMPARISON_READABLE_20261021_R3
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt check
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt gate</pre>
+<p>코드 적용 후 변경 확인·commit·gate-code·push·코드서빙 리비전 갱신이 필요합니다. 상세 순서와 재실행·원복은 첨부 <code>PATCH_NOTE.txt</code>에 있습니다. 실행 TXT는 ZIP 안과 별도 첨부에 동일하게 들어 있습니다.</p>
+<p><strong>READABLE R1/R2 편집기 TXT를 이미 적용했다면 다시 교체할 필요가 없습니다.</strong> 아직 적용하지 않았다면 ZIP 안의 <code>GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt</code>로 Python 단계 전체를 백업 후 교체·저장하세요. 이 파일은 bash 실행용이 아닙니다.</p>
+<p>작업 코드115검사, 최종 ZIP 설치 코드70검사, 설치·복구·원복53명령과 로컬 브라우저 클릭 동작을 확인했습니다. <strong>GENOS 현장 반영과 프론트 클릭은 아직 미검증</strong>입니다. 배포 후 워크플로우 테스트 화면에서 새 요청으로 C번호 제거와 출처·표 열기/닫기를 확인해 주세요. 기존에 저장된 답변은 자동 변경되지 않습니다.</p>
+<p>첨부: 수정 ZIP, 별도 실행 TXT, 적용·원복 안내 TXT.</p>

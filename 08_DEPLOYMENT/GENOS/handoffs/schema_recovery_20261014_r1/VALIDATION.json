@@ -1,0 +1,133 @@
+{
+  "revision": "GENOS_SCHEMA_RECOVERY_20261014_R1",
+  "local_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "schema-recovery-20261014-r1",
+    "generation": 62,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/release.json",
+    "release_manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+    "activated_at": "2026-10-14T07:11:07.165755+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "ce4861815108bf634c853d95fc4964645193aea18356f69c5557711b1779c42b",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/실험/manifest.json",
+        "sha256": "fd7a9deeb3cdb34f547c13e3685bc508f0d96db7ec63d0172cdf5976a0441bbb"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/README.md",
+        "sha256": "fa69809534eb4081fe193653775c1b107433373b0df4e2545e3188704a825b2f"
+      },
+      "arm": "recovery",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/run-001/result.json",
+        "sha256": "721fcbf7d1e095fa720dc9fcaaeb5f1104b08a064136c820a30b507f8ec18bbc"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/design/release-rebase.json",
+        "sha256": "b52697f747e4a4fad2a65f60d88b396b3b41fe1104fd4e4d33fe886acc8643e3"
+      }
+    }
+  },
+  "qualified_contracts": 410,
+  "regressions": {
+    "passed": 817,
+    "skipped": 1,
+    "failed": 0
+  },
+  "installed_contracts": {
+    "INSTALLED_query_latency_20261007_r3_metrics.xml": {
+      "tests": 89,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_BUILD.xml": {
+      "tests": 61,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r4_metrics.xml": {
+      "tests": 89,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_total": 239,
+  "delivery_tests": 3,
+  "query_installer_checks": {
+    "commands": 53,
+    "generation_gates": 2,
+    "tls_success": 2,
+    "tls_untrusted_rejected": 2,
+    "undo": 2,
+    "tamper_rejected": 4
+  },
+  "build_installer_commands": 8,
+  "build_installer_tamper_rejections": 2,
+  "build_dependencies": 261,
+  "known_query_inventories": 330,
+  "query_files": 20,
+  "query_files_identical_to_qualified_source": [
+    "02_BACKEND/semantic_runtime/ad_language.py",
+    "02_BACKEND/semantic_runtime/ad_model.py",
+    "02_BACKEND/semantic_runtime/genos_backend.py",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+    "02_BACKEND/semantic_runtime/legal_agent/model_contract.py",
+    "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+    "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py",
+    "02_BACKEND/semantic_runtime/legal_agent/tiers_session.py",
+    "02_BACKEND/semantic_runtime/legal_agent/tools_session.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+    "02_BACKEND/semantic_runtime/reference_resolution_protocol.py"
+  ],
+  "field_compatibility_variants": [
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py",
+    "02_BACKEND/semantic_runtime/legal_agent/request_entry.py"
+  ],
+  "field_compatibility_reasons": {
+    "investigation_diagnostics.py": "Preserve field choice to omit duplicate raw traceback; add typed diagnostics",
+    "request_entry.py": "Preserve field entry without wiki-recall activation; add bounded admission recovery"
+  },
+  "build_files": 12,
+  "verified_query_roots": [
+    "/tmp/pytest-of-jin/pytest-177/test_real_service_boot_upgrade1/DEV",
+    "/tmp/pytest-of-jin/pytest-177/test_real_service_boot_upgrade0/DEV"
+  ],
+  "model_calls": 0,
+  "real_genos_or_external_network_calls": 0,
+  "transport_test": "Loopback TLS and synthetic model discovery only",
+  "sys_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "python": "3.14.4",
+  "packages": {
+    "jsonschema": "4.26.0",
+    "referencing": "0.37.0",
+    "requests": "2.34.2",
+    "fastapi": "0.141.1",
+    "pytest": "9.1.1"
+  },
+  "genos_field_status": "NOT_VERIFIED",
+  "field_commit": null,
+  "field_generation": null,
+  "field_manifest_sha256": null,
+  "field_serving_revision": null,
+  "field_workflow_test": null,
+  "email_sent": false,
+  "limits": [
+    "Not actual model error-frequency or legal quality measurement",
+    "Query prerequisite inventory must match; unknown versions remain unchanged",
+    "Build install requires exact 261 dependency/asset and preimage hashes; older builds can require rebase",
+    "GENOS Python, internal model, actual data and workflow/build execution unverified"
+  ]
+}

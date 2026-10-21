@@ -1,0 +1,49 @@
+{
+  "purpose": "Read-only source contract mapping; no collector or MAIN modifications",
+  "git_head": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+  "files": [
+    {
+      "path": "02_BACKEND/lawrag/sources/lawgo.py",
+      "sha256": "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/sources/base.py",
+      "sha256": "7518b1929fb311a70ebf9914a7d4a9ddc0e39839fe266b37e812115a4b311f0a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/sources/common.py",
+      "sha256": "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/sources/__init__.py",
+      "sha256": "3d0e71cc882a8aab47e54e44c4ee433523fe4671679a295688efdd205b887037"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect.py",
+      "sha256": "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219"
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "3aba4052dd6ccd521dd4fb50cb95354f6f1a677a39bef269450c2d7f121b511e"
+    }
+  ],
+  "helper_sha256": "b5f1718aa4d2a92e7525fd7809be3918990744109ebc392466c9598a59afd16e",
+  "public_call_count": {
+    "initial_current_parser_check": 4,
+    "delivery_helper_check": 5,
+    "total": 9
+  },
+  "samsung_internal_calls": 0,
+  "genos_calls": 0,
+  "model_calls": 0,
+  "screenshot_basis": [
+    "photo 1: curl and target_url; credentials omitted",
+    "photo 2: supported upstream URLs",
+    "photo 3: development relay and IP lookup",
+    "photo 4: intermediary network architecture"
+  ]
+}

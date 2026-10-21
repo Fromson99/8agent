@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Run from the actual uploaded TRANSFER directory. No fixed TRANSFER path.
+set -Eeuo pipefail
+umask 077
+TASK_NAME=GENOS_MAIN95_IGNORE_REPAIR_20261021_R1
+TASK_TRANSFER="$PWD"
+TASK_LOG_DIR="$TASK_TRANSFER/genos-main95-ignore-repair-r1-logs"
+if [[ -L "$TASK_LOG_DIR" ]]; then echo 'Refuse symlink log directory' >&2; exit 1; fi
+mkdir -p "$TASK_LOG_DIR"
+TASK_LOG="$TASK_LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"; echo "GENOS_IGNORE_EXIT=$TASK_RC LOG=$TASK_LOG"' EXIT
+printf 'TRANSFER=%s\n' "$TASK_TRANSFER"
+TASK_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+if [[ -f "$TASK_SCRIPT_DIR/apply_ignore.py" && -f "$TASK_SCRIPT_DIR/PATCH_SPEC.json" ]]; then
+  TASK_PACKAGE="$TASK_SCRIPT_DIR"
+else
+  TASK_PACKAGE="$TASK_TRANSFER/$TASK_NAME"
+  if [[ ! -f "$TASK_TRANSFER/$TASK_NAME.zip" ]]; then
+    echo "Missing ./$TASK_NAME.zip; upload the ZIP beside this TXT and run from TRANSFER." >&2
+    exit 1
+  fi
+  python3 - "$TASK_TRANSFER/$TASK_NAME.zip" "$TASK_PACKAGE" <<'PY'
+import pathlib,stat,sys,zipfile
+source=pathlib.Path(sys.argv[1]);target=pathlib.Path(sys.argv[2])
+if target.is_symlink():raise ValueError('Package directory is a symlink')
+if target.exists():
+    if (target/'apply_ignore.py').is_file() and (target/'PATCH_SPEC.json').is_file():
+        raise SystemExit(0)
+    raise ValueError('Existing package folder is incomplete; preserve it and use a fresh extraction folder')
+with zipfile.ZipFile(source) as z:
+    for i in z.infolist():
+        p=pathlib.PurePosixPath(i.filename)
+        if p.is_absolute() or '..' in p.parts or '\\' in i.filename or stat.S_ISLNK(i.external_attr>>16):raise ValueError('Unsafe archive path')
+        dest=target.joinpath(*p.parts)
+        if any(q.is_symlink() for q in [dest,*dest.parents]):raise ValueError('Symlink destination')
+    z.extractall(target)
+PY
+fi
+if [[ "${1:-}" == repair ]]; then
+  shift
+  for TASK_ACTION in check apply clean-stage status; do
+    python3 "$TASK_PACKAGE/apply_ignore.py" "$TASK_ACTION" "$@"
+  done
+else
+  python3 "$TASK_PACKAGE/apply_ignore.py" "$@"
+fi

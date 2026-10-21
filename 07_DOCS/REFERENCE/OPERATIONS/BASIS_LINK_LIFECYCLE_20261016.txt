@@ -1,0 +1,107 @@
+공용 근거 관계 원장 — 구현·운영 계약
+2026-10-16 / 실제 선택 상태의 정본: 01_DATA/ACTIVE/local/ACTIVE_RELEASE.json
+최종 확인 기록: 04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/MAIN_RESULT.json
+설계 원본: 09_ARTIFACTS/AUDITS/20261016-internal-external-basis-lifecycle-design/DESIGN.txt
+
+1. 책임과 실행 경로
+일반 RAG의 실제 양측 인용과 대사의 원문 대응은 PROPOSED 후보로 기록한다.
+CONTENT_ONLY 대사 대응은 RELATED(참고)다. 법적 근거임을 자동 확정하지 않는다.
+사용자는 관계 종류·이유를 수정한 새 revision을 승인할 수 있다. RELATED 승인을 BASIS 승인으로 바꾸지 않는다.
+새 internal_basis_discovery_workflow 1.0.0은 선택 내규의 전체 구조·원문 블록을 조사 목록으로 고정한다.
+기존 workflow Runtime의 journal/모델 gateway/원문 도구/예산·deadline을 사용한다.
+선택 내규 ID는 input이고, 조사에 허용된 외규는 신뢰된 사용자 scope에서 별도로 유지한다.
+semantic_runtime/basis_links/Service와 Repository를 질의·대사·전체 조사·검토 API·개정 이행이 공유한다.
+후보·승인은 원문 생성 데이터나 예전 법률 의미 그래프가 아니다.
+
+2. 로컬 사용
+새 선택 릴리스를 읽은 로컬 서비스의 /basis/에서 내규를 고르고 전체 조사를 시작한다.
+같은 화면에서 실제 양쪽 원문·판본을 펼쳐 보고 행을 선택해 승인/반려/취소한다.
+관계 수정은 새 검토 후보 revision을 만들며 이전 기록을 덮어쓰지 않는다.
+활성 AD에서는 '근거 관계 목록' → '1번 승인'처럼 현재 표에 결속한 명시 명령을 사용한다.
+단일 행의 '이 연결 맞아'는 처리하지만 '좋아' 같은 대상 불명 표현으로 일괄 승인하지 않는다.
+현재 구현의 근거 AD 처리는 명시 표현을 해석하며 일반 AD LLM의 판단 결과를 승인으로 간주하지 않는다.
+승인은 동기 commit된다. 다음 질문의 live resolver가 새 상태를 조회하고 승인 외규를 기존 read_node로 우선 읽는다.
+RELATED/HISTORICAL_ORIGIN, 반려·취소 관계는 현재 근거의 우선 읽기로 승격되지 않는다.
+진행 중 요청은 자기 snapshot·예산을 보존하지만 실제 재사용 시 취소·권한·해시를 다시 검사한다.
+전체 조사 진행과 미처리 수는 응답에 표시한다. 동일 실행의 재개는 기존 deadline/사용량을 유지한다.
+예산이 끝난 부분 결과의 '미처리 범위 이어서 조사'는 명시적인 후속 실행이며 이전 사용량/근거와 연결된다.
+원문만 조사(use_llm=false)해도 미확보/미처리 구분을 반환하지만 새 법률 의미 관계를 추정하지 않는다.
+
+3. API
+GET  /v1/basis-links/documents
+GET  /v1/basis-links?internal_document_id=ID&as_of=YYYY-MM-DD
+POST /v1/basis-links/proposals
+POST /v1/basis-links/reviews
+GET  /v1/basis-links/{link_id}/history
+GET  /v1/basis-migrations/{migration_id}
+POST /v1/workflows/run
+GET  /v1/workflows/runs/{run_id}?session_id=SESSION
+POST /v1/workflows/resume
+
+전체 조사 입력 예시:
+{"workflow_id":"internal_basis_discovery_workflow","input":{"internal_document_id":"실제내규ID","mode":"discover"},"session_id":"업무세션","request_id":"중복재전송시유지할ID","use_llm":true}
+조회된 표의 승인 입력 예시:
+{"view_id":"서버가반환한view_id","rows":[1],"action":"approve","request_id":"중복재전송시유지할ID","reason":"원문 검토"}
+
+service.py API_TYPE은 BASIS_LINKS_LIST/PROPOSE/REVIEW/HISTORY와 BASIS_MIGRATION_STATUS을 지원한다.
+권한은 memory_identity(request) 또는 신뢰된 request.state.workflow_principal에서 받는다.
+user_id/team_id/document_ids/basis_review를 외부 요청 본문만 보고 부여하지 않는다.
+로컬 릴리스는 WORKFLOW_USER_ID/TEAM_ID와 기존 문서 scope를 사용하는 개인 개발 서비스다.
+GENOS는 현장의 인증된 사용자/팀/문서 권한과 basis_review 권한을 연결해야 한다.
+
+4. 저장·검증·복구
+로컬 authority 경로: runtime_root/basis-links/authority.sqlite. 코드 릴리스와 독립해 이력을 유지한다.
+원장: basis_head, basis_revision, basis_binding, basis_event, basis_receipt,
+      basis_lineage, basis_migration, basis_view_head.
+원문 범위·해시·문서판본·세대, 승인자·사유·시각, 수정 전후 revision을 저장한다.
+view_hash/revision CAS로 오래된 행 승인을 거부한다. 같은 request_id·같은 입력은 같은 receipt다.
+한 일괄 요청의 행별 충돌은 부분 완료로 남기며, 처리된 행을 재실행하지 않는다.
+연결 불가 시 일반 조사는 부족 사유를 남겨 계속한다. 명시 승인 API는 503이며 성공으로 표시하지 않는다.
+해시·권한·상태 훼손은 의미 불확실성과 구분하여 중단한다.
+모델 제안은 기존 gateway/ModelAdapter의 한정된 수정 담당을 사용한다. 재개는 호출 예산을 초기화하지 않는다.
+자동 관계 포착의 저장 실패는 pending으로 남기고 저장 응답 재조회에서 동일 request receipt로 회복한다.
+원문과 관계가 표시된 뒤의 오류를 새 모델 답변에 이어 붙이지 않는다.
+
+5. 개정·Dataiku 기존 게시 연결
+lawrag.pipeline.basis_lifecycle.prepare(repository, old_sources, new_sources, principal, changes, lineage, official=None)
+구·신 문서의 확정 계열/원문해시를 먼저 등록하고 새 generation의 binding만 추가한다.
+본문·구조 문맥이 유일하게 동일한 이동은 current. 부분 인용이면 승인한 범위만 옮긴다.
+내용/문맥 변경·분할/통합은 review_needed. 대응 불명/중복 위치는 unresolved다.
+기존 승인 이벤트는 보존한다. 변경 신판을 옛 승인과 같다고 쓰지 않고 새 원문 후보를 계속 조사한다.
+법제처 보조 자료는 실제 구·신 판본 및 수집 raw hash에 결속한다. 공식 대응도 새 의미 승인으로 사용하지 않는다.
+삭제는 검색 미적중으로 추정하지 않는다. 이전 연결과 미확보 사유를 남기고 일반 조사로 이어진다.
+
+기존 lawrag.pipeline.document_release.activate는 선택 전에 명시적 basis_plan을 처리한다.
+기존 lawrag.pipeline.oracle_publish.publish / from_notebook는 basis_hook 인자를 받는다.
+PublicationHook(authority, old_sources, new_sources, principal, changes, lineage, official=None)을 주입하면
+기존 게시 payload 생성 전에 prepare와 verify를 실행하고 migration_id를 게시 기록에 결속한다.
+다른 generation 게시/코드 롤백은 원장 이력을 삭제하지 않는다. 이전 generation의 binding을 다시 선택한다.
+배치가 사람 승인 테이블을 재생성하거나 source-derived 테이블처럼 truncate하면 안 된다.
+
+로컬 명시 계획 CLI:
+.venv/bin/python 06_TOOLS/pipeline.py basis-links migrate --plan PLAN --old-generation OLD --new-generation NEW --output NEW_RECEIPT
+.venv/bin/python 06_TOOLS/pipeline.py basis-links verify --plan PLAN --generation NEW --run-id MIGRATION_ID
+inspect/export/import도 같은 plan을 사용한다. import의 외부 승인 주장은 provenance에 남고 실제 승인으로 생성되지 않는다.
+PLAN은 backend=sqlite-local, authority_path, principal(신뢰된 배치 권한 basis_migrate), changes, lineage를 포함한다.
+현장 실행의 Python 명령은 python3이며 로컬 .venv 경로를 현장 실행 안내로 사용하지 않는다.
+
+6. GENOS/Oracle 미확인 지점
+OracleRepository(connection, table_map)와 oracle_factory(connection_factory, source_factory, table_map)를 구현했다.
+create_app(..., memory_identity=현장인증해석기, basis_factory=승인된OracleFactory)로 조립한다.
+소스 포트는 catalogue/generation/identity, endpoint/verify/document_hash/unit_endpoints 계약으로 실제 읽기를 제공한다.
+Oracle DDL 생성기는 제안 스키마일 뿐 기존 KG 실제 테이블/PK를 확인했다는 뜻이 아니다. 자동 DDL 실행은 하지 않는다.
+저장 adapter는 SERIALIZABLE·CAS·CLOB 읽기·중복/동시 변경 오류를 처리한다. 실제 Oracle 드라이버/권한/트랜잭션은 현장 검증 필요다.
+GENOS에 factory가 없으면 명시 관계 API는 설정 미완료를 반환한다. SQLite로 자동 대체하지 않는다.
+이번 세션은 현장에 접근하지 못하므로 실제 테이블 맵/인증 해석기/기존 Dataiku 레시피의 주입과 게시 전환은 하지 않았다.
+GENOS workflow/genos_rag_chat.py의 로컬 파일은 갱신했지만 현장 워크플로우 편집기에 별도로 반영해야 한다.
+현장 실행 확인은 워크플로우 테스트 화면에서 한다. 코드서빙 직접 테스트 UI/API를 요구하지 않는다.
+
+7. 검증과 롤백
+214개 최종 작업 코드 기술 검사: 원장 상태·권한·실제 원문·이행·중단·재개·모델예산·대사/AD/API 소비자와 패키지 결속.
+실제 선택 데이터/서비스의 후보·승인·다음 질문 목표·정확 읽기·모델허용scope·취소 등10개 확인.
+모델은 테스트 더블만 사용했다. 외부 Qwen·GENOS 내부 모델의 실제 관계 판단 정확도는 미측정이다.
+원본 데이터·사용자 승인 운영 원장에 기술 검사용 관계를 넣지 않았다. 검사는 ADR artifacts 아래 격리 원장이다.
+작업 코드 백업: ADR0851(근거 원장 통합), ADR0850(동시 최소 출력 수정), ADR0853(편집기 수정)의 artifacts/working-before.tar.gz와 각 working-integration-plan/receipt.
+릴리스 rollback은 MAIN_RESULT의 활성 포인터가 여전히 선택되어 있을 때만 stable rag_main_promotion.py rollback --confirm-main을 사용한다.
+후속 승격이 있으면 과거 rollback 명령을 그대로 실행하지 말고 현재 포인터/정확한 이전 대상부터 확인한다.
+코드 롤백과 원장 데이터 삭제는 별개다. 새 workflow journal을 구버전 workflow로 강제 재개하지 않는다.

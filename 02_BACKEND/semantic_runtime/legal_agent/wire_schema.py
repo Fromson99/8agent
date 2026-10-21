@@ -48,3 +48,12 @@ def factor_schema(schema):
     if definitions:result['$defs']=definitions
     # A tiny schema may cost more with definitions; retain its exact original form.
     return result if len(key(result))<len(key(original)) else original
+
+
+def navigation_shape(schema):
+    """Keep action/target/required-field binding intact at the provider boundary.
+
+    Repeated nodes may be factored by factor_schema, which preserves semantics.
+    Removing alternatives cannot be reversed by the host without guessing.
+    """
+    return deepcopy(schema)

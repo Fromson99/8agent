@@ -1,0 +1,24 @@
+{
+  "policy": "internal-filename-audit-v1",
+  "status": "COMPLETE_WITH_REVIEW",
+  "counts_by_location": {
+    "TEMP": 1,
+    "LATEST": 13,
+    "REVIEW": 3,
+    "OLDER": 8
+  },
+  "all_locations": 25,
+  "retained_locations": 16,
+  "latest_title_date_pairs": 9,
+  "internal_physical_documents": 25,
+  "physical_exclusion_candidates": 9,
+  "binding": {
+    "mode": "PHOTO_REPRESENTATIVE_NAMES_AND_SYNTHETIC_EDGE_CASES",
+    "field_inventory": false
+  },
+  "model_calls": 0,
+  "source_modified": false,
+  "rag_applied": false,
+  "date_century_rule": "00..69 => 2000..2069; 70..99 => 1970..1999",
+  "filename_date_is_effective_date": false
+}

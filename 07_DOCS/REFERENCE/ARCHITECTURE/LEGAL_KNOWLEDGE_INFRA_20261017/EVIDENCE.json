@@ -1,0 +1,243 @@
+{
+  "schema_version": "architecture-evidence-v1",
+  "report_date": "2026-10-17",
+  "source": "User-confirmed infrastructure on 2026-10-16; target-state request on 2026-10-17; local read-only code inspection.",
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "basis-link-lifecycle-20261016-r1",
+    "generation": 82,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/basis-link-lifecycle-20261016-r1/release.json",
+    "release_manifest_sha256": "389ed0f3989b6ff5a5ad0d638027d2448c8c43842105d6673b771e04e76d853f",
+    "activated_at": "2026-10-16T10:20:11.158346+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "05f9b147385a110fec0ae1d3cf1a5eab5656f5bdd4254baaa2f28ee01a0fa1cd",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/실험/manifest.json",
+        "sha256": "c96f10ce2a5fef5d7ba23f09042bcf4bd7a8ae46a29a2fe77ccddfa5931ef927"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/README.md",
+        "sha256": "0ae791396950f09fabe7c013f6798e05591950f40584a7282f291e1ee31ef2b5"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/artifacts/run-001/result.json",
+        "sha256": "55cde258952cbc02c76f581ace691949cd4b4c6a0bf078926f6aef733d03d5d3"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/artifacts/design/release-rebase.json",
+        "sha256": "c8cb934532a847f5127d57eb7d8271676a67c3ce11ca86f42b9abc0a7857416d"
+      }
+    }
+  },
+  "active_pointer_sha256": "2c8b5eb029cbdcde282797230bbde1d7d5921e69751070341b750ffb61b42be3",
+  "release_manifest_valid": true,
+  "code_checks": [
+    {
+      "path": "service.py",
+      "working_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+      "selected_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+      "selected_manifest_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "8def1c33a3b420c4e6f11517a10d0a4ede2de6b3e934c51c87defa5191398421",
+      "selected_sha256": "8def1c33a3b420c4e6f11517a10d0a4ede2de6b3e934c51c87defa5191398421",
+      "selected_manifest_sha256": "8def1c33a3b420c4e6f11517a10d0a4ede2de6b3e934c51c87defa5191398421",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "working_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "selected_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "selected_manifest_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp.py",
+      "working_sha256": "a1e2b0dfd2ef468ffc5b7ca0d945c6c85a574442b798368ee02f9a19fff6442f",
+      "selected_sha256": "a1e2b0dfd2ef468ffc5b7ca0d945c6c85a574442b798368ee02f9a19fff6442f",
+      "selected_manifest_sha256": "a1e2b0dfd2ef468ffc5b7ca0d945c6c85a574442b798368ee02f9a19fff6442f",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "working_sha256": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+      "selected_sha256": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+      "selected_manifest_sha256": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp_assets.py",
+      "working_sha256": "bcd198f6e8653096377e5a3f6e8974aa28528059fa8808a3e0860894a46eadc7",
+      "selected_sha256": "bcd198f6e8653096377e5a3f6e8974aa28528059fa8808a3e0860894a46eadc7",
+      "selected_manifest_sha256": "bcd198f6e8653096377e5a3f6e8974aa28528059fa8808a3e0860894a46eadc7",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "working_sha256": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+      "selected_sha256": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+      "selected_manifest_sha256": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "working_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "selected_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "selected_manifest_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "working_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "selected_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "selected_manifest_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "working_sha256": "33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c",
+      "selected_sha256": "33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c",
+      "selected_manifest_sha256": "33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py",
+      "working_sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+      "selected_sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+      "selected_manifest_sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "working_sha256": "4dbcda4064bc43e28b7cca403491f0316339b30644594d24a55b9fe210fb1ee1",
+      "selected_sha256": "4dbcda4064bc43e28b7cca403491f0316339b30644594d24a55b9fe210fb1ee1",
+      "selected_manifest_sha256": "4dbcda4064bc43e28b7cca403491f0316339b30644594d24a55b9fe210fb1ee1",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "working_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "selected_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "selected_manifest_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/wiki_proposal.py",
+      "working_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "selected_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "selected_manifest_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/service.py",
+      "working_sha256": "33cfd7b0081c4452e3c8d77d332c705f6230f69465f3e1104dd4e6784f78b834",
+      "selected_sha256": "33cfd7b0081c4452e3c8d77d332c705f6230f69465f3e1104dd4e6784f78b834",
+      "selected_manifest_sha256": "33cfd7b0081c4452e3c8d77d332c705f6230f69465f3e1104dd4e6784f78b834",
+      "packaged_in_selected_release": true,
+      "same": true,
+      "selected_hash_valid": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/basis_lifecycle.py",
+      "working_sha256": "c40de99a4c3a1687d338bbfdc2bc27faf45104ef2a563fa5fada5a777eb8108c",
+      "selected_sha256": null,
+      "selected_manifest_sha256": null,
+      "packaged_in_selected_release": false,
+      "same": null,
+      "selected_hash_valid": null
+    }
+  ],
+  "documents": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "146f4ab51343da3c9e83d06b10430e333c9f6b7be020c8d4213138c8974c2073"
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "10c4d1a99fd43bc5f17f0186d49dbb28f49a473ab531f3bc44e081f5f4864bda"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "4ea5235f6740173e1c1944d6ea2cae82d6288b8cf1ddd873afaebcc1f88f19db"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "e4f98e3aa2c715b79c011c941797158053166c9eaffc8ae901c71ae1e547fa0f"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219"
+    },
+    {
+      "path": "00_SYSTEM/ONTOLOGY_PIPELINE.json",
+      "sha256": "607561e6af45428411f814d57ba9d373c4346cb38c4ee262c6e5b7f4b4e52fe5"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/BASIS_LINK_LIFECYCLE_20261016.txt",
+      "sha256": "7ae316bbc1100e8829563578ede60919b6c3920d58b5bf71cd164cbc9506d562"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_ONTOLOGY_CONTROL_DESIGN_20261001.md",
+      "sha256": "81099ba32160b2449bdb3ca53b7b9a9efe8fb373855a015c78835dacc327c420"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SHORTCUT_LEGAL_WIKI_SYSTEM_DESIGN_20261005/README.md",
+      "sha256": "814b1da86d517b790575ef97bad92c913b3554e10aa751679b52db0968e74ac7"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RAG_LATENCY_DESIGN_20261009/README.md",
+      "sha256": "606161921d916116b2cfc98e2522d366aa24b24117ffcc99859938e272e9c07d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_WIKI_DEDUCTIVE_COMPOSITION_20261009/README.md",
+      "sha256": "ed500f1cfe97e8a83f61156cb4be767af9daf7c404b412ec852e853f60709395"
+    }
+  ],
+  "review_type": "self_review",
+  "new_model_calls": 0,
+  "runtime_tests_run": false,
+  "genos_accessed": false,
+  "oracle_accessed": false,
+  "dataiku_accessed": false,
+  "deployment_changed": false,
+  "active_pointer_changed": false,
+  "scope_note": "Logical target design is not a field deployment receipt or proof of existing Oracle KG schema."
+}

@@ -1,0 +1,54 @@
+{
+  "classification": "delivery code/data inventory mismatch",
+  "five_git_ignored_paths": [
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml",
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml",
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml",
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json",
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json"
+  ],
+  "removed_from_code_inventory_only": [
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/manifest.json",
+      "sha256": "e09936dd0c4388e04fe9ff63d07b2f30cbec4202a99bb163aff9898fe746bf44",
+      "bytes": 30931
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml",
+      "sha256": "190fbb50d3b45e8cbdd9645bde8f13fab9eab2baa860e66b0c30b221011da951",
+      "bytes": 5325
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml",
+      "sha256": "18e42559a1fe6eedd2c8f76930681ea4a30362c646d6e3873c0df030a95b7338",
+      "bytes": 3019
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml",
+      "sha256": "c7782cb82f5d5c5837d7d0a61d3fb620315f95cf34272cabeacdc6b15c0019e6",
+      "bytes": 4055
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json",
+      "sha256": "b8127ad0f83490e7b5ad88379507d3e847c74339522f5fe0e4dc2aa14751a38e",
+      "bytes": 1221776
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json",
+      "sha256": "b5357853a99b5debbd6abd22603ed36cb0eb25d10eb6e538692377261115dd09",
+      "bytes": 320939
+    }
+  ],
+  "selected_serving_release": "genos-model-metadata-20261020-r1",
+  "selected_serving_files": 389,
+  "selected_release_corpus_paths": [],
+  "current_packager_exclusion": "06_TOOLS/COMMANDS/code_ship.py SKIP_PREFIXES: 02_BACKEND/lawrag/agents/agent6/corpus/",
+  "runtime_dependency_observation": "These files are inputs/outputs of the separate agent6 corpus_build CLI; no agent6 corpus import/read in current service.py/main_router/semantic_runtime/PIPELINE execution paths.",
+  "prior_test_gap": "Previous synthetic fixture used git add -f for every archive member and masked the five excluded data paths. New integration checks use ordinary git add and assert the inherited R1 failure before R2 success.",
+  "preserved": [
+    "prior sealed packages/manifests/tests",
+    "six data files and original corpus",
+    "all serving code and dependency checks",
+    "Git history and remote non-force checks"
+  ]
+}

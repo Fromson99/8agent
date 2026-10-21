@@ -1,0 +1,85 @@
+내규·외규 후보 JSON → HTML 검토 → 선택 연결만 SQLite 적용 — GENOS_BASIS_ARTIFACTS_20261020_R1
+
+지금 실행 중인 R3 배치를 중단하거나 재설치하지 않습니다.
+report/export/review는 모델 호출·서비스 부팅·전체 원문 해시·재색인 없이 저장 완료된 이번 배치 연결을 조회합니다.
+실행 중인 문서도 실제 workflow run ID로 찾아 포함합니다. 아직 저장되지 않은 제안은 포함하지 않습니다.
+HTML은 내규 조항/실제 선택 원문, 대응 외규 조항/실제 선택 원문, 이유, 검토 상태,
+원문 일치, 대사 우선 조회 가능 여부, 문서별 배치 상태를 표시합니다.
+한 관계의 복수 조항은 한 행에 보존하며 자동 새로고침은 하지 않습니다.
+주의: 기존 R3는 이미 공유 관계 SQLite에 후보를 저장합니다. 보고서/export만으로 이를 취소하지 않습니다.
+아래 새 stage 배치는 관계 후보를 CANDIDATES.json에만 쓰며 공유 관계 SQLite에 넣지 않습니다.
+
+개발: 실제 업로드한 TRANSFER 폴더에서, 기존 배치와 다른 터미널로 실행
+python3 -m zipfile -e ./GENOS_BASIS_ARTIFACTS_20261020_R1.zip ./GENOS_BASIS_ARTIFACTS_20261020_R1
+bash ./GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt report
+
+로그 마지막 basis.artifacts.html의 path가 생성된 HTML입니다.
+Jupyter 파일 목록에서 다운로드한 뒤 브라우저로 열어 확인합니다.
+원하는 파일명 지정 예:
+bash ./GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt report --output ./연결검토표.html
+같은 명령 재실행은 지정 HTML만 원자적으로 갱신합니다. 배치/원장/코드 원본은 쓰지 않습니다.
+HTML은 내부 원문이 들어 있으므로 기존 문서와 같은 보관·공유 범위를 사용합니다.
+
+다음 새 배치부터 검토 후 적용 방식:
+bash ./GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt stage-plan --count 3
+bash ./GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt stage-run
+중단 뒤 같은 계획/예산으로 재개: stage-resume
+기존 실행/모델 호출과 동시에 새 배치를 시작하지 말고 현재 R3가 끝난 뒤 실행하세요.
+기본 새 job: runtime/basis-batch/pilot-review-20261020-r1
+기존 job/계획은 보존하며 이미 있는 계획은 덮어쓰지 않습니다.
+계획/원문 선택/최소 단위 상위 병합/실제 조사/예산/재개는 기존 basis_batch와 workflow를 사용하고 저장 포트만 JSON입니다.
+stage-plan/run/resume은 기존 R3 서비스·데이터 검증을 실행하며 stage-run은 GENOS 내부 모델을 호출합니다.
+현장 R3에 맞춘 배치 실행기+JSON 저장 포트를 TXT의 보조 코드로 전달하고 기존 checkout/서빙 pin은 수정하지 않습니다.
+로컬에서 별도로 개발 중인 최신 조사 오류 건너뛰기 기능은 이 R3 인계본에 포함하지 않습니다.
+실행 중 report/export는 이 새 계획이 있으면 새 후보를 기본으로 읽습니다.
+기존 R3를 지정하려면 --job 실제runtime/basis-batch/pilot-20261020-r1.
+원문/조사 저널은 기존 공유 runtime을 사용하지만 후보 JSON은 서빙 관계 원장에 연결하지 않습니다.
+
+개발에서 검토할 연결 이관 묶음 생성:
+bash ./GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt export
+기본 출력: ./BASIS_RELATIONS_<해시>/ 및 같은 이름.zip
+현재 저장된 이번 배치의 관계·revision·사건·원문 결속과 필요한 판본 기록만 포함합니다.
+원문 전체 DB/전체 색인/기존 대사 세션/다른 배치/사용자 수동 연결은 가져가지 않습니다.
+실행 중에도 가능하나 해당 시각의 일부 결과입니다. 종료 뒤 다시 export하면 최종 저장분입니다.
+기본 파일명은 생성시각을 포함한 스냅샷 해시로 달라지며 기존 묶음을 덮어쓰지 않습니다.
+
+생성된 폴더의 LINKS.html을 확인한 뒤 선택 기록:
+bash ./BASIS_RELATIONS_<해시>/APPLY_RELATIONS.txt review --all
+일부만 선택: 위 명령의 --all 대신 --ids 연결ID1 연결ID2 ...
+REVIEW.json / REVIEWED.sql과 BASIS_RELATIONS_<해시>_REVIEWED.zip이 생성됩니다.
+이 단계까지 SQLite에 쓰지 않습니다. 검토 기록 없는 apply는 거부합니다.
+검토 선택은 이관 허용 기록이며 기존 관계의 PROPOSED/APPROVED 법률 검토 상태는 유지합니다.
+
+운영: 생성된 BASIS_RELATIONS_<해시>_REVIEWED.zip 하나를 운영 TRANSFER로 가져간 뒤,
+실제 생성된 파일명/폴더명으로 아래 <해시>를 바꿔 실행:
+python3 -m zipfile -e ./BASIS_RELATIONS_<해시>_REVIEWED.zip .
+bash ./BASIS_RELATIONS_<해시>/APPLY_RELATIONS.txt check
+bash ./BASIS_RELATIONS_<해시>/APPLY_RELATIONS.txt apply
+bash ./BASIS_RELATIONS_<해시>/APPLY_RELATIONS.txt status
+
+운영 원문 세대 및 SEARCH_SELECTION이 개발과 같은 복사본이어야 합니다.
+source 문서/조항/원문 span과 메타데이터/권한을 대조하며 전체 corpus의 무결성을 새로 인증하지 않습니다.
+운영의 기존 ~/DEV에 R3 소비자 코드가 있어야 하며 실행 시 코드 394파일을 확인합니다.
+본 패키지는 코드 설치/리비전 배포를 하지 않습니다. R3와 다르면 실패 로그에 파일명이 표시됩니다.
+운영 runtime은 운영 checkout의 00_SYSTEM/GENOS_SERVING_PATHS.json이 선택한 외부 공유 runtime입니다.
+DEV 엔트리 심볼릭 링크는 허용하지만 내부 원장/데이터/출력 경로의 심볼릭 링크는 허용하지 않습니다.
+기본 job은 runtime/basis-batch/pilot-20261020-r1입니다. 다른 배치는 --job 실제경로.
+기본 checkout이 다르면 --root 실제checkout경로.
+
+RELATIONS.json은 검토 전 스냅샷, REVIEW.json은 선택 기록, REVIEWED.sql은 선택 관계 SQL입니다.
+직접 sqlite3로 SQL만 실행하면 원문 검증 없이 적용되지 않도록 중단합니다. 반드시 실행 TXT를 사용합니다.
+같은 ID/같은 이력은 건너뛰며, 같은 ID의 다른 revision/승인 상태는 전체 트랜잭션을 중단합니다.
+자동 승인은 하지 않습니다. PROPOSED 후보도 기존 R3 대사 소비자가 원문 우선 조회에 사용합니다.
+현재 열린 대사의 과거 스냅샷은 바꾸지 않으며 적용 후 시작하는 새 대사에서 조회합니다.
+SQLite 원장과 SQLITE_ENABLED.json을 외부 공유 runtime에 연결합니다. Oracle 이관 도구는 아닙니다.
+
+원복:
+bash ./BASIS_RELATIONS_<해시>/APPLY_RELATIONS.txt rollback
+이번 묶음이 새로 넣은 관계만 REVOKED 새 revision으로 남깁니다. 이력/기존 관계는 보존합니다.
+이관 뒤 운영에서 검토·변경된 연결이 있으면 자동 원복을 중단합니다.
+적용 중 응답이 끊겼다면 같은 묶음으로 status 확인 후 apply를 재실행합니다.
+원복한 묶음을 apply 재실행해 다시 활성화하지 않습니다.
+
+로그: 현재 TRANSFER의 basis-artifacts-logs 또는 basis-transfer-logs, 종료코드는 .log.exit.
+실패 시 생성되어 있던 정상 HTML/배치/원본 데이터/기존 운영 관계를 보존합니다.
+무거운 원문 로딩/모델 테스트 없음. 합성 로컬 검증은 현장 모델 품질·NFS 잠금·운영 성공의 증명이 아닙니다.

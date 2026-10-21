@@ -326,7 +326,16 @@ async def stream_response(data,execute,*,display=None):
                     if 'sse_check' in value['data']:
                         value['data']['sse_check'].update(sse_ready=True,
                             heartbeat_seconds=HEARTBEAT_SECONDS)
-                    await display.finish(value['data'].get('text',''))
+                    try:
+                        await display.finish(value['data'].get('text',''),
+                            failed=value['data'].get('answer_status') in {'failed', 'error'})
+                    except (ValueError, TypeError) as exc:
+                        from semantic_runtime.chat_adapter import views
+                        log_event(get_logger('chat'), 'stream.display.failed', level=40,
+                            exc_info=True, request_id=data['request_id'], error_type=type(exc).__name__)
+                        value['data'].update(answer_status='failed', text=views().render_error(
+                            {'request_id':data['request_id'], '_gateway_status':500}))
+                        await display.finish(value['data']['text'], failed=True)
                     if display.blocks:value['data']['agentFlowExecutedData']=list(display.blocks)
                 for event,payload in rendered:
                     if event=='token':yield _frame(event,payload)

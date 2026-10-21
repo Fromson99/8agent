@@ -41,9 +41,9 @@ SCHEMA={'oneOf':[
     command('job',{'target':TARGET,'control':{'enum':['status','pause','resume','cancel','retry']}}),
     command('schedule',{'when':S}),
     command('clarify',{'message':{'type':'string','minLength':1}}),
-    command('read_context',{'cursor':S,'notes':{'type':'string','maxLength':2000}}),
+    command('read_context',{'cursor':S,'notes':{'type':'string'}}),
     command('read_table',{'source':{'enum':['view','detail']},'id':S,
-                          'offset':{'type':'integer','minimum':0},'notes':{'type':'string','maxLength':2000}}),
+                          'offset':{'type':'integer','minimum':0},'notes':{'type':'string'}}),
 ]}
 
 SYSTEM='''당신은 AD모드의 관리 요청 해석기다. 한국어 자연어, 오타, 생략, 후속 발언을 현재 표·선택·이력에 맞춰 해석한다.

@@ -63,6 +63,17 @@ htmlcov/
 /09_ARTIFACTS/
 /99_ARCHIVE/
 /TRANSFER/
+# Jupyter trash and query-transfer working data are never serving source.
+.Trash/
+.Trash-*/
+/QUERY_TRANSFER_*/
+*.db.partial
+*.db.partial-*
+*.db-journal
+*.sqlite.partial
+*.sqlite.partial-*
+*.sqlite3.partial
+*.sqlite3.partial-*
 /GENOS_DATA/
 /GENOS_INPUT/
 /GENOS_UPLOAD/

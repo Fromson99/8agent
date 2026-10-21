@@ -1,0 +1,19 @@
+{
+  "status": "VERIFIED_AND_COMPACTED",
+  "archive": "SYNTHETIC_TESTS.tar.gz",
+  "sha256": "0cf7a0318ec8d2b23a01a0f436756a903e245200d7f6081d1c4004ec8b1b137f",
+  "source_files": 27996,
+  "source_bytes": 712016587,
+  "archive_bytes": 241206467,
+  "manifest": "SYNTHETIC_TESTS_FILES.json.gz",
+  "manifest_sha256": "d49590dfcfee59bf270d16761a4238921fd3a99adb1fcfc4066266de76e6275b",
+  "roots": [
+    "test-code",
+    "pytest-merged-01",
+    "pytest-merged-02",
+    "pytest-delivery-01",
+    "pytest-delivery-02",
+    "final-transfer"
+  ],
+  "restore": "From this handoff directory: tar -xzf SYNTHETIC_TESTS.tar.gz; compare file SHA-256 with SYNTHETIC_TESTS_FILES.json.gz before reusing evidence."
+}

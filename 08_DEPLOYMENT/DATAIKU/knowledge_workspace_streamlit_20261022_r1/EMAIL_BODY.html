@@ -1,0 +1,9 @@
+<p>안녕하세요.</p><p><b>Dataiku Streamlit에서 실행하는 지식 운영 콘솔</b>의 Python 실행본을 전달드립니다. <b>.js / .jsx / .mjs / .cjs 파일은 ZIP 안에도 포함하지 않았습니다.</b></p>
+<p>첨부는 세 개입니다.</p><ol><li><b>DATAIKU_STREAMLIT_KNOWLEDGE_20261022_R1.zip</b>: 전체 Python 코드와 설정·안내.</li><li><b>DATAIKU_STREAMLIT_APP.txt</b>: Python 편집기에 붙여 넣을 전체 코드. ZIP 안의 app.py와 동일합니다.</li><li><b>START_HERE.txt</b>: 실행·확인·복원 안내.</li></ol>
+<p><b>실행 순서</b></p><ol><li>Dataiku 프로젝트에서 Webapps → New webapp → Code webapp → An empty Streamlit app을 엽니다. 기존 Streamlit 웹앱을 쓰면 현재 코드를 먼저 백업합니다.</li><li>Settings → Backend → Code env에서 Streamlit이 설치된 Python 환경을 선택합니다. 검증 버전은 <code>streamlit==1.50.0</code>입니다.</li><li>Python 편집기에 <b>DATAIKU_STREAMLIT_APP.txt 전체</b>를 붙여 넣고 Save → Preview로 확인합니다.</li></ol>
+<p>별도 JS·CSS·이미지 업로드나 프런트엔드 빌드가 필요하지 않습니다. ZIP을 Managed Folder에 업로드하는 것만으로 자동 실행되는 형식은 아니며, Streamlit Python 편집기에 전체 코드 한 번을 붙여 넣는 방식입니다.</p>
+<p>화면 메뉴: 배치 모니터 / 구조화 누락 승인 / 숏컷 승인 / Legal Wiki / 온톨로지 관리 / 시뮬레이션.</p>
+<p><b>현재 동작 범위:</b> 운영 콘솔 시안으로 목록·원문·집계·시뮬레이션 결과는 예시이고 수정은 현재 세션에만 반영됩니다. 실제 배치 실행·승인 저장·위키 게시·RAG·LLM API는 아직 연결되지 않았습니다. 배치 모니터의 Oracle 점검만 기존 AIDP 연결을 통한 Dataiku SQLExecutor2 읽기 전용 조회를 사용하며, 연결 이름·권한과 현장 접속은 해당 환경에서 확인해야 합니다.</p>
+<p>실제 첨부 ZIP에서 꺼낸 코드로 메뉴 표시·검토 조건·초안/게시 분리·시뮬레이션 버전·Oracle 조회 경계의 7개 검사를 통과했습니다. 이 검사는 로컬 Streamlit과 모의 DB 응답으로 실행했으며 실제 Dataiku/Oracle 현장 실행 완료를 뜻하지 않습니다.</p>
+<p>실행 방법의 공식 참고: <a href="https://developer.dataiku.com/latest/tutorials/webapps/streamlit/getting-started/index.html">Dataiku Streamlit 웹앱 안내</a></p>
+<p>ZIP SHA-256: <code>45e3bfe19efa4ae7ee34fdff5909f4267f21b0fd6e34aca5d9e458c74f4ef76c</code></p>

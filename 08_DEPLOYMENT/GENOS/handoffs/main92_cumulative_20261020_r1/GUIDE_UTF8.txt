@@ -1,0 +1,86 @@
+GENOS_MAIN92_CUMULATIVE_20261020_R1 — MAIN92 최신 누적 반입본
+
+앞서 보낸 GENOS_MAIN90_RESEARCH_20261020_R1 대신 이번 ZIP을 사용합니다.
+기존 Oracle 직접 조회·SQLite 호환·세션·진행 로그를 유지하면서 MAIN91/92의 변경을 누적했습니다.
+- 부모/자식 조사 상태·이력 전달, 부족 해소·상태 변화 재검토, 최대3회 탐색→읽기 복구.
+- 전송 실패 시 확보 원문 전달, 중단·재개·중복 방지, 최신 대사 보고서·화면 전달.
+- 승호님 코드처럼 GENOS 응답 모델명이 요청 ID와 다르거나 없어도 중단하지 않음.
+  자동 ID 조회와 요청/응답 ID 기록을 유지하며 일반·스트림·대사 재개·AD에 적용.
+본문·권한·해시·호출 예산과 외부 실험의 정확한 모델 고정 검사는 유지합니다.
+
+전체1306파일 중 직전 MAIN90 누적본 대비53파일 변경·1253파일 동일입니다.
+MAIN92의 선택389파일 중388파일이 같고 PIPELINE은 Oracle 안내 문서 경로만
+동봉 현장 문서로 바꿨습니다. 실행 코드·프로필·엔진 pin은 MAIN92와 같습니다.
+데이터플랫폼 Oracle 이관용 CLEAN R1은 별도 발송본이며 이 ZIP은 서빙 코드 반입본입니다.
+
+1. 실제 업로드한 TRANSFER 폴더에서 시작
+ZIP과 별도 RUN.txt를 실제 TRANSFER에 올립니다. 그 폴더를 현재 작업 위치로 유지합니다.
+TRANSFER 절대 위치를 추정하지 않으며 설치를 위해 먼저 DEV로 이동하지 않습니다.
+아래 /workspace는 앞선 현장 사진의 기존 Git checkout 실경로입니다.
+현재 기존 DEV checkout 실경로가 다르면 --root를 확인한 경로로 바꾸십시오.
+
+python3 -m zipfile -e ./GENOS_MAIN92_CUMULATIVE_20261020_R1.zip ./GENOS_MAIN92_CUMULATIVE_20261020_R1
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt check --root /workspace
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt apply --root /workspace
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt status --root /workspace
+
+별도 첨부 RUN.txt는 ZIP 옆에서 bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt check --root /workspace로
+실행해도 됩니다. 이 경로는 압축 해제 전부터 main92-cumulative-r1-logs에 로그와 종료 코드를 남깁니다.
+Python 3.11 이상이 필요하며 실제 실행 파일과 버전을 기록합니다.
+sqlglot 30.23.0이 없을 때만 같은 RUN.txt의 deps --root /workspace를 먼저 실행합니다.
+외부 인터넷 설치 없이 첨부 wheel을 사용합니다. 기존 다른 의존성은 이전 누적본 기준을 유지합니다.
+
+2. 적용 대상과 보존·재개
+코드는 기존 Git checkout에 백업 후 적용됩니다. 푼 패키지 폴더만 수정하는 방식이 아닙니다.
+01_DATA 원문·색인·기존 generation, .env, .venv, .git, TRANSFER와 별도 사용자 파일을 보존합니다.
+기존 GENOS_SERVING_PATHS 설정은 별도 보존해 APPLIED_CODE.zip에 결속합니다.
+STATUS.json / LAST_FAILURE.json / 로그를 유지하며 중단된 apply는 백업으로 복구 후 재적용합니다.
+동일 패키지 재적용은 해시를 확인하고 이후 사용자 변경·변조는 거절합니다.
+이번 코드 적용으로 데이터 재구축·Oracle 조회 채널 변경·리비전 배포를 수행하지 않습니다.
+
+3. 실제 checkout의 검토·commit·게이트·push·리비전
+기존 checkout에서 git diff --check와 변경 목록을 검토하고 설치 receipt의 units 및
+CODE_MANIFEST.json을 기준으로 코드만 commit합니다. .env·로그·백업·데이터를 추가하지 않습니다.
+그 뒤 TRANSFER에서 실행합니다.
+
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt gate-code --root /workspace
+
+게이트는 같은 Git 추적 checkout과 HEAD, APPLIED_CODE.zip의 모든 파일을 대조합니다.
+통과한 commit을 기존 원격에 push하고 같은 commit의 새 코드서빙 리비전을 배포합니다.
+기존 시작 명령은 python3 main_router.py입니다. 스크립트가 push/배포를 자동 실행하지 않습니다.
+코드를 추가로 바꿨으면 새 commit과 게이트가 필요합니다.
+
+4. 워크플로우 편집기와 현장 확인
+첨부 WORKFLOW_PASTE_ALL.txt는 이번 서버와 맞는 전체 편집기본입니다.
+이번 WORKFLOW_PASTE_ALL.txt는 직전 MAIN90/WORKFLOW_PROGRESS 편집기본과 다릅니다.
+기존 워크플로우 Python 단계에 이번 전체 내용을 반영하고 저장합니다.
+Git push/코드서빙 배포와 편집기 반영은 별도 상태입니다. 팀·실제 세션 전달·서비스 연결을 유지합니다.
+이전 버전의 미완료 실행을 강제로 새 코드로 재개하지 말고 원장을 보존한 뒤 새 채팅으로 확인합니다.
+
+최종 질의·warmup은 워크플로우 테스트 화면에서만 확인합니다.
+같은 4문항(PF 악화, 일반고객 원화 RP 대상채권, 대손충당금/대손준비금, 레버리지비율)을 사용합니다.
+미확보 조사 목록·추가 조사 상태, 새 원문의 반영, 내규/외규 구분, 현재 문장의 직접 인용,
+partial/실패 표시와 요청 ID·모델/도구 로그를 확인합니다.
+코드 gate PASS, 로컬 모델 결과 또는 health만으로 GENOS 질의 성공이라고 판단하지 않습니다.
+
+5. 데이터·Oracle·현장 검증 범위
+Oracle 모드는 필요한 자료만 Oracle/조회 API에서 요청 중 읽습니다. 서빙에 원문·색인을 복제하지 않습니다.
+이미 검증된 조회 release/channel과 외부 NFS 실행 이력 설정을 유지합니다.
+처음 Oracle 조회 모드를 구성하는 경우 동봉 ORACLE_QUERY_IMPLEMENTATION_UTF8.txt와 DDL을 확인합니다.
+조회 데이터 적재·활성화와 코드 설치는 별도입니다. 이 설치는 데이터 게시/이관을 실행하지 않습니다.
+SQLite 모드를 이미 사용하는 경우에만 실제 선택 세대로 아래를 별도 실행합니다.
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt gate-sqlite --root /workspace --generation <실제선택세대절대경로>
+대형 NFS 검사는 자원 여유가 있는 때 한 프로세스로 실행합니다.
+
+6. 원복
+bash ./GENOS_MAIN92_CUMULATIVE_20261020_R1/GENOS_MAIN92_CUMULATIVE_20261020_R1_RUN.txt undo --root /workspace
+기존 checkout의 적용 전 파일을 정확히 복원합니다. 후속 사용자 변경이 있으면 보존하고 거절합니다.
+원복한 코드 commit/push/리비전, 필요시 이전 편집기본과 데이터 선택의 복원은 별도로 확인합니다.
+
+7. 검증 범위와 현장 상태
+로컬 MAIN92는 고정 코드204개 검사와 앱 주입 없는 실제 서비스 선택·HEALTH·원문 읽기를 확인했습니다.
+이 인계 ZIP 자체의 계약·설치·최종 압축본 검증은 VALIDATION.json/FINAL_VERIFICATION.json을 따릅니다.
+제품 입력·질의의 모델 효과를 새로 비교한 실험은 아니며 새 외부/내부 모델 호출은 없습니다.
+이전 RP 근거 충분성·레버리지 직접 인용 등 의미 판단 및 최종 품질/비용의 한계는 남습니다.
+USER_DIRECTED_CUTOVER, quality_certified=false이고 이전 ADR 판정은 유지합니다.
+GENOS 실제 반입·commit/push·리비전·Oracle/NFS·편집기 저장·내부 모델 결과는 현장 미확인입니다.

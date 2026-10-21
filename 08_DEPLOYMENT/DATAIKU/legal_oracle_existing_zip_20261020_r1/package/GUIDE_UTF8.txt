@@ -1,0 +1,113 @@
+기존 genos-rag-data ZIP → Dataiku → Oracle 개발계 테스트 / 2026-10-20 R1
+
+0. 이번에 사용할 파일
+실행 코드: LEGAL_ORACLE_EXISTING_ZIP_20261020_R1.zip
+데이터: 보유한 genos-rag-data-20261007…zip 원본. 정확한 파일명은 아래 설정에서 지정합니다.
+이 코드는 기존 데이터 ZIP을 읽는 전용 입력 어댑터입니다. 앞서 FULL_PARTS/QUERY_PARTS가 만든 조각과 형식이 다릅니다.
+개발계는 분할 없이 데이터 ZIP을 그대로 업로드합니다. 코드스페이스에서 query-data.db를 새로 추출할 필요가 없습니다.
+메일의 코드 ZIP 안에 운영 데이터는 없습니다.
+
+1. 개발계 — 지금 실행할 순서
+Dataiku Managed Folder 최상위에 아래 두 파일을 업로드합니다.
+(1) LEGAL_ORACLE_EXISTING_ZIP_20261020_R1.zip
+(2) 보유한 genos-rag-data-20261007…zip (원본 ZIP 그대로)
+
+Dataiku의 새 Python 노트북/새 커널을 열고 별도 첨부 DATAIKU_EXISTING_ZIP_IMPORT_RUN.txt 전체를 한 셀에 붙입니다.
+ZIP 안의 DATAIKU_EXISTING_ZIP_IMPORT.ipynb를 가져와도 같은 코드입니다.
+상단 설정:
+FOLDER_ID = 실제 Managed Folder ID
+ORACLE_CONNECTION = 기존 SIDDA 테이블에 연결하는 Dataiku Oracle 연결 이름
+INPUT_MODE = "zip"
+DATA_ZIP_NAME = 실제 업로드한 데이터 ZIP의 정확한 파일명
+WORK_DIR = "./legal-existing-zip-work" (충분한 공간이 있는 영속 경로; 재개 시 유지)
+EXPECTED_ZIP_SHA256 = "" (기존 .sha256 기록이 있으면 그 64자리 값을 넣음)
+
+파일명 기본값은 기록에 있는 genos-rag-data-20261007T002029Z-7c0b050f_verified.zip입니다.
+실제 파일이 이 이름과 다르면 DATA_ZIP_NAME을 수정합니다. 파일을 그 이름으로 바꿔 최신본처럼 취급하지 않습니다.
+ZIP이 교체되거나 다른 데이터를 시험하면 새 WORK_DIR를 씁니다. 같은 작업 폴더에 다른 ZIP을 덮어쓰지 않습니다.
+비밀번호/접속 토큰은 코드에 쓰지 않고 기존 Dataiku 연결을 사용합니다.
+
+ACTION을 아래 순서로 바꾸고 매번 셀 전체를 실행합니다.
+inspect : ZIP 다운로드 및 내부 DATA_MANIFEST 구조·선택 세대·파일 수/압축 해제 크기 확인. Oracle 쓰기 없음.
+restore : ZIP 지문, 각 복원 파일 해시, 원문·용어집·색인 결속 검증 및 작업 폴더 복원. Oracle 쓰기 없음.
+check   : 복원 데이터와 기존 9테이블/조회 인덱스 확인. Oracle 쓰기 없음. 원격 전체 중복 비교 결과는 아님.
+publish : 원문 → 자산/완료 릴리스 → 조회 행/완료 릴리스 → 전체 읽기 대조.
+status  : 필요할 때 다시 전체 대조. publish가 이미 FULL_DATA_VERIFIED로 끝났으면 즉시 반복할 필요 없음.
+
+현재 실제 ZIP이 우리 기록의 세대인지 확인할 값:
+inspect의 generation_in_zip, dataset_version, selected_bytes, excluded_file_count.
+기록에 있는 선택 세대는 /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation 입니다.
+지금 사용자 파일 자체는 이 외부 작업 환경에서 읽지 못했습니다. 실제 값이 다르면 그 결과를 먼저 확인합니다.
+10월7일 파일명이나 해시 통과는 10월20일 최신 자료라는 증명이 아닙니다. ZIP 이후 추가·수정된 자료는 포함하지 않습니다.
+
+2. 기존 Oracle 데이터 처리 — 기본은 중복 재사용
+전체 테이블 DELETE/TRUNCATE/재생성은 실행하지 않습니다.
+원문3테이블: 같은 dataset version/키/내용이면 재사용하고 없는 행만 삽입합니다.
+ASSET_PART: 같은 자산 해시·조각 번호의 데이터를 대조하고 재사용합니다.
+RELEASE: 같은 완료 설명자이면 재사용합니다.
+QUERY_ROW: 동일 조회 release/키에 대해 '없으면 삽입, 있으면 내용 비교' SQL을 사용합니다. 기존 행이 있어도 대조 SQL은 실행할 수 있습니다.
+같은 작업 폴더의 단계 기록을 사용하면 완료된 적재 단계는 재실행하지 않고 최종 대조로 연결합니다.
+새 작업 폴더로 시작해도 기존 원격 데이터를 확인하며 중복 저장하지 않습니다.
+기존 키의 내용이 다르면 충돌을 남기고 멈춥니다. 이때 원본/로그를 보존하고 대상 데이터 차이를 확인합니다.
+원문 버전·검색 선택표·publisher 코드 지문이 다르면 새 릴리스가 될 수 있습니다. 특히 이전 R1 조회 코드와 이번 R2 최적화 코드의 조회 release ID는 다릅니다.
+버전이 다른 조회 행을 무조건 같은 데이터로 생략하지 않습니다. 과거 릴리스는 남고 최신 포인터 전환도 자동으로 하지 않습니다.
+
+기존 이관이 원문5테이블까지 완료됐다면 대부분 재사용하고 추가 조회 데이터를 채울 수 있습니다.
+다만 실제 기존 Oracle 버전/해시와 ZIP 내용을 현장에서 비교하기 전까지 재사용 범위·소요 시간은 확정할 수 없습니다.
+최종 검증은 실제 원문 행·자산 파일·조회 행/건수를 읽어 대조합니다. 단순 건수나 완료 상태만으로 검증을 생략하지 않습니다.
+개발계 전체 삭제 후 재적재가 더 빠르다는 근거는 없어 기본 삭제 기능을 넣지 않았습니다.
+
+3. 데이터 범위
+ZIP의 DATA_MANIFEST가 명시한 generation 아래 파일과 해당 SEARCH_SELECTION만 Dataiku 작업 폴더에 복원합니다.
+그 안에서 기존 Oracle 계약에 선언된 전체 원문·navigation/fulltext/glossary 자산·조회 투영을 적재합니다.
+ZIP에 포함된 runtime 대화/대사/캐시/운영 이력, 다른 generation, 옛 RESTORE.sh/코드는 Oracle 적재 대상이 아닙니다.
+SOURCE_CHANGES 등 provenance는 legacy-data-manifest.json에 담긴 원래 metadata로 보존합니다.
+10월7일 live-v2는 전체 파일의 동일 시점 스냅샷이라는 뜻이 아닙니다. 기록상 runtime 사례 DB 변경은 있었고 이번 입력에서 제외됩니다.
+archive_restore_eligible=false, 원문/색인 해시 불일치, 필수 데이터 누락이면 중단합니다. manifest/해시를 수정해 맞추지 않습니다.
+RAW PDF/Office, ACTIVE/STATE 운영 이력, 서빙 전환까지 자동 이관됐다고 간주하지 않습니다.
+
+4. 로그·중단·재개·자원
+WORK_DIR/restored/restore-state.json : ZIP/코드 바인딩과 최초 복원 기한, 완료/실패 기록
+WORK_DIR/restored/events.jsonl : 파일 복원/재사용·처리 단계·SQL 집계 작업량·메모리/공간 로그
+WORK_DIR/oracle-import/full-state.json : 원문/자산/조회 단계별 완료 기록 및 최종 결과
+WORK_DIR/oracle-import 아래 source/assets/query : 기존 SQL 누적 호출·적재 위치·실패 기록
+PHASE/PROGRESS는 약15초 단위 상태이며, 타이머만 증가했다고 행 적재가 진행됐다고 판단하지 않습니다.
+SQL 조회 행 생성에는 앞서 보낸 추가본 R2와 동일한 FTS 한 번 집계 최적화 및 SQL 작업량 관찰을 포함합니다.
+원문 단계의 건수 로그/자산 조각 로그/조회 단계 로그와 함께 확인합니다. 일부 공통 rows_checked/rows_added 값은 해당 단계에서 갱신되지 않을 수 있습니다.
+성공 기준은 FULL_DATA_VERIFIED입니다. ACTIVE/STATE 변경과 GENOS 실제 서비스 검증은 별도입니다.
+
+1MiB 단위로 읽으며 작업 하나만 실행합니다. Dataiku는 ZIP 로컬 다운로드 + 선택 generation 해제 공간이 필요합니다.
+처음 inspect에서도 Managed Folder ZIP을 로컬 WORK_DIR로 다운로드합니다. 여유가512MiB 미만이면 감지 지점에서 중단합니다.
+전체 필요 공간은 압축 크기만으로 알 수 없고 inspect의 selected_bytes를 함께 봅니다.
+원본 ZIP, 중단 .partial 파일, journal, 상태 JSON을 임의 삭제하지 않습니다.
+복원 중단은 같은 ACTION/WORK_DIR로 재개하며 완료 파일을 해시 확인 후 재사용합니다. 실패 중간 파일은 보존합니다.
+복원은 1회6시간/최초7일, 적재는 PUBLISH_SECONDS 기본1시간/최대6시간 및 기존 최초7일·누적100만 SQL 한도를 유지합니다.
+전체 해시/일부 Python 구간의 제한은 다음 검사 경계에서 적용됩니다. 진행 로그는 강제 취소 보장이 아닙니다.
+자동 재시도나 임의 원복은 하지 않습니다. 원인을 해소하고 같은 ACTION을 실행합니다.
+SQL 성공 응답이 유실돼도 다음 실행이 기존 값을 확인합니다. 중단을 미실행으로 추정해 덮어쓰지 않습니다.
+
+5. 운영계에서만 50MB 제한에 맞춰 분할·병합
+아래는 Linux 코드스페이스에서 기존 데이터 ZIP을 나누는 명령입니다. 이번 개발계 테스트에서는 실행하지 않습니다.
+실제 파일을 업로드한 TRANSFER 폴더에서 실행합니다. DATA_ZIP_NAME 예시를 실제 이름으로 바꿉니다.
+
+python3 -m zipfile -e ./LEGAL_ORACLE_EXISTING_ZIP_20261020_R1.zip ./existing-zip-tools
+bash ./existing-zip-tools/LEGAL_ORACLE_EXISTING_ZIP_20261020_R1/ZIP_TRANSFER_RUN.txt split --archive ./genos-rag-data-20261007T002029Z-7c0b050f_verified.zip --output ./existing-data-parts
+
+생성물: ./existing-data-parts/data.zip.part000001 ... 모든 조각 + parts-manifest.json
+각 조각 최대49,000,000바이트. 전체 원본 SHA와 각 조각 SHA를 기록하며 원본 ZIP은 보존합니다.
+다운로드/반입할 파일은 모든 data.zip.partNNNNNN + parts-manifest.json입니다. 서로 다른 반출의 조각을 섞지 않습니다.
+Dataiku Managed Folder에 작은 코드 ZIP과 조각/manifest를 업로드하고 위 노트북의 INPUT_MODE="parts"로 설정합니다.
+inspect/restore가 조각을 검증·병합한 뒤 같은 경로로 진행합니다. DATA_ZIP_NAME은 parts 모드에서 사용하지 않습니다.
+이번 도구가 생성한 genos-existing-zip-parts-v1만 지원합니다. 10월7일 옛 분할 조각이나 FULL_PARTS/QUERY_PARTS 조각은 넣지 않습니다.
+Dataiku에는 조각 + 병합 ZIP + generation 공간이 필요합니다.
+
+Linux에서 별도 병합이 필요한 경우:
+bash ./existing-zip-tools/LEGAL_ORACLE_EXISTING_ZIP_20261020_R1/ZIP_TRANSFER_RUN.txt join --parts ./existing-data-parts --output ./joined-existing-data
+결과: ./joined-existing-data/joined-data.zip. 이것을 개발계 zip 모드처럼 사용할 수 있습니다.
+분할/병합의 중단 파일은 보존하며 같은 입력/출력으로 재실행합니다. 원본 해시 불일치 시 완료 처리하지 않습니다.
+
+6. 검증 상태
+로컬 계약/회귀58개 통과. 정확한 전달 TXT의 직접 ZIP/parts 복원, 기존 원문·자산 재사용, 누락된 조회 및 일부 원문 행 보충,
+중복 실행의 데이터 유지, 값 충돌 거부, 잘못된 ZIP/경로/해시 거부, 중단 재개와 기한 보존을 확인했습니다.
+실제 사용자 ZIP, 현장 Dataiku JDBC/Oracle19, 대용량 시간/공간은 미확인입니다. 모의 Oracle 데이터로 검사했고 현장 DB는 수정하지 않았습니다.
+로컬 MAIN·GENOS 코드서빙 리비전·활성 포인터는 바꾸지 않았습니다.

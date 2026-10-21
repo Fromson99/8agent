@@ -30,10 +30,10 @@ else:
     _SYSTEM_LOGS = _install_system_logging("workflow-python")
 
 
-WORKFLOW_REVISION = "rag-v6-source-provider-20261013-r2"
-LIVE_PROGRESS_REVISION = "workflow-source-provider-20261013-r2"
+WORKFLOW_REVISION = "rag-team-session-20261019-r1"
+LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
 PROGRESS_DISPLAY_REVISION = "rag-source-provider-20261013-r2"
-ANSWER_DISPLAY_REVISION = "answer-reference-display-20260929-r1"
+ANSWER_DISPLAY_REVISION = "workflow-unlimited-text-20261021-r1"
 JUDGMENT_DISPLAY_REVISION = "judgment-evidence-svg-20261008-r10"
 HTTP_ERROR_DIAGNOSTICS_REVISION = "http-error-origin-20260928-r1"
 QUESTION_KEYS = ("question", "query", "chatInput", "input", "message", "prompt", "text")
@@ -44,7 +44,7 @@ META_KEYS = frozenset(
         "scope",
         "document_ids",
         "use_llm",
-        "API_TYPE",
+        "API_TYPE", "workflow_id", "input", "basis_review", "view_id", "rows",
         "request_id",
         "channel",
         "chatId",
@@ -151,10 +151,13 @@ def _ad_channel(data):
 
 
 def _session_id(data):
-    return _safe_id(
-        data.get("chatId") or data.get("chat_id") or data.get("sessionId") or data.get("session_id"),
-        "sess-anonymous",
-    )
+    value=data.get("chatId") or data.get("chat_id") or data.get("sessionId") or data.get("session_id")
+    if value is None:return 'sess-anonymous'
+    if (not isinstance(value,str) or not value.strip() or len(value)>256
+            or value in ('anonymous','sess-anonymous') or any(ord(c)<32 for c in value)):
+        raise ValueError('안정적인 대화 세션 식별자가 필요합니다.')
+    # Preserve exact IDs: sanitizing/truncating merges distinct chat sessions.
+    return value
 
 
 def _user_id(data):
@@ -331,7 +334,6 @@ def _request_body(question, data):
         "question": question,
         "channel": "genos-chat",
         "session_id": _session_id(data),
-        "user_id": _user_id(data),
         "request_id": request_id,
         "ad_session_id": str(data.get('chatId') or data.get('chat_id') or data.get('sessionId') or data.get('session_id') or ''),
         "ad_channel": _ad_channel(data),
@@ -350,14 +352,8 @@ def _request_body(question, data):
         import hashlib
         if not re.fullmatch(r"[A-Za-z0-9_-]+_team", str(request_body.get('team_id', ''))):
             raise ValueError("멀티턴에는 TEAM_ID 또는 입력 team_id가 필요합니다.")
-        if request_body["user_id"] == "anonymous" or request_body["session_id"] == "sess-anonymous":
-            raise ValueError("멀티턴에는 스튜디오 사용자와 대화 식별자가 필요합니다.")
-        # Preserve full stable identity; sanitizing/truncating must not merge users or sessions.
-        info = data.get("userInfo") if isinstance(data.get("userInfo"), dict) else {}
-        raw_user = data.get("user_id") or data.get("userId") or info.get("user_id") or info.get("userId")
-        raw_session = data.get("chatId") or data.get("chat_id") or data.get("sessionId") or data.get("session_id")
-        request_body["user_id"] = "u-" + hashlib.sha256(str(raw_user).encode()).hexdigest()
-        request_body["session_id"] = "s-" + hashlib.sha256(str(raw_session).encode()).hexdigest()
+        if request_body["session_id"] == "sess-anonymous":
+            raise ValueError("멀티턴에는 대화 세션 식별자가 필요합니다.")
         request_body["memory"] = True
         if "scope" in request_body:
             raise ValueError("멀티턴 문서 범위는 TEAM_ID와 document_ids로 지정합니다.")
@@ -373,6 +369,9 @@ def call_code_serving(question, data):
 
 def _post_code_serving(request_body):
     endpoint, token, timeout = _settings()
+    if request_body.get('API_TYPE') in {'WARMUP', 'WARMUP_STATUS'}:
+        # Controls do not run a model or wait for cache completion. No retry.
+        timeout = min(timeout, 30.0) if timeout > 0 else 30.0
     request_id = request_body["request_id"]
     encoded = json.dumps(request_body, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(endpoint, data=encoded, method="POST")
@@ -420,6 +419,26 @@ async def _workflow_warmup(operation, data):
         text = messages[state] + '\nworker_id: ' + str(body.get('worker_id', ''))
         if body.get('generation_path'):
             text += '\ngeneration: ' + str(body['generation_path'])
+        progress = body.get('progress') or {}
+        if progress:
+            text += '\n준비 단계: ' + str(progress.get('phase', '미확인'))
+            text += '\n경과: ' + str(progress.get('elapsed_seconds', 0)) + '초'
+            text += '\n마지막 진행 이후: ' + str(progress.get('last_progress_age_seconds', 0)) + '초'
+            if 'rows_done' in progress:
+                text += '\n원문 행: ' + str(progress['rows_done']) + '/' + str(progress.get('rows_total', '?'))
+            if 'parts_done' in progress:
+                text += '\n자산 분할: ' + str(progress['parts_done']) + '/' + str(progress.get('parts_total', '?'))
+            if progress.get('sql_in_flight'):
+                text += '\nOracle 응답 대기: ' + str(progress.get('sql_elapsed_seconds', 0)) + '초'
+        if body.get('data_provider'):
+            text += '\ndata_provider: ' + str(body['data_provider'])
+        if body.get('dp_release_id'):
+            text += '\ndp_release_id: ' + str(body['dp_release_id'])
+        if 'nfs_source_used' in body:
+            text += '\nnfs_source_used: ' + str(body['nfs_source_used'])
+        recovery = body.get('ad_worker_recovery') or {}
+        if recovery.get('state') in {'RUNNING', 'FAILED'}:
+            text += '\n예약 작업 복구: ' + str(recovery['state'])
         _log_event('workflow.warmup.finished', request_id=request_id,
                    operation=operation, state=state, worker_id=body.get('worker_id'))
         return {'text': text, 'answer_status': 'warmup', 'request_id': request_id,
@@ -427,6 +446,12 @@ async def _workflow_warmup(operation, data):
     except Exception as exc:
         _log_event('workflow.warmup.failed', level='ERROR', request_id=request_id,
                    operation=operation, error_type=type(exc).__name__, error_message=str(exc),traceback=traceback.format_exc())
+        if isinstance(exc, TimeoutError) or (isinstance(exc, urllib.error.URLError) and isinstance(exc.reason, TimeoutError)):
+            return {'text': '준비 상태 조회가 제한 시간(최대 30초) 안에 응답하지 않았습니다. '
+                    '워크플로우의 code_serving.request.started와 코드서빙의 http.request.started를 대조해 주세요. '
+                    '백그라운드 준비 작업의 종료 여부는 확인되지 않았습니다.\nrequest_id: ' + request_id,
+                    'answer_status': 'failed', 'request_id': request_id,
+                    'failure_kind': 'warmup_status_transport_timeout'}
         return {'text': render_error({'request_id':request_id,'error_type':type(exc).__name__,
                    'detail':str(exc),'traceback':traceback.format_exc()}, exc=exc),
                 'answer_status': 'failed', 'request_id': request_id}
@@ -498,6 +523,10 @@ class _ChatProgress:
         if detail is not None and not self.answer_seq:
             self.flow_events.append(detail)
         if not self.show_progress or self.answer_seq:
+            return
+        if detail is not None and detail['basis'].get('kind') in {'WORKFLOW_CHECKPOINT', 'WORKFLOW_SOURCE_READ'} and detail['basis'].get('detail_mode') == 'activity':
+            await self._flush_source_reads()
+            await self._append_source_card(detail['label'], detail.get('details') or [])
             return
         if await self._source_progress(detail):
             return
@@ -658,7 +687,7 @@ class _ChatProgress:
             await self._send('token', delta)
             self.answer_sent = text
 
-    async def finish(self, text):
+    async def finish(self, text, *, failed=False):
         # Keep the final card list even with no socket, offloaded rendering, or
         # an emitter failure. Pending reads also survive a failed request.
         await self._flush_source_reads()
@@ -672,8 +701,12 @@ class _ChatProgress:
         if self.answer_sent:
             if text.startswith(self.answer_sent):
                 text = text[len(self.answer_sent):]
+            elif failed:
+                text = '\n\n**답변 전달 미완료**\n\n앞서 표시된 답변은 완성된 답변으로 확정되지 않았습니다.\n\n' + text
             else:
-                text = '\n\n---\n\n**답변 작성 결과**\n\n' + text
+                # A different final rendering must not append a second report.
+                # The caller records the mismatch and publishes a failure notice.
+                raise ValueError('final answer differs from the delivered prefix')
         elif self.primed:
             text = "---\n\n**최종 답변**\n\n" + text
         for start in range(0, len(text), 160):
@@ -681,11 +714,11 @@ class _ChatProgress:
         await self._send("end", "end")
 
 
-async def _stream_code_serving(question, data, display, *, probe=False):
+async def _stream_code_serving(question, data, display, *, probe=False, payload=None):
     endpoint, token, configured_timeout = _settings()
     stream_endpoint = endpoint[:-5] + "/stream"
     body = ({"API_TYPE": "SSE_CHECK", "request_id": data["request_id"]}
-            if probe else _request_body(question, data))
+            if probe else payload if payload is not None else _request_body(question, data))
     loop = asyncio.get_running_loop()
     queue = asyncio.Queue(maxsize=128)
     reader_closed = threading.Event()
@@ -739,8 +772,6 @@ async def _stream_code_serving(question, data, display, *, probe=False):
                 for raw in response:
                     if reader_closed.is_set():
                         return
-                    if len(raw) > 1048576:
-                        raise ValueError("SSE frame too large")
                     if not raw.startswith(b"data:"):
                         continue
                     frame = json.loads(raw[5:].decode("utf-8"))
@@ -790,6 +821,8 @@ async def _stream_code_serving(question, data, display, *, probe=False):
             elif kind == "fallback":
                 await reader
                 display.transport.update(route="/json", fallback_http_status=value.code)
+                if payload is not None:
+                    return unwrap(await asyncio.to_thread(_post_code_serving, payload))
                 return await asyncio.to_thread(call_code_serving, question, data)
             else:
                 raise value
@@ -842,12 +875,165 @@ def _answer_text(body):
 
 def _public_answer_text(body):
     """Show v5 legal review notes; retain legacy diagnostic-only filtering."""
+    comparison = _comparison_answer_text(body)
+    if comparison is not None:
+        return comparison
     text = _answer_text(body)
+    if body.get("basis_review_text") and not body.get("workflow_id"):text += "\n"+str(body["basis_review_text"])
     answer = body.get('answer')
     if isinstance(answer, dict) and (answer.get('provider_receipt') or {}).get('final_review_policy') == 'advisory':
         return _without_inline_reference_numbers(text).strip()
     text = re.split(r"(?:^|\n)\s*확인 한계\s*:", text, maxsplit=1)[0]
     return _without_inline_reference_numbers(text).strip()
+
+
+def _report_document_name(value):
+    """Remove known storage prefixes, retaining document and appendix titles."""
+    text = str(value or '').strip()
+    prefix = re.match(r'^(internal|external)\s*([>/])\s*', text, re.I)
+    if not prefix:
+        return text or '문서명 미확인'
+    parts = [p.strip() for p in text.split(prefix.group(2)) if p.strip()]
+    # Appendix names need their parent document to remain distinguishable.
+    for index, part in enumerate(parts):
+        if index >= 2 and part in {'별표서식', '별표·서식', '별표', '별지', '서식'}:
+            return ' · '.join(parts[index-1:])
+    return parts[-1] if len(parts) > 1 else '문서명 미확인'
+
+
+def _report_sources(body):
+    bundle = ((body.get('assembly') or {}).get('term_agent') or {}).get('source_bundle') or {}
+    counters = {}; records = {}; ordered = []
+    for source in bundle.get('sources', []):
+        if not isinstance(source, dict) or source.get('content_read') is not True:
+            continue
+        ident = source.get('selection_id')
+        if not isinstance(ident, str) or not ident or ident in records:
+            continue
+        side = source.get('side')
+        category = {'internal':'내규', 'external':'외규'}.get(side, '출처')
+        counters[category] = counters.get(category, 0) + 1
+        record = {'source':source, 'category':category,
+                  'label':category+' '+str(counters[category]),
+                  'name':_report_document_name(source.get('document_name'))}
+        records[ident] = record; ordered.append(record)
+    return records, ordered
+
+
+def _comparison_answer_text(body):
+    """One report from accepted observations, without regenerating judgments."""
+    if body.get('workflow_id') != 'risk_team_compare_workflow':
+        return None
+    table=body.get('comparison_table') or {}
+    if table.get('schema_version')=='internal-concept-table-v1':
+        # The server assembled source names, coordinates and exact quotations.
+        # Preserve the same text across live delivery, saved status and JSON.
+        return _answer_text(body)
+    report = body.get('report') or {}
+    issues = (report.get('scope') or {}).get('issues')
+    if not isinstance(issues, list):
+        return None
+    items = (body.get('comparison_items') or {}).get('items') or []
+    fields = {'subject':'대상','obligation':'의무','procedure':'절차·담당','authority':'전결·권한',
+        'condition':'조건','exceptions':'예외','date':'기준일','definition':'정의','numerator':'분자',
+        'denominator':'분모','unit':'단위','period':'산정 기간','direction':'기준 방향','value':'기준 수치',
+        'overview':'확인 범위'}
+    verdicts = {'CONFORMS':'부합','ADDITIONAL_INTERNAL':'내부 추가기준','CONFLICT':'상충',
+                'POSSIBLE_GAP':'미비 후보','DEFERRED':'판정 보류'}
+    sources, _ = _report_sources(body)
+    issue_names = {i['id']:i['label'] for i in issues}
+    pairs = {p['pair_id']:p for p in (report.get('basis') or {}).get('pairs', [])}
+    relations = {'DIRECT':'직접 명시','INDIRECT':'상위 내규·위임 경유','CONTENT_ONLY':'내용 대응',
+                 'UNKNOWN':'미확인','UNRELATED':'무관'}
+
+    def plain(value):
+        text = str(value or '')
+        for ident, source in sources.items():
+            text = text.replace('['+ident+']', '〔'+source['label']+'〕')
+            original = source['source'].get('document_name')
+            if original:
+                text = text.replace(original, source['name'])
+        for ident, label in issue_names.items():
+            text = re.sub(r'(?<![A-Za-z0-9_-])'+re.escape(ident)+r'(?![A-Za-z0-9_-])', lambda _:label, text)
+        return _ChatProgress._plain(text).replace('|', '\\|')
+
+    def paragraphs(value):
+        # Retain every sentence, quotation and number; only split whitespace.
+        return '<br><br>'.join(plain(p) for p in re.split(
+            r'\n+|(?<=[.!?。])\s+', str(value or '').replace('\r\n', '\n')) if p.strip())
+
+    def references(citations):
+        labels = list(dict.fromkeys(sources[c['evidence']]['label']
+            for c in citations if c.get('evidence') in sources))
+        return ' · '.join('〔'+label+'〕' for label in labels)
+
+    def side_text(value):
+        blocks = [paragraphs(value.get('text') or '미확보')]
+        refs = references(value.get('citations', []))
+        if refs:blocks.append('**근거**<br>'+refs)
+        elif value.get('text'):blocks.append('근거 미선택')
+        for alternative in value.get('alternatives', []):
+            previous = '**이전 확인**<br>'+paragraphs(alternative.get('text'))
+            refs = references(alternative.get('citations', []))
+            if refs:previous += '<br>'+refs
+            blocks.append(previous)
+        if value.get('missing'):
+            blocks.append('**남은 확인**<br>'+paragraphs(value['missing']))
+        if value.get('status') in {'PARTIAL', 'MISSING', 'CONFLICT'}:
+            blocks.append('확인 상태: '+{'PARTIAL':'일부 확인','MISSING':'미확보','CONFLICT':'상충'}[value['status']])
+        return '<br><br>'.join(blocks)
+
+    lines = ['## 내규·외규 대사 보고서', '', '### 1. 검토 개요', '',
+        '내규와 외규를 비교한 결과입니다.' if body.get('status') == 'completed' else
+        '확인된 원문 범위의 비교 결과입니다. 미확인 사항이 남아 있습니다.', '',
+        '해석은 원문에 대한 LLM의 검토 의견이며, 근거와 함께 검토할 수 있습니다.', '']
+    day = next((line for line in _answer_text(body).splitlines() if line.startswith('기준일: ')), None)
+    if day:lines.extend([plain(day), ''])
+    lines.extend(['### 2. 대사표', '', '| 확인 내용 | 내규 | 외규 | 해석 |', '|---|---|---|---|'])
+    unresolved = list(body.get('unresolved') or [])
+    for issue in issues:
+        related = [i for i in items if i['issue_id'] == issue['id']]
+        judgments = [r for r in report.get('rows', [])
+                     if pairs.get(r['pair_id'], {}).get('issue_id') == issue['id']]
+        if not related:
+            # Older/partial results have no field observations. Show only their
+            # cited exact excerpts, never invent side summaries from a verdict.
+            sides = {}
+            for side in ('internal', 'external'):
+                citations = [c for row in judgments for c in row.get('citations', [])
+                    if c.get('evidence') in sources and sources[c['evidence']]['source'].get('side') == side]
+                excerpts = list(dict.fromkeys(sources[c['evidence']]['source'].get('excerpt', '') for c in citations))
+                sides[side] = {'text':'\n\n'.join(e for e in excerpts if e), 'citations':citations,
+                               'missing':'항목별 요약 미확보 — 확인한 인용 원문만 표시합니다.'}
+            related = [{'field':'overview', 'difference':'항목별 비교 검토 미완료', **sides}]
+        for index, item in enumerate(related):
+            interpretation = [paragraphs(item.get('difference') or '항목별 해석 미확인')]
+            if index == 0:
+                # The whole-issue opinion is explicitly scoped, once per issue.
+                for row in judgments:
+                    pair = pairs.get(row['pair_id'], {})
+                    interpretation.extend(['**쟁점 전체 의견: '+plain(verdicts.get(row['verdict'], row['verdict']))+'**',
+                        paragraphs(row.get('difference')), paragraphs(row.get('reason')),
+                        '근거 관계: '+relations.get(pair.get('basis_relation'), '미확인')])
+                    refs = references(row.get('citations', []))
+                    if refs:interpretation.append('의견 근거: '+refs)
+                    for dimension in row.get('dimensions', []):
+                        state = {'MATCH':'일치','DIFFERENT':'차이 있음','UNKNOWN':'미확인',
+                                 'NOT_APPLICABLE':'해당 없음'}.get(dimension['status'], '미확인')
+                        interpretation.append('**산정 검토 · '+plain(fields.get(dimension['name'], '범위'))+
+                            ': '+state+'**<br>'+paragraphs(dimension.get('reason'))+
+                            ('<br>'+references(dimension.get('citations', [])) if dimension.get('citations') else ''))
+                    unresolved.extend(row.get('unresolved') or [])
+            cells = ['**'+plain(issue['label'])+'**<br><br>'+plain(fields.get(item['field'], '확인 항목')),
+                     side_text(item['internal']), side_text(item['external']),
+                     '<br><br>'.join(dict.fromkeys(p for p in interpretation if p))]
+            lines.append('| '+' | '.join(cells)+' |')
+    if not issues:lines.append('| 확인 범위 미확정 | 미확보 | 미확보 | 비교 검토 미완료 |')
+    lines.extend(['', '### 3. 추가 확인 사항', ''])
+    remaining = list(dict.fromkeys(plain(value) for value in unresolved if str(value).strip()))
+    lines.extend('- '+value+'\n' for value in remaining)
+    if not remaining:lines.append('별도로 기록된 추가 확인 사항은 없습니다.')
+    return '\n'.join(lines).strip()
 
 
 _ANSWER_NUMERIC_REFERENCE = re.compile(r"\[[ \t]*[1-9][0-9]*(?:[ \t]*[,，;、\-–][ \t]*[1-9][0-9]*)*[ \t]*\]")
@@ -862,6 +1048,10 @@ def _without_inline_reference_numbers(text, *, final=True):
     remain literal. Pending brackets wait for their content and link suffix;
     emitted text therefore stays a prefix of the final rendering.
     """
+    # The server has already escaped and numbered this source-bound report.
+    # Numeric brackets inside its literal quotations are original source text.
+    if text.startswith('<!-- GENOS_COMPARISON_START -->'):
+        return text
     out, index, protected = [], 0, None
     while index < len(text):
         char = text[index]
@@ -964,7 +1154,26 @@ def _tier_sources(bundle):
 
 
 def _sources(body):
+    if (body.get('comparison_table') or {}).get('display_version') == 'comparison-readable-v1':
+        return ''  # Exact sources are already grouped and folded in the report.
     bundle=(body.get("assembly",{}).get("term_agent") or {}).get("source_bundle")
+    if isinstance(bundle,dict) and bundle.get('schema_version')=='workflow-source-v1':
+        _, records = _report_sources(body)
+        if not records:return ''
+        lines = ['### 4. 출처' if body.get('workflow_id') == 'risk_team_compare_workflow'
+                 else '**확인한 출처**', '']
+        for category in ('내규', '외규', '출처'):
+            group = [row for row in records if row['category'] == category]
+            if not group:continue
+            lines.extend(['**'+category+'**', ''])
+            for row in group:
+                source = row['source']
+                lines.extend(['**〔'+row['label']+'〕 '+_ChatProgress._plain(row['name'])+'**', '',
+                    '위치: '+_ChatProgress._plain(source.get('coordinate_label') or '상세 위치 미기록'), ''])
+                if source.get('version'):lines.extend(['판본: '+_ChatProgress._plain(str(source['version'])), ''])
+                if any(item.get('evidence_id') == source['selection_id'] for item in body.get('unreviewed_sources', [])):
+                    lines.extend(['확보한 원문이며 항목별 해석은 아직 완료되지 않았습니다.', ''])
+        return '\n'.join(lines).strip()
     if isinstance(bundle,dict) and bundle.get("schema_version")=="source-tiers-v4":
         return _tier_sources(bundle)
     assembly = body.get("assembly")
@@ -1564,6 +1773,11 @@ def _judgment_graph_html(flow):
 
 
 def _completion_answer_status(body, answered):
+    if body.get('response_schema') == 'workflow-result-v1':
+        if body.get('status') in {'failed', 'partial'}:
+            return body['status']
+    if body.get('response_schema')=='workflow-result-v1':
+        return {'completed':'answered','partial':'partial','blocked':'unavailable','failed':'failed'}.get(body.get('status'),'incomplete')
     if body.get("answer_status") in {"failed", "error"}:return "failed"
     agent = (body.get('assembly') or {}).get('term_agent') or {}
     if answered:
@@ -1574,10 +1788,10 @@ def _completion_answer_status(body, answered):
     return 'incomplete' if _has_found_source(body) else 'not_found'
 
 
-DISPLAY_POLICY_REVISION = 'public-display-v4'
+DISPLAY_POLICY_REVISION = 'public-display-v6-workflow'
 REVIEW_INCOMPLETE_MESSAGE = (
     '현재 충분한 법률 검토를 하지 못했습니다. '
-    '검토할 법률 쟁점이나 상황을 조금 더 구체적으로 질문해 주세요.'
+    '답변에 필요한 원문 조사·검토가 완료되지 않았습니다.'
 )
 _TIMEOUT_TYPES = frozenset({'TimeoutError', 'TimeoutException', 'ReadTimeout',
     'ConnectTimeout', 'WriteTimeout', 'PoolTimeout', 'ServerTimeoutError'})
@@ -1768,7 +1982,8 @@ def render_error(body, *, question='', exc=None):
 def render(body, *, flow=None):
     if body.get('response_schema')=='ad-mode-v1':return _ad_result(body)['text']
     status = body.get("_gateway_status")
-    if body.get('answer_status') in {'failed', 'error'} or isinstance(status, int) and status >= 400:
+    if (body.get('answer_status') in {'failed', 'error'} or isinstance(status, int) and status >= 400
+            or body.get('response_schema') == 'workflow-result-v1' and body.get('status') == 'failed'):
         return render_error(body)
     answer = _public_answer_text(body)
     source_text = _sources(body)
@@ -1788,7 +2003,7 @@ def render(body, *, flow=None):
 def _for_markdown(text):
     # Keep code fences and the generated nested HTML intact. In particular,
     # changing the generated image or nested toggle markup breaks rendering.
-    pieces = re.split(r'(<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$))', text, flags=re.S)
+    pieces = re.split(r'(<!-- GENOS_COMPARISON_START -->.*?(?:<!-- GENOS_COMPARISON_END -->|$)|<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$)|(?:^|(?<=\n))\|[^\n]*\|(?:\n\|[^\n]*\|)*)', text, flags=re.S)
     return ''.join(piece if i % 2 else re.sub(r"(?<!\n)\n(?!\n)", "\n\n", re.sub(r"~", r"\\~", piece))
                    for i, piece in enumerate(pieces))
 
@@ -1818,6 +2033,7 @@ async def workflow_display_result(body, events, *, request_id):
         'answer_status': _completion_answer_status(body, answered),
         'judgment_display_revision': JUDGMENT_DISPLAY_REVISION,
         'progress_display_revision': PROGRESS_DISPLAY_REVISION,
+        'answer_display_revision': ANSWER_DISPLAY_REVISION,
     }
     if flow:
         result['judgment_flow'] = flow['metadata']
@@ -1838,6 +2054,7 @@ def _bound_workflow_display(body, request_id):
             or value.get('request_id') != request_id
             or value.get('judgment_display_revision') != JUDGMENT_DISPLAY_REVISION
             or value.get('progress_display_revision') != PROGRESS_DISPLAY_REVISION
+            or value.get('answer_display_revision') != ANSWER_DISPLAY_REVISION
             or not isinstance(value.get('text'), str)):
         return None
     if value.get('response_sha256') != _workflow_display_digest({k: v for k, v in body.items() if k != 'workflow_display'}):
@@ -1845,6 +2062,31 @@ def _bound_workflow_display(body, request_id):
     if value.get('content_sha256') != _workflow_display_digest({k: v for k, v in value.items() if k != 'content_sha256'}):
         return None
     return value
+
+
+async def _run_workflow_stream(data, payload):
+    """Explicit workflow execution uses the same SSE and cards as chat questions."""
+    display = _ChatProgress(data)
+    ident = data['request_id']
+    await display.progress({'schema_version': 'rag-progress-v1', 'request_id': ident,
+        'kind': 'phase', 'label': '요청 확인',
+        'basis': {'kind': 'WORKFLOW', 'name': 'workflow.prepare.started'}})
+    try:
+        body = await _stream_code_serving('', data, display, payload=payload)
+        rendered = await workflow_display_result(body, display.flow_events, request_id=ident)
+        result = {k: rendered[k] for k in ('text', 'answer_status')}
+        result.update(request_id=ident, run_id=body.get('run_id'), basis_result=body)
+        await display.finish(result['text'], failed=result['answer_status'] in {'failed', 'error'})
+    except Exception as exc:
+        _log_event('workflow.request.crashed', level='ERROR', request_id=ident,
+                   error_type=type(exc).__name__, traceback=traceback.format_exc())
+        result = {'request_id': ident, 'answer_status': 'failed',
+                  'text': render_error({'request_id': ident}, exc=exc)}
+        await display.finish(result['text'], failed=True)
+    if display.blocks:
+        result['agentFlowExecutedData'] = list(display.blocks)
+    result['code_serving_transport'] = dict(display.transport)
+    return result
 
 
 async def _run_once(data):
@@ -1860,6 +2102,35 @@ async def _run_once(data):
         return _workflow_settings(data)
     if operation in {'WARMUP', 'WARMUP_STATUS'}:
         return await _workflow_warmup(operation, data)
+    if operation in {'BASIS_LINKS_LIST','BASIS_LINKS_PROPOSE','BASIS_LINKS_REVIEW','BASIS_LINKS_HISTORY','BASIS_MIGRATION_STATUS','WORKFLOW_RUN','WORKFLOW_STATUS','WORKFLOW_RESUME'} or data.get('workflow_id')=='internal_basis_discovery_workflow':
+        selected=operation or 'WORKFLOW_RUN'
+        payload={k:v for k,v in data.items() if k in ('request_id','session_id','team_id','question','workflow_id','input','use_llm','document_ids','as_of','run_id','expected_revision','link_id','migration_id','internal_document_id','json')}
+        payload['API_TYPE']=selected
+        if selected.startswith('WORKFLOW_'):
+            payload.setdefault('session_id',_session_id(data))
+            if 'TEAM_ID' in os.environ:payload['team_id']=os.environ['TEAM_ID']
+            if isinstance(payload.get('json'),dict):
+                payload['json']={**payload['json']}
+                for key in ('session_id','team_id','request_id'):
+                    if key in payload:
+                        if key=='team_id' and 'TEAM_ID' in os.environ and payload['json'].get(key,payload[key])!=payload[key]:
+                            raise ValueError('워크플로우 팀과 요청의 team_id가 다릅니다.')
+                        payload['json'].setdefault(key,payload[key])
+            if selected == 'WORKFLOW_RESUME':
+                # The transport request ID belongs to the new delivery, while
+                # the saved workflow request/budget must remain immutable.
+                payload['json'] = {k:v for k,v in payload.get('json', payload).items()
+                                   if k not in {'API_TYPE', 'request_id'}}
+        if selected in {'WORKFLOW_RUN', 'WORKFLOW_RESUME'}:
+            return await _run_workflow_stream(data, payload)
+        response=await asyncio.to_thread(_post_code_serving,payload)
+        value=response.get('body',response) if isinstance(response,dict) else {}
+        text=(_for_markdown(render(value)) if value.get('response_schema') == 'workflow-result-v1'
+              else (value.get('answer') or {}).get('text'))
+        if not text:
+            if selected=='BASIS_LINKS_REVIEW':text='근거 관계 처리: '+str(value.get('status','미확인'))+'\n'+json.dumps(value.get('items',[]),ensure_ascii=False)
+            else:text=json.dumps(value,ensure_ascii=False,indent=2)
+        return {'text':text,'answer_status':value.get('status','completed'),'request_id':request_id,'basis_result':value}
     question = _extract_question(data)
     if question.upper() == 'SSE_CHECK':
         return await _workflow_sse_check(data)
@@ -1897,7 +2168,7 @@ async def _run_once(data):
                     or isinstance(probe.get('_gateway_status'),int) and probe['_gateway_status'] >= 400):
                 result = {'text':render_error({**probe,'request_id':request_id}),
                           'answer_status':'failed','request_id':request_id}
-                await display.finish(result['text'])
+                await display.finish(result['text'], failed=True)
                 return result
             if probe.get('response_schema')=='ad-mode-v1':
                 result = {**_ad_result(probe),'request_id':request_id}
@@ -1912,7 +2183,7 @@ async def _run_once(data):
                     _SYSTEM_LOGS.write("workflow.errors.raw.log", (
                         "request_id=" + request_id + " AD_PROBE\n" + traceback.format_exc()).encode("utf-8"))
             failure = {'text':render_error({'request_id':request_id},exc=exc),'answer_status':'failed','request_id':request_id}
-            await display.finish(failure['text'])
+            await display.finish(failure['text'], failed=True)
             if display.blocks:
                 failure['agentFlowExecutedData'] = list(display.blocks)
             return failure
@@ -1949,7 +2220,7 @@ async def _run_once(data):
             "request_id": request_id,
         }
         # Full diagnostics remain in logs; the chat gets the short public notice.
-        await display.finish(failed["text"])
+        await display.finish(failed["text"], failed=True)
         if display.blocks:
             failed["agentFlowExecutedData"] = display.blocks
         return failed
@@ -1977,7 +2248,7 @@ async def _run_once(data):
             "session_id": session_id,
             "request_id": request_id,
         }
-        await display.finish(failed["text"])
+        await display.finish(failed["text"], failed=True)
         if display.blocks:
             failed["agentFlowExecutedData"] = display.blocks
         return failed
@@ -2012,7 +2283,7 @@ async def _run_once(data):
                 result['judgment_flow'] = server_display['judgment_flow']
             result['workflow_display_binding'] = {k: server_display[k] for k in (
                 'schema_version', 'producer', 'response_sha256', 'content_sha256', 'display_policy_revision')}
-        await display.finish(text)
+        await display.finish(text, failed=result['answer_status'] in {'failed', 'error'})
         result['workflow_progress_delivery'] = {
             'revision': LIVE_PROGRESS_REVISION, 'mode': display.mode,
             'channel': 'workflow-main_socketio', 'socket_client_id_present': bool(display.sid),
@@ -2044,7 +2315,7 @@ async def _run_once(data):
                    error_type=type(exc).__name__, traceback=traceback.format_exc())
         result = {'text':render_error({'request_id':request_id},exc=exc),
                   'answer_status':'failed','request_id':request_id}
-        await display.finish(result['text'])
+        await display.finish(result['text'], failed=True)
         return result
 
 
@@ -2056,6 +2327,10 @@ async def run(data):
     최종 워크플로우 결과로 해석하지 않는다. 기준 브랜치처럼 단일
     dictionary를 반환해 코드 서빙이 준 검증된 답변을 그대로 전달한다.
     """
+    data = dict(data) if isinstance(data, dict) else {}
+    data['request_id'] = str(data.get('request_id') or data.get('messageId') or uuid.uuid4().hex)
+    _log_event('workflow.entry.received', request_id=data['request_id'],
+               input_keys=sorted(str(key) for key in data))
     try:
         return await _run_once(data)
     except Exception as exc:

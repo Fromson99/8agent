@@ -35,6 +35,16 @@ def current_sink():
     return _sink.get()
 
 
+@contextmanager
+def suppress():
+    """A child investigation cannot publish its answer as its parent's answer."""
+    token = _sink.set(None)
+    try:
+        yield
+    finally:
+        _sink.reset(token)
+
+
 class DraftText:
     """Small streaming JSON lexer; full JSON/schema validation stays in Gateway."""
     def __init__(self, sink, before_text=None):

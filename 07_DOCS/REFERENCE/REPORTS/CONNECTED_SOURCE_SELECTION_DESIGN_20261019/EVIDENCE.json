@@ -1,0 +1,254 @@
+{
+  "schema_version": "design-evidence-v1",
+  "created_at": "2026-10-19T09:07:16.395834+00:00",
+  "activity": "read_only_code_review_and_design_authoring",
+  "review_type": "self_review",
+  "product_edits": false,
+  "new_experiment": false,
+  "new_model_calls": 0,
+  "main_changed": false,
+  "genos_accessed": false,
+  "pointer": {
+    "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "sha256": "a5e69020e01a6d7c052d5ca5fb07fe404070af15485ad55613e0567860e5b03a",
+    "value": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "answer-first-followup-20261019-r1",
+      "generation": 88,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/answer-first-followup-20261019-r1/release.json",
+      "release_manifest_sha256": "7309773ac9b5fbc0ca64705b5aa1c94ae3464c1451833ae37548afa31520df6d",
+      "activated_at": "2026-10-19T06:39:19.479150+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "00c14e392c4c4947972fe7d5ff22ee7a7dd7026acf475c97f32e2fede55138a2",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0917-answer-first-release-closure/실험/manifest.json",
+          "sha256": "285ac54dac28d43ffc9544d40f381a37fc30e130eb5688368f54dd586a7ec98c"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0917-answer-first-release-closure/README.md",
+          "sha256": "d7e5f6f2536b179bbde5bd80f048b0dc808ab1fee3782e51803edc2324760271"
+        },
+        "arm": "qualified",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0917-answer-first-release-closure/artifacts/run-001/result.json",
+          "sha256": "e2a484086321f783fe6136620ed88322ed7fe8596fafe61c5024e7575f3bc837"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0917-answer-first-release-closure/artifacts/design/release-rebase.json",
+          "sha256": "c578abe08050ba53be77d8acd078d1525cf7d92c1b8cfdd593b1e07229a906a7"
+        }
+      }
+    }
+  },
+  "selected_release": {
+    "path": "08_DEPLOYMENT/RELEASES/answer-first-followup-20261019-r1/release.json",
+    "sha256": "7309773ac9b5fbc0ca64705b5aa1c94ae3464c1451833ae37548afa31520df6d",
+    "code_root": "08_DEPLOYMENT/RELEASES/answer-first-followup-20261019-r1/code",
+    "data_path": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation"
+  },
+  "candidate_root": "02_BACKEND/lawrag/research/candidates/adr_0922/normalized/revisions/rev-001/snapshot",
+  "file_comparison": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/connected_exploration.py",
+      "working": null,
+      "selected_release": null,
+      "candidate": "768694a3f3134819f84bc84ee08aa81b920155f9bc1f3e8ed46629e785dc8da8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working": "85c1937a7636b1cd0489a296e0f58d60867ccb0963e4de0b7680512d99134bad",
+      "selected_release": "85c1937a7636b1cd0489a296e0f58d60867ccb0963e4de0b7680512d99134bad",
+      "candidate": "5f1d5594aa01f060c3009dda7d853228673f5fbed08e758b335b682fb011ba05"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "working": "528ed74c73bc4d2e349fd45cab44ee5d9b2a5afb7acf776f3bee4a5af227a920",
+      "selected_release": "528ed74c73bc4d2e349fd45cab44ee5d9b2a5afb7acf776f3bee4a5af227a920",
+      "candidate": "2bd6f71bc3e8092feb0f53dd55212ccb3c7f8a5f0858fd7c6d7dfd629614dc6c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_investigation.py",
+      "working": "3fa1d6f9bc98ba0933284ca1d84a61880ea174afa1ee28cb19392f9ee84126e2",
+      "selected_release": "3fa1d6f9bc98ba0933284ca1d84a61880ea174afa1ee28cb19392f9ee84126e2",
+      "candidate": "acea2b15c90a258114228eabfee94b09c52309fa856d42c2ff6d34d8feda95bb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_handoff.py",
+      "working": "8e1a0457e327908722a9a4c5f30411638cb2b4acd46e67343ccea3cd13ce1ec4",
+      "selected_release": "8e1a0457e327908722a9a4c5f30411638cb2b4acd46e67343ccea3cd13ce1ec4",
+      "candidate": "8e1a0457e327908722a9a4c5f30411638cb2b4acd46e67343ccea3cd13ce1ec4"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "working": "3eccc9a9108c90be0f4ac5109fa60fc1549a6ef60d8742c4155bc94a266c4ba5",
+      "selected_release": "da2875fcff8d3d70b76315d1e18546f167731d368370efac2e0483ff4b1380be",
+      "candidate": "854396272f4cfdb08f5ea7a0dafc131b9f5f62c89346a9b17cc899546f92bbae"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tool_availability.py",
+      "working": "cff4579d93946414b9384859a9d151f32a625fb5c5cd38f6a2c67b12f91ad08e",
+      "selected_release": "cff4579d93946414b9384859a9d151f32a625fb5c5cd38f6a2c67b12f91ad08e",
+      "candidate": "ff020acefddc28c91bd6d52cc09619fe3976a58c24d6b0e07f5124b46f8c58a9"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tool_policy.py",
+      "working": "4d31575cacdbea03d58f4bf8f31a5650967a6b46df4da833f61b7024fba85e3c",
+      "selected_release": "4d31575cacdbea03d58f4bf8f31a5650967a6b46df4da833f61b7024fba85e3c",
+      "candidate": "320661d0c658e573719d158156efecb25de6c59b24f019d526ed99f281e53c0b"
+    }
+  ],
+  "sources": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "aac50a8fa07f0b5055982ed69c7686011d2c7d1b4ae4d932aa89d3066586dbbc",
+      "size_bytes": 74408
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "7299950a1caf0a5e1ff9f2c4856b901b874360428016aaa7bac7adcc688eafd1",
+      "size_bytes": 75292
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "size_bytes": 3014
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "282563d982b9e776d18c9be32cfc1150ae381d64d0b7ba733a9c3ab50990ac7e",
+      "size_bytes": 294032
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099",
+      "size_bytes": 19479
+    },
+    {
+      "path": "service.py",
+      "sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe",
+      "size_bytes": 61945
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "sha256": "85c1937a7636b1cd0489a296e0f58d60867ccb0963e4de0b7680512d99134bad",
+      "size_bytes": 178372
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_investigation.py",
+      "sha256": "3fa1d6f9bc98ba0933284ca1d84a61880ea174afa1ee28cb19392f9ee84126e2",
+      "size_bytes": 14013
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_handoff.py",
+      "sha256": "8e1a0457e327908722a9a4c5f30411638cb2b4acd46e67343ccea3cd13ce1ec4",
+      "size_bytes": 9042
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "sha256": "528ed74c73bc4d2e349fd45cab44ee5d9b2a5afb7acf776f3bee4a5af227a920",
+      "size_bytes": 38262
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "sha256": "3eccc9a9108c90be0f4ac5109fa60fc1549a6ef60d8742c4155bc94a266c4ba5",
+      "size_bytes": 30552
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/workflow_rag.py",
+      "sha256": "a57bbad37ef6222c65835403038256c9dabb1bcbbfa0d75572c73111f7c90422",
+      "size_bytes": 11771
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/workflow_evidence.py",
+      "sha256": "7bd0263193f0fad88152abbf06cdb5a1ae07b8ab61f4c1790c0f92f91ad93b0e",
+      "size_bytes": 18457
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/workflow_bridge.py",
+      "sha256": "33aec59dd66b19b8d1a1aaaa3b63d82283598e871e2ea7a7342ff08d3eaf5311",
+      "size_bytes": 28195
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/comparison_research_bridge.py",
+      "sha256": "706d6039f7d3a0c19a77740e2c73114d7150f11f7152d6b119516790bb8063ab",
+      "size_bytes": 6148
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/comparison_research.py",
+      "sha256": "d15e8f45eb95c881080e2ee8aede2c2ae32cdbdc206d59b6b1af57adcac5e456",
+      "size_bytes": 6805
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_fulltext.py",
+      "sha256": "f5639ce0b9a052f823e0804dfc1f6180aaf0359baffde06ada9f795c8a5f1a5b",
+      "size_bytes": 12557
+    },
+    {
+      "path": "02_BACKEND/workflow/runtime.py",
+      "sha256": "1e67c41e0b0893931cc095919a7a9cedbea25ac4e0a44b88f7321df78c870857",
+      "size_bytes": 11157
+    },
+    {
+      "path": "02_BACKEND/workflow/presentation.py",
+      "sha256": "1f455e60821f3f139f63b3617fe5b28b24a70cf0883ca442a788fc0d9b66feef",
+      "size_bytes": 10015
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py",
+      "sha256": "31906139c5cb6242409c8435a0eea2b46add0ae4e3ce088e23e0d5253beda5ff",
+      "size_bytes": 27486
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py",
+      "sha256": "784e750655f6791fc6417a78ab459aff4b009282fc640361fd2029ebb264c523",
+      "size_bytes": 4118
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json",
+      "sha256": "191b90d74101e987a1ea20825f726d7e4b6110c5e0872ebcf7b7b616a461d366",
+      "size_bytes": 3607
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0921-connected-read-document-terms/artifacts/run-001/successor-diagnosis.json",
+      "sha256": "f425068a0e8d4f2ce2e394ffec91ed5117ea2c48534d82bad340bc8bf0d639fe",
+      "size_bytes": 1895
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0923-connected-term-provider-recheck/USER_RESULT.txt",
+      "sha256": "e237962b354b6c2fdc224d2c5f796f9b29efcbbd9f2d2992c3b16989b01744e0",
+      "size_bytes": 2907
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0923-connected-term-provider-recheck/artifacts/run-001/result.json",
+      "sha256": "7f98287b79541648d12254b2bd39309e9a7f883addb1a69a0c797f513cb68410",
+      "size_bytes": 5183
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0923-connected-term-provider-recheck/artifacts/run-001/manual-review.json",
+      "sha256": "52f40b0cab4f9c580dd8e26624517ec494989072f2eade0e46720a70bf57a683",
+      "size_bytes": 3990
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0923-connected-term-provider-recheck/artifacts/working-drift-check.json",
+      "sha256": "aba9a41ec80a618eb5034aea8ed3fedf02658d8a7d48204ef1a7a7f891a5ecdf",
+      "size_bytes": 13386
+    },
+    {
+      "path": "01_DATA/GOLDEN/risk_cm/README.md",
+      "sha256": "df5542ab8408fcde969450e263dfa5794219d83f1e00b5fae4021f094451cc80",
+      "size_bytes": 8010
+    }
+  ],
+  "report": {
+    "path": "07_DOCS/REFERENCE/REPORTS/CONNECTED_SOURCE_SELECTION_DESIGN_20261019/PLAN.txt",
+    "sha256": "0a7722c0f78f5f95775db82e306f01e60b552eccc218c62c0f2f31109939157d"
+  },
+  "limitations": [
+    "Source fingerprints record files at design closing time, not a global immutable working-tree snapshot.",
+    "No live service/model quality/backend deployment was tested in this design turn.",
+    "All schema names and behavior changes proposed by PLAN.txt remain unimplemented."
+  ]
+}

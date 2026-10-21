@@ -13,7 +13,7 @@ ISSUE = object_schema({'id': {'type': 'string', 'pattern': '^Q[1-9][0-9]*$'},
 
 def intent_schema(base):
     out = deepcopy(base)
-    out['properties']['issues'] = {**array(ISSUE), 'minItems': 1, 'maxItems': 8}
+    out['properties']['issues'] = {**array(ISSUE), 'minItems': 1, 'maxItems': 12}
     out['required'].append('issues')
     return out
 

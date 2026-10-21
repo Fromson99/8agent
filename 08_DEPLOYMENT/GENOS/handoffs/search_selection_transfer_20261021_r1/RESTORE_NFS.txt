@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+TASK_PACKAGE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p "$TASK_PACKAGE_DIR/logs"
+TASK_LOG="$TASK_PACKAGE_DIR/logs/restore-$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_EXIT=$?; trap - EXIT; echo "TRANSFER_EXIT=$TASK_EXIT LOG=$TASK_LOG"; exit "$TASK_EXIT"' EXIT
+echo "TRANSFER_START=$(date -u +%FT%TZ) LOG=$TASK_LOG"
+export PYTHONDONTWRITEBYTECODE=1
+python3 - "$TASK_PACKAGE_DIR" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); h=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+if h(p/'PACKAGE.json')!='fca6fc3abe4dbff7b26e59fb96d0bdaec1b06c90a27bce1b4e686a9af0bbe13e': raise SystemExit('PACKAGE hash mismatch; preserved')
+for name,digest in json.loads((p/'PACKAGE.json').read_text())['files'].items():
+    if h(p/name)!=digest: raise SystemExit('Package file differs: '+name)
+print('PACKAGE_VERIFIED PYTHON='+sys.executable+' VERSION='+sys.version)
+PY
+TASK_ACTION=apply
+if [[ "${1:-}" == check || "${1:-}" == status || "${1:-}" == rollback || "${1:-}" == apply ]]; then
+    TASK_ACTION="$1"
+    shift
+fi
+python3 "$TASK_PACKAGE_DIR/transfer.py" "$TASK_ACTION" "$@"

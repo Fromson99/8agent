@@ -1,0 +1,286 @@
+{
+  "status": "PASS",
+  "runtime_files": 393,
+  "runtime_matches_working_frozen_selected_handoff": true,
+  "local_MAIN": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "comparison-display-scope-20261020-r1",
+    "generation": 95,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/comparison-display-scope-20261020-r1/release.json",
+    "release_manifest_sha256": "703dcca3a91b1b7d79bf1f821a851ec5d404f155f3b9552d54662d49024c96fd",
+    "activated_at": "2026-10-20T14:58:31.049033+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "8d066cfb2e955a667c862983a2830d0a97e4415870bd762b0e9074990b35632d"
+  },
+  "workflow": "1.20.2",
+  "local_contracts_passed": 59,
+  "handoff_contracts": 308,
+  "installation_scenarios": 2,
+  "installation_commands": 43,
+  "syntax": {
+    "status": "PASS",
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "executable": "/home/jin/8-AGENT/.venv/bin/python",
+    "modules": 770,
+    "code_zip_sha256": "2128c778d69d1aa4c0e439fe232e5accd8504f5477f0ccf9d9ebf55fecb370a5"
+  },
+  "syntax_note": "Python 3.11 grammar parse plus compilation on the recorded local interpreter; no actual Python 3.11 or GENOS execution claim.",
+  "local_actual_service": {
+    "status": "PASS",
+    "mode": "active",
+    "app_injected": false,
+    "checks": {
+      "all_393_serving_files_exact": true,
+      "workflow1202_enabled": true,
+      "internal_workflow_retained": true,
+      "failure_receipt_module_exact": true,
+      "display_identity_present": true,
+      "required_scope_present": true,
+      "internal_anchor_contract_enabled": true,
+      "projection_v12": true,
+      "changed_modules_loaded_from_selected_root": true,
+      "research_state_owner_loaded_from_selected_root": true,
+      "response_policy_loaded_from_selected_root": true,
+      "genos_response_alias_allowed": true,
+      "genos_response_missing_allowed": true,
+      "selected_data_unchanged": true,
+      "profile_unchanged": true,
+      "actual_service_health": true,
+      "public_scope_retained": true,
+      "actual_source_read": true,
+      "zero_model_calls": true,
+      "selected_generation95": true,
+      "search_binding_matches_preflight": true,
+      "model_binding_matches_preflight": true
+    },
+    "code_root": "08_DEPLOYMENT/RELEASES/comparison-display-scope-20261020-r1/code",
+    "binding": {
+      "mode": "local-release",
+      "release_id": "comparison-display-scope-20261020-r1",
+      "generation": 95,
+      "release_manifest_sha256": "703dcca3a91b1b7d79bf1f821a851ec5d404f155f3b9552d54662d49024c96fd",
+      "code_sha256": "e5b649c3580639a164b1279213a3dc7e4649ab45549cf0157a930eb3dbc10edb",
+      "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+      "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+      "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+      "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+      "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+      "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+      "process_instance_id": "cabdda96c400413da3d9528fec5a061c",
+      "process_id": 724620,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+      "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+    },
+    "health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "runtime": "term-runtime-v1",
+        "release": {
+          "mode": "local-release",
+          "release_id": "comparison-display-scope-20261020-r1",
+          "generation": 95,
+          "release_manifest_sha256": "703dcca3a91b1b7d79bf1f821a851ec5d404f155f3b9552d54662d49024c96fd",
+          "code_sha256": "e5b649c3580639a164b1279213a3dc7e4649ab45549cf0157a930eb3dbc10edb",
+          "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+          "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+          "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+          "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+          "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+          "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+          "process_instance_id": "cabdda96c400413da3d9528fec5a061c",
+          "process_id": 724620,
+          "investigation_budget": {
+            "max_model_attempts": 40,
+            "finalization_reserve": 3,
+            "max_tool_actions": 1024,
+            "wall_seconds": 1800,
+            "max_no_progress": 2,
+            "investigation_model_attempts": 37,
+            "search_rounds": 8,
+            "assessment_reentry_limit": 2
+          },
+          "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+          "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+        },
+        "generation_id": "term-metadata-733fc8666b5bb1d23e11",
+        "data_status": "DRAFT",
+        "counts": {
+          "document": 1547,
+          "source_unit": 256848,
+          "source_block": 322389
+        },
+        "legacy_fallback": false,
+        "search_selection": {
+          "sha256": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+          "excluded_documents": 0
+        },
+        "quality_certified": false,
+        "vector": "NOT_USED",
+        "llm_model": "qwen/qwen3.8-27b",
+        "rag_mode": "legal-agent-unified-v6",
+        "term_agent_quality_certified": false,
+        "external_export_allowed": false,
+        "document_aliases": {
+          "status": "STORE",
+          "store_documents": 19,
+          "projection_documents": 0,
+          "projection": null
+        }
+      }
+    },
+    "workflow_version": "1.20.2",
+    "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+    "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+    "service_entry": "service.py",
+    "model_calls": 0,
+    "genos_executed": false
+  },
+  "code_zip_sha256": "2128c778d69d1aa4c0e439fe232e5accd8504f5477f0ccf9d9ebf55fecb370a5",
+  "experiment": {
+    "path": "04_EXPERIMENTS/ADR/ADR-0956-comparison-required-scope-retest",
+    "result_sha256": "cc4a0723754440cb9ed017f2c2aeac6808529c04d8fa292970efdb3b9024fa94",
+    "new_model_calls": 103,
+    "by_arm": {
+      "control": {
+        "status": "complete",
+        "cases": 4,
+        "http200": 4,
+        "accuracy": null,
+        "accuracy_unavailable_reason": "No approved legal gold; source and prompt diagnostics only.",
+        "model_calls": 58,
+        "input_tokens": 531929,
+        "output_tokens": 22194,
+        "cost_usd": 0.17604287999999998,
+        "stored_original_checks": 96,
+        "source_mismatches": 0,
+        "presented_total": 14,
+        "presented_mean": 3.5,
+        "presented_p50": 3.5,
+        "presented_p95": 5,
+        "latency_p50": 69.12214757499169,
+        "latency_p95": 163.50862632601638,
+        "scope_correct": 3,
+        "scope_total": 4,
+        "scope_accuracy": 0.75,
+        "legal_accuracy": null
+      },
+      "scoped": {
+        "status": "complete",
+        "cases": 4,
+        "http200": 4,
+        "accuracy": null,
+        "accuracy_unavailable_reason": "No approved legal gold; source and prompt diagnostics only.",
+        "model_calls": 45,
+        "input_tokens": 339670,
+        "output_tokens": 19803,
+        "cost_usd": 0.12478948000000001,
+        "stored_original_checks": 69,
+        "source_mismatches": 0,
+        "presented_total": 12,
+        "presented_mean": 3,
+        "presented_p50": 3.0,
+        "presented_p95": 4,
+        "latency_p50": 89.64134660598938,
+        "latency_p95": 119.04815360097564,
+        "scope_correct": 4,
+        "scope_total": 4,
+        "scope_accuracy": 1.0,
+        "legal_accuracy": null
+      }
+    },
+    "scope_success": true,
+    "all_product_answers_partial": true
+  },
+  "source_kind": "Synthetic paired external-model scope probe, contracts, real local source-only ingress",
+  "GENOS_field_verified": false,
+  "quality_certified": false,
+  "data_profile_search_unchanged": true,
+  "limits": [
+    "No GENOS deployment, internal model, Oracle or NFS field execution.",
+    "Approved-link scope and stricter-internal false-CONFLICT findings remain.",
+    "Unnecessary/stale unresolved prose remains; all 8 live probe answers are partial.",
+    "Control repair failures contribute to call counts; single paired run is not an isolated causal or general performance estimate.",
+    "Six older general RAG test failures recorded by MAIN94 and reproduced on MAIN93 remain unresolved; not rerun or certified fixed here.",
+    "Global ADR graph retains 9 unrelated historical errors; ADR0956 final validation passes.",
+    "Old code-bound runs require their original revision; no forced resume."
+  ],
+  "resources": {
+    "CONTRACT_RESOURCES_01.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/checks.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 38.03334633499617,
+      "peak_group_rss_bytes": 731049984,
+      "min_available_bytes": 12889980928,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/CONTRACT_RESOURCES_01.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10.0,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/checks.py"
+        ]
+      },
+      "samples_sha256": "317935a567c899a79048415fa8960051addd6981c36ba8c4c386fe68cfc4ddb2"
+    },
+    "DELIVERY_RESOURCES_01.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/delivery-runtime",
+        "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/DELIVERY_TESTS_01.xml",
+        "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/test_delivery.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 112.10190435999539,
+      "peak_group_rss_bytes": 285118464,
+      "min_available_bytes": 13210570752,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/DELIVERY_RESOURCES_01.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10.0,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "--tb=short",
+          "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/delivery-runtime",
+          "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/DELIVERY_TESTS_01.xml",
+          "08_DEPLOYMENT/GENOS/handoffs/main95_comparison_scope_20261020_r1/test_delivery.py"
+        ]
+      },
+      "samples_sha256": "050740f15c7cca0a6ee8ad546af226f07834debb88a92f87dc734c6505f6cd10"
+    }
+  }
+}

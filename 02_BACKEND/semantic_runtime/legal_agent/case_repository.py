@@ -56,6 +56,15 @@ class CaseRepository(Memory):
         self._entry_principal=principal
         self.identity(body['session_id'],principal)
         old=self.db.execute('SELECT status,input_hash FROM request WHERE id=?',(self.request_key(body,principal),)).fetchone()
+        recovered=False
+        if old and old['status']=='RUNNING':
+            from .workflow_execution import recover_abandoned_request
+            if recover_abandoned_request(self,body,principal,old):
+                with self.transaction():
+                    self.db.execute("UPDATE request SET status='FAILED' WHERE id=? AND status='RUNNING' AND response IS NULL",
+                                    (self.request_key(body,principal),))
+                old=self.db.execute('SELECT status,input_hash FROM request WHERE id=?',(self.request_key(body,principal),)).fetchone()
+                recovered=True
         self.resume_goal=None
         if old and old['status']=='FAILED' and old['input_hash']==digest({'body':body,'principal':principal}):
             row=self.db.execute("SELECT g.id FROM event e JOIN goal g ON g.id=e.goal WHERE e.request=? AND g.session=? AND g.status='PENDING' ORDER BY e.id DESC LIMIT 1",
@@ -64,11 +73,43 @@ class CaseRepository(Memory):
         external=self.executor.model.pipeline.term_agent.transport.binding['trust_zone']=='external'
         with self.transaction():
             row=self.db.execute('SELECT public_only FROM session_export WHERE session_id=?',(body['session_id'],)).fetchone()
-            if external and (body.get('public_question') is not True or (row and not row[0])):
+            from .workflow_execution import authorization
+            approved_workflow = authorization() is not None
+            if external and not approved_workflow and (body.get('public_question') is not True or (row and not row[0])):
                 raise MemoryError('private session history is not approved for external transfer')
             public=int(body.get('public_question') is True)
             self.db.execute('INSERT INTO session_export VALUES(?,?) ON CONFLICT(session_id) DO UPDATE SET public_only=MIN(public_only,excluded.public_only)',
                 (body['session_id'],public))
+        if recovered:
+            # A process can exit after the route commit but before caching the
+            # response. Publish those committed parts without a new judgment.
+            row=self.db.execute('''SELECT g.id,e.command FROM event e JOIN goal g ON g.id=e.goal
+                WHERE e.request=? AND g.session=? ORDER BY e.id DESC LIMIT 1''',
+                (body['request_id'],body['session_id'])).fetchone()
+            goal=self.goal(row['id'],body['session_id']) if row else None
+            if goal and goal['status']=='READY':
+                route=self.route(goal['id']);parts=self.parts(goal['id'])
+                if (not route or route['revision']!=goal['revision'] or
+                        route['payload']['binding']!=self.executor.binding or
+                        route['payload']['nodes']!={s:parts[s]['id'] for s in STAGES}):
+                    raise MemoryError('abandoned request committed route changed')
+                with self.executor.open(goal['state'],principal,body) as execution:
+                    originals={e['evidence_id']:e for e in parts['READ']['payload']['evidence']+
+                        parts['SELECT']['payload'].get('selected_evidence',[])}
+                    self.executor.verify({'binding':parts['READ']['payload']['binding'],
+                                          'evidence':list(originals.values())})
+                    execution.s.work.record_observation(
+                        {'tool':'workflow_committed_original_restore','args':{'route_hash':digest(route['payload'])}},
+                        {'status':'REUSED'},list(originals.values()),verify=execution.s.sources.source.verify)
+                knowledge=route['payload'].get('reused_experience_id')
+                result={'status':'REUSED' if knowledge else 'READY','goal_id':goal['id'],
+                    'revision':goal['revision'],'route_id':route['id'],'state':goal['state'],
+                    'executed':[],'answer':parts['COMPOSE']['payload'],'knowledge_id':knowledge,
+                    'method_id':json.loads(row['command'])['method_id']}
+                self.validate_response(result,principal,body['session_id'])
+                self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",
+                    (encoded(result),self.request_key(body,principal)))
+                return result
         return super().execute(body,principal)
 
     def resolve(self,context):
@@ -79,6 +120,9 @@ class CaseRepository(Memory):
                 'target':g['id'],'knowledge_id':None,'stage':g['pending'] or 'INTENT','task':None,
                 'source_category':'KEEP','document_ids':None,'facts':None,'queries':None,
                 'restore_event':None,'restore_fields':[],'format':'prose','reason':'resume the recorded incomplete request'}
+        from .workflow_execution import reentry
+        command = reentry(self, context)
+        if command is not None:return command
         entry=getattr(self.executor,'request_entry',None)
         if entry is not None and entry['command'] is not None:
             self.admit(entry['command'],context)
@@ -92,6 +136,12 @@ class CaseRepository(Memory):
 
     def direct_request(self,context):
         """Route before commands, procedure replay, or any legal checkpoints."""
+        # execute() sets this only for the same failed request fingerprint and
+        # an existing pending goal. Its CASE route is already established;
+        # both native and shortcut consumers must resume without rerouting.
+        if getattr(self,'resume_goal',None):return None
+        from .workflow_execution import has_reentry
+        if has_reentry():return None
         from .source_query_planning import (CASE_ROUTING_SYSTEM, CAPABILITIES,
             case_routing_schema, validate_case_routing)
         if not hasattr(self,'request_routing'):
@@ -102,11 +152,40 @@ class CaseRepository(Memory):
                 'current_goals':[{'task':g['state']['task'],'facts':g['state']['facts'],
                                  'status':g['status']} for g in context['goals']],
                 'capabilities':{**CAPABILITIES,'limitations':['등록되고 요청 범위에 허용된 자료만 조회']}}
-            routed=self.invoke(CASE_ROUTING_SYSTEM,data,case_routing_schema(),'source-request-route')
-            try:self.request_routing=validate_case_routing(routed)
-            except ValueError as exc:raise MemoryError(str(exc)) from exc
+            from . import output_contract as output
+            routing_schema=case_routing_schema()
+            def propose(payload,attempt):
+                return self.invoke(CASE_ROUTING_SYSTEM,payload,routing_schema,
+                    'source-request-route' if not attempt else 'source-request-route-repair')
+            def check(value):
+                output.validate_shape(value,routing_schema)
+                try:validate_case_routing(value)
+                except ValueError as exc:
+                    raise output.OutputContractError(str(exc),
+                        [output.issue('REQUEST_ROUTING_CONFLICT')],category='DECISION_CONFLICT') from exc
+            self.request_routing=output.bounded_decision(
+                self,'request-routing',data,routing_schema,propose,check,
+                identity={'request':self._entry_body,'principal':self._entry_principal,
+                    'binding':self.executor.binding,'view':data})
             self.executor.model.ensure().work.event('REQUEST_ROUTED',{
-                **self.request_routing,'owner':'V6_ENTRY','agent_required':self.request_routing['mode']=='CASE'})
+                **self.request_routing,'owner':'V6_ENTRY','agent_required':self.request_routing['mode']!='DIRECT'})
+        if self.request_routing['mode']=='BROWSE':
+            session=self.executor.model.ensure()
+            filters=dict(self.request_routing['catalogue'])
+            from ..pipeline import route_question
+            _,category=route_question(context['utterance'])
+            if category is not None:filters['document_category']=category
+            # Reuse the bound, budgeted catalogue tools. A model cannot supply
+            # the returned document names or expand the request allowlist.
+            allowed=set(self._entry_principal['document_ids'])
+            requested=self._entry_body.get('document_ids')
+            if requested:allowed.intersection_update(requested)
+            text,plan=session.catalogue_observation(
+                {'mode':'BROWSE','inspect_documents':False,**filters},
+                document_scope=allowed)
+            if plan is not None:raise MemoryError('catalogue response cannot start a legal case')
+            return {'status':'CLARIFY','answer':{'text':text,'claims':[],'limitations':[]},
+                    'request_routing':self.request_routing,'executed':[]}
         if self.request_routing['mode']=='DIRECT':
             # The existing no-judgment response contract already accepts CLARIFY.
             # request_routing explicitly distinguishes ordinary guidance here.
@@ -217,6 +296,9 @@ class CaseRepository(Memory):
             'judgment_refs':payload['judgment_refs'],'owner':principal['user_id'],'team':principal['team_id']})
 
     def validate_response(self,result,principal,session):
+        if result.get('kind')=='SOURCE_HANDOFF':
+            from .source_handoff import validate
+            return validate(self,result,principal,session)
         gid=result.get('goal_id')
         if gid:
             g=self.goal(gid,session)

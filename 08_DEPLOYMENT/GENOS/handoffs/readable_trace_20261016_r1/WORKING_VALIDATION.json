@@ -1,0 +1,63 @@
+{
+  "recorded_at": "2026-10-16T01:03:03.621720+00:00",
+  "scope": "working code request trace and duplicate-error projection; no model/prompt/search comparison",
+  "python": "3.14.4",
+  "tests": {
+    "connected": {
+      "passed": 79,
+      "exit_code": 0,
+      "output": "test-connected-final.txt"
+    },
+    "isolation_and_boot": {
+      "passed": 27,
+      "exit_code": 0,
+      "output": "test-isolation-final.txt"
+    },
+    "new_contract_cases": 13,
+    "total_selected_passed": 106
+  },
+  "engine_preflight": {
+    "status": "PASS",
+    "configured_engines": 30,
+    "checked_files": 314
+  },
+  "repinned_manifests": 36,
+  "unchanged_dependency_bytes_verified": true,
+  "diff_whitespace_check": "PASS",
+  "known_unresolved": [
+    {
+      "file": "05_TESTS/CONTRACTS/test_genos_thinking_live_log.py",
+      "failed_cases": 3,
+      "cause": "Pre-existing fixture SimpleNamespace lacks repository.event required by current gateway.",
+      "baseline": "test-known-baseline.txt",
+      "baseline_method": "Before-change observability and request_report sources loaded in isolated Python process; same 3 failures, 1 pass."
+    }
+  ],
+  "execution_evidence": "actual service.service -> RAG API and SQL journal with synthetic model, success and injected failure; actual service.service AD success/HTTP failure; no external or GENOS model calls",
+  "model_calls_added": 0,
+  "selected_local_release": {
+    "id": "evidence-complete-comparison-20261016-r1",
+    "generation": 76,
+    "pointer_sha256": "e88a02918b53716cf720e5c685199f239d0f8cedc9e4b42ebeeb1feb18662532",
+    "changed": false
+  },
+  "genos": {
+    "code_handoff_created": false,
+    "deployed": false,
+    "internal_model_verified": false
+  },
+  "remaining_limits": [
+    "AD trace exports after completion, as before; not live model prompt export.",
+    "Forced kill/shared-storage outage/existing report capacity limit can leave incomplete shared files; SQL/JSON remain authorities.",
+    "The approximately 180-second timeout in supplied photos is identified, not fixed.",
+    "Existing ingestion/build model logs are outside this request-report path."
+  ],
+  "rollback": "Restore only this change using the gzip source snapshots and pins-before; preserve later user edits. Snapshots include the pre-existing worktree changes. No ACTIVE_RELEASE or data generation rollback is needed.",
+  "files": {
+    "CODE_BINDING.json": "80728ed34e641817cd760b5c9f536f4135871e1f732ac25780ee85a6cab9472a",
+    "SAMPLE.trace.txt": "7c4f4aceab66796f5c10e86a39d13ebba45fe2f64568a62b21fa04bc66d6e7c3",
+    "test-connected-final.txt": "d5dc6640ed0c32468584a331b74e00a1a6411f5ec71f5f7c7770633ba2e27fa8",
+    "test-isolation-final.txt": "cb191a043773ca168d97bda24f5a928c03a2c80aee08a007abe21418bc47a283",
+    "test-known-baseline.txt": "842d6eba5c025744ec3ebded001d85f311f8b9852c466e7a628f81bd65a4bbf2"
+  }
+}

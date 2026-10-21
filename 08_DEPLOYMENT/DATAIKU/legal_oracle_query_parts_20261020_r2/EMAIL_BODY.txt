@@ -1,0 +1,29 @@
+추가본 추출은 이번 R2로 먼저 확인해 주세요. 이전 QUERY_PARTS R1 실행 코드를 대체합니다. FULL_PARTS R1은 이번 확인 대상이 아닙니다.
+
+수정 사항
+- FTS 길이 집계의 문서별 전체 토큰 반복 조회를 한 번 집계 후 기본키 조회로 변경했습니다.
+- 약 15초마다 처리 파일/테이블/단계, 기존 행 확인 수, 새 행 저장 수, SQLite 작업량, CPU 시간, 메모리, 남은 공간을 기록합니다.
+- 완성 ZIP을 따로 만들지 않고 최대 49,000,000바이트 조각에 직접 압축합니다.
+- 기존 R1 중단 파일을 보존하고 모든 기존 행을 대조한 뒤 이어서 저장합니다. 원본·코드 해시가 알려진 R1과 일치해야 재개하며 최초 작업 기한은 유지합니다.
+
+실행: 종료한 R1은 다시 켜지 말고, 새 ZIP을 업로드한 실제 TRANSFER 폴더에서 아래 세 줄을 순서대로 실행합니다.
+
+python3 -m zipfile -e ./LEGAL_ORACLE_QUERY_PARTS_20261020_R2.zip ./query-transfer-r2-tools
+bash ./query-transfer-r2-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R2/CODESPACE_QUERY_50MB_RUN.txt check --output /workspace/QUERY_TRANSFER_20261020_R1
+bash ./query-transfer-r2-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R2/CODESPACE_QUERY_50MB_RUN.txt export --resume-r1 --output /workspace/QUERY_TRANSFER_20261020_R1
+
+출력 경로의 R1은 의도한 값입니다. 기존 2.88GB 임시 DB를 재사용합니다. 임시 DB·journal·로그를 삭제하지 마세요. 기존에 별도 --generation 경로를 지정했다면 위 check/export에도 동일하게 붙여야 합니다.
+ROWS_CHECKED는 기존 행 대조이고 ROWS_SAVED는 새 행 저장입니다. 기존 행 대조에 시간이 걸릴 수 있습니다. 집계/정렬 중에는 rows가 멈춰 있어도 sqlite_steps로 SQL 작업 진행을 확인할 수 있습니다.
+
+완료 후 다운로드 위치
+/workspace/QUERY_TRANSFER_20261020_R1/download
+EXPORT_COMPLETE를 확인한 뒤 모든 query-data.zip.partNNNNNN과 parts-manifest.json을 다운로드합니다. R2에서는 query-data.zip 단일 파일이 없어도 정상입니다.
+콘솔 로그는 실행한 TRANSFER의 ./query-transfer-command-logs, 구조화 로그는 기존 output의 events.jsonl입니다.
+
+Dataiku 적재는 반출 완료 후 진행합니다. Managed Folder에 R2 코드 ZIP, 모든 조각, parts-manifest.json을 올리고 새 노트북/커널에서 첨부 DATAIKU_QUERY_IMPORT_RUN.txt를 사용합니다. FOLDER_ID와 ORACLE_CONNECTION을 설정하고 restore → check → publish → status 순서로 실행합니다. 추가 조회 테이블 적재만 수행하며 원문 5테이블 재이관과 ACTIVE/STATE 전환은 하지 않습니다.
+
+로컬 검증: 67개 통과. 봉인 R1과 논리 행/순서 일치, 실제 R1 중단 파일→R2 실행 TXT 재개, 압축 중단/재개, 조각 복원과 모의 Oracle 적재를 확인했습니다. 실제 현장 244만 건·Dataiku JDBC/Oracle19 실행과 완료 시간은 아직 확인하지 못했습니다.
+사진의 남은 공간 1.6GB로 완료할 수 있는지는 미확인입니다. 완성 ZIP 중복은 줄였지만 DB·조각·임시 집계 공간이 필요하며, 공간 부족 시 기록을 보존하고 중단합니다.
+
+첨부: 코드 ZIP, 코드스페이스 실행 TXT, Dataiku 적재 TXT, 전체 안내, 검증 결과, 최종 파일 확인.
+ZIP SHA-256: 693d9d63abc765e37c1f7453ae1bec7269b080b68598a734430d4c3551f98183

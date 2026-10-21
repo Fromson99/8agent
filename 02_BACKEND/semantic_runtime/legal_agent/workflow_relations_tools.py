@@ -12,6 +12,8 @@ from .exploration_tools import ExplorationTools
 from .workflow_relation_cards import RelationCards
 from .repository import encoded, text_hash
 from .errors import BudgetExhausted, DeadlineExceeded, ContractError, ProposalError, ToolExecutionError
+from .tool_execution_receipt import recorded_execution
+from .tool_outcome import FAILURE_STATUSES, failure_details, normalize_result
 
 FAMILIES = ('reference','definition','term','occurrence','structure','knowledge')
 search_log = obs.get_logger('fulltext_tool')
@@ -396,9 +398,11 @@ class RelationsTools(ExplorationTools):
                 'tool':a['tool'],'reason':a['reason'],'question_refs':a.get('question_refs',[]),
                 'expected_information':a.get('expected_information'),'status':r['status'],
                 'evidence_ids':result.get('evidence_ids',[]),'relation_ids':result.get('relation_ids',[]),
-                'reused_from':result.get('reused_from'),'server_reason':result.get('server_reason')})
+                'reused_from':result.get('reused_from'),'server_reason':
+                    result['tool_outcome'].get('cause_code') if result.get('tool_outcome') else result.get('server_reason')})
         return rows
 
+    @recorded_execution
     def execute(self, action, action_id, *, actor=None, view_id=None, parent=None, trigger=None, depth=0):
         with self.repo.navigation_batch():
             return self._execute_batched(action, action_id, actor=actor, view_id=view_id,
@@ -431,11 +435,13 @@ class RelationsTools(ExplorationTools):
             self.repo.db.execute("UPDATE action_context SET status='RUNNING' WHERE action_id=?",(action_id,))
         except (BudgetExhausted,DeadlineExceeded,ProposalError) as exc:
             result['server_reason']=str(exc)
+            result['failure']=failure_details(exc,execution='NOT_STARTED')
             with self.repo.transaction():
                 self.repo.event('ACTION_NOT_EXECUTED',result)
                 self.repo.db.execute('UPDATE action_context SET status=?,result_json=? WHERE action_id=?',('NOT_EXECUTED',encoded(result),action_id))
             if isinstance(exc,ProposalError): return result
             raise
+        self._tool_receipt_phase='handler'
         started=time.monotonic(); evidence=[]; key,offset=self.source.cursor_position(action)
         self._candidate_evidence = None
         self._candidate_cache_active = True
@@ -464,6 +470,7 @@ class RelationsTools(ExplorationTools):
                     # after resolving source structure. Return it to the same
                     # repair loop; never record rejected content as evidence.
                     result.update(server_reason=str(exc),error_code=exc.code,recoverable=True,
+                        failure=failure_details(exc),
                         retry_instruction='Please respond again to the original question. Correct the rejected tool action using current targets and supplied continuations; preserve successful source selections.',
                         budget={'action_reserved':True,'stored_chars':0,'new_read_chars':0,
                                 'duration_ms':int((time.monotonic()-started)*1000)})
@@ -476,9 +483,11 @@ class RelationsTools(ExplorationTools):
                               duration_ms=result['budget']['duration_ms'])
                     return result
             status=extra.pop('status','OK' if items else 'EMPTY')
-            if status=='ERROR':
-                raise ToolExecutionError('tool='+action['tool']+' handler returned ERROR: '
-                                         +str(extra.get('server_reason') or extra.get('error') or 'unspecified execution failure'))
+            if status in FAILURE_STATUSES:
+                raise ToolExecutionError('tool='+action['tool']+' handler returned '+status+': '
+                    +str(extra.get('server_reason') or extra.get('error') or 'unspecified execution failure'),
+                    outcome=normalize_result({**extra,'status':status},action=action,
+                        binding_hash=self.context.binding_hash,action_id=action_id))
             result.update(items=items,evidence_ids=[e['evidence_id'] for e in evidence],status=status,
                 next_cursor=self.source.cursor(key,nxt) if nxt is not None else None,
                 coverage={'complete':nxt is None,'meaning':'selected operation only'})
@@ -506,6 +515,7 @@ class RelationsTools(ExplorationTools):
                     db.set_progress_handler(lambda: int(time.monotonic()>=self.context.deadline),1000)
         result['budget']={'action_reserved':True,'stored_chars':sum(len(p['text']) for e in evidence for p in e['spans']),
             'new_read_chars':0 if action['tool']!='read' or result['status']=='REUSED' else sum(len(p['text']) for e in evidence for p in e['spans']), 'duration_ms':int((time.monotonic()-started)*1000)}
+        self._tool_receipt_phase='observation'
         with self.repo.transaction():
             self.repo.flush_navigation()
             result=self.repo.record_observation(action,result,evidence,verify=self.source.verify)

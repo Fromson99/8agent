@@ -1,0 +1,126 @@
+{
+  "version": "GENOS_SEARCH_LATEST_20261015_R2",
+  "files": [
+    {
+      "path": "02_BACKEND/semantic_runtime/storage.py",
+      "before": [
+        "6a9dfbd4f6770a8407275649c18766e900837594ba5434569a69ee30c541d5d7"
+      ],
+      "after": "3f98097938533528338c78af3f02ae5924aaa20f73892f625985b08bfffa0419"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "before": [
+        "1b34031188a277a5bf7d19ec737c0428923643bbd25d282c3621aab598f3eaf8"
+      ],
+      "after": "fe59106b031a6b8b01241f63a5b79df34103d4c97fdaf7ffe04b85bd21947cfb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "before": [
+        "8657bbad0a7ecbc809df7175d7489d3025bae84214927503a5bd9fc6c3ff26a1"
+      ],
+      "after": "ccc33c9f12afdb277141ac35b4a8cfa199f8ff0a372181b10dd20a3abad4d5bd"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+      "before": [
+        "60001bb91824b46820de871a162a19d72faf8f518e8b1e5297ac0378f07fa648"
+      ],
+      "after": "583503b45b039618846dbb504fa7e3e3b00b64e190fbb1efa9620184ef223157"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/search_selection.py",
+      "before": [
+        null
+      ],
+      "after": "965494cd9acbd7316a30f89f323f954a7a8c1e1e253ef286c8f88a0ee3fcd8a6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/search_selection.py",
+      "before": [
+        null
+      ],
+      "after": "3b2dcbc282a79a51323d47cf247895f6353abfc769c69fa7ddc56627adfa30d5"
+    }
+  ],
+  "manifest": {
+    "format": "8agent-code/1",
+    "scope": "GENOS_SEARCH_LATEST_20261015_R2",
+    "files": [
+      {
+        "path": "02_BACKEND/semantic_runtime/storage.py",
+        "sha256": "3f98097938533528338c78af3f02ae5924aaa20f73892f625985b08bfffa0419",
+        "bytes": 9430
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/term_index.py",
+        "sha256": "fe59106b031a6b8b01241f63a5b79df34103d4c97fdaf7ffe04b85bd21947cfb",
+        "bytes": 38013
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/app.py",
+        "sha256": "ccc33c9f12afdb277141ac35b4a8cfa199f8ff0a372181b10dd20a3abad4d5bd",
+        "bytes": 35224
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+        "sha256": "583503b45b039618846dbb504fa7e3e3b00b64e190fbb1efa9620184ef223157",
+        "bytes": 3919
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/search_selection.py",
+        "sha256": "965494cd9acbd7316a30f89f323f954a7a8c1e1e253ef286c8f88a0ee3fcd8a6",
+        "bytes": 5821
+      },
+      {
+        "path": "02_BACKEND/lawrag/pipeline/search_selection.py",
+        "sha256": "3b2dcbc282a79a51323d47cf247895f6353abfc769c69fa7ddc56627adfa30d5",
+        "bytes": 13677
+      }
+    ],
+    "required_files": [
+      {
+        "path": "02_BACKEND/semantic_runtime/contracts.py",
+        "sha256": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/resident_data.py",
+        "sha256": "7dd985d736e2f0c789b8f296c3e64ef0f12cd65a451bbfc4e1f4e4dad6af7b46"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/folder_navigation.py",
+        "sha256": "7cda2cbad71b2e657b0cd4a61dd3a450a4e129a0a03400bbf6ca29bc8d35f02a"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/pipeline.py",
+        "sha256": "9096f1b436a3ad4e42fc053665e6646b3b59548a78327f720a0b8a88f35cd4dc"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/fulltext.py",
+        "sha256": "b6e76bf31909ef9d528369eeda550da01a4fb68abdd4749fc078cdb78f3bbe4e"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+        "sha256": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/team_scope.py",
+        "sha256": "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7"
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/deployment_paths.py",
+        "sha256": "34170db9e7ebc2021bda5906d673c9bf1e360ad3f56110fc76bb64176cf3385e"
+      },
+      {
+        "path": "06_TOOLS/COMMANDS/genos_release_gate.py",
+        "sha256": "af1339d7e99fdca44b472198aa98fd15bd64cfc3acf3aa95e1f96c3f6c3a6dec"
+      },
+      {
+        "path": "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+        "sha256": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498"
+      }
+    ]
+  },
+  "code_zip_sha256": "35e17c5a0904ed1be460babdf063963c4ff2bd5fbdf05c0579b1846105334589"
+}

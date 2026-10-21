@@ -1,0 +1,157 @@
+question_id	business_context	methods	scope_mode	primary_check	reuse_boundary	related_group	source_note
+cm-001	IPO 의무보유	QUANTITY;APPLICABILITY	pinpoint	주체별 합산 범위와 분모	같은 비율을 다른 주체에 자동 합산하지 않음	CM_LOCKUP	설계 분류
+cm-002	IPO 의무보유	LOOKUP;QUANTITY	pinpoint	요청한 호의 기준시점	다른 호의 기준일을 가져오지 않음	CM_LOCKUP	설계 분류
+cm-003	IPO 의무보유	DISTINGUISH;APPLICABILITY	pinpoint	취득 방식과 투자자 범주의 적용	이름 유사성으로 호를 선택하지 않음	CM_LOCKUP	설계 분류
+cm-004	IPO 의무보유	QUANTITY	pinpoint	괴리율의 입력과 산식	다른 비율 산식 대체 금지	CM_LOCKUP	설계 분류
+cm-005	시장별 의무보유	LOOKUP;COMPARE;APPLICABILITY	enumerate	시장별 대응 규정 존재와 범위	다른 시장 규정의 효력 자동 전이 금지	CM_LOCKUP	설계 분류
+cm-006	시장별 의무보유	DISTINGUISH;APPLICABILITY	pinpoint	해당 시장에서 투자자 범주 취급	동일 명칭의 범위를 시장 간 동일시하지 않음	CM_LOCKUP	설계 분류
+cm-007	상장주선인 의무인수	QUANTITY;APPLICABILITY	pinpoint	수량과 보유기간 및 예외	일반기업과 특수 대상 조건 분리	CM_UNDERWRITING	설계 분류
+cm-008	상장주선인 의무인수	APPLICABILITY;QUANTITY	pinpoint	기간 연장 발동 조건	기본기간과 연장기간 구분	CM_UNDERWRITING	설계 분류
+cm-009	상장주선인 의무인수	APPLICABILITY	enumerate	면제 사유와 적용 범위	면제를 다른 의무 면제로 확대하지 않음	CM_UNDERWRITING	설계 분류
+cm-010	상장주선인 의무인수	QUANTITY;APPLICABILITY	pinpoint	의무인수분의 비율 산입 여부	보유 수량과 산입대상 구분	CM_UNDERWRITING	설계 분류
+cm-011	상장심사 내규 정비	LOOKUP;APPLICABILITY	pinpoint	정비 요구의 근거와 범위	일반 모범사례를 의무 근거로 대체하지 않음	CM_INTERNAL_RULES	설계 분류
+cm-012	상장심사 내규 정비	LOOKUP;QUANTITY	pinpoint	제정 시점의 명시 기준	검색 실패를 시기 규정 부재로 확정하지 않음	CM_INTERNAL_RULES	설계 분류
+cm-013	벤처기업 주식매수선택권	APPLICABILITY;PROCEDURE	enumerate	부여 대상과 요건	일반 주식매수선택권 규정과 특례 구분	CM_OPTION_GRANT	설계 분류
+cm-014	벤처기업 주식매수선택권	LOOKUP;QUANTITY	pinpoint	부여 기준시가 근거	행사가격과 부여일 시가 구분	CM_OPTION_GRANT	설계 분류
+cm-015	벤처기업 주식매수선택권	PROCEDURE	pinpoint	신고 주체와 상대 기관	신고와 승인 구분	CM_OPTION_GRANT	설계 분류
+cm-016	주식매수선택권 행사	APPLICABILITY;QUANTITY	pinpoint	행사 가능 시점과 조건	부여 시점 요건을 행사 요건으로 대체하지 않음	CM_OPTION_EXERCISE	설계 분류
+cm-017	주식 가치 평가	QUANTITY;APPLICABILITY	pinpoint	부여일 평가 방법	평가기준일과 거래일 구분	CM_VALUATION	설계 분류
+cm-018	주식 가치 평가	LOOKUP;DISTINGUISH	pinpoint	지정 조항의 구조	구조 설명을 사건 적용 결론으로 확장하지 않음	CM_VALUATION	설계 분류
+cm-019	주식 가치 평가	LOOKUP;DISTINGUISH	pinpoint	평가심의위원회의 소속과 역할	동명 위원회 혼동 방지	CM_VALUATION	설계 분류
+cm-020	IPO 준비 주식 평가	QUANTITY;APPLICABILITY	pinpoint	공모가격 반영 기간과 방법	가격 종류와 평가시점 결속	CM_VALUATION	설계 분류
+cm-021	IPO 준비 주식 평가	COMPARE;APPLICABILITY;QUANTITY	pinpoint	서로 다른 기간의 적용 조건	짧거나 긴 기간을 임의 우선하지 않음	CM_VALUATION	설계 분류
+cm-022	비상장주식 평가	QUANTITY;APPLICABILITY	pinpoint	보충적 평가식과 입력	식의 적용 요건 없이 계산하지 않음	CM_VALUATION	설계 분류
+cm-023	상장 이익 증여	APPLICABILITY	enumerate	성립 요건과 예외	주체와 취득 시점별 범위 구분	CM_LISTING_GIFT	설계 분류
+cm-024	상장 이익 증여	QUANTITY	pinpoint	기준금액 산정	다른 과세 기준금액 전용 금지	CM_LISTING_GIFT	설계 분류
+cm-025	상장 이익 증여	QUANTITY;APPLICABILITY	pinpoint	기과세 금액의 조정	차감 근거 없이 산식 변경 금지	CM_LISTING_GIFT	설계 분류
+cm-026	상장 이익 증여	APPLICABILITY	pinpoint	유상증자 신주의 포함 범위	기존 주식 규칙을 신주에 자동 적용하지 않음	CM_LISTING_GIFT	설계 분류
+cm-027	주식매수선택권 과세특례	APPLICABILITY;QUANTITY	enumerate	혜택 종류와 조건	개인 자격과 제도 일반 설명 구분	CM_OPTION_TAX	설계 분류
+cm-028	주식매수선택권 과세특례	DISTINGUISH;APPLICABILITY	pinpoint	적격 요건과 효과	적격 판단과 효과를 분리	CM_OPTION_TAX	설계 분류
+cm-029	주식매수선택권 양도	QUANTITY;APPLICABILITY	pinpoint	취득가액 산정 기준	과거 과세 방식과 현재 양도 계산 연결 확인	CM_OPTION_TAX	설계 분류
+cm-030	IPO 재무서류	APPLICABILITY;PROCEDURE	pinpoint	첨부 대상 보고서와 조건	제출처별 의무 혼동 방지	CM_FINANCIAL_REPORTS	설계 분류
+cm-031	IPO 재무서류	LOOKUP;PROCEDURE	enumerate	거래소 요구 자료의 범위	다른 제출기관 자료 목록으로 대체하지 않음	CM_FINANCIAL_REPORTS	설계 분류
+cm-032	반기 분기 보고	COMPARE;QUANTITY;APPLICABILITY	pinpoint	제출기한별 적용 조건	기간 숫자만으로 선택 금지	CM_REPORT_DEADLINE	설계 분류
+cm-033	반기 분기 보고	APPLICABILITY;QUANTITY	pinpoint	연결기준 전환 조건	최초 대상법인과 기준 전환 구분	CM_REPORT_DEADLINE	설계 분류
+cm-034	반기 분기 보고	APPLICABILITY;PROCEDURE	pinpoint	최초 대상법인의 직전 보고	현행 정기보고와 소급 제출 구분	CM_REPORT_DEADLINE	설계 분류
+cm-035	내부회계관리	APPLICABILITY	enumerate	구축의무와 면제	대상 회사와 적용 판본 결속	CM_ACCOUNT_CONTROL	설계 분류
+cm-036	내부회계관리	APPLICABILITY	pinpoint	담당자 자격	역할명과 등기 자격 동일시 금지	CM_ACCOUNT_CONTROL	설계 분류
+cm-037	내부회계관리	DISTINGUISH;APPLICABILITY	pinpoint	검토와 감사의 대상별 차이	절차 명칭의 유사성을 동일 효과로 확대하지 않음	CM_ACCOUNT_CONTROL	설계 분류
+cm-038	내부회계관리	APPLICABILITY;PROCEDURE	pinpoint	대표자의 보고와 위임 범위	보고 책임과 수행 행위 구분	CM_ACCOUNT_CONTROL	설계 분류
+cm-039	회사기관 권한	APPLICABILITY;PROCEDURE	pinpoint	규정 제정 결정기관	규정 종류별 근거 확인	CM_ORGAN_AUTHORITY	설계 분류
+cm-040	회사기관 권한	APPLICABILITY;QUANTITY;PROCEDURE	pinpoint	정관 변경 의결 요건	의결 정족수의 분모와 기준 구분	CM_ORGAN_AUTHORITY	설계 분류
+cm-041	이사회 구성	APPLICABILITY;QUANTITY	pinpoint	이사 수와 적용 대상	상장 여부와 예외 확인	CM_ORGAN_COMPOSITION	설계 분류
+cm-042	이사회 구성	HISTORY;COMPARE	history	개정 내용과 시행시점	명칭 변경과 법적 범위 변경 구분	CM_ORGAN_COMPOSITION	설계 분류
+cm-043	감사 보수	APPLICABILITY;PROCEDURE	pinpoint	결정권과 위임 가능 범위	보수 총액과 개별 배분 등 대상 구분 필요	CM_AUDIT_ORGAN	설계 분류
+cm-044	감사위원회	QUANTITY;APPLICABILITY	pinpoint	분리선출 인원과 판본	시행 전후 기준 혼합 금지	CM_AUDIT_ORGAN	설계 분류
+cm-045	자기주식	HISTORY;APPLICABILITY	history	신설 의무와 시행 범위	발표안과 시행 규정 구분	CM_TREASURY_SHARES	설계 분류
+cm-046	자기주식	APPLICABILITY;PROCEDURE	pinpoint	처분 대상과 허용 조건	소각 의무와 처분 조건 구분	CM_TREASURY_SHARES	설계 분류
+cm-047	우리사주 배정	LOOKUP;APPLICABILITY	pinpoint	배정 근거와 적용 요건	배정 대상과 비율 근거 구분	CM_EMPLOYEE_SHARES	설계 분류
+cm-048	우리사주 배정	PROCEDURE	pinpoint	발행사항 결정기관	법정 결정권과 내부 집행 구분	CM_EMPLOYEE_SHARES	설계 분류
+cm-049	공동주관 의무	APPLICABILITY;QUANTITY	pinpoint	보유 주체와 의무 발동 조건	계열사 합산 여부 확인	CM_COLEAD	설계 분류
+cm-050	공동주관 의무	APPLICABILITY;QUANTITY	pinpoint	특정 비율의 적용 상황	다른 비율 규정으로 대체하지 않음	CM_COLEAD	설계 분류
+cm-051	공동주관 의무	QUANTITY	pinpoint	보유비율의 산식과 범위	분자 분모 기준시점 결속	CM_COLEAD	설계 분류
+RISK-CM-001	PF 심사	APPLICABILITY;QUANTITY;PROCEDURE	pinpoint	분양률 조건과 의사결정기구	산정 기준 확인 없이 초과 판단하지 않음	RISK_PF_AUTH	question_only
+RISK-CM-002	PF 한도	QUANTITY;APPLICABILITY	enumerate	시공사별 실질 익스포져 한도	명목과 실질 익스포져 구분	RISK_PF_LIMIT	question_only
+RISK-CM-003	심사기간	QUANTITY;APPLICABILITY	pinpoint	검토기간의 기산과 적용 조건	단순 일수와 업무일 구분	RISK_REVIEW_PERIOD	question_only
+RISK-CM-004	인수 투자 구분	DISTINGUISH;APPLICABILITY	pinpoint	보유분과 인수분의 적용 준칙	거래 목적과 현재 단계 구분	RISK_RULE_SCOPE	question_only
+RISK-CM-005	투자 사후관리	PROCEDURE;APPLICABILITY	pinpoint	전결 투자 후 필요한 관리	최초 승인과 사후관리 분리	RISK_POST_INVESTMENT	question_only
+RISK-CM-006	판매기한 비용	LOOKUP;QUANTITY;APPLICABILITY	enumerate	자산별 기한 경과와 비용 위치	위험비용과 패널티 구분	RISK_RISK_COST	question_only
+RISK-CM-007	딜 위험등급	DISTINGUISH;APPLICABILITY;LOOKUP	enumerate	거래 형태별 등급 기준	일반대출 매입약정 매입확약 동일시 금지	RISK_CREDIT_GRADE	question_only
+RISK-CM-008	PF 한도	QUANTITY;APPLICABILITY	enumerate	시공사 등급별 대출 한도	등급 종류와 기준시점 확인	RISK_PF_LIMIT	question_only
+RISK-CM-009	PF 편입 대상	LOOKUP;APPLICABILITY	enumerate	투자 가능 등급의 근거	가능 여부와 금액 한도 분리	RISK_PF_LIMIT	question_only
+RISK-CM-010	셀다운 연장	PROCEDURE;APPLICABILITY	pinpoint	승인 대비 지연과 연장 절차	승인 조건 변경과 단순 일정 변경 구분	RISK_TERM_EXTENSION	question_only
+RISK-CM-011	차주 등급	APPLICABILITY;LOOKUP	pinpoint	내부등급 부과 기준	외부 등급을 내부 등급으로 대체하지 않음	RISK_CREDIT_GRADE	question_only
+RISK-CM-012	기투자 의사결정	PROCEDURE;APPLICABILITY	pinpoint	후속 의사결정 상황과 절차	신규 투자 절차 자동 전용 금지	RISK_POST_INVESTMENT	question_only
+RISK-CM-013	부실 징후	RESPONSE;PROCEDURE;APPLICABILITY	pinpoint	징후별 조치와 담당	부실 확정과 징후 발견 구분	RISK_DISTRESS	question_only
+RISK-CM-014	PF 규정 변화	HISTORY;LOOKUP	history	최근 기간의 규정 지침 변경	상대 기간의 기준일과 자료 범위 고정	RISK_RULE_HISTORY	question_only
+RISK-CM-015	전결 준칙 대사	COMPARE;APPLICABILITY	corpus	같은 업무에서 규정별 차이	다른 적용 범위의 차이를 충돌로 단정하지 않음	RISK_CONFLICT	question_only
+RISK-CM-016	규정 우선관계	COMPARE;APPLICABILITY	pinpoint	우선 적용 관계의 근거	문서 제목만으로 우선순위 결정 금지	RISK_CONFLICT	question_only
+RISK-CM-017	상장리츠 IPO	LOOKUP;QUANTITY	pinpoint	처분기한 근거	일반 리츠 투자와 IPO 인수 구분	RISK_REIT	question_only
+RISK-CM-018	블라인드펀드 투자	LOOKUP;APPLICABILITY;PROCEDURE	pinpoint	상품과 금액에 따른 전결 근거	에쿼티와 대출의 조건 혼합 금지	RISK_BLIND_FUND	question_only
+RISK-CM-019	대주 동의	LOOKUP;APPLICABILITY;PROCEDURE	pinpoint	대주 역할과 동의사항 날인	펀드 수익자 역할로 대체하지 않음	RISK_CONSENT	question_only
+RISK-CM-020	수익자 동의	LOOKUP;APPLICABILITY;PROCEDURE	pinpoint	수익자 역할과 신탁계약 동의	대주 동의 절차 자동 전용 금지	RISK_CONSENT	question_only
+RISK-CM-021	PF 인수	APPLICABILITY;PROCEDURE	pinpoint	대출 인수 전결 조건	투자와 인수의 적용 차이 보존	RISK_PF_AUTH	question_only
+RISK-CM-022	PF 한도	QUANTITY;APPLICABILITY	enumerate	시공사 등급과 실질 익스포져	한도값과 산정법 분리	RISK_PF_LIMIT	question_only
+RISK-CM-023	기업신용공여	QUANTITY;APPLICABILITY	enumerate	등급별 금액 기준	등급 주체와 비교 금액 의미 확인	RISK_CREDIT_LIMIT	question_only
+RISK-CM-024	복합 인수 투자	APPLICABILITY;QUANTITY;PROCEDURE	pinpoint	지분 대출의 결합과 전결	각 금액 합산 가능 근거 필요	RISK_CREDIT_AUTH	question_only
+RISK-CM-025	리츠 투자기간	LOOKUP;APPLICABILITY;QUANTITY	pinpoint	영업연계 목적의 투자기간	다른 목적의 기간 전용 금지	RISK_REIT	question_only
+RISK-CM-026	부실채권 제각	PROCEDURE;APPLICABILITY	pinpoint	제각 대상과 내부 절차	충당금 적립과 제각 구분	RISK_DISTRESS	question_only
+RISK-CM-027	충당금 준비금	DISTINGUISH;LOOKUP	pinpoint	정의 목적과 대상별 차이	다른 회사 유형 규정 혼동 방지	RISK_PROVISION	question_only
+RISK-CM-028	심의기구	DISTINGUISH;PROCEDURE	pinpoint	기구 역할 권한과 대상	위원회 이름 유사성으로 대체하지 않음	RISK_COMMITTEE	question_only
+RISK-CM-029	PF 사업성 평가	APPLICABILITY;RESPONSE	pinpoint	등급 하락과 적립 대상 조건	하락만으로 자동 적립 확정 금지	RISK_PROVISION	question_only
+RISK-CM-030	공매 대상	APPLICABILITY	pinpoint	대상 선정 조건	부실 징후와 공매 대상 동일시 금지	RISK_AUCTION	question_only
+RISK-CM-031	공매 절차	PROCEDURE;QUANTITY	pinpoint	내부 절차와 완료기한	외부 절차와 내부 승인 구분	RISK_AUCTION	question_only
+RISK-CM-032	의결권 행사	PROCEDURE;APPLICABILITY	enumerate	상황별 결재 경로	일반 사안과 중요 사안 구분	RISK_VOTING	question_only
+RISK-CM-033	신상품 판정	APPLICABILITY;DISTINGUISH	enumerate	상품군별 신상품 기준	상품 이름만으로 신상품 확정 금지	RISK_NEW_PRODUCT	question_only
+RISK-CM-034	거래검토 심의체	PROCEDURE;APPLICABILITY	enumerate	대상 부서와 자료 요건	다른 심의체 자료 목록 전용 금지	RISK_COMMITTEE	question_only
+RISK-CM-035	승인 변경 해석	COMPARE;APPLICABILITY;REDRAFT	pinpoint	기표 전후 조항 해석과 문구 개선	개선 제안을 현행 원문으로 저장하지 않음	RISK_APPROVAL_CHANGE	question_only
+RISK-CM-036	기업신용공여 CC	APPLICABILITY;PROCEDURE	enumerate	CC 생략 조건과 남는 절차	한 절차 생략을 전체 면제로 확대하지 않음	RISK_CC	question_only
+RISK-CM-037	기업신용공여 전결	APPLICABILITY;QUANTITY;PROCEDURE	pinpoint	목적 등급 금액 조건과 전결	사건 사실을 공통 지식으로 승격하지 않음	RISK_CREDIT_AUTH	question_only
+RISK-CM-038	기업신용공여 전결	APPLICABILITY;QUANTITY;PROCEDURE	pinpoint	기존 한도 익스포져와 신규 거래	037과 사실을 섞지 않음	RISK_CREDIT_AUTH	question_only
+RISK-CM-039	기업신용공여 역산	QUANTITY;APPLICABILITY;PROCEDURE	pinpoint	편입 목적의 가능 금액과 조정량	근거 있는 산식 확인 후 역산	RISK_CREDIT_AUTH	question_only
+RISK-CM-040	블라인드펀드 평가	QUANTITY;APPLICABILITY	enumerate	점수별 상황과 적용 규정	점수 산출과 적용 분기 분리	RISK_BLIND_FUND	question_only
+RISK-CM-041	거래상대방 승인	QUANTITY;APPLICABILITY;PROCEDURE	enumerate	등급별 한도와 승인권	위원회 생략과 한도 승인 구분	RISK_CREDIT_LIMIT	question_only
+RISK-CM-042	준칙별 익스포져	COMPARE;QUANTITY;APPLICABILITY	pinpoint	산정법의 다른 준칙 전이 근거	같은 용어가 같은 산정 기준을 뜻하지 않음	RISK_EXPOSURE_TRANSFER	question_only
+RISK-CM-043	비상장 투자	LOOKUP;APPLICABILITY	pinpoint	거래 유형과 적용 규정	금액만으로 거래 종류 추정하지 않음	RISK_EQUITY_INVESTMENT	question_only
+RISK-CM-044	투자협의체 자료	LOOKUP;PROCEDURE	enumerate	제출 자료 목록	다른 위원회의 요구자료 혼합 금지	RISK_COMMITTEE	question_only
+RISK-CM-045	만기연장	LOOKUP;APPLICABILITY;PROCEDURE	pinpoint	연장 대상과 적용 규정	대상 미확인을 전체 조사 중단으로 처리하지 않음	RISK_TERM_EXTENSION	question_only
+RISK-CM-046	수탁 업무	LOOKUP;APPLICABILITY	enumerate	부서 업무와 적용 규정 범위	부서명 포함 문서만으로 전체성 확정 금지	RISK_DEPARTMENT_SCOPE	question_only
+RISK-CM-047	ECM 업무	LOOKUP;APPLICABILITY	corpus	부서 적용 준칙의 조사 범위	적중한 소수 자료를 전체로 표시하지 않음	RISK_DEPARTMENT_SCOPE	question_only
+RISK-CM-048	주식연계증권 투자	QUANTITY;APPLICABILITY;PROCEDURE	enumerate	상장사 상품별 금액 전결	국내외 상장 여부와 상품종류 구분	RISK_EQUITY_INVESTMENT	question_only
+RISK-CM-049	비상장 투자	QUANTITY;APPLICABILITY;PROCEDURE	enumerate	금액별 전결	상장사 기준 자동 전용 금지	RISK_EQUITY_INVESTMENT	question_only
+RISK-CM-050	CC 구성 자료	PROCEDURE;APPLICABILITY	enumerate	구성원과 자료 요건	소집대상과 의결권자 동일시 금지	RISK_CC	question_only
+RISK-CM-051	CC 서면 대체	APPLICABILITY;PROCEDURE	pinpoint	서면 대체 조건과 단계	회의 생략과 심의 생략 구분	RISK_CC	question_only
+RISK-CM-052	CC 생략	APPLICABILITY;PROCEDURE	pinpoint	생략 조건과 잔존 절차	생략 범위의 명시적 제한	RISK_CC	question_only
+RISK-CM-053	의결권 행사	COMPARE;APPLICABILITY;PROCEDURE	pinpoint	중요도별 합의 대상	중요 사안 분류 근거 확인	RISK_VOTING	question_only
+RISK-CM-054	신종자본증권 비용	QUANTITY;APPLICABILITY	pinpoint	발행자 상품과 위험비용	발행자 전사를 임의 확정하지 않음	RISK_RISK_COST	question_only;발행자 전사 미완
+RISK-CM-055	전결 조항 개정	HISTORY;COMPARE	history	추가 전 직후 현재 판본	누락된 대상 문구를 만들지 않음	RISK_RULE_HISTORY	question_only;대상 문구 자리표시자
+RISK-CM-056	단기사채 인수	LOOKUP;APPLICABILITY;PROCEDURE	pinpoint	적용 준칙과 전결	단기사채와 일반 채권 구분	RISK_CREDIT_AUTH	question_only
+RISK-CM-057	비시장성 위험비용	QUANTITY;APPLICABILITY	enumerate	자산별 비용 책정	자산 분류와 부과 목적 확인	RISK_RISK_COST	question_only
+RISK-CM-058	비시장성 패널티	QUANTITY;APPLICABILITY	pinpoint	부과 조건과 계산	위험비용과 패널티 중복 여부 추정 금지	RISK_RISK_COST	question_only
+RISK-CM-059	채권북 위기대응	RESPONSE;APPLICABILITY	enumerate	북별 단계 트리거와 조치	전략별 적용 범위 분리	RISK_CRISIS	question_only
+RISK-CM-060	북별 한도 초과	RESPONSE;PROCEDURE	enumerate	한도 종류별 초과 조치	하나의 한도 조치를 다른 한도에 전용하지 않음	RISK_LIMIT_ACTION	question_only
+RISK-CM-061	북별 한도 증액	PROCEDURE;APPLICABILITY	enumerate	증액 결재 경로	조정권과 승인권 구분	RISK_LIMIT_CHANGE	question_only
+RISK-CM-062	거래상대방 한도	DISTINGUISH;LOOKUP	enumerate	한도 종류와 목적	같은 대상의 다른 한도 구분	RISK_CREDIT_LIMIT	question_only
+RISK-CM-063	리스크한도 초과	LOOKUP;RESPONSE	pinpoint	확인할 준칙과 조치 연결	검색 위치와 조치 완료 구분	RISK_LIMIT_ACTION	question_only
+RISK-CM-064	한도 증액	PROCEDURE;APPLICABILITY	pinpoint	한도 유형과 증액 절차	한도 대상 미확인 보존	RISK_LIMIT_CHANGE	question_only
+RISK-CM-065	비시장성 위험비용	QUANTITY;APPLICABILITY	enumerate	비용률의 자산별 정리	단위와 적용시점 통일 여부 확인	RISK_RISK_COST	question_only
+RISK-CM-066	현재 위험비용	QUANTITY;HISTORY;APPLICABILITY	pinpoint	현재 효력 있는 부과율	기록된 최신 시각과 시행시점 구분	RISK_RISK_COST	question_only
+RISK-CM-067	헤지펀드 투자한도	QUANTITY;APPLICABILITY	enumerate	펀드별 운용사별 한도	합산 단위가 다른 한도 구분	RISK_HEDGE_FUND	question_only
+RISK-CM-068	헤지펀드 기한연장	APPLICABILITY;PROCEDURE	pinpoint	연장 조건	일반 투자기간과 연장 예외 구분	RISK_HEDGE_FUND	question_only
+RISK-CM-069	헤지펀드 회수	PROCEDURE;APPLICABILITY	pinpoint	회수 결재선	신규 투자 승인 경로 자동 전용 금지	RISK_HEDGE_FUND	question_only
+RISK-CM-070	금리 트리거	APPLICABILITY;LOOKUP	enumerate	적용 전략 목록	전략 목록 확보 범위 표시	RISK_RATE_TRIGGER	question_only
+RISK-CM-071	금리 트리거	QUANTITY;APPLICABILITY	pinpoint	1단계 발동 기준	금리 지표와 관측기간 구분	RISK_RATE_TRIGGER	question_only
+RISK-CM-072	금리 트리거	RESPONSE;PROCEDURE	enumerate	전략별 1단계 조치	발동 판정과 조치 수행 분리	RISK_RATE_TRIGGER	question_only
+RISK-CM-073	시장 위기 시나리오	RESPONSE;DISTINGUISH	enumerate	시나리오 유형과 연결	임의 전망을 규정 시나리오로 만들지 않음	RISK_CRISIS	question_only
+RISK-CM-074	유동성 위기 시나리오	RESPONSE;DISTINGUISH	enumerate	유동성 시나리오 범위	시장 위기와 유동성 위기 구분	RISK_CRISIS	question_only
+RISK-CM-075	한도별 처리 전결	PROCEDURE;APPLICABILITY	enumerate	한도별 절차와 권한	한도 의미가 다른 항목 분리	RISK_LIMIT_ACTION	question_only;084와 같은 원문 질문
+RISK-CM-076	RP 듀레이션	COMPARE;QUANTITY;APPLICABILITY	pinpoint	일반 RP와 CMA RP 한도	상품유형과 듀레이션 산정 구분	RISK_RP	question_only
+RISK-CM-077	원화 RP 매출	APPLICABILITY	pinpoint	매출 제한 조건	편입 조건과 매출 조건 구분	RISK_RP	question_only
+RISK-CM-078	원화 RP 편입	APPLICABILITY;LOOKUP	enumerate	채권 종류와 부가 조건	외규 대상과 회사 추가 제한 구분	RISK_RP	question_only
+RISK-CM-079	부적합 헤지자산	DISTINGUISH;APPLICABILITY	pinpoint	분류 기준	분류와 편입 가능 여부 분리	RISK_HEDGE_ASSET	question_only
+RISK-CM-080	ELB북 편입한도	QUANTITY;APPLICABILITY	pinpoint	신종자본증권 편입 한도	북과 자산 종류별 범위 고정	RISK_HEDGE_ASSET	question_only
+RISK-CM-081	ELB북 편입한도	QUANTITY;APPLICABILITY	pinpoint	부적합 헤지자산 한도	일반 헤지자산 한도 자동 전용 금지	RISK_HEDGE_ASSET	question_only
+RISK-CM-082	부적합 헤지자산 편입	PROCEDURE;APPLICABILITY	pinpoint	예외 편입의 조건과 절차	분류 자체가 허용 또는 금지 결론은 아님	RISK_HEDGE_ASSET	question_only
+RISK-CM-083	신상품 판정 절차	APPLICABILITY;PROCEDURE	pinpoint	신상품 판정 후 절차와 전결	판정 결과와 후속 절차 연결	RISK_NEW_PRODUCT	question_only
+RISK-CM-084	한도별 처리 전결	PROCEDURE;APPLICABILITY	enumerate	한도별 절차와 권한	075와 독립 평가사례로 중복 계산하지 않음	RISK_LIMIT_ACTION	question_only;075와 같은 원문 질문
+RISK-CM-085	신규 거래상대방	APPLICABILITY;PROCEDURE	pinpoint	신규 상대방 파생거래 절차	기존 상대방 절차와 신규 심사 구분	RISK_COUNTERPARTY	question_only
+RISK-CM-086	손실한도 누적	RESPONSE;QUANTITY;LOOKUP	pinpoint	누적 기준과 필요한 조치	기간과 누적 산정 단위 확인	RISK_LIMIT_ACTION	question_only
+RISK-CM-087	운용한도 조정	PROCEDURE;APPLICABILITY	pinpoint	조정 절차	조정과 증액 조건 구분	RISK_LIMIT_CHANGE	question_only
+RISK-CM-088	운용한도 증액	PROCEDURE;APPLICABILITY	pinpoint	증액 절차	일반 조정 경로 그대로 적용하지 않음	RISK_LIMIT_CHANGE	question_only
+RISK-CM-089	운용한도 조정권	PROCEDURE;APPLICABILITY	pinpoint	조정권자	승인권과 집행 권한 구분	RISK_LIMIT_CHANGE	question_only
+RISK-CM-090	운용한도 승인권	PROCEDURE;APPLICABILITY	pinpoint	승인권자	조정권과 승인권 동일시 금지	RISK_LIMIT_CHANGE	question_only
+RISK-CM-091	자금한도 초과	RESPONSE;PROCEDURE	pinpoint	초과 시 조치	다른 한도의 대응 자동 전용 금지	RISK_LIMIT_ACTION	question_only
+RISK-CM-092	금리 급등 대응	RESPONSE;APPLICABILITY	enumerate	급등 상황과 적용 조치	발동 기준과 시장 설명 구분	RISK_RATE_TRIGGER	question_only
+RISK-CM-093	국고채 금리 대응	RESPONSE;APPLICABILITY	pinpoint	지표 상승에 따른 조치	지표와 기준기간 확인	RISK_RATE_TRIGGER	question_only
+RISK-CM-094	국고채 트리거 북	LOOKUP;APPLICABILITY	enumerate	관련 운용북 목록	관련성 검색을 적용 대상 확정으로 보지 않음	RISK_RATE_TRIGGER	question_only
+RISK-CM-095	환율 트리거	RESPONSE;QUANTITY;APPLICABILITY	enumerate	환율 지표별 발동 조건	통화쌍과 방향 및 기간 구분	RISK_FX_TRIGGER	question_only
+RISK-CM-096	NCR 규정 대사	LOOKUP;COMPARE	corpus	관련 조항 목록과 비교 축	소수 적중을 전체 무충돌로 확정하지 않음	RISK_CONFLICT	question_only
+RISK-CM-097	위험관리 준칙 대사	COMPARE;APPLICABILITY	corpus	지정 문서군의 적용 범위와 충돌 후보	문구 차이와 실제 충돌 구분	RISK_CONFLICT	question_only
+RISK-CM-098	신상품 흐름도 개정	HISTORY;COMPARE	history	흐름도 위치와 제거 시점	번호 이동과 내용 삭제 구분	RISK_PRODUCT_HISTORY	question_only
+RISK-CM-099	상품 출시 별첨 개정	HISTORY;COMPARE	history	특정 과거판 별첨의 변화	현재판 부재만으로 최초 삭제일 추정 금지	RISK_PRODUCT_HISTORY	question_only
+RISK-CM-100	대주주 담보대출	APPLICABILITY;QUANTITY	pinpoint	가능 여부와 한도	주체 자격과 거래 유형 확인	RISK_MAJOR_SHAREHOLDER	question_only
+RISK-CM-101	상품별 편입기준	APPLICABILITY;COMPARE	corpus	상품과 운용 목적별 기준	괄호 미완 범위를 임의 보충하지 않음	RISK_ASSET_ELIGIBILITY	question_only;괄호 전사 미완
+RISK-CM-102	국내외 연계증권	COMPARE;APPLICABILITY	pinpoint	국내외 편입기준 차이	상품 이름 일치로 적용 범위 동일시 금지	RISK_ASSET_ELIGIBILITY	question_only
+RISK-CM-103	연계증권 익스포져	APPLICABILITY;QUANTITY	pinpoint	편입에 따른 익스포져 산입	상품별 위험 인식과 명목금액 구분	RISK_EXPOSURE_TRANSFER	question_only
+RISK-CM-104	유동성비율 규정	LOOKUP	enumerate	관련 준칙 조항 위치	비율 이름만 유사한 다른 지표 구분	RISK_LIQUIDITY	question_only
+RISK-CM-105	유동성비율 초과	RESPONSE;APPLICABILITY;PROCEDURE	pinpoint	한도 위반 방향과 후속 조치	질문의 초과 표현만으로 상한 하한을 추측하지 않음	RISK_LIQUIDITY	question_only

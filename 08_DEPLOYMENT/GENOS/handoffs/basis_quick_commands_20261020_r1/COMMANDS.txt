@@ -1,0 +1,58 @@
+내규·외규 조사: 앞으로 아래 명령만 사용하세요.
+
+준비 (한 번)
+기존 GENOS_BASIS_BATCH_20261020_R4 폴더가 있는 실제 TRANSFER 폴더에 ZIP을 올리고 실행:
+
+python3 -m zipfile -e ./GENOS_BASIS_QUICK_20261020_R1.zip .
+
+ZIP의 BASIS_RUN.txt를 사용하세요. 별도 TXT 첨부도 동일한 파일입니다.
+기존 R4는 그대로 필요합니다. 새 코드 설치/apply/DEV 이동은 없습니다.
+
+1. 지금 중단한 기존 작업을 이어하기
+bash ./BASIS_RUN.txt resume
+
+2. 새 작업 시작 (새 계획 생성 + 조사 실행)
+bash ./BASIS_RUN.txt new job1
+
+3. 다음에 또 처음부터 실행
+bash ./BASIS_RUN.txt new job2
+
+4. job1을 중단했다가 이어하기
+bash ./BASIS_RUN.txt resume job1
+
+5. 상태 보기
+bash ./BASIS_RUN.txt status job1
+
+6. HTML 보기
+bash ./BASIS_RUN.txt report job1
+현재 TRANSFER에 basis-review-job1.html이 생깁니다.
+
+새 계획만 만들려면:
+bash ./BASIS_RUN.txt plan job3
+bash ./BASIS_RUN.txt run job3
+
+문서 수를 바꾸려면 (기본 3개, 아래는 5개):
+bash ./BASIS_RUN.txt new job4 5
+
+기억할 것은 두 가지입니다.
+- 처음부터 새로: new + 새로운 이름
+- 중단한 것을 계속: resume + 기존 이름
+
+같은 이름으로 new를 다시 실행하면 기존 계획을 보존하고 중단합니다.
+기존 폴더를 삭제하거나 이동할 필요가 없습니다. 작업 이름을 별도로 기록하세요.
+중단은 실행 중인 터미널에서 Ctrl+C. 조사 프로세스는 한 번에 하나만 실행하세요.
+새 작업은 새 조사·새 예산이며 이전 후보·확정 연결을 자동 복사하지 않습니다.
+기존 기본 작업을 고르려면 resume/status/report에서 작업 이름을 생략합니다.
+job1 등 새 작업은 이후에도 이름을 붙여 사용해야 합니다.
+
+확정 연결 R5를 새 작업에 추가할 때는 이 TXT 출력의 JOB= 경로를
+기존 R5 inspect-fixed/stage-fixed 명령의 --job에 동일하게 지정해야 합니다.
+R5 명령에서 --job을 생략하면 사진의 기존 기본 작업을 선택합니다.
+
+실행 로그: TRANSFER/basis-quick-logs 및 기존 basis-batch-r4-logs.
+종료 코드 0은 정상, 2는 기존 R4의 부분 종료, 다른 값은 실패/중단입니다.
+resume은 기존 누적 사용량·최초 기한을 유지합니다.
+이미 완료/부분 종료/실패로 마감된 문서는 resume으로 자동 재조사하지 않습니다.
+
+검증 범위: Bash 문법과 모의 R4 실행기에서 명령 전달·기존 작업 보존·실패 전파.
+실제 GENOS 모델·NFS 재개 성공·현장 배포는 미검증입니다.

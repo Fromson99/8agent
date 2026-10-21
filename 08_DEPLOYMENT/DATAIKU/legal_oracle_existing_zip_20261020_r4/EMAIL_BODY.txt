@@ -1,0 +1,21 @@
+원본 키 진단 결과를 반영한 R4 수정본입니다. 이전 R3 실행 TXT 대신 이번 R4 전체 TXT를 사용하세요.
+
+현재 확인된 현장 상태는 문서 2,121건 대조 완료, source_unit 0건에서 ROW_KEY 오류 중단이며 원본 SQLite의 식별자 5개 열은 모두 정상입니다. 원본 손상으로 판단하지 않습니다.
+
+현재 코드의 query_to_df는 기본 자동 자료형 추정을 사용했습니다. 숫자 모양 문자열 ID가 숫자로 변환될 수 있는 문제를 로컬에서 재현했습니다. R4는 infer_from_schema=True, parse_dates=False로 Oracle이 선언한 자료형을 유지합니다. 숫자를 나중에 문자열로 강제 변환하거나 앞자리 0을 추정하지 않습니다.
+공식 문서: https://developer.dataiku.com/latest/api-reference/python/sql.html
+현장 Oracle의 실제 반환 자료형은 아직 확인되지 않아, 이것이 이번 오류의 정확한 원인인지는 아래 diagnose로 확인합니다.
+
+진행 방법
+1. 기존 Dataiku Managed Folder에 LEGAL_ORACLE_EXISTING_ZIP_20261020_R4.zip만 추가 업로드하세요. 데이터 ZIP/조각은 다시 올리지 않습니다.
+2. 오류가 종료된 같은 노트북에서 Kernel → Restart 후 R4 DATAIKU_EXISTING_ZIP_IMPORT_RUN.txt 전체로 실행 셀을 교체하세요.
+3. FOLDER_ID와 ORACLE_CONNECTION은 기존 성공한 값으로 넣으세요. WORK_DIR="./legal-existing-zip-r2-work", ALLOW_MISSING_LOOKUP_INDEXES=True는 유지합니다.
+4. ACTION="check"로 READY_FOR_FULL_IMPORT를 확인한 뒤, ACTION="diagnose"로 같은 셀을 실행하세요.
+5. TYPE_INFERENCE_DIFFERENCE_CONFIRMED가 나오면 기본 조회에서 변형된 키가 수정 경로에서 원본과 일치함을 확인한 것입니다. ACTION="publish"로 재개하세요. 다른 진단 상태이면 출력 결과를 먼저 공유해 주세요.
+
+진단은 다음 source_unit 배치의 키만 두 번 조회하고, 키 원문/본문 없이 자료형과 원본 일치 여부를 출력합니다. Oracle 쓰기/진행 기록 변경은 없습니다.
+R4 코드는 code-r4에 설치하지만 기존 oracle-import-r3 진행 기록과 최초 기한을 그대로 사용합니다. 이관 엔진·publisher는 R3와 바이트가 동일하고 Dataiku 조회 어댑터만 변경했습니다. 이미 적재된 행은 내용 대조 후 이어갑니다. 마지막 전체 검증에서는 문서도 다시 대조합니다. 기존 파일과 진행 기록을 지우지 마세요.
+
+로컬 42검사가 통과했습니다. 실제 Pandas 자료형 변환 재현, R3의 일부 적재 뒤 오류 → R4 같은 checkpoint 재개, 데이터/기한 보존, 실제 전달 진단 및 노트북 경로를 확인했습니다. 최초 회귀 검사 1실패는 봉인된 과거 QUERY_PARTS R2와 현행 publisher 코드 해시가 같다고 가정한 테스트 문제였으며 각 코드 해시와 나머지 동일 내용을 별도로 검증하도록 바로잡았습니다. 과거 봉인 ZIP은 그대로입니다.
+
+현장 Dataiku/Oracle 실행 성공은 아직 미확인입니다. 이번 변경은 자료형 보존이며, 본문 조각 조회 방식과 SQL 호출 수는 그대로여서 대용량 속도 개선을 보장하지 않습니다. FULL_DATA_VERIFIED가 나와야 전체 적재 및 대조 완료입니다. ACTIVE/STATE/서빙 변경은 없습니다.

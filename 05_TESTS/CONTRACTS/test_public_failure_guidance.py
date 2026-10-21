@@ -55,7 +55,7 @@ def test_actual_v6_api_failure_preserves_status_code_and_no_extra_calls(unified,
     assert view.public_response(projected, status=status) == projected
     assert body == original
     text = view.render(projected)
-    assert f'({marker})' in text if marker else '조금 더 구체적으로 질문해 주세요.' in text
+    assert f'({marker})' in text if marker else '원문 조사·검토가 완료되지 않았습니다.' in text
     if marker:
         assert '질문해 주세요' not in text
 
@@ -88,7 +88,7 @@ def test_workflow_backend_keeps_marker_and_bound_display(monkeypatch, tmp_path, 
     marker = {'bootstrap': '503', 'timeout': 'timeout', 'incomplete': None}[kind]
     assert public.get('error_code') == marker
     assert display['answer_status'] == 'failed'
-    assert f'({marker})' in display['text'] if marker else '질문해 주세요' in display['text']
+    assert f'({marker})' in display['text'] if marker else '원문 조사·검토가 완료되지 않았습니다.' in display['text']
 
 
 @pytest.mark.parametrize('phase', ['preflight', 'request'])

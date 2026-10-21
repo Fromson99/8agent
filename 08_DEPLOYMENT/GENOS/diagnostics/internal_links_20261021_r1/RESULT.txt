@@ -1,0 +1,34 @@
+내규 연결 표현 읽기 전용 점검 / 2026-10-21
+
+요청: 위임·준용·관련 준칙 등 연결 표현을 검색해 실제 연결 지점을 검사하고,
+현장에서 HTML로 내려받는 명령어를 삼성메일로 전송.
+
+코드 검토: reference_predicates.yaml은 구조 마커 판별 사전이다.
+term_references.py는 명시 좌표를 주로 해석하고 후행 준용 문구를 역할로 기록한다.
+문서명·조문 없는 '관련 준칙'만으로 대상 연결이 보장되지 않으며 실제 현장 판정은 미확인.
+작업/MAIN98 선택 term_references.py 동일 SHA256:
+d50631f1fa2f98c4df5e30d2b852543059f0e825306b56da24cda39addb59db0
+
+구현: 기존 generation/정적 참조 데이터 계약을 읽는 독립 관리자 진단 도구.
+13종 표현 묶음과 지정 용어 신상품 → 원문/정의 → 참조/대상 원문/좌표/해시/역참조.
+문장 인접성을 의미 연결 확정으로 표시하지 않는다. 명시 team 범위 밖의 본문은 출력하지 않는다.
+HTML 검색·상태 필터·대상 페이지, JSONL, 입력 hash, summary, 실행 로그, 내려받기 ZIP.
+제품·서빙·모델·실험·MAIN 변경 없음. 모델0회, 네트워크0회(메일 전송은 별도).
+Oracle publication·동적 관계 원장·사용자 ACL/최신판 선택 전수 검증은 범위 밖.
+
+검증: legacy/실제 shared-body compact 표현의 합성 계약 2종 각각 15개 assert 및
+WAL/입력 변조 거부; 최종 ZIP에서 실제 bash10명령(정상/예상 거부), Python3.11 구문,
+원본 hash 보존, 재실행/중복 출력 거부, 다른 팀 본문 비노출, HTML escaping.
+로컬 Chromium에서 전체11행/신상품1행/오류4행 필터/대상 원문 링크/스크립트 오류0 확인.
+사진 문구를 포함한 SAMPLE은 합성 시연이다. 현장 자료 점검 결과가 아니다.
+동시 진행 중인 실제 임베딩 프로세스가 있어 대형 로컬 데이터/모델 검증은 실행하지 않았다.
+
+인계: TRANSFER 현재 위치에서 python3 압축 해제 → bash 실행TXT check/run.
+코드스페이스 DEV 고정 선택을 읽으며 실제 배포 리비전과 동일한지는 별도 확인.
+GENOS 실행·실제 내규·Oracle·내부 모델·브라우저 현장 결과 미검증.
+
+발송: 삼성파트너 hyungjininfocz.son@partner.samsung.com
+SENT 1a15e5129400ad84
+ZIP/TXT/안내 3개 수신자·본문·이름/MIME/크기 발송함 재확인.
+EMAIL_VERIFIED.json, DELIVERY_VALIDATION.json, VALIDATION.json, BROWSER_VALIDATION.json 참조.
+Git commit/push·GENOS 반입/배포·MAIN 승격 미수행.

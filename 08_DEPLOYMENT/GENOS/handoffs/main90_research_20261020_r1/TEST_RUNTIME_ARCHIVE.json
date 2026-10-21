@@ -1,0 +1,16 @@
+{
+  "status": "VERIFIED_AND_COMPACTED",
+  "archive": "SYNTHETIC_TESTS.tar.gz",
+  "sha256": "7204eaf070e66f4153d8563f1e2decd1e6fadbbd5ffa027ecbd6fe389d4a798c",
+  "source_files": 16215,
+  "source_bytes": 381978113,
+  "archive_bytes": 148640357,
+  "manifest": "SYNTHETIC_TESTS_FILES.json.gz",
+  "manifest_sha256": "1444526e4fd15b9cfa174de343770e91f19674cdd3cf76ea8986167379a4696d",
+  "roots": [
+    "test-code",
+    "test-runtime",
+    "final-transfer"
+  ],
+  "restore": "From this handoff directory: tar -xzf SYNTHETIC_TESTS.tar.gz; compare file SHA-256 with SYNTHETIC_TESTS_FILES.json.gz before reusing evidence."
+}

@@ -1,0 +1,231 @@
+{
+  "status": "PASS",
+  "runtime_files": 393,
+  "runtime_matches_working_frozen_selected_handoff": true,
+  "local_MAIN": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "internal-anchor-comparison-20261020-r1",
+    "generation": 93,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/internal-anchor-comparison-20261020-r1/release.json",
+    "release_manifest_sha256": "ced707a72139553a686e0e5dd12342825146b3b168487f6f7d034e0e1d6fc393",
+    "activated_at": "2026-10-20T12:47:12.267637+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506"
+  },
+  "workflow": "1.20.0",
+  "basis_discovery_workflow": "1.2.0",
+  "local_contracts": 193,
+  "handoff_contracts": 173,
+  "installation_scenarios": 2,
+  "installation_commands": 43,
+  "installed_imports": 252,
+  "syntax": {
+    "python_grammar": "3.11",
+    "actual_interpreter": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "python_modules": 767
+  },
+  "local_actual_service": {
+    "status": "PASS",
+    "mode": "active",
+    "app_injected": false,
+    "checks": {
+      "all_393_serving_files_exact": true,
+      "workflow1200_enabled": true,
+      "internal_workflow_retained": true,
+      "failure_receipt_module_exact": true,
+      "internal_anchor_contract_enabled": true,
+      "projection_v12": true,
+      "changed_modules_loaded_from_selected_root": true,
+      "research_state_owner_loaded_from_selected_root": true,
+      "response_policy_loaded_from_selected_root": true,
+      "genos_response_alias_allowed": true,
+      "genos_response_missing_allowed": true,
+      "selected_data_unchanged": true,
+      "profile_unchanged": true,
+      "actual_service_health": true,
+      "public_scope_retained": true,
+      "actual_source_read": true,
+      "zero_model_calls": true,
+      "selected_generation93": true,
+      "search_binding_matches_preflight": true,
+      "model_binding_matches_preflight": true
+    },
+    "code_root": "08_DEPLOYMENT/RELEASES/internal-anchor-comparison-20261020-r1/code",
+    "binding": {
+      "mode": "local-release",
+      "release_id": "internal-anchor-comparison-20261020-r1",
+      "generation": 93,
+      "release_manifest_sha256": "ced707a72139553a686e0e5dd12342825146b3b168487f6f7d034e0e1d6fc393",
+      "code_sha256": "443051cacb6499655dd25c4dfa6e297ce70307349e9f7c8119cf06dc5b16cc56",
+      "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+      "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+      "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+      "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+      "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+      "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+      "process_instance_id": "c795cf344f914bfc90b65b2f750a6d2d",
+      "process_id": 691224,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+      "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+    },
+    "health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "runtime": "term-runtime-v1",
+        "release": {
+          "mode": "local-release",
+          "release_id": "internal-anchor-comparison-20261020-r1",
+          "generation": 93,
+          "release_manifest_sha256": "ced707a72139553a686e0e5dd12342825146b3b168487f6f7d034e0e1d6fc393",
+          "code_sha256": "443051cacb6499655dd25c4dfa6e297ce70307349e9f7c8119cf06dc5b16cc56",
+          "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+          "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+          "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+          "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+          "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+          "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+          "process_instance_id": "c795cf344f914bfc90b65b2f750a6d2d",
+          "process_id": 691224,
+          "investigation_budget": {
+            "max_model_attempts": 40,
+            "finalization_reserve": 3,
+            "max_tool_actions": 1024,
+            "wall_seconds": 1800,
+            "max_no_progress": 2,
+            "investigation_model_attempts": 37,
+            "search_rounds": 8,
+            "assessment_reentry_limit": 2
+          },
+          "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+          "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+        },
+        "generation_id": "term-metadata-733fc8666b5bb1d23e11",
+        "data_status": "DRAFT",
+        "counts": {
+          "document": 1547,
+          "source_unit": 256848,
+          "source_block": 322389
+        },
+        "legacy_fallback": false,
+        "search_selection": {
+          "sha256": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+          "excluded_documents": 0
+        },
+        "quality_certified": false,
+        "vector": "NOT_USED",
+        "llm_model": "qwen/qwen3.8-27b",
+        "rag_mode": "legal-agent-unified-v6",
+        "term_agent_quality_certified": false,
+        "external_export_allowed": false,
+        "document_aliases": {
+          "status": "STORE",
+          "store_documents": 19,
+          "projection_documents": 0,
+          "projection": null
+        }
+      }
+    },
+    "workflow_version": "1.20.0",
+    "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+    "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+    "service_entry": "service.py",
+    "model_calls": 0,
+    "genos_executed": false
+  },
+  "code_zip_sha256": "a542c89787a520ab5cd60b74942ffaf128fa2269f344d3f9e1da0331f385bc43",
+  "source_kind": "Synthetic contract fixtures and real local source-only service read",
+  "new_model_calls": 0,
+  "GENOS_field_verified": false,
+  "quality_certified": false,
+  "data_profile_search_unchanged": true,
+  "limits": [
+    "No GENOS deployment / internal model / NFS / Oracle field execution",
+    "Prior ADR verdicts and semantic/cost limitations retained",
+    "Old code-bound runs require their original revision; no forced resume"
+  ],
+  "initial_failures_preserved": [
+    "DELIVERY_TESTS_01.txt: fixture tried to add intentionally untracked data/history/manifest",
+    "DELIVERY_TESTS_02.txt: Oracle publisher progress helper missing from handoff; added unchanged existing dependency"
+  ],
+  "resources": {
+    "DELIVERY_RESOURCES_03.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=",
+        "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime-3",
+        "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/DELIVERY_TESTS_03.xml",
+        "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 110.10284972000227,
+      "peak_group_rss_bytes": 293171200,
+      "min_available_bytes": 13499506688,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/DELIVERY_RESOURCES_03.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "pythonpath=",
+          "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime-3",
+          "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/DELIVERY_TESTS_03.xml",
+          "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py"
+        ]
+      },
+      "samples_sha256": "dbf00d22df14d39b2880702e89b6c52e219ab28af11b2ee13404f8aa5ca84cce"
+    },
+    "CONTRACT_RESOURCES_01.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/checks.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 28.02600700399489,
+      "peak_group_rss_bytes": 696324096,
+      "min_available_bytes": 13050417152,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/CONTRACT_RESOURCES_01.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/checks.py"
+        ]
+      },
+      "samples_sha256": "fd523e3eaeed916c37e4068164c212ad2b10c08d119e9a5b4d25eb495a7d2d84"
+    }
+  }
+}

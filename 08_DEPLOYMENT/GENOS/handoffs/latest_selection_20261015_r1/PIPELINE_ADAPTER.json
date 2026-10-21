@@ -1,0 +1,16 @@
+{
+  "reason": "Reproduced field lean workspace has no valid local migration receipt. Explicit genos input_root now bounds collection manifest lookup; no receipt is fabricated and core default behavior remains unchanged.",
+  "type": "ordinary reproducible integration defect",
+  "files": [
+    {
+      "path": "02_BACKEND/lawrag/core/ingest.py",
+      "before": "36fc154274ff1f172181f7ac0c6881f534e7f31d119cc46bf8168cbd7fb35634",
+      "after": "2ab9953446480fa46c7a3b2f471793326a82ad0cc95f4cb551ef228b7d677666"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "before": "8508f0496980256c279e1b01f9a79ee1ca913b5943cb4f8ac4293a7cdeea23f0",
+      "after": "366b7776a5155615d54960c47e5db4258499a92d695a011af19c169d51f0090a"
+    }
+  ]
+}

@@ -166,33 +166,12 @@ class TypedAgent(previous.MultiAgent):
     session_type=TypedSession
     def retrieve(self,plan,use_llm=True):
         self.matcher.navigation_store=self.pipeline.store
-        q=plan['question'];registry=TypeRegistry(self.matcher,plan['scope']['document_version_ids'],q);matches=registry.matches(q,limit=500)
-        folder_cards=[x for x in matches['items'] if x['type']=='folder']
-        listing=('문서' in q and any(w in q for w in ('알려','목록','보여','있'))) or ('내규' in q and any(w in q for w in ('목록','있','알려')))
-        if any(w in q for w in ('요건','지급기준','해석','적용','내용','정의','설명','조항')) or re.search(r'\d+\s*조',q):listing=False
-        tree=any(w in q for w in ('폴더 트리','폴더트리','트리 형태','트리로','폴더 구조','폴더구조'))
-        if (listing or tree) and folder_cards and hasattr(self,'navigator'):
-            # Prefer the explicitly matched nested path over its ancestor group.
-            leaves=[c for c in folder_cards if not any(x['identity'].startswith(c['identity']+'/') for x in folder_cards)]
-            if len(leaves)!=1:
-                text='이름이 일치하는 폴더가 여러 개입니다. 경로를 선택해 주세요:\n'+'\n'.join(x['identity'] for x in leaves)
-                return self.local_result(plan,{'keyword_types':matches},text,'FOLDER_SELECTION',{},notes=[text])
-            card=leaves[0]
-            if tree:
-                data=registry.open_folder(card['handle'],tree=True,limit=500)
-                text=card['identity']+'\n'+'\n'.join(('  '*x['identity'].count('/')+x['identity']+'/') if x['type']=='folder' else '  '*((x.get('folder') or '').count('/')+1)+x['label'] for x in data['items'])
-                if data['next_offset'] is not None:text+='\n다음 페이지 offset: '+str(data['next_offset'])
-                result=self.local_result(plan,data,text,'FOLDER_TREE',{'handle':card['handle']})
-            else:
-                parsed=folders.request(q) or {};data=self.navigator.catalogue(plan['scope']['document_version_ids'],context=getattr(self,'navigation_context',None),folder=card['identity'],title_query=parsed.get('title_query',''),limit=500);self.last_navigation_context=data['context']
-                text=card['identity']+' 안의 문서 '+str(data['total'])+'개:\n'+'\n'.join(d['name'] for d in data['documents'])
-                if data['next_offset'] is not None:text+='\n다음 페이지 offset: '+str(data['next_offset'])
-                result=self.local_result(plan,data,text,'CATALOG',{'folder':card['identity'],'title_query':parsed.get('title_query',''),'field':'document.name'})
-            result['term_agent']['keyword_types']=matches;result['term_agent']['trace'].insert(0,{'tool':'KEYWORD_TYPES','status':'OK','args':{'question':q},'result':matches,'reason':'stored entity type and allowed actions before routing'})
-            return result
+        registry=TypeRegistry(self.matcher,plan['scope']['document_version_ids'],plan['question'])
+        matches=registry.matches(plan['question'],limit=500)
         result=super().retrieve(plan,use_llm)
         state=result['term_agent'];state.setdefault('keyword_types',matches)
-        if state.get('selected_documents') and hasattr(self,'navigator'):self.last_navigation_context=self.navigator.remember(state['selected_documents'],{'selection':'typed document handle'})
+        if state.get('selected_documents') and hasattr(self,'navigator'):
+            self.last_navigation_context=self.navigator.remember(state['selected_documents'],{'selection':'typed document handle'})
         return result
 
 class Conversation(previous.Conversation):

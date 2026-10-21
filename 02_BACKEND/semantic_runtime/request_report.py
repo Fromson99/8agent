@@ -6,7 +6,7 @@ JSONL sidecar preserves returned content, refusal and filter signals for diagnos
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import copy_context
 from copy import deepcopy
 from datetime import datetime, timezone
@@ -140,6 +140,7 @@ class DeferredReport:
             with self._live_lock:
                 self.log_path, self.handler = path, handler
                 if handler:
+                    handler.captured_events = self.events
                     if self._detached:
                         handler.stop_event.set()
                     else:
@@ -149,8 +150,12 @@ class DeferredReport:
             if error:
                 obs.event(_REPORT_LOG, 'shared_live.failed', level=logging.ERROR, error_type=error)
             if handler:
-                run_id = next((row.get('run_id') for row in reversed(list(self.events))
-                               if isinstance(row.get('run_id'), str) and _RUN_ID.fullmatch(row['run_id'])), None)
+                if handler.process_trace:
+                    handler.process_trace.block('요청 입력 전체', self.request, key='request',
+                                                stamp=self.started_at.isoformat())
+                run_id = next((row.get('workflow_run_id') or row.get('run_id') for row in reversed(list(self.events))
+                               if isinstance(row.get('workflow_run_id') or row.get('run_id'), str)
+                               and _RUN_ID.fullmatch(row.get('workflow_run_id') or row['run_id'])), None)
                 if run_id is None and isinstance(self.result, dict):
                     result_body = self.result.get('body')
                     candidate = result_body.get('run_id') if isinstance(result_body, dict) else None
@@ -224,6 +229,12 @@ class DeferredReport:
         try:
             self._live_ready.wait()
             if self.result is None:
+                if self.handler and self.handler.process_trace:
+                    self.handler.poll_journal()
+                    self.handler.process_trace.service_events(self.events)
+                    self.handler.process_trace.block('요청 중단 / 최종 응답 미확정', {
+                        'status': 'INTERRUPTED', 'final_response_recorded': False,
+                        'resume_available': '원장 checkpoint 확인 필요'})
                 return
             body = self.result.get('body') or {}
             answer = body.get('answer') if isinstance(body, dict) else None
@@ -269,6 +280,8 @@ class DeferredReport:
                 for error in ad_journal.get('errors', []):
                     self.handler.write_detail('AD FAILURE', error)
             self._event('shared_report.written', path=str(path))
+            if self.handler and self.handler.process_trace:
+                self.handler.process_trace.finish(json.loads(path.read_text(encoding='utf-8')))
             phase = 'shared_trace'
             self._event('shared_trace.started')
             with obs.step(_REPORT_LOG, 'shared_trace.publish'):
@@ -312,6 +325,7 @@ _LIVE_FIELD_NAMES = (frozenset({
     "previous_event", "previous_step", "elapsed_ms", "diagnostic_revision", "observability_revision",
     "document_count", "unit_count", "checked_count", "cache_hit",
     "team_selected", "request_id", "run_id", "worker_id", "attempt_id", "logical_call_id", "source_stage",
+    "workflow_run_id", "workflow_request_id", "workflow_id", "stage", "revision", "resume",
     "scan_elapsed_ms", "scan_limit_ms", "deadline_scope",
     "error_type", "error_code", "failure_kind", "retry_scheduled", "retryable",
     "read_actions", "queued", "selected_count", "read_complete_count",
@@ -462,15 +476,22 @@ class _LiveLog(logging.Handler):
         self.run_id: str | None = None
         self.journal_path: Path | None = None
         self.last_seq = 0
+        self.journal_cursors = {}
         self.poll_error: str | None = None
         self.poll_lock = threading.Lock()
         self.stop_event = threading.Event()
         # Handler.handle acquires its I/O lock only AFTER filters. An unrelated
         # request must not wait on this request's slow NFS write/heartbeat.
         self.addFilter(lambda record: not self.stop_event.is_set() and
-                       (getattr(record, 'fields', {}) or {}).get('request_id') == self.request_id)
+                       self.request_id in ((getattr(record, 'fields', {}) or {}).get('request_id'),
+                                           (getattr(record, 'fields', {}) or {}).get('workflow_request_id')))
         self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
         self.writer = obs.AsyncHandler(self, max_records=512, max_bytes=1024*1024)
+        self.process_trace = None
+        self.captured_events = []
+        self.process_last_seq = 0
+        from .process_trace import ErrorSections
+        self.error_sections = ErrorSections()
 
     def handle(self, record):
         # Do not acquire the stream/heartbeat lock on the request thread.
@@ -495,10 +516,12 @@ class _LiveLog(logging.Handler):
         self.stop_event.set()
         self.writer.drain(2)
         self.heartbeat_thread.join(timeout=2)
-        self.poll_journal()
+        self.poll_journal(drain=True)
 
     def _heartbeat_loop(self) -> None:
         while not self.stop_event.wait(1):
+            if self.process_trace:
+                self.process_trace.service_events(list(self.captured_events))
             self.poll_journal()
             self.heartbeat()
 
@@ -510,7 +533,15 @@ class _LiveLog(logging.Handler):
         safe = _scrub(value)
         from .legal_agent.readable_log import render_detail
         try:
-            rendered = render_detail(label, safe)
+            # Errors may recur in model, agent and service wrappers. Keep the
+            # original journal intact while linking identical traceback bodies.
+            def has_trace(value):
+                if isinstance(value, dict):
+                    return bool(value.get('traceback')) or any(has_trace(v) for v in value.values())
+                if isinstance(value, list):
+                    return any(has_trace(v) for v in value)
+                return False
+            rendered = self.error_sections.render(safe) if has_trace(safe) else render_detail(label, safe)
         except (TypeError, ValueError, KeyError, AttributeError):
             rendered = '판단 요약 미완료 · 형식을 확인할 수 없는 응답입니다. 원본은 요청 JSON 보고서와 journal에 보존합니다.'
         if rendered is None:
@@ -534,11 +565,29 @@ class _LiveLog(logging.Handler):
         record.live_detail = (label, deepcopy(value))
         self.writer.handle(record)
 
-    def poll_journal(self) -> None:
+    def poll_journal(self, *, drain=False) -> None:
         with self.poll_lock:
-            self._poll_journal()
+            if self.runtime is None or self.run_id is None:
+                return
+            from .request_journals import paths, children
+            found = paths(self.runtime, self.run_id)
+            if len(found) != 1:
+                return
+            def read(path, run_id):
+                while True:
+                    previous = self.journal_cursors.get(run_id)
+                    self._poll_journal(path=path, run_id=run_id)
+                    if not drain or self.failed or self.journal_cursors.get(run_id) == previous:
+                        break
+            read(found[0], self.run_id)
+            try:
+                for child in children(found[0], self.run_id):
+                    read(child['path'], child['run_id'])
+            except (OSError, sqlite3.Error, ValueError, TypeError, KeyError) as exc:
+                self.write_detail('TRACE READER ERROR', {'error_type': type(exc).__name__, 'detail': str(exc)})
 
-    def _poll_journal(self) -> None:
+    def _poll_journal(self, *, path=None, run_id=None) -> None:
+        run_id = run_id or self.run_id
         def raw_model_block(data, phase, presented):
             # This is received output, never a request prompt or an inferred
             # pre-filter answer. Preserve content strings without JSON decoding,
@@ -561,7 +610,7 @@ class _LiveLog(logging.Handler):
                 except (ValueError, TypeError, AttributeError):
                     pass
             raw = {'raw_log_revision': 'llm-raw-log-20260929-r1',
-                'request_id': self.request_id, 'run_id': self.run_id,
+                'request_id': self.request_id, 'run_id': run_id,
                 'attempt_id': data.get('attempt_id'), 'logical_call_id': data.get('logical_call_id'),
                 'attempt_no': data.get('attempt_no'), 'view_id': data.get('view_id'),
                 'phase': phase, 'source_stage': presented.get('source_stage'),
@@ -635,26 +684,33 @@ class _LiveLog(logging.Handler):
                 lines.append('raw_sidecar_status=UNAVAILABLE; received content remains in this block and journal')
             return '\n'.join(lines)
 
-        if self.failed or self.runtime is None or self.run_id is None:
+        if self.failed or self.runtime is None or run_id is None:
             return
         try:
-            if self.journal_path is None:
-                paths = list((self.runtime / "legal-agent" / "runs").glob(f"*/{self.run_id}/journal.sqlite"))
-                if len(paths) != 1:
+            if path is None:
+                from .request_journals import paths
+                found = paths(self.runtime, run_id)
+                if len(found) != 1:
                     return
-                self.journal_path = paths[0]
-            with sqlite3.connect(f"file:{self.journal_path}?mode=ro", uri=True, timeout=1) as db:
+                path = self.journal_path = found[0]
+            last_seq, process_last_seq = self.journal_cursors.get(run_id, (0, 0))
+            with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=1) as db:
                 db.row_factory = sqlite3.Row
-                events = db.execute("SELECT * FROM event WHERE seq>? ORDER BY seq", (self.last_seq,)).fetchall()
+                events = db.execute("SELECT * FROM event WHERE seq>? ORDER BY seq LIMIT 256", (last_seq,)).fetchall()
                 if not events:
                     return
                 tables = {name for (name,) in db.execute(
                     "SELECT name FROM sqlite_master WHERE type='table'")}
+                if self.process_trace:
+                    process_events = [event for event in events if event['seq'] > process_last_seq]
+                    if process_events:
+                        self.process_trace.poll(db, process_events, tables, run_id)
+                        process_last_seq = process_events[-1]['seq']
                 blocks: list[tuple[int, str, Any, str | None]] = []
                 from .progress import ProgressCapture
                 projected = []
                 projection = ProgressCapture(self.request_id, self.runtime, projected.append, compact_public=False)
-                projection.run_id = self.run_id
+                projection.run_id = run_id
                 projection._bind_scope(db)
                 scope_row = db.execute("SELECT payload_json FROM event WHERE kind='CASE_EXECUTION_CONTEXT' ORDER BY seq DESC LIMIT 1").fetchone()
                 if scope_row and projection.admitted is not None:
@@ -730,7 +786,12 @@ class _LiveLog(logging.Handler):
                 if self.failed:
                     break
                 if index + 1 == len(blocks) or blocks[index + 1][0] != seq:
-                    self.last_seq = seq
+                    last_seq = seq
+            if not self.failed:
+                last_seq = events[-1]['seq']
+            self.journal_cursors[run_id] = last_seq, process_last_seq
+            if run_id == self.run_id:
+                self.last_seq, self.process_last_seq = last_seq, process_last_seq
         except (OSError, sqlite3.Error, ValueError, TypeError, KeyError) as exc:
             if isinstance(exc, sqlite3.OperationalError) and any(
                     item in str(exc).lower() for item in ("locked", "no such table")):
@@ -764,14 +825,22 @@ class _LiveLog(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         fields = getattr(record, "fields", {}) or {}
-        if self.failed or (fields.get("request_id") != self.request_id and record.getMessage()!='logging.queue.loss'):
+        if self.failed or (self.request_id not in (fields.get('request_id'), fields.get('workflow_request_id')) and record.getMessage()!='logging.queue.loss'):
             return
         if hasattr(record, 'live_detail'):
             label, value = record.live_detail
             self.write_detail(label, value, stamp=datetime.fromtimestamp(
                 record.created, timezone.utc).isoformat(timespec='milliseconds'))
             return
-        run_id = fields.get("run_id")
+        if self.process_trace:
+            self.process_trace.service_events([{
+                'ts': datetime.fromtimestamp(record.created, timezone.utc).isoformat(),
+                'level': record.levelname, 'logger': record.name,
+                'event': record.getMessage(), **fields,
+                **({'exc_type': record.async_exc_type, 'traceback': record.async_exception}
+                   if getattr(record, 'async_exception', None) else {}),
+            }])
+        run_id = fields.get('workflow_run_id') or fields.get("run_id")
         if isinstance(run_id, str) and _RUN_ID.fullmatch(run_id):
             self.run_id = run_id
         event = _live_value(record.getMessage())
@@ -794,18 +863,20 @@ class _LiveLog(logging.Handler):
         try:
             self.stream.write(f"{stamp} {record.levelname:<7} {event}"
                               + (" " + " ".join(details) if details else "") + "\n")
-            if isinstance(fields.get('failure_diagnostics'),dict):
-                from .legal_agent.readable_log import failure_rows
-                self.stream.write('\n'.join(failure_rows(_scrub(fields['failure_diagnostics'])))+'\n')
-            if fields.get('error_record'):
-                self.stream.write(str(fields['error_record'])+'\n')
+            error_detail = {key: fields[key] for key in
+                ('failure_diagnostics', 'error_diagnostics', 'error_record') if fields.get(key)}
             if record.exc_info and record.exc_info[0]:
                 # The live shared log must show the failing frame and original
                 # exception immediately, even if final report publication fails.
                 traceback = logging.Formatter().formatException(record.exc_info)
-                self.stream.write(obs._redact_secrets(traceback) + "\n")
+                error_detail['traceback'] = traceback
             elif getattr(record,'async_exception',None):
-                self.stream.write(record.async_exception+'\n')
+                error_detail['traceback'] = record.async_exception
+            if error_detail:
+                error_detail.update({key: fields[key] for key in
+                    ('error_code', 'error_type', 'phase', 'source_stage', 'attempt_id',
+                     'duration_ms', 'retry_scheduled') if key in fields})
+                self.stream.write(self.error_sections.render(_scrub(error_detail)))
             self.last_event = event
             self.last_at = time.monotonic()
             step = _live_value(fields.get("step"))
@@ -835,6 +906,12 @@ def live_log(root: Path, request_id: str, runtime: Path | None = None, *,
     stream = os.fdopen(fd, "w", encoding="utf-8", buffering=8192)
     handler = _LiveLog(request_id, stream, runtime)
     handler.log_path = path
+    try:
+        from .process_trace import ProcessTrace
+        handler.process_trace = ProcessTrace(path.with_suffix('.trace.txt'), request_id)
+    except OSError as exc:
+        obs.event(_REPORT_LOG, 'shared_process_trace.failed', level=logging.ERROR,
+                  request_id=request_id, error_type=type(exc).__name__)
     logger = logging.getLogger(obs.ROOT)
     if attach:
         logger.addHandler(handler)
@@ -846,7 +923,13 @@ def live_log(root: Path, request_id: str, runtime: Path | None = None, *,
         logger.removeHandler(handler)
         handler.close()
         # The writer owns the eventual close even when NFS is still blocked.
-        handler.writer.finish(stream.close)
+        def close_streams():
+            try:
+                if handler.process_trace:
+                    handler.process_trace.close()
+            finally:
+                stream.close()
+        handler.writer.finish(close_streams)
         handler.writer.worker.join(timeout=2)
 
 
@@ -873,7 +956,7 @@ class _RequestCapture(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         fields = getattr(record, "fields", {}) or {}
-        if fields.get("request_id") != self.request_id:
+        if self.request_id not in (fields.get('request_id'), fields.get('workflow_request_id')):
             return
         record = obs.prepared_record(record)
         event = {"ts": datetime.fromtimestamp(record.created, timezone.utc).isoformat(),
@@ -887,14 +970,15 @@ class _RequestCapture(logging.Handler):
 
 
 @contextmanager
-def capture_events(request_id: str):
+def capture_events(request_id: str, *, detailed: bool = False):
     """Collect only this request's existing structured container events."""
     obs.configure()
     handler = _RequestCapture(request_id)
     root = logging.getLogger(obs.ROOT)
     root.addHandler(handler)
     try:
-        yield handler.events
+        with obs.capture_details(handler.emit) if detailed else nullcontext():
+            yield handler.events
     finally:
         root.removeHandler(handler)
         handler.close()
@@ -924,16 +1008,16 @@ def _decode_json_columns(row: dict[str, Any]) -> dict[str, Any]:
     return row
 
 
-def _journal(runtime: Path, run_id: str) -> dict[str, Any]:
+def _journal(runtime: Path, run_id: str, *, path=None) -> dict[str, Any]:
     if not _RUN_ID.fullmatch(run_id):
         return {"status": "NO_VALID_RUN_ID"}
-    parent = runtime / "legal-agent" / "runs"
-    paths = list(parent.glob(f"*/{run_id}/journal.sqlite"))
-    if not paths:
+    from .request_journals import paths, children
+    found = [path] if path is not None else paths(runtime, run_id)
+    if not found:
         return {"status": "NOT_FOUND"}
-    if len(paths) != 1:
-        return {"status": "AMBIGUOUS", "matches": len(paths)}
-    with sqlite3.connect(f"file:{paths[0]}?mode=ro", uri=True) as db:
+    if len(found) != 1:
+        return {"status": "AMBIGUOUS", "matches": len(found)}
+    with sqlite3.connect(f"file:{found[0]}?mode=ro", uri=True) as db:
         db.row_factory = sqlite3.Row
         tables: dict[str, list[dict[str, Any]]] = {}
         names = [row[0] for row in db.execute(
@@ -958,7 +1042,12 @@ def _journal(runtime: Path, run_id: str) -> dict[str, Any]:
                 state.setdefault(name, []).append(row)
     timeline = [{"event": row, "created_records": created.get(row["seq"], [])}
                 for row in sorted(tables.get("event", []), key=lambda item: item["seq"])]
-    return {"status": "FOUND", "journal_version": version, "timeline": timeline, "state": state}
+    result = {"status": "FOUND", "journal_version": version, "timeline": timeline, "state": state}
+    if path is None:
+        result['children'] = [{**{k: v for k, v in child.items() if k != 'path'},
+                               'journal': _journal(runtime, child['run_id'], path=child['path'])}
+                              for child in children(found[0], run_id)]
+    return result
 
 
 def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
@@ -973,9 +1062,10 @@ def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
     if not isinstance(run_id, str) or not _RUN_ID.fullmatch(run_id):
         # Public failure projection intentionally omits internal run IDs. Use
         # only this request's captured events, never a newest-file guess.
-        run_id = next((row['run_id'] for row in reversed(events)
-                       if isinstance(row.get('run_id'), str) and _RUN_ID.fullmatch(row['run_id'])
-                       and row.get('request_id') == request_id), None)
+        run_id = next((row.get('workflow_run_id') or row['run_id'] for row in reversed(events)
+                       if isinstance(row.get('workflow_run_id') or row.get('run_id'), str)
+                       and _RUN_ID.fullmatch(row.get('workflow_run_id') or row['run_id'])
+                       and request_id in (row.get('request_id'), row.get('workflow_request_id'))), None)
         run_id_basis = 'captured_event' if run_id else 'unavailable'
     requested_at = requested_at or datetime.now(timezone.utc)
     directory = report_directory(root, team_name(request), requested_at, component=component)
@@ -1003,6 +1093,7 @@ def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
         "team_id": team_name(request),
         "component": component,
         "live_log_path": str(live_log_path) if live_log_path is not None else None,
+        "process_trace_path": str(live_log_path.with_suffix('.trace.txt')) if live_log_path is not None else None,
         "request_id": request_id,
         "run_id": run_id,
         "run_id_basis": run_id_basis,
@@ -1060,7 +1151,9 @@ def format_readable_report(report: dict[str, Any]) -> str:
         from .ad_request_report import readable
         return readable(report)
     journal = report.get("journal") or {}
-    timeline = journal.get("timeline") or []
+    timeline = [{**row, 'run_id': report.get('run_id')} for row in journal.get('timeline', [])]
+    timeline.extend({**row, 'run_id': child['run_id']} for child in journal.get('children', [])
+                    for row in child['journal'].get('timeline', []))
     result = report.get("result") or {}
     body = result.get("body") if isinstance(result.get("body"), dict) else {}
     answer = body.get("answer") if isinstance(body.get("answer"), dict) else {}
@@ -1072,7 +1165,7 @@ def format_readable_report(report: dict[str, Any]) -> str:
         for created in row.get("created_records") or []:
             if created.get("table") == "model_attempt":
                 record = created.get("record") or {}
-                attempts[record.get("attempt_id")] = record
+                attempts[(row.get('run_id'), record.get("attempt_id"))] = record
 
     rows = []
     for index, event in enumerate(report.get("service_events") or []):
@@ -1137,7 +1230,7 @@ def format_readable_report(report: dict[str, Any]) -> str:
                     for action in error.get("corrective_actions") or []:
                         lines.append("  suggested " + _action_line(action))
         elif kind == "ATTEMPT_FINISHED":
-            attempt = attempts.get(payload.get("attempt_id")) or {}
+            attempt = attempts.get((item.get('run_id'), payload.get("attempt_id"))) or {}
             response = attempt.get("response") if isinstance(attempt.get("response"), dict) else {}
             lines.append("  model_status=" + _one_line(payload.get("status"), 40)
                          + " http_status=" + _one_line(response.get("status_code"), 20))
@@ -1158,6 +1251,8 @@ def format_readable_report(report: dict[str, Any]) -> str:
                   *[key + ': ' + _one_line(body[key]) for key in
                     ('message', 'answer_status', 'failure_reason', 'error_code', 'code') if key in body],
                   "", "상세 원장: 같은 이름의 .json 파일 (내부 자료 포함)"])
+    if report.get('process_trace_path'):
+        lines.extend(['', '전체 프롬프트·응답·찾은 정보·단계별 누적 기록: ' + report['process_trace_path']])
     return "\n".join(lines) + "\n"
 
 

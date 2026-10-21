@@ -41,6 +41,10 @@ def profile(value, *, require_model=False):
         raise ContractError('unsupported execution profile')
     for key in set(DEFAULT_PROFILE)-{'schema_version', 'profile_id', 'model_binding'}:
         v = result[key]
+        # None delegates output length to the selected model server. Other
+        # numerical budgets (including attempts and deadline) remain required.
+        if key == 'max_output_tokens' and v is None:
+            continue
         minimum = 0 if key in ('max_schema_repairs', 'max_transport_retries',
                               'max_concurrent_requests_per_process') else 1
         if type(v) is not int or v < minimum:

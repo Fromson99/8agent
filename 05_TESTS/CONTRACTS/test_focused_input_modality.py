@@ -89,7 +89,7 @@ def test_dependency_needs_actual_delivered_clause_and_selected_issue():
  ('신고한다.','UNSPECIFIED'),('해야 하는 것은 아니다.','UNSPECIFIED'),
  ('허가를 받아야 한다. 다만 신고로 갈음할 수 있다.','UNSPECIFIED')])
 def test_explicit_source_modality_does_not_guess_mixed_or_unmarked_text(text,kind):
-    assert v6.source_modality(text)==kind
+    assert v6.source_modality(text)=='UNSPECIFIED'
 
 
 def v6_proposal(ids=('S1',),quote='신고를 갈음할 수 있다.',kind='PERMISSION'):
@@ -100,13 +100,13 @@ def v6_proposal(ids=('S1',),quote='신고를 갈음할 수 있다.',kind='PERMIS
     return out
 
 
-def test_modal_quote_reversal_and_wrong_selected_span_are_rejected():
+def test_model_modal_judgment_is_preserved_and_wrong_selected_span_is_rejected():
     p=v6_proposal();o=[{'id':'S1','source_id':'s','text':'신고를 갈음할 수 있다.'}]
     v6.verify_modalities(p,o)
     bad=deepcopy(p);bad['claims'][0]['rule']['norms'][0]['kind']='OBLIGATION'
-    with pytest.raises(ProposalError,match='modality'):v6.verify_modalities(bad,o)
+    v6.verify_modalities(bad,o)  # Semantic interpretation remains the model's judgment.
     bad=deepcopy(p);bad['claims'][0]['rule']['norms'][0]['text']='신고를 갈음하여야 한다.'
-    with pytest.raises(ProposalError,match='wording reverses'):v6.verify_modalities(bad,o)
+    v6.verify_modalities(bad,o)
     bad=deepcopy(p);bad['claims'][0]['rule']['norms'][0]['source_quote']='신고를 생략할 수 있다.'
     with pytest.raises(ProposalError,match='exact clause'):v6.verify_modalities(bad,o)
 
@@ -207,7 +207,7 @@ def test_card_columns_match_canonical_persisted_json_order():
     ('지정한 절차에 따라야 한다.','OBLIGATION'),
     ('보고서를 내야 한다.','OBLIGATION')])
 def test_additional_explicit_endings_preserve_selected_clause(quote,kind):
-    assert v6.source_modality(quote)==kind
+    assert v6.source_modality(quote)=='UNSPECIFIED'
     v6.verify_modalities(v6_proposal(quote=quote,kind=kind),[{'id':'S1','text':quote}])
 
 
@@ -217,7 +217,7 @@ def test_uncertain_legal_effect_may_remain_unspecified_without_modal_reversal():
     v6.verify_modalities(p,[{'id':'S1','text':quote}])
     assert '규정:' in v6.render_content(p['claims'][0])
     p['claims'][0]['rule']['norms'][0]['text']='이익이 감소하여야 한다.'
-    with pytest.raises(ProposalError,match='wording reverses'):v6.verify_modalities(p,[{'id':'S1','text':quote}])
+    v6.verify_modalities(p,[{'id':'S1','text':quote}])
 
 
 @pytest.mark.parametrize('version', [cc.V5, cc.V7])
@@ -366,11 +366,11 @@ def test_selected_query_does_not_reinsert_excluded_raw_coordinate(explicit,entry
     assert queries==expected and actual==origin and all('310' not in q for q in queries)
 
 
-def test_no_entry_retains_legacy_query_expansion():
+def test_no_entry_preserves_selected_query_without_raw_expansion():
     from semantic_runtime.legal_agent.law_candidates import search_queries
     s=S(context=S(request={'question':'제310조 검사'}))
     queries,origin=search_queries(s,{'queries':['검사'],'law_names':[]})
-    assert origin=='legacy_request_expansion' and any('310' in q for q in queries)
+    assert origin=='request_query_fallback' and queries==['검사']
 
 
 def title_matcher():

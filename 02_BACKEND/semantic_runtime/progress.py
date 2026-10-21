@@ -17,7 +17,19 @@ import time
 
 
 _RUN_ID = re.compile(r"[a-f0-9]{32}\Z")
-REVISION = "rag-source-cards-20261013-r1"
+REVISION = "rag-workflow-journals-20261019-r1"
+_WORKFLOW_STAGES = {
+    'INTAKE': '대사 요청과 비교 범위를 확인 중',
+    'FIND_INTERNAL': '내규 원문을 조사 중',
+    'FIND_EXTERNAL': '외규 원문을 조사 중',
+    'ITEM_REVIEW': '항목별 내규·외규 근거를 검토 중',
+    'DEFINE_CONCEPTS': '찾은 내규의 개념과 조항 범위를 정하는 중',
+    'ITEM_RESEARCH': '미확인 항목의 원문을 추가 조사 중',
+    'VERIFY_BASIS': '비교할 원문과 근거 연결을 확인 중',
+    'REPAIR_SCOPE': '추가로 확인할 비교 범위를 검토 중',
+    'COMPARE': '내규·외규의 차이와 적용 범위를 비교 중',
+    'REPORT': '대사 결과와 미확인 사항을 정리 중',
+}
 _STAGE_LABELS = dict(zip(
     ("INTENT", "PLAN", "RECALL", "READ", "SELECT", "ASSESS", "COMPOSE"),
     ("질문 이해", "검색 계획", "자료 검색", "원문 확인", "근거 선택", "적용 판단", "답변 작성")))
@@ -118,6 +130,10 @@ class ProgressCapture(logging.Handler):
         self.last_read_publish = -5.0
         self.sequence_lock = threading.Lock()
         self.poll_lock = threading.RLock()
+        self.child_captures = {}
+        self.workflow_source_reads = False
+        self.workflow_stage = None
+        self.workflow_id = None
         self.stop_event = threading.Event()
         self.poller = threading.Thread(target=self._poll_loop, daemon=True)
 
@@ -155,7 +171,7 @@ class ProgressCapture(logging.Handler):
         # progress still follows the compact public policy; model I/O remains
         # private. _activity has already checked admitted document identities.
         source_activity = (isinstance(basis, dict) and basis.get('detail_mode') == 'activity'
-            and basis.get('kind') in {'LAW_FULLTEXT_DIRECTORY', 'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_STARTED'})
+            and basis.get('kind') in {'LAW_FULLTEXT_DIRECTORY', 'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_STARTED', 'WORKFLOW_CHECKPOINT', 'WORKFLOW_SOURCE_READ'})
         event = (views().compact_event(event) if self.compact_public and not source_activity
                  else views().public_event(event))
         if event is None:
@@ -176,14 +192,17 @@ class ProgressCapture(logging.Handler):
 
     def emit(self, record):
         fields = getattr(record, "fields", {}) or {}
-        if fields.get("request_id") != self.request_id:
+        if fields.get("request_id") != self.request_id and fields.get('workflow_request_id') != self.request_id:
             return
-        run_id = fields.get("run_id")
+        run_id = fields.get('workflow_run_id') or fields.get("run_id")
         if isinstance(run_id, str) and _RUN_ID.fullmatch(run_id):
             if self.run_id is not None and self.run_id != run_id:
                 return
             self.run_id = run_id
         name = record.getMessage()
+        if name in {'workflow.started', 'workflow.stage.changed', 'workflow.failed'}:
+            self.poll_journal()
+            return
         if record.levelno >= logging.ERROR or name in {'model.output.invalid', 'model.attempt.failed'}:
             return  # Original record remains in the diagnostic handlers.
         if record.levelno >= logging.ERROR:
@@ -221,28 +240,22 @@ class ProgressCapture(logging.Handler):
             return None
         if self.journal_path is not None:
             return self.journal_path
-        matches = list((self.runtime / "legal-agent" / "runs").glob(
-            f"*/{self.run_id}/journal.sqlite"))
+        from .request_journals import paths
+        matches = paths(self.runtime, self.run_id)
         if len(matches) == 1:
             self.journal_path = matches[0]
         return self.journal_path
 
     def _bind_scope(self, db):
-        if self.admitted is not None:
-            return
         try:
-            row = db.execute("SELECT run_id,binding_json,binding_hash FROM run WHERE singleton=1").fetchone()
-            if not row or row[0] != self.run_id:
-                return
-            binding = json.loads(row[1])
-            canonical = json.dumps(binding, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-            if hashlib.sha256(canonical.encode()).hexdigest() != row[2]:
-                return
-            scope = binding.get("scope", {}).get("document_version_ids")
-            if not isinstance(scope, list) or not all(isinstance(d, str) for d in scope):
-                return
-            self.admitted, self.binding_hash = frozenset(scope), row[2]
+            from .request_journals import scope
+            value = scope(db, self.run_id)
+            if value is None or (self.binding_hash is not None and self.binding_hash != value[1]):
+                self.admitted = None
+            elif self.admitted is None:
+                self.admitted, self.binding_hash = value
         except (sqlite3.Error, ValueError, TypeError, AttributeError):
+            self.admitted = None
             return
 
     def _model_stage(self):
@@ -305,10 +318,58 @@ class ProgressCapture(logging.Handler):
         if not self.poll_lock.acquire(blocking=False):
             return
         try:
+            self._poll_children()
             self._poll_journal()
         finally:
             self.poll_lock.release()
         self._flush_reads()
+
+    def _poll_children(self):
+        from .request_journals import children
+        path = self._journal_path()
+        if path is None or path.parent.parent != self.runtime/'workflows':
+            return
+        try:
+            for row in children(path, self.run_id):
+                ident = row['run_id']
+                if ident not in self.child_captures:
+                    # Child completions are not completion of the parent answer.
+                    # Only scoped source activity is projected into its stream.
+                    def source_sink(event):
+                        if (event.get('basis') or {}).get('kind') in {
+                                'LAW_FULLTEXT_DIRECTORY', 'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_STARTED', 'WORKFLOW_SOURCE_READ'}:
+                            self.publish(event['kind'], event['label'], count=event.get('count'),
+                                         basis=event.get('basis'), details=event.get('details'))
+                    child = ProgressCapture(self.request_id, self.runtime, source_sink)
+                    child.run_id, child.journal_path = ident, row['path']
+                    child.workflow_source_reads = True
+                    self.child_captures[ident] = child
+                self.child_captures[ident].poll_journal()
+                self.child_captures[ident]._flush_reads(force=True)
+        except (OSError, sqlite3.Error, ValueError, TypeError):
+            return  # Best-effort display; never retries or changes execution.
+
+    def _workflow_checkpoint(self, db, seq, created=False):
+        payload = self._payload(db, seq)
+        if created:
+            self.workflow_id = payload.get('workflow_id')
+        if self.workflow_id != 'risk_team_compare_workflow':
+            return
+        stage = 'INTAKE' if created else payload.get('stage')
+        status = 'running' if created else payload.get('status')
+        key = (stage, status)
+        if key == self.workflow_stage:
+            return
+        label = _WORKFLOW_STAGES.get(stage)
+        if stage == 'END':
+            label = {'completed': '대사 결과를 정리했습니다',
+                     'partial': '확인된 범위의 대사 결과와 미확인 사항을 정리했습니다',
+                     'failed': '대사 처리를 완료하지 못했습니다'}.get(status)
+        if not label:
+            return
+        self.workflow_stage = key
+        self.publish('phase', label, basis={'kind': 'WORKFLOW_CHECKPOINT',
+            'journal_seq': seq, 'stage': stage, 'state': status, 'detail_mode': 'activity'})
 
     def _poll_journal(self):
         if not self.run_id:
@@ -322,7 +383,9 @@ class ProgressCapture(logging.Handler):
                 rows = db.execute("SELECT seq,kind FROM event WHERE seq>? ORDER BY seq",
                                   (self.last_journal_seq,)).fetchall()
                 for seq, event_kind in rows:
-                    if event_kind == "CASE_EXECUTION_CONTEXT":
+                    if event_kind in {'WORKFLOW_CREATED', 'WORKFLOW_CHECKPOINT'} and self.admitted is not None:
+                        self._workflow_checkpoint(db, seq, event_kind == 'WORKFLOW_CREATED')
+                    elif event_kind == "CASE_EXECUTION_CONTEXT":
                         documents = self._payload(db, seq).get("documents")
                         if (self.admitted is not None and isinstance(documents, list)
                                 and all(isinstance(d, str) for d in documents)
@@ -403,7 +466,10 @@ class ProgressCapture(logging.Handler):
                         values = db.execute("SELECT tool,status FROM observation WHERE created_seq=?",
                                             (seq,)).fetchall()
                         for tool, status in values:
-                            if tool == "read":
+                            if self.workflow_source_reads and self.admitted is not None and tool in {'read', 'read_node'}:
+                                if status in {'OK', 'REUSED'}:
+                                    self._read_result(db, seq, status)
+                            elif tool == "read":
                                 if self.admitted is not None:
                                     continue
                                 count = db.execute("SELECT COUNT(*) FROM observation_evidence oe "
@@ -749,7 +815,8 @@ class ProgressCapture(logging.Handler):
             complete = status in ("OK", "REUSED") and (covered is True or
                 (covered is None and "next_cursor" in result and result["next_cursor"] is None))
             detail = source[1] + (" · 열람 완료" if complete else " · 일부 열람, 나머지 확인 필요")
-            self._queue_read("read_complete", detail, {"kind": "OBSERVATION", "journal_seq": seq})
+            self._queue_read("read_complete", detail, {"kind": "WORKFLOW_SOURCE_READ" if self.workflow_source_reads else "OBSERVATION",
+                "journal_seq": seq, "detail_mode": "activity"})
 
     def _selection(self, db, seq, event_kind):
         values = db.execute("SELECT payload_json FROM entity_version WHERE kind='source_selection' "

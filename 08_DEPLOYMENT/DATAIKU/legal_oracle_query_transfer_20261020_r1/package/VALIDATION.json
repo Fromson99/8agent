@@ -1,0 +1,63 @@
+{
+  "status": "DELIVERY_VALIDATED_FIELD_UNVERIFIED",
+  "scope": "Notebook adapter for existing oracle_query_publish.from_notebook; no application/source/schema changes",
+  "result": "30 passed, 1 Starlette deprecation warning in 12.92s",
+  "test_command": ".venv/bin/python -m pytest -q --tb=short 05_TESTS/CONTRACTS/test_oracle_query_handoff_20261020.py 05_TESTS/CONTRACTS/test_oracle_query_schema.py 05_TESTS/CONTRACTS/test_oracle_query_catalog.py",
+  "tests": {
+    "handoff": 8,
+    "maintained_schema_catalogue": 22,
+    "network_model_calls": 0,
+    "fake_ords": true,
+    "prior_notebook_summary_interface": "synthetic test adapter; existing notebook was not rerun against GENOS"
+  },
+  "verified": [
+    "Exact delivered Python/TXT bytes and Python 3.11 AST grammar",
+    "13 publisher/compiler file hashes match prior sent workflow-progress cumulative code",
+    "Real maintained schema_from_notebook/from_notebook endpoints and Oracle status reads with a synthetic ORDS boundary",
+    "Existing source/assets writes unchanged; active/state untouched",
+    "Lost-write acknowledgement preserves FAILED receipt; explicit retry verifies/reuses same rows and same deadline/call journal",
+    "Expired budget remains PAUSED without further writes",
+    "Missing schema, changed receipt binding, R6 hold, code pin mismatch and remote row tampering rejected",
+    "Error/traceback retains cause and masks notebook credentials"
+  ],
+  "first_test_failure": {
+    "file": "../TESTS_01.txt",
+    "reason": "Local pytest --basetemp parent directory did not exist; setup errors before affected cases ran. Parent created and same suite rerun; first log retained."
+  },
+  "max_rss_kib": 289604,
+  "failure_contract": {
+    "retry_owner": "existing publisher/SQL only; no automatic retries",
+    "deadline": "original 7-day publication receipt",
+    "sql_budget": "existing cumulative journal, default 1000000 calls",
+    "per_invocation_seconds": 3600,
+    "memory": "start requires MemAvailable >= 1 GiB; no hard runtime RSS cap",
+    "disk": "start requires 512 MiB free; full-corpus log size unmeasured",
+    "resume": "same source/code/target/log path; existing engine re-traverses source and verifies/reuses previously uploaded rows"
+  },
+  "limitations": [
+    "GENOS Oracle/ORDS and full-corpus performance not tested",
+    "Existing original full-transfer notebook and matching installed checkout required",
+    "ACTIVE activation, STATE history migration, app installation and field workflow are separate",
+    "status rechecks manifest and per-kind counts; full row verification occurs in publish"
+  ],
+  "local_main_changed": false,
+  "genos_modified": false,
+  "outputs": {
+    "LEGAL_ORACLE_QUERY_TRANSFER_20261020_R1.txt": {
+      "bytes": 12076,
+      "sha256": "6756a19d307d6f964651fae71525484d76d96533ea5aeb7db117c6d7a99a1868"
+    },
+    "CODE_PINS.json": {
+      "bytes": 1815,
+      "sha256": "6ac62eb92c5b42cc50ffd22f19820c576576af2ce0a9e451a9133e8a201fffcf"
+    },
+    "LEGAL_ORACLE_QUERY_TRANSFER_20261020_R1.py": {
+      "bytes": 12076,
+      "sha256": "6756a19d307d6f964651fae71525484d76d96533ea5aeb7db117c6d7a99a1868"
+    },
+    "GUIDE_UTF8.txt": {
+      "bytes": 6097,
+      "sha256": "386b25b907ac255d5c18b230c419a8fe06e886696b2a50c9b14a421567988d3e"
+    }
+  }
+}

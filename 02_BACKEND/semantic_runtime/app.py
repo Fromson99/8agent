@@ -45,12 +45,15 @@ def external_documents(documents, approved, store, team_id=None):
 
 def create_app(root,generation,*,contracts_root=None,release=None,provider=None,vector=None,implementation=None,
                legal_agent_profile=None,legal_agent_transport=None,workspace_root=None,runtime_root=None,
-               memory_factory=None,memory_identity=None):
+               memory_factory=None,memory_identity=None,basis_factory=None,data_store=None,
+               knowledge_factory=None,knowledge_identity=None):
     root=Path(root);contracts_root=Path(contracts_root or root)
     with obs.step(log, 'bootstrap.source_store'):
-        store=Store(generation)
+        store=data_store if data_store is not None else Store(generation)
     with obs.step(log, 'bootstrap.contracts'):
         contracts=Contracts(contracts_root)
+        if contracts.pipeline.get('document_build', {}).get('require_latest_selection'):
+            store.selection.require_latest()
     selected_implementation=implementation or contracts.pipeline['profiles']['legal-rag']['nodes'][0]['parameters']['term_agent'].get('implementation')
     if selected_implementation in ('legal-agent-v1', 'legal-agent-tools-v2', 'legal-agent-tools-v3', 'legal-agent-tools-v4', 'legal-agent-tools-v5','legal-agent-unified-v6'):
         from lawrag.platform.workspace import load_layout
@@ -71,6 +74,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     is_legal_agent=pipeline.profile_id in ('legal-agent-rag-v1', 'legal-agent-rag-v2', 'legal-agent-rag-v3', 'legal-agent-rag-v4', 'legal-agent-rag-v5','legal-agent-rag-v6')
     unified=pipeline.profile_id=='legal-agent-rag-v6'
     pipeline.task_harness_journal = runtime/'task-harness'/'execution.sqlite'
+    pipeline.runtime_dir=runtime
     pipeline.relation_issues = runtime/'relation-issues'/'rejections.sqlite'
     @asynccontextmanager
     async def lifespan(app):
@@ -98,6 +102,15 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     aliases=alias_status(pipeline.contracts.root,pipeline.term_agent.config,store)
     app=FastAPI(title='용어 기반 법률 검색',version='3.0.0',lifespan=lifespan)
     app.state.pipeline=pipeline
+    from lawrag.api.routers.legal_knowledge import install as install_knowledge
+    install_knowledge(app,pipeline,factory=knowledge_factory,identity=knowledge_identity)
+    from .basis_links.api import install as install_basis
+    install_basis(app,pipeline,runtime,release,memory_identity,basis_factory)
+    workflow_dispatch = None
+    if is_legal_agent and contracts.pipeline.get('workflows',{}).get('enabled') is True:
+        from .workflow_bridge import install
+        workflow_dispatch = install(app,pipeline,runtime,release,memory_identity)
+        pipeline.run_workflow = app.state.workflow_runtime.execute
 
     from .legal_agent.errors import LegalAgentError
     @app.exception_handler(LegalAgentError)
@@ -143,6 +156,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         return {'status':'ok','runtime':'term-runtime-v1','release':release,
                 'generation_id':store.manifest['generation_id'],'data_status':store.manifest['data_status'],
                 'counts':store.manifest['counts'],'legacy_fallback':False,
+                'search_selection':{'sha256':store.selection.fingerprint,
+                    'excluded_documents':len(store.selection.excluded)},
                 'quality_certified':False,'vector':'NOT_USED',
                 'llm_model':model,'rag_mode':pipeline.term_agent.config.get('implementation','term-agent-v1'),'term_agent_quality_certified':False,'external_export_allowed':store.manifest['export_allowed'],'document_aliases':aliases}
 
@@ -151,12 +166,13 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         return pipeline.retrieve(pipeline.plan(q,[doc_id] if doc_id else None,scope,team_id=team_id),limit)
 
     def team_documents(team_id):
-        from .team_scope import select_documents
-        return set(select_documents(store,team_id)) if team_id is not None else None
+        from .team_scope import select_documents, prepared_catalogue
+        return set(select_documents(store,team_id)) if team_id is not None else set(prepared_catalogue(store)['ids'])
 
     def check_team_document(doc_id,team_id):
         allowed=team_documents(team_id)
         if allowed is not None and doc_id not in allowed:
+            if team_id is None: raise KeyError(doc_id)
             raise ValueError('document outside selected team')
 
     @app.get('/v1/rag/teams')
@@ -221,8 +237,10 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                                     '출처 발행 중입니다.' if status in ('RUNNING','COMMIT_READY') else '발행 결과가 없습니다.')
             value=json.loads(row[0]);validate_current(repo,value,store)
             from .legal_agent.source_candidates import inventory
-            current=json.loads((store.path/'manifest.json').read_text())
+            store.check_unchanged()
+            current=store.manifest
             allowed=set(current['scope']['document_version_ids'])&set(repo.binding['scope']['document_version_ids'])
+            allowed -= store.selection.excluded
             candidates=[e for e in inventory(repo) if e['document_id'] in allowed]
             labels={'DISCOVERED_NOT_READ':'발견 · 원문 미열람','READ_UNSELECTED':'열람 · 미채택','PENDING':'추가 판단 대기'}
             items=''.join('<li>'+escape(e['document_name']+' · '+str(e['coordinate'] or e['unit_id'])+' · '+labels[e['status']])+('</li>') for e in candidates[offset:offset+20])
@@ -265,9 +283,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 
     @app.get('/v1/rag/links')
     def links(source_id:str,team_id:str|None=None):
-        from .term_index import ro
         allowed=team_documents(team_id)
-        db=ro(pipeline.term_agent.get_index().path/'navigation.sqlite')
+        db=pipeline.term_agent.get_index().resident_connect()
         try:
             if allowed is not None:
                 source=db.execute('SELECT document_id FROM source WHERE id=?',(source_id,)).fetchone()
@@ -285,20 +302,50 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     def ask(body:dict,request:Request=None):
         from .execution_metrics import capture
         with capture() as metrics:
-            result = execute_ask(body, request)
+            from .basis_links.execution import CURRENT
+            # Workflow and session ingress prepare their own scoped principal.
+            # Do not demand a separate management identity before routing them.
+            # Clear any enclosing context so child work cannot inherit another
+            # request's relationship scope; restore it on both success and error.
+            token=CURRENT.set(None)
+            try:result = execute_ask(body, request)
+            finally:
+                CURRENT.reset(token)
             if isinstance(result, dict) and result.get('response_schema') != 'ad-mode-v1':
                 result = {**result, 'execution_stats': metrics.snapshot()}
+            from .session_identity import public_result as session_result
+            result=session_result(result,body.get('session_id'))
             return result
+
+    def session_inputs(body,request,*,require_memory=False):
+        from .legal_agent.memory_identity import prepare
+        trusted=memory_identity(request) if memory_identity is not None else None
+        if memory_identity is not None and not isinstance(trusted,dict):
+            raise HTTPException(403,'서버의 팀·문서 범위를 확인할 수 없습니다.')
+        return prepare(pipeline,runtime,body,trusted,require_memory=require_memory)
 
     def execute_ask(body:dict,request:Request=None):
         started=time.perf_counter()
         ident=uuid.uuid4().hex
         question=body.get('question',body.get('q'))
-        from .ad_mode import handle as handle_ad
-        from .ad_gateway import workspace as ad_workspace
-        from .ad_model import interpret as ad_interpret
-        ad=handle_ad(selected_store(runtime),(ad_workspace() if (_os.environ.get('TEAM_ID') or _os.environ.get('AD_WORKSPACE') or not _os.environ.get('GENOS_RUNTIME_DIR')) else 'request'),body.get('ad_channel','genos-chat'),body.get('ad_session_id',body.get('session_id','')),question,body.get('request_id',ident),interpret=ad_interpret)
-        if ad is not None:return ad
+        if workflow_dispatch is not None:
+            from .workflow_bridge import package
+            from importlib import import_module
+            if import_module(package()+'.contracts').route(body):
+                return workflow_dispatch(body,request)
+        # Disabled administration never probes SQL sessions or a deployment workspace.
+        # Keep the management implementation available without putting it on legal ingress.
+        if pipeline.contracts.pipeline.get('ad_management',{}).get('enabled') is True:
+            if getattr(app.state,'basis_chat',None):
+                basis_ad=app.state.basis_chat(body,request)
+                if basis_ad is not None:return basis_ad
+            from .ad_mode import handle as handle_ad
+            from .ad_gateway import workspace as ad_workspace
+            from .ad_model import interpret as ad_interpret
+            ad=handle_ad(selected_store(runtime),(ad_workspace() if (_os.environ.get('TEAM_ID') or _os.environ.get('AD_WORKSPACE') or not _os.environ.get('GENOS_RUNTIME_DIR')) else 'request'),body.get('ad_channel','genos-chat'),body.get('ad_session_id',body.get('session_id','')),question,body.get('request_id',ident),interpret=ad_interpret)
+            if ad is not None:return ad
+        elif isinstance(question,str) and question.strip() in ('[AD모드 시작]','[AD모드 종료]'):
+            raise HTTPException(403,'AD_DISABLED: 관리 모드는 비활성화되어 있습니다.')
         if not isinstance(question,str) or not question.strip():raise ValueError('question must be a nonempty string')
         docs=body.get('document_ids')
         if docs is not None and (not isinstance(docs,list) or any(not isinstance(x,str) for x in docs)):raise ValueError('document_ids must be a string array')
@@ -321,11 +368,10 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             raise ValueError('public_question is only used for local external model requests')
         case_options={}
         if unified and (body.get('memory') is True or 'session_id' in body):
-            from .legal_agent.memory_identity import resolve
             if not use_llm:raise ValueError('case requests require a model')
             revision=body.get('expected_revision')
             if revision is not None and (type(revision) is not int or revision<1):raise ValueError('invalid expected revision')
-            principal=memory_identity(request) if memory_identity is not None else resolve(pipeline,body)
+            body,principal=session_inputs(body,request)
             principal={**principal,'authenticated':True,'team_scope_bound':memory_identity is None}
             if external is not None:
                 principal['document_ids']=sorted(set(principal['document_ids'])&set(external))
@@ -344,10 +390,9 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         if body.get('memory') is True and not unified:
             from .legal_agent.corrected_memory import Conflict, MemoryError
             from .legal_agent.memory_binding import factory as default_memory_factory, public_result
-            from .legal_agent.memory_identity import resolve
             if pipeline.profile_id!='legal-agent-rag-v5':raise ValueError('memory requires v5 legal agent runtime')
             if scope is not None:raise ValueError('memory uses explicit documents and authenticated team scope')
-            principal=memory_identity(request) if memory_identity is not None else resolve(pipeline,body)
+            body,principal=session_inputs(body,request,require_memory=True)
             for field in ('user_id','team_id'):
                 if body.get(field) is not None and body[field]!=principal[field]:raise ValueError('memory principal mismatch')
             for field in ('session_id','request_id'):
@@ -370,13 +415,24 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             with obs.context(run_id=ident), obs.step(log,'ask.team_validate'):
                 validate_team_id(body['team_id'])
             team_options['team_id']=body['team_id']
+        trusted_basis_identity = (memory_identity is not None or
+            getattr(getattr(request,'state',None),'workflow_principal',None) is not None)
+        if (getattr(pipeline,'basis_factory',None) and not case_options and
+                (not unified or trusted_basis_identity)):
+            # Unified RAG prepares team/document scope for both session and
+            # ephemeral requests, then binds it in memory_binding. Do not demand
+            # a relationship-management identity before that normal RAG path.
+            # Explicit host identities and older native RAG retain their checks;
+            # comparison binds it in parent_task after reading internal sources.
+            from .basis_links.execution import CURRENT
+            CURRENT.set((pipeline.basis_factory,app.state.basis_identity(request,body)))
         with obs.context(run_id=ident):
             obs.event(log,'ask.started',question_chars=len(question or '') if isinstance(question,str) else 0,document_filter_count=len(docs or []),use_llm=use_llm)
             try:
                 if is_legal_agent:
                     genos_selected = bool(_os.environ.get('GENOS_GENERATION', '').strip() or
                                           _os.environ.get('GENOS_DATA_ROOT', '').strip())
-                    deferred = genos_selected and _os.environ.get(
+                    deferred = not getattr(store,'is_oracle_query',False) and genos_selected and _os.environ.get(
                         'GENOS_DEFER_PUBLICATION', '1').strip().lower() not in {'0', 'false', 'off'}
                     run=pipeline.run(question,docs,use_llm,scope,execution_context={
                         'run_id':ident,'release':release,'runtime':runtime,'publish':True,
@@ -410,6 +466,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             return views().public_response(run)
 
     def require_ad(body):
+        if pipeline.contracts.pipeline.get('ad_management',{}).get('enabled') is not True:
+            raise HTTPException(403,'AD_DISABLED: 관리 모드는 비활성화되어 있습니다.')
         import os,sqlite3
         from .ad_store import fingerprint,table_exists
         from .ad_gateway import workspace
@@ -429,8 +487,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             raise ValueError('shortcut v4 capture required')
         allowed={'operation','arguments','user_id','team_id','session_id','request_id','memory_authorization','public_question','use_llm','memory'}
         if set(body)-allowed:raise ValueError('unsupported shortcut command fields')
-        from .legal_agent.memory_identity import resolve
-        principal=memory_identity(request) if memory_identity is not None else resolve(pipeline,body)
+        body,principal=session_inputs(body,request)
         principal={**principal,'authenticated':True}
         for field in ('user_id','team_id'):
             if body.get(field) is not None and body[field]!=principal[field]:raise ValueError('case principal mismatch')
@@ -448,13 +505,12 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     def memory_query(body:dict,request:Request):
         require_ad(body)
         if not unified:raise ValueError('unified legal agent profile required')
-        from .legal_agent.memory_identity import resolve
         from .legal_agent.unified_runtime import open_cases
         from .legal_agent.knowledge_repository import KnowledgeRepository
         allowed={'question','user_id','team_id','session_id','request_id','memory','use_llm','public_question',
                  'memory_authorization','query_kind','experience_id','question_id','after','limit','investigation_id','unit_id','revision','event_id','artifact_id'}
         if set(body)-allowed:raise ValueError('unsupported memory query fields')
-        principal=memory_identity(request) if memory_identity is not None else resolve(pipeline,body)
+        body,principal=session_inputs(body,request)
         for field in ('user_id','team_id'):
             if body.get(field) is not None and body[field]!=principal[field]:raise ValueError('case principal mismatch')
         limit=body.get('limit',32)
@@ -510,7 +566,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 <h1>법률 검색</h1><small id="status">데이터 확인 중</small><p><textarea id="q" placeholder="질문을 입력하세요"></textarea></p>
 <label><input id="llm" type="checkbox"> LLM 답변 사용</label><br>PUBLIC_TOGGLE<button id="ask">검색하기</button><pre id="result"></pre><section id="sources"></section><details id="audit" hidden><summary>탐색·근거 판단</summary><pre id="audit-text"></pre></details>
 <script src="/rag/source-tiers.js"></script><script>const $=id=>document.getElementById(id);fetch('/health').then(r=>r.json()).then(x=>$('status').textContent=`데이터: ${x.generation_id} · ${x.data_status}`);
-$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):(x.message||(r.ok?'현재 충분한 법률 검토를 하지 못했습니다. 검토할 법률 쟁점이나 상황을 조금 더 구체적으로 질문해 주세요.':'현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. ('+r.status+')'))+'\\n조회 번호: '+(x.request_id||'');}catch(e){$('result').textContent='현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (connection)';}};</script></html>'''
+$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):(x.message||(r.ok?'현재 충분한 법률 검토를 하지 못했습니다. 답변에 필요한 원문 조사·검토가 완료되지 않았습니다.':'현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. ('+r.status+')'))+'\\n조회 번호: '+(x.request_id||'');}catch(e){$('result').textContent='현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (connection)';}};</script></html>'''
         return html.replace('PUBLIC_TOGGLE', public_toggle)
 
     @app.api_route('/{path:path}',methods=['GET','POST','PUT','DELETE'])

@@ -5,7 +5,7 @@ the exact mention; preserve uncertainty instead of borrowing a nearby predicate.
 """
 import re
 
-REVISION = 'relation-reading-policy-20261006-r2'
+REVISION = 'relation-reading-policy-20261018-r3'
 RULES = {
     'CITES': ('OPTIONAL', 'OPTIONAL'),
     'BASED_ON': ('OPTIONAL', 'OPTIONAL'),
@@ -32,7 +32,7 @@ GUIDANCE = '''연결 읽기 정책: 답변에 채택한 원문의 준용 대상�
 단순 인용·근거와 정의/준용의 역방향 사용자 목록은 선택 탐색이며 모두 읽을 의무가 없다.
 관계 종류는 문언의 단서이고 적용 결론이 아니다. 질문에 없는 사실을 가정하지 않는다.
 CHECK_APPLICABILITY를 SKIP하려면 applicability=DOES_NOT_APPLY와 구체적 사유를 기록한다.
-적용 여부가 불명확하면 DEFER 또는 FOLLOW다. REQUIRED는 FOLLOW 또는 DEFER만 가능하다.
+적용 여부가 불명확하면 DEFER 또는 FOLLOW다. REQUIRED도 문언상 읽기 단서이며 질문에 대한 적용 결론은 아니다. 질문과 무관하다고 판단하면 DOES_NOT_APPLY와 구체적 사유를 기록하여 SKIP할 수 있다. 필요한 준용·정의의 범위를 임의로 줄이지 않는다.
 FOLLOW 범위는 required_block_ids를 전부 포함한다. 이미 읽은 범위는 재사용한다.
 모든 판단에 applicability와 applicability_reason을 함께 출력한다. FOLLOW는 APPLIES 또는
 UNDETERMINED, DEFER는 UNDETERMINED와 미확인 사유다. 조건부 SKIP은 DOES_NOT_APPLY와
@@ -98,9 +98,7 @@ def validate_decision(decision, group):
         if link.get('already_read'):
             continue
         if decision['action'] == 'SKIP':
-            if obligation == 'REQUIRED':
-                raise ValueError('required relation cannot be skipped')
-            if obligation == 'CHECK_APPLICABILITY' and (
+            if obligation in ('REQUIRED', 'CHECK_APPLICABILITY') and (
                     decision.get('applicability') != 'DOES_NOT_APPLY'
                     or not decision.get('applicability_reason', '').strip()):
                 raise ValueError('conditional relation skip requires inapplicability reason')

@@ -1,0 +1,46 @@
+{
+  "revision": "GENOS_FACT_REASON_20261015_R2",
+  "parent": "GENOS_FACT_REASON_20261015_R1",
+  "parent_patch_spec_sha256": "5ce64b317d358f92d89be85cd2844c051d2e0113810fd4bf4e41b2abdc2796bd",
+  "source_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": "df86acfa871bbadc3d2fabdab6f8d1f9874a8e18a2b1cc6a84909914ca2e3fa9"
+  },
+  "preimage_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08"
+  },
+  "field_variants": {
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": {
+      "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08": "df86acfa871bbadc3d2fabdab6f8d1f9874a8e18a2b1cc6a84909914ca2e3fa9"
+    }
+  },
+  "known_predecessors": 2310,
+  "added_predecessors": 660,
+  "original_1650_entries_unchanged": true,
+  "product_blob_identical_to_r1": true,
+  "transition_specs_sha256": {
+    "tool_availability_20261014_r1": "062e632f3f8fe9c568a55998bc785d52765f792a8a6c9a9a94840bbb0599da90",
+    "tool_recovery_20261014_r1": "cc6153d5ba3278c92bf69f3472faaf0940f658921900ba079224fff5f8c1a413",
+    "length_recovery_20261015_r2": "1c1d820ed3e06dc008db54970afaba2b5c15f04c33cfc3b14dcf4f4358489931"
+  },
+  "transition_coverage": {
+    "tool_availability_20261014_r1": {
+      "inputs": 660,
+      "outputs": 330,
+      "missing_outputs": 0
+    },
+    "tool_recovery_20261014_r1": {
+      "inputs": 990,
+      "outputs": 330,
+      "missing_outputs": 0
+    },
+    "length_recovery_20261015_r2": {
+      "inputs": 1320,
+      "outputs": 990,
+      "missing_outputs": 0
+    }
+  },
+  "field_inventory_sha256": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686",
+  "field_inventory_supported": true,
+  "local_main_changed": false,
+  "genos_field_status": "NOT_VERIFIED"
+}

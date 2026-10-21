@@ -1,0 +1,38 @@
+{
+  "source": "User-provided photograph A9B4BDBF-4181-4BEA-89F7-1F996BB06CA5/1-사진-1.jpg",
+  "transcription_verified_against_original_json": false,
+  "run_status": "EVIDENCE_COLLECTED",
+  "this_is_api_response": false,
+  "destination_ip": "45.101.64.86",
+  "destination_port": 8443,
+  "tcp": {
+    "status": "TCP_TIMEOUT",
+    "local_ip": "172.27.43.182",
+    "local_port": 49822,
+    "started_kst": "2026-10-15T14:23:04.435+09:00",
+    "ended_kst": "2026-10-15T14:23:12.443+09:00",
+    "elapsed_seconds": 8.008
+  },
+  "curl": {
+    "status": "CURL_CONNECT_PHASE_TIMEOUT",
+    "started_kst": "2026-10-15T14:23:12.445+09:00",
+    "ended_kst": "2026-10-15T14:23:20.461+09:00",
+    "exit_code": 28,
+    "http_code": "000",
+    "time_connect": "0.000000",
+    "time_appconnect": "0.000000",
+    "time_total": "8.001534",
+    "size_download": "0",
+    "num_connects": "0",
+    "http_request_sent_observed": false,
+    "cookie_present": false,
+    "proxy_used_by_configuration": false,
+    "local_ip": "",
+    "local_port": "0"
+  },
+  "tcp_and_curl_are_different_sockets": true,
+  "nat_egress_ip": "UNKNOWN",
+  "firewall_block_confirmed": false,
+  "firewall_log_available": false,
+  "interpretation": "Independent TCP and curl connection both timed out. Network/server path investigation is supported; device-specific firewall blocking is not established."
+}

@@ -19,6 +19,7 @@ import atexit
 
 ROOT = "genos"
 _CONTEXT: ContextVar[dict[str, Any]] = ContextVar("genos_log_context", default={})
+_DETAIL_CAPTURE: ContextVar[Any] = ContextVar('genos_detail_capture', default=None)
 _FORBIDDEN_PARTS = ("TOKEN", "KEY", "PASSWORD", "SECRET", "AUTHORIZATION")
 _CONTENT_KEYS = frozenset(
     {"question", "answer", "content", "text", "prompt", "context", "quote", "chunks", "raw"}
@@ -285,6 +286,14 @@ def event(
     if level == logging.INFO and name in _DETAIL_EVENTS:
         level = logging.DEBUG
     if not logger.isEnabledFor(level):
+        capture = _DETAIL_CAPTURE.get()
+        if capture is not None:
+            # Request-scoped detailed capture; do not enable DEBUG globally or
+            # send internal details to the public/container output handlers.
+            record = logger.makeRecord(logger.name, level, __file__, 0, name, (),
+                sys.exc_info() if exc_info else None,
+                extra={'fields': {**_CONTEXT.get(), **fields}})
+            capture(record)
         return
     merged = {**_CONTEXT.get(), **fields}
     if name in {'request.started', 'rag.prepare.started'}:
@@ -309,6 +318,15 @@ def new_request_id(candidate: Any = None) -> str:
 
 
 @contextmanager
+def capture_details(callback):
+    token = _DETAIL_CAPTURE.set(callback)
+    try:
+        yield
+    finally:
+        _DETAIL_CAPTURE.reset(token)
+
+
+@contextmanager
 def context(**fields: Any) -> Iterator[None]:
     current = _CONTEXT.get()
     token = _CONTEXT.set({**current, **{k: v for k, v in fields.items() if v is not None}})
@@ -321,7 +339,7 @@ def context(**fields: Any) -> Iterator[None]:
 @contextmanager
 def step(logger: logging.Logger, name: str, **fields: Any) -> Iterator[None]:
     started = time.perf_counter()
-    detailed = logger.isEnabledFor(logging.DEBUG)
+    detailed = logger.isEnabledFor(logging.DEBUG) or _DETAIL_CAPTURE.get() is not None
     if detailed:
         event(logger, "step.started", level=logging.DEBUG, step=name, **fields)
     work_started = time.perf_counter()

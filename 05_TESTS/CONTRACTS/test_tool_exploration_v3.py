@@ -401,11 +401,11 @@ def test_v3_fixed_outbox_recovery_and_readonly_trace(tmp_path,generation):
     with pytest.raises(ValueError):module.read_trace(tmp_path/'runtime','../escape')
 
 
-def test_explicit_v3_remains_available_alongside_v5_main():
+def test_explicit_v3_remains_available_alongside_v6_main():
     from semantic_runtime.contracts import Contracts
     c=Contracts(ROOT)
     assert c.pipeline['profiles']['legal-agent-rag-v3']['nodes'][0]['parameters']['term_agent']['implementation']=='legal-agent-tools-v3'
-    assert c.pipeline['profiles']['legal-rag']['nodes'][0]['parameters']['term_agent']['implementation']=='legal-agent-tools-v5'
+    assert c.pipeline['profiles']['legal-rag']['nodes'][0]['parameters']['term_agent']['implementation']=='legal-agent-unified-v6'
     active=json.loads((ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json').read_text())
     assert active['schema_version']=='semantic-runtime-active-v2' and active['quality_certified'] is False
 

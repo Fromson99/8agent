@@ -10,7 +10,7 @@ import json
 import math
 from jsonschema import Draft202012Validator, ValidationError
 from ..contracts import digest
-from .errors import ContractError, ProposalError, StaleProposal
+from .errors import ContractError, ProposalError, StaleProposal, InvestigationPending
 
 VERSION = 'output-contract-v1'
 MAX_ISSUES = 16
@@ -56,26 +56,57 @@ def repairable(exc):
 
 def diagnostics(exc):
     """Typed facts survive wrapper exceptions; no classification by message text."""
-    seen = set(); cur = exc
+    terminal = isinstance(exc, InvestigationPending)
+    def result(value):
+        value = deepcopy(value)
+        if terminal:
+            # The underlying proposal might have been repairable before the
+            # owner exhausted its budget. The terminal wrapper must not offer
+            # a new correction merely because it preserves that cause.
+            value['repairable'] = False
+            for row in value.get('issues', []):
+                row['repairable'] = False
+        return value
+    seen = set(); cur = exc; cause = None
     while cur is not None and id(cur) not in seen:
         seen.add(id(cur))
+        if cur is not exc and not isinstance(cur, InvestigationPending):
+            cause = cur
         if isinstance(cur, OutputContractError):
-            return {'contract_version': VERSION, 'category': cur.category,
-                    'repairable': repairable(cur), 'issues': deepcopy(cur.issues)}
+            return result({'contract_version': VERSION, 'category': cur.category,
+                    'repairable': repairable(cur), 'issues': cur.issues})
         if isinstance(cur, ValidationError):
-            return {'contract_version': VERSION, 'category': 'OUTPUT_SHAPE_INVALID',
-                    'repairable': True, 'issues': [schema_issue(cur)]}
+            return result({'contract_version': VERSION, 'category': 'OUTPUT_SHAPE_INVALID',
+                    'repairable': True, 'issues': [schema_issue(cur)]})
         detail=getattr(cur,'diagnostic',None)
         if isinstance(detail,dict):
             contract=detail.get('output_contract',detail)
             if isinstance(contract,dict) and contract.get('contract_version')==VERSION:
-                return deepcopy(contract)
+                return result(contract)
         cur = cur.__cause__
-    return {'contract_version': VERSION,
-            'category': 'STATE_OR_BINDING_INVALID' if isinstance(exc, (ContractError, StaleProposal))
-                        else 'DECISION_CONFLICT' if isinstance(exc, ProposalError)
+    if terminal and cause is None:
+        # SELECT keeps its independent rejections in the investigation report,
+        # whereas ASSESS normally uses an explicit exception cause above.
+        details = [row.get('diagnostics') for row in exc.diagnostics.get('blockers', []) if isinstance(row, dict)]
+        contracts = [d.get('output_contract') for d in details if isinstance(d, dict)]
+        contracts = [c for c in contracts if isinstance(c, dict) and c.get('contract_version') == VERSION]
+        categories = {c['category'] for c in contracts}
+        problems = []; keys = set()
+        for contract in contracts:
+            for row in contract.get('issues', []):
+                key = digest(row)
+                if key not in keys:
+                    keys.add(key); problems.append(row)
+        return result({'contract_version': VERSION,
+            'category': next(iter(categories)) if len(categories) == 1 else 'INVESTIGATION_INCOMPLETE',
+            'repairable': False, 'issues': problems[:MAX_ISSUES] or
+                [issue('SOURCE_INVESTIGATION_INCOMPLETE', repairable=False)]})
+    failure = cause if terminal and cause is not None else exc
+    return result({'contract_version': VERSION,
+            'category': 'STATE_OR_BINDING_INVALID' if isinstance(failure, (ContractError, StaleProposal))
+                        else 'DECISION_CONFLICT' if isinstance(failure, ProposalError)
                         else 'IMPLEMENTATION_FAILURE',
-            'repairable': repairable(exc), 'issues': []}
+            'repairable': repairable(failure), 'issues': []})
 
 
 def strict_json(content, *, max_chars=4194304, max_depth=128):
@@ -184,6 +215,8 @@ def validate_decisions(value):
 
 
 def owner_for(phase):
+    if phase in ('source-request-route', 'source-request-route-repair'):
+        return 'request-routing'
     if phase in ('request-entry', 'request-entry-repair'):
         return 'request-entry'
     if phase in ('memory-resolve', 'memory-resolve-repair', 'memory-command-check'):

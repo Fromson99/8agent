@@ -1,0 +1,19 @@
+from pathlib import Path
+import json,hashlib,re
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0837-comparison-advisory-items';D=A/'artifacts/design';O=A/'artifacts/run-001';O.mkdir(exist_ok=True)
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+assert '53 passed' in (A/'artifacts/tests-r1.log').read_text()
+models=[read(A/f'artifacts/model/connected-{n}/result.json') for n in (19,)]
+consumer=read(A/'artifacts/candidate-consumer-v2.json');assert all(consumer['checks'].values())
+f=read(D/'freeze.json');assert all(sha(R/n)==h for n,h in f['files'].items())
+result={'status':'complete','development_checks_passed':True,'tests_passed':53,'service_checks':len(consumer['checks']),'model_first_attempt_acceptance':{'connected':sum(x['accepted'] for x in models)},'model_denominator_per_arm':1,'real_model_calls':sum(x['model_calls'] for x in models),'model_cases':models,'quality_certified':False,'limitations':['Known source packets, not legal correctness or full workflow evaluation.','Opinions with missing sources remain visible and explicitly lack selected evidence; they are not confirmed legal facts.','MAIN78 and source data untouched.']}
+put(O/'result.json',result);put(D/'verification-binding-final.json',read(D/'verification-binding.json'))
+m=read(A/'실험/manifest.json');m['runs'][0].update(status='complete',sha256=sha(O/'result.json'));m['results'].update(status='complete',by_arm={'baseline':{'status':'complete','result_ref':'ADR-0836-experiment-v1/connected','accepted':0,'total':1,'historical':True},'connected':{'status':'complete','accepted':result['model_first_attempt_acceptance']['connected'],'total':1}},comparisons=[{'metric':'contract_first_attempt_acceptance','baseline':0,'connected':result['model_first_attempt_acceptance']['connected'],'denominator':1,'historical_baseline':True,'legal_correctness':False}],usage={'product_model_calls':1,'offline_evaluator_calls':0},latency={'case_seconds':[x['seconds'] for x in models]},error_taxonomy=[{'kind':'other','detail':x['error']} for x in models if not x['accepted']]);put(A/'실험/manifest.json',m)
+heads=['결정 요약','문제와 변경 전 구조','가설과 사전 판정 기준','실험 설계','데이터·모델·재현성','결과','사례별 오류 분석','비용·지연·회수 규모','해석','한계와 일반화 가능 범위','운영 결정·롤백 조건','재현 명령']
+texts=['Proposed. 항목의 상태·의견은 LLM이 정하고 인용이 없으면 근거 미선택으로 표시한다.','근거 미확보 설명이 있어도 DIFFERENT 상태값 때문에 전체 항목을 재요청했다.',json.dumps(read(D/'criteria.json'),ensure_ascii=False),'개발 계약53개와 실제 서비스13개, 알려진 원문19에서 새 응답1개. 이전836의 해당 실패는 역사적 비교이며 동시 A/B가 아니다.','342파일 중11파일 변경. 모델과 원문은 고정.',json.dumps({k:v for k,v in result.items() if k!='model_cases'},ensure_ascii=False,indent=2),'원문19 새 제안과 수락 여부를 기록한다. 상태/근거 유무 조합은 재판단하지 않으며 선택한 인용의 원문 일치와 구분을 확인한다.','raw/usage/time 기록. 검색 개선 또는 법률 정확도 측정 없음.','의미 판단을 규칙으로 다시 판정하지 않아도 정확한 인용·접근권한·기록 검사는 유지된다.','\n'.join(result['limitations']),'작업 코드·MAIN 미변경. 동일 후보의 기술 계약·서비스 연결을 후속838에서 고정 검증한다.','run_tests.py;consumer_check.py candidate;live.py connected19;report.py;stable status/hash/validate/graph']
+meta=(A/'README.md').read_text().split('---',2)[1];(A/'README.md').write_text('---'+meta+'---\n\n# 대사 항목 LLM 의견 보존\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{t}' for i,(h,t) in enumerate(zip(heads,texts),1))+'\n')
+(A/'실험/README.md').write_text('# 원문 고정 계약 관찰\n\n알려진 원문19에 한 번 응답. 모델 의견과 계약 수락을 기록하며 정답률로 보지 않는다.\n')
+paths=[p for p in (A/'artifacts').rglob('*') if p.is_file() and p.name!='manifest.json' and not p.name.endswith(('-shm','.lock'))]
+put(A/'artifacts/manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':m['adr_id'],'created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Frozen development and actual model evidence','contains_raw_prompts_and_outputs':'/model/' in str(p)} for p in paths]})
+print('Complete:53 contracts;13 service;one known model response;not legal accuracy')

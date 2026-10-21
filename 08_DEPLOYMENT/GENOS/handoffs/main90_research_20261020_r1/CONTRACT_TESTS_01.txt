@@ -1,0 +1,67 @@
+..................F....................................F...........F...{"ts": "2026-10-20T00:08:08.178768+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 399676, "prepare_status": "READY", "elapsed_ms": 26.027, "thread_cpu_ms": 25.063, "phases": {"session.store": {"wall_ms": 2.432, "cpu_ms": 2.08}, "session.resources": {"wall_ms": 20.758, "cpu_ms": 20.247}, "session.context": {"wall_ms": 0.034, "cpu_ms": 0.035}, "session.journal": {"wall_ms": 2.115, "cpu_ms": 2.024}, "session.sources": {"wall_ms": 0.282, "cpu_ms": 0.283}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.002}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.118}
+. [ 82%]
+.{"ts": "2026-10-20T00:08:08.488838+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 399676, "prepare_status": "READY", "elapsed_ms": 26.521, "thread_cpu_ms": 25.466, "phases": {"session.store": {"wall_ms": 1.091, "cpu_ms": 0.842}, "session.resources": {"wall_ms": 22.888, "cpu_ms": 22.147}, "session.context": {"wall_ms": 0.04, "cpu_ms": 0.041}, "session.journal": {"wall_ms": 1.766, "cpu_ms": 1.712}, "session.sources": {"wall_ms": 0.321, "cpu_ms": 0.323}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.002}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.126}
+..............                                                          [100%]
+=================================== FAILURES ===================================
+_____ test_actual_api_preserves_missing_need_and_accepts_flat_side_updates _____
+06_TOOLS/EXPERIMENTS/adr_0936/test_durable.py:145: in test_actual_api_preserves_missing_need_and_accepts_flat_side_updates
+    body=response.json();assert body['research_needs'] and not body['update_failures']
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   assert ([])
+_ test_actual_api_uncited_declaration_preserves_originals_and_duplicate_state __
+06_TOOLS/EXPERIMENTS/adr_0936/test_host_links.py:65: in test_actual_api_uncited_declaration_preserves_originals_and_duplicate_state
+    assert unresolved and body['status']=='partial'
+E   assert (set())
+_ test_actual_api_list_explanations_and_citation_choices_preserve_sources_without_repair _
+06_TOOLS/EXPERIMENTS/adr_0936/test_lossless_wire.py:69: in test_actual_api_list_explanations_and_citation_choices_preserve_sources_without_repair
+    body=response.json();assert body['evidence_updates'] and not body['update_failures']
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert ([{'disposition': 'UNRESOLVED', 'evidence_id': 'E0bf783cc314febdb31a7d5bc5a49', 'fields': [], 'input_hash': '4beaf0f604...43c0c087d396d25', 'fields': [], 'input_hash': '4beaf0f60432eea86ae2343886fb56bb32753efb2a83804b30977aa6c9a9b151', ...}] and not [{'code': 'MODEL_TRANSPORT_ERROR', 'input_hash': '4beaf0f60432eea86ae2343886fb56bb32753efb2a83804b30977aa6c9a9b151', 'new_evidence_ids': ['E0bf783cc314febdb31a7d5bc5a49', 'Eceab420bed8b943c0c087d396d25'], 'proposal_accepted': False}])
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code/main.py:26
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code/main.py:26: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/applications.py:4681: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code/main_workflow.py:35
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code/main_workflow.py:35: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    app.on_event("startup")(recover_ad_schedules)
+
+06_TOOLS/EXPERIMENTS/adr_0936/test_durable.py::test_actual_api_preserves_missing_need_and_accepts_flat_side_updates
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/pecab/_tokenizer.py:265: RuntimeWarning: overflow encountered in scalar add
+    from_pos_data.costs[idx]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 06_TOOLS/EXPERIMENTS/adr_0936/test_durable.py::test_actual_api_preserves_missing_need_and_accepts_flat_side_updates
+FAILED 06_TOOLS/EXPERIMENTS/adr_0936/test_host_links.py::test_actual_api_uncited_declaration_preserves_originals_and_duplicate_state
+FAILED 06_TOOLS/EXPERIMENTS/adr_0936/test_lossless_wire.py::test_actual_api_list_explanations_and_citation_choices_preserve_sources_without_repair
+3 failed, 84 passed, 7 warnings in 9.50s
+INSTALLED_CONTRACT_IMPORTS PASS; modules=230

@@ -185,6 +185,8 @@ def augment(data, schema, values):
 
 
 def choose(host, ids, event):
+    from .tool_policy import require_registered
+    require_registered('wiki_hint','history_ids')
     offered={x['view']['memory_id']:x for x in getattr(host,'wiki_recall_offer',[])}
     ids=ids if isinstance(ids,list) else []
     selected=[offered[x] for x in dict.fromkeys(x for x in ids if isinstance(x,str)) if x in offered][:MAX_SELECTED]
@@ -193,6 +195,8 @@ def choose(host, ids, event):
 
 
 def selected_route(host, principal, state, event):
+    from .tool_policy import require_registered
+    require_registered('wiki_hint','history_ids')
     targets=[];origins=[]
     for item in getattr(host,'wiki_recall_selected',[]):
         try:

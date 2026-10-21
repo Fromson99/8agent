@@ -1,0 +1,16 @@
+대사 표시 R2 검증 — workflow1.20.6
+
+사진의 [C4][C60] 같은 임시 인용 표식을 그대로 노출하던 R1 결함을 보완했습니다.
+수정 전 재현5실패, 수정 후 관련207검사 통과(모델 호출0).
+본문·추가 확인 정리, 원문·사용자 질문 보존, 실제 service.service → 스트림 → 저장 재조회/중복 요청을 검사했습니다.
+C번호를 근거로 출처 연결을 추정하지 않으며 검증된 구조화 인용의 문서 라벨과 원문을 사용합니다.
+최초 추가 service 검사의 채팅 부가 판단 화면 포함 가정1실패를 바로잡았고 원래 실패 기록을 보존했습니다.
+
+최종 ZIP/TXT 설치·재실행·변조 거부·중단 복구·원복 및 설치한 코드의39검사는 DELIVERY_VALIDATION.json/DELIVERY_TRACE.json.gz에 별도 기록합니다.
+검증 대상 시작 상태: MAIN96, 기존 STABLE_COMMANDS+BASIS_FIXED_LOCAL+TEN_MINUTE, 같은 누적 상태+READABLE_R1.
+전체394코드의 해시 결속과 committed checkout gate-code를 확인합니다. 현장 generation이 없는 gate-sqlite는 예상대로 거부되어야 합니다.
+편집기 TXT는 R1과 바이트 동일합니다. R1 편집기 적용 전이라면 전체 교체해야 합니다.
+
+과거 R1에서 재현한 failed-originals fixture8실패와 구 엔진 pin6불일치는 이번 해결 항목이 아닙니다.
+로컬 선택 MAIN96·실제 데이터·Git commit/push·GENOS 반입·리비전·내부 모델은 변경/실행하지 않았습니다.
+GENOS 현장 접기 지원과 실제 내부 모델 결과는 워크플로우 테스트 화면에서 별도 확인해야 합니다.

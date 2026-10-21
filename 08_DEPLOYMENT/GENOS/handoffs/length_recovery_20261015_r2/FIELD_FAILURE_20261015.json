@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-15",
+  "source": "user-provided screenshot",
+  "image_sha256": "fe46890349d1a939efc844c3ef0c27689a6b16236bce44d5883c442c2ecc6abf",
+  "evidence": {
+    "cwd": "/workspace/TRANSFER",
+    "configured_checkout": "/home/genos/DEV",
+    "resolved_checkout": "/workspace",
+    "revision": "GENOS_LENGTH_RECOVERY_20261014_R1",
+    "check": "FAILED before code writes",
+    "apply": "FAILED before code writes",
+    "verify": "NOT_APPLIED",
+    "error": "Unrecorded new module already exists; preserved: 00_SYSTEM/SCHEMAS/pipeline-v1.schema.json"
+  },
+  "not_observed": [
+    "physical schema SHA-256/content",
+    "field commit",
+    "field generation",
+    "serving revision",
+    "workflow query success"
+  ],
+  "recovery": "R2 accepts only exact allowlisted schema preimages; unknown hashes remain blocked",
+  "code_writes_observed": false,
+  "field_status": "NOT_VERIFIED"
+}

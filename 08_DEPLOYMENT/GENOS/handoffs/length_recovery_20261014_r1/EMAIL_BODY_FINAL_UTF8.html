@@ -1,0 +1,14 @@
+<div style="font-family:Arial,sans-serif;line-height:1.7"><p>기존 실패4건과 최근 length 오류의 복구 경로를 수정해 로컬 MAIN66에 반영했습니다.</p>
+<p><b>이번 첨부 GENOS_LENGTH_RECOVERY_20261014_R1.zip을 사용해 주세요.</b> 이전 TOOL_RECOVERY R1의 도구 실패·구조 부모 읽기·의존 조사 수정도 포함한 누적본입니다. ZIP 안에 전체 실행 TXT가 있으며 같은 TXT를 별도로 첨부했습니다.</p>
+<ul><li>기존4검사: durable 요청 격리/중복금지, PIPELINE 확장schema, 공개503오류계약, 현재v6·명시v3호환을 수정·확인했습니다. 검사기가 checkout 경로를 연구코드로 오인하는 결함도 고쳤습니다.</li>
+<li>정상 모델 요청은6400토큰을 유지합니다. 법령 탐색에서 length가 발생한 경우 기존 수정1회에만 최대12800을 허용합니다. 같은 근거와 스키마로 완전한 결정을 검증하며, 잘린 JSON을 이어 붙이거나 실행하지 않습니다.</li>
+<li>동결한296개 길이·경로·어댑터 계약과896개 회귀검사가 모두 통과했습니다. 작업·검증·선택308파일 동일, 실제 로컬 service.service 선택과 상태/검색/목록/실패 경계를 확인했습니다. 원문·데이터·모델·검색 설정은 유지했습니다.</li><li>로컬 모델 연결부도 length 원인을 공통 오류로 보존해 같은 복구 경로를 사용하도록 했습니다. provider·모델·thinking 검증은 유지하며 GENOS 내부에는 외부 모델 어댑터를 새로 반입하지 않습니다.</li></ul>
+<p><b>GENOS 설치본 모의 검증:</b> 두 현장 구성에서 계약/API 합계 1148개 통과(각 구성의 기존 표시 정책 기대 차이 1건은 패치 전 동일 재현, 새 회귀/skip 0), 실제 실행 TXT 32명령, 서비스 부팅 2회, 같은 committed checkout의 generation gate 2회와 원복·변조 거부를 확인했습니다. 알려진 코드 inventory 1320개를 지원합니다. 실제 모델 추론은 0회입니다.</p>
+<p><b>실행:</b> 실제 업로드한 TRANSFER 폴더를 현재 위치로 둔 상태에서 아래 순서로 실행합니다. 코드 적용 대상은 기존 ~/DEV입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_LENGTH_RECOVERY_20261014_R1.zip ./GENOS_LENGTH_RECOVERY_20261014_R1
+bash ./GENOS_LENGTH_RECOVERY_20261014_R1/GENOS_LENGTH_RECOVERY_20261014_R1_RUN.txt check
+bash ./GENOS_LENGTH_RECOVERY_20261014_R1/GENOS_LENGTH_RECOVERY_20261014_R1_RUN.txt apply
+bash ./GENOS_LENGTH_RECOVERY_20261014_R1/GENOS_LENGTH_RECOVERY_20261014_R1_RUN.txt verify</pre>
+<p>이후 기존 DEV에서 변경을 commit하고, 출력된 BACKUP과 실제 선택 generation으로 gate를 통과한 뒤 push·새 코드서빙 리비전 배포·SSE 재시작을 진행합니다. 자세한 절차와 undo는 GUIDE_UTF8.txt에 있습니다. 데이터 재구축 및 워크플로우 편집기 변경은 필요 없습니다.</p>
+<p><b>확인 범위:</b> 최근 사진의 원래 입력/usage/내부서빙context상한은 미확인입니다. 같은 출력 한도를 반복하던 복구 결함은 고쳤지만, 실제 GENOS 내부모델에서 해당 질문이 성공했다고 보고하는 것은 아닙니다. 배포 후 워크플로우 테스트 화면에서 재질의하고 실제 max_tokens/usage/finish_reason과 최종 발행을 확인해 주세요. 수정 응답도length이면 추가 반복 없이 원인을 남깁니다.</p>
+<p>구형 현장 설정에서 쓰지 않는 위키·공통카탈로그 선언은 강제로 추가하지 않습니다. 존재하는 필드 타입·권한·해시·원문·상태·예산·발행 검증은 유지합니다. 전역 실험계보의 과거8오류는 그대로이며 이번작업의 새 오류는 없습니다.</p></div>

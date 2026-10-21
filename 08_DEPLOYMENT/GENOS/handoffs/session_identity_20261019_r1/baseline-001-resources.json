@@ -1,0 +1,40 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/baseline-code",
+    "05_TESTS/CONTRACTS/test_memory_runtime_v2.py::test_model_calls_share_native_budget_and_cleanup",
+    "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_source_tool_error_is_shown_and_stops_workflow",
+    "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_found_but_unreviewed_source_is_not_reported_as_not_found",
+    "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_run_returns_genos_text_contract",
+    "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_run_returns_one_genos_text_dictionary",
+    "05_TESTS/CONTRACTS/test_genos_main_chat.py::test_chat_preserves_payload_and_uses_local_service_once",
+    "05_TESTS/CONTRACTS/test_genos_main_chat.py::test_migrated_chat_reaches_real_v6_and_preserves_ad_read_gate"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 4.008865716999935,
+  "peak_group_rss_bytes": 257982464,
+  "min_available_bytes": 13835669504,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/baseline-001-resources.json",
+    "rss_gib": 3.0,
+    "as_gib": 5.0,
+    "min_available_gib": 3.0,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installed_contract_runner.py",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/baseline-code",
+      "05_TESTS/CONTRACTS/test_memory_runtime_v2.py::test_model_calls_share_native_budget_and_cleanup",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_source_tool_error_is_shown_and_stops_workflow",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_found_but_unreviewed_source_is_not_reported_as_not_found",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_run_returns_genos_text_contract",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py::test_run_returns_one_genos_text_dictionary",
+      "05_TESTS/CONTRACTS/test_genos_main_chat.py::test_chat_preserves_payload_and_uses_local_service_once",
+      "05_TESTS/CONTRACTS/test_genos_main_chat.py::test_migrated_chat_reaches_real_v6_and_preserves_ad_read_gate"
+    ]
+  },
+  "samples_sha256": "8add499338c25556dddc6176c0395b5f490c57e17b51fa58fd3a81cc73f8360e"
+}

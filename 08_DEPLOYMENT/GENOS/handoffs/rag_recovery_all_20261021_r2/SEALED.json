@@ -1,0 +1,33 @@
+{
+  "status": "SEALED",
+  "sealed_at": "2026-10-21T06:35:45.473223+00:00",
+  "archive": "GENOS_RAG_RECOVERY_ALL_20261021_R2.zip",
+  "archive_sha256": "a06b2e74d759e8061c0ddfcd429ed99e0098e65c2da34de3e4d08515eafcbb0c",
+  "delivery_validation_sha256": "07f45eb02093329e51c54e5294a6a6a3321cdf05b11dfd3a500417677486faf3",
+  "code_manifest_sha256": "56261e35d0cb35de5f28877b4f5dfc7bdf748c216ef0ac0c8b7b0b434775f881",
+  "editor_sha256": "6d4bf36d9a56d6a75b1c883cb11224030cf1b7cc13bc5288b4785ffac8811fc5",
+  "parent_archive_sha256": "857db2e20ca96bb0440aa577b402eb7cfc688947f7c4dbc05f3715eff7da5307",
+  "selected_main_modified": false,
+  "GENOS_field_verified": false,
+  "recovery_proof": {
+    "02_BACKEND/semantic_runtime/legal_agent/request_repair.py": {
+      "after": "c5e8d1f3baf8a02ef04d1432eff31a3f444e0d73390ff5a98698bbc83f67af67",
+      "before": "72c3213bfc015605327e7addd82c4c9c43db40370f6539c7ad2d1ef1695b1e04",
+      "verified_record": "09_ARTIFACTS/AUDITS/20261021-gap-finish-reconsider/FINAL_VERIFICATION.json"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py": {
+      "after": "895d9954c61931ec39af9d7369aaa5790f1cc89216bd0d6e42533bdd09212192",
+      "before": "7e70ddcbf2cd64872d2a6ccbe67dc3af39b8cba6755ce31bdd2972bc3028d11b",
+      "verified_record": "09_ARTIFACTS/AUDITS/20261021-gap-finish-reconsider/FINAL_VERIFICATION.json"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": {
+      "after": "9cf3789074db2b1ee1f6a9cafb6655415da1b0187437d224d46fd76e003fb7a8",
+      "before": "e14d6d3267f1cd36f4eeb5f59e62cda204e0420a06bbed2a2d3f20dea1e90668",
+      "verified_record": "09_ARTIFACTS/AUDITS/20261021-gap-finish-reconsider/FINAL_VERIFICATION.json"
+    }
+  },
+  "installed_api_modules_verified": 189,
+  "workflow_version": "1.20.6",
+  "local_selected_main": 97,
+  "not_entire_main97_package": true
+}

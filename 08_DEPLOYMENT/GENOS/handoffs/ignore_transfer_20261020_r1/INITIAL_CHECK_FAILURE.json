@@ -1,0 +1,7 @@
+{
+  "case": "payload tamper via standalone TXT",
+  "observed": "The reused launcher extracted the original ZIP on every standalone invocation, restoring tampered payload before validation.",
+  "repair": "When a complete extracted package exists, reuse it and let package hash verification detect edits. Refuse incomplete existing package directories.",
+  "status": "fixed; complete 32-command verification passed",
+  "field_impact": "none; synthetic fixture only"
+}

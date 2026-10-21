@@ -1,0 +1,75 @@
+{
+  "schema_version": "genos-partial-patch-v1",
+  "revision": "GENOS_LENGTH_RECOVERY_20261015_R2",
+  "prerequisite": [
+    "GENOS_SCHEMA_RECOVERY_20261014_R1 or supported later pre-length inventory"
+  ],
+  "gate_archive": "apply-generated BACKUP/APPLIED_CODE.zip",
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "2e7ac7a531bb6b476c242e7c743f63691b23306f53071dd14c6361ae6c7ea35c",
+      "bytes": 31249
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "1c1d820ed3e06dc008db54970afaba2b5c15f04c33cfc3b14dcf4f4358489931",
+      "bytes": 528198
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "ae8861ad16336c9c98987a23ab9bf78a0ed169f12f39f85a3a2dc8be1c09e854",
+      "bytes": 16785
+    },
+    {
+      "path": "TESTED_DELIVERY_BINDING.json",
+      "sha256": "830bcca8cc310a041bbad0e1dbfc5f40cb6203860898848854a0110acdbb87e5",
+      "bytes": 670
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "6189717d6827a362c62c9bdf6e2c8ad02d9245c00213d0eddf772fbb197be3cc",
+      "bytes": 2919
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "c400ef58fa8a1339729c1401fa6694384742e0e01a7344dac877b7ed3455603f",
+      "bytes": 1312
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "6ab42ad6b8e5cc8e43d02110163f7c94dde12c18c8067d27dcbc09091fdb3ba2",
+      "bytes": 4029
+    },
+    {
+      "path": "FIX_REPORT_UTF8.txt",
+      "sha256": "a7c2db90162ef2a98deb159fcb32d2ce36cd15f0a399732e3c46d9d4423ee953",
+      "bytes": 2347
+    },
+    {
+      "path": "FIELD_FAILURE_20261015.json",
+      "sha256": "6451a68a67054131a19e34967926fd0192dbcf6fa9c6af3d7cc84362ec96c00c",
+      "bytes": 892
+    },
+    {
+      "path": "GENOS_LENGTH_RECOVERY_20261015_R2_RUN.txt",
+      "sha256": "7179d8a31abf056eb2329adba7b03ada0799c0d86803cf2f3ca06883b3c65324",
+      "bytes": 728405
+    },
+    {
+      "path": "known-preimages/68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26",
+      "sha256": "68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26",
+      "bytes": 19721
+    },
+    {
+      "path": "known-preimages/8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+      "sha256": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+      "bytes": 4791
+    },
+    {
+      "path": "known-preimages/8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755",
+      "sha256": "8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755",
+      "bytes": 6216
+    }
+  ]
+}

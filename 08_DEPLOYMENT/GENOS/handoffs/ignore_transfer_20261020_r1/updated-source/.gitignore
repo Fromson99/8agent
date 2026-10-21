@@ -1,0 +1,281 @@
+# 비밀값 — 절대 커밋 금지
+# .env 는 저장소 루트 하나뿐입니다.
+.env
+.env.local
+.env.*
+!.env.example
+!.env.*.example
+*.key
+*.pem
+
+# 가상환경 (docling 이 torch 를 끌고 와 수 GB 입니다)
+# 슬래시 없이 — 루트 .venv (2026-08-18 first-agent/.venv 에서 옮김).
+.venv
+
+# 실행 산출물
+var/
+# v2 canonical runtime/artifact/data payloads.  Keep the contracts and folder
+# guides in Git; immutable packages, feedback ledgers, reports, and runtime
+# state live on the managed volume and travel through their own manifests.
+90_RUNTIME/*
+!90_RUNTIME/README.md
+09_ARTIFACTS/*
+!09_ARTIFACTS/README.md
+99_ARCHIVE/*
+!99_ARCHIVE/README.md
+04_EXPERIMENTS/*
+!04_EXPERIMENTS/README.md
+!04_EXPERIMENTS/LEGACY_ADR/
+04_EXPERIMENTS/LEGACY_ADR/*
+!04_EXPERIMENTS/LEGACY_ADR/STANDARD.md
+!04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md
+01_DATA/CATALOG/*
+!01_DATA/CATALOG/README.md
+01_DATA/PACKAGES/EXTERNAL/*
+!01_DATA/PACKAGES/EXTERNAL/README.md
+01_DATA/PACKAGES/INTERNAL/*
+!01_DATA/PACKAGES/INTERNAL/README.md
+01_DATA/FEEDBACK/*
+!01_DATA/FEEDBACK/README.md
+# GENOS raw inputs and every pipeline/runtime derivative belong on the managed
+# data volume.  SourceSet declarations and contracts remain versioned above;
+# the bytes selected by them do not enter Git history.
+01_DATA/INBOX/
+01_DATA/SEMANTIC/
+01_DATA/INDEXES/*
+!01_DATA/INDEXES/README.md
+01_DATA/ACTIVE/*
+!01_DATA/ACTIVE/README.md
+01_DATA/QUARANTINE/*
+!01_DATA/QUARANTINE/README.md
+01_DATA/BACKUPS/*
+!01_DATA/BACKUPS/README.md
+01_DATA/PROJECTIONS/
+GENOS_INPUT/
+# GENOS 단일 코드스페이스 배치: 코드와 같은 DEV 아래에 두되 Git에는 절대 포함하지 않는다.
+/GENOS_DATA/
+/TRANSFER/
+# Jupyter trash and query-transfer working data are never serving source.
+.Trash/
+.Trash-*/
+/QUERY_TRANSFER_*/
+*.db.partial
+*.db.partial-*
+*.db-journal
+*.sqlite.partial
+*.sqlite.partial-*
+*.sqlite3.partial
+*.sqlite3.partial-*
+/GENOS_UPLOAD/
+/genos-unified-raw-*.zip
+/genos-unified-raw-*.zip.part*
+/parts-manifest.json
+# {stem}.doc.json · *.reconcile.json — CLI 로 재생성됩니다.
+# (주석은 반드시 제 줄에 — 패턴 뒤에 붙이면 주석까지 패턴이 되어 아무것도 안 걸립니다.)
+agents/*/output/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# ADR 원장·실험 산출물은 로컬 운영 기록으로만 보존하고 Git에는 올리지 않는다.
+docs/adr/
+/ADR-[0-9]*/
+
+# 원본 은행 문서
+#
+# 이 브랜치(dev)는 내부 저장소(infoczAI/agent8) 전용이며 dataset/ 을 포함합니다.
+# 공개 저장소(Fromson99/8agent)의 main 은 아래 두 경로를 제외합니다:
+#     lawrag/agents/agent6/corpus/raw/    (법령·준칙 원문 PDF)
+#
+# ⚠️ 이 브랜치를 공개 저장소로 push 하거나 merge 하지 마세요 — 원본 은행 문서가
+#    함께 넘어갑니다.
+
+# (옛 archive/trust-parser-v1 골든 쌍 메모 — 코드는 2026-08-18 삭제)
+# 테스트 픽스처이고, 채워진 값은 전부 지어낸 것입니다(실제 체결 건 아님).
+
+# 서비스 런타임 데이터 — 화면에서 올린 문서·해석 결과·등록 규칙·용어집·참조 링크.
+# 정본이 파일이라 귀중하지만 git 이력이 아니라 볼륨(백업)으로 관리합니다.
+data/structure/
+data/custom/
+data/glossary.json
+data/links.json
+01_DATA/structure/
+01_DATA/custom/
+01_DATA/glossary.json
+01_DATA/links.json
+# 같은 성격 — 화면·배치가 만들어 내는 상태와 관측의 누적입니다.
+# (주석은 여기서도 제 줄에 — 위의 경고와 같은 이유입니다.)
+# data/rag             판정 지문·튜플·후보 (append-only 관측)
+# data/rules           사람이 승인해 만든 규칙 장부 (edge_rules — 백로그 승인의 산물)
+# data/embeddings      구역 벡터 — 코퍼스에서 언제든 다시 만듭니다
+# format_bindings      폴더·문서 → doc_type 연결
+# format_canvas        연결 화면의 배치와 미완성 초안
+# structure_fixes      사람이 옮긴 계층 교정
+# structure_ledger     fingerprint 원장 — 관측 누적
+data/rag/
+01_DATA/rag/
+# 예외 — 질의 스코프 정의는 관측이 아니라 사람이 쓰는 정의라 같이 간다
+!data/rag/scopes.yml
+!01_DATA/rag/scopes.yml
+# 배치 파이프라인 — 실행 상태·로그(관측)와 반입함(원본은 스토어로 옮겨진다)
+data/pipeline/
+data/inbox/
+data/rules/
+data/embeddings/
+01_DATA/pipeline/
+01_DATA/inbox/
+01_DATA/rules/
+01_DATA/embeddings/
+# 구조·프레임·용어에서 재생성하는 로컬 property graph
+data/domain_graph/graph.sqlite
+data/domain_graph/.graph.sqlite.building
+01_DATA/domain_graph/graph.sqlite
+01_DATA/domain_graph/.graph.sqlite.building
+# 법령 관계망 파생 — corpus/law/relations 원본에서 python -m core.lawnet 로 재생성
+data/delegation.json
+data/law_index.json
+01_DATA/delegation.json
+01_DATA/law_index.json
+# 폐쇄망 왕복 스냅샷 — 런타임 산출
+data/ops/
+data/format_bindings.json
+data/format_canvas.json
+data/structure_fixes.json
+data/structure_ledger.json
+01_DATA/ops/
+01_DATA/format_bindings.json
+01_DATA/format_canvas.json
+01_DATA/structure_fixes.json
+01_DATA/structure_ledger.json
+
+# 벤치 실행 결과. 질문셋(data/bench/questions.yaml)만 이력에 둡니다.
+data/bench/last_results.json
+01_DATA/bench/last_results.json
+# 파생층 초기화 보관함 — 되돌리기용, 나르지 않는다
+data/_archive/
+01_DATA/_archive/
+
+# ---------------------------------------------------------------------------
+# GenOS code-serving repository boundary
+#
+# The deployed Git repository contains source/config templates only.  Raw data,
+# published generations, runtime state, hand-off archives, and model outputs
+# live on the persistent volume and must never enter Git (even when they are
+# physically below /home/genos/DEV).
+# ---------------------------------------------------------------------------
+/GENOS_DATA/
+/GENOS_UPLOAD/
+/TRANSFER/
+/runtime/
+/02_BACKEND/GENERATIONS/*
+!/02_BACKEND/GENERATIONS/20260904-code-v19/
+/02_BACKEND/lawrag/research/candidates/*
+!/02_BACKEND/lawrag/research/candidates/adr_0252/
+/02_BACKEND/lawrag/research/candidates/adr_0252/**
+!/02_BACKEND/lawrag/research/candidates/adr_0252/**/
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/genos_authoring.py
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/source_candidates.py
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/definition_patterns.py
+/05_TESTS/GENERATIONS/
+/06_TOOLS/GENERATIONS/*
+!/06_TOOLS/GENERATIONS/20260904-code-v19/
+/08_DEPLOYMENT/RELEASES/
+
+# 01_DATA contains local/source/derived data. Keep only its contracts and small
+# human-authored source-set declarations in a code-serving checkout.
+/01_DATA/*
+!/01_DATA/README.md
+!/01_DATA/CONTRACTS/
+!/01_DATA/CONTRACTS/**
+!/01_DATA/CATALOG/
+!/01_DATA/CATALOG/README.md
+!/01_DATA/SOURCE_SETS/
+!/01_DATA/SOURCE_SETS/**
+# Resolved package inventories are generated on the data volume.
+/01_DATA/SOURCE_SETS/**/*.lock.json
+# Keep folder guides even where data payloads are excluded.
+!/01_DATA/FEEDBACK/
+!/01_DATA/FEEDBACK/README.md
+!/01_DATA/PACKAGES/
+/01_DATA/PACKAGES/*
+!/01_DATA/PACKAGES/EXTERNAL/
+!/01_DATA/PACKAGES/EXTERNAL/README.md
+!/01_DATA/PACKAGES/INTERNAL/
+!/01_DATA/PACKAGES/INTERNAL/README.md
+
+# Agent corpora are volume data, not deployable Python source.
+/02_BACKEND/lawrag/agents/*/corpus/raw/
+/02_BACKEND/lawrag/agents/*/corpus/structured/
+
+# Local transfer artifacts and split archives.
+*.zip
+*.zip.part*
+*.b64.txt
+
+# Local/GENOS shared development and runtime exclusions.
+# The selected code-v19 trees above are dependencies of run_tool.py;
+# the three authoring support files preserve the historical code ZIP contract.
+/.agents/
+/.codex/
+/.claude/
+venv/
+env/
+node_modules/
+.mypy_cache/
+.cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.idea/
+.vscode/
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+*.safetensors
+*.ckpt
+*.log
+/CODE_MANIFEST.json
+
+# Transfer authoring source, installer fixtures and guides remain versioned.
+# Local mail bodies (including encoded attachments), copied working backups,
+# test output and rendered reports are preserved locally outside Git history.
+/.sql-candidate-probe-*/
+*.sqlite-journal
+/08_DEPLOYMENT/GENOS/**/EMAIL_*.json
+/08_DEPLOYMENT/GENOS/**/MAIL_*.json
+/08_DEPLOYMENT/GENOS/**/SEND_*.json
+/08_DEPLOYMENT/GENOS/**/SENT_*.json
+/08_DEPLOYMENT/GENOS/**/EMAIL_*.json.gz
+/08_DEPLOYMENT/GENOS/**/MAIL_*.json.gz
+/08_DEPLOYMENT/GENOS/**/SEND_*.json.gz
+/08_DEPLOYMENT/GENOS/**/SENT_*.json.gz
+*.sqlite.gz
+*.sqlite3.gz
+*.log.gz
+*.log.*.gz
+/08_DEPLOYMENT/GENOS/**/*.xml.gz
+/08_DEPLOYMENT/GENOS/**/*.xml.*.gz
+/08_DEPLOYMENT/GENOS/handoffs/**/before-working/
+/08_DEPLOYMENT/GENOS/handoffs/**/local-before/
+/08_DEPLOYMENT/GENOS/handoffs/**/before/
+/08_DEPLOYMENT/GENOS/handoffs/**/verification-logs/
+/08_DEPLOYMENT/GENOS/handoffs/**/HISTORY_MANIFEST.json
+/08_DEPLOYMENT/GENOS/**/*.xml
+/08_DEPLOYMENT/GENOS/**/*.tar.gz
+/07_DOCS/REFERENCE/REPORTS/**/preview/
+/07_DOCS/REFERENCE/REPORTS/**/*.docx
+/07_DOCS/REFERENCE/REPORTS/**/*.pdf
+/07_DOCS/REFERENCE/REPORTS/REFERENCE_CONNECTION_REPAIR_PLAN_20260922/audit.json
+/07_DOCS/REFERENCE/REPORTS/REFERENCE_CONNECTION_REPAIR_PLAN_20260922/hierarchy_audit.json
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_catalog.json
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_catalog.csv
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_appendix.md

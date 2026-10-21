@@ -35,6 +35,8 @@ def bind_projected_teams(store, projection):
     if not isinstance(projection['team_memberships'], dict):
         raise ValueError('projected team membership map required')
     for did, teams in projection['team_memberships'].items():
+        if did in getattr(getattr(store, 'selection', None), 'excluded', ()):
+            continue
         row = store.db.execute('SELECT source_artifact_sha256,json FROM document WHERE document_id=?', (did,)).fetchone()
         origin = projection.get('documents', {}).get(did)
         if not row or not origin or origin.get('status') != 'verified' or origin.get('source_artifact_sha256') != row[0]:
@@ -54,7 +56,8 @@ def bind_projected_teams(store, projection):
 def prepared_catalogue(store):
     key = generation_key(store)
     with _LOCK:
-        if key in _CACHE:
+        oracle=getattr(store,'is_oracle_query',False)
+        if not oracle and key in _CACHE:
             obs.event(log, 'catalogue.cache.hit', cache_hit=True, document_count=len(_CACHE[key]['ids']))
             return _CACHE[key]
         from .document_roles import role_of_metadata
@@ -77,8 +80,9 @@ def prepared_catalogue(store):
             raise ValueError('source changed during catalogue preparation')
         value = MappingProxyType({'ids': frozenset(teams), 'teams': MappingProxyType(teams),
                                   'roles': MappingProxyType(roles)})
-        _CACHE.clear()  # One generation per worker; no connections or request state.
-        _CACHE[key] = value
+        if not oracle:
+            _CACHE.clear()  # One generation per worker; no connections or request state.
+            _CACHE[key] = value
         obs.event(log, 'catalogue.cache.ready', cache_hit=False, document_count=len(teams), sql_count=1)
         return value
 

@@ -52,7 +52,10 @@
     "batch_selected_pages": true,
     "selectable_search": true,
     "compact_input": true,
-    "completion_policy_version": "investigation-completion-v8"
+    "completion_policy_version": "investigation-completion-v8",
+    "length_recovery_max_tokens": 12800,
+    "definition_entry": true,
+    "answer_first": true
   },
   "request_entry_policy": "fused-title-v1",
   "answer_presentation": "grounded-narrative-v1"

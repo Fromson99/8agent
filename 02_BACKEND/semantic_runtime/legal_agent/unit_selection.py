@@ -116,6 +116,17 @@ def _select_batch(question,record,invoke,*,session,remaining_seconds,max_fulltex
             return invoke(SYSTEM,payload,definition,used_phase,min(180,left))
         value=contracts.bounded_decision(session.repo,'unit-selection',data,definition,propose,checked,
             identity={'phase':phase,'data':data},can_repair=lambda:progress.get('repairs',0)<1)
+        from .query_scope import active
+        if (active(session) or {}).get('selections'):
+            # Only the input of a completed call proves delivery. A skipped
+            # review or newly expanded offer cannot inherit an earlier receipt.
+            delivered=[visible[row['id']] for row in data['units'] if row['original']['complete']]
+            delivered.extend(r for card in data.get('sources', []) for r in selected.values()
+                if r['document_id']==card['document_id'] and r['source_id']==card['source_id']
+                and r['offer'] in card['read_scopes'])
+            output.setdefault('structure_delivery_spans', []).extend(
+                {'document_id':r['document_id'], 'delivered_spans':[p for e in r['evidence'] for p in e['spans']]}
+                for r in delivered)
         if used_phase!=phase:output['choice_repairs'].append({'rejected_phase':phase,'phase':used_phase,'decision':value})
         output['decisions'].append({'phase':used_phase,'decision':value});return value
     def execute(value):
@@ -159,6 +170,9 @@ def _select_batch(question,record,invoke,*,session,remaining_seconds,max_fulltex
         'previous_selected_sources':list(original_map(selected.values()).values()),
         'unread_candidate_groups':len(record.get('pending_unit_hits',[])),
         'option_columns':['scope','stored_heading','blocks','characters']}
+    from .query_scope import active
+    if (active(session) or {}).get('selections'):
+        first_data['requested_structure_selections']=active(session)['selections']
     if not progress.get('triage'):
         progress['triage']=call('source-unit-triage',first_data,POLICY['choices']);save()
     first=progress['triage']
@@ -201,6 +215,8 @@ def _select_batch(question,record,invoke,*,session,remaining_seconds,max_fulltex
             'reference_decisions':[{'round':b['round'],'decision':b['decision']} for b in navigation['batches']],
             'laws':first_data['laws'],'units':list(rows),'unpresented_units':len(omitted),
             'option_columns':first_data['option_columns']}
+        if 'requested_structure_selections' in first_data:
+            review_data['requested_structure_selections']=first_data['requested_structure_selections']
         while review_data['units'] and len(json.dumps(review_data,ensure_ascii=False))>max_fulltext_chars:
             review_data['units'].pop();review_data['unpresented_units']+=1
         if len(json.dumps(review_data,ensure_ascii=False))>max_fulltext_chars:raise BudgetExhausted('selected originals exceed review context budget')
@@ -278,6 +294,7 @@ def select(question,record,invoke,*,session,remaining_seconds,max_fulltext_chars
         progress['history']=[h for h in progress['history'] if h['batch']!=number]+[receipt]
         progress['audit'][str(number)]={key:deepcopy(out[key]) for key in
             ('decisions','rejected_decisions','choice_repairs','actual_selector_excerpts','reference_navigation')}
+        progress['audit'][str(number)]['structure_delivery_spans']=deepcopy(out.get('structure_delivery_spans', []))
         progress['result']=out;save()
         if out['evidence_sufficient'] or not pending or nav['pending'] or out['needs_fulltext']:break
         if number==POLICY['candidate_batches']:break
@@ -302,6 +319,14 @@ def select(question,record,invoke,*,session,remaining_seconds,max_fulltext_chars
         'diagnostics':out['diagnostics'],
         'unread_candidate_keys':[h['key'] for h in progress['pending']],
         'additional_read_actions':progress['acquisition_actions'],'read_groups':len(progress['working']['unit_reads'])}
+    from . import query_scope as qs, structure_selection as ss
+    records=(qs.active(session) or {}).get('selections', [])
+    if records:
+        receipts=[{'document_id':r['document_id'],'acquired_spans':[p for e in r['evidence'] for p in e['spans']]}
+            for r in progress['working']['unit_reads']+list(out['_selected_units'].values())]
+        receipts.extend(r for audit in audits for r in audit['structure_delivery_spans'])
+        out['selection_progress']=ss.progress_from_spans(session, {r['hash']:r for r in records}, receipts)
+        out['completion_limitations'].extend(ss.selection_limitations(session.matcher, out['selection_progress']))
     for key in ('_selected_units','_read_state','_navigation_state','_known_keys'):out.pop(key,None)
     session.repo.event('UNIT_CANDIDATE_ACQUISITION_STOPPED',out['candidate_acquisition'])
     return out

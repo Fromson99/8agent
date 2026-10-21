@@ -1,0 +1,44 @@
+{
+  "schema_version": "genos-field-diagnostic-result-v1",
+  "evidence_type": "USER_PROVIDED_SCREENSHOT",
+  "screenshot_sha256": "2c11a3ecc794ab3b8b91210de8fbd59fe97604066f1073bfe6c736f883bbc2c3",
+  "observed": {
+    "status": "UNSUPPORTED_INVENTORY",
+    "complete": true,
+    "issues": 0,
+    "code_modified": false,
+    "exit_code": 2,
+    "resolved_checkout": "/workspace",
+    "length_recovery_revision": "GENOS_LENGTH_RECOVERY_20261015_R2",
+    "inventory_sha256": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686"
+  },
+  "sealed_crosscheck": {
+    "fact_reason_spec_sha256": "5ce64b317d358f92d89be85cd2844c051d2e0113810fd4bf4e41b2abdc2796bd",
+    "length_recovery_r2_spec_sha256": "1c1d820ed3e06dc008db54970afaba2b5c15f04c33cfc3b14dcf4f4358489931",
+    "field_signature_is_known_length_output": true,
+    "field_signature_in_fact_reason_allowlist": false,
+    "length_output_variants": 990,
+    "fact_reason_covered_length_variants": 330,
+    "missing_length_variants": 660,
+    "matching_predecessors": [
+      {
+        "input_signature": "b6638b93d9206473316da08b90b9ab458c13491b2d302305fdfdc95a8f1c6c00",
+        "output_signature": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686",
+        "label": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r4/applied-display-r5/focused-r3/narrative-r2/stream-fix-r1/success/guidance/metrics/tls/schema-recovery-r1"
+      },
+      {
+        "input_signature": "b12a27bdca1749760cad7d58d0bfacf16fe57bf17070ea6d5b41de8278e4b1b4",
+        "output_signature": "7e3b5d20b21d33cd6e667896fdd023a9842b1c2d82dbef81892438e0b92b9686",
+        "label": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r4/applied-display-r5/focused-r3/narrative-r2/stream-fix-r1/success/guidance/metrics/tls/schema-recovery-r1/dependency-recovery-r1"
+      }
+    ]
+  },
+  "root_cause": "FACT_REASON R1 build_delivery.main mutates payload/manifest while iterating transitions. It enumerates the sequential availability -> tool -> length path, missing direct cumulative length transitions from supported schema/dependency/tool states.",
+  "remediation_required": "Build a new FACT_REASON revision covering the sealed predecessor transition branches, preserve R1, and verify exact input/output hashes. Do not alter field manifest or bypass integrity checks.",
+  "field_raw_manifest_received": false,
+  "genos_connection_attempts": 0,
+  "fix_packaged": false,
+  "product_code_changed": false,
+  "genos_patch_applied": false,
+  "field_serving_revision_verified": false
+}

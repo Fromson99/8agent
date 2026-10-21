@@ -1,0 +1,16 @@
+<p>DEV의 JSON을 배포 코드에서 읽도록 수정했습니다. <b>이번 GENOS_DEV_SEARCH_SELECTION_20261021_R1을 사용하세요.</b> 앞서 보낸 NFS 복원 패키지 대신 적용하는 수정본입니다.</p>
+<p>최신 선택 JSON은 <code>~/DEV/00_SYSTEM/SEARCH_SELECTION/generation.json</code>에 자동 생성됩니다. 원문·SQLite·색인은 기존 NFS를 사용합니다. 배포 후에는 실제 배포 코드 폴더 기준으로 JSON을 읽습니다.</p>
+<p><b>이전 DATA ZIP과 build-receipt.json은 필요 없습니다.</b> 현장 NFS 메타데이터와 기존 승인 규칙으로 JSON을 만듭니다.</p>
+<p>첨부 ZIP/TXT를 실제 업로드한 TRANSFER 폴더에서 터미널을 열고 순서대로 실행하세요. 먼저 DEV로 이동하지 않습니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_DEV_SEARCH_SELECTION_20261021_R1.zip ./GENOS_DEV_SEARCH_SELECTION_20261021_R1
+bash ./GENOS_DEV_SEARCH_SELECTION_20261021_R1/RUN_DEV_SELECTION.txt check
+bash ./GENOS_DEV_SEARCH_SELECTION_20261021_R1/RUN_DEV_SELECTION.txt apply
+bash ./GENOS_DEV_SEARCH_SELECTION_20261021_R1/RUN_DEV_SELECTION.txt commit
+bash ./GENOS_DEV_SEARCH_SELECTION_20261021_R1/RUN_DEV_SELECTION.txt gate</pre>
+<p>마지막 명령이 GENOS_RELEASE_GATE PASS로 끝난 뒤:</p>
+<pre>git -C "$HOME/DEV" push</pre>
+<p><b>GENOS 코드서빙에서 이 커밋으로 새 리비전을 배포해야 적용됩니다.</b> DEV만 변경하고 기존 리비전을 계속 사용하면 503이 남습니다. 워크플로우 Python 단계는 이번 패치로 바꾸지 않습니다. 배포 후 워크플로우 테스트 화면에서 warmup/HEALTH와 실제 원문 질문을 확인하세요.</p>
+<p>설정이 있으면 기존 generation/runtime을 보존합니다. 없으면 사진의 <code>/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation</code> 및 <code>/nfs-root/diamo/8-agent/runtime</code>을 사용합니다. 경로가 다를 때는 GUIDE의 명시 인자를 사용합니다.</p>
+<p>중간에 끊기면 같은 추출 폴더에서 apply를 다시 실행하세요. INSTALL_STATE.json과 blobs/는 백업·재개용이니 보관합니다. 원복은 <code>bash ./GENOS_DEV_SEARCH_SELECTION_20261021_R1/RUN_DEV_SELECTION.txt rollback</code>입니다. 이미 배포했다면 이전 코드서빙 리비전 복귀도 필요합니다.</p>
+<p>검증: 58개 통과, 최종 ZIP/TXT 38명령(의도된 오류 차단 14개), 실제 API 조회·코드 경로 이동·동일 checkout 커밋/데이터 검증·재개/원복 확인. 기존 v1 API fixture 2개는 알려진 별도 실패로 제외하고 v2 API 검사는 포함했습니다. 모델 호출은 없습니다.</p>
+<p>외부에서 GENOS에 접속할 수 없어 실제 현장 실행·배포 성공은 아직 미확인입니다. 별도 요청의 ‘멀티턴에는 대화 세션 식별자가 필요합니다’ 오류는 session_id 전달 문제로, 이번 503 선택 JSON 수정과 구분됩니다.</p>

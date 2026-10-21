@@ -1,0 +1,260 @@
+# Python 코드입니다. 기존 R1 Notebook의 새 Code 셀에 전체를 붙여 넣습니다.
+# 기존 check 객체/결과는 보존합니다. TCP 1회(8초), 사진의 /law/making curl 1회(최대 20초).
+# 사진 속 다른 사람의 OC/Cookie를 복사하지 않습니다. 현재 허가받은 인증값만 사용합니다.
+# 같은 결과 폴더에서 재실행하면 저장된 결과만 표시합니다. bash 실행 파일이 아닙니다.
+import datetime
+import errno
+import getpass
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import socket
+import subprocess
+import time
+from urllib.parse import quote, quote_plus, urlencode, urlsplit
+import requests
+
+PHOTO_ORIGIN = "https://45.101.64.86:8443"
+PHOTO_TARGET = "https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml"
+PHOTO_PARAMS = {"lsClsCd": "BA0103", "closing": "Y", "asndOfiNm": "금융위원회", "admRulNm": "지주"}
+
+
+def evidence_clock():
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return {"utc": now.isoformat(timespec="milliseconds"),
+            "kst": now.astimezone(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="milliseconds")}
+
+
+def evidence_scrub(value, secrets=()):
+    value = str(value)
+    for secret in secrets:
+        if secret:
+            for item in {secret, quote(secret, safe=""), quote_plus(secret)}:
+                value = value.replace(item, "REDACTED")
+    value = re.sub(r"(?i)(OC=)[^&\s\"']+", r"\1REDACTED", value)
+    return re.sub(r"(https?://)[^/@\s]+@", r"\1REDACTED@", value)
+
+
+def evidence_config_value(value):
+    value = str(value)
+    if any(ord(c) < 32 or ord(c) == 127 for c in value):
+        raise ValueError("인증값/설정에 제어문자가 있습니다. 줄바꿈 없는 값을 사용하세요.")
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def evidence_tcp(ip, port):
+    result = {"started": evidence_clock(), "destination_ip": ip, "destination_port": port,
+              "timeout_seconds": 8, "status": "IN_FLIGHT", "application_connect_attempts": 1}
+    start = time.monotonic()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.settimeout(8)
+        sock.connect((ip, port))
+        result["status"] = "TCP_CONNECTED"
+    except OSError as exc:
+        result["errno"] = exc.errno
+        result["exception_class"] = type(exc).__name__
+        if isinstance(exc, (socket.timeout, TimeoutError)) or exc.errno == errno.ETIMEDOUT:
+            result["status"] = "TCP_TIMEOUT"
+        else:
+            result["status"] = {errno.ECONNREFUSED: "TCP_REFUSED", errno.ENETUNREACH: "NETWORK_UNREACHABLE",
+                                errno.EHOSTUNREACH: "HOST_UNREACHABLE", errno.EACCES: "LOCAL_PERMISSION_DENIED",
+                                errno.EPERM: "LOCAL_PERMISSION_DENIED"}.get(exc.errno, "TCP_OS_ERROR")
+        result["error"] = str(exc)[:500]
+    finally:
+        try:
+            local = sock.getsockname()
+            result["local_ip"], result["local_port"] = local[0], local[1]
+        except OSError:
+            result["local_ip"], result["local_port"] = None, None
+        sock.close()
+        result["ended"] = evidence_clock()
+        result["elapsed_seconds"] = round(time.monotonic() - start, 3)
+    result["local_address_note"] = "실행 네임스페이스의 소켓 주소. 0.0.0.0/0이면 미확인. NAT 후 출발지는 방화벽 담당자가 확인."
+    return result
+
+
+def evidence_curl(curl, origin, oc, cookie, proxy, ca):
+    params = {"OC": oc, **PHOTO_PARAMS}
+    url = origin + "/law/making?" + urlencode(params)
+    config = ["url = " + evidence_config_value(url),
+              "header = " + evidence_config_value("target_url: " + PHOTO_TARGET),
+              "proxy = " + evidence_config_value(proxy or ""),
+              'noproxy = ""']
+    if cookie:
+        config.append("header = " + evidence_config_value("Cookie: " + cookie))
+    if isinstance(ca, str):
+        config.append("cacert = " + evidence_config_value(ca))
+    metric_names = ["http_code", "remote_ip", "remote_port", "local_ip", "local_port", "num_connects",
+                    "num_redirects", "time_namelookup", "time_connect", "time_appconnect", "time_starttransfer",
+                    "time_total", "size_download"]
+    writeout = "\n".join(k + "=%{" + k + "}" for k in metric_names) + "\n"
+    # Secrets go through stdin, never shell arguments. No shell, no retry, no TLS bypass.
+    # location is retained, but max-redirs=0 stops after the initial response to keep one request.
+    args = [curl, "--disable", "--config", "-", "--location", "--max-redirs", "0", "--request", "GET",
+            "--connect-timeout", "8", "--max-time", "20", "--retry", "0", "--proto", "=https",
+            "--silent", "--show-error", "--verbose", "--output", os.devnull,
+            "--max-filesize", "1048576", "--write-out", writeout]
+    result = {"status": "IN_FLIGHT", "started": evidence_clock(), "application_curl_attempts": 1,
+              "redirect_follow_limit": 0, "connect_timeout_seconds": 8, "total_timeout_seconds": 20,
+              "cookie_present": bool(cookie), "tls_verification_enabled": True,
+              "proxy_used_by_configuration": bool(proxy), "body_saved": False, "legal_data_success": False}
+    start = time.monotonic()
+    try:
+        completed = subprocess.run(args, input=("\n".join(config) + "\n").encode("utf-8"),
+                                   capture_output=True, timeout=25, check=False)
+        result["exit_code"] = completed.returncode
+        metrics = {}
+        for line in completed.stdout.decode("utf-8", "replace").splitlines():
+            key, sep, value = line.partition("=")
+            if sep and key in metric_names:
+                metrics[key] = value
+        result["metrics"] = metrics
+        stderr = completed.stderr.decode("utf-8", "replace")
+        # Do not persist verbose request/response headers, cookies, query strings, or proxy auth.
+        safe_prefixes = ("* Trying ", "*   Trying ", "* Connected to ", "* connect to ", "* Failed to connect ",
+                         "* Connection timed out", "* SSL connection using ", "* SSL certificate problem:", "curl:")
+        result["transport_events"] = [evidence_scrub(line, (oc, cookie, proxy))[:800]
+                                      for line in stderr.splitlines() if line.startswith(safe_prefixes)][:30]
+        result["http_request_sent_observed"] = bool(re.search(r"(?m)^> GET ", stderr))
+        code = metrics.get("http_code", "000")
+        try:
+            tcp_seconds = float(metrics.get("time_connect", "0"))
+            tls_seconds = float(metrics.get("time_appconnect", "0"))
+        except ValueError:
+            tcp_seconds = tls_seconds = 0.0
+        if code.isdigit() and int(code) >= 100:
+            result["status"] = "HTTP_RESPONSE_" + code
+        elif completed.returncode == 28 and tcp_seconds <= 0:
+            result["status"] = "CURL_CONNECT_PHASE_TIMEOUT"
+        elif completed.returncode == 28 and tls_seconds <= 0:
+            result["status"] = "CURL_TCP_CONNECTED_TLS_OR_PROXY_WAIT_TIMEOUT"
+        elif completed.returncode == 28:
+            result["status"] = "CURL_AFTER_TLS_TIMEOUT"
+        elif completed.returncode in (35, 60):
+            result["status"] = "CURL_TLS_ERROR"
+        else:
+            result["status"] = "CURL_EXIT_" + str(completed.returncode)
+        result["metrics_complete"] = set(metrics) == set(metric_names)
+    except subprocess.TimeoutExpired:
+        result["status"] = "CURL_PROCESS_TIMEOUT"
+    except OSError as exc:
+        result.update(status="CURL_LOCAL_EXECUTION_ERROR", exception_class=type(exc).__name__, errno=exc.errno)
+    finally:
+        result["ended"] = evidence_clock()
+        result["elapsed_seconds"] = round(time.monotonic() - start, 3)
+    return result
+
+
+def show_network_evidence(report, path):
+    print("결과 파일:", path.resolve())
+    print("실행 상태:", report["status"], "/ 방화벽 차단 확정:", report["firewall_block_confirmed"])
+    print("최초 요청:", report["request"]["relay_url"])
+    print("target_url:", report["request"]["target_url"])
+    print("조회 조건:", report["request"]["params_without_OC"])
+    print("Cookie 포함:", report["request"]["cookie_present"], "/ 인증값의 예고 API 권한:", "미검증")
+    print("TCP:", json.dumps(report.get("tcp", {}), ensure_ascii=False))
+    print("curl:", json.dumps(report.get("curl", {}), ensure_ascii=False))
+    print("판정:", report.get("interpretation", "실행이 끝나지 않았습니다. 저장 상태 확인이 필요합니다."))
+    print("기존 결과는 유지합니다. 저장하려면 기존 Notebook의 8번 셀만 다시 실행하세요.")
+
+
+def collect_network_evidence(check):
+    path = Path(check.out) / "network_evidence_r1.json"
+    if path.exists():
+        report = json.loads(path.read_text(encoding="utf-8"))
+        print("기존 증거를 표시합니다. 추가 네트워크 호출은 없습니다.")
+        show_network_evidence(report, path)
+        return report
+    if check.mode != "relay" or check.origin != PHOTO_ORIGIN:
+        raise ValueError("현재 check가 사진의 개발 중계 주소와 다릅니다. 자동으로 목적지를 바꾸지 않습니다.")
+    curl = shutil.which("curl")
+    if not curl:
+        raise RuntimeError("Dataiku 실행 환경에 curl이 없습니다. 관리자에게 설치를 요청하세요. 네트워크 호출 전 중단했습니다.")
+    settings = check.session.merge_environment_settings(PHOTO_ORIGIN + "/law/making", {}, True, check.verify, None)
+    proxy = requests.utils.select_proxy(PHOTO_ORIGIN + "/law/making", settings["proxies"]) or ""
+    ca = settings["verify"]
+    if ca is False or (isinstance(ca, str) and not Path(ca).is_file()):
+        raise ValueError("기존 TLS CA 설정을 확인하세요. TLS 검증을 끄지 않습니다.")
+    oc = getattr(check, "making_oc", "") or check.oc
+    cookie = check.cookie
+    if not cookie:
+        cookie = getpass.getpass("현재 허가받은 중계 Cookie가 있으면 입력 (없으면 Enter, 사진의 타인 Cookie 복사 금지): ").strip()
+    for value in (oc, cookie, proxy):
+        evidence_config_value(value)
+    proxy_parts = urlsplit(proxy if "://" in proxy else "http://" + proxy) if proxy else None
+    public_proxy = (proxy_parts.hostname or "") if proxy_parts else ""
+    if proxy_parts and proxy_parts.port:
+        public_proxy += ":" + str(proxy_parts.port)
+    version = subprocess.run([curl, "--disable", "--version"], capture_output=True, timeout=5, check=False)
+    report = {"schema": "dataiku-network-evidence-v1", "status": "PREPARED", "started": evidence_clock(),
+              "hostname": socket.gethostname(), "parent_run_id": check.run_id,
+              "parent_r1_calls": check.calls, "prior_timeout_diagnostic_present": (Path(check.out) / "timeout_diag_r1.json").exists(),
+              "automatic_retries": 0, "max_tcp_connect_attempts": 1, "max_curl_attempts": 1,
+              "application_attempts_started": 0, "firewall_block_confirmed": False,
+              "firewall_evidence_needed": "동시각 NAT 전후 출발지 IP/port → 45.101.64.86:8443 TCP의 DENY/DROP 로그 및 정책 ID",
+              "curl_version": version.stdout.decode("utf-8", "replace").splitlines()[:1],
+              "proxy_host": public_proxy, "proxy_enabled": bool(proxy),
+              "proxy_policy": "기존 requests 세션이 선택한 프록시를 curl에도 명시. 프록시 경로면 직접 TCP 검사는 건너뜀.",
+              "request": {"method": "GET", "relay_url": PHOTO_ORIGIN + "/law/making", "target_url": PHOTO_TARGET,
+                          "params_without_OC": PHOTO_PARAMS, "cookie_present": bool(cookie),
+                          "oc_source": "existing_making_oc" if getattr(check, "making_oc", "") else "existing_law_oc_scope_unverified",
+                          "oc_value_saved": False, "cookie_value_saved": False},
+              "differences_from_photo": ["허가받은 현재 OC/Cookie 사용; 사진의 타인 인증값 미사용",
+                                         "한글 파라미터를 URL 인코딩; 의미는 동일",
+                                         "최초 요청만: --location --max-redirs 0, 리다이렉트 추가 요청 중단",
+                                         "8초 연결/20초 전체 한도, 재시도 0, .curlrc 미사용, 응답 본문 저장 안 함",
+                                         "기존 Notebook의 실효 프록시 및 CA 설정 명시"]}
+    if not cookie:
+        report["differences_from_photo"].append("Cookie 미입력: 사진의 인증 헤더 구성까지 동일하게 재현한 것은 아님")
+    def save():
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        tmp.chmod(0o600)
+        tmp.replace(path)
+    # Reserve before any network work. An interruption does not reset the budget on re-run.
+    with path.open("x", encoding="utf-8") as handle:
+        json.dump(report, handle, ensure_ascii=False, indent=2)
+    path.chmod(0o600)
+    try:
+        if proxy:
+            report["tcp"] = {"status": "SKIPPED_PROXY_ROUTE", "reason": "프록시 우회 검사를 하지 않음"}
+        else:
+            report.update(status="TCP_IN_FLIGHT", application_attempts_started=1)
+            save()
+            p = urlsplit(PHOTO_ORIGIN)
+            report["tcp"] = evidence_tcp(p.hostname, p.port)
+            save()
+        report["status"] = "CURL_IN_FLIGHT"
+        report["application_attempts_started"] += 1
+        save()
+        report["curl"] = evidence_curl(curl, PHOTO_ORIGIN, oc, cookie, proxy, ca)
+        report["status"] = "EVIDENCE_COLLECTED"
+        if report["curl"]["status"].startswith("HTTP_RESPONSE_"):
+            report["interpretation"] = "이번 curl 경로에서 HTTP 응답 수신. 단순 TCP 차단만으로 설명할 수 없음. HTTP 오류/프록시 응답/API 인증과 데이터는 별도 확인."
+        elif report["tcp"]["status"] == "TCP_TIMEOUT":
+            report["interpretation"] = "독립 TCP 연결 시도도 8초 내 완료되지 않음. OC/target_url 전 단계 문제의 증거. 방화벽 DROP·라우팅·서버/반환 경로 문제는 아직 구분 불가."
+        elif report["tcp"]["status"] == "TCP_CONNECTED":
+            report["interpretation"] = "별도 TCP 연결은 성공. curl의 TLS·프록시·HTTP 단계와 두 시각의 경로 차이를 확인. 법령 수신 성공 판정은 아님."
+        else:
+            report["interpretation"] = "TCP/curl의 개별 상태와 오류를 확인. 방화벽 차단 여부는 해당 시각의 장비 로그 대조 전 미확정."
+    except KeyboardInterrupt:
+        report["status"] = "INTERRUPTED_NO_AUTORETRY"
+        raise
+    except Exception as exc:
+        report.update(status="DIAGNOSTIC_ERROR_NO_AUTORETRY", exception_class=type(exc).__name__,
+                      error=evidence_scrub(str(exc), (oc, cookie, proxy))[:800])
+        raise
+    finally:
+        report["ended"] = evidence_clock()
+        save()
+    show_network_evidence(report, path)
+    return report
+
+
+if "check" not in globals():
+    print("기존 R1 Notebook의 같은 커널에서 실행하세요. check 객체가 없어 네트워크 호출하지 않았습니다.")
+else:
+    _network_evidence = collect_network_evidence(check)

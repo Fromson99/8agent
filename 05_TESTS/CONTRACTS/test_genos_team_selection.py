@@ -197,7 +197,7 @@ def test_genos_v5_uses_environment_model_without_profile_file(tmp_path, team_gen
     model_binding = captured['legal_agent_profile']['model_binding']
     assert model_binding['model'] == 'fixture-model'
     assert 'max_input_bytes' not in model_binding
-    assert captured['legal_agent_profile']['max_output_tokens'] == 80000
+    assert captured['legal_agent_profile']['max_output_tokens'] is None
     assert captured['legal_agent_profile']['wall_seconds'] == 1800
     assert captured['legal_agent_profile']['max_concurrent_requests_per_process'] == 0
     assert model_binding['endpoint_identity'] == hashlib.sha256(
@@ -233,12 +233,14 @@ def test_genos_v5_ignores_retired_request_limit(monkeypatch, value):
 
 
 @pytest.mark.parametrize('value', ['0', '-1', '1.5', 'many'])
-def test_genos_v5_rejects_invalid_output_token_limit(monkeypatch, value):
+def test_genos_v5_ignores_retired_output_token_limit(monkeypatch, value):
     import service
     monkeypatch.setenv('GENOS_LLM_SERVING_ID', '123')
+    monkeypatch.setenv('GENOS_BASE_URL', 'https://internal-fixture.invalid')
+    monkeypatch.setenv('GENOS_LLM_KEY', 'synthetic-test-key')
+    monkeypatch.setenv('GENOS_LLM_MODEL', 'fixture-model')
     monkeypatch.setenv('GENOS_RAG_MAX_OUTPUT_TOKENS', value)
-    with pytest.raises(ValueError, match='GENOS_RAG_MAX_OUTPUT_TOKENS'):
-        service._genos_v5_environment_binding()
+    assert service._genos_v5_environment_binding()[0]['max_output_tokens'] is None
 
 
 def test_genos_v5_output_limit_survives_current_generation_switch(tmp_path, team_generation, monkeypatch):
@@ -279,7 +281,7 @@ def test_genos_v5_output_limit_survives_current_generation_switch(tmp_path, team
         args, kwargs = created[-1]
         assert args[1] == generation
         assert kwargs['release']['mode'] == 'genos-data-current'
-        assert kwargs['legal_agent_profile']['max_output_tokens'] == 80000
+        assert kwargs['legal_agent_profile']['max_output_tokens'] is None
         assert kwargs['legal_agent_profile']['wall_seconds'] == 1800
 
 
@@ -311,7 +313,7 @@ def test_genos_v5_environment_model_boots_real_app(tmp_path, team_generation, mo
         app = service._APP
         assert checked == [('GET', '/models', 'fixture-model')]
         assert app.state.pipeline.term_agent.transport.binding['model'] == 'fixture-model'
-        assert app.state.pipeline.term_agent.profile['max_output_tokens'] == 6400
+        assert app.state.pipeline.term_agent.profile['max_output_tokens'] is None
         assert app.state.pipeline.term_agent.profile['wall_seconds'] == 1800
         with TestClient(app) as client:
             reply = client.post('/v1/rag/ask', json={'question': '전체 문서 목록', 'use_llm': False})

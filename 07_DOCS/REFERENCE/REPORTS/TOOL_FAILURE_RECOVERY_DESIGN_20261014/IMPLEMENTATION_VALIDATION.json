@@ -1,0 +1,45 @@
+{
+  "schema_version": "tool-recovery-validation-v1",
+  "results": {
+    "PASS": 842,
+    "FAIL": 4,
+    "NOT_RUN": 0
+  },
+  "new_contract_tests": 302,
+  "new_regressions_in_executed_tests": 0,
+  "baseline_failure_causes": {
+    "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_nonretryable_auth_error_and_actual_model_mismatch": "semantic_runtime.legal_agent.errors.ContractError: previous model decision outcome is unknown; no automatic replay",
+    "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_candidate_manifest_topology_and_code_pins_are_valid": "jsonschema.exceptions.ValidationError: Additional properties are not allowed ('ad_management', 'document_build', 'genos_operator_paths', 'shortcut_v4' were unexpected)",
+    "05_TESTS/CONTRACTS/test_legal_agent_failures.py::test_admission_limit_returns_503_without_hidden_queue": "KeyError: 'run_id'",
+    "05_TESTS/CONTRACTS/test_tool_exploration_v3.py::test_explicit_v3_remains_available_alongside_v5_main": "AssertionError: assert 'legal-agent-unified-v6' == 'legal-agent-tools-v5'"
+  },
+  "baseline_evidence": [
+    "baseline.xml",
+    "extended-baseline.xml",
+    "admission-baseline-final.xml"
+  ],
+  "final_evidence": "complete.xml",
+  "source_binding": "IMPLEMENTATION_BINDING.json",
+  "scenario_status_counts": {
+    "PASS": 37,
+    "FAIL": 0,
+    "NOT_RUN": 12
+  },
+  "choice_cells": {
+    "PASS": 202,
+    "FAIL": 0,
+    "NOT_RUN": 482
+  },
+  "working_engine_manifests_verified": 30,
+  "selected_MAIN62_files_verified": 302,
+  "selected_pointer_changed": false,
+  "python_3_10_syntax_compatible": true,
+  "external_model_calls": 0,
+  "GENOS_access_or_deployment": false,
+  "service_entry": "test_genos_compact_service_boot.py::test_real_compact_service_boot_search_and_tamper_rejection",
+  "service_environment": "WSL local service.service, synthetic generation, identical working code/pins",
+  "limits": [
+    "고정 합성 검사; 실제 모델 판단 품질·GENOS 현장 품질·성능 미측정",
+    "개별 선택지×모든 실패 조합은 별도 미검증 셀로 유지"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "case": "known_r3",
+  "observed_status": "CHECKOUT_DRIFT_OR_UNREADABLE",
+  "cause": "The first read-only path filter excluded six tracked operating documents under 07_DOCS and service/service.py.",
+  "correction": "Include the established 07_DOCS and service code roots while retaining credential/data/path/symlink exclusions.",
+  "product_code_changed": false,
+  "genos_executed": false
+}

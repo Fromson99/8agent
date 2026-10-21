@@ -20,13 +20,13 @@ def obj(properties):
             'properties': properties, 'required': list(properties)}
 
 
-TEXT = {'type': 'string', 'minLength': 1, 'maxLength': 4000}
+TEXT = {'type': 'string', 'minLength': 1}
 INTERPRET = obj({
     'task_type': {'enum': ['definition_scope', 'unsupported', 'ambiguous']},
     'concepts': {'type': 'array', 'maxItems': 4, 'items': obj({
         'start': {'type': 'integer', 'minimum': 0}, 'end': {'type': 'integer', 'minimum': 1},
         'text': TEXT, 'label': TEXT})},
-    'question_for_user': {'type': 'string', 'maxLength': 2000},
+    'question_for_user': {'type': 'string'},
 })
 ACTIONS = obj({'actions': {'type': 'array', 'minItems': 1, 'maxItems': 4, 'items': obj({
     'tool': {'enum': list(ALL_TOOLS)}, 'args': {'type': 'string'}, 'reason': TEXT})}})

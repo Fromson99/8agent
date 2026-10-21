@@ -1,0 +1,16 @@
+
+==================================== ERRORS ====================================
+_ ERROR collecting 08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py _
+ImportError while importing test module '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py:5: in <module>
+    from conftest import term_glossary
+E   ModuleNotFoundError: No module named 'conftest'
+=========================== short test summary info ============================
+ERROR 08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/test_delivery.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.14s

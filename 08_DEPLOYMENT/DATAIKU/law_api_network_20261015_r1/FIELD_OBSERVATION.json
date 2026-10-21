@@ -1,0 +1,16 @@
+{
+  "source": "User-provided Dataiku diagnostic screenshot; not a machine-readable field log",
+  "observed_status": "CONNECTION_SETUP_TIMEOUT",
+  "observed_relay_url": "https://45.101.64.86:8443/law/DRF",
+  "observed_target_url": "http://www.law.go.kr/DRF/lawService.do?target=law",
+  "observed_elapsed_seconds": 8.01,
+  "observed_http_status": null,
+  "observed_effective_proxy_enabled": false,
+  "observed_exception_classes": ["ConnectTimeout", "MaxRetryError", "ConnectTimeoutError", "TimeoutError"],
+  "exact_field_diagnostic_timestamp": "Not legible in screenshot; obtain from saved diagnostic JSON",
+  "same_as_photo1_curl_request": false,
+  "difference": "Prior request /law/DRF law body; photo1 /law/making ptcpAdmPp notice query",
+  "firewall_block_confirmed": false,
+  "network_capture_available": false,
+  "firewall_log_available": false
+}

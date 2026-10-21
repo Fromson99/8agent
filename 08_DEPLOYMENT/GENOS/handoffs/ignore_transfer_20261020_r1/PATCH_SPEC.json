@@ -1,0 +1,56 @@
+{
+  "id": "GENOS_IGNORE_TRANSFER_20261020_R1",
+  "profiles": [
+    ".gitignore",
+    "genosIgnore",
+    "genosNoJsIgnore",
+    "genosMailIgnore",
+    "08_DEPLOYMENT/GENOS/v6-runtime.genosignore",
+    "08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore",
+    "08_DEPLOYMENT/GENOS/ad-mode-package.ignore"
+  ],
+  "excluded_examples": [
+    ".Trash-1001/files/BACKUP/old.py",
+    ".Trash-1001/info/deleted.trashinfo",
+    ".Trash/files/old.py",
+    "nested/.Trash-1002/files/old.py",
+    "TRANSFER/archive.zip",
+    "QUERY_TRANSFER_20261020_R1/events.jsonl",
+    "QUERY_TRANSFER_20261020_R1/export-state.json",
+    "QUERY_TRANSFER_20261020_R1/job.lock",
+    "QUERY_TRANSFER_20261020_R1/query-data.db.partial",
+    "QUERY_TRANSFER_20261020_R1/query-data.db.partial-journal",
+    "QUERY_TRANSFER_20261020_R1/source-check.json",
+    "QUERY_TRANSFER_future/query-data.db",
+    "scratch/query-data.db.partial",
+    "scratch/query-data.db.partial-journal",
+    "scratch/query-data.db-journal",
+    "scratch/query-data.sqlite.partial",
+    "scratch/query-data.sqlite.partial-wal",
+    "scratch/query-data.sqlite3.partial",
+    "scratch/query-data.sqlite3.partial-journal"
+  ],
+  "retained_examples": [
+    "service.py",
+    "02_BACKEND/semantic_runtime/legal_agent/model_contract.py",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "06_TOOLS/COMMANDS/code_ship.py",
+    "00_SYSTEM/PIPELINE.json",
+    "01_DATA/README.md",
+    "01_DATA/CONTRACTS/example.schema.json",
+    "01_DATA/SOURCE_SETS/example.json",
+    ".env.example"
+  ],
+  "payload_hashes": {
+    "apply_ignore.py": "7ec8917f064e8bb153f80cd0096437ab2512e04e28051bd5330873a2169a0b99",
+    "IGNORE_RULES.txt": "491debdcc145817eef39edf5e43d5ba5e06ed5d00350eda618ea9c7d5079d397",
+    "MAIN92_BASE_INVENTORY.json": "b911e3106e3d3db4a72e24b21bd73a46c302f863a36e593dbe50b20762216a8f",
+    "updated-source/.gitignore": "fd9dcb7df774bb16229ec19ce5b5edc4a9bc8c86f3cfcc531f7e8991d000dfcf",
+    "updated-source/genosIgnore": "cd91f49c07f82a361a8f3288d9cd3c0d08408e43ceb06568c3acfc865ed0e973",
+    "updated-source/genosNoJsIgnore": "ca5c34658abbe8691dc9fc76be65bb369227a67ef036d52ba41cf600579c4ec7",
+    "updated-source/genosMailIgnore": "d86487279b9a7c2a61fecca2f1bce3fcc553f998808e0f2b0d2d88c114313120",
+    "updated-source/08_DEPLOYMENT/GENOS/v6-runtime.genosignore": "f5191a0705534b2ddb8243f1db9d01524b23bac4f41bcde71323ae4840d98b98",
+    "updated-source/08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore": "be4919d3639bc399f31a1272d9df83fe860967e3b063169cff2cb6ca03dbd490",
+    "updated-source/08_DEPLOYMENT/GENOS/ad-mode-package.ignore": "39c98b02ba01642c443eaf9212298430db1f96b85c0a29f3a596aa5193b4385b"
+  }
+}

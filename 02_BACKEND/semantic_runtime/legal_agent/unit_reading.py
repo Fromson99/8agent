@@ -73,10 +73,14 @@ def offer_plan(s,hit):
     if cache is None: cache = s._unit_offer_plans = {}
     key = digest(hit)
     if key not in cache: cache[key] = _offer_plan(s, hit)
-    return deepcopy(cache[key])
+    from .query_scope import filter_offers
+    offers,blocked=deepcopy(cache[key])
+    return filter_offers(s,hit,offers,blocked)
 
 
 def _offer_plan(s,hit):
+    if hit.get('source_partition') is not None:
+        return [partition_offer(s,hit)],[]
     if hit.get('matched_hits'):
         child_plans = [offer_plan(s, h) for h in hit['matched_hits']]
         owned = set()
@@ -146,6 +150,55 @@ def _offer_plan(s,hit):
     return out,blocked
 
 
+def partition_offer(s, hit):
+    """Read one complete canonical group of a verified whole structural union.
+
+    A group is never described as completion of the containing coordinate. The
+    gap inventory retains all expected blocks and READ_ARTICLES keeps each
+    group's own completion receipt and the unchanged shared budget.
+    """
+    from . import structure_query as sq
+    from .repository import text_hash
+    did=hit['document_id']; sid=hit['source_id']; binding=hit['source_partition']
+    if did not in s.scope or set(binding)!={'scope_unit_id'}:
+        raise ContractError('source partition scope mismatch')
+    scope_uid=binding['scope_unit_id']
+    if scope_uid is not None and (did,str(scope_uid)) not in s.matcher.units:
+        raise ContractError('source partition structure missing')
+    ids=sq.non_body_sources(s.matcher,did,scope_uid)
+    if not ids or sid not in ids:
+        raise ContractError('source partition identity missing or ambiguous')
+    wanted=(blocks(s,did,str(scope_uid),'subtree') if scope_uid is not None else
+            [str(r[0]) for r in s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? ORDER BY CAST(block_id AS INTEGER)',(did,))])
+    original={str(b['block_id']):b for b in s.store.sources(did,wanted)}
+    covered=set(); groups={}
+    for ident in ids:
+        source=s.tools.sources.get(ident)
+        if not source or source['document_id']!=did:
+            raise ContractError('source partition outside document')
+        own=[str(b['block_id']) for b in source['blocks']]
+        if not own or len(own)!=len(set(own)) or covered.intersection(own) or set(own)-original.keys():
+            raise ContractError('source partition overlap or escaped original')
+        if (str(source['unit_id'])!=str(s.matcher.sources[ident]['unit_id']) or
+                source.get('text_sha256')!=text_hash('\n'.join(b['text'] for b in source['blocks'])) or
+                any(original[str(b['block_id'])]['text']!=b['text'] or
+                    original[str(b['block_id'])]['source_artifact_sha256']!=source['source_artifact_sha256']
+                    for b in source['blocks'])):
+            raise ContractError('source partition original/hash mismatch')
+        covered.update(own); groups[ident]=own
+    if not wanted or covered!=set(wanted):
+        raise ContractError('source partition union is incomplete')
+    source=s.tools.sources[sid]
+    if str(hit['unit_id'])!=str(source['unit_id']) or str(hit['article_unit_id'])!=str(source['unit_id']):
+        raise ContractError('source partition root mismatch')
+    own=groups[sid]
+    return {'id':'exact:partition:'+digest(binding),'unit_id':str(source['unit_id']) if source['unit_id'] is not None else None,
+            'extent':'exact','reader_target':'source_partition','label':source.get('heading') or '연결 원문 그룹',
+            'block_ids':own,'block_count':len(own),'chars':sum(len(original[b]['text']) for b in own),
+            'description':'선택한 구조를 구성하는 원문 그룹 전체; 다른 그룹의 확보 상태는 별도',
+            'article_complete':True,'source_partition':dict(binding),'coordinate_complete':len(ids)==1}
+
+
 def offers(s,hit):
     return offer_plan(s,hit)[0]
 
@@ -195,6 +248,20 @@ def activity_context(s, hit, offer):
     return {'document_id': hit['document_id'], 'document_name': hit['document_name'],
         'location': locations[0], 'locations': list(dict.fromkeys(locations)),
         'extent': offer['extent'], 'block_count': offer['block_count'], 'chars': offer['chars']}
+
+
+def failed_read(s,error,ids,target,cursor,action_state):
+    """Keep earlier committed pages separate from the failed page's outcome."""
+    error.read_progress={'completed_receipt_refs':list(dict.fromkeys(ids)),
+        'remaining_target':{'target':target,'cursor':cursor},'read_state':dict(action_state)}
+    try:
+        s.repo.event('UNIT_READ_FAILED',error.read_progress)
+    except Exception as storage_error:
+        from .tool_outcome import exception_outcome
+        from .errors import ToolExecutionError
+        outcome=exception_outcome(storage_error,action={'tool':'read','args':{'target':target,'cursor':cursor}},
+            binding_hash=s.context.binding_hash,execution='UNKNOWN',effects='UNKNOWN')
+        raise ToolExecutionError('read progress could not be saved',outcome=outcome) from error
 
 
 @latency.timed('law.read.original')
@@ -247,11 +314,27 @@ def read(s,hit,offer,*,action_state):
                 'expected_information':'선택 범위의 원문·조건·예외; 기존 검증 구간은 재사용'}
             action_state['sequence']+=1
             s._unit_read_state.update(action_state)
-            result=s.execute(action,'unit-read-'+str(action_state['sequence']),actor='SYSTEM_POLICY')
+            action_id='unit-read-'+str(action_state['sequence'])
+            reserved_before=s.repo.budget()['tool_used']
+            try:
+                result=s.execute(action,action_id,actor='SYSTEM_POLICY')
+            except Exception as error:
+                # Reservations remain spent even if no result reaches this
+                # caller. Completed earlier pages already have their receipts.
+                action_state['count']+=max(0,s.repo.budget()['tool_used']-reserved_before)
+                s._unit_read_state.update(action_state)
+                failed_read(s,error,ids,target,cursor,action_state)
+                raise
             action_state['count']+=1;action_state['chars']+=result.get('budget',{}).get('new_read_chars',0)
             s._unit_read_state.update(action_state)
             receipts.append({'source_id':hit['source_id'],'action':action,'result':result})
-            if result['status'] in ('ERROR','NOT_EXECUTED','DENIED'):raise ContractError('unit READ failed')
+            if result['status'] in ('ERROR','NOT_EXECUTED','DENIED','UNKNOWN'):
+                from .tool_outcome import normalize_result
+                from .errors import ToolExecutionError
+                outcome=normalize_result(result,action=action,binding_hash=s.context.binding_hash,action_id=action_id)
+                error=ToolExecutionError('unit READ failed: '+str(outcome.cause_code),outcome=outcome)
+                failed_read(s,error,ids,target,cursor,action_state)
+                raise error
             ids.extend(i['evidence'] for i in result.get('items',[]) if i.get('evidence'))
             checkpoint=getattr(s,'_unit_read_checkpoint',None)
             if checkpoint:checkpoint([s.repo.evidence(eid) for eid in result.get('evidence_ids',[])],dict(action_state))
@@ -398,6 +481,13 @@ def ensure_context(s, selected, state):
             if current in seen: raise ContractError('context parent cycle')
             seen.add(current)
             h = hit_for(s, r['source_id'], current)
+            from . import query_scope as qs
+            if qs.active(s) and r.get('complete'):
+                child_blocks=set(map(str,r['offer']['block_ids']))
+                if child_blocks <= qs.permitted_blocks(s,r['source_id']):
+                    own_ids=set(blocks(s,r['document_id'],str(current),'exact')) & {str(b['block_id']) for b in s.tools.sources[r['source_id']]['blocks']}
+                    qs.grant(s,r['source_id'],own_ids,witness={'kind':'STRUCTURAL_ANCESTOR',
+                        'acquired_unit_id':uid,'parent_unit_id':current,'evidence_ids':r['evidence_ids']})
             candidates, _ = offer_plan(s, h)
             own = next((o for o in candidates if o['extent'] == 'exact'), None)
             if own and not set(own['block_ids']) <= existing[r['source_id']]:

@@ -1,0 +1,76 @@
+대사 출처 펼치기·소괄호 C번호 수정 — GENOS_COMPARISON_READABLE_20261021_R3
+
+사진의 대사 답변에 일반 질문의 ‘개념·법령 관계 그래프 보기’와 같은 펼치기 블록 형식을 적용했습니다.
+이전 NAVIGATION_DELIVERY R1의 원문 전달 수정, READABLE R2 및 10분 제한을 모두 포함합니다.
+MAIN96, MAIN96+10분 패치, READABLE R1/R2, NAVIGATION_DELIVERY R1 위에 적용할 수 있습니다.
+현재 적용 상태를 모르면 check가 알려진 코드인지 확인하며 다른 수정은 덮어쓰지 않습니다.
+
+이번 수정
+- 생성 설명에 남던 (C25), (C42,C99), 전각 괄호와 [C번호] 표식을 화면에서 제거합니다.
+- 일반질문 그래프와 같은 독립 details/summary 블록·줄바꿈·제목/테두리 형식을 사용합니다.
+- 전체 답변을 감싸던 한줄 div와 표 안의 중첩 펼치기를 제거했습니다.
+  펼친 근거 표에는 내규 출처·원문 / 외규 출처·원문 / 검토 의견을 같은 행에 표시합니다.
+- 질문·실제 원문·구조화 인용·모델 원본과 partial/미확인 상태는 보존합니다.
+  조회 원문이 없다는 결론이나 새 법률 의미를 만들지 않습니다. 모델/검색 정책 변경 및 실제 모델 호출은 없습니다.
+- 사진만으로 GENOS 프론트의 sanitizer/파서 원인을 확정하지는 못했습니다.
+  기존 일반질문의 구조와 맞추고 로컬 표시·서비스 연결을 검사했습니다. 현장 클릭 동작은 별도 확인이 필요합니다.
+
+적용 — 실제 업로드한 TRANSFER 폴더를 현재 작업 위치로 사용
+ZIP과 별도 RUN.txt를 업로드한 그 폴더에서 실행하세요. TRANSFER의 절대 위치는 가정하지 않습니다.
+코드 적용 대상은 기존 Git checkout ~/DEV입니다. 다르면 모든 명령에 같은 --root /실제/checkout 을 추가하세요.
+
+python3 -m zipfile -e ./GENOS_COMPARISON_READABLE_20261021_R3.zip ./GENOS_COMPARISON_READABLE_20261021_R3
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt check
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt gate
+
+check/apply는 실제 checkout과 Python 경로·버전, 코드 상태를 기록합니다.
+apply는 백업 후 적용합니다. .env·ignore·현장 경로·데이터·기존 작업 명령은 보존합니다.
+로그는 현재 TRANSFER의 comparison-readable-r3-logs에 첫 명령부터 남습니다.
+코드 변경을 검토하고 실제 checkout에서 COMMIT_PATHS.txt의 변경과 git diff --check를 확인하여 commit합니다.
+그다음 TRANSFER에서 실행하세요.
+
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt gate-code
+
+현재 SQLite/NFS 운영이면 실제 선택 generation을 같은 checkout에서 검증합니다. Oracle 모드에는 이 명령을 사용하지 않습니다.
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt gate-sqlite
+
+PASS한 commit을 push하고 동일 commit으로 코드서빙 리비전을 배포하세요.
+코드 적용·Git push·리비전 배포는 별도 단계입니다. 이 패치는 데이터 generation을 생성하거나 교체하지 않습니다.
+서빙 코드/세대/리비전은 실제 현장 로그로 확인해야 합니다.
+
+워크플로우 Python 편집기
+이번 표시 수정 자체는 편집기 변경이 없습니다.
+첨부 GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt는 이전 READABLE R1/R2와 동일합니다.
+이미 적용했다면 다시 바꾸지 마세요. 아직 READABLE 편집기본을 적용하지 않았다면
+이전 Python 단계 전체를 백업하고 해당 TXT 내용으로 전체 교체·저장/반영하세요.
+이 파일은 편집기용 Python입니다. bash로 실행하지 않습니다.
+
+현장 확인 — 워크플로우 테스트 화면만 사용
+새 코드서빙 리비전에서 사진의 질문을 새 요청으로 실행하세요.
+본문의 (C25) 같은 임시 번호가 사라졌는지 확인합니다.
+‘답변에 사용한 내규·외규 근거 펼치기’를 클릭해 표/정확 원문을 확인하고 다시 접습니다.
+‘함께 확인한 원문’과 ‘추가 확인 사항’도 열고 닫습니다.
+원문이나 질문 자체에 실제로 들어 있는 C번호는 보존하는 것이 정상입니다.
+기존 대화에 이미 저장된 답변 문자열은 자동으로 변경되지 않습니다.
+기존 일반질문의 그래프와 처리 상세도 같은 화면에서 확인하세요.
+
+재실행·원복 — TRANSFER에서
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt status
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R3/GENOS_COMPARISON_READABLE_20261021_R3_RUN.txt rollback
+
+중단 뒤 apply 재실행은 기존 백업과 설치 기록을 이어받습니다.
+rollback은 적용 직전 코드로 복원하며 이후 다른 수정이 있으면 자동 덮어쓰지 않습니다.
+설치 폴더의 backup·INSTALL_STATE.json·ROOT_BINDING.json과 로그를 보존하세요.
+코드서빙 리비전도 이전 검증 리비전으로 별도 복귀해야 합니다.
+
+검증·범위
+작업 코드 관련115검사 PASS. 실제 로컬 service → 답변 스트림 → 채팅 표시 → 저장/중복 요청,
+원문/질문 보존, 출처/해시/발행 거부, 예산/중단/재개 및 일반질문 표시 회귀를 포함합니다.
+정확한 인계 ZIP의 설치·재실행·중단복구·변조 거부·원복 및 설치 코드 API 검증은
+동봉 HANDOFF_VALIDATION.txt와 별도 DELIVERY_VALIDATION.json에 기록합니다.
+이 ZIP은 봉인된 NAVIGATION_DELIVERY R1의 workflow1.20.6에 표시 수정만 결합합니다.
+별도 작업1.20.7의 다른 변경은 작업 트리에 보존하며 이번 현장 인계에 포함하지 않습니다.
+선택 MAIN96·실제 데이터는 변경하지 않았습니다. GENOS 반입/commit/push/서빙 리비전,
+실제 GENOS 내부 모델과 현장 질문·클릭 성공은 아직 검증하지 않았습니다.

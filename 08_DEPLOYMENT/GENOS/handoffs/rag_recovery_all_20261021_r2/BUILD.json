@@ -1,0 +1,85 @@
+{
+  "archive": "GENOS_RAG_RECOVERY_ALL_20261021_R2.zip",
+  "sha256": "a06b2e74d759e8061c0ddfcd429ed99e0098e65c2da34de3e4d08515eafcbb0c",
+  "bytes": 1354470,
+  "patch_files": 51,
+  "required_code_files": 394,
+  "changed_since_recovery_r1": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+    "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+    "02_BACKEND/semantic_runtime/legal_agent/request_repair.py"
+  ],
+  "source_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/payload",
+  "prior_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r1",
+  "verified_runtime_source_root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261021-gap-finish-reconsider/after",
+  "code_manifest_sha256": "56261e35d0cb35de5f28877b4f5dfc7bdf748c216ef0ac0c8b7b0b434775f881",
+  "workflow_editor_sha256": "6d4bf36d9a56d6a75b1c883cb11224030cf1b7cc13bc5288b4785ffac8811fc5",
+  "selected_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "multiturn-structured-scope-20261021-r1",
+    "generation": 97,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/multiturn-structured-scope-20261021-r1/release.json",
+    "release_manifest_sha256": "1e2b0a05c990fbf4db2547fb77f9f43fd8bc16e96d6b6de6cdd4793ca6b2cfff",
+    "activated_at": "2026-10-21T06:16:08.432700+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "f282e78dc4fe268f3e65602fef2a920d3d9efaf6e5b4d1941fa617e30f205dd9",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/실험/manifest.json",
+        "sha256": "72c3d1c85f0cc6f285d0cd45a10aabb21f796fb99d21b3a9fdaeaea96700c242"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/README.md",
+        "sha256": "e6780a6980e74943a28a31767b29df7be5e864ab45739dd713d8c4c3d659e7a6"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/artifacts/result.json",
+        "sha256": "806a285413d902228dfbb0d8982e63096181b2d2d1180daf1d2960f0a9da6a31"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/artifacts/release-rebase.json",
+        "sha256": "19bf022e555c529fc134eb3f0afd2d5d919e71cfd36cd9240d6a2c526da8aad5"
+      }
+    }
+  },
+  "GENOS_checkout": "~/DEV (physical path recorded by check)",
+  "GENOS_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_serving_revision": null,
+  "GENOS_revision_generation_setting": null
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "action": "extract",
+    "exit": 0
+  },
+  {
+    "action": "check",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/genos-ignore-final-19t58fgu/uploaded\nCODE_ROOT=/tmp/genos-ignore-final-19t58fgu/root\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"check\": \"PASS\", \"profiles\": [\".gitignore\", \"genosIgnore\"], \"code_changes\": 0, \"data_changes\": 0, \"git_changes\": 0}\nGENOS_IGNORE_EXIT=0 LOG=/tmp/genos-ignore-final-19t58fgu/uploaded/genos-ignore-r1-logs/20261020T065155Z-557199.log\n",
+    "stderr": ""
+  },
+  {
+    "action": "apply",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/genos-ignore-final-19t58fgu/uploaded\nCODE_ROOT=/tmp/genos-ignore-final-19t58fgu/root\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\nIGNORE_APPLIED; Git index/history and data files unchanged\nGENOS_IGNORE_EXIT=0 LOG=/tmp/genos-ignore-final-19t58fgu/uploaded/genos-ignore-r1-logs/20261020T065155Z-557212.log\n",
+    "stderr": ""
+  },
+  {
+    "action": "status",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/genos-ignore-final-19t58fgu/uploaded\nCODE_ROOT=/tmp/genos-ignore-final-19t58fgu/root\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\nGENOS_IGNORE_EXIT=0 LOG=/tmp/genos-ignore-final-19t58fgu/uploaded/genos-ignore-r1-logs/20261020T065155Z-557225.log\n",
+    "stderr": ""
+  },
+  {
+    "action": "undo",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/genos-ignore-final-19t58fgu/uploaded\nCODE_ROOT=/tmp/genos-ignore-final-19t58fgu/root\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\nIGNORE_RESTORED; Git index/history and data files unchanged\nGENOS_IGNORE_EXIT=0 LOG=/tmp/genos-ignore-final-19t58fgu/uploaded/genos-ignore-r1-logs/20261020T065155Z-557234.log\n",
+    "stderr": ""
+  }
+]

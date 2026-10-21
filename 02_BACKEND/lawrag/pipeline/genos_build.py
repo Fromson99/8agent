@@ -220,7 +220,7 @@ def ingest_files(plan, build, emit):
     for number, row in enumerate(plan['files'], 1):
         emit(f'[1/5] 문서 {number}/{len(plan["files"])}: {row["relative"]}')
         try:
-            _ingest_files({'files': [row]}, build, emit)
+            _ingest_files({**plan, 'files': [row]}, build, emit)
         except Exception as exc:
             import traceback
             error = safe({'document_id': row['document_id'], 'path': row['path'],
@@ -267,14 +267,14 @@ def _ingest_files(plan, build, emit):
                             via='genos-all-corpus', corpus=build / 'corpus')
             # 별표·서식은 조문 HTML 에 없다. 수집 manifest 가 가리키는 첨부의 변환
             # 사이드카를 같은 문서에 실어야 조문이 부르는 별표가 원문으로 남는다.
-            item, manifest = manifest_item_for(original, raw)
+            item, manifest = manifest_item_for(original, raw, collection_root=plan.get('input_root'))
             response = ingest_rulehtml_bytes(raw, row['name'], build / 'structure', row['folder'],
                                             extra_meta={'kind': row['kind']}, site=row['external_source'],
                                             manifest_item=item, manifest=manifest)
             emit(f'  별표·서식 {response.get("annex_md", 0)}/{response.get("annex_have", 0)}건 적재')
         else:
             from lawrag.core.ingest import manifest_item_for
-            item, manifest = manifest_item_for(original, raw)
+            item, manifest = manifest_item_for(original, raw, collection_root=plan.get('input_root'))
             response = registered_ingest(raw, filename, row, build) if row['doc_type'] else ingest(
                           raw, filename, store=build / 'structure', name=row['name'], folder=row['folder'],
                           use_llm=False, engine=row['engine'],
@@ -287,7 +287,7 @@ def _ingest_files(plan, build, emit):
         context = document_metadata(row)
         for key in ('external_source', 'kind', 'raw_role', 'aliases', 'source_metadata', 'conversion', 'input_collection',
                     'representations', 'pdf_references', 'representation_policy', 'pairing_basis',
-                    'pairing_content_verified', 'source_title'):
+                    'pairing_content_verified', 'source_title', 'filename_version', 'is_latest'):
             if key in row:
                 context[key] = row[key]
         context['document_role'] = row.get('document_role') or role_of_row(row)

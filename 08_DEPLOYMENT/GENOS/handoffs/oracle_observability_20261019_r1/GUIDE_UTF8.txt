@@ -1,0 +1,94 @@
+GENOS_ORACLE_LOGGING_20261019_R1 — Oracle 준비·워크플로우 진입 로그
+
+사진에서 확인한 사실
+서버 기동/health 200 이후 Oracle 진행 로그가 없는 화면과, 워크플로우 테스트의
+"시스템 내 MODEL 오류로 가드레일 기능이 정상 동작하지 않습니다" 응답을 확인했습니다.
+후자는 우리 WARMUP_STATUS의 RUNNING/READY 응답이 아닙니다. 플랫폼 가드레일/모델 실행
+기록에서 실패 지점을 확인해야 합니다. 입력/출력 중 어느 단계인지 사진만으로 확정하지 않습니다.
+이 패치는 가드레일을 해제하거나 해당 모델 오류를 복구하지 않습니다.
+
+변경 내용
+- 준비 시작/종료와 진행 heartbeat를 기본 INFO 컨테이너 로그에 15초마다 기록합니다.
+- 설정, Oracle 연결, 저널 복원, 릴리스 조회, 스키마 확인, 원문 다운로드/검증,
+  색인 다운로드/검증, 캐시 결속, RAG 초기화를 구분합니다.
+- 처리 행/분할 수, Oracle 물리 호출 수, 응답 대기 시간, 마지막 진행 후 경과를 표시합니다.
+- WARMUP_STATUS는 AD/SQL/NFS 대화 저장소 초기화를 기다리지 않고 현재 프로세스 상태를 반환합니다.
+- 모듈을 처음 불러올 때의 예약 작업 복구도 별도 스레드에서 실행합니다. 지연/실패 상태를
+  ad_worker_recovery와 ad.worker.recovery 로그에 남기며 데이터 준비 성공으로 바꾸지 않습니다.
+- 워크플로우 Python 진입시 workflow.entry.received를 기록합니다. 상태 조회 통신의
+  연결·읽기 timeout은 최대30초이며 자동 재시도는 없습니다. 일반 RAG 통신 설정은 유지합니다.
+- 키/토큰, SQL 바인딩 값, 원문, 문서 ID는 새 진행 로그에 넣지 않습니다.
+- heartbeat는 프로세스의 관측 신호입니다. 진행 건수/마지막 성공 시각이 변하지 않으면
+  실제 작업이 진전한 것으로 판단하지 않습니다. READY는 기존 검증이 끝나야만 반환합니다.
+
+적용 가능 코드
+GENOS_MAIN87_PATCH_20261019_R1 또는 GENOS_SESSION_IDENTITY_20261019_R1의 검증된 코드입니다.
+현재 설치본을 해시로 판별해 그 버전에 로깅만 추가합니다. 다른 코드/사용자 편집은 거부합니다.
+MAIN87/팀·세션 버전을 서로 교체하지 않습니다. 원본 NFS/Oracle/DP_RELEASE_ID/.env/검색/모델/
+대화 DB를 바꾸지 않습니다. 현재 로컬 MAIN 포인터나 GENOS 리비전을 자동 전환하지 않습니다.
+
+1. 실제 첨부를 업로드한 TRANSFER 폴더에서 실행
+TRANSFER의 절대 위치는 추정하지 않습니다. 압축 해제를 위해 DEV로 먼저 이동하지 마세요.
+
+python3 -m zipfile -e ./GENOS_ORACLE_LOGGING_20261019_R1.zip ./GENOS_ORACLE_LOGGING_20261019_R1
+bash ./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt check
+bash ./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt apply
+bash ./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt status
+
+기본 적용 대상은 기존 ~/DEV입니다. 실제 checkout이 다를 때만 --root /실제/checkout을 붙입니다.
+python3의 실제 경로·버전과 BASE_VARIANT를 출력합니다. 처음부터 TRANSFER/oracle-logging-r1-logs에
+stdout/stderr/종료코드를 저장합니다. 별도 RUN.txt만 실행해도 내부 패키지를 복원합니다.
+백업/상태: ~/DEV/09_ARTIFACTS/BACKUPS/GENOS_ORACLE_LOGGING_20261019_R1/STATE.json
+중단 시 같은 apply로 재개합니다. 알 수 없는 코드 변경이나 백업 변조는 덮어쓰지 않습니다.
+
+2. 적용한 DEV의 변경 확인·commit
+
+git -C ~/DEV diff --check
+git -C ~/DEV diff --stat
+git -C ~/DEV add -- service.py CODE_MANIFEST.json 02_BACKEND/semantic_runtime/preparation_progress.py 02_BACKEND/semantic_runtime/oracle_dp.py 02_BACKEND/semantic_runtime/oracle_dp_io.py 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py
+git -C ~/DEV diff --cached --stat
+git -C ~/DEV commit -m "Expose Oracle preparation progress and independent warmup status"
+3. TRANSFER에서 같은 committed checkout의 코드 gate
+
+bash ./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt gate-code
+
+게이트가 성공한 commit을 git -C ~/DEV push로 기존 원격에 올리고, 같은 commit으로 새
+코드서빙 리비전을 배포합니다. gate-code는 코드 검증이며 현장 Oracle 데이터 검증이 아닙니다.
+기존 DP/Oracle 인증/캐시/내부 모델 설정을 사용합니다. 새 준비 로그는 재시작 후 시작됩니다.
+선택 release_id와 실제 코드서빙 리비전·commit을 현장 기록에 같이 남깁니다.
+
+4. 워크플로우 Python 편집기에 별도 반영
+apply가 현재 설치 버전에 맞는 전체 편집기본을 다음 위치에 생성합니다.
+TRANSFER/oracle-logging-r1-state/WORKFLOW_PASTE_ALL.txt
+현재 TRANSFER 위치 기준 ./oracle-logging-r1-state/WORKFLOW_PASTE_ALL.txt 전체를 기존 Python
+단계에 붙여 넣고 저장합니다. 기존 URL/코드서빙 ID/인증/팀·세션 설정은 유지합니다.
+DEV 파일 변경·Git push만으로 워크플로우 편집기 코드가 바뀌지는 않습니다.
+
+5. 워크플로우 테스트 화면에서만 확인
+입력 JSON: {"question":"WARMUP_STATUS"}
+NOT_STARTED/FAILED라면 원인을 확인하고 {"question":"WARMUP"}으로 한 번 명시 시작/재개합니다.
+RUNNING일 때는 상태와 카운터를 확인합니다. 연속 질문을 보내거나 준비 상태를 초기화하지 않습니다.
+READY에서 data_provider=oracle, dp_release_id 일치, nfs_source_used=false, 로컬 generation 경로를
+확인합니다. 이후 {"question":"SSE_CHECK"}와 원문 근거를 아는 질문 한 건으로 답변을 확인합니다.
+코드서빙 직접 테스트 UI/API 실행은 요구하지 않습니다.
+
+로그 판별
+- 워크플로우 실행 로그: workflow.entry.received → code_serving.request.started → response.received
+- 코드서빙 컨테이너 로그: http.request.started → service.entered → warmup.status
+- 준비 로그: warmup.started → preparation.progress / warmup.progress → warmup.finished
+- workflow.entry.received 없이 MODEL/가드레일 오류라면 플랫폼에서 Python 이전/이후 실행 단계와
+  가드레일 모델 상태를 확인합니다. 서버 로그만으로 플랫폼 실패 원인을 확정하지 않습니다.
+- 코드서빙에 요청이 없으면 실제 호출 대상 리비전/코드서빙 ID/게이트웨이 경로를 대조합니다.
+- sql_in_flight=true가 지속되면 Oracle 응답 대기입니다. 카운터 증가 여부와 last_progress_age_seconds를
+  함께 확인합니다. 연결 초기화 중에는 phase=oracle.connect로 표시됩니다.
+- 제어 조회가 timeout이어도 백그라운드 준비가 중단됐다고 간주하지 않습니다.
+
+원복: 실제 TRANSFER에서
+bash ./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt undo
+원복한 코드의 변경을 확인·commit/push한 뒤 이전 리비전·이전 워크플로우 편집기본으로 복귀합니다.
+기존 캐시·Oracle 데이터·대화 기록은 삭제하지 않습니다.
+
+검증 범위
+로컬 합성 Oracle/작은 SQLite/실제 서비스·워크플로우 소비자로 정상·지연·실패·재개·무결성·
+중복 시작·비밀 비출력·타임아웃·설치·원복을 확인합니다. 상세 결과는 VALIDATION.json을 참고합니다.
+현장 Oracle 접속·속도·가드레일 모델·Git push·리비전·편집기 저장·답변 성공은 미확인입니다.

@@ -1,0 +1,30 @@
+{
+  "status": "LOCAL_SYNTHETIC_CONTRACTS_PASSED",
+  "checks": 87,
+  "log_sha256": "8d154acf242872a4345b0f5ab72b81108a564da5565acc10f99eaf1752c98041",
+  "validation_binding_sha256": "3c6c3b5deebd96eea0596bde9ec2b5b261e00c8df91d9e9662a58abfd17eb2af",
+  "workflow_version": "1.2.0",
+  "scope": [
+    "durable source return without issues",
+    "scope and document error skip",
+    "no failed call replay",
+    "budget and deadline preservation",
+    "integrity and stale stop",
+    "JSON candidates without authority SQLite writes",
+    "HTML review and separate reviewed transfer"
+  ],
+  "model_calls": {
+    "GENOS": 0,
+    "external": 0,
+    "transport": "deterministic fixture only"
+  },
+  "changed_sources_match_validation": true,
+  "MAIN92_active_pointer_unchanged": true,
+  "final_zip_delivery_check": "See external FINAL_VERIFICATION.json, bound to final ZIP SHA-256",
+  "limits": [
+    "GENOS internal model quality unverified",
+    "NFS and field deployment unverified",
+    "existing R3 jobs are not migrated or modified",
+    "legacy direct batch commands still publish to SQLite; use this R4 launcher for JSON candidates"
+  ]
+}

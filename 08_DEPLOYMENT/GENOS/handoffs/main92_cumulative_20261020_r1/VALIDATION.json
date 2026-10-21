@@ -1,0 +1,116 @@
+{
+  "status": "LOCAL_DELIVERY_VERIFIED_FIELD_PENDING",
+  "version": "GENOS_MAIN92_CUMULATIVE_20261020_R1",
+  "base": "GENOS_MAIN90_RESEARCH_20261020_R1",
+  "code_zip_sha256": "035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6",
+  "local_main_release_manifest_sha256": "4aed2488ae665df58547e3eb5a6677425895e15293ae777b6dbbed583a5f9b31",
+  "main_generation": 92,
+  "workflow_version": "1.19.4",
+  "changes": {
+    "with_manifests_and_pins": 53,
+    "unchanged": 1253,
+    "exact_main_files": 388,
+    "pipeline_exception": "Only Oracle guide reference points to the included field guide"
+  },
+  "contract_tests": {
+    "passed": 204,
+    "product_imports_from_packaged_code": 257,
+    "log": "CONTRACT_TESTS_01.txt",
+    "xml": "CONTRACT_TESTS_01.xml",
+    "coverage": "GENOS model metadata, bounded output recovery, stream completion/failure, AD, workflow resume/hash/deadline/idempotence, current MAIN research state, API and display consumers",
+    "fixture": "synthetic documents and scripted models"
+  },
+  "delivery_tests": {
+    "passed": 2,
+    "scenarios": [
+      {
+        "status": "PASS",
+        "commands": 23,
+        "exact_rollback": true,
+        "preserved_data": true,
+        "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-runtime/test_transfer_preserved_config0/actual checkout",
+        "code_zip_sha256": "3218df5f4cb8296054e475e3a5cab240886febc568ac23ebabaaabef639358b7",
+        "source_generation_opened": false,
+        "mode": "preserved-config-interruption"
+      },
+      {
+        "status": "PASS",
+        "commands": 20,
+        "exact_rollback": true,
+        "preserved_data": true,
+        "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-runtime/test_transfer_no_config_standa0/actual checkout",
+        "code_zip_sha256": "01b637bfa717ee40d593396fa9477c1324699461af9b61e848b18108dcca5cb2",
+        "source_generation_opened": false,
+        "mode": "no-config-standalone"
+      }
+    ],
+    "commands": 43,
+    "coverage": "actual TRANSFER ZIP/TXT, existing Git checkout, preserved config/data, interrupted install, reapply, committed checkout gate, tamper refusal, exact rollback"
+  },
+  "python311": {
+    "status": "PASS",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "modules": 757,
+    "code_zip_sha256": "035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6"
+  },
+  "workflow_editor": {
+    "changed": true,
+    "prior_sha256": "1e76970d3a84a4935024f7af49590fae5dec2854d32f349313f6290f42e38862",
+    "current_sha256": "f4f3193f04fbb4d49733e61d91f30d49877359265b5f169a5f1287e7d40f3cd5",
+    "editor_replacement_required": true
+  },
+  "main_source_verification": {
+    "checks": 204,
+    "actual_local_service_verified": true,
+    "source": "09_ARTIFACTS/AUDITS/20261020-genos-model-metadata-main/final-check.json"
+  },
+  "source_pointer_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506",
+  "selected_local_main_changed_by_packaging": false,
+  "working_source_changed_by_packaging": false,
+  "separate_working_changes": {
+    "observed_working_differences": {
+      "02_BACKEND/semantic_runtime/oracle_query_catalog.py": {
+        "selected": "bd0cdcd295a209694c2692602b1310f1050b817ebe39ed8bddf1fe87759b400c",
+        "working": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5"
+      },
+      "02_BACKEND/semantic_runtime/oracle_query_db.py": {
+        "selected": "63a9ba9ae70999069dc00f05d469d7efdeedcf63d62989e16925c4e9ac0d4d25",
+        "working": "0513d03aba513c8e13addf28ce1dd4a3d7618f16716abf909f8aa160a202c6b3"
+      }
+    },
+    "selected_release_unchanged": true,
+    "action": "Keep handoff bound to immutable selected MAIN92. Preserve separate working changes.",
+    "preparation_check_failure": "An overbroad check required the mutable work tree to equal the selected immutable release; package bytes remained unchanged."
+  },
+  "model_calls": 0,
+  "quality_certified": false,
+  "cutover": "USER_DIRECTED_CUTOVER",
+  "known_limitations": "Prior legal evidence sufficiency/current citation weaknesses, quality/cost validation and existing unrelated regressions remain; no prior ADR verdict changed.",
+  "field": {
+    "checkout": "existing DEV Git checkout",
+    "commit": null,
+    "generation_path": null,
+    "generation_manifest_sha256": null,
+    "oracle_query_release": null,
+    "codeserving_revision": null,
+    "workflow_editor_saved": false,
+    "verified": false
+  },
+  "remaining": [
+    "GENOS install/commit/gate/push/new revision",
+    "Replace and save workflow editor with this package's full TXT",
+    "Verify same failed question in workflow test UI with internal model and actual Oracle/NFS"
+  ],
+  "file_sha256": {
+    "CODE_MANIFEST.json": "aeb22476f21e0a5741f93a46b9d5b02e9c66398cd2fe7b87cdd91d049965bb29",
+    "SOURCE_BINDING.json": "6bceec9bfba22c40fec95d6f652d4e297618139f76b4ce879025475e1a1b37cf",
+    "PACKAGE_SPEC.json": "d1f167f7ec9994c52073b6c249dc6f453412462e14d4106a1d7ce8254c440033",
+    "run.py": "24839b0d5212f47880ca91c6787bfe30ceee21b9a49efd310c24e7925f7019f3",
+    "replace.py": "deaeed789b7d3421969bf1869e4f91f9ec6526b0c179eedb400b8800331b9c50",
+    "code_smoke.py": "3b0786b16b5fae411284b38af8b690e8315c5e128d1e9f0109698fcbbd86325b",
+    "CONTRACT_TESTS_01.txt": "8e01d88ba4fa8eb9f08ed47dcdd9895106fcc01111651f82b6735e751a54a4a4",
+    "DELIVERY_TESTS_01.txt": "a5485a7888ee17b7d1d97d9cd34f26a23ba9e80c59c3a088fc7fe595a4d2d67a",
+    "WORKFLOW_DIFF.json": "d79baf8e929292efcf7ce49bc6b313552717dab35bf1a05469fd7dfb0fb23530"
+  }
+}

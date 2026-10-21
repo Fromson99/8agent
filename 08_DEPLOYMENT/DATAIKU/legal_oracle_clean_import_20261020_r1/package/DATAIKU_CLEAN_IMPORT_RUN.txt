@@ -1,0 +1,114 @@
+# 별도 새 Dataiku Python 노트북에서 실행합니다. SQL/Bash용이 아닙니다.
+# 기존 이관 노트북은 중단 대상입니다. 이 코드는 별도 새 노트북에 붙이세요.
+ACTION = "inspect_processes"  # inspect_processes → stop → plan → replace, 중단 후 resume
+FOLDER_ID = "LEGAL_DATA_ZIP_IMPORT"  # 실제 Managed Folder ID 또는 이름
+ORACLE_CONNECTION = "AIDP"          # 기존 이관과 같은 연결
+WORK_DIR = ""  # 자동 탐색은 정확히 한 폴더일 때만. 여러 개면 기존 로그의 절대 work 경로 입력
+RUN_SECONDS = 21600  # 실행당 최대 6시간, 같은 작업 최초 7일/누적 SQL 한도는 유지
+
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+import zipfile
+import time
+import dataiku
+
+_CODE_ZIP = "LEGAL_ORACLE_CLEAN_IMPORT_20261020_R1.zip"
+_CODE_PREFIX = "LEGAL_ORACLE_CLEAN_IMPORT_20261020_R1/"
+_PINS_HASH = "adec1234c6adf388ad3d294a756934b352546206076a14dbfc9911b41e9f2fbd"
+
+def _download(folder,name,destination,*,expected_sha=None,max_bytes=None):
+    if destination.is_symlink():raise RuntimeError('입력 경로가 링크입니다: '+str(destination))
+    if destination.exists():
+        h=hashlib.sha256()
+        with destination.open('rb') as f:
+            while b:=f.read(1024**2):h.update(b)
+        if expected_sha is not None and h.hexdigest()==expected_sha:return
+        if expected_sha is None:return  # Code ZIP is independently checked against pinned executable members.
+        raise RuntimeError('기존 파일 해시가 다릅니다. 기록을 보존하고 원본 파일을 확인하세요: '+name)
+    temporary=destination.with_name(destination.name+'.partial')
+    if temporary.exists():
+        # Preserve prior interrupted bytes; never use them as completed input.
+        temporary=destination.with_name(destination.name+'.partial-'+os.urandom(6).hex())
+    h=hashlib.sha256();count=0;last=time.monotonic()
+    with folder.get_download_stream('/'+name) as source,temporary.open('xb') as target:
+        while b:=source.read(1024**2):
+            count+=len(b)
+            if max_bytes is not None and count>max_bytes:raise RuntimeError('파일 크기 제한 초과: '+name)
+            if shutil.disk_usage(destination.parent).free<512*1024**2:raise RuntimeError('가용 디스크 512MiB 미만. 부분 파일은 보존합니다.')
+            h.update(b);target.write(b)
+            if time.monotonic()-last>=15:
+                print("DOWNLOAD",name,"bytes=",count,"free_bytes=",shutil.disk_usage(destination.parent).free,flush=True);last=time.monotonic()
+        target.flush();os.fsync(target.fileno())
+    if expected_sha is not None and h.hexdigest()!=expected_sha:raise RuntimeError('다운로드 해시 불일치: '+name)
+    temporary.rename(destination)
+
+def _prepare(folder,work):
+    work.mkdir(parents=True,exist_ok=True)
+    _download(folder,_CODE_ZIP,work/_CODE_ZIP,max_bytes=4*1024**2)
+    code=work/'code-clean-r1';code.mkdir(exist_ok=True)
+    with zipfile.ZipFile(work/_CODE_ZIP) as z:
+        member=_CODE_PREFIX+'CODE_PINS.json'
+        if z.getinfo(member).file_size>1024**2:raise RuntimeError('코드 목록 크기 오류')
+        raw=z.read(member)
+        if hashlib.sha256(raw).hexdigest()!=_PINS_HASH:raise RuntimeError('코드 ZIP 버전/해시 불일치')
+        pins=json.loads(raw)
+        for relative,sha in pins.items():
+            rel=Path(relative)
+            if rel.is_absolute() or '..' in rel.parts or rel.suffix!='.py':raise RuntimeError('코드 경로 오류')
+            info=z.getinfo(_CODE_PREFIX+relative)
+            if info.file_size>4*1024**2:raise RuntimeError('코드 파일 크기 오류')
+            data=z.read(info)
+            if hashlib.sha256(data).hexdigest()!=sha:raise RuntimeError('코드 파일 해시 오류: '+relative)
+            target=code/relative;target.parent.mkdir(parents=True,exist_ok=True)
+            if target.is_symlink() or not target.resolve().is_relative_to(code.resolve()):raise RuntimeError('코드 경로 링크 오류')
+            if target.exists():
+                if target.read_bytes()!=data:raise RuntimeError('기존 실행 코드가 다릅니다: '+relative)
+            else:target.write_bytes(data)
+        (code/'CODE_PINS.json').write_bytes(raw)
+    spec=importlib.util.spec_from_file_location('query_transport_entry',code/'entry.py')
+    entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
+    return entry.load()
+
+def _work():
+    if WORK_DIR:
+        return Path(WORK_DIR).resolve(strict=True)
+    base = Path("/data/dataiku/design/jupyter-run/dku-workdirs/LEGAL_RAG")
+    paths = [p for p in base.glob("*/legal-existing-zip-r2-work") if (p/"restored/full-manifest.json").is_file()]
+    if len(paths) != 1:
+        print("후보 작업 폴더:", [str(p) for p in paths])
+        raise RuntimeError("기존 작업 폴더가 정확히 하나가 아닙니다. 기존 로그의 WORK_DIR 절대경로를 입력하세요.")
+    return paths[0].resolve()
+
+
+def _run():
+    if ACTION not in {"inspect_processes", "stop", "plan", "replace", "resume", "status"}:
+        raise RuntimeError("ACTION 값 오류")
+    work = _work()
+    print("기존 작업 폴더:", str(work), flush=True)
+    folder = dataiku.Folder(FOLDER_ID)
+    _prepare(folder, work)
+    from lawrag.pipeline import oracle_import_stop as stop_tool
+    if ACTION == "inspect_processes":
+        return stop_tool.inspect(work)
+    if ACTION == "stop":
+        return stop_tool.stop(work)
+    from lawrag.pipeline.oracle_query_dataiku import DataikuClient
+    from lawrag.pipeline.oracle_clean_import import run
+    client = DataikuClient(dataiku.SQLExecutor2(connection=ORACLE_CONNECTION), ORACLE_CONNECTION, dataiku.default_project_key())
+    binding, target = client.identity()
+    print("Oracle 연결 대상:", json.dumps(target, ensure_ascii=False), flush=True)
+    print("새 로그:", str(work/"oracle-clean-r1"), flush=True)
+    return run(client, work, target_binding=binding, action=ACTION, seconds=RUN_SECONDS)
+
+try:
+    CLEAN_RESULT = _run()
+    print(json.dumps(CLEAN_RESULT, ensure_ascii=False, indent=2), flush=True)
+except BaseException as exc:
+    message = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
+    print("중단:", message, flush=True)
+    raise

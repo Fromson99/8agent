@@ -1,0 +1,118 @@
+{
+  "status": "PASS_SCOPED_WITH_RECORDED_BROADER_FIXTURE_ERRORS",
+  "focused_contract_tests": 47,
+  "sqlite_r2_tests": 24,
+  "historical_selection_contract_tests": 23,
+  "test_log": "09_ARTIFACTS/AUDITS/20261020-risk-basis-sqlite-r2/tests-focused.txt",
+  "package_checks": 14,
+  "expected_package_blocks": 3,
+  "package_validation": {
+    "status": "PASS",
+    "checks": [
+      {
+        "check": "check-via-dev-symlink",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "install",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "install-repeat",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "missing-config-blocked",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "check": "pinned-cli-api",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "local-runtime-blocked",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "check": "other-edit-blocked",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "check": "rollback",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "rollback-repeat",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "check-restored",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "r1-upgrade-check",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "r1-upgrade-install",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "r1-upgrade-repeat",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "r1-upgrade-rollback",
+        "exit": 0,
+        "expected": 0
+      }
+    ],
+    "archive_used_sha256": "a9a1a6d8053384733c860ffd53ace3cfd63afb5667533c11617d74c6212fbeb9",
+    "payload_hashes": {
+      "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": "4a30c8f341907b8235de2c73f183961c7ca7a1487b3bb6484b965c2befea71ac",
+      "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": "5d7024a99c1477dcf9c46c66c7d57e4364428cfbdc25d9f521aab3a569c659a3",
+      "02_BACKEND/lawrag/pipeline/risk_basis_sqlite.py": "9f346cc8cba5c6ed558e6a981c639c0e65e7df47d69640460cc02b7707c08825",
+      "02_BACKEND/lawrag/pipeline/basis_lifecycle.py": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc"
+    },
+    "base_code_binding_sha256": "ab386dac81adf6928d80c9bc86f5195bc1f651b63aaafd9473e27c4ddce1ba8b",
+    "fixture_manifest_sha256": "37dc03ae5ac793098ce55bdf6fda5c650559f0e2899f235e68adb3085b4cce24",
+    "source_writes": 0,
+    "other_checkout_files_changed": 0,
+    "configured_cli_actual_sqlite": true,
+    "existing_api_and_resolver": true,
+    "network_storage_mock_only_in_local_consumer_test": true,
+    "oracle_calls": 0,
+    "model_calls": 0,
+    "genos_field_execution": false
+  },
+  "broader_batch_run": {
+    "passed": 61,
+    "setup_errors": 9,
+    "reason": "old test_ingress fixture lacks latest-v2 document selection; not patched in this add-on",
+    "log": "09_ARTIFACTS/AUDITS/20261020-risk-basis-sqlite-r2/tests-rerun.txt"
+  },
+  "initial_failures_preserved": [
+    "read-only API test factory prevented view write; test factory corrected",
+    "batch test collection missing WORKFLOW_TEST_CODE_ROOT; rerun with explicit root",
+    "package fixture had been losslessly archived; verified tar archive used"
+  ],
+  "active_release_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506",
+  "main_changed": false,
+  "genos_verified": false,
+  "oracle_calls": 0,
+  "model_calls": 0,
+  "quality_certified": false
+}

@@ -13,9 +13,10 @@ from semantic_runtime.legal_agent.source_selection import originals
 
 class Transport:
     binding = PROFILE['model_binding']
-    def __init__(self, fail=False):
+    def __init__(self, fail=False, *, browse=False):
         self.calls = []
         self.fail = fail
+        self.browse = browse
 
     def validate_model(self):
         return {'verified': True, 'synthetic': True}
@@ -25,8 +26,7 @@ class Transport:
         v = json.loads(body['messages'][1]['content'])['view']
         phase = v.get('source_stage', v['phase'])
         if phase == 'source-query-plan':
-            from semantic_runtime.folder_navigation import request as catalogue_request
-            browse = catalogue_request(v['question']) is not None
+            browse = self.browse
             return wire({'mode': 'BROWSE' if browse else 'SEARCH',
                          'law_names': [] if browse else ['모의승인규정'],
                          'queries': [] if browse else ['모의승인규정 제1조', '모의승인규정 제2조'],

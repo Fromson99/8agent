@@ -1,6 +1,97 @@
 # MAIN — 원문과 용어 기반 탐색
 
-2026-10-14 현재 로컬 RAG MAIN은 `public-failure-guidance-20261014-r1`(포인터 generation **61**)이다. MAIN60의 모델·검색·데이터를 유지하며 검토 미완료와 기술 예외를 일관된 법률 검토 안내로 표시하고 오류 코드·실패 상태·요청 ID를 보존한다. 합성 프로토콜2400조합·관련298계약, 선택301파일과 실제 WSL `service.service` 정상조회/503/timeout/limit 경계를 확인했다. [MAIN 반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0775-public-failure-main/MAIN_RESULT.txt). GENOS 현장 배포/편집기 저장/화면은 별도다.
+<!-- CURRENT_LOCAL_RAG_RELEASE -->
+2026-10-21 사용자 “실제 LLM으로 다양한 범위·복수·제외 표현도 테스트해보고 문제없으면 메인에 반영하고 GENOS 반입용 ZIP도 만들어줘” 지시에 따라 **로컬 RAG MAIN99 / workflow1.20.8**을 선택했다. 릴리스는 `structured-selection-20261021-r1`, 정본은 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`이다. 자연어 분류를 LLM에 맡기는 기존 수정과 구조화 범위·복수·제외 선택을 통합했다. 초기·후속 범위 판단을 필수 출력하고 저장된 조·항·호·목 집합과 명시적 비교 연산을 실행한다. 적용 가정과 원문 제외를 구분하며 권한·원문·상태·해시 검사를 유지한다. ADR0972 후보16/32와 ADR0973 후보31/32는 거절 기록으로 보존했다. 최종 ADR0974 신규 합성32사례에서 기존1/32·후보32/32, 실제Qwen64요청·63응답(기준 HTTP429 1회 보존); 전체 답변 정확도·현장 성능 인증은 아니다. 최종199계약, 후보/작업/선택 서비스 HEALTH와419파일 결속을 확인했다. 데이터·모델 프로필·검색 선택 유지. 무거운 기존 임베딩 작업과 전체 원문 로딩을 병렬 실행하지 않았으며 실제 원문 읽기는 같은 코드의 합성 API와 모델 경계 검사로 확인했다. `VALIDATED_ADR_PROMOTION`, 품질 우회 없음, `quality_certified=false`. GENOS ZIP 설치 검사와 현장 반입·배포는 별도 상태이며 Git commit/push 미수행. 이전 전역 graph·의미 오류는 해결한 것으로 보지 않는다. 전환·복원: `09_ARTIFACTS/AUDITS/20261021-structured-selection-main/RESULT.txt`.
+<!-- /CURRENT_LOCAL_RAG_RELEASE -->
+
+2026-10-21 **작업 코드에 업무 검토 지식 관리·RAG 안내 연결을 추가했다.** `lawrag/legal_knowledge`와 같은 앱의 `/legal-knowledge/`, `/v1/legal-knowledge`가 공통 계약·Oracle 주입 포트를 사용한다. 관리 기본값 false, 소비 off이며 AD는 계속 비활성이다. 초안/게시/CAS/멱등 receipt와 기존 저널 참조를 연결했다. 실제 Oracle·GENOS 인증 주입, 실모델 효과·MAIN 승격은 미확인/미수행이다. 전체 설계 중 자동 생략·복합 계산·전역 영향·실행 역색인은 남았다. [구현 범위·연결·복구](../07_DOCS/REFERENCE/REPORTS/CM_KNOWLEDGE_SYSTEM_DESIGN_20261020/IMPLEMENTATION_20261021.md).
+
+아래는 이전 구현·검증 시점의 기록이다. 당시 MAIN 미반영 표시는 위 현재 선택 상태로 대체된다.
+
+2026-10-20 **작업 코드**의 대사 workflow는 **1.19.2**다. [research_state.py](../02_BACKEND/semantic_runtime/research_state.py)의 `ResearchLedger`가 부모의 조사 필요·시도·검토·횟수, `NativeResearchTasks`가 자식 실행 기록, `OriginalProgress`가 원문 확보 진전을 담당한다. 기존 checkpoint/journal이 저장 정본이며 호출·권한·트랜잭션은 기존 실행기가 담당한다. 새 원문 ID가 없어도 새 단서·조사 결과가 생기면 부모가 한 번 검토한다. 기존 부족 해소는 명시적 `need_resolution=RESOLVED`와 원문 인용·이유가 필요하며 빈 `missing`만으로 해소하지 않는다. 복구 선택은 완료된 행동의 상태 버전과 새로 노출된 실제 대상을 기준으로 최대 3회 연결하며, 동일 대상·변조·낡은 상태·누적 예산 검사를 유지한다. 원문 전달과 법률적 충분성 판단은 분리한다.
+
+최종 후보 573계약, 작업 코드의 일반 회귀 33검사, 후보·작업의 실제 원문/서비스 연결 검사가 통과했다. 전체 389파일이 후보와 일치한다. **선택 로컬 MAIN은 generation90 / workflow1.16.0을 유지**한다. 실제 비용 관찰에는 제공자429·호출 중단·사용량 누락이 있어 전체 비용과 최종 후보의 실제 모델 효과를 확정하지 않았다. GENOS 미반영. [현재 통합·한계·복구 기록](../09_ARTIFACTS/AUDITS/20261020-research-decision-main/RESULT.txt), [이전 1.18 상태 소유자 리팩터링](../09_ARTIFACTS/AUDITS/20261020-research-state-refactor/RESULT.txt).
+
+앞선 **1.17.0** 작업은 조사 필요를 쟁점·항목·내외규별로 유지하고 부모의 조사 목적·과거 시도·근거 검토를 자식 입력 검증과 원문 조사 화면까지 연결했다. 후보 발견과 새 원문 구간 확보를 구분하며 같은 근거의 미확보 설명 변경 및 표시 이름만 다른 동일 조회를 재사용한다. 원문 전달·미확인 상태·누적 예산·재개 기록을 유지한다. [1.17 통합·검사 기록](../09_ARTIFACTS/AUDITS/20261020-research-continuity/RESULT.txt).
+
+## 전체 인프라 — 사용자 확인 2026-10-16
+
+최종 목표의 Legal Agent·Legal Wiki·Legal Ontology 역할, 저장 값, Oracle 논리 구조와 구현 순서는
+[상세 아키텍처](../07_DOCS/REFERENCE/ARCHITECTURE/LEGAL_KNOWLEDGE_INFRA_20261017/ARCHITECTURE.md)를 따른다.
+2026-10-17 목표 설계이며 현재 연결·선택 릴리스·GENOS 현장 상태를 구분한다.
+
+사용자가 설명한 전체 인프라의 기준이다. **GENOS는 채팅과 에이전트 백엔드 실행,
+데이터플랫폼의 Dataiku는 데이터 수집·가공·적재 흐름, Dataiku에 연결된 Oracle DB는
+법령·용어 등의 지식그래프와 온톨로지 저장을 담당한다.** 지식그래프와 온톨로지는
+Oracle의 RDB 테이블에 그래프 형태로 표현되어 있으며, GENOS 에이전트는 이 데이터를
+쿼리로 조회해 RAG를 수행한다.
+
+| 흐름 | 입력 → 처리 → 소비자 |
+|---|---|
+| 사용자 질의 | 사용자 → GENOS 채팅 앱 → GENOS 백엔드 에이전트 → Oracle의 지식그래프·온톨로지 조회 → RAG 답변 → GENOS 채팅 앱 |
+| 외규 갱신 | Dataiku의 매일 배치 → API 중계서버 → 법제처 API에 신규·갱신 데이터 확인 → 변경 자료 수집 → 구조적 파싱·VLM 파싱으로 구조 분해 → 색인 → Oracle 지식그래프 적재·갱신 |
+| 내규 반입 | 현업이 데이터 포탈에 내규 업로드 → Dataiku 연결·수집 → 구조적 파싱 → 색인·Oracle 지식그래프 적재 |
+
+외규는 법제처 API의 변경 확인으로, 내규는 현업의 데이터 포탈 업로드로 유입된다.
+두 경로는 구조화·색인·지식그래프 적재 후 GENOS의 RAG 조회로 이어진다.
+이 인프라는 아래 MAIN의 입력·구조화·용어집/문서 연결·색인·RAG·피드백 단계가
+배치되는 환경이며, MAIN의 단계별 책임과 계약을 대체하지 않는다.
+
+확인 출처는 **2026-10-16 사용자의 전체 인프라 설명**이다. 직접 SQL 접속인지 조회 API를
+거치는지, 실제 테이블·스키마, 파서/VLM의 실행 위치와 배포 리비전은 이번 설명에서
+지정하지 않았다. 여기서 임의로 정하지 않는다. 아래의 SQLite·NFS generation·로컬 릴리스
+기록은 각각의 구현·반입·검증 범위이며, Oracle 중심 전체 인프라를 대신하는 설명으로
+사용하지 않는다. 이번 기록은 현장 접속·배치 실행·Oracle 연동을 새로 검증했다는 뜻이 아니다.
+
+### 서빙 데이터 저장 금지 — 사용자 명시 2026-10-19
+
+사용자가 "서빙쪽에는 데이터를 저장하면 안됨"을 명시했다. GENOS 코드서빙에 원문·용어·관계·색인을 전체 복제하거나 로컬 SQLite/파일/영속 볼륨에 보관하는 구조를 최종 운영안으로 사용하지 않는다. 서빙은 Oracle 또는 승인된 조회 API에 조건·판본·접근 범위를 전달하고, 필요한 결과만 받아 요청 처리 중 일시적으로 사용한다. 요청 간 재사용을 위한 데이터 캐시도 서빙 내부에 추가하지 않는다.
+
+기본 캐시는 Oracle DB 내부의 데이터 블록 캐시이며 DB 운영 영역이다. 별도 조회 결과 캐시는 성능 측정으로 필요성이 확인될 때 서빙 밖의 데이터 계층에서 검토하고, 데이터 버전·조회 조건·권한 범위·갱신/무효화 정책을 결속한다. Redis 등 특정 제품의 설치·사용 가능성은 확인되지 않았다. 서빙의 대화/실행 상태 보존도 필요한 범위를 외부 저장소에 연결해야 하며, 기존 로컬 상태 소비자는 별도 점검 대상이다.
+
+Dataiku는 수집·구조화·용어 연결·색인·검증한 버전 게시를 담당하고, Oracle에서 검색·관계 탐색·원문 조회가 가능하도록 테이블과 조회 경로를 연결해야 한다. SQLite 색인 파일을 Oracle 자산 테이블에 보관한 것만으로 Oracle 직접 검색이 구현된 것은 아니다. 갱신은 새 버전의 게시 완료 후 신규 요청이 그 버전을 선택하고, 진행 중인 요청의 버전 결속을 유지하는 방향으로 설계한다.
+
+**작업 코드 전환 — 2026-10-19:** `service.py`의 `DP=oracle`은 `oracle_query_service.Factory`로 연결되어 Oracle 원문·검색·관계를 요청별로 조회한다. 기존 `oracle_dp.resolve()` 전체 복원 유틸리티는 서빙에서 호출하지 않으며 SQLite 모드는 보존한다. Dataiku가 게시한 불변 query release와 활성 채널 revision을 요청 시작에 고정한다. 원문·색인 데이터의 파일/SQLite 복제와 요청 간 데이터 캐시는 없고, 실행 이력·로그는 명시한 외부 NFS/CIFS를 사용한다. 외부 마운트가 없으면 로컬에 쓰지 않고 실패한다. 로컬 Oracle 23과 모의 모델로 서비스 연결을 검사했으며, 실제 현장 ORDS·NFS·모델·배포 성능은 미검증이다. Oracle STATE 테이블의 CAS 포트도 제공하지만 기존 이력 소비자는 NFS에 유지한다. 이 작업은 선택 포인터·GENOS 리비전을 변경하지 않았다. 완료 시 별도 ADR-0917의 MAIN88 선택을 확인했으며 그 릴리스에는 새 Oracle 조회 모듈이 없다. [구현/설정/검증 범위](../09_ARTIFACTS/AUDITS/20261019-oracle-query/IMPLEMENTATION_UTF8.txt).
+
+## 로컬 구현·릴리스와 검증 이력
+
+2026-10-20 현행 로컬 RAG 서빙은 **MAIN90 `durable-research-review-20261020-r1` / workflow 1.16.0**다. 질문에 근거한 조사 항목, 미확보 조사 보존·추가 조사 연결, 새 근거 갱신 형식 정규화와 RP 연결 문서 등록 수정을 통합했다. 분리 stage와 선택 릴리스의 387파일은 검증 후보와 동일하다. 작업 코드에는 같은 40파일을 통합하고 별도 화면 작업 2파일을 보존했다. stage/작업 각각 87개 계약·API·화면 검사와 실제 선택 서비스의 12개 연결 검사를 통과했다. 데이터·모델 설정은 MAIN89와 같다. 이전 4문항 결과의 RP 필수 근거 미확보와 레버리지 현재 문장 직접 인용 문제는 남아 있다. 해당 한계를 설명한 뒤 받은 사용자 지시에 따른 `USER_DIRECTED_CUTOVER`이며 `quality_certified=false`다. ADR-0936의 Rejected 기록은 유지했다. 이번 새 모델 호출은 0회이고 GENOS 배포·Git main 병합은 별도다. [반영·검증·원복](../09_ARTIFACTS/AUDITS/20261020-durable-research-main/RESULT.txt).
+
+2026-10-16 이전 로컬 RAG 서빙은 **MAIN81 `source-return-comparison-20261016-r1` / workflow 1.8.0**다. 지정한 짧은 내규 전문 읽기, 기존 명시 참조 연결 우선 조회, 대사 자식의 정상 원문 반환, 쟁점별 단일 비교표를 구현했다. 불확실성은 의견·미확보로 표시하고 원문·권한·해시·상태 검사는 유지한다. 검증 후보와 선택344파일 동일, 후보/작업 각각76검사와 활성 서비스13검사 통과. 개발 후보의 실제 Qwen 대사는9호출·510초·2비교행을 반환했다. 이후 원장 종료·SELECT 스키마 보완본은 API·실제 데이터 소비자로 검증했으며 전체 모델 질의를 다시 호출하지 않았다. 법률 정답 인증·GENOS 배포는 별도다. [구현·검증·한계·원복](../09_ARTIFACTS/AUDITS/20261016-risk-comparison-source-return/RESULT.txt).
+
+2026-10-16 이전 로컬 RAG 서빙 **MAIN80 `direct-comparison-20261016-r1` / workflow1.7.0**다. 항목 검토의 원문을 바로 비교로 전달하고 별도 BASIS 승인 호출을 제거했다. 조사 관리 필드와 별도 채택 표시가 유효한 읽기·종료를 막지 않으며, 조사 미완료에서도 실제 원문과 실패 상태를 함께 보존한다. 후보/작업 회귀113개, 새 기술 상태168개, 양측 기존 회귀84개, 활성 서비스13개 통과. 최종 선택 서비스의 새 검색부터 실제 대사를 실행해19호출·809초에4항목·2비교행을 반환했다. 외규 정리 실패에도52읽은 원문을 보존해 비교를 끝냈으며, 미확인 자료는partial로 표시했다. 법률 정답 인증은 아니다. GENOS 미반영. [검증·한계·원복](../09_ARTIFACTS/AUDITS/20261016-risk-comparison-task-guidance/LIVE_COMPARISON_MAIN80.txt).
+
+2026-10-16 이전 로컬 RAG 서빙 **MAIN79 `llm-comparison-judgment-20261016-r1` / workflow 1.5.2**다. 비교의 의미 판단은 LLM에 맡기고, 미확보 설명·표현 차이·수치 차원 목록과 메타데이터의 부족을 이유로 비교 전체를 거절하던 검사를 줄였다. 위치에 따른 도구·근거 연결은 시스템이 조립하고 실제 인용·권한·해시·상태 보존은 검사한다. 후보와 선택342파일 동일, 작업 회귀53개·기술 상태84개·활성 서비스13개를 확인했다. 알려진 원문 묶음의 새 모델 응답1건을 보존했으며, 전체 대사 품질·검색 범위 문제는 미검증/미해결이다. GENOS 미반영. [반영·검증·한계·원복](../09_ARTIFACTS/AUDITS/20261016-risk-comparison-task-guidance/LLM_JUDGMENT_MAIN79.txt).
+
+2026-10-16 이전 로컬 RAG 서빙 **MAIN77 `comparison-task-guidance-20261016-r1` / workflow 1.4.2**다. 비교 항목 설정·양방향 조사 과제·부족 항목 조사·성공 근거 보존·자식 요청 재개·부분 결과 반환을 기존 RAG에 연결했다. 최종 검증 후보와 선택된342파일이 같고, 통합 후 API58개와 활성 서비스13개를 확인했다. 공통 회귀는 양쪽208통과·동일6실패다. 실제 Qwen 대사는429로 미완료였으며, 그 실패 원장 재생에서 확보 외규6근거의 반환을 확인했다. 법률 정확도 개선률은 미인증이고 GENOS는 미반영이다. [구현·검증·복원 기록](../09_ARTIFACTS/AUDITS/20261016-risk-comparison-task-guidance/IMPLEMENTATION.txt).
+
+2026-10-15의 이전 로컬 RAG **MAIN75 `system-owned-workflow-20261015-r1`**는 대사의 질문 재해석·인용 복사·고정 필드·정의 원문 읽기·자식 문장화·보류 재판단·행 저장/재개·최종 근거 표시를 시스템에 맡긴다. 의미 판단은 모델에 유지한다. 후보269/신규기술8/활성서비스12 검사, 선택338파일 동일. 전체 Qwen 유동성 질의는 partial·0행이며 수정한 BASIS 재생의3짝/3보류행과 구분한다. [완료·한계·원복](../04_EXPERIMENTS/ADR/ADR-0809-system-mechanics-qualification/MAIN_RESULT.txt). GENOS 미반영.
+
+2026-10-15 이전 로컬 RAG **MAIN74 `workflow-adopted-evidence-20261015-r1`**은 대사 자식의 채택 원문만 전달하고 현재 판단·조건 의존성·입력 한도·비교·표시를 연결한다. MAIN72 최초 정의 탐색과 MAIN73 최신 선택을 유지한다. 기능278계약/UI4/실제 서비스12 검사 통과. 실제 Qwen 유동성 질의는 partial·비교0행으로 미해결이며 기능 검증과 구분한다. [완료·한계·원복](../04_EXPERIMENTS/ADR/ADR-0801-workflow-handoff-qualification/MAIN_RESULT.txt). GENOS 미반영.
+
+2026-10-15 이전 로컬 RAG **MAIN73 `latest-document-selection-20261015-r1`**은 승인 파일명 예외와 최신 표시를 RAW 구조화 입력 및 기존 세대 검색·탐색에 연결한다. 원본 세대는 보존하고 선택표/네이티브 메타데이터를 검증한다. MAIN72의 최초 정의 탐색을 유지하며 로컬 내규11개 모두 최신 검색 대상으로 마킹했다. [실제 연결·검증·원복](../04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/MAIN_RESULT.txt). GENOS 현장 적용은 별도다.
+
+2026-10-15 이전 로컬 RAG **MAIN72 `definition-entry-navigation-20261015-r1`**은 질문에 일치하는 저장 정의와 명시 참조 조문을 첫 탐색 읽기 후보에 제공한다. 정의·참조 원문/해시·권한을 검사하며 기존 전문검색을 보존한다. 외부 제공자 문법의 반복 행동 조건을 줄이고 서버의 원래 검증을 유지했다. 계약516건, 후보/활성 실제 서비스8건씩, 선택329파일 hash 확인. 공개 유동성 사례에서 첫 선택으로 정의와 제3-24조의4제2항을 읽고 최종 답변에 포함했다. 알려진 사례이며 일반 답변 정확도 미인증, GENOS 미배포. [검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0794-definition-entry-storage-binding/MAIN_RESULT.txt).
+
+2026-10-15 이전 로컬 RAG **MAIN71 `risk-committee-team-metadata-20261015-r1`**은 MAIN70 코드·검색·모델을 유지하고, 추가 준칙의 팀 메타데이터 위치를 교정했다. 위험관리팀 선택442→443, 대사 내규 자식10→11이며 실제 서비스에서 목록·원문·검색·대사 scope를 확인했다. 전체 원문 행 대조,23기술검사 및 선택328파일 hash 확인 완료. 유동성 정의 연결의 최초 검색 미사용과 Parasail schema 크기 오류는 미수정이다. GENOS 미배포. [검증·진단·원복](../04_EXPERIMENTS/ADR/ADR-0792-risk-committee-team-metadata/MAIN_RESULT.txt).
+
+2026-10-15 이전 로컬 RAG **MAIN70 `risk-rag-orchestration-20261015-r3`**는 대사 질문을 기존 RAG에 `내규:`/`외규:`로 각각 전달하고 답변·검증 원문·조사 기록을 받아 판단한다. 정정한 위험관리위원회운영준칙1문서와 명명 정의·참조635건을 추가한 세대를 선택했다. 부모 전체회귀1187건, 후속 재시작42건, 통합12건과 실제 fresh service.service 프로세스2개의 동일 요청 재사용을 확인했다. 최초 MAIN68의 재시작 결함은 즉시 롤백 후 수정했다. Qwen 실질문은 partial이며 필요한 내규와 정답 조문을 놓친 문제가 남아 있다. GENOS는 미배포다. [배선·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0791-risk-rag-restart-binding/MAIN_RESULT.txt).
+
+2026-10-15 명시 인용을 포함한 명명 정의는 기존 SQLite에 증분 보강할 수 있다. `pipeline.py document-release augment-definitions`가 원문·FTS를 재사용해 정의/참조 연결만 추가하며 기존 정의 조회가 소비한다. 최종 635건 추가, 계약12통과 및 MAIN67 코드의 도구/API 연결 확인. 당시 갱신본은 미활성화였으며 현재 결합 세대 선택은 위 MAIN72 기록을 따른다. 일반 검색 우선 회수 개선은 별도다. [결과](../09_ARTIFACTS/AUDITS/20261015-naming-definition-append/RESULT.txt).
+
+2026-10-15 이전 구현 이력: **작업 코드에 Risk팀 대사 workflow를 통합**했다(ADR-0785). `대사:` → 공통 `workflow` 실행부 → `risk_team_compare_workflow` → 기존 RAG 원문·정의·참조 도구로 연결하며, 관계 확인·내용 비교와 사유별 복귀를 분리한다. 새 DOCX를 포함한1547문서 세대와 같은 코드로 로컬 서비스 경로를 확인했다. 후보500계약·추가 v6검사1건, 통합 후60계약 통과. 활성 MAIN66과 GENOS는 변경하지 않았고 실제 내부 모델 법률 판단은 미검증이다. [운영 계약](../07_DOCS/REFERENCE/OPERATIONS/RISK_TEAM_COMPARE_WORKFLOW.md), [구현·검증·한계](../09_ARTIFACTS/AUDITS/20261015-risk-team-compare-workflow/IMPLEMENTATION_RESULT.txt).
+
+2026-10-15 이전 로컬 RAG **MAIN67 `navigation-delivery-recovery-20261015-r1`**에 원문 전달 기록과 채택 판단 분리, FINISH 교정 계약, 쟁점별 채택 검증 일치, 실패한 동일 조사 재호출 차단을 반영했다. 100상태 포함1113회귀 통과, 동결/선택308파일과 실제 WSL service.service를 확인했다. Qwen 보조4회는 모두 미확보 쟁점 경고가 남았으며 모델 판단 개선을 입증하지 않는다. 관련7작업 소스만 통합하고 다른 작업은 보존했다. GENOS는 미배포다. [결과·한계·원복](../04_EXPERIMENTS/ADR/ADR-0788-navigation-finish-delivery-recovery/MAIN_RESULT.txt).
+
+2026-10-15 이전 로컬 RAG **MAIN66 `length-recovery-20261015-r1`**에 기존4실패·길이복구·선택 로컬 어댑터의 종료원인 보존을 통합했다.296유한 계약·896회귀 모두 통과, 작업/검증/선택308파일과 실제 WSL service.service를 확인했다. 정상6400 유지·법령탐색 length 수정1회만12800이며 GENOS 현장 재질의 성공은 미확인이다. [결과·한계·원복](../04_EXPERIMENTS/ADR/ADR-0784-length-adapter-parity/MAIN_RESULT.txt).
+
+2026-10-14 당시 로컬 RAG **MAIN65 `length-recovery-20261014-r2`**는 경로 별칭도 실제 해석된 의존 경로로 검사해 기존 연구 코드 차단을 보존한다.264유한 계약·887회귀 모두 통과, 작업/검증/선택308파일과 실제 WSL service.service를 확인했다. MAIN64 다음의 검증 이력이며 현재 선택은 위 MAIN72이다. [결과·한계·원복](../04_EXPERIMENTS/ADR/ADR-0783-length-recovery-path-integrity/MAIN_RESULT.txt).
+
+2026-10-14 중간 로컬 RAG MAIN64는 `length-recovery-20261014-r1`(포인터 generation **64**)이다. 법령 탐색 length 수정1회에만 명시12800토큰을 허용하고 정상6400·원문·모델·검색 설정을 유지한다. 기존4계약실패와 host 경로 오분류를 수정했다. 동결256계약·887회귀 모두 통과, 작업/검증/선택308파일 및 실제 WSL service.service를 확인했다. GENOS 현장 재질의는 미확인이다. [결과·한계·원복](../04_EXPERIMENTS/ADR/ADR-0782-length-recovery-final/MAIN_RESULT.txt).
+
+2026-10-14 이전 로컬 RAG MAIN63은 `tool-recovery-20261014-r1`(포인터 generation **63**)이다. MAIN62의 원문·모델·검색 정책을 보존하면서 도구 실패 P1~P3와 이전 구조 부모 읽기·의존 조사·도구 노출 수정을 통합했다. 동결 정책5994조합·회귀842통과/기존4실패, 작업/검증/선택306파일과 실제 WSL `service.service` HEALTH/검색/목록/실패 경계를 확인했다. 전역 graph는 과거8오류 유지·추가0이다. GENOS 배포·내부 모델·사진 질문의 현장 재실행은 별도다. [MAIN 반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0779-tool-recovery-main/MAIN_RESULT.txt).
+
+2026-10-14 MAIN61 전환 당시 로컬 RAG MAIN은 `public-failure-guidance-20261014-r1`(포인터 generation **61**)이다. MAIN60의 모델·검색·데이터를 유지하며 검토 미완료와 기술 예외를 일관된 법률 검토 안내로 표시하고 오류 코드·실패 상태·요청 ID를 보존한다. 합성 프로토콜2400조합·관련298계약, 선택301파일과 실제 WSL `service.service` 정상조회/503/timeout/limit 경계를 확인했다. [MAIN 반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0775-public-failure-main/MAIN_RESULT.txt). GENOS 현장 배포/편집기 저장/화면은 별도다.
 
 2026-10-13 MAIN60 전환 당시 로컬 RAG MAIN은 `assessment-gap-action-20261013-r1`(포인터 generation **60**)다. MAIN59의 정상 완료 shortcut 정책과 원문 세대를 보존하며 원문 gap의 잘못된 사실 질문 행동만 기존 조사로 연결한다. 고정 합성952조합·관련353계약, 작업/검증/선택301파일 및 실제 WSL `service.service` HEALTH/RAG_SEARCH200을 확인했다. [실패·충돌 필수 코딩 지침](../07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md)은 전역 구현 완료를 뜻하지 않는다. GENOS 현장 배포와 기존 복구4건은 별도다. [반영·근거·롤백](../04_EXPERIMENTS/ADR/ADR-0774-assessment-gap-action-main/MAIN_RESULT.txt).
 
@@ -319,3 +410,47 @@ GENOS 배포·Git push는 미확인이다. 활성 frozen MAIN·데이터 CURRENT
 ## 2026-10-06 법령별 후보 탐색 작업 코드
 
 [구현과 완료 정책](../07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/IMPLEMENTATION.md). MAIN의 RAG 서빙 단계에서 소유 본문 색인을 법령 판본→조→적중 단위 페이지로 조회하고, 기존 SELECT가 법령 선택 이유·부모/형제 READ·다른 법령 이동·전체 허용 범위 재검색을 수행한다. 기존 원문/navigation/용어 단계 계약은 유지한다. 사용자 후속 지시에 따라 미해결 필수 연결은 완료 관문에서 제외하며 실제 미해결 상태와 경고는 보존한다. v6 작업 프로필과 기존 native API/SQL checkpoint에 연결한 상태이며 로컬 frozen MAIN 및 GENOS 배포 전환은 수행하지 않았다.
+
+
+## 2026-10-16 공용 근거 관계 원장 — 로컬 MAIN82
+
+`basis-link-lifecycle-20261016-r1`(포인터 generation82)에 질의·대사·내규 전체 조사·사용자 검토·개정 이행이 공유하는 `semantic_runtime/basis_links`를 연결했다. 원문과 용어집 구축을 대체하지 않는 관계 검토·재사용 층이다. `internal_basis_discovery_workflow` 1.0.0은 기존 workflow Runtime에 등록되며 승인 관계는 다음 요청부터 기존 원문 도구로 우선 읽는다. `document_release.activate`와 기존 Oracle 게시 함수에는 판본별 binding의 prepare/verify 후속 단계를 연결했다.
+
+검증 후보와 최종 작업 코드, 선택 릴리스의 해시를 연결했다. 최종 작업 코드214검사와 선택된 실제 로컬 서비스10검사가 통과했으며 데이터 세대는 유지했다. 동시 완료된 최소 모델 출력 계약(ADR0850)도 보존하여 ADR0853의 명시적 부모 통합으로 선택했다. [구현 결과](../09_ARTIFACTS/AUDITS/20261016-internal-external-basis-lifecycle-design/IMPLEMENTATION.txt), [실행 binding과 hash](../09_ARTIFACTS/AUDITS/20261016-internal-external-basis-lifecycle-design/IMPLEMENTATION_RESULT.json), [운영 계약](../07_DOCS/REFERENCE/OPERATIONS/BASIS_LINK_LIFECYCLE_20261016.txt).
+
+GENOS의 Oracle 관계 저장·인증된 사용자·Dataiku 실제 배치 연결은 구현된 factory/hook에 현장 계약을 주입해야 한다. 현장 반입·배포·워크플로우 편집기 반영은 수행하지 않았다. Oracle DB-API 테스트 더블과 로컬 원문을 이용한 기술 검증이며 실제 모델 정확도·현장 성능 인증이 아니다. 기존 로컬 상주 프로세스도 재시작하지 않았다.
+
+
+## 2026-10-18 시스템 조립 출력 계약 — 로컬 MAIN83
+
+`host-assembled-output-20261018-r1`(포인터 generation83)은 MAIN82의 전체 단계 책임, 대사 workflow1.9.0, 내규 근거 발굴 workflow1.0.0, 공용 근거 관계 원장과 Oracle 연결을 유지한다. 원문 데이터 세대·검색 선택·모델 정책·실패 예산은 바꾸지 않았다. MAIN의 서빙 단계에서 모델 생성 → 최소 출력 복원 → 원래 검증/소비자 순서를 유지하며 생성·복원 계약만 맞췄다.
+
+모델은 판단·이유·필요한 대상을 반환한다. 계약으로 확정 가능한 고정값·빈 구조·상태/표시 ID와 중복 대상·쟁점 연결은 시스템이 조립한다. 단일 대상 행동은 `targets`, 여러 원문 읽기는 `exploration`에서 한 번 선택한다. 행동별 필수값/허용 대상과 부모·중첩 분기의 제약을 생성 스키마에서도 보존하며, 서로 모순되는 구 응답을 임의로 고치지 않는다. 원문 인용·권한·상태·예산 검사와 의미 불확실성 표시 원칙은 유지한다.
+
+ADR0870 후보413검사, 통합 작업415검사와 후보/작업/선택 릴리스의 실제 데이터·서비스 각10검사를 확인했다. 후보711파일과 작업 코드, 서빙370파일과 선택 릴리스가 일치한다. ADR0871의 동일 코드 외부 Qwen fulltext16호출에서는 생성 스키마·복원 오류0회, 최종 답변1건·조사 미완료1건이었다. 법률 정답률이나 GENOS 내부 모델 timeout 해소의 증명이 아니다. 완료0870 기록을 바꾸지 않고 ADR0872에서 승격 결속10검사를 별도로 수행했다.
+
+[반영 결과·자원 기록·한계·롤백](../08_DEPLOYMENT/RELEASES/host-assembled-output-20261018-r1/IMPLEMENTATION.txt)과 [정확한 선택/서비스 binding](../08_DEPLOYMENT/RELEASES/host-assembled-output-20261018-r1/IMPLEMENTATION_RESULT.json)을 따른다. 무거운 검사는 하나씩 실행하고 원문·색인을 공유했다. GENOS 현장 코드 적용·Git push·리비전·워크플로우 편집기 반영·내부 모델 검증은 별도 미확인 상태다.
+
+## 2026-10-18 대사 후속 조사·상태 계약 — 로컬 MAIN84
+
+`bounded-followup-20261018-r1`(포인터 generation84)은 MAIN83의 단계 책임·출력 압축·시스템 조립·근거 원장·Oracle 연결·데이터·검색을 유지한다. 대사 workflow1.9.1의 기존 task board에서 과제별 입력 → 자식 원문 조사 → 정확한 과제 receipt → 부모 상태 저장 → 새 근거가 있을 때 항목 재검토 → 비교/답변으로 연결한다. 첫 빈 조회 뒤 다른 독립 과제는 기존2회 한도 안에서 진행하며, 동일 자료 획득은 항목 간 재사용한다. 자식 호출 성공과 원문 확보 완료를 구분하고 재개 전 근거 목록·호출 ID·누적 예산을 유지한다. 내규 근거 발굴 workflow1.0.0은 공유 코드 pin만 갱신했다.
+
+MAIN83 실제 모델 기준8호출과 동일 데이터의 고정 수정 후보12호출을 실행했다. 후보는 빈 내규 조회 뒤 외규 추가 조사와 재검토를 거쳐 최종2항목 부분 결과를 반환했다. 인용 span·권한·상태/중복·소비자 검사를 통과했으나 원문 부족·모델 적용범위 판단 오류가 남아 법률 정답으로 인증하지 않는다.311계약, 후보·작업·실제 활성 서비스 각10검사를 통과했고 선택370파일과 후보/작업711파일을 결속했다. 이 검증은 RAG 대사 서빙 경로이며 전체 데이터 수집 파이프라인 또는 GENOS 내부 모델 배포 검증을 대신하지 않는다.
+
+[실제 선택/서비스 binding·원복](../08_DEPLOYMENT/RELEASES/bounded-followup-20261018-r1/IMPLEMENTATION_RESULT.json), [실제 모델 원문·판정 한계](../04_EXPERIMENTS/ADR/ADR-0875-bounded-followup-live/artifacts/run-001/manual-review.json)를 따른다.
+
+## 2026-10-18 원문 문맥·쟁점 연결 — 로컬 MAIN85
+
+`original-context-20261018-r1`(포인터 generation85)은 MAIN84의 전체 단계 책임과 데이터·검색·모델·예산을 유지한다. 대사 workflow1.10.0은 항목 선택 근거 → 동일 출처/문서/쪽/쟁점의 확보 원문 문맥 → 해당 쟁점과 항목 의견 → 최종 비교로 연결한다. 모델 인용 선택이 이미 읽은 단서를 누락시키지 않도록 pair 허용 근거와 입력 문맥을 같이 결속한다. 새 의미 승인 관문이나 강제 재시도는 추가하지 않는다. 읽기 선택지와 전달 원문 수는 시스템이 제공하며, 충분성·적용범위는 검토 가능한 모델 의견이다.
+
+내부 참조 규정의 미등록, 금융소비자보호법 RAW와 명시 팀 입력 범위 차이, 이미 확보된 원문 전달 누락을 구분했다. 워크플로우 부분 결과와 모델의 검색·미확인 조문번호 오류를 보존한다. 제8조 단서 범위는 별도 실제 모델 원문 검사에서 확인했으며 전체 검색·법률 정답률을 인증하지 않는다. [정확 코드·선택·서비스 결속](../08_DEPLOYMENT/RELEASES/original-context-20261018-r1/IMPLEMENTATION_RESULT.json)과 [원인·잔여 사항](../08_DEPLOYMENT/RELEASES/original-context-20261018-r1/IMPLEMENTATION.txt)을 따른다. GENOS 현장 적용은 별도다.
+
+
+## MAIN86 읽기 선택과 시스템 조립 계약 — 2026-10-18
+
+2026-10-18 당시 선택 로컬 RAG는 **MAIN86 `read-first-host-contract-20261018-r1` / 포인터 generation86**, 대사 workflow **1.10.0**이다. MAIN85의 데이터·검색·Oracle·대사·출력 압축·재개·예산을 유지하고, 본문 읽기 선택과 읽은 원문 유지, 평가 고정값·질문 인용 시스템 조립, 조건 관계식 복원을 연결했다.404기술 검사와 후보/작업/활성 서비스 각10검사를 통과했다. 같은 CM5문항은 최초4답변/1RAM보호중단이며 CM008별도 재검증을 보존했다. **일부 재검색·조기 판단·불필요한 확인 문구와 CM003/051의 답변 완결성 문제는 남고, GENOS현장과새ZIP/TXT는 미수행**이다. [실제 결과·한계·원복](../08_DEPLOYMENT/RELEASES/read-first-host-contract-20261018-r1/IMPLEMENTATION.txt) · [선택 binding](../08_DEPLOYMENT/RELEASES/read-first-host-contract-20261018-r1/IMPLEMENTATION_RESULT.json).
+
+
+## MAIN87 원문 전달 연속성과 응답 일치 — 2026-10-19
+
+2026-10-19 현재 선택 로컬 RAG는 **MAIN87 `cm-read-continuity-20261019-r1` / 포인터 generation87**, 대사 workflow **1.10.0**이다. MAIN86 데이터·출력 압축·재개·예산·Oracle·근거 원장을 유지하고 원문 탐색/전달 연속성, 참조 판단의 제한 복구, 평가 입력 축약과 저장·공개 응답 일치를 연결했다. 669기술 검사와 후보/작업/활성 서비스 각10검사 통과. 기존CM5+추가011·022·038 실제 RAG는8응답/핵심7충족이며 **CM003 의미 판단, 불필요한 확인 문구·일부 반복 조사는 남는다.** 전체 대사8회 또는 GENOS현장 검증 결과가 아니다. [실제 결과·한계·원복](../08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/IMPLEMENTATION.txt) · [선택 binding](../08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/IMPLEMENTATION_RESULT.json).

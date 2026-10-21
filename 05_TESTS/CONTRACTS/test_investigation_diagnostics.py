@@ -126,18 +126,26 @@ def test_failure_details_survive_journal_live_text_and_service_log(native_journa
     finally:handler.close()
 
 
-def test_progress_filters_foreign_documents_and_keeps_all_admitted_rows(native_journal):
+def test_complete_scoped_diagnostics_remain_internal(native_journal):
     repo,projection,events=native_journal
     rows=[{'category':'DATA_REFERENCE','code':'REFERENCE_TARGET_UNRESOLVED','reference_id':f'allowed-ref-{n}',
            'document_id':'allowed','resolution':'UNRESOLVED_COORDINATE'} for n in range(15)]
     rows.append({'category':'DATA_REFERENCE','code':'PRIVATE_CAUSE','document_id':'other','reference_id':'PRIVATE_REF'})
-    from semantic_runtime.legal_agent.investigation_diagnostics import report
-    repo.event('REFERENCE_NAVIGATION_STATUS',report('REFERENCE_NAVIGATION',True,rows,generation_id='fixture'))
+    from semantic_runtime.legal_agent.investigation_diagnostics import report, scoped_report
+    diagnostic=report('REFERENCE_NAVIGATION',True,rows,generation_id='fixture')
+    scoped=scoped_report(diagnostic,{'allowed'})
+    assert scoped['counts']=={'DATA_REFERENCE':15}
+    assert len(scoped['blockers'])==15
+    internal=render_detail('AGENT REFERENCE NAVIGATION STATUS',scoped)
+    assert all(f'allowed-ref-{n}' in internal for n in range(15))
+    assert 'PRIVATE_REF' not in internal and 'PRIVATE_CAUSE' not in internal
+    repo.event('REFERENCE_NAVIGATION_STATUS',diagnostic)
     projection.poll_journal()
     rendered=json.dumps(events,ensure_ascii=False)
     assert 'PRIVATE_CAUSE' not in rendered and 'PRIVATE_REF' not in rendered
-    assert '데이터 참조 해석: 15' in rendered
-    assert all(f'allowed-ref-{n}' in rendered for n in range(15))
+    # The current public display contract hides internal failure details.
+    assert 'REFERENCE_TARGET_UNRESOLVED' not in rendered
+    assert all(f'allowed-ref-{n}' not in rendered for n in range(15))
 
 
 def test_unknown_stop_code_is_visible_instead_of_generic_state():
@@ -155,7 +163,8 @@ def test_http_failure_keeps_source_cause_through_native_runtime(unified,monkeypa
     monkeypatch.setattr(memory_rag,'select_sources',lambda *a,**kw:{'status':'pending','needs_fulltext':False,
         'next_action':'CONTINUE_REFERENCES','final_ids':['s'],'diagnostics':diagnostic})
     response=send()
-    assert response.status_code==422 and 'REFERENCE_TARGET_UNRESOLVED' in response.text
+    assert response.status_code==422 and response.json()['answer_status']=='failed'
+    assert 'REFERENCE_TARGET_UNRESOLVED' not in response.text and 'http-reference-7' not in response.text
     event=next(r for r in caplog.records if r.getMessage()=='ask.failed')
     assert event.fields['error_code']=='SOURCE_INVESTIGATION_INCOMPLETE'
     assert event.fields['failure_diagnostics']['stage']=='SELECT'

@@ -1,0 +1,87 @@
+{
+  "status": "PASS",
+  "scope": "MAIN81 serving code plus three previously sealed GENOS changes; technical delivery verification, not legal accuracy",
+  "main_release": "source-return-comparison-20261016-r1",
+  "main_generation": 81,
+  "payload_files": 1255,
+  "selected_main_files": 344,
+  "selected_main_files_unchanged": 310,
+  "genos_overlay_modules": [
+    {
+      "path": "service.py",
+      "sealed_source": "output_unlimited_20261015_r1",
+      "main_sha256": "f620986ce576663dedf83d26b40f546586b9b1bc36298033304ba2b2cbbda521",
+      "deployment_sha256": "2b7e932dfd416d83edafb320249ba3dab51da5841d6a8bacea9dbd9688870a44",
+      "sealed_preimage_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c",
+      "sealed_result_sha256": "e7946b78b3c3df8b4d57cc3001d47684786fd2440dc0dad51f9e982449be7d64"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_model.py",
+      "sealed_source": "output_unlimited_20261015_r1",
+      "main_sha256": "e53b6d4aa630055ccf8c183d7aa751945cc99f248e0e294193aa34893a7bcbbd",
+      "deployment_sha256": "d2c4e1ab3892b963c9a9bc099dab0e97fb6770ed9f6255b18f451b72c8d6b7e6",
+      "sealed_preimage_sha256": "e53b6d4aa630055ccf8c183d7aa751945cc99f248e0e294193aa34893a7bcbbd",
+      "sealed_result_sha256": "d2c4e1ab3892b963c9a9bc099dab0e97fb6770ed9f6255b18f451b72c8d6b7e6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "sealed_source": "fact_reason_20261015_r1",
+      "main_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "deployment_sha256": "df86acfa871bbadc3d2fabdab6f8d1f9874a8e18a2b1cc6a84909914ca2e3fa9",
+      "sealed_preimage_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "sealed_result_sha256": "df86acfa871bbadc3d2fabdab6f8d1f9874a8e18a2b1cc6a84909914ca2e3fa9"
+    }
+  ],
+  "repinned_files": 31,
+  "installed_contracts_passed": 94,
+  "excluded_invalid_prior_fixture": 1,
+  "replacement_gate_contracts_passed": 17,
+  "installation_scenarios": {
+    "prior_main76": {
+      "commands": 22,
+      "transcript_sha256": "ab733a2a04338c5ad54bedf482fd2151bbfb0f467db7cbcdf116e13f74b2da5b",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_code_sha256": "ae7c9f5cf85fad7ce8f193a09033cdc813f1012bef44982fb8fbffc5f695c6ec",
+      "service_boots": 1,
+      "committed_gate": 1
+    },
+    "legacy_interrupted": {
+      "commands": 23,
+      "transcript_sha256": "2926fdb1cf468cba3fa60edd7d0cf67752010a742e99fc3197af24651513937a",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_code_sha256": "5a741bad4f4ee27fbe60ce094672998bc97159023140e87d2e1b59ac9369a245",
+      "service_boots": 1,
+      "committed_gate": 1
+    }
+  },
+  "python311": {
+    "status": "PASS",
+    "compiled_modules": 709,
+    "executable": "/home/jin/.local/bin/python3.11",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]"
+  },
+  "main_local_qualification": {
+    "contracts": 76,
+    "active_service_checks": 13,
+    "reference": "04_EXPERIMENTS/ADR/ADR-0846-source-return-boundary/MAIN_RESULT.json"
+  },
+  "model_calls": 0,
+  "field_deployment": "NOT_VERIFIED",
+  "field_reference_connections": "PREFER_EXISTING_UNVERIFIED_HERE",
+  "default_install_data_access": "Small fixed config and generation manifest only; no database/index/search-selection changes",
+  "large_io_policy": "gate-code is code only; full gate is separate and deferred during NFS I/O restriction",
+  "failures_preserved": [
+    "Initial pytest collection path omitted; corrected invocation.",
+    "Basename preload imported an unrelated old test; removed preload and used pytest collection hook.",
+    "Inherited GENOS state shared contract fixture stores; isolated test environments. Product runtime unchanged.",
+    "Baseline diagnostic lacked workspace directories; preserved as harness failure, not product regression."
+  ],
+  "limitations": [
+    "All delivery tests use synthetic data and local TLS configuration endpoints. No GENOS network/model access.",
+    "Runtime exact to tested bytes; final transfer ZIP is checked separately in FINAL_VERIFICATION.json.",
+    "Native latest-document marks or an existing valid selection are required by current MAIN; code-only installation does not build them.",
+    "No production Git commit/push/revision/editor changes are performed by this local task."
+  ]
+}

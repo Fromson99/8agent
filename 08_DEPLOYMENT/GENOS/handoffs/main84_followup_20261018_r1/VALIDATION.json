@@ -1,0 +1,116 @@
+{
+  "status": "PASS",
+  "scope": "Technical delivery verification of selected MAIN84 plus its qualified non-serving dependencies.",
+  "main_release": "bounded-followup-20261018-r1",
+  "main_generation": 84,
+  "main_pointer_changed": false,
+  "selected_main_files": 370,
+  "selected_main_files_unchanged": 370,
+  "workflow_versions": {
+    "risk_team_compare_workflow": "1.9.1",
+    "internal_basis_discovery_workflow": "1.0.0"
+  },
+  "payload_files": 1284,
+  "installed_contracts_passed": 385,
+  "replacement_gate_contracts_passed": 17,
+  "installation_scenarios": {
+    "prior_main83": {
+      "commands": 22,
+      "transcript_sha256": "1e4775098d7874fe09838e02b214c70c4857a0abd9ba16c0c41d0891cec3ab34",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "1c65ed088cf8ee6e950625a457ecf5c07564a170c5f85b5f99d03c797ecd306c",
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/pytest-runtime/retry-main83/test_actual_delivery_prior_mai0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "legacy_interrupted": {
+      "commands": 23,
+      "transcript_sha256": "b34cb821eae5f03bd35b8f0350084bc7f6ac006df46603b86285fa73922f5385",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "8975c6ceb2dca5b4401e08f08d7254150a0836fe07ef31776398dd0905fa83ea",
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/pytest-runtime/test_actual_delivery_legacy_in0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "oracle_dp": {
+      "commands": 21,
+      "transcript_sha256": "cbae785d53e970d69f64b126a7b4fe5182d1f306706c8819e298bcd3d57896c9",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "c4cb814b605846e7a72ce2241e0480b45a675c0c852ee075fc937b6e17399ced",
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/pytest-runtime/test_actual_delivery_oracle_dp0/DEV",
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    }
+  },
+  "python311": {
+    "status": "PASS",
+    "compiled_modules": 733,
+    "workflow_editor": true,
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11"
+  },
+  "actual_local_service": {
+    "checks": 10,
+    "code_root": "08_DEPLOYMENT/RELEASES/bounded-followup-20261018-r1/code",
+    "service_entry": "service.py",
+    "service_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+    "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+    "record_sha256": "8ade2722a81272311bb02b64d615251261de58d20a09f96fa7d78d97eaf4837e"
+  },
+  "external_fulltext_audit": {
+    "path": "04_EXPERIMENTS/ADR/ADR-0875-bounded-followup-live/artifacts/run-001/result.json",
+    "sha256": "59a5b6e64837e28c99a08a7b66d184b31708a1322f7c3c92431cf42b7fa0c356"
+  },
+  "actual_model_calls": 0,
+  "genos_field_deployment": "NOT_VERIFIED",
+  "resource_checks": {
+    "replacement-resources.json": {
+      "sha256": "25707a41f143db06d3542accfa53661b0e522a9ffd15836d0fd439c10a19921c",
+      "peak_group_rss_bytes": 3944448,
+      "min_available_bytes": 13874036736,
+      "seconds": 2.0041826460001175
+    },
+    "delivery-resources.json": {
+      "sha256": "6973418878f32c2b6358c76e6f0ab616c41491c791ad86d84041e89a53b2e479",
+      "peak_group_rss_bytes": 1030770688,
+      "min_available_bytes": 12522438656,
+      "seconds": 154.13175591499748
+    },
+    "initial_matrix_harness_failure": {
+      "sha256": "1ef48e822260ec44b2339baddb7e6c361fe9d036c4e3ac16872f403a723e30e2",
+      "peak_group_rss_bytes": 1038770176,
+      "min_available_bytes": 12776169472,
+      "seconds": 254.21944616900146,
+      "result": "1 failed import harness scenario,2 passed scenarios; failed prior-main case rerun separately"
+    }
+  },
+  "heavy_workers": 1,
+  "default_install_data_access": "Existing fixed path config and small generation manifest only; no DB/index/selection mutation.",
+  "oracle_dp": "Selected Oracle serving code and qualified publishing helpers retained; runtime tested with simulated Oracle, not internal Oracle.",
+  "test_harness_sha256": {
+    "test_delivery.py": "af88fc32cb675ed2b1a6a7ed03b36e6628fb6471775fd0ddd917d4257501900f",
+    "installed_contract_runner.py": "1dbeb8babc88ef6050e15698865c20f5c2d250851303993c6869f6285aa53908",
+    "code_smoke.py": "3291bd2cd2c41acdad25cf45bd5fbb2618b2d25ef61a908303f5e73d23ca2754"
+  },
+  "actual_consumer_script": {
+    "path": "06_TOOLS/EXPERIMENTS/adr_0874/consumer.py",
+    "sha256": "e3d6ee6b50e8e7dae5dd8bcd23225bac6291f73192367c6d38f36b38ff01e233"
+  },
+  "failures_preserved": [
+    "failures/test-import-001/RECEIPT.json"
+  ],
+  "limitations": [
+    "No GENOS network, internal model, production push, revision or workflow editor access.",
+    "Synthetic protocol tests do not certify legal correctness, speed improvement or field timeout resolution.",
+    "Existing GENOS_SERVING_PATHS binding is required by the full-code installer.",
+    "Full generation gate verifies the existing generation; Oracle provider/release must also be checked in the field workflow.",
+    "Final transfer archive execution is recorded separately in FINAL_VERIFICATION.json."
+  ]
+}

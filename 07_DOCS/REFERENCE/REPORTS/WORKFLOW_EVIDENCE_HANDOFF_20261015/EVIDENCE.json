@@ -1,0 +1,270 @@
+{
+  "schema_version": "design-evidence-v1",
+  "created_at": "2026-10-15T11:34:54.600073+00:00",
+  "status": "DESIGN_ONLY",
+  "new_experiment": false,
+  "new_model_calls": 0,
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "latest-document-selection-20261015-r1",
+    "generation": 73,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/latest-document-selection-20261015-r1/release.json",
+    "release_manifest_sha256": "32b67481cdd18d24c14379a430019aad050592fa852ecea895653803a609b49b",
+    "activated_at": "2026-10-15T11:21:34.549231+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "91baa8140d6d06c3bee1865b0cbb832c712bc03a9188269f43881f28fbde9046",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/실험/manifest.json",
+        "sha256": "149a78eb6078d3c53764dfca39210b6a0a2cd6f8f93485770501531c3dabb1bf"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/README.md",
+        "sha256": "726cfcc74aa2643372b30b7e360d10dc7dde1fa21b450ed2188511b4ba8f6695"
+      },
+      "arm": "selected",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/artifacts/run-001/result.json",
+        "sha256": "c80ad4a8fa488abbc1dbea5c697f47f807c6110559233b505df01af32bde2429"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/artifacts/design/release-rebase.json",
+        "sha256": "2ef35e79418a67404cb7cd8d6e4288e503e0c5b4fef5df6a8022c48d945774e7"
+      }
+    }
+  },
+  "active_manifest_path": "08_DEPLOYMENT/RELEASES/latest-document-selection-20261015-r1/release.json",
+  "active_manifest_sha256": "32b67481cdd18d24c14379a430019aad050592fa852ecea895653803a609b49b",
+  "data_path": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+  "generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+  "selected_files_verified": 334,
+  "selected_files_match_manifest": true,
+  "files": {
+    "service.py": {
+      "selected_sha256": "f620986ce576663dedf83d26b40f546586b9b1bc36298033304ba2b2cbbda521",
+      "working_sha256": "2b7e932dfd416d83edafb320249ba3dab51da5841d6a8bacea9dbd9688870a44",
+      "working_matches_selected": false,
+      "main72_matches_main73": true
+    },
+    "00_SYSTEM/PIPELINE.json": {
+      "selected_sha256": "f9964ca8be6fde15d1dd87647f96f00f1a8e77e51c4f333dfc1587a4bb2ee7ee",
+      "working_sha256": "7b836be98d36eb5f8bbb689c26c51318006cb43068c776a54f096ec264078dee",
+      "working_matches_selected": false,
+      "main72_matches_main73": false
+    },
+    "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": {
+      "selected_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+      "working_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/app.py": {
+      "selected_sha256": "e03ccc9a9f2aac15ace4907577c018290d1eea1b6aee4f5ff289f9e8a6f18243",
+      "working_sha256": "e03ccc9a9f2aac15ace4907577c018290d1eea1b6aee4f5ff289f9e8a6f18243",
+      "working_matches_selected": true,
+      "main72_matches_main73": false
+    },
+    "02_BACKEND/semantic_runtime/workflow_rag.py": {
+      "selected_sha256": "b22be4532bcad263a55ab23d87b8791a9747b1fa2d990853bc620957df894e7f",
+      "working_sha256": "b22be4532bcad263a55ab23d87b8791a9747b1fa2d990853bc620957df894e7f",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/workflow_bridge.py": {
+      "selected_sha256": "77a94241c95bb90eb2a7183c60d20a2468f62bd4e499e143170f053e9dabeb5a",
+      "working_sha256": "77a94241c95bb90eb2a7183c60d20a2468f62bd4e499e143170f053e9dabeb5a",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py": {
+      "selected_sha256": "74f47090783f8602c86033f293669b305223c5de371e95bb4c615cc591bb7c57",
+      "working_sha256": "74f47090783f8602c86033f293669b305223c5de371e95bb4c615cc591bb7c57",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": {
+      "selected_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "working_sha256": "df86acfa871bbadc3d2fabdab6f8d1f9874a8e18a2b1cc6a84909914ca2e3fa9",
+      "working_matches_selected": false,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": {
+      "selected_sha256": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "working_sha256": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/source_tiers_ui.py": {
+      "selected_sha256": "367195100b8f2bb788695fc042cde0f31885dfdf15febe7d2ce5863c086e52e2",
+      "working_sha256": "36622742a4f291a72af002f0d5a7bde14864c957161518622c695bcaa15d9573",
+      "working_matches_selected": false,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/runtime.py": {
+      "selected_sha256": "15c54191098a635d21ba54d41bd3d567147a98c20b7fe7624c31f49c2d7dbe7a",
+      "working_sha256": "15c54191098a635d21ba54d41bd3d567147a98c20b7fe7624c31f49c2d7dbe7a",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/contracts.py": {
+      "selected_sha256": "b4404f2811e60c3b450ede10d01fa93134fb663e5700a6147ef1bd2646965807",
+      "working_sha256": "b4404f2811e60c3b450ede10d01fa93134fb663e5700a6147ef1bd2646965807",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/repository.py": {
+      "selected_sha256": "5643e77ce16031ccd69a1dffde0cbcc75e43c2ab547d00cb9ffd763c21f7feee",
+      "working_sha256": "5643e77ce16031ccd69a1dffde0cbcc75e43c2ab547d00cb9ffd763c21f7feee",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/adapters/model.py": {
+      "selected_sha256": "909b5d403e1f76f716da0e5865d44011fffa6728001be1bdda001de33cd21ca2",
+      "working_sha256": "909b5d403e1f76f716da0e5865d44011fffa6728001be1bdda001de33cd21ca2",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/query_scope.py": {
+      "selected_sha256": "ba1c4974fd227945c2060d7ed1fc9fa3437a072214e58167721ab82941858334",
+      "working_sha256": "ba1c4974fd227945c2060d7ed1fc9fa3437a072214e58167721ab82941858334",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py": {
+      "selected_sha256": "a36d259ae12d2e4797bcf85f10b332a3abd04d2f308937f9f8c5ba89632659f2",
+      "working_sha256": "a36d259ae12d2e4797bcf85f10b332a3abd04d2f308937f9f8c5ba89632659f2",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/basis.py": {
+      "selected_sha256": "04efe183a5d4f2d9a43b87696aa1fffbf45e3c5dba82a19f1caf120f3dcea8dc",
+      "working_sha256": "04efe183a5d4f2d9a43b87696aa1fffbf45e3c5dba82a19f1caf120f3dcea8dc",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/compare.py": {
+      "selected_sha256": "b9ded1a6c01809805fc3d081f806767d3bdc6c122b8bec022ed8ad915a3b621c",
+      "working_sha256": "b9ded1a6c01809805fc3d081f806767d3bdc6c122b8bec022ed8ad915a3b621c",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/report.py": {
+      "selected_sha256": "82e6e7534cc2c2774115d2dbfa15bcd5ec236356b40cecf1d00de563ecf9b8d9",
+      "working_sha256": "82e6e7534cc2c2774115d2dbfa15bcd5ec236356b40cecf1d00de563ecf9b8d9",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/recovery.py": {
+      "selected_sha256": "30a1bc19f8fed46bc9fc5182e546e1cef0fc52e31ecadc0ba4b13787d8bd0787",
+      "working_sha256": "30a1bc19f8fed46bc9fc5182e546e1cef0fc52e31ecadc0ba4b13787d8bd0787",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/contracts.py": {
+      "selected_sha256": "503c7df3a0059f9785be5cf3679e96fb42ca8b7801a8f1c358ca6331bde82f68",
+      "working_sha256": "503c7df3a0059f9785be5cf3679e96fb42ca8b7801a8f1c358ca6331bde82f68",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json": {
+      "selected_sha256": "f5512c47a2c0c23eadd905fe13c937cc181cfa74268051bfb06504d95481f053",
+      "working_sha256": "f5512c47a2c0c23eadd905fe13c937cc181cfa74268051bfb06504d95481f053",
+      "working_matches_selected": true,
+      "main72_matches_main73": true
+    }
+  },
+  "historical_observation": {
+    "release": "MAIN72",
+    "adr_id": "ADR-0795",
+    "case_count": 1,
+    "sides": {
+      "internal": {
+        "read_receipts": 24,
+        "distinct_source_ids": 12,
+        "distinct_source_texts": 12,
+        "identical_source_text_repeats": 12,
+        "answer_cited_sources": 3,
+        "accepted_claim_spans": 3,
+        "accepted_quote_chars": 147,
+        "child_status": "partial",
+        "journal_path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/runtime/workflows/58629daa5e05c9b00bbc21e4e4cec8de/children/internal/legal-agent/runs/20261015/9c2fdcd9fbbc478e9c98c20650d8634a/journal.sqlite",
+        "journal_sha256": "8eb3036bde471076952acbd933cf6d93504428f955eb86eac57bbf34f897d229",
+        "assessment_sha256": "cfb2ed84706e4cfe72e789f8a2d9d1dc779827634a080e4121046e470e4daff9"
+      },
+      "external": {
+        "read_receipts": 70,
+        "distinct_source_ids": 17,
+        "distinct_source_texts": 35,
+        "identical_source_text_repeats": 35,
+        "answer_cited_sources": 8,
+        "accepted_claim_spans": 13,
+        "accepted_quote_chars": 985,
+        "child_status": "completed",
+        "journal_path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/runtime/workflows/58629daa5e05c9b00bbc21e4e4cec8de/children/external/legal-agent/runs/20261015/e22eca8d60b142788f52a24358097c2b/journal.sqlite",
+        "journal_sha256": "ad965fdf948cb99d238d5b5c0c1b24c9b08eb7ba879e442074f6444ddf466979",
+        "assessment_sha256": "c05aae662f1b46ae618dcf1fa61284a13e7445958e3d8f2a21ef18b6e3f1e43b"
+      }
+    },
+    "context_size": {
+      "character_count": 129927,
+      "limit_characters": 100000,
+      "excess_characters": 29927,
+      "component_json_characters": {
+        "question": 40,
+        "as_of": 4,
+        "scope": 375,
+        "history": 434,
+        "gaps": 2,
+        "sources": 89816,
+        "rag_results": 38943,
+        "basis": 4,
+        "reopened_issues": 4,
+        "budget": 121,
+        "deadline_at": 34
+      },
+      "sources_count": 94,
+      "source_original_text_characters": 46122,
+      "source_metadata_json_characters": 21294,
+      "basis": "Reconstruct unchanged Runtime.view fields from exact durable journal/immutable original sources at VERIFY_BASIS before appended stop gap; source completeness computed with the same range union rule",
+      "was_sent_to_model": false,
+      "model_reserved": 16,
+      "model_limit": 40
+    },
+    "source_artifacts": [
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/context-size.json",
+        "sha256": "198e3b73b9ef7d40d5cd3a5e9be5b6f1cf8401faacd2040d9bc62cfcfb3d6910"
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/diagnostic.json",
+        "sha256": "2939edfa713f77fb1645e4f242332547d2b5aa687da8cc66ff864e67e39bebcb"
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/response.json",
+        "sha256": "e289642cb4b2776ea253edf1589452725d20e34f3dedf3a2bb3a2455e343d07a"
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/result.json",
+        "sha256": "1d54dc565d4a4e7be21687758a419ad5417bceb0bdcb08eb7172b6d309119311"
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0795-main72-workflow-comparison/artifacts/live-v2/static-findings.json",
+        "sha256": "8017a33c2adff392a9273db1fbfedb690cb42c23ae627274d9834434dda60b65"
+      }
+    ]
+  },
+  "limits": [
+    "MAIN73 workflow functions identical; historical MAIN72 observation is not a fresh MAIN73 execution",
+    "Accepted span counts are descriptive archive inspection, not a replay, model test, or optimization effect experiment",
+    "1132 characters describes quote bodies only; final prompt size, necessary surrounding clauses, latency and legal quality are unmeasured",
+    "No product code/registry/pointer/data/GENOS changes"
+  ],
+  "effective_pinned_profile": {
+    "max_model_attempts": 40,
+    "wall_seconds": 1800,
+    "max_context_chars": 100000,
+    "max_output_tokens": 6400
+  }
+}

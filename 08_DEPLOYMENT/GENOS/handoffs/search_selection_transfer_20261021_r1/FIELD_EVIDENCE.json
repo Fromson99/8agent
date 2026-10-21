@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-21",
+  "evidence": "User-provided code-serving/workflow logs and NFS terminal photographs in this conversation",
+  "confirmed_error": "latest document selection required; run pipeline search-selection --latest before serving",
+  "failed_stage": "bootstrap.contracts -> Selection.require_latest -> runtime.bootstrap.failed -> 503",
+  "observed_generation_directory": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "observed_parent_entries": ["generation", "SEARCH_SELECTION", "share-receipt.json"],
+  "expected_selection_path": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/SEARCH_SELECTION/generation.json",
+  "selection_file_existence_and_schema": "NOT_CONFIRMED_BY_PHOTO",
+  "deployed_revision_and_actual_generation_binding": "NOT_CONFIRMED_BY_PHOTO",
+  "separate_error": "A different request has sess-anonymous with memory enabled and fails because a conversation session identifier is required.",
+  "requested_handoff": "Two commands: build a ZIP in existing DEV from NFS selection metadata; restore/apply that DEV ZIP to the same NFS generation selection path.",
+  "network_access_to_genos_attempted": false
+}

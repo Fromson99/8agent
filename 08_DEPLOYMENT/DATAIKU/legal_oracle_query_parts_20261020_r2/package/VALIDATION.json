@@ -1,0 +1,50 @@
+{
+  "status": "LOCAL_VALIDATED_FIELD_UNVERIFIED",
+  "tests": {
+    "passed": 67,
+    "elapsed_seconds": 12.81,
+    "max_rss_kib": 394568,
+    "log": "09_ARTIFACTS/AUDITS/20261020-query-export-r2/TEST_03.txt"
+  },
+  "defect": "FTS document-length LEFT JOIN rescanned unindexed fts5vocab for each document",
+  "repair": "single vocabulary GROUP BY into TEMP table, then INTEGER PRIMARY KEY lookup; logical row output/order unchanged",
+  "r1_resume": {
+    "explicit_flag": "--resume-r1",
+    "exact_old_code_pair_only": true,
+    "same_source_hashes_required": true,
+    "preserve_prior_receipt_deadline": true,
+    "rederive_and_compare_every_retained_row": true,
+    "completed_r1_rejected": true
+  },
+  "coverage": [
+    "old/new output equivalence: FTS full/column/none, empty/Unicode/repeated tokens/negative IDs/multicolumn and complete fixture generation",
+    "bounded SQLite VM work and primary-key lookup plan",
+    "SQLite deadline cancellation and real phase logs",
+    "actual sealed R1 export interrupted -> exact R2 Bash resume -> strict restore -> Oracle synthetic query import",
+    "unknown code/source/row mismatch/deadline rejected",
+    "direct ZIP fragments with deterministic replay after injected compression failure",
+    "exact R2 Dataiku TXT restored uploaded fragments via synthetic Managed Folder",
+    "query schema/catalogue and full transport regressions"
+  ],
+  "field_limits": [
+    "real field stalled stack not observed",
+    "real 2,448,000-row partial and production speed/space not tested",
+    "Oracle SQL writes and Dataiku client unchanged; this R2 run uses synthetic Oracle, no new live DSS/Oracle19 execution",
+    "512MiB resource floor not proof of sufficient completion capacity",
+    "old sealed FULL_PARTS R1 package remains unchanged"
+  ],
+  "changes_vs_r1": [
+    "entry.py",
+    "runtime/lawrag/pipeline/oracle_query_package.py",
+    "runtime/lawrag/pipeline/oracle_query_publish.py",
+    "runtime/lawrag/pipeline/oracle_transfer_progress.py (new)"
+  ],
+  "model_calls": 0,
+  "activation": false,
+  "prior_failed_tests": "TEST_01.txt: missing prefix-completion log and ZIP close writing a truncated suffix after injected failure; fixed, TEST_02 12 passed; TEST_03 67 passed",
+  "source_hashes": {
+    "02_BACKEND/lawrag/pipeline/oracle_query_package.py": "a0ca0fd3ea4f071679bdfa38f71847731c4f0fa8108710165b7ce23b353e673d",
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py": "f8568c68b9ca145e6bde32c2f20bdd2222b5d2c4d0345149e0687268cba7c02a",
+    "02_BACKEND/lawrag/pipeline/oracle_transfer_progress.py": "38d4c264efac33f92fa48d3f0176735ae5e1f6c3da6a71de70c57ebc67106de1"
+  }
+}

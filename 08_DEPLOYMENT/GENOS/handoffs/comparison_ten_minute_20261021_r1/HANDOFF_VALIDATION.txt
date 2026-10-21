@@ -1,0 +1,19 @@
+검증 범위 — 실제 모델/GENOS 호출 없음
+작업 코드: 145개 합성 계약/API/service 검사 통과.
+설치 코드: 동일 394파일 지문, 변경 42파일. 설치본의 25개 핵심 검사 재통과.
+전달 명령: MAIN96 및 MAIN96+STABLE_COMMANDS+BASIS_FIXED_LOCAL 두 시나리오 36명령.
+check/apply/재실행/status/gate/committed checkout gate-code, 설치 중단 뒤 복구,
+변조·후속 수정·재적용 거부, 정확 원복과 설정/ignore/기존 명령 도구 보존을 확인했다.
+7개 비정상 종료는 의도한 거부이며, 미존재 현장 세대를 gate-sqlite가 거부한 경우도 포함한다.
+
+로컬 WSL Python 3.14.4, 저장소 .venv의 기존 의존성 사용, 신규 의존성 없음.
+인계 Python 소스는 Python 3.11 구문으로 검사했다. 현장 Python 버전과 실행 파일은 TXT 로그에 남긴다.
+작은 합성 문서 2개, 최대 검사 자식 RSS 약 307MiB, 4GiB 메모리 제한하에 순차 실행.
+내부 모델의 의미 품질, 현장 세대/NFS, GENOS 실제 10분 실측은 미검증이다.
+첫 전달 검사의 2개 실패는 검사용 import 의존성과 가짜 현장 경로 설정으로 발생했다.
+검사 준비만 수정했으며 제품 코드의 바이트는 145검사 이후 변경하지 않았다.
+
+본 ZIP의 실행 TXT는 python3로 실제 업로드 TRANSFER에서 실행한다. 기본 적용 대상은 ~/DEV.
+코드 ZIP 지문과 필수 파일 목록은 CODE_MANIFEST.json, 적용 전후 상태/백업은 INSTALL_STATE.json에 기록된다.
+검사 로그의 checkout 경로·커밋, 선택 generation 경로/manifest 해시와 새 서빙 리비전을 현장에서 함께 기록한다.
+이 인계는 코드 준비/로컬 검증이며 Git push·리비전 배포·워크플로우 화면 검증 완료를 뜻하지 않는다.

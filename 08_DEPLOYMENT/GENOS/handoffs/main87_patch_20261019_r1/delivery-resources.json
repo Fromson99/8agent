@@ -1,0 +1,40 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "conftest",
+    "--tb=short",
+    "--basetemp",
+    "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/pytest-runtime/run-003",
+    "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/test_delivery.py::test_actual_delivery[prior_main84]"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 158.14091604300484,
+  "peak_group_rss_bytes": 1122631680,
+  "min_available_bytes": 12475445248,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/delivery-resources.json",
+    "rss_gib": 3.0,
+    "as_gib": 4.0,
+    "min_available_gib": 2,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "conftest",
+      "--tb=short",
+      "--basetemp",
+      "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/pytest-runtime/run-003",
+      "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/test_delivery.py::test_actual_delivery[prior_main84]"
+    ]
+  },
+  "samples_sha256": "82cc2228b2b9e9312f423a1edf0e4372b05c0bcb89237bf39a89a78d7e003391"
+}

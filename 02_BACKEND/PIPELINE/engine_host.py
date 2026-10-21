@@ -106,7 +106,7 @@ def engine(config, engine_id, mode, root=ROOT):
     for relative_file, expected in manifest['files'].items():
         file = contained(root, relative_file)
         if sha(file) != expected: raise ContractError('engine code hash drift: ' + relative_file)
-        if maturity != 'RESEARCH' and '/research/' in file.as_posix():
+        if maturity != 'RESEARCH' and '/research/' in ('/' + file.relative_to(root.resolve()).as_posix()):
             raise ContractError('released/tool engine depends on research code')
     entry = manifest['entrypoint']['path']
     if entry not in manifest['files']: raise ContractError('entrypoint not hash-bound')

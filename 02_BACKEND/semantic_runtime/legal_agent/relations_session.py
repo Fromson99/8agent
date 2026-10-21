@@ -137,8 +137,7 @@ class RelationsSession(ToolsSession):
         return True
 
     def investigate(self):
-        from .tools_policy import metadata_only_request
-        if not self.context.request['use_llm'] or metadata_only_request(self.context.request['question']):
+        if not self.context.request['use_llm']:
             # Reuse catalogue filtering without manufacturing a model purpose.
             original=self.sources.execute
             def metadata(action,ident):

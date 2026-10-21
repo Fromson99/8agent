@@ -1,0 +1,18 @@
+안녕하세요. 요청하신 GENOS ignore 수정 전용 패치를 보냅니다.
+
+첨부 GENOS_IGNORE_TRANSFER_20261020_R1.zip을 사용하세요. 기존 MAIN92 누적 코드에 추가하는 작은 패치이며 서버 기능을 덮어쓰지 않습니다. .Trash/.Trash-* 휴지통, QUERY_TRANSFER_* 이관 작업 폴더, 임시 DB/journal을 Git과 코드 포장에서 제외합니다. updated-source에는 수정한 규칙 파일 7개 전체본을 포함했고, 현장 설치는 기존 파일을 보존하며 새 규칙만 추가합니다.
+
+실제 ZIP을 업로드한 TRANSFER 폴더에서 아래 순서로 실행하세요. 각 단계가 성공해야 다음 단계로 진행합니다. --root /workspace는 사진에서 확인한 기존 Git checkout입니다.
+
+python3 -m zipfile -e ./GENOS_IGNORE_TRANSFER_20261020_R1.zip ./GENOS_IGNORE_TRANSFER_20261020_R1
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt check --root /workspace
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt apply --root /workspace
+bash ./GENOS_IGNORE_TRANSFER_20261020_R1/GENOS_IGNORE_TRANSFER_20261020_R1_RUN.txt status --root /workspace
+
+기존 커밋에 들어간 QUERY_TRANSFER_20261020_R1의 DB는 ignore만으로 빠지지 않습니다. 사진에서는 commit은 완료됐고 push 중단 뒤의 원격 반영 여부는 아직 확인되지 않았습니다. status 결과와 GUIDE_UTF8.txt의 읽기 전용 원격 조회부터 확인하세요. 새 삭제 커밋만 추가하면 이전 커밋에 DB가 남아 계속 전송됩니다. 원격에 없는 마지막 단일 커밋으로 확인된 경우에만 파일을 보존하는 추적 제외·커밋 수정 절차를 안내에 따라 진행합니다. 설치기는 add/commit/push/amend/데이터 삭제를 자동 실행하지 않습니다.
+
+패키지의 STATE.json은 원복·재개 기록입니다. 압축 해제 폴더와 genos-ignore-r1-logs를 보존하세요. 적용 후 사용자가 수정한 파일은 덮어쓰지 않고 중단합니다. 기존 MAIN92 R1 gate-code는 ignore 수정 전 해시 기준이므로, 커밋 정리 후 이번 패키지의 gate 명령을 사용합니다. gate는 MAIN92 1306파일과 필수 의존성·현장 설정·ignore 변경을 대조하며 원격 이력·실제 모델/리비전 성공까지 확인하는 검사는 아닙니다.
+
+검증: 실제 ZIP/TXT의 합성 Git checkout 32명령(기대한 실패 4건 포함), 적용/재실행/부분 복구/변조 거부/사용자 수정 보존/원복/추적 데이터 감지/미전송 커밋 정리/MAIN92 코드 대조 및 최종 ZIP 5명령을 통과했습니다. JavaScript 첨부 0개, GENOS 현장 실행은 미확인입니다.
+
+첨부 6개: ZIP, 별도 실행 TXT, 안내 TXT, 검증 JSON, 최종 ZIP 검증 JSON, SHA256SUMS TXT.

@@ -1,0 +1,86 @@
+{
+  "schema_version": "internal-reference-wording-audit-v1",
+  "status": "CHECKS_COMPLETED",
+  "team": "risk_team",
+  "runtime_serving_verified": false,
+  "model_calls": 0,
+  "meaning_verified": false,
+  "patterns": {
+    "위임": "위임",
+    "준용": "준용",
+    "준하여": "준하여|준한다",
+    "따름": "따른다|따라|따르는|따른",
+    "정함": "정한|정하는|정하여|정한다",
+    "의함": "의한다|의하여|의거",
+    "갈음": "갈음",
+    "적용": "적용한다|적용하며|적용되는",
+    "참조": "참조|명시된|기재된",
+    "별도 정함": "(?:별도(?:로)?|따로)[^.。;\\n]{0,50}정[한하]",
+    "불특정 규정": "(?:관련|관계|해당|별도(?:의)?)\\s*(?:법령|법률|준칙|규정|규칙|세칙|지침|기준)",
+    "보충 규정": "정하지\\s*(?:아니한|않은)|규정하지\\s*(?:아니한|않은)",
+    "명시 좌표": "제\\s*\\d+\\s*(?:조(?:의\\s*\\d+)?|항|호)|별표\\s*\\d+|별지\\s*제?\\s*\\d+"
+  },
+  "limits": {
+    "rss_mib": 512,
+    "seconds": 3600,
+    "output_mib": 200
+  },
+  "scope": "선택한 generation의 원문과 navigation 참조 색인. Oracle publication·동적 관계 원장·실제 배포 리비전 검사는 포함하지 않음.",
+  "generation": "/tmp/internal-link-audit-tests-ym3tqpkk/legacy",
+  "generation_id": "synthetic",
+  "selection_basis": "explicit argument/environment; deployment not independently verified",
+  "documents_selected": 2,
+  "documents_unknown_category": 0,
+  "document_filter": "",
+  "rows": 11,
+  "counts": {
+    "NO_REFERENCE": 3,
+    "NEARBY_REFERENCE": 2,
+    "UNRESOLVED": 1,
+    "BROKEN": 4,
+    "RESTRICTED": 1
+  },
+  "blocks_scanned": 11,
+  "documents": [
+    {
+      "id": "d",
+      "name": "상품위원회운영지침 (합성)",
+      "rows": 11
+    },
+    {
+      "id": "zero",
+      "name": "표현 없는 내규 (합성)",
+      "rows": 0
+    }
+  ],
+  "elapsed_seconds": 0.02,
+  "max_rss_mib": 27.73,
+  "exit_code": 1,
+  "files": {
+    "/tmp/internal-link-audit-tests-ym3tqpkk/legacy/manifest.json": {
+      "sha256": "721a75cbaa15ddb08496e5f9e9d33986f3e69942e0902b761eff02d772175a9a",
+      "bytes": 286,
+      "mtime_ns": 1792583567375856267
+    },
+    "/tmp/internal-link-audit-tests-ym3tqpkk/legacy/navigation/manifest.json": {
+      "sha256": "060b2e867cefe65af69a61964398ded77dd25323412778a08ee385abf639f92f",
+      "bytes": 345,
+      "mtime_ns": 1792583567375856267
+    },
+    "/tmp/internal-link-audit-tests-ym3tqpkk/legacy/store.sqlite": {
+      "sha256": "1fd7c72ca69867aa2740f00db16eb7425a0b2361c1abe5d043e8617b04165193",
+      "bytes": 16384,
+      "mtime_ns": 1792583567375856267
+    },
+    "/tmp/internal-link-audit-tests-ym3tqpkk/legacy/navigation/navigation.sqlite": {
+      "sha256": "f8c26c2ff4be591777dc1cf8ad5b8d9864d71b97cc381ba98fa920387daf83ec",
+      "bytes": 45056,
+      "mtime_ns": 1792583567375856267
+    },
+    "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/diagnostics/internal_links_20261021_r1/audit_internal_links.py": {
+      "sha256": "aeb40f8e6a6902ba64e5b6feb4734fbe3da189543d96f8123b38a444b7962310",
+      "bytes": 27666,
+      "mtime_ns": 1792583567307856276
+    }
+  }
+}

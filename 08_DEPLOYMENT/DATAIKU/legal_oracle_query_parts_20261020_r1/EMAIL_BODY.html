@@ -1,0 +1,14 @@
+<p>이전에 운영 공유 경로의 데이터를 코드스페이스로 가져와 50MB 미만으로 나눴던 절차를 확인하고, <b>추가 조회 테이블용 데이터만 추출하는 코드와 Dataiku Oracle 적재 코드</b>를 준비했습니다.</p>
+<p><b>이번 메일의 ZIP은 실행 코드입니다. 실제 운영 데이터는 포함하지 않았습니다.</b> 코드스페이스에서 실행하면 운영 generation을 읽어 query-data.db → ZIP → 최대 49,000,000바이트 조각을 만듭니다. 생성 위치는 기본 <code>/workspace/QUERY_TRANSFER_20261020_R1/download</code>입니다.</p>
+<p><b>이전 사례 확인</b>: 10/6 NFS 읽기·이관 R7, 10/7 49MB 분할 및 현장 병합 기록을 대조했습니다. 10/7에는 <code>/workspace/TRANSFER/genos-rag-data-20261007T002029Z-7c0b050f_verified.zip</code>의 원본 전체 해시 일치가 확인되었습니다. 이번에는 원문 전체/runtime/대화 이력을 재반출하지 않습니다.</p>
+<p><b>1. 코드스페이스</b><br>첨부 ZIP을 실제 TRANSFER에 올리고, 그 폴더에서 아래 순서로 실행합니다.</p>
+<pre>python3 -m zipfile -e ./LEGAL_ORACLE_QUERY_PARTS_20261020_R1.zip ./query-transfer-tools
+bash ./query-transfer-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R1/CODESPACE_QUERY_50MB_RUN.txt check --output /workspace/QUERY_TRANSFER_20261020_R1
+bash ./query-transfer-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R1/CODESPACE_QUERY_50MB_RUN.txt export --output /workspace/QUERY_TRANSFER_20261020_R1</pre>
+<p>기본 원본은 기존 현장 이관 경로 <code>/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation</code>입니다. 경로가 달라졌다면 check/export 둘 다 <code>--generation 실제경로</code>를 붙입니다. 최신 폴더를 추측해 선택하지 않습니다.</p>
+<p>EXPORT_COMPLETE 후 코드스페이스 왼쪽 파일 목록에서 <code>download</code> 폴더의 <b>모든 .part 파일과 parts-manifest.json</b>을 각각 우클릭 → Download로 받습니다. 폴더 전체를 다시 큰 ZIP으로 받지 않습니다. 각 조각은 단독 압축해제하는 ZIP이 아니며 Dataiku에서 자동 병합합니다.</p>
+<p><b>2. Dataiku</b><br>Managed Folder 최상위에 작은 코드 ZIP + 모든 데이터 조각 + parts-manifest.json을 올립니다. 새 Python 노트북/커널에 별도 첨부 <b>DATAIKU_QUERY_IMPORT_RUN.txt 전체</b>를 붙이거나 ZIP 안의 ipynb를 가져옵니다. SQL 노트북/bash에 붙이는 코드는 아닙니다.</p>
+<p>맨 위 <b>FOLDER_ID</b>와 <b>ORACLE_CONNECTION</b>에 실제 Managed Folder ID와 Oracle 연결 이름을 넣고, 재실행 때 유지할 <b>WORK_DIR</b>를 확인합니다. 비밀번호는 적지 않고 기존 Dataiku 연결을 사용합니다.<br><b>ACTION=&quot;restore&quot; → &quot;check&quot; → &quot;publish&quot; → &quot;status&quot;</b> 순서로 같은 셀을 실행합니다.</p>
+<p>조각/전체 ZIP/DB/행 해시를 확인하고, 기존 Oracle에 완료된 원문 버전과 일치할 때만 적재합니다. QUERY_ROW와 QUERY_RELEASE에 삽입·전체 읽기 대조를 수행합니다. 기존 5테이블은 재이관하지 않으며 <b>QUERY_ACTIVE 전환과 QUERY_STATE 이력 이관, 서빙 배포는 별도</b>입니다.</p>
+<p><b>검증</b>: 합성 계약과 로컬 Oracle23 실제 SQL을 합쳐 40검사 통과. 긴 한글·이모지 CLOB, 값 이스케이프, 롤백, 누락/손상 조각, 중단 재개, 동일 릴리스 생성, 실제 전달 TXT 실행을 확인했습니다. Python3.11 문법과 최종 ZIP43파일 대조도 확인했습니다. 내부 GENOS/Dataiku JDBC/Oracle19의 현장 실행, 실제 운영 데이터 크기·성능은 미확인입니다.</p>
+<p>앞서 만든 <code>LEGAL_ORACLE_QUERY_TRANSFER_20261020_R1</code>은 원본 전체 generation을 Dataiku 실행 위치에서 읽는 방식입니다. <b>이번 요청인 ‘추가 데이터만 50MB 미만으로 옮기기’에는 이 메일의 PARTS R1을 사용</b>하세요. 기존 생성 SQL/원문 이관 기록은 보존합니다. 단계별 다운로드·재개·실패 처리·공간 안내는 GUIDE_UTF8.txt에 정리했습니다.</p>

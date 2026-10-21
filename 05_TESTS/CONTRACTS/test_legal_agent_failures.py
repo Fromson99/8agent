@@ -194,13 +194,21 @@ def test_late_reply_is_recorded_but_never_applied(work):
         work.apply_proposal(view, proposal(), event_id='late')
 
 
-def test_nonretryable_auth_error_and_actual_model_mismatch(work):
+def test_nonretryable_auth_error_blocks_same_decision_replay(work):
     transport = WireTransport([TransportError('auth', retryable=False)])
     gateway = ModelGateway(work, work.context, PROFILE, DOMAIN, transport)
     view = work.save_view('investigate', {}, [])
     with pytest.raises(TransportError):
         gateway.generate('investigate', view, 'InvestigateDecision')
     assert len(transport.calls) == 1
+    with pytest.raises(ContractError, match='no automatic replay'):
+        gateway.generate('investigate', view, 'InvestigateDecision')
+    assert len(transport.calls) == 1
+    assert work.budget()['model_reserved'] == 1
+
+
+def test_adapter_format_failure_is_durable(work):
+    view = work.save_view('investigate', {}, [])
     class FormatFailure(WireTransport):
         def send_once(self, **kwargs):
             self.calls.append(kwargs['body'])
@@ -213,6 +221,8 @@ def test_nonretryable_auth_error_and_actual_model_mismatch(work):
     assert attempts[-1][0] == 'FAILED'
     assert json.loads(attempts[-1][1])['error'] == 'MODEL_PROPOSAL_INVALID'
 
+def test_actual_model_mismatch_is_not_repaired(work):
+    view = work.save_view('investigate', {}, [])
     class WrongModel(WireTransport):
         def send_once(self, **kwargs):
             response = wire(proposal())
@@ -361,11 +371,12 @@ def test_direct_pipeline_call_completes_durable_publication(tmp_path, generation
 
 
 def test_candidate_manifest_topology_and_code_pins_are_valid():
-    import importlib.util
-    spec = importlib.util.spec_from_file_location('legal_agent_host_check', ROOT/'02_BACKEND/PIPELINE/engine_host.py')
+    import importlib.util, sys
+    code = Path(sys.modules[ModelGateway.__module__].__file__).resolve().parents[3]
+    spec = importlib.util.spec_from_file_location('legal_agent_host_check', code/'02_BACKEND/PIPELINE/engine_host.py')
     host = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(host)
-    planned = host.plan(host.load(ROOT), 'legal-agent-rag-v1', root=ROOT)
+    planned = host.plan(host.load(code), 'legal-agent-rag-v1', root=code)
     assert [step['node'] for step in planned['steps']] == ['retrieve', 'select', 'assemble', 'answer']
     assert planned['mode'] == 'tool'
 
@@ -411,7 +422,12 @@ def test_admission_limit_returns_503_without_hidden_queue(tmp_path, generation):
         with TestClient(app) as client:
             response = client.post('/v1/rag/ask', json={'question': '문서', 'document_ids': ['d'], 'use_llm': False})
             assert response.status_code == 503
-            assert response.json()['run_id']
+            payload = response.json()
+            assert payload['request_id'] and payload['message']
+            assert payload['error_code'] == '503'
+            assert 'run_id' not in payload and 'traceback' not in response.text
+            assert not list((tmp_path/'90_RUNTIME/semantic/legal-agent/runs').glob('*/*/journal.sqlite'))
+            assert not list((tmp_path/'90_RUNTIME/semantic/runs').glob('*.json'))
     finally:
         agent.admission.release()
 

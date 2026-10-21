@@ -1,0 +1,8 @@
+Input: existing genos-rag-data-path-preserving-v1 / live-v2 ZIP with DATA_MANIFEST; not a new generation exporter.
+Consumer: safe generation-only restore -> maintained oracle_full_package.import_generation -> existing 7 data tables; ACTIVE/STATE untouched.
+Default conflict policy: compare identical keys and reuse; insert missing; incompatible rows stop. No delete/truncate/reset mode.
+Validation: ZIP canonical member paths, duplicate/link/encrypted rejection, bounded metadata, archive eligible flag, generation manifest hash, each restored file hash, existing generation asset binding; preserve original ZIP and archived provenance.
+Recovery owner: restore coordinator records original input/code binding and seven-day deadline; partial outputs preserved, completed matching files reused. No automatic retries. 6h restore budget/1h publish call; SQL cumulative existing limits.
+Resource scope: one data worker, 1MiB chunks, free disk/RAM 512MiB checks, estimate extracted generation before writes. Existing live ZIP runtime changes are recorded but runtime is not imported.
+Verification: actual notebook and shell entrypoints, identical and partially populated Oracle fixture, conflicts/no extra writes, corruption/traversal, restore interruption and original deadline preservation, split/join roundtrip.
+Field ZIP and Dataiku/Oracle19 unavailable here. Synthetic tests are not field success or a speed estimate. No MAIN/serving revision update.

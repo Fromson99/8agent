@@ -1,0 +1,56 @@
+{
+  "archive": "GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1.zip",
+  "sha256": "880eafa8447f309d7d53f9248da2eb762d99d0a225dc804a0f80a2756605eb31",
+  "bytes": 1252927,
+  "code_files": 394,
+  "patch_files": 58,
+  "verified_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261021-natural-language-routing/genos-code",
+  "GENOS_checkout": "~/DEV (resolved and recorded on site)",
+  "GENOS_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_serving_revision": null,
+  "GENOS_revision_generation_setting": null,
+  "local_active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "law-name-recovery-20261021-r1",
+    "generation": 98,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/law-name-recovery-20261021-r1/release.json",
+    "release_manifest_sha256": "8175c3684048672a132080beea27908653ea05103319531dc3f5fc3a6e4cf133",
+    "activated_at": "2026-10-21T10:36:59.119083+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "607eba22a60bab147b05ea3fe79d8260742502e3bcbeca46d4d660cee5786746",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0967-law-name-main-integration/실험/manifest.json",
+        "sha256": "c62a75f641dc6a9072d51fc4147a0b68039461fd8584d382153f7c1358207103"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0967-law-name-main-integration/README.md",
+        "sha256": "460a090412b8025c0a3881c69379e29021f09e200fe259eec4c9ca8f63810951"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0967-law-name-main-integration/artifacts/result.json",
+        "sha256": "416ec75a3d2e06ae0862e7800b2a90a782620e46a223951810eb88ac3e5105bb"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0967-law-name-main-integration/artifacts/release-rebase.json",
+        "sha256": "2367979c2b64495c9290b33dd56f3cde8bce3c5d73159da5c1dd8d91e162f70a"
+      }
+    }
+  },
+  "three_way_merged": [
+    "02_BACKEND/semantic_runtime/document_navigation.py",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_v6.py",
+    "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+    "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+    "02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py",
+    "02_BACKEND/semantic_runtime/legal_agent/structure_query.py"
+  ],
+  "model_calls": 0,
+  "contract_log": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261021-natural-language-routing/genos-contracts-final.txt"
+}

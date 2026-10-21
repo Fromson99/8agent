@@ -2,14 +2,13 @@
 import hashlib
 import json
 import math
-import os
 import time
 from .genos import from_env, advertised_model
 from .legal_agent.transport import GenosTransport
-from .legal_agent.workflow_tiers_policy import DEFAULT_PROFILE
 from contextlib import contextmanager
 from contextvars import ContextVar
-from .legal_agent.model_contract import structured_request, structured_value, REVISION
+from .legal_agent.model_contract import (structured_request, structured_value, REVISION,
+                                        validate_response_model, response_model_metadata)
 from .legal_agent.errors import ContractError
 from .legal_agent import output_contract as output
 
@@ -36,11 +35,11 @@ def interpret(context,schema,system):
     transport=GenosTransport(target,binding)
     seconds=target.read_timeout
     if not math.isfinite(seconds) or seconds<=0:raise ValueError('AD_MODEL: GENOS_LLM_TIMEOUT must be positive and finite')
-    tokens=int(os.environ.get('GENOS_RAG_MAX_OUTPUT_TOKENS') or DEFAULT_PROFILE['max_output_tokens'])
-    if tokens<1:raise ValueError('AD_MODEL: GENOS_RAG_MAX_OUTPUT_TOKENS must be positive')
-    payload=structured_request(model=model,max_tokens=tokens,schema_name='ad_command_v1',schema=schema,
+    payload=structured_request(model=model,max_tokens=None,schema_name='ad_command_v1',schema=schema,
         messages=[{'role':'system','content':system},
                   {'role':'user','content':json.dumps(context,ensure_ascii=False)}])
+    from .legal_agent.minimal_output import prepare_request
+    payload,projection=prepare_request(payload,schema)
     recorder=_REQUEST_RECORDER.get()
     if recorder is not None:recorder(payload)
     started=time.monotonic()
@@ -48,15 +47,17 @@ def interpret(context,schema,system):
     raw=envelope['body_json'];plan=None;decode_error=None;failure=None
     try:
         if not isinstance(raw,dict):raise output.OutputContractError('model response is not an object',[output.issue('MODEL_ENVELOPE_INVALID')])
-        if raw.get('model')!=model:raise ContractError('AD_MODEL: response model differs from configured model')
-        plan=structured_value(raw)
+        validate_response_model(binding,raw)
+        plan=structured_value(raw, allow_length_repair=False)
+        plan=projection.expand(plan)
     except (output.ProposalError,ContractError) as exc:
         decode_error=str(exc);failure=output.diagnostics(exc)
     receipt={**binding,'model_contract_revision':REVISION,'model_call_id':context.get('model_call_id') or context['request_id'],
         'http_status':envelope.get('status_code'),'response_bytes':envelope.get('response_bytes'),
-        'actual_response_model':raw.get('model') if isinstance(raw,dict) else None,
+        **response_model_metadata(binding,raw),
         'seconds':time.monotonic()-started,'usage':raw.get('usage') if isinstance(raw,dict) else None,
         'request_sha256':hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True).encode()).hexdigest(),
         'response_sha256':envelope.get('body_sha256'),'decode_error':decode_error,
-        'output_contract':failure,'correction_owner':'ad-language'}
+        'output_contract':failure,'correction_owner':'ad-language',
+        'minimal_output':projection.receipt}
     return {'plan':plan,'receipt':receipt,'raw':raw}

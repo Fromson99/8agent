@@ -292,6 +292,8 @@ class WorkRepository:
             return body
 
     def reserve_attempt(self, view, request, logical_call_id, attempt_no, phase):
+        from .workflow_execution import reserve
+        reserve(self, 'model')
         with self.transaction():
             budget = self.budget()
             budget_class = view.get('budget_class')
@@ -331,6 +333,8 @@ class WorkRepository:
         return status
 
     def reserve_tool(self):
+        from .workflow_execution import reserve
+        reserve(self, 'tool')
         with self.transaction():
             if self.db.execute('UPDATE budget SET tool_used=tool_used+1 WHERE singleton=1 AND tool_used<tool_limit').rowcount != 1:
                 raise BudgetExhausted('tool action limit')

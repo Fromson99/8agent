@@ -108,7 +108,7 @@ def test_two_real_articles_read_in_one_action_with_separate_evidence(connected):
     assert len(inv.p['selected'])==2 and len({r['source_id'] for r in inv.p['selected'].values()})==2
     assert len(after['sources'])==2 and not inv.active_records()
 
-def test_real_reference_return_reoffers_identical_menu_after_skip(connected):
+def test_real_reference_return_reuses_closed_skip(connected):
     s,_=connected;menus=[]
     def invoke(system,data,schema,phase,timeout):
         assert phase.startswith('source-reference-');menus.append(copy.deepcopy(data));return reference_choice(data)
@@ -120,10 +120,10 @@ def test_real_reference_return_reoffers_identical_menu_after_skip(connected):
     assert menus
     fid=menus[0]['chain_frame_id'];original=copy.deepcopy(chain.frame(inv.p,fid)['data']['groups'])
     back(inv,fid,'접속 관계를 다시 검토해야 하므로 이전 선택지로 복귀')
-    assert len(menus)==2 and menus[1]['groups']==original
-    assert menus[1]['return_context']['reason']=='접속 관계를 다시 검토해야 하므로 이전 선택지로 복귀'
-    assert any(step['action']=='RETURN_TO' for step in menus[1]['investigation_chain']['steps'])
-    assert any(step['reference_decisions'] for step in menus[1]['investigation_chain']['steps'])
+    assert len(menus)==1
+    assert chain.frame(inv.p,fid)['data']['groups']==original
+    assert any(step['action']=='RETURN_TO' for step in chain.context(inv.p)['steps'])
+    assert any(step['reference_decisions'] for step in chain.context(inv.p)['steps'])
 
 def test_repeated_same_choice_is_two_actions_but_interrupted_resume_is_one(session):
     inv=investigation(session);data,actions=inv.view();v=decide(data,'PENDING')

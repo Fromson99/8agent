@@ -5,7 +5,7 @@ from . import relations_protocol as v3
 from .protocol import obj, arr, enum, S, ID
 from .errors import ProposalError
 ITEM = obj({'evidence_id':ID,'tier':enum('CORE','SUPPLEMENTAL'),
-    'basis_span_ids':arr(ID,1,24),'relevance_reason':{'type':'string','minLength':1,'maxLength':400},
+    'basis_span_ids':arr(ID,1,24),'relevance_reason':{'type':'string','minLength':1},
     'relation_refs':arr(ID,0,24),'interpretation_status':enum('UNASSESSED','UNCERTAIN','REVIEWED')})
 DECISION = obj({'goal_id':ID,'question_revision':{'type':'integer','minimum':1},'view_id':ID,
     'selections':arr(ITEM,0,20), 'pending':arr(obj({'evidence_id':ID,'reason':S}),0,40),

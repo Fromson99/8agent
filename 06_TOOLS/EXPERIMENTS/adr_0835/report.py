@@ -1,0 +1,21 @@
+from pathlib import Path
+import json,hashlib,re
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0835-comparison-llm-judgment';D=A/'artifacts/design';O=A/'artifacts/run-001';O.mkdir(exist_ok=True)
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+log=(A/'artifacts/tests-r1.log').read_text();assert '43 passed' in log and not re.search(r'\d+ failed',log)
+models=[read(A/f'artifacts/model/{arm}-{n}/result.json') for n in (17,19,21) for arm in ('baseline','connected')]
+consumer=read(A/'artifacts/candidate-consumer-v2.json');assert all(consumer['checks'].values())
+f=read(D/'freeze.json');assert all(sha(R/n)==h for n,h in f['files'].items())
+accepted={arm:sum(x['accepted'] for x in models if x['arm']==arm) for arm in ('baseline','connected')}
+result={'status':'complete','development_checks_passed':True,'tests_passed':43,'service_checks':len(consumer['checks']),'model_first_attempt_acceptance':accepted,'model_denominator_per_arm':3,'real_model_calls':sum(x['model_calls'] for x in models),'model_cases':models,'quality_certified':False,'limitations':['Known source packets, not legal correctness or full workflow evaluation.','Remaining invalid operation/locator pairing is a model-mechanical contract defect; follow-up candidate required.','MAIN78 and source data untouched.']}
+put(O/'result.json',result)
+binding=read(D/'verification-binding.json');put(D/'verification-binding-final.json',binding)
+m=read(A/'실험/manifest.json');m['runs'][0].update(status='complete',sha256=sha(O/'result.json'));m['results'].update(status='complete',by_arm={arm:{'status':'complete','accepted':accepted[arm],'total':3} for arm in accepted},comparisons=[{'metric':'contract_first_attempt_acceptance','baseline':accepted['baseline'],'connected':accepted['connected'],'denominator':3,'legal_correctness':False}],usage={'product_model_calls':result['real_model_calls'],'offline_evaluator_calls':0},latency={'case_seconds':[{k:x[k] for k in ('arm','source_call','seconds')} for x in models]},error_taxonomy=[{'kind':'other','detail':x.get('error','')} for x in models if not x['accepted']]);put(A/'실험/manifest.json',m)
+heads=['결정 요약','문제와 변경 전 구조','가설과 사전 판정 기준','실험 설계','데이터·모델·재현성','결과','사례별 오류 분석','비용·지연·회수 규모','해석','한계와 일반화 가능 범위','운영 결정·롤백 조건','재현 명령']
+texts=['Proposed. 의미 판단을 LLM에 맡기는 후보 개발을 완료했으나 도구 종류/위치 중복 작성 오류가 남아 후속 수정한다.','MISSING 설명과 문자열 차이를 오류/충돌로 만들고, 비교 전에 모든 의미 조건을 강제했다.',json.dumps(read(D/'criteria.json'),ensure_ascii=False), '개발 계약43개, 실제 데이터 서비스13개, 동결된 기존 원문3묶음의 새 Qwen 응답6개. 테스트 fixture는 새 wire 필드 계약에 맞췄으며 이전 충돌 강제 기대는 사용자 정책으로 교체했다.','MAIN78 기준342파일 중11파일 변경(실제 구현5·manifest/pin6). Qwen3.8/Parasail FP8/none/no fallback; 정확原문·권한·hash/state 계약 유지.',json.dumps({k:v for k,v in result.items() if k!='model_cases'},ensure_ascii=False,indent=2),'기준3응답은 MISSING 설명 형식으로 거절. 후보의 자세한 수치 요청에서 참조 없는 위치에 follow_reference를 선택한 오류가 남았다. 기록을 삭제하지 않는다.','개별 raw/usage와 소요시간 보존. 검색은 실행하지 않았고 법률 정답률을 측정하지 않았다.','형식/의미 관문을 줄여도 원문 검증은 유지할 수 있다. 도구 선택까지 모델에 중복 요구하는 부분은 추가 축소한다.','\n'.join(result['limitations']),'작업 코드 및 MAIN 미통합. 후속836에서 운영 도구 이름을 서버에 이관한다.','run_tests.py test_judgment.py test_workflow.py;consumer_check.py candidate;live.py ARM 17/19/21;report.py;stable status/hash/validate/graph']
+meta=(A/'README.md').read_text().split('---',2)[1];(A/'README.md').write_text('---'+meta+'---\n\n# 대사 LLM 판단 개발\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{t}' for i,(h,t) in enumerate(zip(heads,texts),1))+'\n')
+(A/'실험/README.md').write_text('# 원문 고정 판단 계약 검사\n\n질문 정답 평가는 없다. ADR0834의 알려진17·19·21 원문 묶음에서 새 응답을 받았다. 실제 요청·응답·schema·usage는 artifacts/model 각 arm 폴더에 보존했다.\n')
+paths=[p for p in (A/'artifacts').rglob('*') if p.is_file() and p.name!='manifest.json' and not p.name.endswith(('-shm','.lock'))]
+put(A/'artifacts/manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':m['adr_id'],'created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Frozen development and actual model evidence','contains_raw_prompts_and_outputs':'/model/' in str(p)} for p in paths]})
+print('Completed development',accepted,'43 contracts;13 service checks')

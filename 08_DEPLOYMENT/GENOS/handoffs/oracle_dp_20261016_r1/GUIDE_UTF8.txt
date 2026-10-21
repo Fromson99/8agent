@@ -1,0 +1,116 @@
+법규 RAG 전체 이관과 Oracle DP 전환 — 2026-10-16 R1
+
+현재 확인: 사용자 사진에서 SIDDA 표본 3행 INSERT/재조회 및 Dataiku 표시 성공.
+이번 파일은 이미 발송한 MAIN81 R2 전체 패치 위에 적용하는 추가 패치입니다.
+원문 전체 이관, 색인 게시, 코드 적용, Git push, 코드서빙 리비전 배포, 워크플로우 확인은 별도 단계입니다.
+Codex는 망분리 GENOS/Oracle에 접속하지 않았습니다. 실제 이관/Oracle SQL 엔진/대용량 속도/현장 모델은 현장 확인 대상입니다.
+
+1. 먼저 원문 전체 이관
+앞서 보낸 메일 제목: [법규 RAG] SQLite → SIDDA 원문 3테이블 전체 이관 코드 R1
+첨부 LEGAL_ORACLE_FULL_TRANSFER_20261016_R1_CELL.txt 전체를 조회/표본 쓰기가 성공한 R6 노트북의 새 Code 셀에 붙여 실행합니다.
+ACTION="run" → SOURCE_COMPLETE까지 진행합니다. PAUSED면 같은 셀을 다시 실행합니다.
+이어 ACTION="verify"로 다시 실행해 VERIFIED, SOURCE_TRANSFER_VERIFIED=3/3을 확인합니다.
+LEGAL_FULL_TRANSFER_RESULT와 그 receipt 경로를 보관합니다. 이관 셀은 원본을 읽기 전용으로 열고 기존 동일 행을 재사용합니다.
+원본: /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation/store.sqlite
+대상: SIDDA.LEGAL_SRC_DOCUMENT_A / LEGAL_SRC_SOURCE_UNIT_A / LEGAL_SRC_BLOCK_PAYLOAD_A
+버전은 원본 generation/manifest.json의 SHA-256입니다. 원본/Oracle 행이 다르면 덮어쓰지 않고 중단합니다.
+원문 3테이블 검증 완료만으로 RAG 전환 완료는 아닙니다.
+
+2. 색인 자산용 테이블 2개 추가
+GENOS_ORACLE_DP_20261016_R1_CREATE_TABLES.txt를 Dataiku의 기존 AIDP SQL 노트북에서 실행합니다.
+각 CREATE TABLE을 개별 Query로 실행합니다. 기존 테이블은 삭제하지 않습니다.
+SIDDA.LEGAL_RAG_ASSET_PART_A: 탐색 색인, 전문 검색 색인, 용어집/용어집 캐시를 압축 분할 보관합니다.
+SIDDA.LEGAL_RAG_RELEASE_A: 원문 버전, 행 검증 해시, 자산 해시, 검색 선택 정책을 묶은 완료 버전입니다.
+담당자/소유자가 BAIP04APP에 이 두 테이블의 SELECT, INSERT를 부여해야 합니다. GRANT는 해당 권한을 가진 계정에서 실행합니다.
+서빙만 수행하는 별도 계정은 위 5개 테이블의 SELECT가 필요합니다. 원문 이관과 자산 게시 계정은 SELECT, INSERT가 필요합니다.
+
+3. 같은 GENOS R6 노트북에서 색인 게시
+GENOS_ORACLE_DP_20261016_R1_PUBLISH_CELL.txt 전체를 새 Code 셀에 붙여 실행합니다.
+같은 커널의 LEGAL_FULL_TRANSFER_RESULT['receipt']를 자동 사용합니다. 커널을 다시 시작했다면 R6 연결을 확인하고
+셀 맨 위 TRANSFER_RECEIPT에 1번에서 저장한 실제 VERIFIED receipt 경로를 지정합니다.
+이미 성공한 desk 연결을 재사용하므로 client ID/secret을 코드에 쓰지 않습니다.
+원본 generation에 선언된 navigation/fulltext/glossary 자산을 읽어 게시합니다. 전체 파일 크기에 비례한 NFS 읽기/전송이 발생합니다.
+1시간 한도 PAUSED이면 동일 셀을 다시 실행해 검증된 분할부터 이어갑니다. 누적 호출 한도와 최초 7일 기한은 보존됩니다.
+응답 유실/오류는 실패 기록을 확인한 뒤 같은 셀로 명시적으로 재개합니다. 이미 있는 동일 분할을 재사용합니다.
+완료 시 출력되는 DP_RELEASE_ID=<64자리 SHA256>를 보관합니다. 이 값은 데이터 버전이며 client ID가 아닙니다.
+자산이 전부 검증되기 전에는 완료 버전을 게시하지 않습니다. SOURCE_COMPLETE만으로는 이 셀을 실행할 수 없고 VERIFIED가 필요합니다.
+현재 지원 범위는 compact source-v2 + 기존 navigation + unit/fulltext-v2 + 선언된 glossary 자산입니다.
+별도 vectors 항목이 있는 generation은 자동 제외하지 않고 VECTOR_ASSETS 오류로 중단합니다. 이 경우 해당 manifest 형식 확인이 필요합니다.
+
+4. MAIN81 R2를 먼저 적용한 뒤 이 추가 코드 패치 적용
+앞서 보낸 GENOS_MAIN_FULL_20261016_R2의 설치/검증을 마친 기존 ~/DEV에 적용합니다.
+아래 명령은 첨부 ZIP을 실제 업로드한 TRANSFER 폴더를 현재 작업 위치로 두고 실행합니다.
+TRANSFER의 절대경로를 추정해 이동하지 마세요. 압축을 푸는 위치와 코드 적용 대상 ~/DEV는 다릅니다.
+
+python3 -m zipfile -e ./GENOS_ORACLE_DP_20261016_R1.zip ./GENOS_ORACLE_DP_20261016_R1
+bash ./GENOS_ORACLE_DP_20261016_R1/GENOS_ORACLE_DP_20261016_R1_RUN.txt check
+bash ./GENOS_ORACLE_DP_20261016_R1/GENOS_ORACLE_DP_20261016_R1_RUN.txt apply
+
+기본 적용 대상은 ~/DEV입니다. 다른 실제 checkout이면 각 명령 마지막에 --root /실제/checkout을 지정합니다.
+첫 명령부터 ./oracle-dp-r1-logs에 실행 로그와 종료 코드를 저장합니다. 기존 MAIN81 R2 코드 바이트를 확인합니다.
+다른 패치가 섞여 있으면 충돌 파일을 출력하고 적용하지 않습니다. 기존 파일 백업 후 6개 코드 파일과 CODE_MANIFEST.json을 반영합니다.
+중단되면 같은 apply로 이어가며 알 수 없는 편집을 덮어쓰지 않습니다. 추가 파일도 내용이 다르면 중단합니다.
+백업/상태: ~/DEV/09_ARTIFACTS/BACKUPS/GENOS_ORACLE_DP_20261016_R1
+원본 NFS 세대, 선택 포인터, 대화/피드백 DB, .env는 변경하지 않습니다.
+
+5. 실제 checkout commit/검증/push
+설치는 commit/push/리비전 배포를 대신하지 않습니다. 변경 파일을 확인한 뒤 다음을 실행합니다.
+
+git -C ~/DEV diff --check
+git -C ~/DEV diff --stat
+git -C ~/DEV add -f -- service.py CODE_MANIFEST.json 02_BACKEND/semantic_runtime/oracle_dp.py 02_BACKEND/semantic_runtime/oracle_dp_io.py 02_BACKEND/semantic_runtime/oracle_dp_assets.py 02_BACKEND/lawrag/pipeline/oracle_migration.py 02_BACKEND/lawrag/pipeline/oracle_publish.py
+git -C ~/DEV diff --cached --stat
+git -C ~/DEV commit -m "Add pinned Oracle DP source and index cache"
+bash ./GENOS_ORACLE_DP_20261016_R1/GENOS_ORACLE_DP_20261016_R1_RUN.txt gate-code
+
+다른 미커밋 변경이나 이전 MAIN81 R2의 미추적 배포 파일이 있으면 게이트가 실패합니다. 그 변경을 먼저 검토·정리하며 일괄 삭제하지 않습니다.
+게이트는 적용한 실제 DEV의 파일/커밋과 APPLIED_CODE.zip 전체를 비교합니다.
+코드 게이트 성공 후 현재 브랜치의 기존 원격으로 git -C ~/DEV push를 수행하고 그 커밋으로 새 코드서빙 리비전을 배포합니다.
+DP 패치는 별도 워크플로우 문구 변경을 요구하지 않습니다. MAIN81 R2 메일의 워크플로우 Python 전체 붙여넣기 적용은 먼저 완료돼 있어야 합니다.
+
+6. 코드서빙 환경변수
+DP=oracle
+DP_RELEASE_ID=3번에서 출력한 실제 64자리 값
+DP_CACHE_DIR=/var/tmp/8-agent-oracle-dp
+ORACLE_ORDS_SCHEMA=b04
+ORACLE_ORDS_CLIENT_ID=현장 승인된 연결의 client ID
+ORACLE_ORDS_CLIENT_SECRET=현장 승인된 연결의 secret
+
+위 ID/secret 값은 현장의 비밀 환경변수에 설정합니다. 사진의 값은 이 코드/메일에 포함하지 않았습니다.
+SIDDA는 테이블 소유자이며 ORDS 연결 alias가 아닙니다. 성공한 R6 SDK_DEFAULT 연결과 같이 BASE_URL은 기본값을 쓰도록 둡니다.
+명시한 URL로 성공한 연결을 사용했다면 ORACLE_ORDS_BASE_URL도 그 실제 값에 맞춥니다.
+기존 내부 LLM/임베딩/프로필 환경변수는 MAIN81 R2 구성을 유지합니다.
+DP_CACHE_DIR는 코드서빙 프로세스가 쓸 수 있는 로컬 디스크여야 합니다. NFS/CIFS/tmpfs/ramfs는 거부합니다.
+기본 resident 추가 복사는 off입니다. 기존에 GENOS_RESIDENT_DATA를 명시했다면 그 설정을 보존합니다.
+현재 패치는 원문·색인 저장소를 전환합니다. 대화·피드백·실행 로그의 기존 runtime 저장 위치는 별도이며 NFS일 수 있습니다.
+
+7. 워크플로우 테스트 화면에서 준비/실제 질문
+새 리비전/환경변수를 저장한 뒤 워크플로우 테스트 화면에 WARMUP을 입력합니다.
+이후 WARMUP_STATUS로 확인합니다. 최초 내려받기는 백그라운드에서 수행하므로 RUNNING 동안 반복 질문을 보내지 않습니다.
+READY 결과에서 data_provider=oracle, dp_release_id=지정 버전, nfs_source_used=false와 generation_path의 로컬 캐시 경로를 확인합니다.
+그 다음 기존에 근거가 확인된 질문으로 원문 인용/권한 범위/답변을 확인하고 요청 ID와 결과를 보관합니다.
+코드서빙 직접 테스트 UI/API 호출을 요구하지 않습니다. 워크플로우 테스트 화면만 사용합니다.
+FAILED면 warmup.failed/Oracle 캐시 journal의 오류를 확인한 뒤 WARMUP으로 명시 재개합니다. NFS로 자동 전환하지 않습니다.
+코드스페이스에서 cache gate를 하려면 동일 비밀 환경변수와 DP를 설정하고 RUN.txt gate를 쓸 수 있으나,
+그 코드는 코드스페이스 로컬 캐시 검사이며 코드서빙 컨테이너의 캐시/리비전/질문 성공을 증명하지 않습니다.
+
+색인과 캐시 동작
+- Oracle source 3테이블에서 해당 버전의 모든 원문 행을 읽습니다. 순서별 논리 해시/건수/긴 CLOB를 확인하고 로컬 SQLite 캐시를 만듭니다.
+- 탐색/전문검색/용어집 SQLite 자산은 Oracle에서 그대로 받아 파일 SHA256을 검증합니다. 재색인/재임베딩하지 않습니다.
+- 새 SQLite 파일의 바이트 해시는 달라지므로 원문 행의 완전 일치를 확인한 다음 파생 캐시 manifest에 새 파일 해시를 결속합니다.
+  원래 manifest는 oracle_origin에 보존합니다. NFS manifest는 고치지 않습니다. 기존 Store/TermIndex/fulltext/glossary 검증기를 그대로 통과해야 합니다.
+- 준비 완료한 디렉터리만 원자적으로 공개합니다. 같은 프로세스는 메모리 객체를 재사용하고 새 프로세스는 완료 캐시를 검증해 재사용합니다.
+- READY 캐시가 있으면 원문/색인을 다시 내려받지 않습니다. 새 프로세스는 Oracle 완료 버전 접근을 다시 확인합니다.
+- 로컬 디스크가 배포/재시작 때 사라지는 환경이면 다시 내려받습니다. 최초 전송 시간/필요 공간/대용량 SQL 비용은 현장 측정 전입니다.
+- 데이터 갱신은 새 generation의 원문 이관/verify/자산 게시 → 새 DP_RELEASE_ID → 새 프로세스 순서입니다. 실행 중 값만 바꿔 캐시를 섞지 않습니다.
+- DP를 비우거나 DP=nfs로 설정하고 새 프로세스를 시작하면 기존 NFS 선택 경로를 사용합니다. 이전 NFS 세대는 보존됩니다.
+
+코드 원복이 필요할 때
+bash ./GENOS_ORACLE_DP_20261016_R1/GENOS_ORACLE_DP_20261016_R1_RUN.txt undo
+원복된 코드 변경을 검토/commit/push하고 이전 검증 리비전과 환경변수로 배포합니다.
+원복은 이 패치의 코드만 대상으로 하고 Oracle 데이터와 로컬 완료 캐시를 삭제하지 않습니다.
+
+검증 범위
+로컬 Oracle 모의 응답 + 실제 SQLite/기존 RAG 서비스 코드로 cold/warm, 원문 폴더 제거 후 기동, 본문 조회,
+모의 모델을 사용한 근거 포함 RAG, 권한 범위, 원문/자산 변조, 응답 유실·재개, 기한 보존, MAIN81 R2 설치/원복을 검사합니다.
+실제 Oracle 엔진, 현장 계정 권한, 네트워크, 전체 데이터량의 속도, GENOS 내부 모델/배포 성공은 로컬 결과로 대체하지 않습니다.

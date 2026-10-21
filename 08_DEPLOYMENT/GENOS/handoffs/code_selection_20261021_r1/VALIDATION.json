@@ -1,0 +1,89 @@
+{
+  "status": "LOCAL_VALIDATED_FIELD_NOT_RUN",
+  "tests": {
+    "passed": 58,
+    "deselected": 2,
+    "deselected_reason": "pre-existing v1 fixture invokes an API requiring latest-v2; equivalent latest-v2 API tests included"
+  },
+  "command_count": 38,
+  "expected_rejections": 14,
+  "archive_sha256": "0f2e509cedfbe772f84ee9fb885b6fd3db3206a2ea0708a4250e9a6d408fc794",
+  "runtime_sources": {
+    "02_BACKEND/semantic_runtime/search_selection.py": "498ea0824a886aaf78a43590f56e94359e3cf3a20ce82f067636f90da4ede76f",
+    "02_BACKEND/lawrag/pipeline/search_selection.py": "14fd67bc098d94bccc0ee09c700367c918d0c712509f8c33e1fa38b3b31446ae"
+  },
+  "field_generation": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "field_generation_manifest_sha256": null,
+  "field_commit": null,
+  "field_revision": null,
+  "nfs_modified": false,
+  "model_calls": 0,
+  "selected_main_changed": false,
+  "coverage": [
+    "missing NFS selection",
+    "existing v1 NFS selection preserved",
+    "existing config and code inventory preserved",
+    "code JSON path/hash/missing/metadata/marks rejection",
+    "runtime binding drift",
+    "legacy writer exclusion",
+    "actual v5/v6 HTTP API, legacy/compact-v2",
+    "real deployed directory relocation",
+    "DEV symlink checkout",
+    "interrupted apply resume",
+    "exact rollback including modes",
+    "foreign edit / corrupted backup refusal",
+    "data change after prepare refusal",
+    "unrelated staged files refusal",
+    "ignored metadata explicitly committed",
+    "same checkout committed code gate and generation e2e/verify_assets"
+  ],
+  "failures_preserved": [
+    "HANDOFF_TEST_1.log: workflow-relative manifest path resolver fixed",
+    "HANDOFF_TEST_2/3/4.log: fixture was missing offline DEV gate dependencies; added actual existing modules",
+    "HANDOFF_TEST_5/6.log: synthetic data compiler differed from fixture checkout; generation and checkout now use same reviewed compiler bytes"
+  ],
+  "main_active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "multiturn-structured-scope-20261021-r1",
+    "generation": 97,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/multiturn-structured-scope-20261021-r1/release.json",
+    "release_manifest_sha256": "1e2b0a05c990fbf4db2547fb77f9f43fd8bc16e96d6b6de6cdd4793ca6b2cfff",
+    "activated_at": "2026-10-21T06:16:08.432700+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "f282e78dc4fe268f3e65602fef2a920d3d9efaf6e5b4d1941fa617e30f205dd9",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/실험/manifest.json",
+        "sha256": "72c3d1c85f0cc6f285d0cd45a10aabb21f796fb99d21b3a9fdaeaea96700c242"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/README.md",
+        "sha256": "e6780a6980e74943a28a31767b29df7be5e864ab45739dd713d8c4c3d659e7a6"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/artifacts/result.json",
+        "sha256": "806a285413d902228dfbb0d8982e63096181b2d2d1180daf1d2960f0a9da6a31"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0964-scoped-main-integration/artifacts/release-rebase.json",
+        "sha256": "19bf022e555c529fc134eb3f0afd2d5d919e71cfd36cd9240d6a2c526da8aad5"
+      }
+    }
+  },
+  "package_files": {
+    "runner.py": "5d84f09412a6d925dea696e142caf87bf4493717d20dccd38b59541d4b895283",
+    "selection_worker.py": "361f2b08e16fdb50a4c8853100205aaa45df444fc60fcfa9e6617d65bdadfdc5",
+    "genos_release_gate.py": "af1339d7e99fdca44b472198aa98fd15bd64cfc3acf3aa95e1f96c3f6c3a6dec",
+    "PATCH_SPEC.json": "7aa32b144d16cba02d2fb078721e9a2a4ef26fb2271fd1de5585cc43500cf14c",
+    "CODE_MANIFEST.json": "e9e7de0d286db0a0a34bb4ddc309470d286aba7fc213a61f56a54c22f5a8ab18",
+    "GUIDE_UTF8.txt": "22df3db3bb7d6741efc79d8addc1aba2f2a382bf11f27bc224dd1246bae2cd87",
+    "payload/02_BACKEND/semantic_runtime/search_selection.py": "498ea0824a886aaf78a43590f56e94359e3cf3a20ce82f067636f90da4ede76f",
+    "payload/02_BACKEND/lawrag/pipeline/search_selection.py": "14fd67bc098d94bccc0ee09c700367c918d0c712509f8c33e1fa38b3b31446ae",
+    "PACKAGE.json": "ad97e8bb71a3200b0fb70349fe63102ad72e39cc10a452a469d9e3f2b0d07f02",
+    "RUN_DEV_SELECTION.txt": "96bf492745513b9c7d7ba4c10d1b5a3a0cd4093a22733e5d98e0f6e44ddf1777",
+    "GENOS_DEV_SEARCH_SELECTION_20261021_R1.zip": "0f2e509cedfbe772f84ee9fb885b6fd3db3206a2ea0708a4250e9a6d408fc794"
+  }
+}

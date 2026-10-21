@@ -1,0 +1,39 @@
+ADR0956 대사 필수 조사 범위 재검증 — 2026-10-20
+같은 합성7문서16조항, 승인 연결2개, 질문4개를 MAIN94(control)와 작업 workflow1.20.2(scoped)에 각1회 실행했다.
+Qwen3.8/qwen3.8-27b, OpenRouter Parasail FP8, reasoning none, fallback 없음. 실행 순서는 질문별로 번갈아 고정했고 무거운 요청은 순차 실행했다.
+판정: 고정 범위 검사 통과. 인샘플 Proposed, decision_eligible=false, quality_certified=false.
+
+anchor-scope: 호출 23 → 11, 시간 163.5 → 89.6초.
+선택적 산식 후속 조사 2건→0건, 호출23→11. 요청 field에 formula/numerator/denominator를 별도 추가하지 않았다. 원문 회수 유지. 양쪽 모두 더 엄격한 내규를 CONFLICT로 표시한 기존 의미 오류는 남는다. control에서 duplicate field-side patch 보정 실패가 있어 호출 차이 전부를 범위 지시의 순수 효과로 단정할 수 없다.
+reference-exception: 호출 9 → 8, 시간 69.1 → 49.4초.
+연결 외규에서 다시 참조하는 장애대응규정 제2조까지 읽고 3영업일·전산 장애·사전 승인 불가능·장애 기록 조건을 유지했다. 호출9→8. control의 질문 인용 검증 실패가 있었으나 저장된 원문과 제한 답변은 유지했다.
+missing-source: 호출 10 → 10, 시간 67.2 → 95.0초.
+내규 별표9를 확보하지 못한 상태를 유지하면서 외규의 통지 다음 영업일 및 장애 입증 시 3영업일 원문을 인용했다. 내규 기한을 만들지 않았다. 호출10→10. scoped 추가 확인 목록에 이미 확보한 외규 기준을 미확보라고 적은 낡은 문구가 남았다.
+explicit-formula: 호출 16 → 16, 시간 107.2 → 119.0초.
+양쪽에서 산식·분자·분모를 내규/외규 후속 조사 대상으로 유지했고 각각2개 과제를 실행했다. 양측 원문에서 산식을 확보하지 못했음을 밝혔으며 유지상한을 산식의 답으로 대체하지 않았다. 호출16→16. scoped 제목/개념에는 유지상한·보고의무 등 주변 항목과 예외 미확인 문구가 여전히 남는다.
+
+전체 호출 58 → 45; 비용 $0.17604288 → $0.12478948.
+범위 판정 3/4 → 4/4. 실제 법률 정답률이 아니다.
+필수 원문 최종 인용 회수율: {"control": 1.0, "scoped": 1.0}
+원문·span·해시 검사 96+69, 불일치 0+0.
+과거 ADR0955의 호출 수를 비교 기준으로 재사용하지 않고 이번에 실행한 control과 비교했다.
+MAIN 선택은 이 실험 실행 중 유지했다. 사용자 요청에 따른 MAIN 반영은 별도 maintenance receipt로 수행하며 이 탐침을 일반화 품질 인증으로 바꾸지 않는다.
+선택 개념 밖 승인 연결 조회와 더 엄격한 내규의 상충 오판은 이번 수정 대상이 아니며 발견 시 그대로 기록했다.
+실제 risk_cm 자료·GENOS 내부 모델·Oracle 현장·전체 corpus 성능은 검증하지 않았다.
+사전 일반 validate는 아직 측정하지 않은 회수 집계값 누락을 보고했다. 두 코드 revision의 freeze/validate 및 설계 해시는 첫 호출 전 통과·고정했고, 최종 기록 검사는 측정값을 채운 뒤 별도 실행했다.
+
+{
+  "anchor-scope": true,
+  "reference-exception": true,
+  "missing-source": true,
+  "explicit-formula": true,
+  "required_final_source_recall_both_arms": true,
+  "original_span_hash_mismatches_zero": true,
+  "no_scoped_integrity_or_state_errors": true,
+  "stored_and_duplicate_consumers_no_calls_and_identical": true,
+  "physical_calls_within_125percent": true
+}
+
+보충: 모든8개 응답은 partial이며 완전한 법률 답변으로 판정하지 않았다. 불필요한 미확인 문구와 이미 확보한 외규를 미확보라고 적은 문구가 남았다.
+기준본에서 출력 보정 실패2건이 있었으며 호출 비교에 포함된다. 이번 단회 관찰로 호출 차이를 범위 지시의 순수 효과로 단정하지 않는다.
+ADR0956 최종 구조 검사는 통과했다. 전체 ADR graph에는 과거9건의 오류가 남았고 ADR0956 관련 오류는 없었다. 과거 기록은 소급 수정하지 않았다.

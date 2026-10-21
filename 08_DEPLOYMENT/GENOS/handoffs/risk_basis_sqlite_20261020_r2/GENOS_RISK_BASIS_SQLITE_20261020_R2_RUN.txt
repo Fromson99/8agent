@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# 업로드한 TRANSFER 폴더를 현재 위치로 둔 채 실행합니다.
+set -Eeuo pipefail
+umask 077
+exec > >(tee -a "$PWD/GENOS_RISK_BASIS_SQLITE_20261020_R2.log") 2>&1
+trap 'rc=$?; printf "[EXIT] status=%s time=%s\n" "$rc" "$(date -Is)"' EXIT
+printf '[START] time=%s cwd=%s\n' "$(date -Is)" "$PWD"
+package_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+dev_root="${RISK_BASIS_DEV_ROOT:-"$HOME/DEV"}"
+state_dir="${RISK_BASIS_STATE_DIR:-"$PWD/GENOS_RISK_BASIS_SQLITE_20261020_R2_STATE"}"
+action="${1:-check}"
+shift || true
+python3 -c 'import sys; print("PYTHON", sys.executable, sys.version)'
+case "$action" in
+  check|install|rollback-code)
+    python3 "$package_dir/install.py" --root "$dev_root" --state "$state_dir" "$action" "$@"
+    ;;
+  inspect|plan|apply|verify|revoke|verify-revoked)
+    python3 "$package_dir/install.py" --root "$dev_root" --state "$state_dir" run -- \
+      "$action" --root "$dev_root" --output "$state_dir/db" "$@"
+    ;;
+  *)
+    printf '사용법: bash %s {check|install|inspect|plan|apply|verify|revoke|verify-revoked|rollback-code}\n' "${BASH_SOURCE[0]}"
+    exit 2
+    ;;
+esac

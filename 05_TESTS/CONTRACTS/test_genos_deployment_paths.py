@@ -39,3 +39,12 @@ def test_invalid_binding_is_rejected_before_mutating_environment(tmp_path,key,ba
 def test_config_symlink_is_rejected(tmp_path):
     p,value=configuration(tmp_path,tmp_path/'generation');saved=p.with_name('original.json');p.rename(saved);p.symlink_to(saved)
     with pytest.raises(ValueError):paths.install(tmp_path,environment={})
+
+@pytest.mark.parametrize('mode',['oracle','1','true'])
+def test_oracle_preserves_explicit_external_runtime_and_ignores_stale_sqlite_binding(tmp_path,mode):
+    p,value=configuration(tmp_path,tmp_path/'generation')
+    Path(value['generation']).rename(tmp_path/'offline-sqlite-generation')
+    env={'DP':mode,'GENOS_RUNTIME_DIR':'/external-nfs/oracle-runtime','GENOS_STATE_DIR':'/external-nfs/state'}
+    before=dict(env)
+    assert paths.install(tmp_path,environment=env) is None
+    assert env==before

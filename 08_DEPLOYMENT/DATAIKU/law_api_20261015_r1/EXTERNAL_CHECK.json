@@ -1,0 +1,101 @@
+{
+  "scope": "WSL external public API only; no Samsung relay or Dataiku access",
+  "credential_present": true,
+  "requests": [
+    {
+      "label": "law_search",
+      "endpoint": "https://www.law.go.kr/DRF/lawSearch.do",
+      "params": {
+        "target": "law",
+        "type": "XML",
+        "query": "자본시장과 금융투자업에 관한 법률",
+        "display": "50"
+      },
+      "at_utc": "2026-10-15T03:55:31Z",
+      "http_status": 200,
+      "bytes": 2835,
+      "sha256": "0fd9e7253e0d09ee4689cabdd942757ee223f929e2db6516dc09a460d17b265e",
+      "elapsed_seconds": 0.303,
+      "stored": false,
+      "xml_root": "LawSearch",
+      "status": "XML_RECEIVED",
+      "row_count": 3,
+      "exact_current_matches": 1
+    },
+    {
+      "label": "law_body",
+      "endpoint": "https://www.law.go.kr/DRF/lawService.do",
+      "params": {
+        "target": "eflaw",
+        "type": "XML",
+        "ID": "010513"
+      },
+      "at_utc": "2026-10-15T03:55:32Z",
+      "http_status": 200,
+      "bytes": 2185564,
+      "sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460",
+      "elapsed_seconds": 1.118,
+      "stored": true,
+      "xml_root": "법령",
+      "status": "XML_RECEIVED",
+      "metadata": {
+        "name": "자본시장과 금융투자업에 관한 법률",
+        "doc_id": "010513",
+        "promulgated": "20260804",
+        "promul_no": "21857",
+        "rev_kind": "타법개정",
+        "enforce": "20261002",
+        "dept": "금융위원회"
+      },
+      "annex_links": 17
+    },
+    {
+      "label": "admrul_search",
+      "endpoint": "https://www.law.go.kr/DRF/lawSearch.do",
+      "params": {
+        "target": "admrul",
+        "type": "XML",
+        "query": "금융투자업규정",
+        "display": "50"
+      },
+      "at_utc": "2026-10-15T03:55:34Z",
+      "http_status": 200,
+      "bytes": 1784,
+      "sha256": "5c1a467b69990dd0077897a7ef65b1c3cc1103e2c83ec671ce2380a14504a166",
+      "elapsed_seconds": 0.092,
+      "stored": false,
+      "xml_root": "AdmRulSearch",
+      "status": "XML_RECEIVED",
+      "row_count": 2,
+      "exact_current_matches": 1
+    },
+    {
+      "label": "admrul_body",
+      "endpoint": "https://www.law.go.kr/DRF/lawService.do",
+      "params": {
+        "target": "admrul",
+        "type": "XML",
+        "ID": "2100000285020"
+      },
+      "at_utc": "2026-10-15T03:55:35Z",
+      "http_status": 200,
+      "bytes": 1758451,
+      "sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982",
+      "elapsed_seconds": 0.989,
+      "stored": true,
+      "xml_root": "AdmRulService",
+      "status": "XML_RECEIVED",
+      "metadata": {
+        "name": "금융투자업규정",
+        "doc_id": "36022",
+        "promulgated": "20260909",
+        "promul_no": "2026-38",
+        "rev_kind": "",
+        "enforce": "20260915",
+        "dept": "금융위원회"
+      },
+      "annex_links": 80
+    }
+  ],
+  "status": "COMPLETED"
+}

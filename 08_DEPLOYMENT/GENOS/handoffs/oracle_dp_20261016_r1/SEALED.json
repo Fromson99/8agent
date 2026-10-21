@@ -1,0 +1,38 @@
+{
+  "files": {
+    "GENOS_ORACLE_DP_20261016_R1.zip": {
+      "sha256": "b806edc6a7e88d29c80eaa12301b1043421f88f56bf49f9d2a2255badd1624ea",
+      "bytes": 539941
+    },
+    "GENOS_ORACLE_DP_20261016_R1_RUN.txt": {
+      "sha256": "1221825fa2fdb45834325d7bfb61f5bf95876290644f954729fb1293914972b4",
+      "bytes": 319738
+    },
+    "GENOS_ORACLE_DP_20261016_R1_PUBLISH_CELL.txt": {
+      "sha256": "eabfaf49f9913f04bab3d9e28679b7392386629f4cf74b058b8862f42d51de66",
+      "bytes": 21303
+    },
+    "GENOS_ORACLE_DP_20261016_R1_CREATE_TABLES.txt": {
+      "sha256": "2b3a4ae13e13375de62e7473063c14c9301144370bbd397e2961197d1a82ecd2",
+      "bytes": 1066
+    }
+  },
+  "payload_sha256": "728b1c528c898428b77ed7d495f50436f53b4523f29ed769a6295b5bbcef3f6d",
+  "final_verification": {
+    "status": "PASS",
+    "tested_execution_files_unchanged": true,
+    "payload_sha256": "728b1c528c898428b77ed7d495f50436f53b4523f29ed769a6295b5bbcef3f6d",
+    "scans": [
+      {
+        "archive": "outer",
+        "members": 16
+      },
+      {
+        "archive": "RUN embedded",
+        "members": 10
+      }
+    ],
+    "local_main_pointer_changed_by_this_task": false,
+    "field_deployment": "NOT_PERFORMED"
+  }
+}

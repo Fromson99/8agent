@@ -1,0 +1,9 @@
+Extend previous existing-ZIP adapter with legacy zero-based GNU SHA part input.
+Input: explicitly uploaded Managed Folder part000000... and ORIGINAL/PARTS.sha256 (numbered downloaded copies allowed only when semantically identical; ambiguous copies require explicit filename).
+Consumer: join -> previous archive inspect/restore -> unchanged full Oracle importer. No remote writes before check/publish action.
+Recovery: at most one part may have one appended tail byte; select all-but-last only if its part SHA matches AND final whole SHA matches. Never modify uploaded parts or their checksums.
+Failure: missing/extra/duplicate/gapped/unsafe names, mixed metadata, corruption, changed target, timeout, disk/RAM low preserve diagnostics and partial output; no automatic retry or hash rewriting.
+Streaming: 1MiB reads directly from Dataiku API to a local partial ZIP; no second local copy of every part. A failed merge restarts from part zero, preserving failed partials. Complete ZIP reused only by whole hash. Restore/import retain previous checkpoints.
+Budget: merge six hours per attempt, original seven-day deadline retained. Resource floor512MiB. No blocked stream interrupt guarantee. One data worker.
+Tests: actual delivered notebook inspect/merge/restore, nonseekable short-read stream, normal/one-byte recovery, forbidden corruption/two-byte/two-part/whole-SHA mismatch, missing before part reads, duplicates/renamed checksum copies, interrupted merge, complete reuse and target conflict; prior archive/import regressions.
+Field files are screenshots only; actual checksums/bytes and live Dataiku/Oracle not available.

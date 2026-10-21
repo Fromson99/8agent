@@ -70,7 +70,9 @@ def test_direct_input_never_resolves_case_or_acquires_originals(routed_app, capt
         assert db.execute('SELECT status FROM run').fetchone()[0] == 'COMPLETED'
     with sqlite3.connect(runtime/'case-memory'/('cases-v4.sqlite' if capture else 'cases-v3.sqlite')) as db:
         assert db.execute('SELECT count(*) FROM goal').fetchone()[0] == 0
-    assert ok(client.post('/v1/rag/ask', json=body)) == result
+    again = ok(client.post('/v1/rag/ask', json=body))
+    assert again['answer'] == result['answer'] and again['run_id'] == result['run_id']
+    assert again['execution_stats']['llm_calls'] == 0
     assert transport.phases == ['source-request-route']
 
 

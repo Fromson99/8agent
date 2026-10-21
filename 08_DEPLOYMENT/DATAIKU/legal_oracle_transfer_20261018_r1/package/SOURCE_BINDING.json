@@ -1,0 +1,34 @@
+{
+  "delivery": "LEGAL_ORACLE_TRANSFER_20261018_R1",
+  "scope": "data-only; selected compact-v2 source plus declared serving assets",
+  "runtime_patch_included": false,
+  "main_pointer_changed": false,
+  "origin_cells": {
+    "08_DEPLOYMENT/DATAIKU/legal_oracle_dp_20261016_r1/LEGAL_ORACLE_FULL_TRANSFER_20261016_R1_CELL.txt": "39380aa182eea5485744138a9e3b4a226b74777983537840f9d326444e0c60da",
+    "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/GENOS_ORACLE_DP_20261016_R1_PUBLISH_CELL.txt": "eabfaf49f9913f04bab3d9e28679b7392386629f4cf74b058b8862f42d51de66",
+    "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/GENOS_ORACLE_DP_20261016_R1_CREATE_TABLES.txt": "2b3a4ae13e13375de62e7473063c14c9301144370bbd397e2961197d1a82ecd2"
+  },
+  "readable_sources": {
+    "sources/oracle_dp_io.py": {
+      "origin": "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/payload/02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "sha256": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40"
+    },
+    "sources/oracle_dp_assets.py": {
+      "origin": "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/payload/02_BACKEND/semantic_runtime/oracle_dp_assets.py",
+      "sha256": "bcd198f6e8653096377e5a3f6e8974aa28528059fa8808a3e0860894a46eadc7"
+    },
+    "sources/oracle_migration.py": {
+      "origin": "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/payload/02_BACKEND/lawrag/pipeline/oracle_migration.py",
+      "sha256": "eb40d1cad19b7aefeca18b7bb36c7444a140f7beae239984215a2faed76476bd"
+    },
+    "sources/oracle_publish.py": {
+      "origin": "08_DEPLOYMENT/GENOS/handoffs/oracle_dp_20261016_r1/payload/02_BACKEND/lawrag/pipeline/oracle_publish.py",
+      "sha256": "969471e3582924b4344b14d0343eb3c732107b9d13e3407a457f0d1a007d0bc5"
+    }
+  },
+  "changes": [
+    "Split source verification into a separate cell with 21600-second budget.",
+    "Combine SQL and migration instructions; no migration engine changes."
+  ],
+  "namespace_note": "Standalone cells rewrite imports to isolated module names; readable sources retain original imports."
+}

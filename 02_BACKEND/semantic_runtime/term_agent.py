@@ -20,6 +20,10 @@ class TermAgent:
     def get_index(self):
         with self.lock:
             if self.index is None:
+                if getattr(self.pipeline.store,'is_oracle_query',False):
+                    from .oracle_query_index import Index
+                    self.index=Index(self.pipeline.store)
+                    return self.index
                 binding=self.pipeline.store.manifest.get('navigation') or self.config.get('index')
                 if not binding:raise ValueError('term-agent requires a version-bound navigation index')
                 root=self.pipeline.store.path if self.pipeline.store.manifest.get('navigation') else self.pipeline.contracts.root
@@ -30,6 +34,12 @@ class TermAgent:
             return self.index
     def get_fulltext(self):
         """Optional morpheme ranking index bound in config; None when not configured."""
+        if getattr(self.pipeline.store,'is_oracle_query',False):
+            with self.lock:
+                if getattr(self,'fulltext',None) is None:
+                    from .oracle_query_fulltext import UnitIndex
+                    self.fulltext=UnitIndex(self.pipeline.store.oracle_request)
+                return self.fulltext
         # Bound to one navigation index: generations sharing a source store and generation ID
         # still differ by index, and one without this build has no full-text ranking.
         # A published generation owns its derived fulltext binding. The profile

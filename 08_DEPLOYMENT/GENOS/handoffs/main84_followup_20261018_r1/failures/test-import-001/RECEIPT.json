@@ -1,0 +1,19 @@
+{
+  "status": "HARNESS_IMPORT_COLLISION_FIXED",
+  "first_run": "1 scenario failed (8 product-entry import errors/377 checks passed),2 scenarios passed. No guard violation.",
+  "cause": "Pytest prepended the ADR test directory, shadowing installed main.py with the promotion helper added after candidate qualification.",
+  "fix": "Renamed non-frozen promotion helper and restored installed code first after collection; assert main/main_workflow/service paths are also installed. No product or delivered executable bytes changed.",
+  "helper_rename": {
+    "before": "06_TOOLS/EXPERIMENTS/adr_0874/main.py",
+    "after": "06_TOOLS/EXPERIMENTS/adr_0874/promote_main.py",
+    "sha256": "45ff1263975611ae5b9f0cb972681d19b7f32e44a2285eefc40c40356b4dc40b"
+  },
+  "rerun": "Only prior_main83 scenario, fresh child basetemp; other2 successful scenario records preserved.",
+  "files": {
+    "delivery-resources.jsonl": "1c289dce7b5c4d2a19e471c9a6e758d7bf7307aaa64ea968b8f8e6b5c65d1a6c",
+    "installed_contract_runner.py": "4798fe8e979d5ec0ec135f2f925be7e78087ed8ab334943bcb9b9112d57b8b62",
+    "delivery-resources.json": "1ef48e822260ec44b2339baddb7e6c361fe9d036c4e3ac16872f403a723e30e2",
+    "DELIVERY_TEST.log": "691253875aba22388cf4023d1ccfc6dfbf5e1efb76069363e7e8b90d6e22a47a",
+    "TEST_prior_main83.json.gz": "5f14068c0e2a6f6b5ffa21f5cfa08e33fffced7cf589ce004a0e0199bb0f6179"
+  }
+}

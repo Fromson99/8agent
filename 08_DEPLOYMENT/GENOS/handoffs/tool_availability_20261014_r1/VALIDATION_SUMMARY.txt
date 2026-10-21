@@ -1,0 +1,12 @@
+GENOS 상황별 도구 제한·구조 부모 원문 읽기 R1 검증 — 2026-10-14
+작업 코드: 1084 passed / 1 skipped / 0 failed.
+기존 실패 4건 명시 제외: 수정 전 구조 API mock에서도 같은 실패를 재현했고 로그/XML 보존.
+추가로 기존 resolver mock/예외 타입 실패 3건도 수정 전 재현. 신규 회귀와 구분.
+설치된 2개 현장 코드 조합 계약/API 400개 통과, 실패/면제 0.
+기존 Git checkout에서 TXT check/apply/reapply/verify/undo, 변조 거부 4회, 총 32명령 검증.
+실제 service.service localhost TLS 부팅 2회 및 동일 committed checkout generation gate 2회 통과.
+작업 코드 9개 수정/신규 파일은 설치 코드와 동일. 숏컷의 종료 guard도 동일하며 나머지 현장 routing/hint 코드를 보존.
+현장 진단 소비자의 traceback 설정도 보존.
+스키마 R1 / 의존 복구 R1의 알려진 660개 inventory만 지원. 원문 데이터/기존 환경 설정 보존.
+실제 LLM 호출 0. 현장에 접근하지 않았으며 내부 모델 품질·현장 배포 성공은 미확인.
+로컬 MAIN62 포인터/선택 릴리스 변경 없음. 422 팀/범위 오류 수정 없음.

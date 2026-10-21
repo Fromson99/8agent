@@ -1,0 +1,57 @@
+[
+  {
+    "command": "check",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND check\n{\"time_utc\": \"2026-10-16T02:05:37Z\", \"event\": \"START\", \"command\": \"check\"}\nKEEP financial-risk-success-20261005-schema-r2 \nCANDIDATES [\"fulltext-repair-original\", \"smoke-original\"]\nCHECK_BINDING {\"base\": \"/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/term-releases\", \"dev\": \"/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/DEV\", \"active_identity\": [72, 43051], \"generation\": \"/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/term-releases/financial-risk-success-20261005-schema-r2/generation\", \"manifest_sha256\": \"d4fc0031f7c1c5ba2ca88e0e0df9be988006849b22eaa20e0815eb587aa50ce9\", \"search_selection_metadata\": null, \"asset_metadata\": {\"store.sqlite\": [72, 43058, 26, 1792116337934413098], \"navigation\": [72, 43053, 60, 1792116337934413098], \"fulltext\": [72, 43054, 60, 1792116337934413098], \"glossary/bundle\": [72, 43056, 40, 1792116337934413098], \"glossary/dictionary.sqlite\": [72, 43061, 26, 1792116337934413098], \"glossary/cache\": [72, 43057, 40, 1792116337934413098]}, \"code_metadata\": {\"service.py\": [72, 43069, 33, 1792116337934413098], \"main_router.py\": [72, 43070, 33, 1792116337934413098], \"00_SYSTEM/PIPELINE.json\": [72, 43071, 33, 1792116337934413098]}, \"config_sha256\": \"eaa335e5822e4afb4faf62405d9555bdaad0e5def6f7750efae652bf1b1dafe5\", \"validation_level\": \"METADATA_ONLY\", \"payload_content_verified\": false}\n{\"time_utc\": \"2026-10-16T02:05:37Z\", \"event\": \"METADATA_CHECK_PASS\", \"plan\": \"/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-state/PLAN.json\", \"metadata_bytes_read\": 647, \"payload_content_verified\": false, \"data_deleted\": false}\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020537-8025.log\n"
+  },
+  {
+    "command": "check",
+    "exit": 1,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND check\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"check\"}\nTraceback (most recent call last):\n  File \"<stdin>\", line 264, in <module>\n  File \"<stdin>\", line 220, in main\n  File \"<stdin>\", line 24, in require\nValueError: Existing plan preserved. Use status/isolate/verify/restore; do not overwrite it\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"FAILED\", \"error_type\": \"ValueError\", \"detail\": \"Existing plan preserved. Use status/isolate/verify/restore; do not overwrite it\", \"recovery\": \"status then restore if needed\"}\nSTORAGE_EXIT=1 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020537-8032.log\n"
+  },
+  {
+    "command": "verify",
+    "exit": 1,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND verify\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"verify\"}\nTraceback (most recent call last):\n  File \"<stdin>\", line 264, in <module>\n  File \"<stdin>\", line 253, in main\n  File \"<stdin>\", line 24, in require\nValueError: All candidates must be isolated before verify\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"FAILED\", \"error_type\": \"ValueError\", \"detail\": \"All candidates must be isolated before verify\", \"recovery\": \"status then restore if needed\"}\nSTORAGE_EXIT=1 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8039.log\n"
+  },
+  {
+    "command": "isolate",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND isolate\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"isolate\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATE_INTENT\", \"name\": \"fulltext-repair-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED_ONE\", \"name\": \"fulltext-repair-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATE_INTENT\", \"name\": \"smoke-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED_ONE\", \"name\": \"smoke-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED\", \"data_deleted\": false, \"space_reclaimed\": false}\nNEXT: metadata verify. Do not restart/warm up now; that can cause large data reads.\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8046.log\n"
+  },
+  {
+    "command": "isolate",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND isolate\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"isolate\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED\", \"data_deleted\": false, \"space_reclaimed\": false}\nNEXT: metadata verify. Do not restart/warm up now; that can cause large data reads.\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8053.log\n"
+  },
+  {
+    "command": "verify",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND verify\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"verify\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED_METADATA_PASS\", \"metadata_bytes_read\": 2723, \"workflow\": \"UNVERIFIED\", \"payload_content_verified\": false, \"deletion_ready\": false}\nNo server restart, warmup, DB open, full hashing, or recursive scan was performed.\nKeep quarantine. A cached response does not prove operation after permanent deletion.\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8060.log\n"
+  },
+  {
+    "command": "verify",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND verify\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"verify\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"ISOLATED_METADATA_PASS\", \"metadata_bytes_read\": 2723, \"workflow\": \"UNVERIFIED\", \"payload_content_verified\": false, \"deletion_ready\": false}\nNo server restart, warmup, DB open, full hashing, or recursive scan was performed.\nKeep quarantine. A cached response does not prove operation after permanent deletion.\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8067.log\n"
+  },
+  {
+    "command": "verify",
+    "exit": 1,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND verify\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"verify\"}\nTraceback (most recent call last):\n  File \"<stdin>\", line 264, in <module>\n  File \"<stdin>\", line 245, in main\n  File \"<stdin>\", line 104, in binding\n  File \"<stdin>\", line 24, in require\nValueError: Active generation manifest hash mismatch\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"FAILED\", \"error_type\": \"ValueError\", \"detail\": \"Active generation manifest hash mismatch\", \"recovery\": \"status then restore if needed\"}\nSTORAGE_EXIT=1 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8074.log\n"
+  },
+  {
+    "command": "restore",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND restore\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"restore\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORE_INTENT\", \"name\": \"fulltext-repair-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORED_ONE\", \"name\": \"fulltext-repair-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORE_INTENT\", \"name\": \"smoke-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORED_ONE\", \"name\": \"smoke-original\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORED\", \"data_deleted\": false, \"space_reclaimed\": false}\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8081.log\n"
+  },
+  {
+    "command": "restore",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND restore\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"restore\"}\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"RESTORED\", \"data_deleted\": false, \"space_reclaimed\": false}\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8088.log\n"
+  },
+  {
+    "command": "status",
+    "exit": 0,
+    "output": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 COMMAND status\n{\"time_utc\": \"2026-10-16T02:05:38Z\", \"event\": \"START\", \"command\": \"status\"}\nKEEP financial-risk-success-20261005-schema-r2 \nQUARANTINE /tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/term-releases-quarantine-20261016-r1\nORIGINAL fulltext-repair-original\nORIGINAL smoke-original\nDATA_DELETED=False WORKFLOW_RESULT=NOT_AUTOMATICALLY_VERIFIED\nSTORAGE_EXIT=0 LOG=/tmp/pytest-of-jin/pytest-1/test_script_metadata_cli_round0/TRANSFER/term-release-storage-r1-logs/20261016T020538-8095.log\n"
+  }
+]

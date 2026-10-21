@@ -1,0 +1,16 @@
+{
+  "photo": "1-사진-1.jpg",
+  "photo_sha256": "bb4561a040f703ca25c111e2c4b7162ad3dc71f3f57929da7a2201e2ea4fa792",
+  "observed": {
+    "working_directory": "/workspace/TRANSFER",
+    "check_tests": 37,
+    "check_exit": 0,
+    "compare_error": "FAILED_PREFLIGHT: output must be outside DEV checkout",
+    "compare_exit": 1,
+    "python": "/venv/bin/python3",
+    "python_version": "3.11.15"
+  },
+  "inference": "R1 resolves the output below DEV and rejects it; TRANSFER is inside the resolved checkout. Exact DEV target is not printed in this photo.",
+  "source_data_scan_completed": false,
+  "rag_applied": false
+}

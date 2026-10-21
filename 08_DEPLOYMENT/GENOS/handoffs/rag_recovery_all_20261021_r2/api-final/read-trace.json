@@ -1,0 +1,733 @@
+[
+  {
+    "seq": 5,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "9bd1e86f0e7162822ec52136f66d682f9d35619caefe9cb173a1375e6560f2cb",
+        "owner": "request-entry",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "353a1ef92d24ce2734453db4ba456b1253794959930d5382720ca071c4f57104",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "7c9165309c578f1b9b7653e5e040a4047be887a398bc1dd17cad7a60aa8bc103",
+      "status": "RESERVED"
+    }
+  },
+  {
+    "seq": 16,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "9bd1e86f0e7162822ec52136f66d682f9d35619caefe9cb173a1375e6560f2cb",
+        "owner": "request-entry",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "353a1ef92d24ce2734453db4ba456b1253794959930d5382720ca071c4f57104",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "7c9165309c578f1b9b7653e5e040a4047be887a398bc1dd17cad7a60aa8bc103",
+      "status": "ACCEPTED",
+      "value": {
+        "command": {
+          "facts": [],
+          "format": "prose",
+          "method_id": "CASE_START",
+          "queries": [
+            "모의승인규정 제1조"
+          ],
+          "reason": "모의 원문 조사",
+          "source_category": "ALL"
+        },
+        "context_quotes": [],
+        "intent": {
+          "concepts": [
+            "승인"
+          ],
+          "issues": [
+            {
+              "id": "Q1",
+              "kind": "OTHER",
+              "question": "모의승인규정의 적용 기준은?",
+              "request_quote": "모의승인규정의 적용 기준은?",
+              "subject": "모의 승인"
+            }
+          ],
+          "purpose": "모의 적용 기준 확인"
+        },
+        "routing": {
+          "answer": "",
+          "mode": "CASE",
+          "reason": "모의 적용 범위 확인"
+        },
+        "search": {
+          "mode": "STRUCTURE",
+          "reason": "모의 조문부터 확인",
+          "title_hint_ids": []
+        }
+      },
+      "value_hash": "9ec3dc8f926ed80342df52780c92dd4c5fd8e6cac5ece76793e13735fe738a88"
+    }
+  },
+  {
+    "seq": 52,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "150f9f109333494145bbc6fa431a01eee14d3c86b3e1f88f854a6a8ee27ddce2",
+        "owner": "read-choice",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "81752eca29c5f4a59570190f806585f4c7721780fdd5d6e46798bbc55ede3748",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "a751595a330e3e1f9cf1bb4c455e9c62f56d51339e21790d903efff7a9ba769f",
+      "status": "RESERVED"
+    }
+  },
+  {
+    "seq": 66,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "150f9f109333494145bbc6fa431a01eee14d3c86b3e1f88f854a6a8ee27ddce2",
+        "owner": "read-choice",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "81752eca29c5f4a59570190f806585f4c7721780fdd5d6e46798bbc55ede3748",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "a751595a330e3e1f9cf1bb4c455e9c62f56d51339e21790d903efff7a9ba769f",
+      "status": "ACCEPTED",
+      "value": {
+        "choice": "READ",
+        "selections": [
+          {
+            "issue_id": "Q1",
+            "missing_need": "모의 적용 대상 원문 확인",
+            "relation": "DIRECT",
+            "source_ref": null,
+            "target": "Ta9ef62196b01a3d02fb136cfeb85"
+          }
+        ]
+      },
+      "value_hash": "f1de6bf2fa6ca059923e9166b7d93e95f70db7261515ac4068228cca960ec254"
+    }
+  },
+  {
+    "seq": 67,
+    "kind": "READ_CHOICE_SELECTED",
+    "payload": {
+      "automatic_adoption": false,
+      "canonical_hash": "eec0069b4f306a9cf95aca6ca142fcd60b6854524713e1f8f03f6e4d2b13bd71",
+      "choice": {
+        "choice": "READ",
+        "selections": [
+          {
+            "issue_id": "Q1",
+            "missing_need": "모의 적용 대상 원문 확인",
+            "relation": "DIRECT",
+            "source_ref": null,
+            "target": "Ta9ef62196b01a3d02fb136cfeb85"
+          }
+        ]
+      },
+      "key": "67c397ea9da734918adb1127fcb007b35abffd0a2582812de31bd200d3be80de"
+    }
+  },
+  {
+    "seq": 78,
+    "kind": "ACQUIRED_ORIGINALS_TO_ASSESS",
+    "payload": {
+      "automatic_adoption": false,
+      "evidence_sufficient": false,
+      "material_hash": "096534016571930b450a05e873dbff2f7a45f68f7ddd80945bf68d9462360d12",
+      "navigation_delivery_claimed": false,
+      "omitted_evidence_ids": [],
+      "source_ids": [
+        "article:bbb3b79da72c6250f25c3377"
+      ]
+    }
+  },
+  {
+    "seq": 86,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "a83a79a2c6b9a7f7a7681ea1c1e33b4e1202eb4662da2b837f8d74aafcdf39f6",
+        "owner": "assessment",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "0ae463aa551dd41d8397aff158bef2c0b1618448d818b8720df622f8bf112a1b",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "d7ba8d8a6b596f390a1cbcec07db421ce92811de442ac2404f7f5319f25f296c",
+      "status": "RESERVED"
+    }
+  },
+  {
+    "seq": 100,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "a83a79a2c6b9a7f7a7681ea1c1e33b4e1202eb4662da2b837f8d74aafcdf39f6",
+        "owner": "assessment",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "0ae463aa551dd41d8397aff158bef2c0b1618448d818b8720df622f8bf112a1b",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "d7ba8d8a6b596f390a1cbcec07db421ce92811de442ac2404f7f5319f25f296c",
+      "status": "ACCEPTED",
+      "value": {
+        "claims": [],
+        "disposition": "NEEDS_INVESTIGATION",
+        "gaps": [
+          {
+            "issue_id": "Q1",
+            "kind": "MISSING_SOURCE",
+            "material": true,
+            "material_id": null,
+            "missing_target": "모의승인규정 제2조",
+            "reason": "모의 적용 범위 원문을 아직 읽지 않았다.",
+            "suggested_action": "READ_SCOPE"
+          }
+        ],
+        "issue_assessments": [
+          {
+            "issue_id": "Q1",
+            "reason": "판단 상태 INSUFFICIENT; 근거 주장 0개, 미확인 1개.",
+            "status": "INSUFFICIENT"
+          }
+        ]
+      },
+      "value_hash": "d8fec8ee9e694f014b3919965569c3a7792750d912d45b45f771d0d44e6bbd5a"
+    }
+  },
+  {
+    "seq": 101,
+    "kind": "ASSESSMENT_GAP_REENTRY_PLANNED",
+    "payload": {
+      "count": 0,
+      "fresh": [
+        "Kdd5c6e3a2907b74d9b0a"
+      ],
+      "limit": 2,
+      "repeated": []
+    }
+  },
+  {
+    "seq": 106,
+    "kind": "ASSESSMENT_GAP_ROUND_OPENED",
+    "payload": {
+      "gaps": [
+        {
+          "gap_id": "G8abda4b0c476b167",
+          "gap_key": "Kdd5c6e3a2907b74d9b0a",
+          "issue_id": "Q1",
+          "kind": "MISSING_SOURCE",
+          "missing_target": "모의승인규정 제2조"
+        }
+      ],
+      "round": 1
+    }
+  },
+  {
+    "seq": 107,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "97bbac3ab088080b477832f86addd89fbf61bf2f5c5d9cf574642d13d8f3613f",
+        "owner": "read-choice",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "424c9aad34a3f2299a3d3d05c5b21f3e9de597d3a8ae0f41ec8072de4a5356c7",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "c89191c19f4071d474df74d2ecde63cb25b21fe3a77e267f6ff03a42668e3a2d",
+      "status": "RESERVED"
+    }
+  },
+  {
+    "seq": 122,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "97bbac3ab088080b477832f86addd89fbf61bf2f5c5d9cf574642d13d8f3613f",
+        "owner": "read-choice",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "424c9aad34a3f2299a3d3d05c5b21f3e9de597d3a8ae0f41ec8072de4a5356c7",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "c89191c19f4071d474df74d2ecde63cb25b21fe3a77e267f6ff03a42668e3a2d",
+      "status": "ACCEPTED",
+      "value": {
+        "choice": "READ",
+        "selections": [
+          {
+            "issue_id": "Q1",
+            "missing_need": "모의 적용 대상 원문 확인",
+            "relation": "DIRECT",
+            "source_ref": null,
+            "target": "T6fec7462e72ae3ab6abf5e1ebacb"
+          }
+        ]
+      },
+      "value_hash": "55b634c01293af227bd06e67739e9f3d8556903e0ab46f71ec61468a3131a6fe"
+    }
+  },
+  {
+    "seq": 123,
+    "kind": "READ_CHOICE_SELECTED",
+    "payload": {
+      "automatic_adoption": false,
+      "canonical_hash": "2f6ff7285ebaad3001a7f698851934ffe483d5e1aa191606db859c72f3798284",
+      "choice": {
+        "choice": "READ",
+        "selections": [
+          {
+            "issue_id": "Q1",
+            "missing_need": "모의 적용 대상 원문 확인",
+            "relation": "DIRECT",
+            "source_ref": null,
+            "target": "T6fec7462e72ae3ab6abf5e1ebacb"
+          }
+        ]
+      },
+      "key": "ed73fb6842974de86e3ac4dd08e21d43d46314f7ffd3ef8bfc608be1e79589d8"
+    }
+  },
+  {
+    "seq": 138,
+    "kind": "ACQUIRED_ORIGINALS_TO_ASSESS",
+    "payload": {
+      "automatic_adoption": false,
+      "evidence_sufficient": false,
+      "material_hash": "fc57ed31672c90ca19197fd85447b51308f8801c3c399022dcbd53a3b5277b6c",
+      "navigation_delivery_claimed": false,
+      "omitted_evidence_ids": [],
+      "source_ids": [
+        "article:bbb3b79da72c6250f25c3377",
+        "article:81a39be87217e43e1e1050ae"
+      ]
+    }
+  },
+  {
+    "seq": 146,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "15028b01a14eef641a77fa192835cdde539afabbd031899b59060642098a2738",
+        "owner": "assessment",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "eeeec2481b8200c8c5b2fe488809a6845e26c19c385515aa447dc422cf1ded99",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "21b0c8c387d6a68550e89b1d3bc6ef3d8f55d44bd3dcd7500f6d90a19eaad889",
+      "status": "RESERVED"
+    }
+  },
+  {
+    "seq": 160,
+    "kind": "OUTPUT_DECISION_STATE",
+    "payload": {
+      "attempt": 0,
+      "binding": {
+        "identity_hash": "15028b01a14eef641a77fa192835cdde539afabbd031899b59060642098a2738",
+        "owner": "assessment",
+        "runtime_binding": {
+          "catalogue_binding": {
+            "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+            "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+          },
+          "catalogue_hash": "e05aa4aa2ca386b87c474b48a8fcfc811a3b5fe56381e49cc6ebf5a969f9d636",
+          "contract_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/rag_recovery_all_20261021_r2/delivery-u_1syyoj/normal/DEV",
+          "domain_sha256": "06a7eb8105e27518243c4aa5c1fdf9c3a7c6883e9c360bb5cb855318c0e8cd9c",
+          "export_allowed": false,
+          "generation_id": "term-source-2a2e5ca09bee96c47a59",
+          "glossary": {
+            "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+            "dictionary_sha256": "f431ff70c4ab936fb5cc050969cb8bdf665b1f1807eb0a1125b4a8428667e0ae",
+            "manifest_sha256": "5e8be73c33afcc64ecf64a128c10994c0c5e68bf37938c40b51cdefcc6b6196a"
+          },
+          "index_sha256": "f6378fc20a3ec8ce22fab9ce1ac54cb7451c4a2b79072befad8a5b54119677fa",
+          "method_policy_hash": "603abb673481b3587a5e56b5914738b84a5ab9d4a568b88d8982d491a53a5ac4",
+          "model": {
+            "adapter_version": "fixture-v1",
+            "endpoint_identity": "no-network",
+            "max_input_bytes": 500000,
+            "model": "synthetic-contract",
+            "provider": "fixture",
+            "trust_zone": "internal"
+          },
+          "pipeline_sha256": "8f44de4ce00ae4f572a39cd8d85918e973efd1bedb50a4e0d499b6ca989b07c6",
+          "profile_sha256": "f4488854d418879ee4e71f39fef9b8a7b38837a6d47bbf9de21f45e3ad755360",
+          "release": null,
+          "scope": {
+            "document_version_ids": [
+              "d"
+            ]
+          },
+          "store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038"
+        },
+        "schema_hash": "eeeec2481b8200c8c5b2fe488809a6845e26c19c385515aa447dc422cf1ded99",
+        "version": "output-contract-v1"
+      },
+      "decision_key": "21b0c8c387d6a68550e89b1d3bc6ef3d8f55d44bd3dcd7500f6d90a19eaad889",
+      "status": "ACCEPTED",
+      "value": {
+        "claims": [
+          {
+            "claim_id": "C1",
+            "content_contract": "source-modality-v4",
+            "evidence_refs": [
+              "S5e8dbdd4093ef3169d75ca50693d"
+            ],
+            "explanation": "",
+            "issue_refs": [
+              "Q1"
+            ],
+            "rule": {
+              "action": "승인",
+              "condition_tree": null,
+              "exceptions": [],
+              "fact_refs": [],
+              "kind": "GENERAL_RULE",
+              "norms": [
+                {
+                  "evidence_refs": [
+                    "S5e8dbdd4093ef3169d75ca50693d"
+                  ],
+                  "kind": "OBLIGATION",
+                  "source_ref": "S5e8dbdd4093ef3169d75ca50693d",
+                  "text": "모의 인수 업무는 승인하여야 한다."
+                }
+              ],
+              "scope": "모의 규정",
+              "subject": "신청자"
+            }
+          }
+        ],
+        "disposition": "ANSWER",
+        "gaps": [],
+        "issue_assessments": [
+          {
+            "issue_id": "Q1",
+            "reason": "판단 상태 COVERED; 근거 주장 1개, 미확인 0개.",
+            "status": "COVERED"
+          }
+        ]
+      },
+      "value_hash": "3fbb0238203065f1070b78dac86f8fff7f3f5c85665a36af5a8221abcbc049b9"
+    }
+  }
+]

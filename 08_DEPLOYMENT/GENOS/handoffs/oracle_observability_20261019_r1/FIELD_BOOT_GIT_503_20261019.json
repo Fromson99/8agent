@@ -1,0 +1,18 @@
+{
+  "status": "FIELD_BOOT_BLOCKED_DURING_GIT_CLONE",
+  "evidence": "User photo D92BEEBB-0910-432D-8347-68B8225F7BDD/1-사진-1.jpg",
+  "observed": {
+    "git_url": "http://llmops-gitea-service:3000/llmops/701.git/",
+    "http_status": 503,
+    "remote_error": "no healthy upstream",
+    "init_exit": 128,
+    "secondary_errors": ["expected 'packfile'", "can't cd to /app/src/service"],
+    "repetition": "clone/init failure repeats; marker not set; retry on next boot"
+  },
+  "interpretation": "Container bootstrap cannot clone application source from the internal Git route. Application Python and Oracle initialization are not reached in the shown attempts.",
+  "root_cause_limit": "Photo does not distinguish Git backend health from proxy/service routing or establish a platform-wide outage.",
+  "next_action": "Platform operator checks the internal Gitea route/backend availability from the code-serving environment; after recovery retry the same intended commit/revision and verify startup and workflow test.",
+  "code_fault_established": false,
+  "field_recovery_verified": false,
+  "genos_network_access_attempted": false
+}

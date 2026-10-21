@@ -236,7 +236,7 @@ def test_run_returns_genos_text_contract(monkeypatch):
     assert output["text"].startswith("검증된 답변입니다.")
     assert output["answer_status"] == "answered"
     assert output["run_id"] == "run-123"
-    assert output["session_id"] == "chat---42"
+    assert output["session_id"] == "chat / 42"
     assert output["history"] == "not_persisted"
 
 

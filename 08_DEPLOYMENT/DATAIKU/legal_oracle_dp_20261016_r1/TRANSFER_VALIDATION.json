@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "tests": 14,
+  "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_oracle_dp.py",
+  "scope": "Real temporary SQLite + mocked ORDS; no Oracle SQL engine or GENOS connection",
+  "field_status": "FULL_TRANSFER_NOT_EXECUTED",
+  "cell_sha256": "39380aa182eea5485744138a9e3b4a226b74777983537840f9d326444e0c60da",
+  "modules": {
+    "oracle_dp_io.py": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+    "oracle_migration.py": "eb40d1cad19b7aefeca18b7bb36c7444a140f7beae239984215a2faed76476bd"
+  },
+  "standalone_import_adapter": "Only absolute module import rewritten to a unique in-memory module name; all implementation bytes otherwise identical",
+  "exact_standalone_notebook_entry_test": "PASS"
+}

@@ -48,7 +48,7 @@ def bind_catalogue(matcher,store,projection=None):
     from .team_scope import generation_key
     key = (generation_key(store),projection_hash)
     with _CATALOGUE_LOCK:
-        cached = _CATALOGUE_CACHE.get(key)
+        cached = None if getattr(store,'is_oracle_query',False) else _CATALOGUE_CACHE.get(key)
     if cached is not None:
         matcher.document_catalogue = cached
         obs.event(log,'folder_catalogue.cached')
@@ -97,8 +97,11 @@ def bind_catalogue(matcher,store,projection=None):
                 record.update(classify_path(origin['raw_relative_path']));record['origin']=deepcopy(origin)
         catalogue[did]=record
     with _CATALOGUE_LOCK:
-        _CATALOGUE_CACHE.clear()
-        matcher.document_catalogue=_CATALOGUE_CACHE.setdefault(key,catalogue)
+        if getattr(store,'is_oracle_query',False):
+            matcher.document_catalogue=catalogue
+        else:
+            _CATALOGUE_CACHE.clear()
+            matcher.document_catalogue=_CATALOGUE_CACHE.setdefault(key,catalogue)
     obs.event(log,'folder_catalogue.ready')
     return matcher
 
@@ -146,7 +149,8 @@ class FolderNavigator:
     def outline(self,authorized,*,context,document_id='',root_unit_id='',include_children=False,offset=0,limit=100):
         did=self.document(authorized,context,document_id)
         if type(offset)!=int or offset<0 or type(limit)!=int or not 1<=limit<=500:raise ValueError('invalid pagination')
-        units={uid:u for (d,uid),u in self.m.units.items() if d==did}
+        rows=self.m.units.for_document(did) if hasattr(self.m.units,'for_document') else self.m.units.items()
+        units={uid:u for (d,uid),u in rows if d==did}
         if root_unit_id and root_unit_id not in units:raise ValueError('unknown stored root unit')
         def within(uid):
             if not root_unit_id:return True
@@ -181,34 +185,12 @@ class FolderNavigator:
         return {'document_id':did,'document_name':self.m.documents[did],'unit_id':str(unit_id),'source_id':s['id'],'coordinate_key':u.get('coordinate_key'),'coordinate_scope':u.get('coordinate_scope'),'blocks':deepcopy(blocks),'text':text,'segment_sha256':hashlib.sha256(text.encode()).hexdigest(),'source_artifact_sha256':s['source_artifact_sha256'],'binding':self.binding,'read_extent':'exact stored node span, including its descendants','content_read':True}
 
 def request(question):
-    """Conservative metadata intent parser; explicit filters, never a hidden body fallback."""
-    q=normalized(question)
-    category='internal' if '내규' in q or '내부문서' in q else 'external' if '외부문서' in q else 'all'
-    provider=next((x for x in PUBLIC_PROVIDERS if re.search(r'(?<![A-Za-z])'+x+r'(?![A-Za-z])',question,re.I)), '')
-    if '금융투자협회' in question:provider='kofia'
-    available = re.search(r'(?:볼|읽을|조회할|열람할|검색할|접근할)수있는(?:문서|자료)'
-                          r'(?:가|는|들|들을|를)?(?:뭐야|뭐지|무엇이야|무엇인가요|알려줘|보여줘|알려주세요|보여주세요|목록)?[?!?.]*$', q)
-    listing=any(w in q for w in ('전체목록','문서목록','자료목록','내규목록','어떤문서','어떤게있','어떤것이있','뭐가있','문서들','문서리스트','문서가뭐','문서뭐있','자료뭐있')) or bool(available) or ('db' in q and '문서' in q and '알려' in q)
-    listing = listing or ('데이터' in q and any(w in q for w in
-                           ('뭐있', '뭐가있', '무엇이있', '어떤게있', '어떤것이있', '목록', '보여줘', '알려줘')))
-    if not listing:return None
-    if any(w in q for w in ('지급기준','지급조건','승인요건','해석해','적용해','내용을')):return None
-    title='';m=re.search(r'(?:중에서|중에|중)\s*(.+?)\s*관련(?:한|된)?',question)
-    if m:title=m.group(1).strip()
-    else:
-        m=re.search(r'([^\s]+)\s*관련(?:한|된)?',question)
-        if m:title=m.group(1)
-    if not title:
-        m=re.search(r'["“](.+?)["”]',question)
-        if m:title=m.group(1)
-    if not title:
-        # Explicit topic directly followed by 문서들/문서 목록.
-        m=re.search(r'([^\s]+)\s+문서(?:들|\s*목록)',question)
-        if m:
-            modifier=normalized(m.group(1))
-            generic=modifier in ('외부','내부','전체','있는','보유한','등록된','저장된','현재','지금','어떤','모든','우리','내','해당','가능한') or re.fullmatch(r'(?:현재|지금)?(?:볼|읽을|조회할|열람할|검색할|접근할)수있는',modifier)
-            if not generic:title=m.group(1)
-    return dict(category=category,provider=provider,title_query=title)
+    """Deprecated natural-language shortcut. Use model routing or catalogue API filters.
+
+    The API accepts explicit category/provider/title filters. Arbitrary question
+    words must never turn a content request into a metadata-only response.
+    """
+    return None
 
 def search_structure(navigator,authorized,*,context,document_id='',root_unit_id,query,field='structure_title',offset=0,limit=100):
     """Explicit subtree search. Body mode only scans blocks inside stored node span."""
@@ -220,7 +202,8 @@ def search_structure(navigator,authorized,*,context,document_id='',root_unit_id,
     if root is None:raise ValueError('stored root required; no global search fallback')
     start,end=root['span'];q=normalized(query);hits=[]
     if field=='structure_title':
-        for (d,uid),u in units.items():
+        rows=units.for_document(did) if hasattr(units,'for_document') else units.items()
+        for (d,uid),u in rows:
             if d!=did or not(start<=u['span'][0] and u['span'][1]<=end):continue
             if q in normalized(u.get('title') or ''):hits.append({'unit_id':uid,'surface':u.get('surface'),'title':u.get('title'),'coordinate_key':u.get('coordinate_key')})
     else:

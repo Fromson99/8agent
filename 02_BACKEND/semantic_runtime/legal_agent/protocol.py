@@ -18,8 +18,8 @@ def enum(*items):
     return {'type': 'string', 'enum': list(items)}
 
 
-S = {'type': 'string', 'minLength': 1, 'maxLength': 10000}
-ID = {'type': 'string', 'minLength': 1, 'maxLength': 160}
+S = {'type': 'string', 'minLength': 1}
+ID = {'type': 'string', 'minLength': 1}
 IDS = {**arr(ID), 'uniqueItems': True}
 POS = {'type': 'integer', 'minimum': 1}
 ISSUE = obj({'text': S, 'question_piece_ids': {**IDS, 'minItems': 1},
@@ -34,9 +34,9 @@ def action(name, fields):
     return obj({'tool': {'const': name}, 'args': obj(fields), 'reason': S})
 
 
-CURSOR = {'type': ['string', 'null'], 'maxLength': 160}
+CURSOR = {'type': ['string', 'null']}
 TOOLS = [
-    action('list_documents', {'query': {'type': 'string', 'maxLength': 500}, 'cursor': CURSOR}),
+    action('list_documents', {'query': {'type': 'string'}, 'cursor': CURSOR}),
     action('list_structure', {'document': ID, 'cursor': CURSOR}),
     action('read_node', {'node': ID, 'cursor': CURSOR}),
     action('search_text', {'query': S, 'document': {'type': ['string', 'null']}, 'cursor': CURSOR}),

@@ -1,0 +1,52 @@
+........................................................................ [ 35%]
+.......................................{"ts": "2026-10-20T06:04:42.407443+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 537076, "prepare_status": "READY", "elapsed_ms": 64.871, "thread_cpu_ms": 64.33, "phases": {"session.store": {"wall_ms": 1.409, "cpu_ms": 1.285}, "session.resources": {"wall_ms": 60.505, "cpu_ms": 60.159}, "session.context": {"wall_ms": 0.041, "cpu_ms": 0.042}, "session.journal": {"wall_ms": 2.145, "cpu_ms": 2.087}, "session.sources": {"wall_ms": 0.324, "cpu_ms": 0.325}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.002}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.12}
+.{"ts": "2026-10-20T06:04:42.511856+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 537076, "prepare_status": "READY", "elapsed_ms": 24.287, "thread_cpu_ms": 22.92, "phases": {"session.store": {"wall_ms": 1.207, "cpu_ms": 0.898}, "session.resources": {"wall_ms": 20.741, "cpu_ms": 19.738}, "session.context": {"wall_ms": 0.037, "cpu_ms": 0.038}, "session.journal": {"wall_ms": 1.602, "cpu_ms": 1.554}, "session.sources": {"wall_ms": 0.306, "cpu_ms": 0.308}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.003}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.112}
+..{"ts": "2026-10-20T06:04:42.787566+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 537076, "prepare_status": "READY", "elapsed_ms": 26.01, "thread_cpu_ms": 25.195, "phases": {"session.store": {"wall_ms": 1.746, "cpu_ms": 1.5}, "session.resources": {"wall_ms": 21.618, "cpu_ms": 21.111}, "session.context": {"wall_ms": 0.04, "cpu_ms": 0.041}, "session.journal": {"wall_ms": 1.816, "cpu_ms": 1.763}, "session.sources": {"wall_ms": 0.322, "cpu_ms": 0.324}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.002}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.128}
+........{"ts": "2026-10-20T06:04:43.452211+00:00", "level": "ERROR", "logger": "genos.legal_agent.model_http", "event": "model_http.failed", "method": "POST", "operation": "/chat/completions", "attempt_id": null, "endpoint_identity": "8fb2a0b32625c65403db640195563f86de407aed47d2f40ecccbafa2424cb853", "model": "synthetic-contract", "timeout_ms": 20, "transport_backend": "urllib", "transport_revision": "genos-urllib-tls-20261008-r1", "failure_kind": "timeout", "duration_ms": 20, "previous_event": "model_http.started", "previous_step": null, "previous_log_ms": 0.133}
+...................... [ 70%]
+........................{"ts": "2026-10-20T06:04:51.814731+00:00", "level": "INFO", "logger": "genos.session", "event": "session.prepare.timings", "diagnostic_revision": "request-prepare-20260929-r1", "process_id": 537076, "prepare_status": "READY", "elapsed_ms": 28.677, "thread_cpu_ms": 27.158, "phases": {"session.store": {"wall_ms": 1.639, "cpu_ms": 1.215}, "session.resources": {"wall_ms": 23.954, "cpu_ms": 22.924}, "session.context": {"wall_ms": 0.043, "cpu_ms": 0.044}, "session.journal": {"wall_ms": 2.197, "cpu_ms": 2.145}, "session.sources": {"wall_ms": 0.353, "cpu_ms": 0.355}, "session.gateway": {"wall_ms": 0.002, "cpu_ms": 0.003}}, "previous_event": "session.owner_lock.acquired", "previous_step": null, "previous_log_ms": 0.143}
+....................................             [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-code/main.py:26
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-code/main.py:26: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/applications.py:4681: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-code/main_workflow.py:35
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main92_cumulative_20261020_r1/test-code/main_workflow.py:35: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    app.on_event("startup")(recover_ad_schedules)
+
+05_TESTS/CONTRACTS/test_genos_response_model_metadata.py::test_actual_service_parent_children_saved_duplicate_and_restart[server-alias]
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/pecab/_tokenizer.py:265: RuntimeWarning: overflow encountered in scalar add
+    from_pos_data.costs[idx]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+204 passed, 7 warnings in 28.49s
+INSTALLED_CONTRACT_IMPORTS PASS; modules=257

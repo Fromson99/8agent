@@ -148,7 +148,7 @@ class RelationCards:
         for uid in sorted(uids):
             unit = self.s.matcher.units.get((did, uid))
             if not unit: continue
-            for (d,u), other in sorted(self.s.matcher.units.items()):
+            for (d,u), other in sorted(self.s.matcher.units.for_document(did) if hasattr(self.s.matcher.units,'for_document') else self.s.matcher.units.items()):
                 if d!=did or u==uid: continue
                 pred = 'PARENT' if u==unit['parent'] else 'CHILD' if other['parent']==uid else 'SIBLING' if other['parent']==unit['parent'] else None
                 if pred:

@@ -186,7 +186,7 @@ class BoundSession(previous.LegalSession):
         suggestions=list(self.route_actions)
         if self.query_coordinates(self.question):
             docs=[d for d in self.scope if previous.normalized(self.m.documents[d])[0] in previous.normalized(self.question)[0]]
-            suggestions.append({'tool':'FIND_ARTICLE','args':{'locator':self.question,'document_id':docs[0] if len(docs)==1 else '', 'branch':'appendix' if '부칙' in self.question else 'body' if '본문' in self.question else 'any'}})
+            suggestions.append({'tool':'FIND_ARTICLE','args':{'locator':self.question,'document_id':docs[0] if len(docs)==1 else '', 'branch':'any'}})
         data['next_actions']=suggestions[:12];data['structure_binding']=self.m.structure_binding
         data['route_policy']='OPEN_TERM -> linked LIST; matched source -> READ; empty scoped LIST -> relax optional document filter inside authorized scope. Incomplete stop remains available.'
         if len(json.dumps(data,ensure_ascii=False))>self.limits['context_chars']:raise ValueError('structure context exceeds budget')

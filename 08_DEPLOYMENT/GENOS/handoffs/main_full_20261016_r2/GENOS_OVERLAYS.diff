@@ -1,0 +1,67 @@
+--- MAIN/02_BACKEND/semantic_runtime/ad_model.py
++++ GENOS/02_BACKEND/semantic_runtime/ad_model.py
+@@ -2,11 +2,9 @@
+ import hashlib
+ import json
+ import math
+-import os
+ import time
+ from .genos import from_env, advertised_model
+ from .legal_agent.transport import GenosTransport
+-from .legal_agent.workflow_tiers_policy import DEFAULT_PROFILE
+ from contextlib import contextmanager
+ from contextvars import ContextVar
+ from .legal_agent.model_contract import structured_request, structured_value, REVISION
+@@ -36,9 +34,7 @@
+     transport=GenosTransport(target,binding)
+     seconds=target.read_timeout
+     if not math.isfinite(seconds) or seconds<=0:raise ValueError('AD_MODEL: GENOS_LLM_TIMEOUT must be positive and finite')
+-    tokens=int(os.environ.get('GENOS_RAG_MAX_OUTPUT_TOKENS') or DEFAULT_PROFILE['max_output_tokens'])
+-    if tokens<1:raise ValueError('AD_MODEL: GENOS_RAG_MAX_OUTPUT_TOKENS must be positive')
+-    payload=structured_request(model=model,max_tokens=tokens,schema_name='ad_command_v1',schema=schema,
++    payload=structured_request(model=model,max_tokens=None,schema_name='ad_command_v1',schema=schema,
+         messages=[{'role':'system','content':system},
+                   {'role':'user','content':json.dumps(context,ensure_ascii=False)}])
+     recorder=_REQUEST_RECORDER.get()
+@@ -49,7 +45,7 @@
+     try:
+         if not isinstance(raw,dict):raise output.OutputContractError('model response is not an object',[output.issue('MODEL_ENVELOPE_INVALID')])
+         if raw.get('model')!=model:raise ContractError('AD_MODEL: response model differs from configured model')
+-        plan=structured_value(raw)
++        plan=structured_value(raw, allow_length_repair=False)
+     except (output.ProposalError,ContractError) as exc:
+         decode_error=str(exc);failure=output.diagnostics(exc)
+     receipt={**binding,'model_contract_revision':REVISION,'model_call_id':context.get('model_call_id') or context['request_id'],
+--- MAIN/02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py
++++ GENOS/02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py
+@@ -295,7 +295,7 @@
+         raise ContractError('claim quote differs from source-span compilation')
+ 
+ 
+-GAP_WORDS = {'MISSING_FACT': '추가 사실 확인이 필요합니다',
++GAP_WORDS = {'MISSING_FACT': '해당 사안에 적용할 결론을 하나로 확정하려면 추가 사실 정보가 필요합니다',
+              'VERSION_AMBIGUOUS': '적용 시점과 판본 확인이 필요합니다',
+              'WRONG_SUBJECT': '질문의 주체와 적용 범위를 추가로 확인해야 합니다',
+              'UNREAD_SAVED': '확보한 자료의 원문 확인이 남아 있습니다',
+--- MAIN/service.py
++++ GENOS/service.py
+@@ -204,16 +204,9 @@
+     from semantic_runtime.legal_agent.transport import GenosTransport
+     from semantic_runtime.legal_agent.workflow_tiers_policy import DEFAULT_PROFILE, profile
+ 
+-    raw_output_tokens = os.environ.get("GENOS_RAG_MAX_OUTPUT_TOKENS", "").strip()
+-    if raw_output_tokens:
+-        try:
+-            output_tokens = int(raw_output_tokens)
+-        except ValueError as exc:
+-            raise ValueError("GENOS_RAG_MAX_OUTPUT_TOKENS must be a positive integer") from exc
+-        if output_tokens < 1:
+-            raise ValueError("GENOS_RAG_MAX_OUTPUT_TOKENS must be a positive integer")
+-    else:
+-        output_tokens = DEFAULT_PROFILE["max_output_tokens"]
++    # GENOS owns its model/context limit. Retired environment caps must not
++    # silently restore an application output limit on an existing revision.
++    output_tokens = None
+ 
+     request_profile = _genos_v5_admission_profile({**(request_profile or DEFAULT_PROFILE),
+         'bounded_source_selection_enabled': True})

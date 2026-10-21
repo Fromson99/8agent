@@ -350,6 +350,10 @@ def handle(path, workspace, channel, chat, question, request_id, *, interpret=No
                 result={'response_schema':'ad-mode-v1','ad_mode':True,'answer_status':'administration','text':'AD모드를 시작했습니다. shortcut·legal_wiki 관리 전용입니다.\n\n'+HELP}
             else:
                 if not session['enabled']:raise ValueError('AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.')
+                # The legacy executor is also used for server-constructed commands
+                # after a validated model decision. Never feed it raw chat as a
+                # fallback when the management interpreter is unavailable.
+                if q!=EXIT:raise ValueError('AD_MODEL_REQUIRED: 관리 명령 해석 모델이 연결되지 않았습니다. 요청을 실행하지 않았습니다.')
                 result=Controller(store,session).execute(q,operation)
             store.db.execute("UPDATE ad_operation SET status='SUCCEEDED',finished_at=?,response=? WHERE id=?",(time.time(),json.dumps(result,ensure_ascii=False),operation))
             return result

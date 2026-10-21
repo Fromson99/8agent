@@ -1,0 +1,354 @@
+[
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q",
+      "-b",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic base"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q",
+      "--bare",
+      "/tmp/genos-next-push-uravexjs/remote.git"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "remote",
+      "add",
+      "risk_team",
+      "/tmp/genos-next-push-uravexjs/remote.git"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "push",
+      "risk_team",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "To /tmp/genos-next-push-uravexjs/remote.git\n * [new branch]      main -> main\n"
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic bad commit"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "branch",
+      "backup/main92-before-ignore-20261020"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/home/jin/8-AGENT/.venv/bin/python",
+      "/tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1/apply_ignore.py",
+      "apply",
+      "--root",
+      "/tmp/genos-next-push-uravexjs/checkout"
+    ],
+    "exit": 0,
+    "stdout": "CODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python VERSION=3.14.4\nIGNORE_APPLIED; Git index/history and data files unchanged\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rm",
+      "-r",
+      "--cached",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "rm 'QUERY_TRANSFER_20261020_R1/query-data.db.partial'\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "--",
+      ".gitignore",
+      "genosIgnore",
+      "genosNoJsIgnore",
+      "genosMailIgnore",
+      "08_DEPLOYMENT/GENOS/v6-runtime.genosignore",
+      "08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore",
+      "08_DEPLOYMENT/GENOS/ad-mode-package.ignore"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "--amend",
+      "--no-edit"
+    ],
+    "exit": 0,
+    "stdout": "[main 381342e] synthetic bad commit\n Date: Tue Oct 20 16:03:25 2026 +0900\n 7 files changed, 84 insertions(+)\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "381342e0842f62d9a89421d9673ff20264fa94ad\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\nCODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n{\"status\": \"MAIN92_PLUS_IGNORE_CODE_MATCH\", \"code_files\": 1311, \"commit\": \"381342e0842f62d9a89421d9673ff20264fa94ad\", \"base_code_zip_sha256\": \"035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6\", \"history_and_remote\": \"NOT_CHECKED\", \"field_model_and_revision\": \"NOT_CHECKED\"}\nTo /tmp/genos-next-push-uravexjs/remote.git\n   2ab03a0..381342e  381342e0842f62d9a89421d9673ff20264fa94ad -> main\nPUSH_CONFIRMED=381342e0842f62d9a89421d9673ff20264fa94ad\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070325Z-561390.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "381342e0842f62d9a89421d9673ff20264fa94ad\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "for-each-ref",
+      "--format=%(refname)",
+      "refs/heads"
+    ],
+    "exit": 0,
+    "stdout": "refs/heads/main\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "log",
+      "--all",
+      "--format=%H",
+      "--",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\nCODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n{\"status\": \"MAIN92_PLUS_IGNORE_CODE_MATCH\", \"code_files\": 1311, \"commit\": \"381342e0842f62d9a89421d9673ff20264fa94ad\", \"base_code_zip_sha256\": \"035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6\", \"history_and_remote\": \"NOT_CHECKED\", \"field_model_and_revision\": \"NOT_CHECKED\"}\n이미 원격 main과 일치합니다. 다시 push하지 않습니다.\nPUSH_CONFIRMED=381342e0842f62d9a89421d9673ff20264fa94ad\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070325Z-561441.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\nIGNORE_PATCH_FAILED: Uncommitted tracked changes remain\nCODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n종료코드=1 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070325Z-561472.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "381342e0842f62d9a89421d9673ff20264fa94ad\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "clone",
+      "-q",
+      "-b",
+      "main",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "/tmp/genos-next-push-uravexjs/other"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "remote-only.txt"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "remote advanced"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "push",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "To /tmp/genos-next-push-uravexjs/remote.git\n   381342e..db5f952  main -> main\n"
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "db5f95203f6147a985b7105429467ef19b069886\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\nCODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n{\"status\": \"MAIN92_PLUS_IGNORE_CODE_MATCH\", \"code_files\": 1311, \"commit\": \"381342e0842f62d9a89421d9673ff20264fa94ad\", \"base_code_zip_sha256\": \"035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6\", \"history_and_remote\": \"NOT_CHECKED\", \"field_model_and_revision\": \"NOT_CHECKED\"}\n중단: 원격 main 상태가 마지막 사진과 다릅니다. 강제 push하지 않습니다.\n종료코드=1 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070325Z-561516.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "db5f95203f6147a985b7105429467ef19b069886\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 1,
+    "stdout": "중단: 적용된 ignore 패키지를 하나로 확인하지 못했습니다. 기존 패키지와 STATE.json을 보존하고 이 로그를 확인하세요.\n종료코드=1 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070325Z-561582.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "remote",
+      "rename",
+      "risk_team",
+      "risk-team"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-uravexjs/remote.git",
+      "update-ref",
+      "refs/heads/main",
+      "381342e0842f62d9a89421d9673ff20264fa94ad"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r1/GENOS_NEXT_COPY_PASTE_20261020_R1.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-uravexjs/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\nCODE_ROOT=/tmp/genos-next-push-uravexjs/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python3 VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n{\"status\": \"MAIN92_PLUS_IGNORE_CODE_MATCH\", \"code_files\": 1311, \"commit\": \"381342e0842f62d9a89421d9673ff20264fa94ad\", \"base_code_zip_sha256\": \"035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6\", \"history_and_remote\": \"NOT_CHECKED\", \"field_model_and_revision\": \"NOT_CHECKED\"}\n이미 원격 main과 일치합니다. 다시 push하지 않습니다.\nPUSH_CONFIRMED=381342e0842f62d9a89421d9673ff20264fa94ad\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-uravexjs/checkout/.git/genos-push-records/20261020T070326Z-561594.log\n",
+    "stderr": ""
+  }
+]

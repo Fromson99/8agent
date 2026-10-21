@@ -1,0 +1,125 @@
+{
+  "status": "LOCAL_VERIFIED_FIELD_PENDING",
+  "change": "Opt-in latest internal filename date selection before representation and content deduplication",
+  "working_code_and_payload_sha256_equal": true,
+  "files": [
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_representations.py",
+      "before": "b9ffc28afc457f2e854ee86d1a8fab396cb85947e066298c0ebfd23f3d277f09",
+      "after": "f910ae9e4eb3df983bd8a26056272b405c0aaa9d7c50b7b15ae3e254845928db"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_corpus.py",
+      "before": "2c8afc9cdd00942a8b2539f02ceccd68a10ad944fbae4ec98eba9828d5eb78a7",
+      "after": "1cc7632e99af63c8e57fab9a27853885154fa5916a0553d6afe309aee45f7b52"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/team_raw.py",
+      "before": "72f1ea7be16866291ea63e02d26326b457d4f215e0b12311eb88df7ab033489d",
+      "after": "3035a298f88ccc9350f3f65137b98cc696765e8d6062be7635397baad3d2b9ca"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "before": "a641f0cdf0c1fc87b70a71ba4c7fd9fb411a0e655305f9d4fe265b3e833746c5",
+      "after": "b079e8a3d8a4f0c53c6063158d0a98dc050ed4cee5b62f6cd94989f23d449a73"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_release.py",
+      "before": "2d0080b16c4cb92914465ce3e53f78e4ff9ce06cf9def795ecb26188b1a2604b",
+      "after": "dc30466233e540978e3685c27d9ee6e2acc8aeea048e67e43eba4b945bbdc8ed"
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_data_stages.py",
+      "before": "d8d264288bd08fec54fd19eaec56c5f236bef801a310e99ac39a26ed6ad0c8d4",
+      "after": "b1d17e8703bdf391d51df65d52eeddeca0833be84f99ad7cbe53d1078aacda86"
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/composed_build.py",
+      "before": "f58787817707fbbfd25d24f8b9e3dc7342423cdd320f08956d32cd8b9dc82eea",
+      "after": "096028b896cb3cf4d6c3db4be7830e3ad4c4bcbb1e1dd68782aac000c7b9de7d"
+    }
+  ],
+  "contract_tests": {
+    "passed": 16,
+    "failed": 0,
+    "includes": [
+      "latest wins before format priority",
+      "raw preserved",
+      "same-date conflict",
+      "invalid dates",
+      "mixed date naming",
+      "team separation",
+      "old-base reintroduction refused",
+      "input policy resume binding",
+      "legacy and compact-v2/unit/factorized-v1 generation",
+      "real HTTP document/search/read consumers",
+      "tampered source rejected"
+    ]
+  },
+  "related_regression": {
+    "passed": 69,
+    "failed": 3,
+    "new_failures": 0,
+    "preimage_baseline_same_three_failures": true,
+    "failures": [
+      "test_full_link_index_bundle_and_scoped_navigation",
+      "test_release_build_review_pause_activation_rollback",
+      "test_raw_xml_addition_to_integrated_serving_generation"
+    ]
+  },
+  "installed_code_contracts": {
+    "passed": 16,
+    "failed": 0
+  },
+  "sealed_delivery": {
+    "status": "PASS",
+    "commands": 21,
+    "sealed_zip_sha256": "c4537d40032d2a7381337013dce8db66f8a6b3578b15195f10939974fa5ad180",
+    "field_execution": "NOT_RUN"
+  },
+  "delivery_checks": [
+    "check",
+    "apply",
+    "idempotent apply",
+    "verify",
+    "actual stable CLI inventory",
+    "installed code/API tests",
+    "committed checkout generation gate for legacy and compact-v2",
+    "undo",
+    "unknown preimage rejection",
+    "payload tamper rejection",
+    "post-write verifier failure rollback",
+    "reapply after restoration"
+  ],
+  "generation_gates": 2,
+  "python_311_syntax_files": 9,
+  "local_active_pointer": {
+    "release_id": "length-recovery-20261015-r1",
+    "generation": 66,
+    "sha256": "3aba4052dd6ccd521dd4fb50cb95354f6f1a677a39bef269450c2d7f121b511e",
+    "changed": false
+  },
+  "field": {
+    "actual_raw_version_counts": "UNKNOWN",
+    "checkout": "UNKNOWN",
+    "generation_path": "UNKNOWN",
+    "generation_manifest_sha256": "UNKNOWN",
+    "git_commit_push": "NOT_RUN",
+    "codeserving_revision": "UNKNOWN",
+    "workflow_test": "NOT_RUN"
+  },
+  "model_calls": 0,
+  "emails_sent": false,
+  "files_sha256": {
+    "GENOS_LATEST_INTERNAL_20261015_R1.zip": "c4537d40032d2a7381337013dce8db66f8a6b3578b15195f10939974fa5ad180",
+    "CODE.zip": "5d42f980e712bbdfd0a5718ba5275a15ca73a176e63ff5060e2a5f77cc93c6f2",
+    "CODE_MANIFEST.json": "ecac3884d071d453e4afefe708af80a478d0d43c4d96e90b897036d8113644a5",
+    "PATCH_SPEC.json": "01a307cb740f0e7fcf92a1f60dcdde0474e1acee96a7a0552684d11cea838c75",
+    "GENOS_LATEST_INTERNAL_20261015_R1_RUN.txt": "908184424eb63f5b8029aac8cb474cdb0874a978508da5d68cd344ce7e7fce17",
+    "GUIDE_UTF8.txt": "8dd89cad57a14977c6fcfa167dc28ac160a5a503addc879898e9df7b1a8510e2",
+    "DELIVERY_TRANSCRIPT.json.gz": "216d61223cf49aa530d181abd4274325ede45d3f0179c8f4fda1c11333e6ae77",
+    "CONTRACT_TEST.log.gz": "bda4216044c313e1eda10b7a25306c35f4ff38376ecb634a9787ec173a15fde5",
+    "REGRESSION_TEST.log.gz": "70c05102f88785efc0c031ad551383f98e4351c601c469dd4a5a9dbc2d5d5e74",
+    "BASELINE_TEST.log": "9657c8fc0ef22a110108907245cf6948ea54781a1984d54db0dbd94ce48e6495"
+  }
+}

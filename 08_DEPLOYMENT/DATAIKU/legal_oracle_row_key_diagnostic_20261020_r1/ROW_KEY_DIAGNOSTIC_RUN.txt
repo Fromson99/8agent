@@ -1,0 +1,43 @@
+# Python 노트북의 새 셀에 전체를 붙여 실행하세요. SQL/b​​ash용이 아닙니다.
+# 기존 이관이 오류로 종료된 뒤 실행합니다. 데이터/진행 기록을 변경하지 않습니다.
+# 같은 노트북의 WORK_DIR를 사용합니다. 없으면 아래 R2 작업 폴더를 사용합니다.
+import json
+import sqlite3
+from pathlib import Path
+
+WORK_DIR = globals().get("WORK_DIR", "./legal-existing-zip-r2-work")
+work = Path(WORK_DIR).resolve()
+states = list((work / "oracle-import-r3" / "source").glob("*/state.json"))
+if len(states) != 1:
+    raise RuntimeError(f"진행 기록이 {len(states)}개입니다. WORK_DIR와 대상 확인이 필요합니다.")
+
+state = json.loads(states[0].read_text())
+print("상태:", state.get("status"))
+print("대조 완료 행:",
+      {k: v.get("rows", 0) for k, v in state.get("tables", {}).items()})
+
+source = Path(state["binding"]["source_path"]).resolve()
+keys = {
+    "document": ["document_id"],
+    "source_unit": ["document_id", "unit_id"],
+    "block_payload": ["document_id", "block_id"],
+}
+
+db = sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)
+try:
+    for table, columns in keys.items():
+        for column in columns:
+            rows = db.execute(f"""
+                SELECT typeof("{column}"),
+                       CASE WHEN "{column}" IS NULL THEN 'NULL'
+                            WHEN "{column}" = '' THEN '빈 문자열'
+                            ELSE '문자열 아닌 값' END
+                FROM "{table}"
+                WHERE typeof("{column}") <> 'text' OR "{column}" = ''
+                LIMIT 5
+            """).fetchall()
+            print(f"{table}.{column}:", rows or "원본 키 정상")
+finally:
+    db.close()
+
+print("읽기 전용 진단 완료. 위 결과를 공유해 주세요. 이관 재개/수정은 수행하지 않았습니다.")

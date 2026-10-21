@@ -1,0 +1,24 @@
+import base64,hashlib,json
+from pathlib import Path
+p=Path(__file__).resolve().parent
+body='''<div style="font-family:Arial,Malgun Gothic,sans-serif;line-height:1.7"><h2>내규 위임·준용·참조 연결 점검 — 실행 파일</h2>
+<p>요청하신 표현 기반 검색과 연결 점검 도구를 보냅니다. <b>위임·준용·따름·정함·관련 준칙·별도 정함</b> 등 13가지 표현 묶음과 <b>신상품</b>을 실제 내규 원문에서 찾아, 참조 색인·대상 원문·구조 좌표·해시·역참조를 확인합니다.</p>
+<p>코드 검토상 기존 참조 서술어 사전은 구조 마커 판별용입니다. 표현이 있다는 것만으로 문서 간 연결이 생성되지는 않습니다. 사진의 <b>“관련 준칙에서 정한 바에 따라”</b>처럼 문서명·조문이 생략된 지점을 우선 확인할 수 있게 했습니다. 사진만으로 연결 누락을 확정한 것은 아닙니다.</p>
+<h3>TRANSFER 폴더에서 세 줄 실행</h3><p>첨부 ZIP을 실제 업로드한 TRANSFER 폴더를 현재 위치로 두고 실행하세요.</p>
+<pre style="background:#f3f5f7;padding:16px">python3 -m zipfile -e ./GENOS_INTERNAL_LINK_AUDIT_20261021_R1.zip ./GENOS_INTERNAL_LINK_AUDIT_20261021_R1
+bash ./GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt check
+bash ./GENOS_INTERNAL_LINK_AUDIT_20261021_R1/RUN_INTERNAL_LINK_AUDIT.txt run</pre>
+<p>기본값은 <b>risk_team 내규 전체</b>입니다. <code>~/DEV/00_SYSTEM/GENOS_SERVING_PATHS.json</code>의 고정 generation과 hash를 사용합니다. 설정이 없으면 실제 선택 경로를 <code>--generation /실제/선택된/generation/절대경로</code>로 지정하세요. 예전 NFS 경로나 최근 폴더를 추정하지 않습니다.</p>
+<p>상품위원회 문서만 먼저 보려면 마지막 명령에 <code>--document-contains 상품위원회</code>를 추가합니다. 용어 추가는 <code>--keyword 신상품심사</code>처럼 지정할 수 있습니다.</p>
+<h3>HTML 내려받기</h3><p>실행 마지막의 <b>DOWNLOAD_ZIP</b> 파일을 코드스페이스 파일 탐색기에서 내려받고, 내부 PC에서 압축을 풀어 <b>index.html</b>을 여세요. 검색창에 <b>신상품</b> 또는 <b>관련 준칙</b>을 입력하면 내규 출처·실제 원문·저장된 정의·연결 상태를 한 행에서 볼 수 있습니다. 대상 링크를 누르면 실제 연결 원문이 열립니다.</p>
+<p>상태는 참조 없음 / 같은 문장에 연결 존재(의미 대응 검토 필요) / 대상 미확정·부분 연결 / 원문·구조·색인 불일치 / 권한 범위 밖 / 구형 계약으로 구분합니다. 인접한 참조를 위임 대상으로 자동 확정하지 않습니다.</p>
+<p>합성 legacy/compact 자료 검사, 최종 ZIP의 실행·오류 보존·중복/변조 거부 10개 명령 검증을 마쳤습니다. 모델·네트워크 호출은 없고 원문·색인·MAIN·배포를 변경하지 않습니다. 실제 GENOS 내규 결과는 현장 실행으로 확인해야 합니다. 기존 generation용 도구이며 Oracle publication이나 동적 관계 원장 검증을 대신하지 않습니다.</p>
+<p>첨부: 도구 ZIP / 별도 전체 실행 TXT / 상세 안내 TXT. ZIP 안에도 같은 실행 TXT가 있습니다. 생성 보고서는 내부 원문을 포함하므로 허용된 내부 환경에서 열람하세요.</p></div>'''
+files=[('GENOS_INTERNAL_LINK_AUDIT_20261021_R1.zip','application/zip'),('RUN_INTERNAL_LINK_AUDIT.txt','text/plain'),('GUIDE_UTF8.txt','text/plain')]
+parts=[{'mime_type':'text/html','charset':'UTF-8','body':{'content':body}}]
+meta=[]
+for name,mime in files:
+ data=(p/name).read_bytes();parts.append({'mime_type':mime,'filename':name,'content_disposition':'attachment','body':{'base64_url_content':base64.urlsafe_b64encode(data).decode()}});meta.append({'filename':name,'mime_type':mime,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+request={'to':'hyungjininfocz.son@partner.samsung.com','subject':'[GENOS 점검] 내규 위임·준용·관련 준칙 연결 검사 / HTML 내려받기','payload':{'mime_type':'multipart/mixed','parts':parts}}
+(p/'EMAIL_REQUEST.json').write_text(json.dumps(request,ensure_ascii=False));(p/'EMAIL_EXPECTED.json').write_text(json.dumps({'to':request['to'],'subject':request['subject'],'attachments':meta},ensure_ascii=False,indent=2));(p/'EMAIL_BODY.html').write_text(body)
+print(json.dumps({'to':request['to'],'subject':request['subject'],'attachments':meta},ensure_ascii=False,indent=2))

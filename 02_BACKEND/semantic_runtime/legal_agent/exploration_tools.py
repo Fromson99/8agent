@@ -128,7 +128,7 @@ class ExplorationTools:
         if prepared is not None:
             ids = [sid for _,sid in heapq.merge(*(prepared['source_index'].get(d,()) for d in allowed))]
         else:
-            ids = [sid for sid,s in self.matcher.sources.items() if s['document_id'] in allowed]
+            ids = [sid for d in sorted(allowed) for sid,_ in self.matcher.sources.for_document(d)] if hasattr(self.matcher.sources,'for_document') else [sid for sid,s in self.matcher.sources.items() if s['document_id'] in allowed]
         if bounds:
             lo, hi = bounds
             ids = [sid for sid in ids if any(lo <= int(b['block_id']) < hi for b in self.tools.sources[sid]['blocks'])]
@@ -259,7 +259,7 @@ class ExplorationTools:
             did, focus = n['document_id'], n.get('unit_id')
             parent = self.matcher.units[(did, focus)]['parent'] if focus is not None else None
             items = []
-            for (d, uid), unit in sorted(self.matcher.units.items(), key=lambda kv: (kv[1].get('span', [0])[0], kv[0])):
+            for (d, uid), unit in sorted(self.matcher.units.for_document(did) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items(), key=lambda kv: (kv[1].get('span', [0])[0], kv[0])):
                 if d != did: continue
                 chain = self.ancestors(did, uid)
                 relative = len(chain)-(chain.index(focus)+1 if focus in chain else 0)
@@ -321,14 +321,23 @@ class ExplorationTools:
                     if q in normalized(self.matcher.documents[did]):
                         d = self.handle('D', {'document_id': did})
                         items.append({'target': d, 'title': self.matcher.documents[did], **self.location(d), 'content_read': False})
-            for (did, uid), u in self.matcher.units.items():
+            for (did, uid), u in ((row for did in sorted(docs) for row in self.matcher.units.for_document(did)) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()):
                 if did in docs and (not bounds or bounds[0] <= u['span'][0] < bounds[1]) and q in normalized(u.get('title', '')):
                     items.append(self.node_card(did, uid, route=route))
         else:
             marks = ','.join('?' for _ in docs)
-            for r in self.store.db.execute('SELECT document_id,block_id,unit_id,text FROM source_block WHERE document_id IN ('+marks+') ORDER BY document_id,CAST(block_id AS INTEGER)', docs):
+            oracle=getattr(self.store,'is_oracle_query',False)
+            if oracle:
+                sql='SELECT document_id,block_id,unit_id FROM source_block WHERE document_id IN ('+marks+') AND instr(legal_normalized(text),?)>0'
+                args=[*docs,normalized(query)]
+                if bounds:
+                    sql+=' AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<?';args.extend(bounds)
+                rows=self.store.db.execute(sql+' ORDER BY document_id,CAST(block_id AS INTEGER)',args)
+            else:
+                rows=self.store.db.execute('SELECT document_id,block_id,unit_id,text FROM source_block WHERE document_id IN ('+marks+') ORDER BY document_id,CAST(block_id AS INTEGER)', docs)
+            for r in rows:
                 if bounds and not bounds[0] <= int(r['block_id']) < bounds[1]: continue
-                if normalized(query) in normalized(r['text']):
+                if oracle or normalized(query) in normalized(r['text']):
                     items.append(self.node_card(r['document_id'], str(r['unit_id']), route=route))
         items = list({i['target']: i for i in items}.values())
         page, next_pos = self.page(items, offset)
@@ -346,9 +355,9 @@ class ExplorationTools:
         from lawrag.core.legal_coordinate import find_coordinates
         coordinates = {normalized(c.coordinate.canonical_surface()) for c in find_coordinates(args['locator'])}
         if coordinates:
-            hits = {key for key,c in getattr(self.matcher,'stored_coordinates',{}).items()
+            hits = {key for key,c in ((row for did in sorted(docs) for row in self.matcher.stored_coordinates.for_document(did)) if hasattr(self.matcher.stored_coordinates,'for_document') else self.matcher.stored_coordinates.items())
                     if c and key[0] in docs and normalized(c.canonical_surface()) in coordinates}
-        for (did, uid), u in self.matcher.units.items():
+        for (did, uid), u in ((row for did in sorted(docs) for row in self.matcher.units.for_document(did)) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()):
             if not coordinates and did in docs and q in (normalized(u.get('coordinate_key') or ''), normalized(u.get('surface') or '')):
                 hits.add((did, uid))
         items = []
@@ -407,7 +416,9 @@ class ExplorationTools:
     def lookup_definition(self, args, offset):
         allowed = set(self.sources_in(args['target']))
         query = normalized(args['query'])
-        matches = [row for row in self.tools.definition_summaries
+        summaries=(self.tools.definition_summaries_for(query=args['query'],source_ids=allowed)
+                   if hasattr(self.tools,'definition_summaries_for') else self.tools.definition_summaries)
+        matches = [row for row in summaries
                    if row[1] in allowed and query in row[3]]
         local_count = len(matches)
         if offset < local_count:

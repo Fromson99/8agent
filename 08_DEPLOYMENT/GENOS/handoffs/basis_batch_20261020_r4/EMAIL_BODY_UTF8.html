@@ -1,0 +1,20 @@
+<!doctype html><html lang="ko"><body style="font-family:Arial,sans-serif;line-height:1.7;color:#222">
+<p>내규·외규 조사 수정본 <strong>GENOS_BASIS_BATCH_20261020_R4</strong>를 전달합니다.</p>
+<p>이번부터 <strong>조사 → JSON 후보 저장 → HTML 확인 → 별도 검토·SQLite 적용</strong> 순서입니다. 조사 실행은 관계 SQLite에 자동 반영하지 않습니다. 기존 검토·이관 도구의 같은 후보 형식을 사용합니다.</p>
+<ul><li>사진의 <code>source return task missing</code> 원인인 부모 작업 기록 누락을 수정했습니다.</li>
+<li>분류된 조사 오류는 해당 범위/문서의 실패 사유와 사용량을 남기고 다음 항목으로 진행합니다. 권한·해시·상태·자원 오류는 중단합니다.</li>
+<li>재개 시 완료/부분 종료/실패 처리된 항목을 다시 모델 호출하지 않습니다.</li></ul>
+<p><strong>다음 조사는 이전 R3 대신 이번 R4 실행기를 사용해 주세요.</strong> 기존 R3 계획·실패 기록은 보존하고 R4 새 계획으로 시작합니다. 기본 작업 폴더는 <code>runtime/basis-batch/pilot-review-skip-20261020-r4</code>이며 새 조사 예산입니다. 기존 작업을 강제로 resume하지 않습니다.</p>
+<p>첨부 ZIP과 TXT를 실제 업로드한 <strong>TRANSFER 폴더</strong>에 두고 그 위치에서 아래를 실행합니다. 코드 적용 대상은 기존 <code>~/DEV</code>입니다. 아래 <code>apply</code>는 코드 패치 적용이며 관계 SQLite 적용이 아닙니다.</p>
+<pre style="padding:14px;background:#f3f5f7;white-space:pre-wrap">python3 -m zipfile -e ./GENOS_BASIS_BATCH_20261020_R4.zip ./GENOS_BASIS_BATCH_20261020_R4
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt check
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt apply
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt gate
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt plan --count 3
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt run
+bash ./GENOS_BASIS_BATCH_20261020_R4/GENOS_BASIS_BATCH_20261020_R4_RUN.txt report --output ./내규외규_후보검토.html</pre>
+<p>이후 중단 재개는 같은 실행 TXT의 <code>resume</code>, 이관 파일 생성은 <code>export</code>입니다. <code>export</code>도 SQLite에 적용하지 않습니다. 기존 독립 ARTIFACTS R1은 R3 코드 해시에 고정되어 있으므로 <strong>이번 R4의 report/export</strong>를 사용해 주세요. 생성된 이관 묶음은 같은 R4 소비자 코드와 원문/권한/판본을 확인한 뒤 별도 review/check/apply로 적용합니다.</p>
+<p>수정 내용은 저장소 <code>GENOS.md</code> 변경 이력에 반영했고, 별도 첨부 <strong>PATCH_NOTES.txt</strong>에도 정리했습니다. 검증된 ZIP의 내용과 해시는 그대로 유지했습니다.</p>
+<p>합성 계약 검사 <strong>87개</strong>, 최종 ZIP 실제 실행 <strong>19명령(의도된 차단 6)</strong>을 확인했습니다. 로컬 MAIN92는 유지하며 Git push·GENOS 현장 적용/배포·실제 내부 모델 검증은 아직 수행하지 않았습니다.</p>
+<p>첨부: ZIP, 완전한 실행 TXT, 패치노트, 사용 안내, 계약 검증, 최종 ZIP 검증, SHA-256 목록.</p>
+</body></html>

@@ -43,6 +43,20 @@ def main():
             if key not in cache:
                 if n in baseline:
                     assert n in before,n
+                    if n.endswith('/request_entry.py') and b'wiki_recall' not in before[n]:
+                        def outside_run(raw):
+                            tree=ast.parse(raw);tree.body=[node for node in tree.body if not isinstance(node,ast.FunctionDef) or node.name!='run']
+                            return ast.dump(tree,include_attributes=False)
+                        assert outside_run(before[n])==outside_run(baseline[n]),'Unreviewed field entry difference'
+                        # The older field entry has no wiki-recall feature. Preserve that boundary.
+                        raw=target.decode()
+                        raw=raw.replace('    from . import wiki_recall\n', '')
+                        raw=raw.replace("    memory=wiki_recall.offer(repo.executor,repo._entry_principal,context['utterance'],scope,work.event)", '    memory=None')
+                        raw=raw.replace('    data,request_schema=wiki_recall.augment(data,request_schema,memory)\n','')
+                        raw=raw.replace("    recall_prompt=wiki_recall.PROMPT if memory else ''", "    recall_prompt=''")
+                        raw=raw.replace("    if memory:wiki_recall.choose(repo.executor,prepared['history_ids'] if intent is not None else [],work.event)\n",'')
+                        assert 'wiki_recall' not in raw
+                        raw=raw.encode();ast.parse(raw);cache[key]=raw
                     # Some sealed field inventories intentionally omit duplicate raw tracebacks.
                     # Keep that presentation choice; only add the typed contract diagnostic.
                     if n.endswith('/investigation_diagnostics.py'):
@@ -53,7 +67,7 @@ def main():
                         raw=before[n].decode().replace(anchor,addition+anchor).encode()
                         ast.parse(raw);cache[key]=raw
                     try:
-                        if n.endswith('/investigation_diagnostics.py'):pass
+                        if key in cache:pass
                         else:raw=old.transform(before[n],baseline[n],target,n)
                     except ValueError:
                         with tempfile.TemporaryDirectory() as td:

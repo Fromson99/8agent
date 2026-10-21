@@ -1,0 +1,89 @@
+--- MAIN81_R2/service.py
++++ ORACLE_DP/service.py
+@@ -313,6 +313,9 @@
+ 
+ 
+ def _resolve_binding() -> tuple[Path, Path, dict[str, Any]]:
++    from semantic_runtime.oracle_dp import enabled as dp_enabled, resolve as dp_resolve
++    if dp_enabled():
++        return dp_resolve(_ROOT)
+     explicit = _explicit_generation()
+     if explicit is not None:
+         return explicit
+@@ -379,6 +382,11 @@
+ 
+     global _APP, _BINDING
+     if _APP is not None:
++        from semantic_runtime.oracle_dp import enabled as dp_enabled, environment_binding as dp_environment_binding
++        if dp_enabled() != ((_BINDING or {}).get('mode') == 'oracle-dp'):
++            raise RuntimeError('data provider changed; restart this process before reusing the application')
++        if dp_enabled() and dp_environment_binding() != _BINDING.get('dp_environment_binding'):
++            raise RuntimeError('Oracle DP release/connection/cache settings changed; restart this process')
+         obs.event(log, "runtime.cache.hit", binding=_BINDING)
+         return _APP
+     with obs.step(log, "binding.resolve"):
+@@ -474,14 +482,14 @@
+                     raise ValueError(selected_implementation+" requires LEGAL_AGENT_PROFILE and LEGAL_AGENT_PROFILE_SHA256")
+                 options["legal_agent_profile"] = profile(load_bound(code_root, {
+                     "path": profile_path, "sha256": profile_hash}), require_model=True)
+-            elif selected_implementation in {"legal-agent-tools-v5", "legal-agent-unified-v6"} and binding.get("mode") in ("genos-generation", "genos-data-current"):
++            elif selected_implementation in {"legal-agent-tools-v5", "legal-agent-unified-v6"} and binding.get("mode") in ("genos-generation", "genos-data-current", "oracle-dp"):
+                 environment_binding = (_genos_v5_environment_binding(
+                     _json(code_root / "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json"))
+                     if selected_implementation == "legal-agent-unified-v6"
+                     else _genos_v5_environment_binding())
+                 if environment_binding is not None:
+                     options["legal_agent_profile"], options["legal_agent_transport"] = environment_binding
+-        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current'):
++        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp'):
+             from semantic_runtime.legal_agent.workflow_tiers_policy import profile as v5_profile
+             configured_profile = options.get('legal_agent_profile') or _json(code_root / ('00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json' if selected_implementation=='legal-agent-unified-v6' else '00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json'))
+             options['legal_agent_profile'] = v5_profile(_genos_v5_wait_profile(
+@@ -516,13 +524,13 @@
+             **options,
+         )
+         if not (selected_implementation == 'legal-agent-tools-v5' and
+-                binding.get('mode') in ('genos-generation', 'genos-data-current')):
++                binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp')):
+             agent = getattr(getattr(getattr(_APP, 'state', None), 'pipeline', None), 'term_agent', None)
+             effective_profile = getattr(agent, 'profile', None) or getattr(agent, 'limits', None) or getattr(agent, 'config', {}).get('limits', {})
+             obs.event(log, 'runtime.request_budget', wall_seconds=effective_profile.get('wall_seconds'),
+                       implementation=selected_implementation, binding_mode=binding['mode'],
+                       timeout_revision='timeout-sync-20260928-r1')
+-        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current'):
++        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp'):
+             # ASGITransport does not drive FastAPI lifespan. Recover completed
+             # FINAL journals in the background so this cannot delay a new ask.
+             loaded_app = _APP
+@@ -644,7 +652,8 @@
+ 
+ def _warm_resources():
+     """Use the same request-local resource path, without asking a model a question."""
+-    if not (os.environ.get("GENOS_GENERATION", "").strip() or
++    from semantic_runtime.oracle_dp import enabled as dp_enabled
++    if not (dp_enabled() or os.environ.get("GENOS_GENERATION", "").strip() or
+             os.environ.get("GENOS_DATA_ROOT", "").strip()):
+         raise ValueError("warmup requires an explicit GENOS data selection")
+     app = _bootstrap_application()
+@@ -670,7 +679,11 @@
+             with agent.resources(scope) as (_, _, _, matcher):
+                 validate_structure(matcher,scope)
+                 tokenize("용어 색인 준비")
+-            return {"generation_path": str(store.path), "document_count": len(scope)}
++            return {"generation_path": str(store.path), "document_count": len(scope),
++                    "data_provider": (_BINDING or {}).get("data_provider", "generation"),
++                    "dp_release_id": (_BINDING or {}).get("release_id") if (_BINDING or {}).get("mode")=="oracle-dp" else None,
++                    "nfs_source_used": (_BINDING or {}).get("nfs_source_used"),
++                    "cache_hit": (_BINDING or {}).get("cache_hit")}
+         finally:
+             store.close()
+ 
+@@ -1088,7 +1101,7 @@
+ # immutable resource preparation while the worker is idle after deployment.
+ # Questions still work if the platform imports lazily at first request; in that
+ # case the first real request may pay the cold cost. Each worker warms itself.
+-if (os.environ.get("GENOS_GENERATION", "").strip() or os.environ.get("GENOS_DATA_ROOT", "").strip()) and os.environ.get("GENOS_AUTO_WARMUP", "1").strip().lower() not in {"0", "false", "off"}:
++if (os.environ.get("DP", "").strip().lower() in {"1", "true", "oracle"} or os.environ.get("GENOS_GENERATION", "").strip() or os.environ.get("GENOS_DATA_ROOT", "").strip()) and os.environ.get("GENOS_AUTO_WARMUP", "1").strip().lower() not in {"0", "false", "off"}:
+     _warmup(start=True)
+ 
+ # Recover SQL schedules at code-serving worker import, including after restart.

@@ -35,7 +35,9 @@ def views():
 def request_body(data,question,trusted_platform=False):
     view=views()
     memory_enabled=os.environ.get('GENOS_MEMORY_ENABLED','0').lower() in {'1','true','on'}
-    if data.get('memory') is True or memory_enabled:
+    session_present=any(data.get(k) for k in ('chatId','chat_id','sessionId','session_id'))
+    team_present=bool(data.get('team_id') or os.environ.get('TEAM_ID'))
+    if data.get('memory') is True or memory_enabled or (session_present and team_present):
         return view._request_body(question,data)
     # Ordinary single turns do not select saved session state.
     body={'API_TYPE':'LEGAL_AGENT','question':question,'request_id':data['request_id'],'channel':'genos-chat'}

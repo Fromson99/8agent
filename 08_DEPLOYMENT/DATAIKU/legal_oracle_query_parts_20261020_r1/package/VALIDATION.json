@@ -1,0 +1,55 @@
+{
+  "status": "LOCAL_VERIFIED_FIELD_NOT_EXECUTED",
+  "date": "2026-10-20",
+  "tests": {
+    "passed": 40,
+    "warning": "Starlette/httpx deprecation",
+    "elapsed_seconds": 21.08,
+    "max_rss_kib": 373960,
+    "log": "09_ARTIFACTS/AUDITS/20261020-oracle-query-parts/FINAL_TESTS.txt"
+  },
+  "coverage": [
+    "same query release ID as canonical publisher",
+    "same source release ID as prior original migration publisher",
+    "streamed SQLite export, ZIP fragmentation, full restore hash and logical chain",
+    "interrupted export resume, lock, low disk guard",
+    "exact delivered Bash entrypoint and complete Dataiku TXT restore against synthetic Managed Folder",
+    "missing/appended/traversal/duplicate fragment rejection",
+    "changed table/descriptor/row rejection before SQL",
+    "immutable Oracle write acknowledgement loss/reconciliation",
+    "original deadline, binding and cumulative call journal retained",
+    "remote tamper and extra rows rejected",
+    "local Oracle23 executes exact generated JDBC PL/SQL, full publish/readback and serving Records read",
+    "large Korean/supplementary Unicode CLOB and quote literals, transaction rollback"
+  ],
+  "field_limits": [
+    "GENOS current serving revision and selected generation not accessed",
+    "Dataiku SQLExecutor2/JDBC driver itself unavailable; identical SQL executed through local Oracle DB-API adapter",
+    "Oracle19 and internal permissions/connection/Managed Folder/download UI not field verified",
+    "actual production payload size, duration and peak memory unknown",
+    "query ACTIVE and STATE unchanged; no serving rollout"
+  ],
+  "scope": {
+    "writes": [
+      "LEGAL_RAG_QUERY_ROW_A",
+      "LEGAL_RAG_QUERY_RELEASE_A"
+    ],
+    "read_only": [
+      "existing source release",
+      "source generation files"
+    ],
+    "activation": false,
+    "state_migration": false,
+    "model_calls": 0
+  },
+  "preserved_attempts": [
+    "TEST_01.txt: missing lazy errors dependency",
+    "TEST_02.txt: missing lazy filename_versions dependency",
+    "TEST_03.txt: 12 passed",
+    "TEST_04.txt: interrupted duplicate test process to keep one data test worker",
+    "TEST_05.txt: 37 passed",
+    "LIVE_01.txt: 2 passed",
+    "ORACLE_PULL.txt: local Docker credential helper absent; used isolated anonymous public-image config"
+  ],
+  "code_pins_sha256": "cf68965549297d93d5f2ddc11e5b676d0631f41593e590023ffa0be171f59d9c"
+}

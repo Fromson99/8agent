@@ -1,0 +1,20 @@
+{
+  "scope": "Existing unrelated failures; preserved rather than hidden",
+  "workflow": {
+    "test": "test_genos_team_selection.py::test_workflow_legal_agent_through_service_to_real_v5_app",
+    "cause": "Existing workflow AD_PROBE precedes LEGAL_AGENT; old assertion sees final captured probe",
+    "preimage_service_test": "PREEXISTING_FAILURE.xml",
+    "reproduced_before_change": true
+  },
+  "gateway": {
+    "tests": [
+      "test_genos_thinking_log.py::test_single_send_records_request_flag_and_response_without_changing_body",
+      "test_genos_thinking_live_log.py::test_model_call_reaches_actual_live_log_and_summary_without_private_text (3 parameters)"
+    ],
+    "cause": "Old synthetic repo fixture lacks event() required by existing model-output contract journaling",
+    "preimage_gateway_test": "PREEXISTING_GATEWAY.xml",
+    "reproduced_before_change": true
+  },
+  "initial_working_suite": "WORKING_TESTS.xml",
+  "expanded_working_suite": "REGRESSION.xml"
+}

@@ -22,10 +22,12 @@ background_quotes에는 요구가 아닌 업무 배경 원문만 쓴다. 배경�
 def intent_schema(base):
     out = deepcopy(base)
     row = out['properties']['issues']['items']
-    row['properties']['request_quote'] = {'type':'string','minLength':1,'maxLength':2000}
+    # Literal membership in the admitted request is the provenance boundary.
+    # A second character limit would discard a valid request's trailing scope.
+    row['properties']['request_quote'] = {'type':'string','minLength':1}
     row['required'].append('request_quote')
     out['properties']['background_quotes'] = {'type':'array','maxItems':8,
-        'items':{'type':'string','minLength':1,'maxLength':2000}}
+        'items':{'type':'string','minLength':1}}
     out['required'].append('background_quotes')
     return out
 
@@ -47,7 +49,7 @@ def verify_intent(value, request):
 def assessment_schema(issues, materials, options, facts, previous_keys=()):
     schema = cc.assessment_schema(issues,materials,options)
     ids = [o['id'] for o in options]
-    text = {'type':'string','minLength':1,'maxLength':3000}
+    text = {'type':'string','minLength':1}
     fragment = cc.obj({'text':text,'evidence_refs':cc.refs(ids,1)})
     def node(depth):
         leaf = cc.obj({'mode':{'const':'LEAF'},'text':text,'evidence_refs':cc.refs(ids,1)})

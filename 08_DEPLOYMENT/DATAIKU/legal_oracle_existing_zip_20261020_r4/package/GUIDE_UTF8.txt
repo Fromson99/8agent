@@ -1,0 +1,23 @@
+LEGAL_ORACLE_EXISTING_ZIP_20261020_R4 — Dataiku 조회 자료형 보존
+
+현장 진단: document 2121건 대조 완료, source_unit 0건에서 ROW_KEY 중단. 원본 SQLite의 5개 키 열은 정상입니다. 실제 Oracle 반환값의 자료형은 아직 미확인입니다.
+확인된 코드 문제: query_to_df 기본 자동 추정으로 숫자 모양 문자열 식별자가 숫자로 바뀔 수 있습니다. R4는 SELECT에 infer_from_schema=True, parse_dates=False를 지정합니다. 이미 변환된 숫자를 str()로 되돌리는 방식이 아니므로 앞자리 0을 임의 복원하지 않습니다.
+공식 근거: https://developer.dataiku.com/latest/api-reference/python/sql.html
+
+실행 순서
+1. 기존 Managed Folder에 LEGAL_ORACLE_EXISTING_ZIP_20261020_R4.zip만 추가 업로드합니다.
+2. 이관이 중단된 같은 노트북에서 Kernel → Restart 후, R4 DATAIKU_EXISTING_ZIP_IMPORT_RUN.txt 전체로 실행 셀을 교체합니다. 코드 파일명/해시만 수작업으로 바꾸지 마세요.
+3. FOLDER_ID, ORACLE_CONNECTION은 기존 성공한 값으로 설정합니다. WORK_DIR는 ./legal-existing-zip-r2-work 그대로, ALLOW_MISSING_LOOKUP_INDEXES=True를 유지합니다.
+4. ACTION="check"로 실행해 READY_FOR_FULL_IMPORT를 확인합니다.
+5. ACTION="diagnose"로 같은 셀을 실행합니다. 기존 R3 source_unit checkpoint 다음 배치의 키만 Oracle에서 두 번 조회해 기본 추정과 수정 경로를 비교합니다. 키 원문/본문은 출력하지 않고 상태나 Oracle 데이터도 변경하지 않습니다.
+   TYPE_INFERENCE_DIFFERENCE_CONFIRMED: 기본 경로에서 변형된 키가 수정 경로에서는 원본과 일치함을 확인했습니다.
+   KEYS_MATCH_ON_BOTH_PATHS: 이번 배치의 키는 양쪽 모두 일치합니다. 이전 오류의 정확한 원인은 이 검사로 확정되지 않습니다.
+   NO_EXISTING_TARGET_ROWS: 대상 행이 없어 실제 반환 자료형 비교를 확정하지 못했습니다.
+   TYPED_KEYS_STILL_DIFFER: 수정 경로도 원본 키와 다릅니다. publish하지 말고 결과를 공유하세요.
+6. TYPE_INFERENCE_DIFFERENCE_CONFIRMED이면 ACTION="publish"로 재개합니다. 다른 결과는 먼저 출력 결과를 공유해 원인을 좁힙니다. 최종 FULL_DATA_VERIFIED가 전체 대조 완료 상태입니다.
+
+R4 코드는 code-r4에 설치하지만, 복원 폴더와 oracle-import-r3 진행 기록은 그대로 이어 씁니다. full/source/query 이관 엔진과 publisher 파일은 R3와 동일합니다. 진행 기록/기한/기존 Oracle 데이터를 지우지 않습니다. 이전 source_unit 배치가 이미 적재됐더라도 기존 값 전체를 대조한 후 진행합니다. 실제 재개 후 마지막 전체 검증에서는 문서도 다시 대조합니다.
+
+보조 인덱스 4개 보류 옵션, PK/FK/JSON·해시·내용 대조는 유지합니다. 데이터 재업로드·merge·restore는 필요 없습니다. ACTIVE/STATE/서빙 변경은 없습니다.
+이번 변경은 조회 자료형 보존입니다. 본문 1000단위 조회 방식과 SQL 호출 수는 그대로이므로 대용량 속도 개선을 보장하지 않습니다.
+로컬 합성 검증과 현장 Dataiku/Oracle 실행 성공은 구분합니다. 원본 키 정상 결과만으로 Oracle 데이터 전체가 정상이라고 단정하지 않습니다.

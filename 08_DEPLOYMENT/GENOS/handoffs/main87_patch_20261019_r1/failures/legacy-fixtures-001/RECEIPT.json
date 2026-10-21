@@ -1,0 +1,10 @@
+{
+  "cause": "Four legacy fixture failures reproduced unchanged on working MAIN87; not package-byte drift.",
+  "recorded_navigation": "Two historical outputs conflict with now host-assembled action_refs. Existing ADR0895 already excludes recorded_navigation_boundary.",
+  "old_stream_fixture": "Both fail before compose at source-law-navigation-1-read-choice because the old double has no reply for the new read choice stage.",
+  "replacement": "New synthetic fixture handles current read choice and compact assessment only; original uncapped stream and interrupted-publication assertions remain unchanged. Both pass on installed package.",
+  "working_repro_sha256": "df4ca11895e11dd205cc4398e1e41d013f1358e839f0692e9e81821d2a0f655e",
+  "current_stream_sha256": "2fab6c4df11da7ef65a68f0c3e102727cfc8dd3837b053c2c80b2c05dca96402",
+  "product_code_changed": false,
+  "first_matrix": "1 failed prior-main84, 2 passed legacy-interrupted/oracle-dp; retain successful scenarios and rerun prior-main84 only."
+}

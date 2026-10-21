@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "host-assembled-output-20261018-r1",
+  "generation": 83,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/host-assembled-output-20261018-r1/release.json",
+  "release_manifest_sha256": "d96ec1bff28253283454cbd176e9fa3f8df64ff31bce74fdc59c34a77effa53c",
+  "activated_at": "2026-10-17T18:23:15.186836+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "2c8b5eb029cbdcde282797230bbde1d7d5921e69751070341b750ffb61b42be3",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0872-host-assembly-promotion-contract/실험/manifest.json",
+      "sha256": "4cd8af93baa88f63333039c9371f19ddd9c5a8ac1c3600997860c67fe1bc8f7d"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0872-host-assembly-promotion-contract/README.md",
+      "sha256": "b71f86ba01b231dafa7d8fa6c4a22a6fb597e3eed5b7e3a90e96f187160b3117"
+    },
+    "arm": "qualified",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0872-host-assembly-promotion-contract/artifacts/run-001/result.json",
+      "sha256": "50f8e7d37d8828f616739ab5ff0a1a2d7f530cc4221c31de3fd1814d2f05d1d1"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0870-host-owned-enum-contract/artifacts/design/release-rebase.json",
+      "sha256": "6853abc12f81434fd5a93f872302cf96d69d061ecae8178a4e1d5b9f09cda030"
+    }
+  }
+}

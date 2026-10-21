@@ -1,0 +1,72 @@
+"""Seal verified artifacts and assemble the user-authorized Samsung email."""
+from pathlib import Path
+import base64,hashlib,html,io,json,subprocess,zipfile
+H=Path(__file__).resolve().parent;R=H.parents[3];N='GENOS_WORKFLOW_PROGRESS_20261019_R1'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+enc=lambda v:(json.dumps(v,ensure_ascii=False,indent=2)+'\n').encode()
+assert not (H/'EMAIL_SENT.json').exists(),'Inspect existing send receipt before retrying'
+final=json.loads((H/'FINAL_VERIFICATION.json').read_bytes());assert final['status']=='PASS'
+assert final['outer_zip_sha256']==sha((H/(N+'.zip')).read_bytes())
+names=[N+'.zip',N+'_RUN.txt',N+'_WORKFLOW_PASTE_ALL.txt','GUIDE_UTF8.txt','VALIDATION.json','FINAL_VERIFICATION.json']
+with zipfile.ZipFile(H/names[0]) as z:
+    for n in names[1:-1]:assert z.read(n)==(H/n).read_bytes(),n
+count=0
+def scan(raw):
+    global count
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        assert z.testzip() is None
+        for i in z.infolist():
+            assert Path(i.filename).suffix.lower() not in {'.js','.jsx','.mjs','.cjs'}
+            count+=1
+            if i.filename.lower().endswith(('.zip','.whl')):scan(z.read(i.filename))
+scan((H/names[0]).read_bytes())
+subprocess.run(['bash','-n',str(H/names[1])],check=True)
+(H/'SHA256SUMS.txt').write_text(''.join(sha((H/n).read_bytes())+'  '+n+'\n' for n in names))
+names+=['SHA256SUMS.txt']
+seal={'version':N,'files':{n:{'sha256':sha((H/n).read_bytes()),'bytes':(H/n).stat().st_size} for n in names},'field_deployment':'NOT_VERIFIED'}
+if (H/'SEALED.json').exists():assert json.loads((H/'SEALED.json').read_bytes())==seal
+else:(H/'SEALED.json').write_bytes(enc(seal))
+body=f'''<!doctype html><html lang="ko"><body>
+<p>요청하신 <strong>대사 로그·진행 표시·최종 답변 수정본</strong>을 보내드립니다.</p>
+<p><strong>직전 GENOS_MAIN88_ORACLE_QUERY_20261019_R1 대신 이번 {N} ZIP을 사용하세요.</strong>
+직전 누적 코드에 이번 수정만 더한 전체 반입본입니다. 변경 전 소스 10개가 모두 직전 누적본과 일치했고,
+원장 탐색 모듈 1개를 추가했습니다. 기존 MAIN88·Oracle 직접 조회·SQLite 모드·팀/세션·내부 모델 설정을 유지합니다.</p>
+<ul><li>대사 부모와 내규·외규 자식 RAG의 모델/도구 로그를 같은 요청에 연결했습니다.</li>
+<li>진행 화면에 조사 단계와 읽은 문서명·조문을 표시합니다.</li>
+<li>표 줄바꿈 오류와 긴 내부 ID 노출을 정리하고 검토 의견·이유·인용 위치·미확인 사항을 유지합니다.</li>
+<li>실행/재개도 SSE로 연결했습니다. <strong>답변 검증 후 분할 전송이며, 모델 생성 중 실시간 토큰 전송은 아닙니다.</strong></li></ul>
+<p>ZIP을 실제 업로드한 <strong>TRANSFER 폴더에서</strong> 아래를 실행하세요.
+<code>/workspace</code>는 앞선 현장 사진의 실제 기존 Git checkout 경로입니다. 현재 경로가 다르면 확인한 경로로 바꾸세요.</p>
+<pre>python3 -m zipfile -e ./{N}.zip ./{N}
+bash ./{N}/{N}_RUN.txt check --root /workspace
+bash ./{N}/{N}_RUN.txt apply --root /workspace
+bash ./{N}/{N}_RUN.txt status --root /workspace</pre>
+<p>처음부터 <code>workflow-progress-r1-logs</code>에 로그/종료 코드가 남고 기존 checkout 파일을 백업합니다.
+sqlglot 30.23.0을 이미 설치했다면 반복 설치할 필요가 없습니다. 아직 없으면 GUIDE의 <code>deps</code> 명령을 먼저 실행하세요.</p>
+<p>적용 후 기존 checkout에서 변경 검토·commit → <code>gate-code</code> → push → 같은 commit의 새 코드서빙 리비전 배포를 진행하세요.
+<strong>첨부 WORKFLOW_PASTE_ALL.txt 전체를 워크플로우 Python 편집기에도 별도로 반영하고 저장해야 합니다.</strong>
+이번 표시/로그 수정 때문에 원문·색인 재구축이나 기존 Oracle 조회 채널 변경을 다시 할 필요는 없습니다.</p>
+<p>현장 확인은 <strong>워크플로우 테스트 화면</strong>의 새 채팅에서 사진과 같은 질문으로 진행하세요.
+“대사: 유동성비율 관련 외부규정은 무엇이고 내부 규정에는 어떻게 되어있나”.
+내규/외규 조사 단계·문서명·요청 로그·표·답변 전송 및 partial 상태를 확인합니다.</p>
+<p><strong>검증:</strong> 반입 코드만 import한 계약/API/SSE 125개 통과, 실제 ZIP/TXT 설치 2개 시나리오 통과
+(중단 복구·재적용·같은 committed checkout 코드 게이트·변조 거부·정확한 원복), Python 3.11에서 753모듈 컴파일 통과.
+최종 ZIP도 다시 추출·설치·상태·원복 확인했습니다. 실제 외부/내부 모델 호출은 하지 않았습니다.</p>
+<p><strong>GENOS 현장 반입·리비전·편집기 저장·내부 모델·Oracle/NFS 및 브라우저 버퍼링은 아직 미확인</strong>입니다.
+로컬 MAIN88 포인터도 변경하지 않았습니다. 상태·재개·원복·현장 확인 순서는 GUIDE를 참고하세요.</p>
+<p>첨부 7개: ZIP, 별도 실행 TXT, 워크플로우 편집기 전체본, 적용 안내, 검증 JSON, 최종 ZIP 검증 JSON, SHA-256 목록.
+ZIP에는 실행 TXT와 안내도 포함했습니다. JavaScript 파일은 중첩 ZIP까지 검사하여 제외했습니다.</p>
+<p>ZIP SHA-256: <code>{seal['files'][N+'.zip']['sha256']}</code></p>
+</body></html>'''
+parts=[{'mime_type':'text/html','charset':'UTF-8','body':{'content':body}}];rows=[]
+for n in names:
+    raw=(H/n).read_bytes();mime={'.zip':'application/zip','.json':'application/json'}.get(Path(n).suffix,'text/plain')
+    parts.append({'mime_type':mime,'filename':n,'content_disposition':'attachment','body':{'base64_url_content':base64.urlsafe_b64encode(raw).decode()}})
+    rows.append({'name':n,'bytes':len(raw),'sha256':sha(raw),'mime_type':mime})
+args={'to':'hyungjininfocz.son@partner.samsung.com','subject':'[GENOS] 대사 로그·진행 표시·최종 답변 수정 누적본 (2026-10-19 R1)',
+      'payload':{'mime_type':'multipart/mixed','parts':parts},'response_fields':['id','thread_id','label_ids']}
+(H/'EMAIL_ARGS.json').write_bytes(json.dumps(args,ensure_ascii=False).encode())
+(H/'EMAIL_BODY_UTF8.html').write_text(body);(H/'EMAIL_ATTACHMENT_BINDING.json').write_bytes(enc(rows))
+(H/'EMAIL_PRECHECK.json').write_bytes(enc({'status':'PASS','to':args['to'],'subject':args['subject'],'attachments':rows,
+ 'args_bytes':(H/'EMAIL_ARGS.json').stat().st_size,'members_scanned':count,'javascript_exclusions':'PASS','bash_syntax':'PASS'}))
+print(json.dumps({'status':'PASS','to':args['to'],'attachments':len(rows),'args_bytes':(H/'EMAIL_ARGS.json').stat().st_size}))

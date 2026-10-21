@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "tests": [
+    {
+      "file": "09_ARTIFACTS/AUDITS/20261021-stable-commands/checks-05.xml",
+      "tests": 66,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "file": "09_ARTIFACTS/AUDITS/20261021-stable-commands/checks-fixed.xml",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "passed": 86,
+  "zip": {
+    "name": "GENOS_STABLE_COMMANDS_20261021_R1.zip",
+    "sha256": "94b35fb7273226d352aec0813c15ab8f3bee48c15708005f2bcd1622f79d11d1",
+    "bytes": 65098,
+    "payload_files": 12
+  },
+  "code_binding": {
+    "working_tool_manifest_sha256": "f4fc74e6aeebf34d0ecad7d02066680abec676d735001eb192d9de397c229b0d",
+    "payload_matches_working_code": true,
+    "installed_validation_base": "GENOS_MAIN95_COMPARISON_SCOPE_20261020_R1/code.zip",
+    "base_sha256": "2128c778d69d1aa4c0e439fe232e5accd8504f5477f0ccf9d9ebf55fecb370a5",
+    "working_pipeline_sha256_at_record": "444486057d1510ef6a9c9265d2dc9dc62b985fd65757d3937c25fabcc03d57f0"
+  },
+  "verified": [
+    "final ZIP check/apply/reapply/status/drift refusal/rollback/exact restoration; existing ignore preserved",
+    "actual current pipeline.py -> real service plan-all; post-patch historical status/report; incompatible resume blocked before model use",
+    "portable export/review/check/apply/duplicate/status/rollback through installed MAIN95 CLI with changed compatible pipeline identity",
+    "current engine and helper code tamper refused; source/span/ACL/generation/SQL conflicts preserved",
+    "source selection plan/apply/idempotence/rollback/stale configuration refusal and deployment_paths consumer",
+    "four user-fixed relationships, seven external endpoints, shared candidate history, selected import and rollback"
+  ],
+  "not_run": [
+    "actual GENOS/NFS/Oracle execution",
+    "full production structure/index rebuild",
+    "live internal model",
+    "Git commit/push/deployment",
+    "MAIN promotion"
+  ],
+  "prior_diagnostics": [
+    "checks-01: missing test-only WORKFLOW_TEST_CODE_ROOT; rerun with explicit root",
+    "first gate used legacy pipeline schema; changed to existing service Contracts/StageRunner validation (no schema/hash check disabled)",
+    "checks-03: 61 passed, 2 historical API fixture setup errors (latest selection absent); test setup now uses real search-selection API; final checks-05: 66 passed"
+  ],
+  "backend": "existing external shared SQLite only; Oracle production import is not implemented by this toolkit",
+  "heavy_process_policy": "sequential tests; source fixture 24 MiB read-only, not the 3.2 GiB full index; no model calls",
+  "field_applied": false,
+  "main_changed": false,
+  "source_selection_changed_in_user_environment": false
+}

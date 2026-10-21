@@ -1,0 +1,40 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "conftest",
+    "--tb=short",
+    "--basetemp",
+    "08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/pytest-runtime",
+    "08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/test_delivery.py"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 254.21944616900146,
+  "peak_group_rss_bytes": 1038770176,
+  "min_available_bytes": 12776169472,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/delivery-resources.json",
+    "rss_gib": 2.0,
+    "as_gib": 3.0,
+    "min_available_gib": 2,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "conftest",
+      "--tb=short",
+      "--basetemp",
+      "08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/pytest-runtime",
+      "08_DEPLOYMENT/GENOS/handoffs/main84_followup_20261018_r1/test_delivery.py"
+    ]
+  },
+  "samples_sha256": "1c289dce7b5c4d2a19e471c9a6e758d7bf7307aaa64ea968b8f8e6b5c65d1a6c"
+}

@@ -1,0 +1,121 @@
+--- before/service.py
++++ after/service.py
+@@ -46,6 +46,8 @@
+ _APP_BOOTSTRAP_LOCK = threading.Lock()
+ _WARMUP_LOCK = threading.Lock()
+ _WARMUP_STATE: dict[str, Any] = {"state": "NOT_STARTED"}
++_WARMUP_HEARTBEAT_SECONDS = 15.0
++_AD_WORKER_RECOVERY: dict[str, Any] = {"state": "DISABLED"}
+ _PROCESS_INSTANCE_ID = uuid.uuid4().hex
+ _BARE_UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
+ 
+@@ -669,6 +671,8 @@
+             os.environ.get("GENOS_DATA_ROOT", "").strip()):
+         raise ValueError("warmup requires an explicit GENOS data selection")
+     app = _bootstrap_application()
++    from semantic_runtime.preparation_progress import current as preparation
++    preparation.update('warmup.resources.verify')
+     if (_BINDING or {}).get("mode") == "local-release":
+         raise ValueError("warmup cannot fall back to a local frozen release")
+     from semantic_runtime.document_agent import ServingDocumentAgent
+@@ -701,8 +705,19 @@
+ 
+ 
+ def _run_warmup():
++    from semantic_runtime.preparation_progress import current as preparation
+     started = time.perf_counter()
++    preparation.clear()
++    preparation.update('warmup.resources')
++    stopped = threading.Event()
++    def heartbeat():
++        while not stopped.wait(_WARMUP_HEARTBEAT_SECONDS):
++            obs.event(log, 'warmup.progress', worker_id=_PROCESS_INSTANCE_ID,
++                      progress=preparation.snapshot())
++    monitor = threading.Thread(target=heartbeat, daemon=True, name='genos-warmup-progress')
++    obs.event(log, 'warmup.started', worker_id=_PROCESS_INSTANCE_ID)
+     try:
++        monitor.start()
+         with obs.step(log, "warmup.resources"):
+             detail = _warm_resources()
+         state = {"state": "READY", **detail}
+@@ -710,12 +725,19 @@
+         obs.event(log, "warmup.failed", level=logging.ERROR, exc_info=True,
+                   error_type=type(exc).__name__)
+         state = {"state": "FAILED", "error_type": type(exc).__name__}
++    finally:
++        stopped.set()
++        if monitor.ident is not None:
++            monitor.join(timeout=1)
+     state["duration_ms"] = int((time.perf_counter() - started) * 1000)
++    state['progress'] = preparation.snapshot()
+     with _WARMUP_LOCK:
+         _WARMUP_STATE.update(state)
++    obs.event(log, 'warmup.finished', worker_id=_PROCESS_INSTANCE_ID, **state)
+ 
+ 
+ def _warmup(start=False):
++    from semantic_runtime.preparation_progress import current as preparation
+     with _WARMUP_LOCK:
+         if start and _WARMUP_STATE["state"] in {"NOT_STARTED", "FAILED"}:
+             _WARMUP_STATE.clear()
+@@ -728,8 +750,11 @@
+             except RuntimeError:
+                 _WARMUP_STATE.update(state="FAILED", error_type="RuntimeError")
+         state = dict(_WARMUP_STATE)
++    if state['state'] == 'RUNNING':
++        state['progress'] = preparation.snapshot()
+     return {"status": 202 if state["state"] == "RUNNING" else 200,
+             "body": {**state, "process_id": os.getpid(), "worker_id": _PROCESS_INSTANCE_ID,
++                     "ad_worker_recovery": dict(_AD_WORKER_RECOVERY),
+                      "process_local": True}}
+ 
+ 
+@@ -1004,6 +1029,18 @@
+ 
+ async def service(config: dict, data: dict) -> dict[str, Any]:
+     """GENOS JSON gateway contract with one correlated event stream per request."""
++    payload = data if isinstance(data, dict) else {}
++    request_id = obs.new_request_id(payload.get('request_id'))
++    obs.event(log, 'service.entered', request_id=request_id,
++              worker_id=_PROCESS_INSTANCE_ID,
++              api_type=str(payload.get('API_TYPE') or payload.get('op') or '')[:64])
++    control = _normalize(payload).get('op')
++    if control in {'warmup', 'warmup_status'}:
++        # Pure process-local controls must not wait for AD/SQL/NFS initialization.
++        result = _warmup(start=control == 'warmup')
++        obs.event(log, 'warmup.status', request_id=request_id, worker_id=_PROCESS_INSTANCE_ID,
++                  state=result['body']['state'], progress=result['body'].get('progress', {}))
++        return result
+     # GENOS_CACHE_DIAGNOSTICS_HOOK_V1
+     if isinstance(data, dict) and str(data.get("API_TYPE", "")).strip().upper() == "CACHE_DIAGNOSTICS":
+         from semantic_runtime.cache_diagnostics import collect as _collect_cache_diagnostics
+@@ -1110,6 +1147,22 @@
+ 
+ __all__ = ["application", "service"]
+ 
++
++def _recover_ad_worker():
++    """Schedule recovery must not hold the service module's import lock on NFS."""
++    global _AD_WORKER_RECOVERY
++    _AD_WORKER_RECOVERY = {'state': 'RUNNING'}
++    obs.event(log, 'ad.worker.recovery.started', worker_id=_PROCESS_INSTANCE_ID)
++    try:
++        _ad_control().start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
++    except Exception as exc:
++        _AD_WORKER_RECOVERY = {'state': 'FAILED', 'error_type': type(exc).__name__}
++        obs.event(log, 'ad.worker.recovery.failed', level=logging.ERROR, exc_info=True,
++                  worker_id=_PROCESS_INSTANCE_ID, error_type=type(exc).__name__)
++    else:
++        _AD_WORKER_RECOVERY = {'state': 'COMPLETE'}
++        obs.event(log, 'ad.worker.recovery.finished', worker_id=_PROCESS_INSTANCE_ID)
++
+ # The GENOS revision imports service.py once per worker. Start its expensive
+ # immutable resource preparation while the worker is idle after deployment.
+ # Questions still work if the platform imports lazily at first request; in that
+@@ -1119,4 +1172,5 @@
+ 
+ # Recover SQL schedules at code-serving worker import, including after restart.
+ if os.environ.get("AD_WORKER_ENABLED", "1") != "0":
+-    _ad_control().start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
++    _AD_WORKER_RECOVERY = {'state': 'RUNNING'}
++    threading.Thread(target=_recover_ad_worker, daemon=True, name='genos-ad-worker-recovery').start()

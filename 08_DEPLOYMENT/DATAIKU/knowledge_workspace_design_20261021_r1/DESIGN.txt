@@ -1,0 +1,102 @@
+CM 검토 워크스페이스 · Dataiku Streamlit 화면 시안
+2026-10-21
+
+목적
+기존 Dataiku Oracle 조회 예시를 바탕으로 현업용 검토·지식 관리 화면을 설계했다.
+제품 UI는 app.py 한 파일이다. 외부 웹 자산, 별도 프런트엔드 서버, 별도 에이전트가 필요하지 않다.
+원래 예시: 08_DEPLOYMENT/DATAIKU/streamlit_oracle_smoke_20261021_r1/STREAMLIT_ORACLE_TEST.py
+
+화면과 동작
+1. 업무 검토
+   왼쪽: 예시 선택 → 질문 입력 → 조사 범위·기준일 → 확인 항목·미확인 사항.
+   오른쪽: 인용 원문 패널 → 해당 검토 지식 상세로 이동.
+   결과 탭: 검토 요약 / 내규–외규 대사 / 실행 기록.
+   질문을 직접 입력할 수 있으나 이 버전은 입력과 배치 미리보기만 수행한다.
+   모델 호출이나 질문별 법률 판단을 생성하지 않는다. 임의 질문에 예시 판단을 붙이지 않는다.
+   대사표는 내규 조항·개념·실제 원문 → 연결 외규·실제 원문 → 해석·미확인을 같은 행에 둔다.
+
+2. 검토 지식
+   왼쪽 목록: 검색 + 검토 방법 / 조건·확인 사항 / 위키·탐색 경로 / 숏컷.
+   오른쪽 편집: 이름·목적·업무 범위·확인 항목·제외·재개 기준.
+   근거 연결 탭: 문서·위치·원문 버전·해시를 확인할 자리.
+   게시 미리보기 탭: 변경 내용 → 근거·권한 검증 → 버전 확정.
+   초안 저장과 게시 후 화면 미리보기는 현재 Streamlit 세션에만 반영된다.
+   실제 게시 버튼은 비활성이다. 원문 미연결 예시를 게시한 것으로 처리하지 않는다.
+   세션이 종료되면 편집 예시는 사라진다. 동시 편집·영속 복구·실제 rollback은 미연결이다.
+
+3. 원문 데이터
+   설계 예시: 문서 검색·목록·목차·원문·출처 패널 구성.
+   Oracle 조회: 기존 SQLExecutor2 방식의 읽기 전용 확인 기능.
+   Dataiku 등록 연결 AIDP → 연결 확인 → 테이블 목록 → 선택 테이블 일부 행.
+   자동 조회 없음. 입력을 바꿔도 버튼을 누르기 전에는 SQL을 실행하지 않는다.
+   전체 count, 전체 다운로드, 색인 복원, DDL/DML, 로컬 영속 데이터 저장은 수행하지 않는다.
+   테이블 최대 201행 조회 / 200개 선택, 열 최대 41개 조회 / 40개 표시,
+   데이터 최대 20행, 문자열·CLOB·NCLOB 앞 300자. BLOB 등 미지원 형식 제외.
+   조회 미리보기는 RAG의 권한 검증 원문이나 source-reference로 사용하지 않는다.
+   이 조회 기능은 웹앱 실행 계정 권한을 사용하며 문서별 사용자 권한은 미연결이다.
+   제한된 개발자용 Dataiku 웹앱에서 사용해야 한다.
+
+4. 게시 이력
+   세션에서 게시 미리보기를 한 버전과 변경 제목을 확인한다.
+   실제 운영 연결 때는 기존 작업 receipt·게시 버전·게시자·변경 사유·복원 경로를 표시한다.
+   현재 표는 실제 감사 로그가 아니다. 별도 저장소를 만들지 않는다.
+
+디자인
+짙은 남색의 고정 메뉴, 흰색 작업 패널, 청록색 주요 행동, 황색 미확인 상태.
+대량 통계보다 현재 질문·확인 항목·원문·편집 내용을 먼저 보여준다.
+운영자용 연결 설정은 원문 데이터에 모으고 업무 검토 화면에는 노출하지 않는다.
+실패를 빈 성공으로, 미확인을 적용 불가로 표시하지 않는다.
+작은 화면에서는 Streamlit 기본 사이드바 접기와 세로 배치를 사용한다.
+폰트는 사용자 환경의 맑은 고딕/Apple SD Gothic/Noto Sans KR을 사용한다.
+외부 CDN·폰트·분석 SDK·이미지 요청은 추가하지 않았다.
+
+실제 연결 설계 — 아래는 아직 이 Streamlit 앱에 연결되지 않았다
+질문: 기존 /v1/rag/ask → 기존 질문 해석·조사·판단·기록.
+지식 목록/상세: GET /v1/legal-knowledge/objects 와 /objects/{id}.
+문서·참조: GET /v1/legal-knowledge/documents, POST /source-reference.
+적용 미리보기: POST /v1/legal-knowledge/preview.
+초안/게시/회수/복원: POST /v1/legal-knowledge/commands.
+영향·작업 상태: POST /impact, GET /operations/{id}.
+위키·숏컷: 기존 저장소와 컴파일러의 버전 참조를 사용한다.
+Oracle 업무 데이터: 기존 legal_knowledge의 Oracle repository adapter로 저장한다.
+Dataiku 인증 → 신뢰할 수 있는 서버 측 principal/팀/문서 scope → 기존 관리/RAG API로 연결해야 한다.
+브라우저 입력, 팀 선택 박스, 임의 헤더를 신뢰 사용자 ID로 사용하지 않는다.
+실제 호출 시 요청 ID·원문/지식 버전·CAS·멱등 receipt는 기존 API 계약을 그대로 따른다.
+Streamlit rerun 때 모델 호출·게시 요청을 자동 재실행하지 않는 별도 클라이언트 배선이 필요하다.
+현장 인증 전달 방식·API 주소·Oracle 테이블 매핑은 이 시안에서 확정하거나 추정하지 않았다.
+
+조회 실패 계약
+입력 오류: SQL 실행 전 차단.
+Dataiku 모듈·연결·권한·SQL·전송 오류: 한 번의 요청을 실패로 끝내고 확인 번호/ORA 코드 표시.
+원인과 traceback: Dataiku 백엔드 로그. 화면에는 자격증명·원문 오류를 표시하지 않는다.
+자동 재시도 없음. 확인 후 사용자의 버튼 클릭으로 새 조회한다.
+목록 갱신이나 테이블 미리보기 실패: 이전 결과 제거, 빈 성공으로 바꾸지 않는다.
+연결/스키마/접두어 변경: 이전 목록·미리보기·연결 성공 상태 제거.
+테이블/행 수 변경: 이전 미리보기 제거.
+연결 확인 1회, 목록 1회, 선택 테이블 미리보기 최대 2회 SQL.
+쿼리 timeout은 현장 Dataiku/Oracle 연결 설정을 따른다. 앱 자체 강제 취소는 미구현.
+
+로컬 미리보기
+WSL 저장소 루트에서:
+  .venv/bin/python 03_FRONTEND/APPS/legal-knowledge-streamlit/preview.py
+  http://127.0.0.1:8769
+종료: 실행한 터미널에서 Ctrl+C.
+preview.py는 workspace의 frontend/runtime 논리 root를 사용한다.
+UI 의존성은 90_RUNTIME/streamlit-knowledge-design/python 아래에서 우선 로드한다.
+다른 개발 환경에서 처음 설치할 때:
+  .venv/bin/python -m pip install --target 90_RUNTIME/streamlit-knowledge-design/python -r 03_FRONTEND/APPS/legal-knowledge-streamlit/requirements.txt
+Dataiku에는 preview.py, check_ui.py, 로컬 runtime 폴더를 반입하지 않는다.
+
+검증과 현재 상태
+Streamlit 1.50.0에서 메뉴 4개·임의 질문·초안/게시 예시·세션 분리·검증 실패·Oracle 모의 조회/실패 검사.
+실제 Chromium에서 PC/모바일 화면과 메뉴 동작 확인. 원문 전체·모델 로딩 없음.
+실제 Dataiku/Oracle 연결 및 RAG 실행은 미검증·미연결. 현장 배포를 수행하지 않았다.
+선택 MAIN97, 기존 RAG·관리 API·AD 비활성 설정은 수정하지 않았다.
+이 작업은 화면 설계와 일반 UI/조회 계약 검사다. 모델 실험이나 MAIN 승격이 아니다.
+
+공식 참고
+Dataiku Streamlit webapp: DSS 14.3+ / Streamlit 1.57은 DSS 14.5.3+ 필요.
+이 시안은 Streamlit 1.50.0으로 검증했다. 현장 code env의 호환 버전은 별도로 확인한다.
+https://developer.dataiku.com/latest/tutorials/webapps/streamlit/getting-started/index.html
+https://docs.streamlit.io/1.50.0/develop/api-reference/layout/st.container
+https://docs.streamlit.io/develop/api-reference/app-testing/st.testing.v1.apptest

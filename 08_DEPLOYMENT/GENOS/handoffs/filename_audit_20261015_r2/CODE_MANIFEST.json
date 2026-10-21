@@ -1,0 +1,26 @@
+{
+  "schema_version": "filename-audit-code-v1",
+  "purpose": "read-only diagnostic; no installation",
+  "required_files": [
+    {
+      "path": "genos_filename_audit.py",
+      "sha256": "6761e689cdcd5246fcb7b14cb8e91afa1724d38e95a6472a47e06c8e1a13e473",
+      "source": "06_TOOLS/OFFLINE/genos_filename_audit.py"
+    },
+    {
+      "path": "deployment_paths.py",
+      "sha256": "34170db9e7ebc2021bda5906d673c9bf1e360ad3f56110fc76bb64176cf3385e",
+      "source": "02_BACKEND/semantic_runtime/deployment_paths.py"
+    },
+    {
+      "path": "genos_generation_e2e.py",
+      "sha256": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498",
+      "source": "06_TOOLS/COMMANDS/genos_generation_e2e.py"
+    },
+    {
+      "path": "test_filename_audit.py",
+      "sha256": "aad5f4dd1985b2ed2764c7802842263f8e82142d82a6af01387765934ef2c27e",
+      "source": "08_DEPLOYMENT/GENOS/handoffs/filename_audit_20261015_r2/test_filename_audit.py"
+    }
+  ]
+}

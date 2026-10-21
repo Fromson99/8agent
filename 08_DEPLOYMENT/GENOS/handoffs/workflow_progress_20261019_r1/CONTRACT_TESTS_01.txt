@@ -1,0 +1,49 @@
+........................................................................ [ 57%]
+.................{"ts": "2026-10-19T09:00:20.486093+00:00", "level": "ERROR", "logger": "genos.request-report", "event": "step.failed", "request_id": "req-nfs-failed", "api_type": "PING", "step": "shared_report.publish", "duration_ms": 0, "work_ms": 0.04, "thread_cpu_ms": 0.039, "start_log_ms": 0.075, "previous_event": "shared_report.started", "previous_step": null, "previous_log_ms": 0.093, "exc_type": "NotADirectoryError", "traceback": "Traceback (most recent call last):\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/02_BACKEND/semantic_runtime/observability.py\", line 353, in step\n    yield\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/02_BACKEND/semantic_runtime/request_report.py\", line 266, in finalize\n    path = write_report(self.root, self.runtime, request_id=self.request_id,\n                        api_type=self.api_type, request=self.request,\n                        result=self.result, events=self.events,\n                        requested_at=self.started_at, live_log_path=self.log_path,\n                        record_id=self.record_id, component=self.component)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/02_BACKEND/semantic_runtime/request_report.py\", line 1071, in write_report\n    directory = report_directory(root, team_name(request), requested_at, component=component)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/02_BACKEND/semantic_runtime/request_summary.py\", line 50, in report_directory\n    directory.mkdir(parents=True, exist_ok=True, mode=0o750)\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.14/pathlib/__init__.py\", line 1012, in mkdir\n    os.mkdir(self, mode)\n    ~~~~~~~~^^^^^^^^^^^^\nNotADirectoryError: [Errno 20] Not a directory: '/tmp/pytest-of-jin/pytest-83/test_service_keeps_response_wh0/not-a-directory/2026-10-19/unassigned/legal_agent'"}
+.{"ts": "2026-10-19T09:00:20.487687+00:00", "level": "ERROR", "logger": "genos.request-report", "event": "shared_report.failed", "request_id": "req-nfs-failed", "api_type": "PING", "error_type": "NotADirectoryError", "previous_event": "step.failed", "previous_step": "shared_report.publish", "previous_log_ms": 1.581}
+.............................{"ts": "2026-10-19T09:00:20.892449+00:00", "level": "ERROR", "logger": "genos.request-report", "event": "shared_process_trace.failed", "request_id": "r", "error_type": "OSError", "recovery": "authoritative_journal_and_json_retained"}
+......                    [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/main.py:26
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/main.py:26: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+.venv/lib/python3.14/site-packages/fastapi/applications.py:4681
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/applications.py:4681: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/main_workflow.py:35
+  /home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code/main_workflow.py:35: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    app.on_event("startup")(recover_ad_schedules)
+
+05_TESTS/CONTRACTS/test_workflow_progress_api.py::test_current_api_progress_logs_stream_final_and_duplicate[/v1/rag/ask]
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/pecab/_tokenizer.py:265: RuntimeWarning: overflow encountered in scalar add
+    from_pos_data.costs[idx]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+125 passed, 8 deselected, 7 warnings in 6.14s
+INSTALLED_CONTRACT_IMPORTS PASS; modules=240

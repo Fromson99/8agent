@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "cm-read-continuity-20261019-r1",
+  "generation": 87,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/release.json",
+  "release_manifest_sha256": "b3e22f04193a2084d22684ce3339df5920cdb956343bf5594faac8b72a9a1d85",
+  "activated_at": "2026-10-18T16:51:01.997843+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "6457cbe464d6c44371033710b91814f39b7954afc80ee42c9a7493fd2250c048",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0896-cm-read-continuity-qualification/실험/manifest.json",
+      "sha256": "95efa0fbab9021efc212f83c1f983268ddfb65194dd9b1b0354edff6c9fadbc7"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0896-cm-read-continuity-qualification/README.md",
+      "sha256": "7c9214e210687c6af96c4e61d4814701fc1bc14590df869019d70a08ed00cda8"
+    },
+    "arm": "qualified",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0896-cm-read-continuity-qualification/artifacts/run-001/result.json",
+      "sha256": "5341cdde4396096d665872d9b1c71dcc39e0617f38370a3fe6dc89a2d7a1e02f"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0895-committed-answer-consistency/artifacts/design/release-rebase.json",
+      "sha256": "d92aa92a32798b723e6371e7ccc6ea69795ffbc8c8215bc93418193dd41b1b1b"
+    }
+  }
+}

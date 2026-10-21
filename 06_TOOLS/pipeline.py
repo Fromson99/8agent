@@ -6,6 +6,28 @@ from pathlib import Path
 import sys
 
 root = Path(__file__).resolve().parents[1]
+if __name__ == '__main__' and sys.argv[1:2] == ['legal-knowledge']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.legal_knowledge import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['basis-work']:
+    os.execv(sys.executable, [sys.executable, str(root / '06_TOOLS/COMMANDS/basis_work.py'), *sys.argv[2:]])
+if __name__ == '__main__' and sys.argv[1:2] == ['oracle-query']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.oracle_query_publish import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['basis-batch']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.basis_batch import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['basis-links']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.basis_lifecycle import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['search-selection']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.search_selection import main
+    raise SystemExit(main(sys.argv[2:]))
 if __name__ == '__main__' and sys.argv[1:2] == ['fulltext']:
     sys.path.insert(0, str(root / '02_BACKEND'))
     from lawrag.pipeline.fulltext_stage import main

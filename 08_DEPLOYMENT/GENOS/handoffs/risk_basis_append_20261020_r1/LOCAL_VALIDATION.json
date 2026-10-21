@@ -1,0 +1,126 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "tests": {
+    "passed": 32,
+    "failed": 0,
+    "log": "09_ARTIFACTS/AUDITS/20261020-risk-basis-append/tests-accepted.txt",
+    "log_sha256": "e1c573419b8757ec0c492c36f00d5e6e69c13137b0b60c9c5e3e70e48862f3b8"
+  },
+  "package_checks": [
+    {
+      "check": "check",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "install",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "install-again",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "inspect-photo",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "reject-local-sql",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "check": "inspect-main-absent",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "check": "reject-other-edit",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "check": "rollback",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "rollback-again",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "check": "check-restored",
+      "exit_code": 0,
+      "expected": 0
+    }
+  ],
+  "package_payload_sha256": {
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": "07649b5cdf2b541e058e1ce34c82a1be66de7a1b72f73cc30b407e9b5582b882",
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": "95078c11fe65aea564b07d3c042f3231090ab4ad699bcfdb75ca52847bc2f437",
+    "02_BACKEND/lawrag/pipeline/risk_basis_sql.py": "7dad25bee90690eaf0a4981f2113898bf944eb890e46fa58315be9d8a9122b1b",
+    "02_BACKEND/lawrag/pipeline/basis_lifecycle.py": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+    "02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py": "165f7729702029dd6d3e838392be77e4dd74a0a0232bb8c22a4b1264ca2eb849"
+  },
+  "pinned_consumer": {
+    "status": "PASS",
+    "consumer": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/genos-model-metadata-20261020-r1/code/02_BACKEND/semantic_runtime/basis_links/service.py",
+    "result": {
+      "status": "APPEND_VERIFIED",
+      "links": [
+        {
+          "link_id": "ece2d87e45854c28bfdfd3462d0f15eb",
+          "revision": 2,
+          "status": "APPROVED"
+        },
+        {
+          "link_id": "ae97462195ef45c7b1f23ace975ddbf2",
+          "revision": 2,
+          "status": "APPROVED"
+        },
+        {
+          "link_id": "f47315ebc2e345b0ae5d7a0a9ea44a75",
+          "revision": 2,
+          "status": "APPROVED"
+        },
+        {
+          "link_id": "91d25d981cad43c09dd002305a3ce479",
+          "revision": 2,
+          "status": "APPROVED"
+        }
+      ],
+      "resolver_endpoint_count": 7,
+      "lifecycle_rows_verified": null,
+      "rag_factory_deployment_verified": false,
+      "index_rebuild": false
+    },
+    "actual_active_release_changed": false
+  },
+  "photo_source": {
+    "generation": "term-source-696ba4030ea5f1a19ccf",
+    "manifest_sha256": "37dc03ae5ac793098ce55bdf6fda5c650559f0e2899f235e68adb3085b4cce24",
+    "internal_document_id": "7a3907e193ec6c14",
+    "status": "LOCAL_FIXTURE_ONLY"
+  },
+  "selected_main": {
+    "release": "genos-model-metadata-20261020-r1",
+    "generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "active_pointer_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506",
+    "active_unchanged": true,
+    "target_document_found": false
+  },
+  "python311_syntax": "PASS",
+  "oracle_engine_run": false,
+  "genos_run": false,
+  "legal_quality_certified": false,
+  "source_or_index_updates": 0,
+  "remote_deployment": "NOT_RUN",
+  "initial_harness_failures_preserved": [
+    "tests-first.txt",
+    "tests-second.txt",
+    "tests-third.txt"
+  ]
+}

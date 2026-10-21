@@ -350,7 +350,10 @@ def test_unknown_coordinate_keeps_scoped_tools_and_unresolved_status(session):
     d,a=i.view();target=d['gap_targets'][0]
     assert g['target_binding']['document_candidates']==['d']
     assert not g['target_binding']['absence_proven']
-    assert {a[t]['action'] for t in target['navigation_actions']}=={'SEARCH_STRUCTURE','OPEN_STRUCTURE','SEARCH_BODY'}
+    # SEARCH_BODY executes explicit scoped queries only in structure-first mode.
+    expected={'SEARCH_STRUCTURE','OPEN_STRUCTURE'}
+    if i.policy['structure_first']:expected.add('SEARCH_BODY')
+    assert {a[t]['action'] for t in target['navigation_actions']}==expected
     assert all(a[t]['identity']['document_id']=='d' for t in target['navigation_actions'])
     assert 'UNRESOLVED' in d['gap_rule']
 

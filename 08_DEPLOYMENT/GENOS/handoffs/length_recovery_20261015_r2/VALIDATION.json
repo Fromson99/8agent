@@ -1,0 +1,91 @@
+{
+  "revision": "GENOS_LENGTH_RECOVERY_20261015_R2",
+  "installer_contracts": {
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "service_gate_integrations": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "initial_snapshot_test_failures": 4,
+  "initial_failure_resolution": "Test snapshot excluded Python-generated __pycache__ files; installer unchanged; complete source and modes still compared. Original failing report retained.",
+  "installed_contracts": {
+    "query_latency_20261007_r4": {
+      "tests": 575,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "query_latency_20261007_r3": {
+      "tests": 575,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_passes": 1148,
+  "preexisting_display_expectation_failures": 2,
+  "new_product_regressions": 0,
+  "actual_standalone_txt_commands": 48,
+  "same_committed_checkout_generation_gates": 2,
+  "actual_service_loopback_tls_boots": 2,
+  "all_1320_predecessor_and_output_signatures_preserved": true,
+  "all_product_blobs_identical_to_r1": true,
+  "known_unrecorded_schema_preimages": {
+    "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json": {
+      "8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755": {
+        "bytes": 6216,
+        "evidence": [
+          {
+            "git_commit": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+            "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json"
+          }
+        ]
+      },
+      "68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26": {
+        "bytes": 19721,
+        "evidence": [
+          {
+            "sealed_delivery": "GENOS_LENGTH_RECOVERY_20261014_R1",
+            "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json"
+          }
+        ]
+      }
+    },
+    "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json": {
+      "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc": {
+        "bytes": 4791,
+        "evidence": [
+          {
+            "git_commit": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+            "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json"
+          },
+          {
+            "sealed_delivery": "GENOS_LENGTH_RECOVERY_20261014_R1",
+            "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json"
+          }
+        ]
+      }
+    }
+  },
+  "verified_local_code_roots": [
+    "/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea1/DEV",
+    "/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea0/DEV"
+  ],
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "sys_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "genos_connections": 0,
+  "model_inference_calls": 0,
+  "local_main_changed": false,
+  "field_schema_hashes": null,
+  "field_commit": null,
+  "field_generation": null,
+  "field_serving_revision": null,
+  "field_workflow_success": null,
+  "field_status": "NOT_VERIFIED"
+}

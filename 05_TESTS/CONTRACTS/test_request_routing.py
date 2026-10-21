@@ -34,8 +34,8 @@ def test_direct_answer_is_published_without_search_or_empty_evidence_warning(tmp
     transport = DirectTransport(answer)
     app = app_for(tmp_path, generation, transport, settings())
     try:
-        ask = next(r.endpoint for r in app.routes if r.path == '/v1/rag/ask')
-        result = ask({'question': question, 'document_ids': ['d']})
+        ask = lambda question, docs: app.state.pipeline.run(question, docs, execution_context={'runtime':tmp_path/'runtime','publish':True})
+        result = ask(question, ['d'])
         assert result['answer']['text'] == answer
         assert result['answer']['claims'] == []
         assert result['answer']['unresolved'] == []
@@ -45,13 +45,13 @@ def test_direct_answer_is_published_without_search_or_empty_evidence_warning(tmp
         assert meta['source_bundle']['sources'] == []
         assert result['answer']['provider_receipt']['physical_attempts'] == 1
         assert len(transport.calls) == 1
-        path = next((tmp_path/'90_RUNTIME/semantic/legal-agent/runs').glob('*/*/journal.sqlite'))
+        path = next((tmp_path/'runtime/legal-agent/runs').glob('*/*/journal.sqlite'))
         with sqlite3.connect(path) as db:
             assert db.execute('SELECT status FROM run').fetchone()[0] == 'COMPLETED'
             assert db.execute('SELECT count(*) FROM observation').fetchone()[0] == 0
             assert db.execute('SELECT count(*) FROM evidence_unit').fetchone()[0] == 0
             assert db.execute("SELECT count(*) FROM event WHERE kind='REQUEST_ROUTED'").fetchone()[0] == 1
-        saved = tmp_path/'90_RUNTIME/semantic/runs'/(result['run_id']+'.json')
+        saved = tmp_path/'runtime/runs'/(result['run_id']+'.json')
         assert json.loads(saved.read_text())['answer']['text'] == answer
         # GENOS uses this renderer for the same /json and SSE final result.
         bridge = runpy.run_path(str(Path(__file__).resolve().parents[2]/'08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py'))
@@ -62,16 +62,16 @@ def test_direct_answer_is_published_without_search_or_empty_evidence_warning(tmp
 
 @pytest.mark.parametrize('question', ['현재 볼 수 있는 문서가 뭐야?', '현재 볼 수 있는 문서 알려줘',
     '현재 문서 목록 보여줘', '현재 볼수있는 문서 목록', '전체 문서 목록 보여줘'])
-def test_available_documents_use_scoped_catalogue_without_model(tmp_path, generation, question):
-    transport = Transport()
+def test_available_documents_use_model_selected_scoped_catalogue(tmp_path, generation, question):
+    transport = Transport(browse=True)
     app = app_for(tmp_path, generation, transport, settings())
     try:
-        ask = next(r.endpoint for r in app.routes if r.path == '/v1/rag/ask')
-        result = ask({'question': question, 'document_ids': ['d']})
+        ask = lambda question, docs: app.state.pipeline.run(question, docs, execution_context={'runtime':tmp_path/'runtime','publish':True})
+        result = ask(question, ['d'])
         assert '모의승인규정' in result['answer']['text']
         assert not result['answer']['claims']
-        assert transport.calls == []
-        assert request(question)['title_query'] == ''
+        assert len(transport.calls) == 1
+        assert request(question) is None
     finally:
         app.state.pipeline.store.close()
 
@@ -80,8 +80,8 @@ def test_greeting_with_legal_question_still_recalls_and_answers(tmp_path, genera
     transport = Transport()
     app = app_for(tmp_path, generation, transport, settings())
     try:
-        ask = next(r.endpoint for r in app.routes if r.path == '/v1/rag/ask')
-        result = ask({'question': '안녕, 모의승인규정의 승인 대상은?', 'document_ids': ['d']})
+        ask = lambda question, docs: app.state.pipeline.run(question, docs, execution_context={'runtime':tmp_path/'runtime','publish':True})
+        result = ask('안녕, 모의승인규정의 승인 대상은?', ['d'])
         assert result['answer']['claims']
         assert result['assembly']['term_agent']['request_routing']['mode'] == 'SEARCH'
         assert result['assembly']['term_agent']['source_bundle']['sources']
@@ -105,7 +105,7 @@ def test_inconsistent_route_is_rejected(row):
 
 def test_available_document_phrase_does_not_swallow_content_request():
     assert request('현재 볼 수 있는 문서에서 승인 요건을 설명해줘') is None
-    assert request('자본시장법 문서 목록 보여줘')['title_query'] == '자본시장법'
+    assert request('자본시장법 문서 목록 보여줘') is None
     # Completed search-only callers keep their original schema and response contract.
     value = {'plans': [{'case_id': 'old', 'law_names': [], 'queries': ['승인 대상']}]}
     assert planning.validate(value, [{'case_id': 'old'}], [])['old']['queries'] == ['승인 대상']

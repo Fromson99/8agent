@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "scope": "Oracle preparation and workflow/control observability only",
+  "contract_tests_unique_passed": 38,
+  "latest_changed_control_tests": 11,
+  "runs": {
+    "tests-001": "31 passed, 1 failed: tmpfs fixture rejected by existing cache mount contract",
+    "tests-002": "5 passed on disk (failed service case plus 4 existing warmup workflow cases)",
+    "tests-003": "18 passed (progress, warmup, Oracle service/resume/integrity)",
+    "tests-004": "11 passed after import-lock/AD recovery fix",
+    "tests-005": "1 passed after final display addition"
+  },
+  "installation": {
+    "status": "PASS",
+    "variants": {
+      "main87_patch_20261019_r1": {
+        "status": "PASS",
+        "commit": "71a00e1b0855b47da1ec9081dab4cc0e04422822",
+        "code_zip_sha256": "46a8abbdd7f8777c0580aed7385fd5b170ae9940a770958941ef31271510a0ed",
+        "generation": "unchanged; no source data loaded",
+        "service_smoke": "PASS",
+        "workflow_smoke": "PASS"
+      },
+      "session_identity_20261019_r1": {
+        "status": "PASS",
+        "commit": "1970c27950d43ca6ebcc63d91148fb62630ff57f",
+        "code_zip_sha256": "aa512b366a52175652bf13aa2a2bad31a61a3cfd2770516e4817abd40d1c407c",
+        "generation": "unchanged; no source data loaded",
+        "service_smoke": "PASS",
+        "workflow_smoke": "PASS"
+      }
+    },
+    "commands": 32,
+    "fixture_cleanup": "only reproducible synthetic checkouts; original sealed ZIPs and receipts retained",
+    "package_sha256": "9fc5b292754d3d5852673db01171d32f3768625908863c1be3bae57b5ab0b452"
+  },
+  "installation_peak_rss_kib": 41896,
+  "python311": {
+    "status": "PASS",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "compiled_files": 13
+  },
+  "source_binding": {
+    "service.py": "2282d07382d32e994afad93a0f9fd5cad9aba4bd09de56bcbfcf89f0a6310332",
+    "02_BACKEND/semantic_runtime/oracle_dp.py": "9effce6fbb700ca57075d3268ac068204d404b50db79ea3d8120cbeba5240708",
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "6517ad538c538a0fcf78229aada8f0d01450ff9e2ada03aae1badd15c39ebbba",
+    "02_BACKEND/semantic_runtime/preparation_progress.py": "a913aec24cb3791b0ddf13eaa298c12ca8744531206106cbba5c33fea1b21bf3"
+  },
+  "source_pointer_sha256_at_start": "00c14e392c4c4947972fe7d5ff22ee7a7dd7026acf475c97f32e2fede55138a2",
+  "source_pointer_sha256_at_finish": "00c14e392c4c4947972fe7d5ff22ee7a7dd7026acf475c97f32e2fede55138a2",
+  "pointer_modified_by_this_task": false,
+  "genos_field_deployed": false,
+  "field_guardrail_error_fixed": false,
+  "model_calls": 0,
+  "oracle_network_calls": 0,
+  "coverage": [
+    "blocked SQL observation and secret exclusion",
+    "no automatic retry; original journal/budget/error preserved",
+    "cold/warm cache, source hash and asset hash failure, resume corruption and expired budget",
+    "control returns while warmup or import-time AD storage is blocked",
+    "AD startup failure remains separate from readiness",
+    "heartbeat terminates at success/failure",
+    "workflow control timeout and display, original legal timeout preserved",
+    "exact installed source and workflow entry, two sealed bases, resumed/idempotent apply, changed-file refusal, code gate, exact undo"
+  ],
+  "limitations": [
+    "platform MODEL/guardrail failure needs field investigation; input/output stage not established by screenshot",
+    "heartbeat means observer alive, not proof of data progress",
+    "status transport timeout does not cancel background initialization",
+    "no full field data load, field revision, workflow editor save or internal model validation"
+  ],
+  "preexisting_environment_failure": "00_SYSTEM/ARCHITECTURE.md whitespace at EOF; WSL/Linux/Git boundary passed; task source diff check passed"
+}

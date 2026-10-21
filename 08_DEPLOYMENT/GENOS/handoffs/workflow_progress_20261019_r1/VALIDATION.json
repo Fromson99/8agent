@@ -1,0 +1,88 @@
+{
+  "status": "LOCAL_DELIVERY_VERIFIED_FIELD_PENDING",
+  "version": "GENOS_WORKFLOW_PROGRESS_20261019_R1",
+  "base": "GENOS_MAIN88_ORACLE_QUERY_20261019_R1",
+  "code_zip_sha256": "dfe5f849d69f9933f6bfe43ea1511f20472d651ee19c6860b307b7ce2aeffc25",
+  "changes": {
+    "sources": 11,
+    "with_manifests_and_pins": 44,
+    "unchanged": 1258
+  },
+  "contract_tests": {
+    "passed": 125,
+    "deselected": 8,
+    "product_imports_from_packaged_code": 240,
+    "coverage": "display/logging/source cards/transport/process traces/current API/SSE/resume/duplicate/stale state",
+    "fixture": "two synthetic documents with scripted model, no network/model calls",
+    "log": "CONTRACT_TESTS_01.txt",
+    "resource_receipt": "CONTRACT_RESOURCES_01.json"
+  },
+  "working_source_verification": {
+    "passed": 126,
+    "receipt": "09_ARTIFACTS/AUDITS/20261019-workflow-progress/VALIDATION.json"
+  },
+  "delivery_tests": {
+    "passed": 2,
+    "scenarios": [
+      {
+        "status": "PASS",
+        "commands": 23,
+        "exact_rollback": true,
+        "preserved_data": true,
+        "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-runtime/test_transfer_preserved_config0/actual checkout",
+        "code_zip_sha256": "5264c754cbd2ec9a7f272a91d2e401a4fe01cd0b6d116eb7249326ab7e5a1d08",
+        "source_generation_opened": false,
+        "mode": "preserved-config-interruption"
+      },
+      {
+        "status": "PASS",
+        "commands": 20,
+        "exact_rollback": true,
+        "preserved_data": true,
+        "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-runtime/test_transfer_no_config_standa0/actual checkout",
+        "code_zip_sha256": "5d6f2afe61a2d5adc7042a3c6519ae84bdd907d5745881c55ce9b59ff3d810eb",
+        "source_generation_opened": false,
+        "mode": "no-config-standalone"
+      }
+    ],
+    "commands": 43,
+    "coverage": "actual uploaded TRANSFER ZIP/TXT, existing Git checkout, physical symlink resolution, interrupted apply recovery, idempotence, same committed checkout code gate, tamper refusal, exact rollback",
+    "resource_receipt": "DELIVERY_RESOURCES_01.json"
+  },
+  "python311": {
+    "status": "PASS",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "modules": 753,
+    "code_zip_sha256": "dfe5f849d69f9933f6bfe43ea1511f20472d651ee19c6860b307b7ce2aeffc25"
+  },
+  "streaming": "investigation progress live; final answer chunks after durable verified result; no model-generation token streaming",
+  "source_pointer_sha256": "a5e69020e01a6d7c052d5ca5fb07fe404070af15485ad55613e0567860e5b03a",
+  "selected_local_main_changed": false,
+  "field": {
+    "checkout": "existing DEV, earlier field physical root /workspace",
+    "commit": null,
+    "generation_path": null,
+    "generation_manifest_sha256": null,
+    "oracle_query_release": null,
+    "codeserving_revision": null,
+    "workflow_editor_saved": false,
+    "verified": false
+  },
+  "remaining": [
+    "GENOS import/commit/push/revision deployment",
+    "separate workflow editor source update",
+    "same question in workflow test UI with internal model/Oracle/NFS",
+    "real proxy/browser buffering behavior"
+  ],
+  "file_sha256": {
+    "CODE_MANIFEST.json": "ff0e92227d08b9ced112bdbe4d74a206499a462a9929f24fbd2e25ba3dcfbf0a",
+    "SOURCE_BINDING.json": "d9aba263e7d68a273299fa419cf92583cb6e670636002bd171fc4859748eb4d1",
+    "PACKAGE_SPEC.json": "00994e84a95f84db76cc2f2ed786e23e370889025fb8365c5f482c6f820d598f",
+    "run.py": "bf743b41252187cce539cb178cc989bd69e30fe32d12708df8e452056dd1ad6f",
+    "replace.py": "deaeed789b7d3421969bf1869e4f91f9ec6526b0c179eedb400b8800331b9c50",
+    "code_smoke.py": "b4d5eb3131abd67da36a47644971ec1b101d7f5ec8040f1253a5b73a85ea9836",
+    "CONTRACT_TESTS_01.txt": "53cb4b7f563aeff9d5720b54d873022bf3af513e301a929928b540831deb4db1",
+    "DELIVERY_TESTS_01.txt": "46b26b39632c6dc9fad597233864fb0539025635fad5f7e9acccf51ac8e693c7"
+  }
+}

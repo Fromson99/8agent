@@ -1,0 +1,190 @@
+Dataiku 방화벽 확인용 증거 수집 — 2026-10-15 R1
+
+1. 먼저 정정할 내용: 기존 코드와 사진은 완전히 같은 요청이 아니었습니다.
+
+사진 1의 실제 curl:
+  GET https://45.101.64.86:8443/law/making
+  쿼리: OC, lsClsCd=BA0103, closing=Y, asndOfiNm=금융위원회, admRulNm=지주
+  헤더: target_url: https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml
+  헤더: Cookie: 현재 허가받은 세션값
+  옵션: --location --request GET
+사진의 제목과 달리 URL상 행정예고 조회 샘플입니다.
+
+기존 R1 첫 호출과 TIMEOUT 추가 진단:
+  GET https://45.101.64.86:8443/law/DRF
+  쿼리: OC, ID=010513, type=XML
+  헤더: target_url: http://www.law.go.kr/DRF/lawService.do?target=law
+  Cookie: 기존 설정에서 입력/사용했을 때만 포함
+  Python requests 사용, 리다이렉트 미추적
+
+동일한 것은 중계 IP·포트와 target_url 헤더로 원본 API를 지정하는 계약입니다.
+경로·조회 항목·인증 헤더의 실제 값·curl 실행 여부는 달랐습니다.
+기존 코드는 사진 2에 제시된 법령 본문 API를 우선 검사한 것입니다.
+따라서 기존 결과를 '사진 1의 curl 그대로 실행한 결과'라고 말하면 안 됩니다.
+
+2. 현재 사진이 증명하는 범위
+
+사용자가 제공한 현장 화면:
+  CONNECTION_SETUP_TIMEOUT
+  ConnectTimeout / MaxRetryError / ConnectTimeoutError / TimeoutError
+  elapsed_seconds: 8.01
+  http_status: None
+  effective_proxy_enabled: False
+  relay_url: https://45.101.64.86:8443/law/DRF
+
+이것은 해당 Dataiku Python 요청의 연결 수립 시간초과와 HTTP 응답 미수신 증거입니다.
+법제처 본문을 받은 기록도, API의 인증 거절 응답을 받은 기록도 아닙니다.
+stage=awaiting_response_headers는 요청 전 코드가 지정한 단계명입니다.
+이 이름을 '서버가 요청을 받았고 처리 중이었다'는 증거로 사용하지 마세요.
+MaxRetryError라는 예외 이름만으로 자동 재호출이 있었다고 해석하지 마세요.
+기존 진단의 자동 재시도 설정은 0이며, 실제 횟수는 실행 기록으로 확인합니다.
+effective_proxy_enabled=False는 requests가 명시적 HTTP 프록시를 선택하지 않았다는 뜻입니다.
+중간 NAT·방화벽·투명 프록시가 없다는 뜻은 아닙니다.
+
+현재 근거만으로 방화벽 차단을 확정할 수 없습니다.
+방화벽 DROP, 라우팅/반환 경로 문제, 서버 무응답, 잘못된 개발 주소를 구분해야 합니다.
+LAW_OC나 URL 파라미터를 바꾸는 것으로 TCP 연결 실패가 해결되지는 않습니다.
+
+3. 이번 실행 파일이 하는 일
+
+파일: DATAIKU_NETWORK_EVIDENCE_20261015_R1_CELL.txt
+Python 코드이며 기존 R1 Notebook의 새 Code 셀에 전체를 붙여 넣습니다.
+기존 R1/기존 timeout 진단을 덮어쓰는 교체본이 아니라 증거 수집용 추가 셀입니다.
+
+① 기존 세션의 실효 프록시·TLS CA 설정을 확인합니다.
+② 프록시를 사용하지 않는 경우 45.101.64.86:8443에 TCP 연결을 딱 1회 시도합니다.
+   TLS·OC·Cookie·HTTP 경로를 보내지 않는 독립 검사입니다. 최대 8초입니다.
+③ 실제 curl 프로그램으로 사진 1의 /law/making GET, 조회 조건, target_url을 1회 요청합니다.
+   연결 8초, 전체 20초, 자동 재시도 0입니다.
+④ 두 검사의 UTC/KST 시작·종료, TCP 로컬 IP/port, curl 연결 시간·IP·port·종료코드를 저장합니다.
+   응답 본문은 저장하지 않습니다. 이 코드는 법령 데이터 수신 품질을 검증하지 않습니다.
+
+프록시가 선택된 환경이면 직접 TCP 검사는 건너뜁니다. curl에는 기존 세션이 선택한 프록시를 씁니다.
+현재 사진의 개발 중계 주소와 check.origin이 다르면 호출 전 중단합니다.
+이 코드가 다른 IP/포트를 검색하거나 외부 법제처로 직접 우회하지 않습니다.
+검사 횟수는 애플리케이션 시도 기준입니다. 운영체제의 TCP SYN 재전송 횟수와 다릅니다.
+
+사진과 남는 차이도 결과 JSON에 기록합니다.
+  - OC는 기존 making_oc가 있으면 그것, 없으면 기존 LAW_OC를 사용합니다.
+    LAW_OC가 예고 API에도 등록되어 있는지는 미확인으로 기록합니다.
+  - Cookie는 기존 check.cookie가 있으면 사용하고, 없으면 현재 허가받은 값을 비표시 입력받습니다.
+    없으면 Enter로 건너뛸 수 있습니다. 이때 Cookie 포함 여부=False로 기록되므로 인증까지 동일한 재현은 아닙니다.
+    사진 속 타인의 오래된 OC/JSESSIONID를 복사하지 마세요.
+  - 한글 검색어는 URL 인코딩하며 의미는 동일합니다.
+  - --location은 포함하되 --max-redirs 0으로 최초 응답 뒤 추가 리다이렉트 요청을 중단합니다.
+    302와 curl 종료코드 47이면 최초 서버의 HTTP 응답은 받은 것입니다.
+  - .curlrc 미사용, 시간 한도, 재시도 0, 기존 세션의 프록시·CA를 명시합니다.
+이 차이들은 연결 시도의 목적지 IP/포트를 바꾸지 않습니다. 프록시 사용 시 실제 TCP 상대는 프록시입니다.
+
+4. Dataiku에서 누르는 순서
+
+1) 현재 결과를 확인한 DATAIKU_LAW_API_20261015_R1 Notebook을 그대로 엽니다.
+   새 Notebook을 만들거나 Kernel > Restart / Run All을 누르지 않습니다.
+2) 맨 아래 셀을 클릭합니다.
+3) 상단 Insert > Insert Cell Below를 클릭합니다. 또는 + 버튼으로 아래 셀을 추가합니다.
+4) 상단 셀 종류 드롭다운이 Code인지 확인합니다. Markdown이면 Code로 바꿉니다.
+5) 이번 메일의 CELL.txt를 열고 전체 내용을 복사하여 새 셀에 붙여 넣습니다.
+   ZIP을 받은 경우 압축을 풀고 같은 이름의 CELL.txt를 사용합니다.
+6) Shift+Enter 또는 Run을 한 번 누릅니다.
+7) Cookie 입력칸이 뜨면 허가받은 현재 값만 입력합니다. 값이 없으면 Enter를 누릅니다.
+   입력값은 화면에 표시되지 않습니다. 대화창이나 이메일로 인증값을 보내지 않습니다.
+8) TCP와 curl 결과가 출력될 때까지 기다립니다. 보통 두 검사 합계 최대 약 28초입니다.
+   로컬 프로세스 준비/종료 시간은 별도이며 curl 프로세스 자체에도 25초 한도가 있습니다.
+9) 결과에서 TCP, curl, 검사 시각 부분을 확인합니다.
+10) 기존 8번 Managed Folder 저장 셀만 다시 실행합니다.
+    MANAGED_FOLDER_ID가 이미 입력되어 있으면 새 network_evidence_r1.json도 같은 run 폴더로 저장됩니다.
+    Folder 미설정이면 먼저 기존 가이드의 Managed Folder 생성/ID 입력 절차를 따릅니다.
+    API 호출 셀이나 전체 Notebook을 다시 돌리지 마세요.
+11) Flow에서 지정한 Managed Folder를 열고 기존 run ID 하위의
+    network_evidence_r1.json을 내려받아 네트워크 담당자에게 전달합니다.
+    필요하면 기존 timeout_diag_r1.json도 함께 전달합니다.
+
+같은 셀을 다시 실행하면 network_evidence_r1.json을 읽어 출력하고 네트워크 요청은 하지 않습니다.
+중단/오류로 끝나도 예산을 초기화하지 않습니다. 저장 파일을 지우고 반복 검사하지 마세요.
+curl이 없다는 메시지가 나오면 Dataiku Notebook 실행 이미지/코드 환경 관리자에게 설치를 요청합니다.
+check가 없다는 메시지가 나오면 기존 Notebook의 원래 살아 있는 커널인지 확인합니다.
+원래 커널을 잃었다면 결과 파일을 우선 보존하고 그 사실을 알려주세요.
+
+5. 핵심 결과 판독
+
+TCP_TIMEOUT + curl exit 28 + time_connect=0 + HTTP 000
+  → 해당 시각에 독립 TCP 연결도 완료되지 않음. 경로/네트워크/서버 계층 확인 근거가 강화됩니다.
+  → 아직 '방화벽 확정'은 아닙니다. 방화벽 로그·양단 패킷으로 위치를 확인합니다.
+
+TCP_CONNECTED
+  → 그 TCP 검사 시각에는 해당 목적지와 연결을 수립했습니다.
+  → curl의 TLS, HTTP 결과를 따로 확인합니다. 두 검사는 다른 소켓·시각입니다.
+
+TCP_REFUSED
+  → 연결 거절 응답입니다. 서버 리스너 없음 또는 중간/호스트 방화벽 REJECT 가능성이 있습니다.
+  → 방화벽 DROP으로 단정하지 않습니다.
+
+NETWORK_UNREACHABLE / HOST_UNREACHABLE
+  → 로컬/중간 경로와 해당 오류 원인을 확인합니다. 이것만으로 특정 장비의 차단을 확정할 수 없습니다.
+
+time_connect > 0, time_appconnect=0, curl exit 28/35/60
+  → TCP 상대까지 연결된 뒤 TLS 또는 프록시 단계 문제를 확인합니다.
+  → IP로 호출한 HTTPS 인증서 이름 불일치/신뢰 CA 문제도 확인 대상입니다.
+    담당자가 제공한 정식 호스트명을 사용해야 하는지는 별도 확인하며 인증서 검증을 끄지 않습니다.
+
+HTTP_RESPONSE_200/302/401/403/404/5xx
+  → 이번 curl 경로에서 HTTP 응답을 받았습니다. 단순 TCP 차단만으로 설명할 수 없습니다.
+  → 403은 API 권한, WAF, 프록시 등 여러 계층에서 발생할 수 있으므로 발신 주체/로그를 확인합니다.
+  → HTTP 200만으로 정상 법령 데이터 수신이라고 판정하지 않습니다.
+
+curl의 exit 28은 시간초과 일반 코드입니다. DNS/TCP/TLS/응답 대기 중 어디인지 시간을 함께 봅니다.
+time_connect는 TCP 상대(프록시 사용 시 프록시)와 연결이 완료될 때까지의 시간입니다.
+time_appconnect는 TLS 등 핸드셰이크 완료까지의 시간입니다. 공식 설명:
+https://curl.se/docs/manpage.html#--connect-timeout
+https://curl.se/docs/manpage.html#--write-out
+https://curl.se/docs/manpage.html#EXITCODES
+
+6. 방화벽 차단을 확정할 핵심 증거
+
+가장 직접적인 근거는 이번 시도와 일치하는 방화벽 DENY/DROP 로그와 적용 정책 ID입니다.
+맞춰야 할 필드:
+  검사 시각(UTC/KST), 출발지 IP·포트, NAT 변환 후 IP·포트,
+  목적지 45.101.64.86, 목적지 TCP 8443, 장비명/구간, DENY/DROP 액션, 정책 ID.
+Dataiku 브라우저를 보는 사용자 PC IP가 아니라 Notebook 프로세스의 실제 실행 노드/컨테이너 경로입니다.
+JSON의 local_ip는 실행 네임스페이스 내부 주소일 수 있습니다. NAT 후 IP는 장비에서 확인해야 합니다.
+두 검사에서 출발지 포트가 달라지므로 TCP 검사와 curl 검사 각각의 시각/포트를 대조합니다.
+실패한 curl의 local_ip/port가 비어 있으면 추정하지 말고 독립 TCP 기록과 패킷 캡처를 사용합니다.
+
+보조 증거: 같은 실행 네임스페이스/노드와 중계 서버 양단의 패킷 기록.
+클라이언트 SYN 재전송만 있고 SYN-ACK/RST가 없으면 무응답/드롭 경로 의심 근거입니다.
+단독 캡처만으로 차단한 장비를 특정할 수 없습니다.
+서버에 SYN이 도착했는지, 서버 SYN-ACK가 나갔는지, 클라이언트까지 돌아왔는지를 대조해야 합니다.
+로그가 없다는 사실만으로 허용됐다고 판단할 수 없습니다(로그 미설정/다른 경로 가능).
+
+관리자가 캡처 권한이 있는 쉘에서 사용할 제한 명령 예시:
+  TZ=UTC timeout 45s tcpdump -nn -tttt -i any 'host 45.101.64.86 and tcp port 8443 and (tcp[tcpflags] & (tcp-syn|tcp-rst) != 0)'
+관리자가 먼저 캡처를 시작한 다음 사용자가 증거 셀을 처음 1회 실행합니다.
+이미 실행한 셀을 다시 누르면 저장 결과만 표시되므로 새로운 패킷은 발생하지 않습니다.
+이 명령은 현재 실행 셀에서 자동 실행하지 않습니다. sudo 권한을 가정하지 않습니다.
+이 예시는 IPv4 SYN/SYN-ACK/RST를 보는 용도입니다. 앱 응답/전체 TLS 진단용 캡처가 아닙니다.
+NAT 밖 서버에서 보는 출발지 주소와 클라이언트 네임스페이스 주소는 다를 수 있습니다.
+
+7. 담당자에게 보낼 요청문
+
+Dataiku AI Data Hub (DEV DESIGN)의 Notebook에서 사진에 제공된 개발 중계 주소
+45.101.64.86:8443 호출 시 연결 수립 시간초과가 발생했습니다.
+기존 Python 진단은 ConnectTimeout, 8.01초, HTTP 응답 없음, 실효 프록시 없음입니다.
+기존 요청은 /law/DRF였으며 /law/making curl 샘플 자체와는 경로가 달랐습니다.
+추가 첨부 network_evidence_r1.json에는 같은 Notebook에서 수행한 TCP 검사와
+사진의 /law/making 조회 조건을 사용하는 curl 검사 시각/출발지/결과가 담깁니다.
+첨부 결과에 기재된 차이(현재 OC/Cookie, 최초 요청만, 시간 제한)도 함께 확인 부탁드립니다.
+
+이 시각의 실제 Notebook 실행 노드/컨테이너와 NAT 후 출발지 IP·port를 식별하고,
+해당 출발지 → 45.101.64.86 TCP 8443 흐름의 방화벽 허용/차단 로그,
+적용 정책 ID 및 중계 서버 수신/리스너 로그를 확인 부탁드립니다.
+특히 DENY/DROP 여부와 반환 경로 허용 여부, 개발 중계 주소의 유효성을 확인해 주세요.
+현 단계에서는 방화벽 차단을 확정하지 않았으며, 요청과 일치하는 장비 로그가 필요합니다.
+
+8. 검증 상태 및 보존
+
+이번 코드 검증은 외부 개발 환경의 localhost HTTPS 서버와 모의 오류로 수행했습니다.
+실제 curl의 사진 경로/쿼리/target_url/Cookie 전송, 리다이렉트 중단,
+중복 실행 방지, 오류 분류, 비밀값 제외, 기존 Managed Folder 저장 연결을 검사했습니다.
+삼성 내부 중계 주소에 이 개발 환경에서 접속하지 않았습니다.
+사내 방화벽 차단 여부 및 /law/making의 실제 권한·응답 본문은 현장 결과 전까지 미확인입니다.
+기존 R1/timeout 패키지·결과·MAIN·GENOS 배포는 변경하지 않습니다.

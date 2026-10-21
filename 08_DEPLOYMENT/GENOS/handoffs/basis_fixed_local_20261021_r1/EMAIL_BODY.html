@@ -1,0 +1,16 @@
+<p>확정 연결 → HTML 확인 → 같은 SQLite 적용 명령입니다.</p>
+<p>이전 export 안내 대신 아래 순서로 실행하세요. 최신 MAIN96 위에 이번 작은 ZIP을 추가하면 됩니다.</p>
+<p><b>1. 첨부를 올린 실제 TRANSFER 폴더에서 설치</b></p>
+<pre>python3 -m zipfile -e ./GENOS_BASIS_FIXED_LOCAL_20261021_R1.zip ./GENOS_BASIS_FIXED_LOCAL_20261021_R1
+bash ./GENOS_BASIS_FIXED_LOCAL_20261021_R1/GENOS_BASIS_FIXED_LOCAL_RUN.txt check --root /workspace
+bash ./GENOS_BASIS_FIXED_LOCAL_20261021_R1/GENOS_BASIS_FIXED_LOCAL_RUN.txt apply --root /workspace</pre>
+<p><b>2. 확정 연결 4건 준비 + HTML 생성</b></p>
+<pre>python3 /workspace/06_TOOLS/pipeline.py basis-work local-prepare fixed-001</pre>
+<p><b>3. 아래 HTML을 열어 연결·원문 확인</b></p>
+<pre>./basis-local-fixed-001/LINKS.html</pre>
+<p><b>4. 같은 SQLite에 적용 + 확인</b></p>
+<pre>python3 /workspace/06_TOOLS/pipeline.py basis-work local-apply fixed-001
+python3 /workspace/06_TOOLS/pipeline.py basis-work local-status fixed-001</pre>
+<p>같은 TRANSFER 폴더에서 같은 이름 <code>fixed-001</code>로 실행합니다. 재실행하면 같은 4건을 중복 삽입하지 않습니다. 마지막 결과의 <code>live</code> 4건이 <code>APPROVED</code>, <code>marker_enabled=true</code>인지 확인하세요.</p>
+<p>이미 구조화·색인된 선택 세대를 사용하며, 전체 조사 명령은 그대로 유지합니다. 이번 순서는 기존에 지정한 위험관리 내규·외규 확정 연결 4건용입니다.</p>
+<p>로컬 30개 검사 및 최종 ZIP의 MAIN96 설치·실제 서비스 준비·SQLite 반영/재실행/원복 검증을 완료했습니다. GENOS 현장 실행은 별도입니다.</p>

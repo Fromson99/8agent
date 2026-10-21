@@ -1,0 +1,11 @@
+<p>앞서 보낸 <b>GENOS_COMPARISON_READABLE_20261021_R1</b>에서 본문 속 <code>[C4][C60]</code> 같은 임시 인용 번호 처리가 빠져 있었습니다. 이 부분을 보완한 <b>R2를 사용해 주세요.</b></p>
+<p>본문·검토 의견·추가 확인에 섞인 C번호를 제거하고, 검증된 출처는 내규/외규 문서 번호와 접을 수 있는 원문으로 표시합니다. 원문과 사용자 질문의 실제 문자·각주, 저장된 모델 출력과 출처 연결은 보존합니다. 이전의 미완료 문구·E해시 정리, 출처 접기, 본문/표 일치 수정도 포함합니다.</p>
+<p>관련 로컬 검사 207개를 통과했습니다. 최종 ZIP 설치·재실행·중단 복구·원복과 설치한 코드의 서비스 검사도 확인했습니다. GENOS 반입·배포와 내부 모델 확인은 아직 수행하지 않았습니다.</p>
+<p><b>첨부 4개:</b> 수정 ZIP, 별도 실행 TXT, 워크플로우 편집기 전체 TXT, 적용 안내입니다. R1 설치 전과 후 모두 R2를 적용할 수 있습니다.</p>
+<p>파일을 실제 업로드한 <b>TRANSFER 폴더</b>에서 아래 명령을 실행합니다. 적용 대상은 기존 Git checkout <code>~/DEV</code>이며 다른 경우 안내의 <code>--root</code>를 지정합니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_COMPARISON_READABLE_20261021_R2.zip ./GENOS_COMPARISON_READABLE_20261021_R2
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt check
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt gate</pre>
+<p>이후 적용 안내에 따라 checkout 변경 검토·commit·gate-code·필요한 선택 세대 검사·push·서빙 리비전 배포를 진행합니다. <b>편집기 TXT는 R1과 같습니다.</b> 이미 R1 TXT를 전체 교체했다면 다시 바꾸지 않아도 됩니다. 아직 적용하지 않았다면 Python 단계에 전체 교체하고 저장해야 합니다.</p>
+<p>새 질문을 워크플로우 테스트 화면에서 실행해 C번호/E해시 노출, 출처 접기와 본문/표 일치를 확인해 주세요. 이전 실행 기록은 보존합니다.</p>

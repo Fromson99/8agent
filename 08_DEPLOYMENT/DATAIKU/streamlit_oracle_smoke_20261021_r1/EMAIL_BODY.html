@@ -1,0 +1,22 @@
+<!doctype html><html><body>
+<p>안녕하세요.</p>
+<p>요청하신 <b>Dataiku Streamlit 화면·Oracle 조회 테스트 코드 R1</b>을 보냅니다.</p>
+<p><b>첨부 3개</b></p>
+<ul>
+<li>DATAIKU_STREAMLIT_ORACLE_TEST_20261021_R1.zip: Python 소스, 전체 붙여넣기 TXT, 안내, 로컬 검사 기록, SHA-256</li>
+<li>STREAMLIT_ORACLE_TEST.txt: Dataiku Streamlit Python 편집기에 전체를 붙여 넣을 코드</li>
+<li>GUIDE.txt: 설정·사용 순서와 오류 확인 방법</li>
+</ul>
+<p><b>실행 순서</b></p>
+<ol>
+<li>ZIP을 내려받아 압축을 풀고, DATAIKU_STREAMLIT_ORACLE_TEST_20261021_R1 폴더의 GUIDE.txt를 확인합니다.</li>
+<li>Dataiku 프로젝트 → Code → Webapps → New webapp → Code webapp → Streamlit → Empty Streamlit app으로 생성합니다. 기본 웹앱 방식은 DSS 14.3 이상 기준입니다.</li>
+<li>Settings → Backend → Code env에서 Streamlit과 pandas가 설치된 Python 3.9 이상 환경을 선택합니다. 추가 패키지 예시는 <code>streamlit&gt;=1.40,&lt;1.57</code> 및 <code>pandas</code>입니다. 사내 제공 패키지와 Python 호환 버전을 사용합니다.</li>
+<li>Python 편집기의 기본 코드를 지우고 STREAMLIT_ORACLE_TEST.txt 전체를 붙여 넣은 후 Save합니다. 별도 첨부 TXT와 ZIP 내부 TXT는 동일합니다. 이 코드는 웹앱 편집기용입니다.</li>
+<li>화면 왼쪽 연결 이름은 기존 이관 자료의 <b>AIDP</b>로 설정했습니다. 실제 연결 이름이 다르면 변경합니다.</li>
+<li><b>Oracle 연결 확인 → 테이블 목록 불러오기 → 테이블 선택 → 선택한 테이블 조회</b> 순서로 누릅니다. 다른 스키마는 왼쪽 스키마 입력을 바꾸고 목록을 다시 불러옵니다.</li>
+</ol>
+<p>이번 테스트는 <b>읽기 전용</b>입니다. 최대 20행·40개 열을 조회하며 문자열과 긴 본문은 앞 300자만 표시합니다. 연결/권한/조회 오류는 화면의 확인 번호와 ORA 코드로 확인하고, 원래 오류는 Webapp 백엔드 로그에서 조회합니다.</p>
+<p>동일 소스의 Python 3.9 문법과 로컬 모의 동작 11개 검사를 통과했고 최종 ZIP 내용과 TXT 일치를 확인했습니다. <b>실제 Dataiku 화면·Oracle 연결은 아직 현장 미검증</b>입니다. MAIN 및 GENOS 배포 변경은 없습니다.</p>
+<p>공식 안내: <a href="https://developer.dataiku.com/latest/tutorials/webapps/streamlit/getting-started/index.html">Dataiku Streamlit 웹앱 생성</a></p>
+</body></html>

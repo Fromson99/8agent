@@ -1,0 +1,42 @@
+Dataiku Streamlit / Oracle 조회 테스트
+
+1. Dataiku 프로젝트 > Code > Webapps > New webapp > Code webapp > Streamlit > Empty Streamlit app.
+   기본 Streamlit 웹앱은 DSS 14.3 이상을 기준으로 한다. 메뉴가 없으면 설치 버전 확인이 먼저다.
+2. Settings > Backend > Code env에서 Python 3.9 이상이며 Streamlit과 pandas가 설치된 환경을 선택한다.
+   새 환경의 추가 패키지 예: streamlit>=1.40,<1.57 및 pandas.
+   사내 패키지 저장소에서 제공하는 Python/Streamlit 호환 버전을 사용한다.
+   공식 안내: DSS 14.5.2 이하는 Streamlit 1.56 이하, Streamlit 1.57은 DSS 14.5.3 이상 필요.
+3. Python 편집기의 예제 코드를 지우고 STREAMLIT_ORACLE_TEST.txt 전체를 붙여 넣는다.
+   이 파일은 Python 소스와 바이트가 같다. 노트북 셀이나 SQL 편집기용이 아니다.
+4. Save 후 웹앱 미리보기에서 왼쪽 연결 이름을 확인한다.
+   기본 AIDP는 기존 Dataiku 이관 자료에 기록된 연결 이름이며 현장 연결 성공을 뜻하지 않는다.
+5. '1. Oracle 연결 확인'으로 DB_USER, CURRENT_SCHEMA, DB_TIME 표시를 확인한다.
+6. '2. 테이블 목록 불러오기' → 테이블 선택 → 조회 행 수 → '3. 선택한 테이블 조회'.
+   다른 스키마의 표를 보려면 왼쪽 스키마 입력을 바꾼 후 목록을 다시 불러온다.
+   스키마 입력은 일반 대문자 Oracle 식별자만 지원하며, 동의어/뷰 탐색은 이번 범위 밖이다.
+
+실행 범위
+- MAIN 파이프라인과 독립된 일회성 화면/DB 접속 점검 예제. 기존 서비스 호출이나 RAG 연결은 없다.
+- SELECT만 사용한다. INSERT/UPDATE/DELETE/DDL/COMMIT, 모델 호출, 데이터 전체 다운로드는 없다.
+- 테이블 목록 최대 201행 조회/200개 표시, 열 최대 41개 조회/40개 미리보기, 데이터 최대 20행.
+- 문자열과 CLOB/NCLOB은 DB에서 앞 300자만 가져온다. BLOB/RAW/LONG/사용자 정의 형식 등은 제외한다.
+- 총 건수/최신 순서/본문 전체/데이터 완전성을 검증하는 화면이 아니다.
+- 앱의 SQL은 Dataiku 웹앱 실행 계정과 등록 Oracle 연결의 권한으로 실행된다.
+  기존 웹앱/프로젝트 접근 범위 안에서 개인 개발 테스트에 사용한다. 개별 사용자의 문서 권한/RAG 권한은 연결하지 않았다.
+- 서버 전역 데이터 캐시는 없고 테이블 목록만 브라우저 세션 상태에 둔다.
+
+실패 계약
+- 입력 오류는 SQL 실행 전 표시한다. 연결/권한/통신/SQL 오류는 실패 번호와 ORA 코드를 표시하고 해당 실행을 끝낸다.
+- 원래 예외와 traceback은 Dataiku 웹앱 백엔드 로그에 남긴다. 화면에 자격증명/원문 오류/traceback을 표시하지 않는다.
+- 자동 재시도 없음. 연결 확인 1회, 목록 1회, 미리보기는 열 조회+본문 조회 최대 2회다.
+- 쿼리 시간 제한은 현장 Dataiku/Oracle 연결 설정을 따른다. 앱 자체 취소/강제 deadline은 구현하지 않았다.
+- 실패를 빈 결과 성공으로 바꾸지 않는다. 목록 갱신 실패나 연결/스키마/시작 글자 변경 시 이전 목록을 사용할 수 없다.
+- 재시도는 설정을 확인한 사용자의 버튼 클릭으로 수행한다. 영속 실행/작업 복구 기능은 없다.
+- 실패 로그는 현장 Dataiku가 보존한다. 제거하려면 이 테스트 웹앱만 중지/삭제하면 되고 DB 원복은 필요 없다.
+
+공식 문서
+https://developer.dataiku.com/latest/tutorials/webapps/streamlit/getting-started/index.html
+https://developer.dataiku.com/latest/api-reference/python/sql.html
+https://doc.dataiku.com/dss/latest/webapps/security.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/ALL_TAB_COLUMNS.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/DBMS_LOB.html

@@ -1,0 +1,66 @@
+"""Exercise output/failure/API contracts against the installed full code only."""
+import importlib,json,os,sys,tempfile,re
+import pytest
+from pathlib import Path
+R=Path(__file__).resolve().parents[4];C=Path(sys.argv[1]).resolve();sys.dont_write_bytecode=True
+# Contract fixtures own their isolated temporary stores; the separate real
+# GENOS bootstrap check intentionally retains deployment environment settings.
+for key in list(os.environ):
+    if key.startswith(('GENOS_','ORACLE_','LLMOPS_','DP_')) or key in ('DP','AD_STORE_PATH'):
+        os.environ.pop(key,None)
+sys.path[:0]=[str(C/'02_BACKEND'),str(C),str(R/'05_TESTS/CONTRACTS'),str(R/'05_TESTS')]
+sys.path[:0]=[str(R/'06_TOOLS/EXPERIMENTS/adr_0847'),str(R/'06_TOOLS/EXPERIMENTS/adr_0844'),str(R/'06_TOOLS/EXPERIMENTS/adr_0841'),str(R/'06_TOOLS/EXPERIMENTS/adr_0811')]
+os.environ.update(LAWRAG_WORKSPACE_ROOT=str(C),LAWRAG_TOOL_WORKSPACE_ROOT=str(C),AD_WORKER_ENABLED='0',GENOS_AUTO_WARMUP='0')
+os.environ.update(WORKFLOW_TEST_CODE_ROOT=str(C),SOURCE_PROVIDER_PROJECT_ROOT=str(R),LAWRAG_TOKEN_TEST_REPOSITORY=str(R))
+import semantic_runtime.app as app
+for row in json.loads((C/'00_SYSTEM/WORKSPACE.json').read_text())['roots']:
+    (C/row['canonical_path']).mkdir(parents=True,exist_ok=True)
+# Tests sometimes prepend the parent repository while importing their fixtures.
+# Pin these entry modules before collection; assert all product imports below.
+import service,main,main_workflow,main_router
+original=app.create_app
+def create(*args,**kw):
+    if kw.get('contracts_root') is not None and Path(kw['contracts_root']).resolve()==R:kw['contracts_root']=C
+    generation=Path(args[1] if len(args)>1 else kw['generation'])
+    if 'pytest-' in str(generation):
+        from lawrag.pipeline.search_selection import plan,activate
+        from semantic_runtime.search_selection import selection_path
+        if not selection_path(generation).exists():activate(plan(generation,latest=True))
+    return original(*args,**kw)
+app.create_app=create
+plugin=importlib.import_module('conftest')
+class InstalledTests:
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_runtest_setup(self,item):
+        # Importing deployed service.py intentionally installs its field config.
+        # A different synthetic test must not inherit that prior test's store.
+        for key in list(os.environ):
+            if key.startswith(('GENOS_','ORACLE_','LLMOPS_','DP_')) or key in ('DP','AD_STORE_PATH'):
+                os.environ.pop(key,None)
+        os.environ.update(AD_WORKER_ENABLED='0',GENOS_AUTO_WARMUP='0')
+
+    @pytest.fixture
+    def tmp_path(self,request,tmp_path_factory):
+        # Only the Oracle service contract requires a physical local cache.
+        # Keep other fixture stores on pytest's ordinary isolated temp volume.
+        if request.node.name=='test_actual_service_uses_oracle_without_source_nfs':
+            return Path(tempfile.mkdtemp(prefix='pytest-main87-oracle-',dir=R/'90_RUNTIME'))
+        return tmp_path_factory.mktemp(re.sub(r'\W','_',request.node.name)[:30],numbered=True)
+
+    def pytest_collection_modifyitems(self,items):
+        # Pytest may prepend fixture folders; product imports must use this checkout.
+        sys.path[:0]=[str(C/'02_BACKEND'),str(C)]
+        # Imported fixture modules also load service.py. Point those at the
+        # installed checkout; the standalone Dataiku cell remains a test asset.
+        for name,module in list(sys.modules.items()):
+            if name.startswith('test_') and name!='test_oracle_dp' and getattr(module,'ROOT',None)==R:
+                module.ROOT=C
+                if isinstance(getattr(module,'MODULE_PATH',None),Path) and module.MODULE_PATH.is_relative_to(R):
+                    module.MODULE_PATH=C/module.MODULE_PATH.relative_to(R)
+if __name__=='__main__':
+    result=pytest.main(['-q','--import-mode=importlib','--tb=short','--show-capture=no','-o','pythonpath=','--noconftest',*sys.argv[2:]],plugins=[plugin,InstalledTests()])
+    imports={name:str(Path(module.__file__).resolve()) for name,module in sys.modules.items()
+             if (name.startswith(('semantic_runtime','workflow','lawrag')) or name in ('main','main_workflow','service')) and getattr(module,'__file__',None)}
+    assert all(Path(path).is_relative_to(C) for path in imports.values()),imports
+    print('INSTALLED_CONTRACT_IMPORTS PASS; modules='+str(len(imports)),flush=True)
+    raise SystemExit(result)

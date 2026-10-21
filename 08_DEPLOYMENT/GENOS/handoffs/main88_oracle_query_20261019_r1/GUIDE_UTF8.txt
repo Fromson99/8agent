@@ -1,0 +1,107 @@
+GENOS_MAIN88_ORACLE_QUERY_20261019_R1 — MAIN88 + Oracle 직접 조회 누적 반입본
+
+1. 이번에 사용할 파일 / 상태
+최신 선택 MAIN88 answer-first-followup-20261019-r1(포인터 generation 88)을 기준으로
+Oracle 직접 조회, 기존 SQLite 경로, 팀·세션 구분, 로깅을 통합한 전체 코드 반입본입니다.
+이전 MAIN87/SESSION_IDENTITY/ORACLE_LOGGING 패치를 다시 순서대로 적용할 필요가 없습니다.
+앞선 패치 대신 이번 ZIP을 사용합니다. 설치는 기존 checkout 파일을 백업하고 교체합니다.
+SOURCE_POINTER.json은 기준 MAIN 기록입니다. 설치가 현장 데이터/로컬 MAIN 포인터를 바꾸지는 않습니다.
+현장 Git commit/push, Oracle 게시/활성화, 코드서빙 리비전, 워크플로우 편집기 반영은 아직 미확인입니다.
+코드 ZIP 지문과 모든 파일 목록: PACKAGE_SPEC.json, CODE_MANIFEST.json, SOURCE_BINDING.json.
+현장 실제 commit/리비전/Oracle 조회 release/revision/요청 ID는 별도로 기록하십시오.
+
+2. TRANSFER에서 적용 — 사용자 현장 경로를 확인
+ZIP/TXT를 실제 업로드한 TRANSFER 폴더를 현재 터미널 작업 위치로 둡니다.
+TRANSFER의 절대경로를 추정하거나 압축 해제를 위해 먼저 DEV로 이동하지 않습니다.
+아래 /workspace는 제공된 현장 사진에서 확인된 기존 checkout 실제 경로입니다.
+현재 현장에서도 git rev-parse --show-toplevel 결과와 같은지 확인하고, 다르면 확인한 경로로 바꾸십시오.
+~/DEV가 /workspace를 가리키는 심볼릭 링크여도 설치기는 실제 경로를 확인합니다.
+
+python3 -m zipfile -e ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1.zip ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt deps --root /workspace
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt check --root /workspace
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt apply --root /workspace
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt status --root /workspace
+
+deps는 동봉된 sqlglot==30.23.0 wheel만 --no-index --no-deps로 설치합니다. 기존 런타임 의존성은 유지합니다.
+실제 Python 실행 파일/버전이 로그에 남습니다. 최소 Python 3.11입니다.
+별도 첨부 RUN.txt도 ZIP 옆에서 실행하면 압축 해제 후 같은 명령으로 연결합니다.
+최초 실행부터 TRANSFER/main88-oracle-query-r1-logs에 로그와 종료 코드를 보존합니다.
+설치 상태/실패는 패키지 폴더의 STATUS.json/LAST_FAILURE.json에 남습니다.
+코드 백업은 기존 checkout의 09_ARTIFACTS/BACKUPS/code-replacement에 남습니다.
+check 실패를 무시하고 apply하지 마십시오. 중단된 apply는 원본 복원 후 재시도하도록 연결했습니다.
+다른 사용자가 이후 수정한 파일이 발견되면 덮어쓰거나 원복하지 않고 오류로 멈춥니다.
+
+3. Git commit → 동일 checkout 코드 게이트 → push → 새 리비전
+적용한 기존 checkout에서 git diff --check와 변경 파일을 검토해 commit합니다.
+.env, 데이터, TRANSFER, 로그/백업은 Git에 추가하지 않습니다.
+CODE_MANIFEST.json과 설치 receipt.units에 나오는 변경 코드 파일을 commit 대상으로 확인합니다.
+그 후 TRANSFER에서 아래 코드 전용 게이트를 실행합니다.
+
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt gate-code --root /workspace
+
+게이트는 APPLIED_CODE.zip의 모든 파일을 실제 checkout의 추적 파일 및 HEAD와 대조합니다.
+후속 수정이 있으면 새 commit 후 다시 검사합니다. 통과한 commit을 기존 승인된 원격에 push하고
+코드서빙 새 리비전이 그 commit인지 확인합니다. 이 스크립트가 자동 push/배포하지는 않습니다.
+Oracle 모드는 데이터 generation 파일 검사를 사용하지 않습니다. 코드 게이트 PASS는 Oracle 현장 조회 PASS가 아닙니다.
+SQLite 모드로 운영할 때만 기존 세대를 대상으로 gate-sqlite --generation <실제세대절대경로>를 별도 실행합니다.
+
+4. Oracle 조회 데이터 준비 — Dataiku에서 수행
+기존 원문 이관 완료 release_id와 새 조회 release_id는 서로 다릅니다.
+조회 테이블 4개를 허용한 전제로 DDL과 게시 명령을 포함했습니다. 기존 테이블 DROP/ALTER는 없습니다.
+스키마 owner SIDDA와 ORDS 접속 schema b04를 혼동하지 마십시오.
+이 패키지의 코드를 Dataiku 실행 코드에도 적용하고 sqlglot wheel을 같은 Python 환경에 설치한 뒤 실행합니다.
+아래 <...>는 실제 경로/receipt 값으로 대체해야 합니다. 인증 정보는 기존 검증된 접속 설정을 사용합니다.
+
+python3 06_TOOLS/pipeline.py oracle-query check-schema --log-dir <스키마확인로그>
+python3 06_TOOLS/pipeline.py oracle-query create-schema --log-dir <스키마생성로그>
+python3 06_TOOLS/pipeline.py oracle-query publish --generation <Dataiku검증세대폴더> --source-release-id <기존원문릴리스ID> --log-dir <새게시로그폴더>
+python3 06_TOOLS/pipeline.py oracle-query activate --channel main --release-id <완료된새조회릴리스ID> --expected-revision 0 --log-dir <활성화로그폴더>
+
+expected-revision 0은 채널 최초 생성에만 씁니다. 기존 채널 갱신/원복에는 현재 revision과
+--expected-release-id <현재조회릴리스ID>를 함께 지정합니다. COMPLETE 결과와 receipt를 보존합니다.
+기존 query 게시 결과가 있다면 현재 코드의 compiler/schema 지문에 맞게 다시 게시해야 할 수 있습니다.
+법제처 갱신 Dataiku 스케줄 등록은 이번 패키지가 자동 수행하지 않습니다. 매일 배치는
+수집/구조화/색인 → 원문 이관 → 조회 게시 COMPLETE 확인 → 채널 활성화 순서로 연결합니다.
+게시 실패 시 이전 채널을 유지하고 같은 receipt로 재개합니다. 새 요청은 새 버전,
+진행 중 요청은 처음 선택한 이전 버전을 끝까지 사용합니다. 이전 불변 릴리스는 자동 삭제하지 않습니다.
+
+5. 코드서빙 설정 / 저장 방식
+DP=oracle
+DP_QUERY_CHANNEL=main
+GENOS_RUNTIME_DIR=<실제 외부 NFS/CIFS runtime 절대경로>
+GENOS_SHARED_LOG_DIR=<실제 외부 NFS/CIFS 요청 로그 경로; 별도 지정할 때>
+ORACLE_ORDS_BASE_URL / ORACLE_ORDS_SCHEMA / ORACLE_ORDS_CLIENT_ID / ORACLE_ORDS_CLIENT_SECRET는 기존 접속 값을 사용합니다.
+내부 GENOS 모델/팀 설정을 유지하고 시작 명령은 python3 main_router.py입니다.
+
+채널 대신 특정 조회 버전 고정 시 DP_QUERY_CHANNEL을 제거하고 DP_QUERY_RELEASE_ID=<조회릴리스ID>를 씁니다.
+두 설정을 동시에 넣지 마십시오. 둘 다 없으면 main 채널을 선택합니다.
+DP_RELEASE_ID / DP_CACHE_DIR는 새 Oracle 서빙 경로에서 사용하지 않습니다.
+원문/색인 전체 다운로드 및 서빙 데이터 SQLite 저장은 없습니다. 필요한 행/본문만 요청 메모리로 읽습니다.
+대화·사건·대사·요청 로그 등 기존 상태는 외부 NFS/CIFS에 유지합니다. STATE 테이블로 이관한 것은 아닙니다.
+외부 마운트가 빠지면 로컬 디스크로 대체하지 않고 오류를 반환합니다.
+이전 GENOS_SERVING_PATHS.json은 보존하지만 Oracle 모드에서는 그 SQLite 경로 설정을 읽지 않습니다.
+DP=sqlite 또는 DP 미설정은 기존 세대/SQLite 동작을 유지합니다.
+
+6. 워크플로우 편집기 / 현장 확인
+GENOS_MAIN88_ORACLE_QUERY_20261019_R1_WORKFLOW_PASTE_ALL.txt 전체를 기존 워크플로우 Python 단계에 반영합니다.
+이는 Git push/코드서빙 리비전 배포와 별도입니다. 기존 팀 식별/서비스 연결을 유지하십시오.
+현장 테스트는 워크플로우 테스트 화면에서만 수행합니다.
+{"question":"WARMUP_STATUS"}와 실제 근거 질문으로 준비 상태와 최종 응답/인용을 확인합니다.
+준비 결과 mode=oracle-query, source_downloaded=false, serving_data_cache=false,
+query_release_id/query_pointer_revision과 oracle.release.selected 로그를 같은 요청으로 대조합니다.
+HEALTH=200만으로 답변 성공으로 판단하지 않습니다. 처음에는 새 채팅/세션에서 확인하십시오.
+기존 MODEL/가드레일 플랫폼 오류 또는 Gitea 503을 이 패키지가 해결했다는 뜻은 아닙니다.
+
+7. 원복
+아래 명령은 정확히 이 설치가 바꾼 파일만 백업으로 복원합니다. 이후 사용자 수정이 있으면 거부합니다.
+bash ./GENOS_MAIN88_ORACLE_QUERY_20261019_R1/GENOS_MAIN88_ORACLE_QUERY_20261019_R1_RUN.txt undo --root /workspace
+그 뒤 원복 checkout을 별도 commit/게이트/push하고 이전 검증 리비전 및 해당 설정으로 재배포합니다.
+조회 채널 원복은 activate에 이전 COMPLETE 조회릴리스ID와 현재 revision/release를 넣어 별도로 수행합니다.
+코드 원복은 의존성 wheel을 자동 제거하지 않습니다. 공유 Python 환경에 영향을 주지 않기 위함입니다.
+
+8. 검증 범위
+VALIDATION.json에 합친 코드의 테스트와 설치/중단복구/원복 결과를 기록합니다.
+이전 작업의 실제 로컬 Oracle 23 SQL 검사와 현재 통합 코드 계약 검사를 구분합니다.
+망분리 Oracle 19/ORDS HTTP·인증, 실제 외부 NFS 장애, 내부 LLM 답변, 전체 데이터 성능은 미검증입니다.
+실제 현장 검증 후 code commit/revision, query release/revision, 요청 ID와 결과를 함께 남기십시오.

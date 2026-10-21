@@ -1,0 +1,25 @@
+대사 표시 수정 검증 — workflow1.20.5
+
+변경 코드·pin의 합성 계약/API/service/저장·중복·재개/표시·스트림 검사: 204 passed.
+신규 표시 검사11개 포함: 최종 인용과 표 연결, 단측 인용, 위조 인용/해시/발행근거 거부,
+90개 분할 원문의 문서별 접기, 판본 분리, 1/17/160자 스트림 일치, HTML 삽입 방지.
+원문 숫자·각주·구분자·줄바꿈 및 원문 속 '미완료' 같은 실제 문구는 변경하지 않습니다.
+모델·검색 추가 호출0. 기존 600초·24회 예산과 partial 상태·원장 유지.
+
+동일 설치기 사전 검사: MAIN96 및 MAIN96+STABLE_COMMANDS+BASIS_FIXED_LOCAL+TEN_MINUTE
+두 시작 상태에서 설치·재실행·강제 중단 후 복구·committed checkout gate-code·변조 거부·원복38명령 통과.
+설치한 코드394파일에서 핵심36검사 재통과, 실제 service.service와 저장 소비자 포함.
+최종 ZIP 재검증의 해시·명령 결과는 별도 DELIVERY_VALIDATION.json 및 SHA256SUMS.txt가 정본입니다.
+GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt는 해당 표시 코드와 바이트 동일하며 Python3.10 구문 검사 통과.
+
+브라우저: 합성 표시의 닫기/펼치기 및 3열 구조를 로컬 Chromium으로 확인.
+실제 GENOS HTML sanitizer/스타일/접기 허용은 현장 워크플로우 테스트에서 확인해야 합니다.
+
+확대 검사 중 구형 failed-originals8개는 latest document selection이 없는 fixture 때문에 실행 전 실패했습니다.
+수정 전 MAIN96 checkout에서도 같은8실패를 재현했습니다. 이를 이번 해결/통과 수로 계산하지 않습니다.
+일반 답변 스트림 fixture3개는 JSON 사전확인에 SSE 전용 모의 응답을 전달하던 준비 코드를 보완했습니다.
+과거 semantic_runtime/1.0.0의 app.py pin6개는 작업 전과 동일한 불일치로 별도 기록했으며
+현재 선택 실행 경로의 gate·pin 검증과 혼동하지 않습니다.
+
+선택 로컬 MAIN96·실제 데이터·Git commit/push·GENOS 반입·리비전 배포·내부 모델은 미변경/미수행입니다.
+이 파일은 실제 GENOS 배포 성공이나 법률 답변 품질 인증을 뜻하지 않습니다.

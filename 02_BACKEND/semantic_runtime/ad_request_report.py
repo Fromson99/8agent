@@ -38,7 +38,7 @@ async def intercept(gateway, data, runtime, application):
         data['json'] = {**data['json'], 'request_id': request_id}
     root = os.environ.get('GENOS_SHARED_LOG_DIR', '').strip()
     started_at, started = datetime.now(timezone.utc), time.perf_counter()
-    capture = reports.capture_events(request_id) if root else nullcontext([])
+    capture = reports.capture_events(request_id, detailed=True) if root else nullcontext([])
     with capture as events, obs.context(request_id=request_id, api_type='AD_PROBE'):
         obs.event(log, 'request.started', component='ad_mode')
         result = await asyncio.to_thread(gateway.intercept, data, runtime, application)
@@ -106,6 +106,8 @@ def readable(report):
     lines = ['GENOS AD 요청 실행 기록', 'request_id: '+str(report.get('request_id')),
              'team: '+str(report.get('team_id')), 'journal: '+str(journal.get('status')),
              'answer_status: '+str(body.get('answer_status'))]
+    if report.get('process_trace_path'):
+        lines.append('전체 프롬프트·응답·단계별 누적 기록: ' + report['process_trace_path'])
     for call in journal.get('calls', []):
         response = call.get('model_output') or {}
         status = response.get('status_code') if isinstance(response, dict) else None

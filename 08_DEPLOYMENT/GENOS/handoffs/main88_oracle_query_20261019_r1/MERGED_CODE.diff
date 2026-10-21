@@ -1,0 +1,748 @@
+--- MAIN88/02_BACKEND/semantic_runtime/ad_gateway.py
++++ merged/02_BACKEND/semantic_runtime/ad_gateway.py
+@@ -22,6 +22,10 @@
+     path=selected_store(runtime)
+     if not path.exists() or os.environ.get('AD_WORKER_ENABLED','1')=='0':return
+     def compile_item(job,item,guard):
++        from .oracle_query_service import request_context
++        with request_context():
++            return _compile_item(job,item,guard)
++    def _compile_item(job,item,guard):
+         state=Store(path)
+         try:
+             row=state.db.execute('SELECT revision FROM sw_investigation WHERE id=?',(item['investigation'],)).fetchone()
+--- MAIN88/02_BACKEND/semantic_runtime/app.py
++++ merged/02_BACKEND/semantic_runtime/app.py
+@@ -45,10 +45,10 @@
+ 
+ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,vector=None,implementation=None,
+                legal_agent_profile=None,legal_agent_transport=None,workspace_root=None,runtime_root=None,
+-               memory_factory=None,memory_identity=None,basis_factory=None):
++               memory_factory=None,memory_identity=None,basis_factory=None,data_store=None):
+     root=Path(root);contracts_root=Path(contracts_root or root)
+     with obs.step(log, 'bootstrap.source_store'):
+-        store=Store(generation)
++        store=data_store if data_store is not None else Store(generation)
+     with obs.step(log, 'bootstrap.contracts'):
+         contracts=Contracts(contracts_root)
+         if contracts.pipeline.get('document_build', {}).get('require_latest_selection'):
+@@ -73,6 +73,7 @@
+     is_legal_agent=pipeline.profile_id in ('legal-agent-rag-v1', 'legal-agent-rag-v2', 'legal-agent-rag-v3', 'legal-agent-rag-v4', 'legal-agent-rag-v5','legal-agent-rag-v6')
+     unified=pipeline.profile_id=='legal-agent-rag-v6'
+     pipeline.task_harness_journal = runtime/'task-harness'/'execution.sqlite'
++    pipeline.runtime_dir=runtime
+     pipeline.relation_issues = runtime/'relation-issues'/'rejections.sqlite'
+     @asynccontextmanager
+     async def lifespan(app):
+@@ -233,7 +234,8 @@
+                                     '출처 발행 중입니다.' if status in ('RUNNING','COMMIT_READY') else '발행 결과가 없습니다.')
+             value=json.loads(row[0]);validate_current(repo,value,store)
+             from .legal_agent.source_candidates import inventory
+-            current=json.loads((store.path/'manifest.json').read_text())
++            store.check_unchanged()
++            current=store.manifest
+             allowed=set(current['scope']['document_version_ids'])&set(repo.binding['scope']['document_version_ids'])
+             allowed -= store.selection.excluded
+             candidates=[e for e in inventory(repo) if e['document_id'] in allowed]
+@@ -409,7 +411,7 @@
+                 if is_legal_agent:
+                     genos_selected = bool(_os.environ.get('GENOS_GENERATION', '').strip() or
+                                           _os.environ.get('GENOS_DATA_ROOT', '').strip())
+-                    deferred = genos_selected and _os.environ.get(
++                    deferred = not getattr(store,'is_oracle_query',False) and genos_selected and _os.environ.get(
+                         'GENOS_DEFER_PUBLICATION', '1').strip().lower() not in {'0', 'false', 'off'}
+                     run=pipeline.run(question,docs,use_llm,scope,execution_context={
+                         'run_id':ident,'release':release,'runtime':runtime,'publish':True,
+--- MAIN88/02_BACKEND/semantic_runtime/deployment_paths.py
++++ merged/02_BACKEND/semantic_runtime/deployment_paths.py
+@@ -13,6 +13,11 @@
+ 
+ 
+ def install(root, *, environment=None):
++    env = os.environ if environment is None else environment
++    # Oracle selects its publication per request and requires an explicit external
++    # runtime. A retained SQLite deployment binding must not override either.
++    if env.get('DP', '').strip().lower() in {'oracle', '1', 'true'}:
++        return None
+     file = Path(root) / CONFIG
+     if not file.exists():
+         return None
+@@ -29,7 +34,6 @@
+     fingerprint = value.get('generation_manifest_sha256', '')
+     if len(fingerprint) != 64 or any(c not in '0123456789abcdef' for c in fingerprint):
+         raise ValueError('generation manifest fingerprint required')
+-    env = os.environ if environment is None else environment
+     env['GENOS_GENERATION'] = value['generation']
+     env['GENOS_RUNTIME_DIR'] = value['runtime']
+     env.pop('GENOS_STATE_DIR', None)
+--- MAIN88/02_BACKEND/semantic_runtime/document_agent.py
++++ merged/02_BACKEND/semantic_runtime/document_agent.py
+@@ -18,6 +18,11 @@
+ class ServingDocumentAgent(ServingNavigationAgent):
+     @contextmanager
+     def resources(self, scope):
++        if getattr(self.pipeline.store,'is_oracle_query',False):
++            from .oracle_query_resources import resources
++            with resources(self,scope) as opened:
++                yield opened
++            return
+         with obs.step(log, 'resources.index'):
+             index = self.get_index()
+         with obs.step(log, 'resources.tools'):
+@@ -62,7 +67,11 @@
+         with self.resources(scope) as (index, tools, glossary, matcher):
+             # The current HTTP contract has no authenticated user/session identity.
+             # Keep interpretation proposals inside this request; never share aliases.
+-            with TemporaryDirectory(prefix='rag-document-request-') as folder:
++            temporary_root=None
++            if getattr(self.pipeline.store,'is_oracle_query',False):
++                temporary_root=self.pipeline.runtime_dir/'request-mappings'
++                temporary_root.mkdir(parents=True,exist_ok=True)
++            with TemporaryDirectory(prefix='rag-document-request-',dir=temporary_root) as folder:
+                 agent = MappedAgent(self.pipeline, glossary, index, matcher,
+                                     self.config.get('limits'),
+                                     ledger=Path(folder)/'mappings.sqlite', actor=plan['id'],
+--- MAIN88/02_BACKEND/semantic_runtime/folder_navigation.py
++++ merged/02_BACKEND/semantic_runtime/folder_navigation.py
+@@ -48,7 +48,7 @@
+     from .team_scope import generation_key
+     key = (generation_key(store),projection_hash)
+     with _CATALOGUE_LOCK:
+-        cached = _CATALOGUE_CACHE.get(key)
++        cached = None if getattr(store,'is_oracle_query',False) else _CATALOGUE_CACHE.get(key)
+     if cached is not None:
+         matcher.document_catalogue = cached
+         obs.event(log,'folder_catalogue.cached')
+@@ -97,8 +97,11 @@
+                 record.update(classify_path(origin['raw_relative_path']));record['origin']=deepcopy(origin)
+         catalogue[did]=record
+     with _CATALOGUE_LOCK:
+-        _CATALOGUE_CACHE.clear()
+-        matcher.document_catalogue=_CATALOGUE_CACHE.setdefault(key,catalogue)
++        if getattr(store,'is_oracle_query',False):
++            matcher.document_catalogue=catalogue
++        else:
++            _CATALOGUE_CACHE.clear()
++            matcher.document_catalogue=_CATALOGUE_CACHE.setdefault(key,catalogue)
+     obs.event(log,'folder_catalogue.ready')
+     return matcher
+ 
+@@ -146,7 +149,8 @@
+     def outline(self,authorized,*,context,document_id='',root_unit_id='',include_children=False,offset=0,limit=100):
+         did=self.document(authorized,context,document_id)
+         if type(offset)!=int or offset<0 or type(limit)!=int or not 1<=limit<=500:raise ValueError('invalid pagination')
+-        units={uid:u for (d,uid),u in self.m.units.items() if d==did}
++        rows=self.m.units.for_document(did) if hasattr(self.m.units,'for_document') else self.m.units.items()
++        units={uid:u for (d,uid),u in rows if d==did}
+         if root_unit_id and root_unit_id not in units:raise ValueError('unknown stored root unit')
+         def within(uid):
+             if not root_unit_id:return True
+@@ -220,7 +224,8 @@
+     if root is None:raise ValueError('stored root required; no global search fallback')
+     start,end=root['span'];q=normalized(query);hits=[]
+     if field=='structure_title':
+-        for (d,uid),u in units.items():
++        rows=units.for_document(did) if hasattr(units,'for_document') else units.items()
++        for (d,uid),u in rows:
+             if d!=did or not(start<=u['span'][0] and u['span'][1]<=end):continue
+             if q in normalized(u.get('title') or ''):hits.append({'unit_id':uid,'surface':u.get('surface'),'title':u.get('title'),'coordinate_key':u.get('coordinate_key')})
+     else:
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/definition_entry.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/definition_entry.py
+@@ -16,7 +16,8 @@
+     index = SurfaceIndex()
+     # Use the existing generation-bound document definitions. No answer labels,
+     # source-name guesses, glossary synonyms or generated legal relationships.
+-    summaries=getattr(session.tools,'definition_summaries',None)
++    summaries=(session.tools.definition_summaries_for(question=session.context.request['question'])
++               if hasattr(session.tools,'definition_summaries_for') else getattr(session.tools,'definition_summaries',None))
+     if summaries is not None:
+         for ident,source_id,key,*_ in summaries:
+             if session.tools.sources[source_id]['document_id'] in session.scope:index.add(key,ident)
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py
+@@ -128,7 +128,7 @@
+         if prepared is not None:
+             ids = [sid for _,sid in heapq.merge(*(prepared['source_index'].get(d,()) for d in allowed))]
+         else:
+-            ids = [sid for sid,s in self.matcher.sources.items() if s['document_id'] in allowed]
++            ids = [sid for d in sorted(allowed) for sid,_ in self.matcher.sources.for_document(d)] if hasattr(self.matcher.sources,'for_document') else [sid for sid,s in self.matcher.sources.items() if s['document_id'] in allowed]
+         if bounds:
+             lo, hi = bounds
+             ids = [sid for sid in ids if any(lo <= int(b['block_id']) < hi for b in self.tools.sources[sid]['blocks'])]
+@@ -259,7 +259,7 @@
+             did, focus = n['document_id'], n.get('unit_id')
+             parent = self.matcher.units[(did, focus)]['parent'] if focus is not None else None
+             items = []
+-            for (d, uid), unit in sorted(self.matcher.units.items(), key=lambda kv: (kv[1].get('span', [0])[0], kv[0])):
++            for (d, uid), unit in sorted(self.matcher.units.for_document(did) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items(), key=lambda kv: (kv[1].get('span', [0])[0], kv[0])):
+                 if d != did: continue
+                 chain = self.ancestors(did, uid)
+                 relative = len(chain)-(chain.index(focus)+1 if focus in chain else 0)
+@@ -321,14 +321,23 @@
+                     if q in normalized(self.matcher.documents[did]):
+                         d = self.handle('D', {'document_id': did})
+                         items.append({'target': d, 'title': self.matcher.documents[did], **self.location(d), 'content_read': False})
+-            for (did, uid), u in self.matcher.units.items():
++            for (did, uid), u in ((row for did in sorted(docs) for row in self.matcher.units.for_document(did)) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()):
+                 if did in docs and (not bounds or bounds[0] <= u['span'][0] < bounds[1]) and q in normalized(u.get('title', '')):
+                     items.append(self.node_card(did, uid, route=route))
+         else:
+             marks = ','.join('?' for _ in docs)
+-            for r in self.store.db.execute('SELECT document_id,block_id,unit_id,text FROM source_block WHERE document_id IN ('+marks+') ORDER BY document_id,CAST(block_id AS INTEGER)', docs):
++            oracle=getattr(self.store,'is_oracle_query',False)
++            if oracle:
++                sql='SELECT document_id,block_id,unit_id FROM source_block WHERE document_id IN ('+marks+') AND instr(legal_normalized(text),?)>0'
++                args=[*docs,normalized(query)]
++                if bounds:
++                    sql+=' AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<?';args.extend(bounds)
++                rows=self.store.db.execute(sql+' ORDER BY document_id,CAST(block_id AS INTEGER)',args)
++            else:
++                rows=self.store.db.execute('SELECT document_id,block_id,unit_id,text FROM source_block WHERE document_id IN ('+marks+') ORDER BY document_id,CAST(block_id AS INTEGER)', docs)
++            for r in rows:
+                 if bounds and not bounds[0] <= int(r['block_id']) < bounds[1]: continue
+-                if normalized(query) in normalized(r['text']):
++                if oracle or normalized(query) in normalized(r['text']):
+                     items.append(self.node_card(r['document_id'], str(r['unit_id']), route=route))
+         items = list({i['target']: i for i in items}.values())
+         page, next_pos = self.page(items, offset)
+@@ -346,9 +355,9 @@
+         from lawrag.core.legal_coordinate import find_coordinates
+         coordinates = {normalized(c.coordinate.canonical_surface()) for c in find_coordinates(args['locator'])}
+         if coordinates:
+-            hits = {key for key,c in getattr(self.matcher,'stored_coordinates',{}).items()
++            hits = {key for key,c in ((row for did in sorted(docs) for row in self.matcher.stored_coordinates.for_document(did)) if hasattr(self.matcher.stored_coordinates,'for_document') else self.matcher.stored_coordinates.items())
+                     if c and key[0] in docs and normalized(c.canonical_surface()) in coordinates}
+-        for (did, uid), u in self.matcher.units.items():
++        for (did, uid), u in ((row for did in sorted(docs) for row in self.matcher.units.for_document(did)) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()):
+             if not coordinates and did in docs and q in (normalized(u.get('coordinate_key') or ''), normalized(u.get('surface') or '')):
+                 hits.add((did, uid))
+         items = []
+@@ -407,7 +416,9 @@
+     def lookup_definition(self, args, offset):
+         allowed = set(self.sources_in(args['target']))
+         query = normalized(args['query'])
+-        matches = [row for row in self.tools.definition_summaries
++        summaries=(self.tools.definition_summaries_for(query=args['query'],source_ids=allowed)
++                   if hasattr(self.tools,'definition_summaries_for') else self.tools.definition_summaries)
++        matches = [row for row in summaries
+                    if row[1] in allowed and query in row[3]]
+         local_count = len(matches)
+         if offset < local_count:
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/law_candidates.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/law_candidates.py
+@@ -252,7 +252,9 @@
+ 
+ def siblings(session, hit, offer):
+     result = []
+-    for (did, uid), unit in session.matcher.units.items():
++    units=session.matcher.units
++    rows=units.for_document(hit['document_id']) if hasattr(units,'for_document') else units.items()
++    for (did, uid), unit in rows:
+         if did == hit['document_id'] and str(unit.get('parent')) == str(offer['unit_id']):
+             result.append({'unit_id': uid, 'label': unit.get('surface') or unit.get('title') or uid,
+                            'order': unit.get('span', [0])[0]})
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/relation_cards.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/relation_cards.py
+@@ -148,7 +148,7 @@
+         for uid in sorted(uids):
+             unit = self.s.matcher.units.get((did, uid))
+             if not unit: continue
+-            for (d,u), other in sorted(self.s.matcher.units.items()):
++            for (d,u), other in sorted(self.s.matcher.units.for_document(did) if hasattr(self.s.matcher.units,'for_document') else self.s.matcher.units.items()):
+                 if d!=did or u==uid: continue
+                 pred = 'PARENT' if u==unit['parent'] else 'CHILD' if other['parent']==uid else 'SIBLING' if other['parent']==unit['parent'] else None
+                 if pred:
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/request_repair.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/request_repair.py
+@@ -99,7 +99,7 @@
+                 did=next(iter(docs))
+                 # A missing index entry is not source absence if the stored tree
+                 # lacks coordinate bindings. Partial/legacy trees stay unknown.
+-                nodes=[(key,u) for key,u in session.matcher.units.items() if key[0]==did
++                nodes=[(key,u) for key,u in (session.matcher.units.for_document(did) if hasattr(session.matcher.units,'for_document') else session.matcher.units.items()) if key[0]==did
+                        and (u.get('family')=='kr_article' or bool(coordinates[0].coordinate.chain))]
+                 indexed_complete=bool(nodes) and all(
+                     u.get('coordinate_scope') is not None
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/source_bundle.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/source_bundle.py
+@@ -38,14 +38,17 @@
+         return validate_case(repo,result,store,allowed_documents=allowed_documents)
+     validate_saved(repo,result)
+     if repo.VERSION not in (4,5):return
+-    current=json.loads((store.path/'manifest.json').read_text())
++    oracle=getattr(store,'is_oracle_query',False)
++    if oracle: store.check_unchanged()
++    current=store.manifest if oracle else json.loads((store.path/'manifest.json').read_text())
+     for key in ('generation_id','store_sha256','export_allowed'):
+         if current[key]!=repo.binding[key]: raise ContractError('source binding changed before publication/open')
+     try:
+-        verify_store_binding(store.path/'store.sqlite', current['store_sha256'])
++        if not oracle: verify_store_binding(store.path/'store.sqlite', current['store_sha256'])
+     except ValueError as exc:
+         raise ContractError('source store changed') from exc
+     allowed=set(current['scope']['document_version_ids'])
++    if oracle: allowed &= store.oracle_request.sources.allowed
+     if allowed_documents is not None: allowed &= set(allowed_documents)
+     if set(repo.binding['scope']['document_version_ids'])-allowed:
+         raise ContractError('request source scope no longer authorized')
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/source_recall.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/source_recall.py
+@@ -55,7 +55,7 @@
+     index = getattr(matcher, '_source_recall_coordinate_index_v1', None)
+     if index is None:
+         index = defaultdict(list)
+-        for (did, uid), coord in matcher.stored_coordinates.items():
++        for (did, uid), coord in ((row for d in sorted(scope) if matcher.documents.get(d,'').endswith(kind.group(1)) for row in matcher.stored_coordinates.for_document(d)) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items()):
+             name = matcher.documents.get(did, '')
+             if not coord: continue
+             for suffix in ('시행령','시행규칙'):
+@@ -70,7 +70,7 @@
+ 
+ def preserve_source_choices(branches, allowed, limit):
+     chosen = list(dict.fromkeys(sid for branch in branches for sid in branch))
+-    if len(chosen)>limit or set(chosen)-set(allowed):
++    if len(chosen)>limit or any(sid not in allowed for sid in chosen):
+         raise ContractError('source union cannot silently drop or escape a branch selection')
+     if any(not set(branch).issubset(chosen) for branch in branches):
+         raise ContractError('source union lost a parent choice')
+@@ -123,8 +123,9 @@
+     def __init__(self, sources):
+         self.s = sources
+         scope = set(sources.scope)
+-        self.allowed = {sid for sid, source in sources.matcher.sources.items()
+-                        if source['document_id'] in scope}
++        catalogue=sources.matcher.sources
++        self.allowed = (catalogue.ids_for_documents(scope) if hasattr(catalogue,'ids_for_documents') else
++                        {sid for sid, source in catalogue.items() if source['document_id'] in scope})
+         self.scores = defaultdict(float)
+         self.routes = defaultdict(list)
+         self.limits = []
+@@ -203,7 +204,7 @@
+             exact = {normalize(c.coordinate.canonical_surface()) for c in find_coordinates(variant)}
+             paired = []
+             if named and exact:
+-                for (did, uid), coord in self.s.matcher.stored_coordinates.items():
++                for (did, uid), coord in ((row for d in sorted(named) for row in self.s.matcher.stored_coordinates.for_document(d)) if hasattr(self.s.matcher.stored_coordinates,'for_document') else self.s.matcher.stored_coordinates.items()):
+                     if did in named and coord and normalize(coord.canonical_surface()) in exact:
+                         paired.extend(self.s.matcher._unit_sources(did, uid))
+             for sid in dict.fromkeys(paired):
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py
+@@ -67,8 +67,9 @@
+ class SourceRecall:
+     def __init__(self, sources):
+         self.s = sources
+-        self.allowed = {sid for sid, source in sources.tools.sources.items()
+-                        if source['document_id'] in sources.scope}
++        catalogue=sources.tools.sources
++        self.allowed = (catalogue.ids_for_documents(sources.scope) if hasattr(catalogue,'ids_for_documents') else
++                        {sid for sid, source in catalogue.items() if source['document_id'] in sources.scope})
+         self.scores = defaultdict(float)
+         self.routes = defaultdict(list)
+         self.limits = []
+@@ -122,7 +123,9 @@
+             exact = {normalize(c.coordinate.canonical_surface()) for c in find_coordinates(variant)}
+             paired = []
+             if named and exact:
+-                for (did, uid), coord in self.s.matcher.stored_coordinates.items():
++                coordinates=self.s.matcher.stored_coordinates
++                rows=(row for did in sorted(named) for row in coordinates.for_document(did)) if hasattr(coordinates,'for_document') else coordinates.items()
++                for (did, uid), coord in rows:
+                     if did in named and coord and normalize(coord.canonical_surface()) in exact:
+                         paired.extend(self.s.matcher._unit_sources(did, uid))
+             for sid in dict.fromkeys(paired):
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/source_tools.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/source_tools.py
+@@ -225,7 +225,8 @@
+                 next_position = value['next_offset']
+             elif name in ('list_structure', 'locate_provision'):
+                 did = self.resolve(args['document'], 'D')
+-                units = [(u, v) for (d, u), v in self.matcher.units.items() if d == did]
++                rows=self.matcher.units.for_document(did) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()
++                units = [(u, v) for (d, u), v in rows if d == did]
+                 if name == 'locate_provision':
+                     q = normalized(args['coordinate'])
+                     units = [(u, v) for u, v in units if q in (normalized(v.get('coordinate_key') or ''), normalized(v.get('surface') or ''))]
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/structure_query.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/structure_query.py
+@@ -27,6 +27,7 @@
+ 
+ def coordinate_index(matcher):
+     """Reuse the immutable generation's coordinate map across request matchers."""
++    if hasattr(matcher,'coordinate_index'): return matcher.coordinate_index
+     global _COORDINATES, _INDEX
+     coordinates = matcher.stored_coordinates
+     with _LOCK:
+@@ -215,7 +216,8 @@
+         return None
+ 
+     candidates = []
+-    for key, unit in matcher.units.items():
++    rows=matcher.units.for_document(did) if hasattr(matcher.units,'for_document') else matcher.units.items()
++    for key, unit in rows:
+         if key[0] != did or unit.get('coordinate_binding', {}).get('mode') == 'unresolved':
+             continue
+         coordinate = matcher.stored_coordinates.get(key)
+@@ -297,7 +299,8 @@
+     This verifies structural identities only. The existing reader validates the
+     complete union against original blocks before any partition is executable.
+     """
+-    ids = (sorted(sid for sid, source in matcher.sources.items() if source['document_id'] == did)
++    rows=matcher.sources.for_document(did) if hasattr(matcher.sources,'for_document') else matcher.sources.items()
++    ids = (sorted(sid for sid, source in rows if source['document_id'] == did)
+            if uid is None else list(dict.fromkeys(matcher._unit_sources(did, str(uid)))))
+     roots = set()
+     for sid in ids:
+@@ -447,7 +450,7 @@
+                 if not ids and any(d == did and c and c.canonical_surface() == locator
+                         and matcher.units[(d, u)].get('coordinate_scope') == 'body'
+                         and matcher.units[(d, u)].get('coordinate_binding', {}).get('mode') == 'unresolved'
+-                        for (d, u), c in matcher.stored_coordinates.items()):
++                        for (d, u), c in (matcher.stored_coordinates.for_document(did) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items())):
+                     code = 'UNRESOLVED_COORDINATE_BINDING'
+                 break
+     return {**result, 'failure': failure(code, count=count)}
+@@ -478,7 +481,9 @@
+     from ..fulltext import question_terms
+     query_terms = set(question_terms(query))
+     found = {}
+-    for (did, uid), coordinate in matcher.stored_coordinates.items():
++    coordinates=matcher.stored_coordinates
++    rows=(r for d in sorted(docs) for r in coordinates.for_document(d)) if hasattr(coordinates,'for_document') else coordinates.items()
++    for (did, uid), coordinate in rows:
+         if did not in docs or coordinate is None or coordinate.unit != '조' or coordinate.chain:
+             continue
+         unit = matcher.units[(did, uid)]
+@@ -650,7 +655,8 @@
+         if did in cache:
+             return cache[did]
+         keys = prepared['unit_index'].get(did, ()) if reusable else (
+-            key for key in matcher.units if key[0] == did)
++            (key for key,_ in matcher.units.for_document(did)) if hasattr(matcher.units,'for_document') else
++            (key for key in matcher.units if key[0] == did))
+         children, coordinates, levels, edges, branches = defaultdict(list), defaultdict(list), {}, set(), defaultdict(int)
+         nodes = []
+         for _, uid in keys:
+@@ -754,7 +760,7 @@
+         unresolved = coordinate and any(c and c.canonical_surface() == locator
+             and (matcher.units[(d, u)].get('coordinate_scope') or 'unknown') == branch
+             and matcher.units[(d, u)].get('coordinate_binding', {}).get('mode') == 'unresolved'
+-            for (d, u), c in matcher.stored_coordinates.items() if d == did)
++            for (d, u), c in (matcher.stored_coordinates.for_document(did) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items()) if d == did)
+         diagnostic = failure('UNRESOLVED_COORDINATE_BINDING' if unresolved else
+             'TITLE_FILTER_MISMATCH' if coordinate and candidates and title else
+             'MISSING_COORDINATE' if coordinate else 'MISSING_TITLE')
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/unified_publication.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/unified_publication.py
+@@ -131,12 +131,16 @@
+ def validate_current(repo,result,store,*,allowed_documents=None):
+     validate_saved(repo,result)
+     from ..storage import verify_store_binding
+-    current=json.loads((store.path/'manifest.json').read_text())
++    oracle=getattr(store,'is_oracle_query',False)
++    if oracle: store.check_unchanged()
++    current=store.manifest if oracle else json.loads((store.path/'manifest.json').read_text())
+     for key in ('generation_id','store_sha256','export_allowed'):
+         if current[key]!=repo.binding[key]:raise ContractError('unified source generation changed')
+-    try:verify_store_binding(store.path/'store.sqlite',current['store_sha256'])
++    try:
++        if not oracle: verify_store_binding(store.path/'store.sqlite',current['store_sha256'])
+     except ValueError as exc:raise ContractError('unified source store changed') from exc
+     allowed=set(current['scope']['document_version_ids'])
++    if oracle: allowed &= store.oracle_request.sources.allowed
+     c=_commit(repo);principal=json.loads(c['principal_json'])
+     if principal.get('team_scope_bound') is True:
+         from ..team_scope import select_documents
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py
+@@ -163,7 +163,9 @@
+         if anchor.startswith('E'): labels.add('')
+         evidence_text = self.s.repo.evidence(anchor)['text'] if anchor.startswith('E') else None
+         # Compare small cached fields before deepcopying payloads or loading source text.
+-        for definition_id, sid, key, _, _ in self.s.tools.definition_summaries:
++        summaries=(self.s.tools.definition_summaries_for(labels=labels,evidence_text=evidence_text)
++                   if hasattr(self.s.tools,'definition_summaries_for') else self.s.tools.definition_summaries)
++        for definition_id, sid, key, _, _ in summaries:
+             if key not in labels and not (evidence_text is not None and key in evidence_text): continue
+             source = self.s.tools.sources.get(sid)
+             if not source or source['document_id'] not in self.s.scope: continue
+@@ -205,7 +207,7 @@
+         e = self.s.repo.evidence(anchor); did = e['document_id']
+         if did not in self._structure_units_by_document:
+             self._structure_units_by_document[did] = sorted(
+-                ((u, unit) for (d, u), unit in self.s.matcher.units.items() if d == did),
++                ((u, unit) for (d, u), unit in (self.s.matcher.units.for_document(did) if hasattr(self.s.matcher.units,'for_document') else self.s.matcher.units.items()) if d == did),
+                 key=lambda item: item[0])
+         document_units = self._structure_units_by_document[did]
+         uids = set()
+--- MAIN88/02_BACKEND/semantic_runtime/legal_agent_adapter.py
++++ merged/02_BACKEND/semantic_runtime/legal_agent_adapter.py
+@@ -132,10 +132,11 @@
+             if requires_model and self.transport is None:
+                 raise ContractError('explicit deployment model profile required for model execution')
+             with phase('session.store'):
+-                local_store = Store(self.pipeline.store.path, verify=False)
++                oracle=getattr(self.pipeline.store,'is_oracle_query',False)
++                local_store = self.pipeline.store.reopen() if oracle else Store(self.pipeline.store.path, verify=False)
+             if local_store.manifest != self.pipeline.store.manifest:
+                 raise ContractError('source generation binding changed')
+-            source_stat = (local_store.path/'store.sqlite').stat()
++            source_stat = local_store.binding_signature() if oracle else (local_store.path/'store.sqlite').stat()
+             proxy = SimpleNamespace(store=local_store, contracts=self.pipeline.contracts, unit_fulltext=getattr(self,'unit_fulltext',None))
+             source_agent = ServingDocumentAgent(proxy, self.config)
+             obs.event(log, 'session.resources.started')
+@@ -225,6 +226,11 @@
+                     try:
+                         def check_sources_unchanged():
+                             glossary.check_unchanged()
++                            if oracle:
++                                local_store.check_unchanged()
++                                if local_store.binding_signature()!=source_stat:
++                                    raise ContractError('Oracle request binding changed')
++                                return
+                             after = (local_store.path/'store.sqlite').stat()
+                             if (source_stat.st_ino, source_stat.st_size, source_stat.st_mtime_ns, source_stat.st_ctime_ns) != (after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                                 raise ContractError('source artifact changed during request')
+--- MAIN88/02_BACKEND/semantic_runtime/multi_entry_navigation.py
++++ merged/02_BACKEND/semantic_runtime/multi_entry_navigation.py
+@@ -64,6 +64,8 @@
+ 
+ def validate_structure(matcher, scope):
+     """Cache successful checks only for the final immutable binding; mutable adapters rescan."""
++    if hasattr(matcher,'validate_structure'):
++        return matcher.validate_structure(scope)
+     from .legal_agent.errors import ContractError
+     prepared = getattr(matcher,'prepared_structure',None)
+     reusable = prepared is not None and matcher.units is prepared['units']
+--- MAIN88/02_BACKEND/semantic_runtime/navigation_match.py
++++ merged/02_BACKEND/semantic_runtime/navigation_match.py
+@@ -195,15 +195,10 @@
+         for name, value in self._build(store_db, source_tools, glossary).items():
+             setattr(self, name, value)
+ 
+-    def _build(self, store_db, source_tools, glossary):
++    def _load_documents(self, store_db):
+         self.documents = {r['document_id']: r['name'] for r in store_db.execute(
+             'SELECT document_id,name FROM document ORDER BY document_id')}
+-        self.structures, self.document_names = SurfaceIndex(), SurfaceIndex()
+-        self.body = MorphIndex()
+-        self.units, self.members = {}, defaultdict(set)
+-        self.sources = {}
+-        for row in source_tools.db.execute("SELECT id,document_id,json_extract(json,'$.unit_id') AS unit_id,json_extract(json,'$.heading') AS heading FROM source"):
+-            self.sources[row['id']] = dict(row)
++        self.document_names = SurfaceIndex()
+         # Document titles and official abbreviations name a law; folder and file labels
+         # below only locate it. Only title spans shadow glossary terms in starts().
+         self.title_keys = set()
+@@ -236,6 +231,15 @@
+             for alias in aliases:
+                 self.document_names.add(alias, did)
+                 self.title_keys.add(norm(alias))
++
++    def _build(self, store_db, source_tools, glossary):
++        self._load_documents(store_db)
++        self.structures = SurfaceIndex()
++        self.body = MorphIndex()
++        self.units, self.members = {}, defaultdict(set)
++        self.sources = {}
++        for row in source_tools.db.execute("SELECT id,document_id,json_extract(json,'$.unit_id') AS unit_id,json_extract(json,'$.heading') AS heading FROM source"):
++            self.sources[row['id']] = dict(row)
+         for r in store_db.execute('SELECT document_id,unit_id,parent_id,json FROM source_unit'):
+             u = json.loads(r['json']); key = (r['document_id'], str(r['unit_id']))
+             self.units[key] = {'parent': str(r['parent_id']) if r['parent_id'] is not None else None,
+--- MAIN88/02_BACKEND/semantic_runtime/oracle_dp.py
++++ merged/02_BACKEND/semantic_runtime/oracle_dp.py
+@@ -28,7 +28,7 @@
+ def enabled(environment=None):
+     env=os.environ if environment is None else environment
+     value=env.get('DP','').strip().lower()
+-    if value in ('','0','false','nfs'):return False
++    if value in ('','0','false','nfs','sqlite'):return False
+     if value in ('1','true','oracle'):return True
+     raise DPError('DP_CONFIG: DP must be oracle/1 or nfs/0')
+ 
+--- MAIN88/02_BACKEND/semantic_runtime/team_scope.py
++++ merged/02_BACKEND/semantic_runtime/team_scope.py
+@@ -56,7 +56,8 @@
+ def prepared_catalogue(store):
+     key = generation_key(store)
+     with _LOCK:
+-        if key in _CACHE:
++        oracle=getattr(store,'is_oracle_query',False)
++        if not oracle and key in _CACHE:
+             obs.event(log, 'catalogue.cache.hit', cache_hit=True, document_count=len(_CACHE[key]['ids']))
+             return _CACHE[key]
+         from .document_roles import role_of_metadata
+@@ -79,8 +80,9 @@
+             raise ValueError('source changed during catalogue preparation')
+         value = MappingProxyType({'ids': frozenset(teams), 'teams': MappingProxyType(teams),
+                                   'roles': MappingProxyType(roles)})
+-        _CACHE.clear()  # One generation per worker; no connections or request state.
+-        _CACHE[key] = value
++        if not oracle:
++            _CACHE.clear()  # One generation per worker; no connections or request state.
++            _CACHE[key] = value
+         obs.event(log, 'catalogue.cache.ready', cache_hit=False, document_count=len(teams), sql_count=1)
+         return value
+ 
+--- MAIN88/02_BACKEND/semantic_runtime/term_agent.py
++++ merged/02_BACKEND/semantic_runtime/term_agent.py
+@@ -20,6 +20,10 @@
+     def get_index(self):
+         with self.lock:
+             if self.index is None:
++                if getattr(self.pipeline.store,'is_oracle_query',False):
++                    from .oracle_query_index import Index
++                    self.index=Index(self.pipeline.store)
++                    return self.index
+                 binding=self.pipeline.store.manifest.get('navigation') or self.config.get('index')
+                 if not binding:raise ValueError('term-agent requires a version-bound navigation index')
+                 root=self.pipeline.store.path if self.pipeline.store.manifest.get('navigation') else self.pipeline.contracts.root
+@@ -30,6 +34,12 @@
+             return self.index
+     def get_fulltext(self):
+         """Optional morpheme ranking index bound in config; None when not configured."""
++        if getattr(self.pipeline.store,'is_oracle_query',False):
++            with self.lock:
++                if getattr(self,'fulltext',None) is None:
++                    from .oracle_query_fulltext import UnitIndex
++                    self.fulltext=UnitIndex(self.pipeline.store.oracle_request)
++                return self.fulltext
+         # Bound to one navigation index: generations sharing a source store and generation ID
+         # still differ by index, and one without this build has no full-text ranking.
+         # A published generation owns its derived fulltext binding. The profile
+--- MAIN88/06_TOOLS/pipeline.py
++++ merged/06_TOOLS/pipeline.py
+@@ -6,6 +6,10 @@
+ import sys
+ 
+ root = Path(__file__).resolve().parents[1]
++if __name__ == '__main__' and sys.argv[1:2] == ['oracle-query']:
++    sys.path.insert(0, str(root / '02_BACKEND'))
++    from lawrag.pipeline.oracle_query_publish import main
++    raise SystemExit(main(sys.argv[2:]))
+ if __name__ == '__main__' and sys.argv[1:2] == ['basis-links']:
+     sys.path.insert(0, str(root / '02_BACKEND'))
+     from lawrag.pipeline.basis_lifecycle import main
+--- MAIN88/genos_diagnostics.py
++++ merged/genos_diagnostics.py
+@@ -282,6 +282,10 @@
+ def install(component="python"):
+     """Call before importing FastAPI/runtime to capture import/environment failures."""
+     global _INSTANCE
++    if os.environ.get('DP','').strip().lower() in ('oracle','1','true'):
++        # Oracle serving has no local data/log spool. Structured stdout and
++        # explicitly configured external request journals remain available.
++        return None
+     if not enabled():
+         return None
+     with _INSTALL_LOCK:
+--- MAIN88/service.py
++++ merged/service.py
+@@ -316,9 +316,9 @@
+ 
+ 
+ def _resolve_binding() -> tuple[Path, Path, dict[str, Any]]:
+-    from semantic_runtime.oracle_dp import enabled as dp_enabled, resolve as dp_resolve
++    from semantic_runtime.oracle_dp import enabled as dp_enabled
+     if dp_enabled():
+-        return dp_resolve(_ROOT)
++        raise RuntimeError('Oracle query bindings are pinned by the request factory; generation restoration is disabled')
+     explicit = _explicit_generation()
+     if explicit is not None:
+         return explicit
+@@ -380,10 +380,26 @@
+     )
+ 
+ 
++def _oracle_factory():
++    global _APP, _BINDING
++    from semantic_runtime.oracle_query_service import Factory
++    if _APP is None:
++        _APP=Factory(sys.modules.get(__name__) or SimpleNamespace(**globals()))
++        _BINDING=dict(_APP.binding)
++    if not isinstance(_APP,Factory):
++        raise RuntimeError('data provider changed; restart before selecting Oracle')
++    return _APP
++
++
+ def application():
+     """Create and cache the ASGI app after verifying code and generation binding."""
+ 
+     global _APP, _BINDING
++    from semantic_runtime.oracle_dp import enabled as dp_enabled
++    if dp_enabled():
++        return _oracle_factory().application()
++    if getattr(_APP,'is_oracle_query_factory',False):
++        raise RuntimeError('data provider changed; restart before selecting SQLite')
+     if _APP is not None:
+         from semantic_runtime.oracle_dp import enabled as dp_enabled, environment_binding as dp_environment_binding
+         if dp_enabled() != ((_BINDING or {}).get('mode') == 'oracle-dp'):
+@@ -667,6 +683,9 @@
+ def _warm_resources():
+     """Use the same request-local resource path, without asking a model a question."""
+     from semantic_runtime.oracle_dp import enabled as dp_enabled
++    if dp_enabled():
++        with _APP_BOOTSTRAP_LOCK:
++            return _oracle_factory().warmup()
+     if not (dp_enabled() or os.environ.get("GENOS_GENERATION", "").strip() or
+             os.environ.get("GENOS_DATA_ROOT", "").strip()):
+         raise ValueError("warmup requires an explicit GENOS data selection")
+@@ -1000,7 +1019,8 @@
+     """Load administration from the selected release, independent of legal bootstrap."""
+     code_root = _ROOT
+     pointer = _ROOT / '01_DATA/ACTIVE/local/ACTIVE_RELEASE.json'
+-    if not (os.environ.get('GENOS_GENERATION') or os.environ.get('GENOS_DATA_ROOT')) and pointer.is_file():
++    from semantic_runtime.oracle_dp import enabled as dp_enabled
++    if not (dp_enabled() or os.environ.get('GENOS_GENERATION') or os.environ.get('GENOS_DATA_ROOT')) and pointer.is_file():
+         active = _json(pointer)
+         manifest_path = _ROOT / active['manifest_path']
+         if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != active['release_manifest_sha256']:
+@@ -1027,7 +1047,7 @@
+     return importlib.import_module(package+'.ad_gateway')
+ 
+ 
+-async def service(config: dict, data: dict) -> dict[str, Any]:
++async def _service(config: dict, data: dict) -> dict[str, Any]:
+     """GENOS JSON gateway contract with one correlated event stream per request."""
+     payload = data if isinstance(data, dict) else {}
+     request_id = obs.new_request_id(payload.get('request_id'))
+@@ -1145,6 +1165,26 @@
+         result = {**result, 'body': views().public_response(body, status=status, request_id=request_id)}
+     return result
+ 
++async def service(config: dict, data: dict) -> dict[str, Any]:
++    from semantic_runtime.oracle_dp import enabled as dp_enabled
++    if not dp_enabled():
++        return await _service(config,data)
++    from semantic_runtime.oracle_query_service import request_context,external_runtime
++    from semantic_runtime.oracle_dp_io import DPError
++    control=_normalize(data if isinstance(data,dict) else {}).get('op')
++    if control=='ping':
++        return {'status':200,'body':{'status':'ok','data_provider':'oracle','app_loaded':_APP is not None}}
++    try:
++        if control not in ('warmup','warmup_status'):
++            external_runtime()
++        with request_context():
++            return await _service(config,data)
++    except DPError as exc:
++        obs.event(log,'oracle.request.failed',level=logging.ERROR,exc_info=True)
++        return {'status':503,'body':{'error':'Oracle request unavailable','code':'ORACLE_QUERY_ERROR',
++                                   'detail':obs._redact_secrets(str(exc))}}
++
++
+ __all__ = ["application", "service"]
+ 
+ 
+@@ -1154,6 +1194,10 @@
+     _AD_WORKER_RECOVERY = {'state': 'RUNNING'}
+     obs.event(log, 'ad.worker.recovery.started', worker_id=_PROCESS_INSTANCE_ID)
+     try:
++        from semantic_runtime.oracle_dp import enabled as dp_enabled
++        if dp_enabled():
++            from semantic_runtime.oracle_query_service import external_runtime
++            external_runtime()
+         _ad_control().start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
+     except Exception as exc:
+         _AD_WORKER_RECOVERY = {'state': 'FAILED', 'error_type': type(exc).__name__}

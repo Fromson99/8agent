@@ -38,7 +38,8 @@ def raw_path(corpus, source, value):
 
 
 def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_internal=False,
-            internal_pdf_root=None, only_internal_pdf=False, limit=None, only_internal=False):
+            internal_pdf_root=None, only_internal_pdf=False, limit=None, only_internal=False,
+            latest_internal_versions=False, filename_exceptions=None):
     """Select external RAW plus an explicit PDF-only internal root when supplied.
 
     The maintained CLI reads RAW/internal for every supported format.
@@ -46,6 +47,8 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
     """
     if (only_internal_pdf or only_internal) and exclude_internal:
         raise ValueError('Cannot both select and exclude internal PDFs')
+    if latest_internal_versions and (only_internal_pdf or internal_pdf_root or limit or exclude_internal):
+        raise ValueError('Latest internal versions require the full native internal input scope')
     if limit is not None and (not only_internal_pdf or type(limit) is not int or limit < 1):
         raise ValueError('Positive limit requires only_internal_pdf')
     corpus = Path(corpus).expanduser().absolute()
@@ -211,6 +214,10 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
         report['sources'][source]={'physical_inputs':len(report['files'])-start}
         emit(f'[0/5] {source}: 파일 기반 원문 {len(report["files"])-start}개 발견')
 
+    if latest_internal_versions:
+        from .document_representations import select_latest_internal
+        report['files'], versions = select_latest_internal(report['files'], filename_exceptions)
+        report['excluded'].extend(versions)
     report['files'],alternatives=builder.select_representations(report['files'])
     report['excluded'].extend(alternatives)
     for source,value in report['sources'].items():
@@ -247,6 +254,9 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
             'format_assets': assets, 'bindings_sha256': bindings_sha,
             'optional_metadata_hashes': report['manifest_hashes'], 'input_contract':'physical-files-v1',
             'representation_policy':builder.REPRESENTATION_POLICY,'all_corpus': True}
+    if latest_internal_versions:
+        from .document_representations import LATEST_INTERNAL_POLICY
+        plan['internal_version_policy'] = report['internal_version_policy'] = LATEST_INTERNAL_POLICY
     if internal_pdf_root is not None:
         plan['input_roots'] = report['input_roots']
     if exclude_internal:

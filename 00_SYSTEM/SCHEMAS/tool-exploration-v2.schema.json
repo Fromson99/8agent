@@ -15,8 +15,7 @@
               "properties": {
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "relation": {
                   "type": "string",
@@ -45,8 +44,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -60,8 +58,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -82,13 +79,11 @@
               "properties": {
                 "query": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "mode": {
                   "type": "string",
@@ -102,8 +97,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -116,8 +110,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -138,13 +131,11 @@
               "properties": {
                 "text": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "strategy": {
                   "type": "string",
@@ -158,8 +149,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -172,8 +162,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -196,8 +185,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 160
+                    "minLength": 1
                   },
                   "minItems": 1,
                   "maxItems": 16,
@@ -205,8 +193,7 @@
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "match": {
                   "type": "string",
@@ -219,8 +206,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -233,8 +219,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -255,13 +240,11 @@
               "properties": {
                 "locator": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "branch": {
                   "type": "string",
@@ -276,8 +259,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -290,8 +272,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -312,20 +293,17 @@
               "properties": {
                 "query": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "cursor": {
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -337,8 +315,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -359,8 +336,7 @@
               "properties": {
                 "evidence": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "direction": {
                   "type": "string",
@@ -374,8 +350,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -387,8 +362,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -409,8 +383,7 @@
               "properties": {
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "extent": {
                   "type": "string",
@@ -424,8 +397,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -437,8 +409,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -472,8 +443,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -484,8 +454,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -515,8 +484,7 @@
                     "properties": {
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "relation": {
                         "type": "string",
@@ -545,8 +513,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -560,8 +527,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -582,13 +548,11 @@
                     "properties": {
                       "query": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "mode": {
                         "type": "string",
@@ -602,8 +566,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -616,8 +579,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -638,13 +600,11 @@
                     "properties": {
                       "text": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "strategy": {
                         "type": "string",
@@ -658,8 +618,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -672,8 +631,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -696,8 +654,7 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 160
+                          "minLength": 1
                         },
                         "minItems": 1,
                         "maxItems": 16,
@@ -705,8 +662,7 @@
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "match": {
                         "type": "string",
@@ -719,8 +675,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -733,8 +688,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -755,13 +709,11 @@
                     "properties": {
                       "locator": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "branch": {
                         "type": "string",
@@ -776,8 +728,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -790,8 +741,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -812,20 +762,17 @@
                     "properties": {
                       "query": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "cursor": {
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -837,8 +784,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -859,8 +805,7 @@
                     "properties": {
                       "evidence": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "direction": {
                         "type": "string",
@@ -874,8 +819,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -887,8 +831,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -909,8 +852,7 @@
                     "properties": {
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "extent": {
                         "type": "string",
@@ -924,8 +866,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -937,8 +878,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -972,8 +912,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -984,8 +923,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1007,13 +945,11 @@
             "properties": {
               "evidence": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "summary": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "disposition": {
                 "type": "string",
@@ -1033,15 +969,13 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "question_refs": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -1068,8 +1002,7 @@
             "properties": {
               "candidate": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "decision": {
                 "type": "string",
@@ -1080,8 +1013,7 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -1101,8 +1033,7 @@
             "properties": {
               "route": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "decision": {
                 "type": "string",
@@ -1114,8 +1045,7 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -1137,8 +1067,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 64,
@@ -1146,20 +1075,17 @@
               },
               "interpretation": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "missing_fact": {
                 "type": [
                   "string",
                   "null"
-                ],
-                "maxLength": 10000
+                ]
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -1184,8 +1110,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         }
       },
       "required": [
@@ -1209,15 +1134,13 @@
             "properties": {
               "text": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "evidence": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 64,
@@ -1227,8 +1150,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 64,
@@ -1238,8 +1160,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64
@@ -1260,8 +1181,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 10000
+            "minLength": 1
           },
           "minItems": 0,
           "maxItems": 64
@@ -1283,8 +1203,7 @@
             "properties": {
               "claim": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "verdict": {
                 "type": "string",
@@ -1299,8 +1218,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -1308,13 +1226,11 @@
               },
               "issue": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "actions": {
                 "type": "array",
@@ -1331,8 +1247,7 @@
                           "properties": {
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "relation": {
                               "type": "string",
@@ -1361,8 +1276,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1376,8 +1290,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1398,13 +1311,11 @@
                           "properties": {
                             "query": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "mode": {
                               "type": "string",
@@ -1418,8 +1329,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1432,8 +1342,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1454,13 +1363,11 @@
                           "properties": {
                             "text": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "strategy": {
                               "type": "string",
@@ -1474,8 +1381,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1488,8 +1394,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1512,8 +1417,7 @@
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "minLength": 1,
-                                "maxLength": 160
+                                "minLength": 1
                               },
                               "minItems": 1,
                               "maxItems": 16,
@@ -1521,8 +1425,7 @@
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "match": {
                               "type": "string",
@@ -1535,8 +1438,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1549,8 +1451,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1571,13 +1472,11 @@
                           "properties": {
                             "locator": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "branch": {
                               "type": "string",
@@ -1592,8 +1491,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1606,8 +1504,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1628,20 +1525,17 @@
                           "properties": {
                             "query": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "cursor": {
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1653,8 +1547,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1675,8 +1568,7 @@
                           "properties": {
                             "evidence": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "direction": {
                               "type": "string",
@@ -1690,8 +1582,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1703,8 +1594,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1725,8 +1615,7 @@
                           "properties": {
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "extent": {
                               "type": "string",
@@ -1740,8 +1629,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1753,8 +1641,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1788,8 +1675,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -1800,8 +1686,7 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -1846,8 +1731,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -1855,8 +1739,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -1878,15 +1761,13 @@
       "properties": {
         "claim": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160
+          "minLength": 1
         },
         "evidence": {
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 160
+            "minLength": 1
           },
           "minItems": 1,
           "maxItems": 64,
@@ -1894,8 +1775,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         },
         "requested_resolution": {
           "type": "string",
@@ -1935,8 +1815,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         },
         "state_revision": {
           "type": "integer",

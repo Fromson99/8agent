@@ -26,13 +26,15 @@ def mixed_generation(tmp_path, term_glossary):
             db.execute('UPDATE document SET json=? WHERE document_id=?',
                        (json.dumps({'document_category': category}), did))
     build_generation(raw, term_glossary, tmp_path / 'built', serving=True)
+    from lawrag.pipeline.search_selection import plan, activate
+    activate(plan(tmp_path / 'built/generation', latest=True))
     return tmp_path / 'built/generation'
 
 
 @pytest.mark.parametrize('question,cleaned,category', [
     ('내규: 승인 절차는?', '승인 절차는?', 'internal'),
     (' 외규, 승인 절차는?', '승인 절차는?', 'external'),
-    ('내규 승인 절차는?', '승인 절차는?', 'internal'),
+    ('내규 승인 절차는?', '내규 승인 절차는?', None),
     ('승인 절차의 내규와 외규는?', '승인 절차의 내규와 외규는?', None),
     ('내규정의 승인 절차는?', '내규정의 승인 절차는?', None),
 ])
@@ -40,10 +42,10 @@ def test_prefix_only_at_start(question, cleaned, category):
     assert route_question(question) == (cleaned, category)
 
 
-def test_colloquial_data_inventory_is_a_catalogue_request():
-    assert catalogue_request('내규데데이터 뭐있냐')['category'] == 'internal'
-    assert route_question('내규: 내규데데이터 뭐있냐') == ('전체 문서 목록', 'internal')
-    assert route_question('외규: 내규 데이터 뭐있냐') == ('전체 문서 목록', 'external')
+def test_colloquial_data_inventory_is_not_a_keyword_route():
+    assert catalogue_request('내규데데이터 뭐있냐') is None
+    assert route_question('내규: 내규데데이터 뭐있냐') == ('내규데데이터 뭐있냐', 'internal')
+    assert route_question('외규: 내규 데이터 뭐있냐') == ('내규 데이터 뭐있냐', 'external')
 
 
 def test_prefix_filters_plan_and_real_request_scope(tmp_path, mixed_generation, monkeypatch):
@@ -56,7 +58,7 @@ def test_prefix_filters_plan_and_real_request_scope(tmp_path, mixed_generation, 
             query = pipeline.plan(f'{marker}: 승인 절차는?')
             assert query['question'] == '승인 절차는?'
             assert query['scope']['document_version_ids'] == [expected]
-            assert pipeline.plan(f'{marker} 승인 절차는?', ['internal', 'external'])[
+            assert pipeline.plan(f'{marker}: 승인 절차는?', ['internal', 'external'])[
                 'scope']['document_version_ids'] == [expected]
             captured = {}
             def open_session(request, *, query, **kwargs):
@@ -103,8 +105,10 @@ def test_prefix_filters_main_ask_document_list(tmp_path, mixed_generation):
         assert '모의외규' in response.json()['answer']['text']
 
 
-def test_user_wording_opens_prefixed_catalogue_without_model(tmp_path, mixed_generation):
-    app = app_for(tmp_path, mixed_generation)
+def test_user_wording_opens_prefixed_catalogue_after_model_choice(tmp_path, mixed_generation):
+    from test_bounded_source_main import Transport
+    transport = Transport(browse=True)
+    app = app_for(tmp_path, mixed_generation, transport, settings())
     with TestClient(app) as client:
         for question, included, excluded in [
             ('내규: 내규데데이터 뭐있냐', '모의내규', '모의외규'),
@@ -116,7 +120,7 @@ def test_user_wording_opens_prefixed_catalogue_without_model(tmp_path, mixed_gen
             assert included in result['answer']['text']
             assert excluded not in result['answer']['text']
             assert '출처미확인' not in result['answer']['text']
-            assert result['answer']['provider_receipt']['physical_attempts'] == 0
+            assert result['answer']['provider_receipt']['physical_attempts'] == 1
 
 
 @pytest.mark.parametrize('marker,category,notice', [

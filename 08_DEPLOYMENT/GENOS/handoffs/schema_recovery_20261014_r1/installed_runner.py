@@ -27,6 +27,17 @@ for name in ('test_legal_agent_double_harness', 'test_genos_answer_stream'):
     importlib.import_module(name).ROOT = code
 import pytest
 import test_genos_model_stream_completion
+import test_output_contract_recovery
+import json
+from semantic_runtime.unit_fulltext import UnitFulltextIndex
+
+@pytest.fixture
+def prebuilt_unit_tree():
+    generation=Path(os.environ["METRICS_TEST_GENERATION"])
+    index=UnitFulltextIndex(Path(os.environ["METRICS_TEST_UNIT_INDEX"]),json.loads((generation/"navigation/manifest.json").read_bytes()))
+    return generation,index
+
+test_output_contract_recovery.tree=prebuilt_unit_tree
 
 @pytest.fixture
 def prebuilt_gateway_generation():

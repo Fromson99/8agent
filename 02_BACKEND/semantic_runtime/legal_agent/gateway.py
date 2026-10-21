@@ -24,6 +24,31 @@ NUMBER_INSTRUCTIONS = (
 def compact_wire_view(view, phase):
     """Project redundant wire data only; original views and receipts stay intact."""
     result = deepcopy(view)
+    if result.get('source_stage') in ('memory-assess', 'memory-assess-repair'):
+        # The durable exact_evidence cards bind current-request presentation.
+        # Compact assessment already transmits these exact subspans as options.
+        # Drop a duplicate container only when every coordinate and byte is
+        # present under the same source/document identity in that wire input.
+        exact = result.get('exact_evidence', [])
+        options = result.get('evidence_options', [])
+        def option_carries(card):
+            spans = card.get('spans', [])
+            if len(spans) != 1 or card.get('text') != spans[0].get('text'):
+                return False
+            span = spans[0]
+            return bool(card.get('source_id') and card.get('document_id')) and any(
+                (o.get('source_id'), o.get('document_id')) == (card['source_id'], card['document_id'])
+                and all(o.get(k) == span.get(k) for k in ('block_id', 'start_cp', 'end_cp', 'text'))
+                for o in options)
+        if exact and all(option_carries(card) for card in exact):
+            result.pop('exact_evidence')
+        if result.get('input_projection')=='compact-selection-source-v3':
+            # Both the sender and durable wire-receipt verifier call this exact
+            # projection, after canonical source/span/ACL verification. Persisted
+            # evidence keeps its coordinates; models see exact text and IDs once.
+            from .completion_execution import assessment_original_view
+            result['sources'], result['evidence_options'] = assessment_original_view(
+                result.get('sources',[]),result.get('evidence_options',[]))
     if result.get('input_projection')=='compact-selection-source-v1':
         compact_original_text(result)
     for evidence in result.get('exact_evidence', []):
@@ -174,7 +199,8 @@ def _response_diagnostics(body):
 
 from . import output_contract as output
 from .model_contract import (genos_wire_schema, structured_request, structured_content,
-                             request_metrics, response_length_metrics)
+                             request_metrics, response_length_metrics,
+                             response_model_metadata, validate_response_model)
 
 
 def available_tool_schema(schema, view):
@@ -241,6 +267,7 @@ class ModelGateway:
             view, schema = references.view(view), references.schema(schema)
             numbered_instructions = NUMBER_INSTRUCTIONS if self.compact else INSTRUCTIONS
         schema = available_tool_schema(schema, view)
+        self._generation_schema = deepcopy(schema)
         schema = genos_wire_schema(schema)
         prompt = self.prompts[phase]
         if numbered_instructions and view.get('input_projection')!='compact-selection-source-v3':
@@ -286,7 +313,13 @@ class ModelGateway:
             references = NumberedReferences(view)
         from .. import query_latency as latency
         with latency.span('model.request_build',phase=phase):
+            self._generation_schema = None
             request = self.request(phase, view, schema_name, references=references)
+            from .minimal_output import prepare_request
+            request, minimal_output = prepare_request(request, getattr(self, '_generation_schema', None),
+                partial_contract=schema_name in ('TurnDecision', 'SourceSelectionDecision'))
+        self.repo.event('MODEL_MINIMAL_OUTPUT_CONTRACT', {
+            'source_stage':view.get('source_stage') or phase, **minimal_output.receipt})
         if streaming:
             request = {**request, 'stream': True, 'stream_options': {'include_usage': True}}
         role = view.get('source_stage') or phase
@@ -297,7 +330,7 @@ class ModelGateway:
         self.repo.event('MODEL_OUTPUT_CONTRACT', {**spec.receipt(view, self.transport.binding),
             'wire_schema_hash':digest(request['response_format']['json_schema']['schema']),
             'codec':type(references).__name__ if references is not None else 'canonical-v1',
-            'wire_projection':'genos-unique-items-server-v1'})
+            'wire_projection':getattr(self.transport,'wire_projection','genos-unique-items-server-v1')})
         journal = (output.DecisionJournal(self.repo, 'gateway',
             {'role':role,'view':{k:v for k,v in view.items() if k != 'view_id'}},
             self.protocol.schema(schema_name)) if spec.owner == 'gateway' else None)
@@ -338,7 +371,7 @@ class ModelGateway:
             thinking = template.get('enable_thinking')
             thinking = thinking if type(thinking) is bool else None
             obs.event(log, 'model.attempt.started', **fields,
-                      **input_metrics, max_tokens=request['max_tokens'],
+                      **input_metrics, max_tokens=request.get('max_tokens'),
                       diagnostics_version=DIAGNOSTICS_VERSION,
                       thinking_requested=thinking,
                       thinking_control_present='enable_thinking' in template,
@@ -365,8 +398,7 @@ class ModelGateway:
                         if 200 <= status < 300:
                             if getattr(adapter_error,'format_error',False) is True:
                                 body=response.get('body_json') or {}
-                                if body.get('model') != self.transport.binding['model']:
-                                    raise ContractError('actual response model differs from pinned model') from adapter_error
+                                validate_response_model(self.transport.binding, body)
                                 error=ProposalError('model response is incomplete or invalid')
                                 error.format_error=True
                                 error.response=response
@@ -433,7 +465,8 @@ class ModelGateway:
                 raise TransportError('single-send adapter failed', unknown=True) from exc
             body = raw.get('body_json')
             receipt = {'model': body.get('model') if isinstance(body, dict) else None,
-                       'usage': body.get('usage') if isinstance(body, dict) else None, 'attempt_id': ident}
+                       'usage': body.get('usage') if isinstance(body, dict) else None, 'attempt_id': ident,
+                       **response_model_metadata(self.transport.binding, body)}
             length_metrics = response_length_metrics(request, body)
             receipt['input_metrics'] = {**input_metrics, **length_metrics}
             status = self.repo.finish_attempt(ident, 'SUCCEEDED', raw, receipt)
@@ -441,19 +474,27 @@ class ModelGateway:
                       http_status=raw.get('status_code'), journal_status=status,
                       duration_ms=int((time.perf_counter() - attempt_started) * 1000),
                       response_bytes=raw.get('response_bytes'),
+                      **response_model_metadata(self.transport.binding, body),
                       **{**_response_diagnostics(body), **length_metrics})
             self.context.remaining()
             if status != 'SUCCEEDED':
                 raise StaleProposal('late model response ignored')
-            if receipt['model'] != self.transport.binding['model']:
+            try:
+                validate_response_model(self.transport.binding, body)
+            except ContractError:
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='model_mismatch', actual_model=receipt['model'])
-                raise ContractError('actual response model differs from pinned model')
+                raise
             content = None
             try:
                 from .completion_contracts import enabled
-                content = structured_content(body, require_complete=enabled(self.profile))
+                content = structured_content(body,
+                    require_complete=enabled(self.profile) or 'max_tokens' not in request,
+                    allow_length_repair='max_tokens' in request)
+                from .evidence_inventory import record_delivery
+                record_delivery(self.repo, view, ident)
                 value = output.strict_json(content)
+                raw_hash = digest(value)
                 if str(role).startswith('source-law-navigation-'):
                     from . import request_repair
                     if request_repair.enabled(self.profile):
@@ -463,8 +504,16 @@ class ModelGateway:
                             self.repo.event('MODEL_OUTPUT_NORMALIZED', {'contract_version':output.VERSION,
                                 'attempt_id':ident, 'rule':'exact-decision-duplicates-v1',
                                 'raw_proposal_hash':before,'normalized_hash':digest(value),'changes':changes})
+                value = minimal_output.expand(value)
+                self.repo.event('MODEL_OUTPUT_RECONSTRUCTED', {
+                    'attempt_id':ident, **minimal_output.receipt,
+                    'raw_value_sha256':raw_hash, 'reconstructed_value_sha256':digest(value)})
                 if references is not None:
-                    value = references.decode(value, request['response_format']['json_schema']['schema'], schema_name)
+                    # Generation may omit host-owned optional properties. Decode against
+                    # the full request-local contract, then validate canonical IDs.
+                    decoding_schema=(references.schema(self.protocol.schema(schema_name))
+                        if schema_name=='BoundedSourceDecision' else minimal_output.schema)
+                    value = references.decode(value, decoding_schema, schema_name)
                 self.validate_output(schema_name,value,view)
                 obs.event(log, 'model.attempt.accepted', **fields, schema_repairs=repairs)
                 if journal:journal.accept(repairs, value)
@@ -494,7 +543,7 @@ class ModelGateway:
                     if isinstance(exc, output.OutputContractError):
                         exc.format_error = True
                         raise
-                    error = ProposalError('structured model output invalid after bounded repair')
+                    error = ProposalError('structured model output invalid after bounded repair: '+str(exc)[:3000])
                     error.format_error = True
                     raise error from exc
                 # Append-only chat cannot retract a draft. Repair still uses the

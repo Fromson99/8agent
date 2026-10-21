@@ -97,6 +97,8 @@ def structure_key(row, plan, dependencies):
 
 
 def structure(row, plan, data, dependencies, timeout, emit, *, pdf_parser=None):
+    if plan.get('internal_version_policy') == 'user-approved-retained-set-latest-v2' and row.get('source') == 'internal' and row.get('is_latest') is not True:
+        raise ValueError('internal structure input must carry verified latest selection mark')
     from .genos_doc import prepare
     from .document_representations import verify_representations
     verify_representations(row)

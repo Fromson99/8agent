@@ -1,0 +1,19 @@
+Scope: explicit development reset of seven legal data tables, preserve ACTIVE/STATE.
+Entry: Dataiku fresh notebook -> pinned loader -> oracle_clean_import.run.
+Inputs: existing R2 work/restored, bound historical ZIP generation, same target identity.
+Consumers: existing source/asset/query release formats; activation remains separate.
+Normal policy: insert-only batches <=100 rows / ~512KiB, single-row cap8MiB.
+Verification: input hashes, schema/PK/FK/JSON, commit ACK, counts/kind counts and small manifests.
+Not claimed: remote full-body verification, Oracle engine tests, field deployment or speedup.
+Old code preserved. New journal oracle-clean-r1 has a new explicitly requested replacement lineage.
+Failure owner: clean importer. No automatic retry of SQL failures.
+Uncertain INSERT: regenerate same pending batch, keys all absent -> insert; all present -> exact server-side verification; mixed/conflicting -> stop.
+Uncertain reset DELETE: block repeat reset; require external transaction outcome resolution.
+Concurrency: exact old importer file locks plus new job lock, seven-table reset lock + ACTIVE lock and empty check.
+Destructive scope: constant allowlist, external referencing FKs and triggers blocked; ACTIVE/STATE rejected by writer.
+Stop utility: exact inode lock owner, same-user ipykernel, Linux pidfd, TERM then KILL; never kill arbitrary Python/Oracle sessions.
+Budget: bounded memory/streamed input, resource throttling, 6h per invocation / original7d / cumulative1M SQL.
+State: original data/logs untouched, immutable plan separate from checkpoint, pending batch before write.
+Completion: CLEAN_LOAD_COUNTS_CONFIRMED with full_body_readback=false, controls modified=false.
+Tests: normal, protected controls, uncertain writes/reset, interruption/resume, changed input/target, permissions/side effects,
+same-code Dataiku adapter boundary, exact packaged notebook, Linux process termination, regression.

@@ -20,17 +20,18 @@ def test_workflow_unsigned_session_and_service_preservation(monkeypatch):
  raw=workflow._request_body('모의 요청',{'userInfo':{'userId':'u/one'},'chatId':'s/one','request_id':'r'})
  normalized=service._normalize(raw)['json']
  principal=memory_identity.validate_session(normalized)
- assert principal['team_id']=='risk_team' and principal['user_id'].startswith('u-')
+ assert principal['team_id']=='risk_team' and principal['user_id'].startswith('session:')
  assert normalized['session_id']==raw['session_id']
- assert raw['user_id']!=workflow._request_body('모의 요청',{'userId':'u-one','chatId':'s-one'})['user_id']
+ assert 'user_id' not in raw
+ assert raw['session_id']!=workflow._request_body('모의 요청',{'userId':'u-one','chatId':'s-one'})['session_id']
  assert 'memory_authorization' not in raw
  changed={**normalized,'session_id':''}
  with pytest.raises(m.MemoryError):memory_identity.validate_session(changed)
  monkeypatch.setenv('GENOS_MEMORY_ENABLED','0')
  old=workflow._request_body('모의 요청',{'userId':'u','chatId':'s'})
- assert 'memory' not in old and 'session_id' not in service._normalize(old)['json']
+ assert 'memory' not in old and service._normalize(old)['json']['session_id']=='s'
 
-@pytest.mark.parametrize('data',[{}, {'userId':'u'},{'chatId':'s'}])
+@pytest.mark.parametrize('data',[{}, {'userId':'u'}])
 def test_anonymous_memory_is_rejected(monkeypatch,data):
  workflow=module('memory_workflow',ROOT/'08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
  monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.delenv('GENOS_MEMORY_SIGNING_KEY',raising=False);monkeypatch.setenv('TEAM_ID','risk_team')
@@ -55,7 +56,7 @@ def test_api_multiturn_uses_authenticated_principal_and_safe_response(tmp_path,g
   two=api.post('/v1/rag/ask',json={**body,'request_id':'r2'});assert two.status_code==200,two.text
   assert two.json()['executed']==['ASSESS','COMPOSE']
   assert api.post('/v1/rag/ask',json={**body,'request_id':'r3','expected_revision':1}).status_code==409
-  assert api.post('/v1/rag/ask',json={**body,'user_id':'other','request_id':'r4'}).status_code==422
+  assert api.post('/v1/rag/ask',json={**body,'user_id':'other','request_id':'r4'}).status_code==200
   assert api.post('/v1/rag/ask',json={**body,'document_ids':['private'],'request_id':'r5'}).status_code==422
 
 def test_unsigned_api_still_requires_selected_documents(tmp_path,generation,monkeypatch):

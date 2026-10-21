@@ -1,0 +1,28 @@
+개발계는 분할 없이 보유한 genos-rag-data ZIP을 Dataiku에 그대로 업로드하는 방식으로 준비했습니다.
+이번 실행본은 LEGAL_ORACLE_EXISTING_ZIP_20261020_R1입니다. 현재 목적에는 앞서 보낸 FULL_PARTS/QUERY_PARTS 추출을 다시 할 필요가 없습니다.
+
+지금 할 일
+1. Dataiku Managed Folder 최상위에 보유한 데이터 ZIP과 첨부 LEGAL_ORACLE_EXISTING_ZIP_20261020_R1.zip을 함께 업로드합니다.
+2. 새 Python 노트북/커널에서 첨부 DATAIKU_EXISTING_ZIP_IMPORT_RUN.txt 전체를 한 셀에 붙입니다.
+3. FOLDER_ID, ORACLE_CONNECTION, DATA_ZIP_NAME을 실제 값으로 설정하고 INPUT_MODE="zip"을 유지합니다.
+4. ACTION="inspect" → "restore" → "check" → "publish" 순서로 같은 셀 전체를 실행합니다.
+
+DATA_ZIP_NAME 기본 예시는 기록에 있는 genos-rag-data-20261007T002029Z-7c0b050f_verified.zip입니다. 실제 파일명과 다르면 설정을 고치면 됩니다.
+inspect에서 generation_in_zip, dataset_version, selected_bytes를 먼저 확인할 수 있습니다. 실제 파일을 제가 받은 것은 아니므로 10월20일 최신본이라고 확정한 것은 아닙니다.
+
+중복 처리
+- 동일한 원문 버전/키/내용과 자산 해시는 대조 후 재사용하고 빠진 항목만 삽입합니다.
+- 조회 데이터는 같은 release/키에 없으면 삽입하고, 있으면 내용이 같은지 확인합니다. 검사 SQL은 실행되지만 같은 행을 중복 저장하지 않습니다.
+- 기존 키의 값이 다르면 덮어쓰지 않고 중단합니다. 테이블 전체 삭제/TRUNCATE는 넣지 않았습니다.
+- 이전 코드/검색 선택표와 다르면 조회 release가 달라질 수 있어 새 버전 조회 행은 만들어질 수 있습니다. 과거 버전은 보존하며 ACTIVE/STATE는 바꾸지 않습니다.
+- 마지막 원문·자산·조회 전수 대조는 생략하지 않습니다. 완료 기준은 FULL_DATA_VERIFIED입니다.
+
+기존 ZIP의 DATA_MANIFEST를 읽고 선택된 원문·용어집·색인 generation을 복원합니다. runtime 대화/대사 이력과 ZIP의 옛 실행 코드는 적재하지 않습니다. 앞서 추가본 R2에 넣었던 FTS 집계 최적화와 진행 로그도 포함했습니다.
+
+운영계의 50MB 제한이 필요할 때만 첨부 ZIP_TRANSFER_RUN.txt의 split/join을 사용합니다. Linux 코드스페이스에서 최대49,000,000바이트 조각으로 나누고, Dataiku에서는 INPUT_MODE="parts"로 같은 노트북이 검증·병합합니다. 정확한 명령은 GUIDE_UTF8.txt 5번에 있습니다. 이번 개발계 테스트에서는 분할하지 않습니다.
+
+검증: 로컬58개 통과. 전달 노트북의 ZIP 직접/분할 복원, 기존 원문·자산 재사용, 일부 원문·조회 행 보충, 반복 실행, 충돌 거부, 중단 재개를 확인했습니다. 실제 보유 ZIP·Dataiku JDBC/Oracle19·대용량 시간/공간은 현장 미확인입니다.
+기존 ZIP 및 중단 파일/상태/로그는 보존하고, 재실행할 때 같은 WORK_DIR를 사용합니다. publish가 FULL_DATA_VERIFIED로 끝나면 별도 status 전수 검사를 곧바로 반복할 필요는 없습니다.
+
+첨부6개: 실행 코드 ZIP, Dataiku 전체 실행 TXT, 운영계 분할/병합 실행 TXT, 안내, 검증, 최종 파일 확인.
+코드 ZIP SHA-256: f78567c361401abe202919fa42ea679c418c704b5616e9fe1b2c23d45028d65a

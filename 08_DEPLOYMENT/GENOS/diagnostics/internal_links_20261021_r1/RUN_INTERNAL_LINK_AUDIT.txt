@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+launch_dir="$PWD/internal-link-audit-logs/run-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+mkdir -p "$launch_dir"
+exec > >(tee -a "$launch_dir/run.log") 2>&1
+finish() { local rc=$?; printf 'INTERNAL_LINK_AUDIT_EXIT=%s\n' "$rc"; printf '{"exit_code":%s}\n' "$rc" > "$launch_dir/exit.json"; }
+trap finish EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+printf 'START %s\n' "$(date -u +%FT%TZ)"
+python3 -c 'import sys,platform; print("PYTHON",sys.executable,platform.python_version())'
+package_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+if [[ ! -f "$package_dir/audit_internal_links.py" ]]; then
+  package_dir="$PWD/GENOS_INTERNAL_LINK_AUDIT_20261021_R1"
+fi
+python3 - "$package_dir" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+p=Path(sys.argv[1]);m=json.loads((p/'PACKAGE_MANIFEST.json').read_text())
+for name,want in m['files'].items():
+ f=p/name
+ if f.is_symlink() or f.parent.resolve()!=p.resolve():raise SystemExit('Invalid package member')
+ if hashlib.sha256(f.read_bytes()).hexdigest()!=want:raise SystemExit('PACKAGE_HASH_MISMATCH: '+name)
+print('PACKAGE_OK',m['id'])
+PY
+mode="${1:-run}"
+if [[ $# -gt 0 && ( "$mode" == check || "$mode" == run ) ]]; then shift; else mode=run; fi
+if [[ "$mode" == check ]]; then
+  python3 "$package_dir/audit_internal_links.py" --help
+  printf 'CHECK_OK: package and Python startup only; data not audited.\n'
+  exit 0
+fi
+report="$PWD/internal-links-report-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+args=("$@")
+for ((i=0;i<${#args[@]};i++)); do
+  if [[ "${args[$i]}" == --output ]]; then report="${args[$((i+1))]:?--output needs a value}"; fi
+  if [[ "${args[$i]}" == --output=* ]]; then report="${args[$i]#--output=}"; fi
+done
+if [[ -e "$report" || -L "$report" || -e "$report.zip" || -L "$report.zip" ]]; then
+  printf 'Use a new output directory; existing files are preserved.\n'; exit 2
+fi
+set +e
+python3 "$package_dir/audit_internal_links.py" "${args[@]}" --output "$report"
+rc=$?
+set -e
+if [[ -f "$report/index.html" ]]; then
+  python3 - "$report" <<'PY'
+from pathlib import Path
+import sys,zipfile
+p=Path(sys.argv[1]).resolve();z=Path(str(p)+'.zip')
+with zipfile.ZipFile(z,'x',compression=zipfile.ZIP_DEFLATED) as out:
+ for f in sorted(p.iterdir()):
+  if f.is_file() and not f.is_symlink():out.write(f,f.name)
+print('HTML',p/'index.html');print('DOWNLOAD_ZIP',z)
+PY
+fi
+printf 'LOG %s\n' "$launch_dir/run.log"
+exit "$rc"

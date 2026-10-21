@@ -1,0 +1,51 @@
+GENOS 자연어 의미 하드코딩 제거 R1
+
+적용 대상: 기존 GENOS_RAG_RECOVERY_ALL_20261021_R2 + GENOS_DEV_SEARCH_SELECTION_20261021_R1이 적용된 정확한 394 코드 파일.
+R2의 워크플로우 1.20.6과 데이터 설정을 유지하는 58파일 증분 패치다.
+사용자 환경의 다른 변경은 덮어쓰지 않으며 check에서 예상 해시와 다르면 중단한다.
+로컬 MAIN98 코드를 통째로 반입하는 패키지가 아니다. 검증한 R2 기반 코드를 담았다.
+
+실제 업로드한 TRANSFER 폴더를 현재 위치로 유지한다. 절대 위치를 가정하지 않는다.
+아래 check/apply는 기존 ~/DEV Git checkout에 적용한다. --root는 명시한 다른 기존 checkout만 허용된다.
+
+python3 -m zipfile -e ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1.zip ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1
+bash ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1_RUN.txt check
+bash ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1_RUN.txt apply
+bash ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1_RUN.txt gate
+
+check부터 로그와 종료코드를 TRANSFER/natural-language-routing-r1-logs에 남긴다.
+검증한 원본을 패키지 내부 backup에 보존한 뒤 적용한다. 같은 apply 재실행은 이미 적용된 바이트를 확인한다.
+코드만 적용하며 데이터 복원/재구축, NFS generation 생성, 환경변수 편집, Git commit/push를 하지 않는다.
+
+반영 내용
+- 뭐가 있어/어떤 게 있어 등으로 질문을 목록으로 분류하던 분기 제거.
+- 대화 전체의 CASE/DIRECT/BROWSE 선택을 LLM이 결정. 목록은 실제 허용 문서 메타데이터로 조립.
+- 자연어 내규/외규로 검색 범위를 제한하지 않음. 명시 내규:/외규: 선택 구문 유지.
+- 질문을 전체 문서 목록으로 바꾸는 처리, 원문 선읽기와 검색어 임의 분해/조문 재삽입 제거.
+- 법률 문장 어미로 의무/허용/금지를 덮어쓰거나 거부하던 처리 제거. LLM의 해석과 실제 원문을 구분.
+- 판단 일관성 오류는 한 번만 수정. 기존 사건 기록에 시도를 남겨 동일 요청 재시작 시 예산 유지.
+- 관리 모드 모델이 없을 때 자연어를 규칙으로 실행하는 경로 차단. 현재 관리 모드 비활성 유지.
+- 인용·권한·코드/데이터/상태 해시·원문 일치와 typed API 구문 검사는 유지.
+
+Git/배포
+apply 후 ~/DEV에서 변경 파일을 검토하고 git diff --check를 실행한다.
+동봉 COMMIT_PATHS.txt의 파일만 사용자가 승인한 커밋에 포함한다. 다른 작업 파일을 함께 add하지 않는다.
+커밋 후 TRANSFER로 돌아와 다음 검사를 수행한다.
+bash ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1_RUN.txt gate-code
+검증한 커밋을 push하고 코드서빙 리비전을 갱신한다. 코드 수정 시 새 커밋으로 게이트를 재실행한다.
+기존 조회 API/Oracle 설정을 보존한다. generation을 사용하는 환경은 실제 선택 경로와 manifest 해시를 기록한다.
+이 패치는 기존 oracle_dp 전체 로컬 복원 구조를 Oracle 요청 조회 구조로 전환하지 않는다.
+
+현장 확인은 워크플로우 테스트 화면에서만 수행한다.
+1. '양도차익 산정할 때 양도가액에서 공제되는 경비는 뭐가 있어?' → CASE 판단 및 원문 조사.
+2. '전체 문서 목록 보여줘' → BROWSE 판단 및 허용 문서 목록.
+3. '공제 항목을 목록으로 설명해 줘' → 문서 목록이 아닌 내용 조사.
+4. 같은 대화의 후속 질문, 내규:/외규: 명시 범위와 권한 밖 문서 제외 확인.
+5. 요청 ID, 선택 코드 커밋, 리비전, 실제 모델 ID, 판단 이유·원문·결과 기록.
+실제 내부 모델의 의미 판단 정확도는 현장 미검증이다. 외부 모의 검사 통과로 보증하지 않는다.
+워크플로우 편집기 Python 변경은 이 패치에 필요하지 않다. 기존 R2 편집기 1.20.6은 유지한다.
+
+복원 (TRANSFER에서 실행)
+bash ./GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1/GENOS_NATURAL_LANGUAGE_ROUTING_20261021_R1_RUN.txt rollback
+새로운 사용자 수정이 있으면 보존을 위해 복원을 거부한다. 복원 후 Git 커밋/이전 서빙 리비전 선택은 별도다.
+완료된 롤백의 설치 기록은 보존하고, 다시 적용하려면 다른 새 추출 폴더를 사용한다.

@@ -246,7 +246,7 @@ def test_gateway_workflow_calls_internal_interpreter_without_legal_bootstrap(rec
     assert len(calls)==1 and calls[0]['state']['session']['chat']=='chat'
 
 
-@pytest.mark.parametrize('finish,model_id',[('stop','internal-test'),('length','internal-test'),('stop','other-model')])
+@pytest.mark.parametrize('finish,model_id',[('stop','internal-test'),('length','internal-test'),('stop','other-model'),('stop',None)])
 def test_internal_adapter_preserves_payload_binding_and_audits_invalid_output(monkeypatch,finish,model_id):
     from semantic_runtime.genos import endpoint
     target_endpoint=endpoint('https://internal.invalid/v1',token='test-secret',read_timeout=91)
@@ -261,9 +261,11 @@ def test_internal_adapter_preserves_payload_binding_and_audits_invalid_output(mo
                 'usage':{'total_tokens':7}},'body_sha256':'response-hash'}
     monkeypatch.setattr(ad_model,'GenosTransport',Transport)
     result=ad_model.interpret({'question':'숏컷','request_id':'ad-turn'},{'type':'object'},'system')
-    assert sent[0]['max_tokens']==1234 and sent[0]['chat_template_kwargs']=={'enable_thinking':False}
+    assert 'max_tokens' not in sent[0] and sent[0]['chat_template_kwargs']=={'enable_thinking':False}
     assert result['raw']['usage']['total_tokens']==7 and result['receipt']['response_sha256']=='response-hash'
-    if finish=='length' or model_id!='internal-test':assert result['plan'] is None and result['receipt']['decode_error']
+    assert result['receipt']['requested_model']=='internal-test'
+    assert result['receipt']['actual_response_model']==model_id
+    if finish=='length':assert result['plan'] is None and result['receipt']['decode_error']
     else:assert result['plan']['action']=='help'
 
 

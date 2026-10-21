@@ -27,6 +27,7 @@ def document_hits(text, matcher):
 
 def coordinate_index(matcher):
     """Reuse the immutable generation's coordinate map across request matchers."""
+    if hasattr(matcher,'coordinate_index'): return matcher.coordinate_index
     global _COORDINATES, _INDEX
     coordinates = matcher.stored_coordinates
     with _LOCK:
@@ -74,15 +75,11 @@ def heading_route(question, matcher, scope, hits, result):
         pairs.append({'document_id': did, 'document_name': matcher.documents[did],
                       'unit_id': uid, 'coordinate': coordinate, 'heading': matcher.units[(did, uid)].get('title', '')})
     sources = list(dict.fromkeys(sources))
-    if len(sources) > 16:
-        return {**result, 'reason': 'STRUCTURE_SELECTION_LIMIT'}
     return {'status': 'MATCH', 'pairs': pairs, 'source_ids': sources, 'reason': 'EXACT_DOCUMENT_HEADING'}
 
 
 def definition_route(question, matcher, scope, hits, result):
-    """Route one explicitly quoted term to its bound definition in one named document."""
-    if not re.search(r'정의|의미|뜻|이란|란\s*무엇', question):
-        return result
+    """Resolve a model-selected quoted term to stored definitions, without guessing intent."""
     quoted = set(re.findall(r"['\"‘“]([^'\"’”]{2,40})['\"’”]", question))
     if len(quoted) != 1:
         return result
@@ -93,7 +90,7 @@ def definition_route(question, matcher, scope, hits, result):
     did = next(iter(named))
     term = next(iter(quoted))
     rows = [d for d in definitions.values() if d['document_id'] == did and d['key'] == term]
-    if not rows or len(rows) > 16:
+    if not rows:
         return result
     sources = list(dict.fromkeys(d['source_id'] for d in rows))
     if any(sid not in matcher.sources or matcher.sources[sid]['document_id'] != did
@@ -106,64 +103,243 @@ def definition_route(question, matcher, scope, hits, result):
 
 
 def navigation_context(question, matcher, scope, *, matches=None):
-    """Compact, non-citable structure/term locations for the existing first planner."""
+    """Complete non-citable locations; the caller owns the request context budget."""
     matches = matcher.starts(question, scope) if matches is None else matches
     scope = set(scope)
-    named = {d['id'] for d in matches['documents']}
     structures = []
     for row in matches['structures']:
         did, uid = row['document_id'], row['unit_id']
-        if did not in scope or (named and did not in named):
+        if did not in scope:
             continue
         unit = matcher.units.get((did, uid), {})
         structures.append({'document_id': did, 'unit_id': uid,
                            'coordinate': unit.get('coordinate_key'),
-                           'title': unit.get('title', '')[:100], 'match_kind': row['kind']})
-        if len(structures) == 8:
-            break
+                           'title': unit.get('title', ''), 'match_kind': row['kind']})
     terms = []
     for row in matches['terms']:
         term = matcher.tools.terms.get(row['id'], {})
         label = term.get('label', '')
-        if label and label not in {t['label'] for t in terms}:
+        if label:
             terms.append({'term_id': row['id'], 'label': label,
-                          'question_text': row['question_spans'][0]['text']})
-        if len(terms) == 6:
-            break
+                          'question_text': row['question_spans'][0]['text'],
+                          'question_spans': row['question_spans']})
     # A definition in another document is a possible lead, never an applicable rule.
     labels = {t['label'] for t in terms}
     labels.update(re.findall(r"['\"‘“]([^'\"’”]{2,40})['\"’”]", question))
     definition_candidates = []
     for d in getattr(matcher.tools, 'definitions', {}).values():
-        if (d['document_id'] not in scope or d['key'] not in labels or
-                (named and d['document_id'] not in named)):
+        if d['document_id'] not in scope or d['key'] not in labels:
             continue
         definition_candidates.append({'definition_id': d['id'], 'term': d['key'],
                                       'document_id': d['document_id'], 'unit_id': d['unit_id'],
                                       'source_id': d['source_id'],
                                       'scope_status': d.get('scope_status')})
-        if len(definition_candidates) > 8:
-            break
-    # An arbitrary first page from many documents would bias the first planner.
-    ambiguous = not named and (len(definition_candidates) > 8 or
-        len({d['document_id'] for d in definition_candidates}) > 3)
-    definitions = [] if ambiguous else definition_candidates[:8]
+    locations = defaultdict(set)
+    for row in definition_candidates:
+        locations[row['term']].add((row['document_id'], row['unit_id'], row['source_id']))
+    # Competing stored locations are all visible. Their count cannot select a
+    # version or turn exact navigation metadata into an apparent absence.
+    ambiguous = any(len(values) > 1 for values in locations.values())
     return {'documents': [{'document_id': d['id'], 'name': d['name']}
-                          for d in matches['documents'][:3] if d['id'] in scope],
-            'structures': structures, 'terms': terms, 'definitions': definitions,
+                          for d in matches['documents'] if d['id'] in scope],
+            'structures': structures, 'terms': terms, 'definitions': definition_candidates,
             'definition_candidates_ambiguous': ambiguous,
             'navigation_hint_only': True, 'citation_eligible': False}
+
+
+def non_body_route(question, matcher, scope, *, document_id=None):
+    """Resolve a stored non-body location without guessing a rule or a version.
+
+    Embedded annexes belong to the explicitly selected document. A separate
+    attachment is considered only when its stored parent-folder metadata names
+    that document, or the request explicitly names the attachment itself.
+    """
+    from ..term_references import ANNEX, annex_coordinate
+    from ..navigation_match import norm
+    result = {'status': 'MISS', 'pairs': [], 'source_ids': [], 'reason': 'NO_EXPLICIT_PAIR'}
+    annexes = list(ANNEX.finditer(question))
+    if len(annexes) > 1 or (annexes and '부칙' in question):
+        return {**result, 'reason': 'RANGE_OR_NON_BODY'}
+    mentions = find_coordinates(question)
+    title_hits = [h for h in matcher.document_names.match(question) if h['key'] in matcher.title_keys]
+    if annexes and any(not annexes[0].start() <= c.start < annexes[0].end()
+                       and not any(h['start'] <= c.start and c.end <= h['end'] for h in title_hits)
+                       for c in mentions):
+        return {**result, 'reason': 'RANGE_OR_NON_BODY'}
+    if not annexes and len(mentions) > 1:
+        return {**result, 'reason': 'RANGE_OR_NON_BODY'}
+    context = getattr(matcher, 'document_context', {})
+    named = {d for h in document_hits(question, matcher) for d in h['values']}
+    explicit = {d for h in title_hits for d in h['values']
+                if role_of_metadata(context.get(d, {})) != 'body'
+                and h['key'] in {norm(value) for value in [matcher.documents.get(d, ''),
+                    context.get(d, {}).get('document_title', ''),
+                    *[a.get('document_title', '') for a in context.get(d, {}).get('aliases', [])],
+                    *getattr(matcher, 'document_aliases', {}).get(d, ())] if value}}
+    if document_id is not None:
+        if document_id not in scope:
+            return {**result, 'reason': 'DOCUMENT_OUTSIDE_REQUEST_SCOPE'}
+        if named and named != {document_id}:
+            return {**result, 'reason': 'CONFLICTING_DOCUMENT_TARGET'}
+        named = {document_id}
+    if len(named) > 1:
+        return {**result, 'reason': 'AMBIGUOUS_DOCUMENT_PAIR'}
+    if named and not named <= set(scope):
+        return {**result, 'reason': 'DOCUMENT_OUTSIDE_REQUEST_SCOPE'}
+    if not named and len(explicit) != 1:
+        return {**result, 'reason': 'AMBIGUOUS_DOCUMENT_PAIR' if explicit else 'NO_EXPLICIT_PAIR'}
+    if named and explicit and explicit != named:
+        # A separately named file is an explicit version/representation choice.
+        # Its parent's embedded annex must not silently replace that file.
+        return {**result, 'reason': 'AMBIGUOUS_DOCUMENT_PAIR'}
+    selected = named or explicit
+    if not selected <= set(scope):
+        return {**result, 'reason': 'DOCUMENT_OUTSIDE_REQUEST_SCOPE'}
+    did = next(iter(selected))
+    locator = (annex_coordinate(annexes[0][1], annexes[0][2].replace('호', ''))
+               if annexes else '부칙')
+
+    def annex_label(text):
+        match = ANNEX.match(text.strip())
+        return annex_coordinate(match[1], match[2].replace('호', '')) if match else None
+
+    def branch(key):
+        visited = set()
+        while key in matcher.units and key not in visited:
+            visited.add(key); unit = matcher.units[key]
+            if unit.get('surface', '').strip() == '부칙':
+                return key
+            parent = unit.get('parent')
+            key = (key[0], str(parent)) if parent is not None else None
+        return None
+
+    candidates = []
+    rows=matcher.units.for_document(did) if hasattr(matcher.units,'for_document') else matcher.units.items()
+    for key, unit in rows:
+        if key[0] != did or unit.get('coordinate_binding', {}).get('mode') == 'unresolved':
+            continue
+        coordinate = matcher.stored_coordinates.get(key)
+        if annexes:
+            if annex_label(unit.get('surface', '')) == locator:
+                candidates.append(key)
+        else:
+            root = branch(key)
+            if root is None:
+                continue
+            if mentions:
+                if coordinate and coordinate.canonical_surface() == mentions[0].coordinate.canonical_surface():
+                    candidates.append(key)
+            elif key == root:
+                candidates.append(key)
+    # A supplied exact amendment heading can disambiguate stored 부칙 branches.
+    if not annexes and len(candidates) > 1:
+        specified = [key for key in candidates if name_key(matcher.units[branch(key)].get('title', '')) not in ('', name_key('부칙'))
+                     and name_key(matcher.units[branch(key)].get('title', '')) in name_key(question)]
+        if specified:
+            candidates = specified
+    if len(candidates) > 1:
+        return {**result, 'reason': 'AMBIGUOUS_NON_BODY_COORDINATE'}
+    if not candidates and annexes:
+        parent = context.get(did, {})
+        parent_names = {name_key(x) for x in [parent.get('document_title', ''),
+                        *getattr(matcher, 'document_aliases', {}).get(did, ())] if x}
+        attached = set()
+        for other, metadata in context.items():
+            if role_of_metadata(metadata) not in ('annex', 'form', 'reference', 'attachment'):
+                continue
+            labels = [metadata, *metadata.get('aliases', [])]
+            matches_locator = any(annex_label(m.get('document_title', '') or m.get('file_name', '')) == locator
+                                  for m in labels)
+            parent_bound = any(parent_names & {name_key(v) for v in m.get('folder_names', [])}
+                               for m in labels)
+            if matches_locator and (other in explicit or other == did or parent_bound):
+                attached.add(other)
+        if len(attached) > 1:
+            return {**result, 'reason': 'AMBIGUOUS_DOCUMENT_PAIR'}
+        if attached and not attached <= set(scope):
+            return {**result, 'reason': 'DOCUMENT_OUTSIDE_REQUEST_SCOPE'}
+        if attached:
+            did = next(iter(attached))
+            # A detached attachment can have several original roots. Preserve all
+            # roots, including an unstructured prefix; none is a substitute for it.
+            candidates = [(did, None)]
+    if not candidates:
+        return {**result, 'reason': 'MISSING_NON_BODY_COORDINATE'}
+    pairs, sources = [], []
+    for key in candidates:
+        if key[1] is not None and key not in matcher.units:
+            return {**result, 'reason': 'NO_BOUND_ORIGINAL'}
+        ids = non_body_sources(matcher, *key)
+        if ids is None:
+            return {**result, 'reason': 'NON_UNIQUE_NON_BODY_ORIGINAL'}
+        if not ids:
+            return {**result, 'reason': 'NO_BOUND_ORIGINAL'}
+        partitioned = key[1] is None or len(ids) > 1
+        for sid in ids:
+            root = matcher.sources[sid]['unit_id']
+            uid = (str(root) if root is not None else None) if partitioned else key[1]
+            unit = matcher.units.get((key[0], uid), {})
+            coordinate = matcher.stored_coordinates.get(key)
+            pairs.append({'document_id': key[0], 'document_name': matcher.documents[key[0]],
+                          'unit_id': uid, 'source_id': sid,
+                          'coordinate': locator if annexes else coordinate.canonical_surface() if coordinate else locator,
+                          'coordinate_scope': unit.get('coordinate_scope', locator),
+                          'heading': unit.get('title', matcher.sources[sid].get('heading', '')),
+                          **({'source_partition': {'scope_unit_id': key[1]}} if partitioned else {})})
+        sources.extend(ids)
+    return {'status': 'MATCH', 'pairs': pairs, 'source_ids': list(dict.fromkeys(sources)),
+            'reason': 'EXACT_STORED_NON_BODY_LOCATION'}
+
+
+def non_body_sources(matcher, did, uid):
+    """A coordinate's original partitions, distinct from competing coordinates.
+
+    This verifies structural identities only. The existing reader validates the
+    complete union against original blocks before any partition is executable.
+    """
+    rows=matcher.sources.for_document(did) if hasattr(matcher.sources,'for_document') else matcher.sources.items()
+    ids = (sorted(sid for sid, source in rows if source['document_id'] == did)
+           if uid is None else list(dict.fromkeys(matcher._unit_sources(did, str(uid)))))
+    roots = set()
+    for sid in ids:
+        source = matcher.sources.get(sid, {})
+        root = source.get('unit_id')
+        if source.get('document_id') != did:
+            return None
+        if root is None:
+            if uid is not None: return None
+            continue  # Whole-document source-only groups are checked by block union.
+        if (did, str(root)) not in matcher.units or str(root) in roots:
+            return None
+        roots.add(str(root))
+        if len(ids) > 1 and uid is not None:
+            current = str(root); seen = set()
+            while current != str(uid):
+                if current in seen or (did, current) not in matcher.units:
+                    return None
+                seen.add(current)
+                parent = matcher.units[(did, current)].get('parent')
+                if parent is None: return None
+                current = str(parent)
+    return ids
+
+
+def read_identity(row):
+    return {k: row[k] for k in ('document_id', 'source_id', 'unit_id', 'source_partition') if k in row}
 
 
 def _resolve(question, matcher, scope, *, document_id=None):
     """All requested pairs must be unique and readable; partial hits never narrow scope."""
     result = {'status': 'MISS', 'pairs': [], 'source_ids': [], 'reason': 'NO_EXPLICIT_PAIR'}
     coordinates = find_coordinates(question)
-    if not getattr(matcher, 'stored_coordinates', None):
-        return result
-    if (re.search(r'부칙|별표|별지|부터|내지|[~～]', question)
+    if (re.search(r'부터|내지|[~～]', question)
             or any(coordinates[i].start < coordinates[i-1].end for i in range(1, len(coordinates)))):
         return {**result, 'reason': 'RANGE_OR_NON_BODY'}
+    from ..term_references import ANNEX
+    if ANNEX.search(question) or '부칙' in question:
+        return non_body_route(question, matcher, scope, document_id=document_id)
+    if not getattr(matcher, 'stored_coordinates', None):
+        return result
     hits = document_hits(question, matcher)
     if document_id is not None:
         if document_id not in scope:
@@ -211,8 +387,6 @@ def _resolve(question, matcher, scope, *, document_id=None):
         sources.extend(ids)
         previous_end = mention.end
     sources = list(dict.fromkeys(sources))
-    if len(sources) > 16:
-        return {**result, 'reason': 'STRUCTURE_SELECTION_LIMIT'}
     return {'status': 'MATCH', 'pairs': pairs, 'source_ids': sources, 'reason': 'EXACT_DOCUMENT_COORDINATE'}
 
 
@@ -253,6 +427,8 @@ def resolve(question, matcher, scope, *, document_id=None):
         'MISSING_OR_AMBIGUOUS_HEADING': 'UNRESOLVED_HEADING', 'NO_BOUND_ORIGINAL': 'MISSING_ORIGINAL',
         'RANGE_OR_NON_BODY': 'UNSUPPORTED_STRUCTURE_RANGE', 'DOCUMENT_OUTSIDE_REQUEST_SCOPE': 'OUTSIDE_SCOPE',
         'CONFLICTING_DOCUMENT_TARGET': 'CONFLICTING_DOCUMENT', 'UNRESOLVED_INTERVENING_DOCUMENT': 'MISSING_DOCUMENT',
+        'AMBIGUOUS_NON_BODY_COORDINATE': 'AMBIGUOUS_COORDINATE',
+        'NON_UNIQUE_NON_BODY_ORIGINAL': 'NON_UNIQUE_ORIGINAL',
         'STRUCTURE_SELECTION_LIMIT': 'SELECTION_LIMIT'}.get(reason, 'MISSING_COORDINATE')
     count = None
     if reason == 'MISSING_OR_AMBIGUOUS_COORDINATE':
@@ -272,7 +448,7 @@ def resolve(question, matcher, scope, *, document_id=None):
                 if not ids and any(d == did and c and c.canonical_surface() == locator
                         and matcher.units[(d, u)].get('coordinate_scope') == 'body'
                         and matcher.units[(d, u)].get('coordinate_binding', {}).get('mode') == 'unresolved'
-                        for (d, u), c in matcher.stored_coordinates.items()):
+                        for (d, u), c in (matcher.stored_coordinates.for_document(did) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items())):
                     code = 'UNRESOLVED_COORDINATE_BINDING'
                 break
     return {**result, 'failure': failure(code, count=count)}
@@ -303,7 +479,9 @@ def heading_term_candidates(matcher, docs, query, term_cache):
     from ..fulltext import question_terms
     query_terms = set(question_terms(query))
     found = {}
-    for (did, uid), coordinate in matcher.stored_coordinates.items():
+    coordinates=matcher.stored_coordinates
+    rows=(r for d in sorted(docs) for r in coordinates.for_document(d)) if hasattr(coordinates,'for_document') else coordinates.items()
+    for (did, uid), coordinate in rows:
         if did not in docs or coordinate is None or coordinate.unit != '조' or coordinate.chain:
             continue
         unit = matcher.units[(did, uid)]
@@ -320,7 +498,7 @@ def heading_term_candidates(matcher, docs, query, term_cache):
 
 
 def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit=8,
-              structure_filter=None):
+              structure_filter=None, row_filter=None):
     """Paged stored titles/coordinates; no body scan, fulltext rank or evidence.
 
     A bare coordinate across documents is a candidate list, never an exact pair.
@@ -330,7 +508,7 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
     if document_id is not None and document_id not in scope:
         raise ValueError('structure target outside request scope')
     if structure_filter is not None:
-        return filtered_catalogue(matcher, scope, document_id, structure_filter, offset, limit)
+        return filtered_catalogue(matcher, scope, document_id, structure_filter, offset, limit, row_filter=row_filter)
     docs = {did for did in ({document_id} if document_id is not None else scope)
             if role_of_metadata(getattr(matcher, 'document_context', {}).get(did, {})) == 'body'}
     queries = list(queries or [])
@@ -347,6 +525,15 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
         route = resolve(query, matcher, scope, document_id=document_id) if query else None
         if route:
             resolutions.append({'query': query, **route})
+        if route and route['status'] == 'MATCH' and route['reason'] == 'EXACT_STORED_NON_BODY_LOCATION':
+            for pair in route['pairs']:
+                did = pair['document_id']; uid = None if pair['unit_id'] is None else str(pair['unit_id'])
+                rows[('structure', did, uid, pair['source_id'])] = {'kind': 'structure', **pair,
+                    'title': matcher.units.get((did, uid), {}).get('title', pair.get('heading', '')), 'content_read': False,
+                    'ambiguous': False, 'source_binding_unique': True,
+                    'original_count': 1, 'coordinate_original_count': len(route['source_ids'])}
+                ranking[(did, uid)] = (1, 0, 0)
+            continue
         if route and route['status'] == 'MATCH':
             keys = {(p['document_id'], str(p['unit_id'])) for p in route['pairs']
                     if p['document_id'] in docs
@@ -411,11 +598,12 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
     ordered = sorted(rows.values(), key=lambda r: (r['document_name'], r['document_id'],
         0 if r['kind'] == 'document' else 1,
         tuple(-x for x in ranking.get((r['document_id'], r.get('unit_id')), (0, 0, 0))),
-        matcher.units[(r['document_id'], r['unit_id'])].get('span', [0])[0] if r['kind'] == 'structure' else 0,
-        r.get('unit_id', '')))
+        matcher.units.get((r['document_id'], r.get('unit_id')), {}).get('span', [0])[0] if r['kind'] == 'structure' else 0,
+        str(r.get('unit_id') or ''), r.get('source_id') or ''))
+    if row_filter is not None:ordered=[r for r in ordered if row_filter(r)]
     for row in ordered[offset:offset+limit]:
         if row['kind'] == 'structure':
-            row['path'] = node_path(matcher, row['document_id'], row['unit_id'])
+            row['path'] = node_path(matcher, row['document_id'], row['unit_id']) if row['unit_id'] is not None else []
     return lookup_report({'contract': 'stored-structure-catalogue-v1', 'queries': queries,
         'document_id': document_id, 'offset': offset, 'total': len(ordered),
         'items': ordered[offset:offset+limit],
@@ -466,7 +654,8 @@ def document_tree(matcher, did):
         if did in cache:
             return cache[did]
         keys = prepared['unit_index'].get(did, ()) if reusable else (
-            key for key in matcher.units if key[0] == did)
+            (key for key,_ in matcher.units.for_document(did)) if hasattr(matcher.units,'for_document') else
+            (key for key in matcher.units if key[0] == did))
         children, coordinates, levels, edges, branches = defaultdict(list), defaultdict(list), {}, set(), defaultdict(int)
         nodes = []
         for _, uid in keys:
@@ -543,10 +732,16 @@ def document_structure(matcher, scope, document_id, *, unit_id=None, offset=0, l
         'navigation_hint_only': True, 'citation_eligible': False}
 
 
-def filtered_catalogue(matcher, scope, did, filters, offset, limit):
+def filtered_catalogue(matcher, scope, did, filters, offset, limit, *, row_filter=None):
     """Typed coordinate/title filters against stored nodes of one bound document."""
     if did is None or did not in scope:
         raise ValueError('typed structure lookup requires a scoped document')
+    if 'selection' in filters:
+        from .structure_selection import catalogue, FILTER_SCHEMA
+        from jsonschema import validate
+        validate(filters, FILTER_SCHEMA)
+        page = catalogue(matcher, scope, did, filters['selection'], offset, limit, row_filter=row_filter)
+        return {**page, 'structure_filter': filters}
     tree = document_tree(matcher, did)
     branch = filters.get('coordinate_scope') or 'body'
     coordinate, title = filters.get('coordinate', '').strip(), filters.get('title', '').strip()
@@ -560,6 +755,7 @@ def filtered_catalogue(matcher, scope, did, filters, offset, limit):
     rows = [tree_row(matcher, did, uid, tree) for uid in candidates
             if valid and (matcher.units[(did, uid)].get('coordinate_scope') or 'unknown') == branch
             and (not title or name_key(title) in name_key(matcher.units[(did, uid)].get('title', '')))]
+    if row_filter is not None:rows=[r for r in rows if row_filter(r)]
     rows.sort(key=lambda row: (matcher.units[(did, row['unit_id'])].get('span', [0])[0], row['unit_id']))
     diagnostic = None
     if not valid:
@@ -570,7 +766,7 @@ def filtered_catalogue(matcher, scope, did, filters, offset, limit):
         unresolved = coordinate and any(c and c.canonical_surface() == locator
             and (matcher.units[(d, u)].get('coordinate_scope') or 'unknown') == branch
             and matcher.units[(d, u)].get('coordinate_binding', {}).get('mode') == 'unresolved'
-            for (d, u), c in matcher.stored_coordinates.items() if d == did)
+            for (d, u), c in (matcher.stored_coordinates.for_document(did) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items()) if d == did)
         diagnostic = failure('UNRESOLVED_COORDINATE_BINDING' if unresolved else
             'TITLE_FILTER_MISMATCH' if coordinate and candidates and title else
             'MISSING_COORDINATE' if coordinate else 'MISSING_TITLE')

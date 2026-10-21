@@ -228,6 +228,13 @@ def selected_sources(data, run_id, bases):
     path = genos_stages.plain_path(data / 'LOGS' / run_id / 'structure-selection.json')
     selection = json.loads(path.read_text())
     paths, pins = verified_structures(data, selection)
+    if bases:
+        # Do not reintroduce already indexed old internal versions through a base
+        # generation, including after document-release select of successful rows.
+        for value in selection['documents'].values():
+            receipt = json.loads((data / 'STRUCTURE' / value['key'] / 'structure-receipt.json').read_text())
+            if receipt.get('input_row', {}).get('input_version_policy'):
+                raise ValueError('Latest internal version selection cannot merge base generations; rebuild the complete intended RAW scope')
     pins.update({str(path): sha(path), **verify_origin(path.parent, selection)})
     base_paths = []
     for base in bases:
@@ -746,7 +753,7 @@ def _atomic(path, value):
         Path(name).unlink(missing_ok=True)
 
 
-def change_pointer(root, *, release=None, rollback=None, expected_current, confirm=False):
+def change_pointer(root, *, release=None, rollback=None, expected_current, confirm=False, basis_plan=None):
     if not confirm:
         raise ValueError('Activation/rollback requires --confirm-main')
     if bool(release) == bool(rollback):
@@ -780,10 +787,15 @@ def change_pointer(root, *, release=None, rollback=None, expected_current, confi
                     raise ValueError('Rollback target changed')
                 with closing(Store(previous)):
                     pass
+        basis_receipt=None
+        if basis_plan is not None and release and before:
+            from .basis_lifecycle import prepare_local
+            basis_receipt=prepare_local(before['path'],after['path'],basis_plan)
         history = pointer.parent / 'receipts' / (uuid.uuid4().hex + '.json')
         event = {'schema_version': 'document-release-activation-v1', 'before': before, 'after': after,
                  'previous_pointer_sha256': actual, 'action': 'APPLY' if release else 'ROLLBACK',
                  'quality_certified': False, 'release': str(release) if release else None}
+        if basis_receipt is not None:event['basis_migration']=basis_receipt
         _atomic(history, event)
         if after is None:
             pointer.unlink(missing_ok=True)
@@ -885,6 +897,14 @@ def reindex_prepared(data, prepared_run, output_run, *, fulltext_workers=None):
 
 
 def main(argv=None):
+    import sys
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments[:1] in (['augment-definitions'], ['verify-definitions']):
+        from .naming_definition_append import main as naming_main
+        return naming_main(arguments)
+    if arguments[:1] in (['append'], ['verify-append']):
+        from .document_append import main as append_main
+        return append_main(arguments)
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('action', choices=['select', 'merge', 'prepare', 'review', 'references', 'index', 'reindex', 'status',
                                      'build', 'verify', 'verify-glossary', 'publish-shared', 'activate', 'rollback',
@@ -909,10 +929,12 @@ def main(argv=None):
     p.add_argument('--max-reference-cases', type=int, default=10000)
     p.add_argument('--reference-batch-size', type=int, default=8)
     p.add_argument('--release', type=Path); p.add_argument('--receipt', type=Path)
+    p.add_argument('--basis-plan', type=Path, help='Explicit local basis authority/lineage migration plan for activation')
     p.add_argument('--shared-root', type=Path)
     p.add_argument('--active-data-root', type=Path)
     p.add_argument('--expected-current'); p.add_argument('--confirm-main', action='store_true')
     a = p.parse_args(argv)
+    if a.basis_plan and a.action!='activate':p.error('--basis-plan applies to activate only')
     if a.fulltext_workers is not None and (a.action != 'reindex' or a.fulltext_workers < 1):
         p.error('--fulltext-workers requires reindex and a positive integer')
     if a.action in {'archive-audit', 'restore-audit'}:
@@ -999,7 +1021,8 @@ def main(argv=None):
         if not a.active_data_root or not a.expected_current: p.error('--active-data-root and --expected-current are required')
         result = change_pointer(a.active_data_root, release=a.release if a.action == 'activate' else None,
                                 rollback=a.receipt if a.action == 'rollback' else None,
-                                expected_current=a.expected_current, confirm=a.confirm_main)
+                                expected_current=a.expected_current, confirm=a.confirm_main,
+                                basis_plan=json.loads(a.basis_plan.read_text()) if a.basis_plan else None)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 3 if (a.action in {'merge', 'prepare', 'review', 'index', 'build'} and
                  not result.get('stage_completed', result['completed'])) else 0

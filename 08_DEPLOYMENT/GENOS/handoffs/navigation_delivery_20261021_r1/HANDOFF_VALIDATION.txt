@@ -1,0 +1,28 @@
+원문 전달 중단 수정의 검증 범위
+
+작업 코드에서 신규14·관련19검사=33통과, 실제 로컬 /v1/rag/ask에서
+선택 수정 성공 및 두 번 실패 뒤 원문 기반 답변 발행·중복 요청 재사용을 확인했습니다.
+코드 해시 검사를 유지했고 실제 외부/GENOS 모델 호출은 하지 않았습니다.
+기존 unknown 전송 재개 검사1실패는 수정 전 구현에서도 동일하게 재현했으며 미해결입니다.
+
+인계본은 봉인된 READABLE R2의394파일에 이번 runtime2파일과 해당 engine/PIPELINE pin만 결합합니다.
+작업 폴더에 있던 별도 workflow 변경5파일은 반입본에 섞지 않습니다.
+이 조합은 작업 코드 전체와 동일하다고 보고하지 않으며 정확한 최종 ZIP을 설치한 코드에서
+해당 신규/API·기존 원문 전달/권한/진단·대사 표시 검사를 다시 실행합니다.
+
+최종 ZIP 검사는 임시 기존 Git checkout에서 다음을 검사합니다.
+- MAIN96에서 설치·재설치·status·gate·commit 후 gate-code.
+- 기존 STABLE_COMMANDS/BASIS_FIXED_LOCAL/TEN_MINUTE 위 중단 후 재개와 정확 원복.
+- READABLE R2 위 설치·재설치·정확 원복.
+- 후속 코드 수정과 payload 변조 거부, 원복 뒤 동일 설치 상태의 재사용 거부.
+- .env·ignore·현장 경로 설정·휴지통 사용자 파일·별도 명령 파일 보존.
+- 최종 파일394개와 CODE_MANIFEST/engine/workflow pin 대조.
+
+실제 결과·명령 수·실행 로그·최종 ZIP 해시는 DELIVERY_VALIDATION.json / DELIVERY_TRACE.json.gz에 기록합니다.
+이 ZIP 안의 CODE_MANIFEST.json과 PACKAGE.json이 실제 인계 코드의 정본입니다.
+GENOS commit·선택 generation 경로/manifest·서빙 리비전 값은 현장 미확인으로 비워 두었습니다.
+현장 generation이 없는 로컬 gate-sqlite 거부는 예상 결과이며 실제 데이터 검증 성공이 아닙니다.
+선택 로컬 MAIN96/데이터를 바꾸거나 GENOS 현장 반입·push·배포를 실행하지 않았습니다.
+
+봉인 전 같은 구성의 실제 ZIP 검사: 52명령(예상 거부7)과 설치 코드47검사 PASS.
+최종 봉인 후에도 동일 설치 검사를 다시 수행하고 그 ZIP 해시를 DELIVERY_VALIDATION.json에 기록합니다.

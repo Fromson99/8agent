@@ -1,0 +1,16 @@
+<p>요청하신 대로 <b>추가본과 같은 위치의 전체 원문 DB·용어집·검색 색인 데이터</b>를 반출하고 기존 Oracle 테이블에 모두 적재하도록 수정했습니다.</p>
+<p>이번 전체 이관에는 <b>LEGAL_ORACLE_FULL_PARTS_20261020_R1.zip</b>을 사용합니다. 앞서 보낸 QUERY_PARTS R1은 추가 조회 데이터 전용입니다. 두 버전의 코드/조각/작업 폴더는 섞지 않습니다.</p>
+<p><b>변경점</b>: 기존에는 추가 query-data.db만 만들었고, 이번에는 같은 generation의 원문 store.sqlite와 등록된 navigation/fulltext/glossary 파일·검색 선택표를 통째로 압축합니다. 조회 행은 Dataiku에서 기존 엔진으로 생성하므로 반출 쪽에 대형 query DB를 추가로 만들지 않습니다. 샘플링이나 문서 수 제한은 없습니다.</p>
+<p><b>1. 코드스페이스 반출</b><br>첨부 ZIP을 실제 업로드한 TRANSFER 폴더에서 아래 명령을 실행합니다.</p>
+<pre>python3 -m zipfile -e ./LEGAL_ORACLE_FULL_PARTS_20261020_R1.zip ./full-transfer-tools
+bash ./full-transfer-tools/LEGAL_ORACLE_FULL_PARTS_20261020_R1/CODESPACE_FULL_50MB_RUN.txt check --output /workspace/FULL_TRANSFER_20261020_R1
+bash ./full-transfer-tools/LEGAL_ORACLE_FULL_PARTS_20261020_R1/CODESPACE_FULL_50MB_RUN.txt export --output /workspace/FULL_TRANSFER_20261020_R1</pre>
+<p>기본 입력은 기존 추가본과 동일한 <code>/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation</code>입니다. 추가본 실행 때 다른 경로를 지정했다면 check/export 모두 같은 <code>--generation 실제경로</code>를 붙입니다. check 결과에 실제 문서·단위·본문 건수와 파일 목록이 표시됩니다.</p>
+<p><code>FULL_EXPORT_COMPLETE</code>가 나오면 workspace의 <code>/workspace/FULL_TRANSFER_20261020_R1/download</code>에서 <b>모든 full-data.zip.partNNNNNN과 parts-manifest.json</b>을 각각 다운로드합니다. 조각은 최대 49,000,000바이트이며 개별 압축해제 파일이 아닙니다.</p>
+<p><b>2. Dataiku 적재</b><br>Managed Folder 최상위에 코드 ZIP + 모든 데이터 조각 + parts-manifest.json을 올립니다. 새 Python 노트북/커널에서 첨부 <b>DATAIKU_FULL_IMPORT_RUN.txt 전체</b>를 붙이거나 ZIP의 ipynb를 가져옵니다.</p>
+<p>상단 <b>FOLDER_ID / ORACLE_CONNECTION / WORK_DIR</b>를 확인하고 <b>ACTION=&quot;restore&quot; → &quot;check&quot; → &quot;publish&quot; → &quot;status&quot;</b> 순서로 실행합니다. 비밀번호 없이 기존 Dataiku Oracle 연결을 사용합니다. WORK_DIR는 재실행에도 유지되는 영속 폴더여야 합니다.</p>
+<p>publish는 <b>원문3테이블 → 전체 원문 대조 → 자산/원문릴리스2테이블 → 조회행/조회릴리스2테이블 → 최종 전체 대조</b> 순서입니다. 기존 데이터가 있으면 버전과 내용을 비교하며, 다른 값을 덮어쓰거나 테이블을 재생성하지 않습니다. 중단되면 기록을 보존하고 같은 명령/ACTION으로 재개합니다.</p>
+<p><b>완료 상태는 FULL_DATA_VERIFIED</b>입니다. SOURCE_COMPLETE 등은 중간 단계입니다. QUERY_ACTIVE의 활성 버전 선택과 QUERY_STATE의 대화·대사 이력, GENOS 서빙 배포는 이번 데이터 이관에서 변경하지 않습니다.</p>
+<p>범위는 지정 generation에 등록된 전체 원문·용어집·색인입니다. RAW 업로드 원본 PDF/Office, 다른 실험 세대나 runtime 운영 이력을 모두 모으는 작업은 아닙니다. 현장 generation 자체에 없는 데이터는 자동으로 보충되지 않습니다.</p>
+<p><b>검증</b>: 합성·회귀 55개와 로컬 실제 Oracle 전체 SQL 1개, 총56검사를 통과했습니다. 실제9테이블을 빈 상태로 만들어 전체 적재/재실행/최종대조/서빙 Records 읽기 및 원격 자산 누락 거부를 확인했습니다. 전달 Bash/TXT 반출·복원, 조각 변조·중단·응답 유실·재개도 확인했습니다. Dataiku SQLExecutor2 자체와 현장 Oracle19·GENOS는 미접속이며, 운영 데이터 규모/소요시간은 미측정입니다.</p>
+<p>이 메일은 <b>실행 코드 인계</b>이며 실제 운영 데이터나 현장 이관 완료 결과를 포함하지 않습니다. 상세 실행·공간·재개 방법은 GUIDE_UTF8.txt에 있습니다.</p>

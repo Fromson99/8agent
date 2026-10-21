@@ -1,0 +1,12 @@
+입력/소비자: Dataiku Python Notebook. relay_origin, CA, 법령 ID/명, run_id → 단계별 결과표·로컬 JSON·기존 RelayCheck 본문/receipt.
+기존 연결: 20261015 R1 relay_check.py를 바이트 그대로 내장. 기존 request/inspect_xml/마스킹/압축 저장을 사용한다. 새 수집 파이프라인이 아니다.
+1단계: 중계 /law/DRF에 HEAD 1회, OC/Cookie/target_url 없음. 모든 HTTP 응답은 현재 전송 경로 응답 수신으로 표시. 프록시·인증·법제처 업무 성공과 구분.
+2단계: HEAD 응답을 받은 경우에만 등록 OC/선택 Cookie로 같은 중계에 법령 본문 GET 1회. 본문 ID·명칭·조문까지 확인해야 BODY_OK.
+복구 담당: NotebookRun이 단계 진행·중복·상태를 담당. requests/RelayCheck 자동 재시도는 0. 인증/전송/응답을 임의 보정하지 않는다.
+예산: HEAD 연결8초/응답10초, GET은 기존 연결8초/읽기20초/수신루프45초·본문12MiB. 실행 전체는 새 요청 시작 전 15분 deadline 검사. HEAD와 GET 합계 최대2시도.
+상태: 호출 전 IN_FLIGHT·누적 횟수·원래 deadline·코드/설정 binding 저장. 파일 잠금으로 동일 run_id 동시 실행을 막는다. 커널 재시작 때도 기존 결과·실패·예산 유지.
+중단: IN_FLIGHT/INTERRUPTED는 완료 불명이며 자동 재호출하지 않는다. 기존 GET 개별 receipt 경로를 보존한다. 성공/실패를 수동 확인하고 의도적으로 새 run_id를 선택해야 새 시도 가능.
+실패: TLS/연결/응답 timeout은 1단계 오류로 남기고 GET 미실행. HEAD 401/403/404/405는 HTTP 수신이며 GET의 현재 인증을 별도로 검사. HTTP200 HTML/오류 XML/ID 불일치는 법령 성공이 아니다.
+저장 실패: 성공으로 숨기지 않고 오류. 먼저 저장된 IN_FLIGHT와 기존 receipt를 보존. 설정/코드 binding 불일치는 기존 파일을 덮어쓰지 않는다.
+검사: 실제 전달 Notebook 셀의 정상/HEAD실패/HEAD비200/GET실패/HTML200/ID불일치/중복/재시작/예산/중단/binding/잠금/인증마스킹. 동일 셀을 로컬 TLS 서버로 실행해 HEAD→GET URL·헤더·최종 저장 연결 확인.
+한계: GENOS·사내 Dataiku·중계서버 접속 없음. 외부 법제처 새 호출 없음. Oracle·MAIN·Managed Folder 적재 없음. 모델/검색/프롬프트 비교가 아니므로 신규 ADR 실험 아님.

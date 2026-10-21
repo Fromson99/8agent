@@ -1,5 +1,24 @@
 # MAIN PDF 구간별 구조화 틀·bbox 검수
 
+## 2026-10-14 v38: 모델 출력 계약과 재개 예산
+
+작업 코드의 `genos-recipe-v38-output-contract-recovery`는 기존 `build-data-stages → ingest →
+recipe_runtime.revise_pdf`에 연결되어 있다. strict JSON·종료 상태·검증 오류를 구분하고,
+같은 결정의 교정은 최대 1회이며 원문·좌표·검수 상태는 보존한다. JSON 요청 HTTP400의
+숨은 prompt fallback은 제거했고 원래 응답과 실제 물리 호출 수를 기록한다.
+
+기존 tag lock 안에서 `checkpoints/model-calls/<binding hash>.json`에 호출을 예약한다.
+같은 코드·원문·모델·설정으로 재개하면 사용량·완료 응답·검수 승인을 재사용하고,
+결과가 불명확한 예약은 자동 재송신하지 않는다. 구 캐시·실패 이력은 보존한다.
+
+ADR0777에서 RAG/AD/구축을 포함한 817개 회귀와 410개 합성 계약을 확인했다.
+GENOS 구축용 인계의 정확한 사전 해시·의존성 조건은
+[BUILD_SOURCE_BINDING.json](../../../08_DEPLOYMENT/GENOS/handoffs/schema_recovery_20261014_r1/BUILD_SOURCE_BINDING.json)을 따른다.
+실행은 [통합 안내](../../../08_DEPLOYMENT/GENOS/handoffs/schema_recovery_20261014_r1/GUIDE_UTF8.txt)를 따른다.
+현장 v36a/v37을 새 버전과 같다고 간주하지 않는다. `BUILD_CHECK`가 실패하면
+기존 코드를 보존하고 읽기 전용 inventory로 차이를 확인한다. 실제 GENOS 내부 모델 실행과
+현장 데이터 품질은 미확인이다. 아래는 당시 기록이며 소급 변경하지 않는다.
+
 ## 2026-09-17 v37: 기업공시 복합 조문·작성지침과 호출 예산 진단
 
 `genos-recipe-v37-disclosure-budget-diagnostics`. 기존 `build-data-stages → ingest →

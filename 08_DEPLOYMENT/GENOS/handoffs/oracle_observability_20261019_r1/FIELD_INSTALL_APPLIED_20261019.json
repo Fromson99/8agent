@@ -1,0 +1,30 @@
+{
+  "status": "FIELD_INSTALL_APPLIED_FROM_USER_PHOTO",
+  "evidence": "User photo 0A609987-45B1-46F6-88AC-21C37988BCFA/1-사진-1.jpg",
+  "observed": {
+    "code_root": "/workspace",
+    "transfer_cwd": "/workspace/TRANSFER",
+    "base_variant": "session_identity_20261019_r1",
+    "python": "/venv/bin/python3",
+    "python_version": "3.11.15",
+    "check": "CHECK PASS",
+    "install": "ORACLE_LOGGING_PATCH_APPLIED",
+    "receipt_status": "APPLIED",
+    "exit_code": 0,
+    "compiled_files": 5,
+    "service_control": "PASS",
+    "workflow_progress": "PASS",
+    "workflow_editor_file": "/workspace/TRANSFER/oracle-logging-r1-state/WORKFLOW_PASTE_ALL.txt"
+  },
+  "interpretation": "Installation smoke deliberately returns RUNNING with worker_id=mock for workflow rendering; this does not verify actual Oracle preparation.",
+  "pending": [
+    "review and commit applicable checkout changes",
+    "gate-code --root /workspace on the same committed checkout",
+    "push and matching code-serving revision deployment",
+    "separate workflow Python editor save",
+    "workflow-test WARMUP_STATUS, actual Oracle readiness and RAG response"
+  ],
+  "field_deployment_verified": false,
+  "field_oracle_ready_verified": false,
+  "field_guardrail_error_fixed": false
+}

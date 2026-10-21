@@ -1,0 +1,80 @@
+NFS 최신판 선택 정보 → DEV ZIP 생성 / DEV ZIP → NFS 적용
+GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1
+
+1번: 현장 NFS 데이터를 읽어 DEV에 데이터 ZIP만 만듭니다.
+2번: DEV에 있는 그 ZIP을 검증하여 원래 NFS 위치에 적용합니다.
+이번 메일의 도구 ZIP과 1번 실행으로 생기는 데이터 ZIP은 서로 다른 파일입니다.
+
+대상 코드: 기존 ~/DEV (플랫폼에서 /workspace로 해석되는 경우도 허용)
+대상 데이터:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+적용 파일:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/SEARCH_SELECTION/generation.json
+
+처음 준비 — 첨부 ZIP을 실제로 올려 둔 폴더에서 실행
+DEV에 업로드했다면 DEV에서, TRANSFER에 업로드했다면 그 TRANSFER에서 실행합니다.
+TRANSFER의 절대 위치는 가정하지 않습니다. 아래 명령 사이에 위치를 바꾸지 않습니다.
+
+python3 -m zipfile -e ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1.zip ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1
+
+1. NFS의 최신판 선택 정보를 준비하여 DEV에 ZIP 생성
+bash ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1/BUILD_DEV_ZIP.txt
+
+출력:
+~/DEV/GENOS_LATEST_SELECTION_DATA_20261021_R1.zip
+~/DEV/GENOS_LATEST_SELECTION_DATA_20261021_R1.build-receipt.json
+
+NFS의 파일이 없거나 정상 구형(v1)이면 기존 DEV의 search-selection plan(latest=True)으로
+현재 데이터에 맞는 v2 내용을 준비합니다. 최신판 예외 정책은 기존 DEV의 승인된
+00_SYSTEM/FILENAME_EXCEPTIONS.json을 그대로 사용합니다. 기존 유효 v2와 다르면 중단합니다.
+이 단계에서는 NFS의 검색 선택 파일을 생성/변경하지 않습니다.
+완성 데이터 ZIP에는 generation.json과 그 데이터/코드 해시를 담은 BUNDLE.json만 들어갑니다.
+SQLite DB, 원문 본문, 키, .env는 ZIP에 넣지 않습니다.
+
+2. DEV에 있는 ZIP을 열어 지정 NFS 위치에 적용
+bash ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1/RESTORE_NFS.txt
+
+첫 명령에서 만들어진 ~/DEV/GENOS_LATEST_SELECTION_DATA_20261021_R1.zip을 읽습니다.
+데이터 경로/manifest/메타데이터/승인 규칙/코드와 비교 후 기존 search-selection activate를 호출합니다.
+현재 파일이 있으면 기존 공통 실행기가 NFS SEARCH_SELECTION/receipts 아래 원본을 백업합니다.
+기존 파일 권한은 적용·원복 시 보존하고, 새 파일의 읽기 권한은 원문 manifest.json을 따릅니다.
+같은 최신 파일이면 중복 적용하지 않으며 같은 명령을 재실행할 수 있습니다.
+성공 표시는 APPLIED_RESTART_REQUIRED이며 target에 위 generation.json 전체 경로가 나옵니다.
+
+두번째 명령 전에 쓰기 없이 검사하려면:
+bash ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1/RESTORE_NFS.txt check
+현재 상태:
+bash ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1/RESTORE_NFS.txt status
+이번 명령이 실제 변경한 파일만 원복:
+bash ./GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1/RESTORE_NFS.txt rollback
+
+원복은 원래 파일이 없었으면 이번에 생성한 파일을 제거하고, 있으면 원래 바이트를 복원합니다.
+원래 파일로 돌아가면 기존 503도 다시 발생할 수 있습니다. 이후 다른 수정이 있으면 원복을 거부합니다.
+한 번 원복한 작업의 재적용은 기존 ZIP/상태를 보존하고 새 --archive 이름으로 두 단계를 실행합니다.
+
+다른 DEV 경로를 사용하면 두 명령에 모두 같은 --root /실제/DEV를 붙입니다.
+서빙 데이터는 DEV/00_SYSTEM/GENOS_SERVING_PATHS.json 또는 명시 GENOS_GENERATION으로 대조합니다.
+사진의 경로와 다르면 쓰기 전에 중단합니다. 의도적으로 다른 선택 세대를 다룰 때만 두 명령에
+동일한 --generation /실제/선택/generation 을 명시합니다. 임의 최신 폴더는 자동 선택하지 않습니다.
+데이터 ZIP을 다른 곳으로 복사했다면 RESTORE_NFS.txt에 --archive /실제/데이터.zip 을 지정합니다.
+
+적용 후
+- 같은 NFS 데이터 세대를 읽는 코드서빙 프로세스/리비전과 별도 SSE 프로세스가 있다면 재시작합니다.
+- 워크플로우 테스트 화면에서 원래 질문을 다시 실행합니다. 코드서빙 직접 테스트 UI/API는 요구하지 않습니다.
+- 실제 서빙 리비전의 generation 설정도 위 NFS 경로인지 확인합니다. DEV 설정 일치만으로
+  실행 중인 다른 리비전의 경로가 일치한다고 판정하지 않습니다.
+- 새 코드나 데이터 세대 생성, Git commit/push, 워크플로우 편집기 변경은 이 작업에 포함되지 않습니다.
+- 사진의 별도 요청에서 나온 '멀티턴에는 대화 세션 식별자가 필요합니다'는 이 파일 작업으로 해결되지 않습니다.
+
+기록/자원/실패
+각 실행 시작부터 도구 폴더 logs에 stdout/stderr, 종료 코드, Python 경로/버전, 코드 해시,
+DEV commit(확인 가능 시), 데이터 경로/manifest 해시를 기록합니다.
+DEV의 .apply-state.json, NFS receipts, 원래 ZIP과 logs를 보존하세요.
+중단 시 무한 자동 재시도 없이 실패하며, 같은 두 번째 명령은 동일 before/after 영수증을 찾아 이어갑니다.
+한 프로세스, 모델 호출0, DB/색인 재구축0입니다. 최소 가용 RAM1GiB/디스크64MiB를 확인하며,
+주소공간2GiB/명령당900초 상한을 적용합니다. 대형 원문/색인을 상주 메모리에 적재하지 않습니다.
+문서 메타데이터 계획과 실제 Store/Selection 소비자를 검사합니다. 대형 store 전체의 SHA를
+재계산하거나 전체 GENOS 질의 품질을 인증하지 않습니다. 원문·manifest·선택 세대 포인터는 보존합니다.
+해시 불일치/변조/잘못된 경로는 차단하며 manifest나 최신판 검사를 수동 우회하지 않습니다.
+
+로컬 합성 검증 결과는 VALIDATION.txt에 있습니다. 실제 GENOS 실행·NFS 권한·리비전 재시작·내부 모델은 미검증입니다.

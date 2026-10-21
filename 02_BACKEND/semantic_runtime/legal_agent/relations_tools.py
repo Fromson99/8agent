@@ -271,9 +271,13 @@ class RelationsTools(ExplorationTools):
                 'tool':a['tool'],'reason':a['reason'],'question_refs':a.get('question_refs',[]),
                 'expected_information':a.get('expected_information'),'status':r['status'],
                 'evidence_ids':result.get('evidence_ids',[]),'relation_ids':result.get('relation_ids',[]),
-                'reused_from':result.get('reused_from'),'server_reason':result.get('server_reason')})
+                'reused_from':result.get('reused_from'),'server_reason':
+                    result['tool_outcome'].get('cause_code') if result.get('tool_outcome') else result.get('server_reason')})
         return rows
 
+    from .tool_execution_receipt import recorded_execution
+
+    @recorded_execution
     def execute(self, action, action_id, *, actor=None, view_id=None, parent=None, trigger=None, depth=0):
         actor=actor or self._actor
         view_id=None if actor=='SYSTEM_POLICY' else view_id or self._view_id
@@ -301,11 +305,14 @@ class RelationsTools(ExplorationTools):
             self.repo.db.execute("UPDATE action_context SET status='RUNNING' WHERE action_id=?",(action_id,))
         except (BudgetExhausted,DeadlineExceeded,ProposalError) as exc:
             result['server_reason']=str(exc)
+            from .tool_outcome import failure_details
+            result['failure']=failure_details(exc,execution='NOT_STARTED')
             with self.repo.transaction():
                 self.repo.event('ACTION_NOT_EXECUTED',result)
                 self.repo.db.execute('UPDATE action_context SET status=?,result_json=? WHERE action_id=?',('NOT_EXECUTED',encoded(result),action_id))
             if isinstance(exc,ProposalError): return result
             raise
+        self._tool_receipt_phase='handler'
         started=time.monotonic(); evidence=[]; key,offset=self.source.cursor_position(action)
         scan=action['tool'] in ('follow_relations','follow_reference')
         scan_deadline=self.context.deadline
@@ -330,14 +337,25 @@ class RelationsTools(ExplorationTools):
                 coverage={'complete':nxt is None,'meaning':'selected operation only'})
             result.update(extra)
             result['relation_ids']=[n['relation_id'] for n in items if 'notice_hash' in n]
+            from .tool_outcome import FAILURE_STATUSES
+            if status in FAILURE_STATUSES:
+                evidence=[]
+                result.update(items=[],evidence_ids=[],relation_ids=[],next_cursor=None,
+                              coverage={'complete':False,'meaning':'failed operation; not absence evidence'})
         except (sqlite3.OperationalError,ProposalError,ValueError) as exc:
             result.update(status='ERROR',server_reason=str(exc),scan_status='FAILED')
+            evidence=[]
+            result.update(items=[],evidence_ids=[],relation_ids=[],next_cursor=None,
+                          coverage={'complete':False,'meaning':'failed operation; not absence evidence'})
+            from .tool_outcome import failure_details
+            result['failure']=failure_details(exc)
         finally:
             if scan:
                 for db in (self.store.db,self.tools.db,*self.glossary.dbs.values()):
                     db.set_progress_handler(lambda: int(time.monotonic()>=self.context.deadline),1000)
         result['budget']={'action_reserved':True,'stored_chars':sum(len(p['text']) for e in evidence for p in e['spans']),
             'new_read_chars':0 if action['tool']!='read' or result['status']=='REUSED' else sum(len(p['text']) for e in evidence for p in e['spans']), 'duration_ms':int((time.monotonic()-started)*1000)}
+        self._tool_receipt_phase='observation'
         with self.repo.transaction():
             result=self.repo.record_observation(action,result,evidence,verify=self.source.verify)
             for e in evidence:

@@ -1,0 +1,108 @@
+{
+  "schema_version": "risk-basis-offline-patch-v2",
+  "package_id": "GENOS_RISK_BASIS_SQLITE_20261020_R2",
+  "supersedes": "GENOS_RISK_BASIS_APPEND_20261020_R1 (Oracle; DO NOT USE)",
+  "storage": "existing GENOS_SERVING_PATHS runtime/basis-links/authority.sqlite",
+  "payload": {
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": {
+      "sha256": "4a30c8f341907b8235de2c73f183961c7ca7a1487b3bb6484b965c2befea71ac",
+      "allowed_before": [
+        null,
+        "07649b5cdf2b541e058e1ce34c82a1be66de7a1b72f73cc30b407e9b5582b882"
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": {
+      "sha256": "5d7024a99c1477dcf9c46c66c7d57e4364428cfbdc25d9f521aab3a569c659a3",
+      "allowed_before": [
+        null,
+        "95078c11fe65aea564b07d3c042f3231090ab4ad699bcfdb75ca52847bc2f437"
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_sqlite.py": {
+      "sha256": "9f346cc8cba5c6ed558e6a981c639c0e65e7df47d69640460cc02b7707c08825",
+      "allowed_before": [
+        null
+      ]
+    },
+    "02_BACKEND/lawrag/pipeline/basis_lifecycle.py": {
+      "sha256": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+      "allowed_before": [
+        null,
+        "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+        "c40de99a4c3a1687d338bbfdc2bc27faf45104ef2a563fa5fada5a777eb8108c"
+      ]
+    }
+  },
+  "dependencies": {
+    "02_BACKEND/lawrag/__init__.py": [
+      "64539a741ad6212d064674c8e0c862bc22985325457666523cf91421893e741a"
+    ],
+    "02_BACKEND/lawrag/pipeline/__init__.py": [
+      "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953"
+    ],
+    "02_BACKEND/lawrag/pipeline/basis_batch.py": [
+      "974a9a80801cab34491c49c71dd673576ae98c7d82793cc3c9d4604d8d4f15e4"
+    ],
+    "02_BACKEND/semantic_runtime/__init__.py": [
+      "ce7278ea23a9ecc8c076c977c7dce1bf2ed04f9ff0d855d8a43b249235a897ba"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/__init__.py": [
+      "091407c3acc90302147499e1277dd426f0c6f3d37c40037b4c52aca470b76912"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/api.py": [
+      "be7c1674f86de93c77e78dfdc0413630c1ebfe940f856c7f12fc22fd138bd446"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/contracts.py": [
+      "5da8e6a5f115a7a46d95349a82fabad436672799549b40780d205cd1fc64ef86"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/integration.py": [
+      "fa22f69a2a2617c9921589cd23c832cd1bda80c46b514097687acbf5144ac7b7"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/repository.py": [
+      "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/resolver.py": [
+      "de6e478205ac16313694d5cc1fb0eb24594a0cbe9eddd24f45b6e41de25cd2ad"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/service.py": [
+      "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc"
+    ],
+    "02_BACKEND/semantic_runtime/basis_links/sources.py": [
+      "b1efda1b357beebe50f0d35ae9d11ffc64d18842942123b383d4552bbd149062"
+    ],
+    "02_BACKEND/semantic_runtime/contracts.py": [
+      "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f"
+    ],
+    "02_BACKEND/semantic_runtime/observability.py": [
+      "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e"
+    ],
+    "02_BACKEND/semantic_runtime/state_sqlite.py": [
+      "2229d464d3a3d52da1def657f05ab1506cdeeef8164ce28cbf9378727f443608"
+    ],
+    "02_BACKEND/semantic_runtime/storage.py": [
+      "3f98097938533528338c78af3f02ae5924aaa20f73892f625985b08bfffa0419"
+    ],
+    "02_BACKEND/semantic_runtime/team_scope.py": [
+      "2152c1ff0e96946995181d72edc1a19a571993026ebe88e2999156a0a59a6999"
+    ]
+  },
+  "package_files": {
+    "GENOS_RISK_BASIS_SQLITE_20261020_R2_RUN.txt": "72e00728d2df2924747f9610eca427a2442bb4433d4351b9e5f60c7cac96fc26",
+    "LOCAL_VALIDATION.json": "60288b8b4063c99eea253a0d8036729b7343b4ad3956936f9bb67ddb2715964f",
+    "install.py": "064928e1810015d6d752702d64f33b1b6ab0f00d6535d70ab4fb96beb758c292",
+    "payload/02_BACKEND/lawrag/pipeline/basis_lifecycle.py": "27f2c7af4709a4ef67cf28d6a41e221f7a8f98b8d0c493d0ae089dcdcc310bcc",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_seed.py": "4a30c8f341907b8235de2c73f183961c7ca7a1487b3bb6484b965c2befea71ac",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": "5d7024a99c1477dcf9c46c66c7d57e4364428cfbdc25d9f521aab3a569c659a3",
+    "payload/02_BACKEND/lawrag/pipeline/risk_basis_sqlite.py": "9f346cc8cba5c6ed558e6a981c639c0e65e7df47d69640460cc02b7707c08825",
+    "읽어주세요.txt": "155a36cc86aaefb8c504337e5b095296df4ba296e5315319d4388ac41a7bf7df"
+  },
+  "precondition": "GENOS_BASIS_BATCH_20261020 R1/R2/R3 identical feature code; existing shared SQLite",
+  "source_fixture_generation": "term-source-696ba4030ea5f1a19ccf",
+  "deployment_target": "~/DEV (resolved existing Git checkout)",
+  "genos_serving_revision": "NOT_VERIFIED",
+  "genos_execution": "NOT_RUN",
+  "oracle_execution": "NOT_USED",
+  "data_reindex": false,
+  "main_changed": false,
+  "git_push": false
+}

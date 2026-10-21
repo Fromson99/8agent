@@ -1,0 +1,5 @@
+{
+  "cause": "Unlike the original candidate without a field config, importing installed service.py configures GENOS_RUNTIME_DIR. Later synthetic tests inherited that shared field store, mixing AD sessions and cached requests.",
+  "recovery": "Clear inherited deployment environment before each synthetic test, before its fixtures establish their own configuration. Keep Oracle cache on real disk; do not disable its mount guard. Product bytes unchanged.",
+  "original_result": "245 passed; 2 failed"
+}

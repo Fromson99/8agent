@@ -1,0 +1,50 @@
+{
+  "id": "GENOS_MAIN95_IGNORE_REPAIR_20261021_R1",
+  "profiles": [
+    ".gitignore",
+    "genosIgnore",
+    "genosNoJsIgnore",
+    "genosMailIgnore",
+    "08_DEPLOYMENT/GENOS/v6-runtime.genosignore",
+    "08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore",
+    "08_DEPLOYMENT/GENOS/ad-mode-package.ignore"
+  ],
+  "excluded_examples": [
+    ".Trash-1001/files/BACKUP/old.py",
+    ".Trash-1001/info/deleted.trashinfo",
+    ".Trash/files/old.py",
+    "nested/.Trash-1002/files/old.py",
+    "TRANSFER/archive.zip",
+    "QUERY_TRANSFER_20261020_R1/events.jsonl",
+    "QUERY_TRANSFER_20261020_R1/export-state.json",
+    "QUERY_TRANSFER_20261020_R1/job.lock",
+    "QUERY_TRANSFER_20261020_R1/query-data.db.partial",
+    "QUERY_TRANSFER_20261020_R1/query-data.db.partial-journal",
+    "QUERY_TRANSFER_20261020_R1/source-check.json",
+    "QUERY_TRANSFER_future/query-data.db",
+    "scratch/query-data.db.partial",
+    "scratch/query-data.db.partial-journal",
+    "scratch/query-data.db-journal",
+    "scratch/query-data.sqlite.partial",
+    "scratch/query-data.sqlite.partial-wal",
+    "scratch/query-data.sqlite3.partial",
+    "scratch/query-data.sqlite3.partial-journal"
+  ],
+  "retained_examples": [
+    "service.py",
+    "02_BACKEND/semantic_runtime/legal_agent/model_contract.py",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "06_TOOLS/COMMANDS/code_ship.py",
+    "00_SYSTEM/PIPELINE.json",
+    "01_DATA/README.md",
+    "01_DATA/CONTRACTS/example.schema.json",
+    "01_DATA/SOURCE_SETS/example.json",
+    ".env.example"
+  ],
+  "payload_hashes": {
+    "apply_ignore.py": "19c876a9218a7241e866581be65220123d02ed52f0d3e1d5ec681c8a595d2bff",
+    "IGNORE_RULES.txt": "491debdcc145817eef39edf5e43d5ba5e06ed5d00350eda618ea9c7d5079d397",
+    "MAIN95_BASE_INVENTORY.json": "39919806b648701aa8148e8be739c2700e66620cc9557f7677880ff696faacf6",
+    "GENOS_MAIN95_IGNORE_REPAIR_20261021_R1_RUN.txt": "0df55af759efdf7e9776d37227bf710bc40e0aef0696b4950cc468be8bb615ee"
+  }
+}

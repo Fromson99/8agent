@@ -1,0 +1,64 @@
+GENOS 내규 파일명 비교 R3 — 사용자 예외 적용
+
+R2 대신 R3를 사용합니다. R2의 DEV 내부 TRANSFER 출력 문제 수정은 포함됩니다.
+실제 업로드한 TRANSFER에서 아래 두 줄을 실행합니다. DEV로 먼저 이동하지 않습니다.
+
+python3 -m zipfile -e ./GENOS_FILENAME_AUDIT_20261015_R3.zip ./GENOS_FILENAME_AUDIT_20261015_R3
+bash ./GENOS_FILENAME_AUDIT_20261015_R3/GENOS_FILENAME_AUDIT_20261015_R3_RUN.txt compare
+
+시작 로그에 GENOS_FILENAME_AUDIT_REVISION=R3와 EXCEPTIONS=설정경로가 표시됩니다.
+기존 고정 GENOS_SERVING_PATHS → 선택 generation의 전체 내규 메타데이터를 읽습니다.
+RAG·RAW·DB·색인·CURRENT·기존 DEV 코드를 수정하지 않습니다. 모델 호출/재구축/배포는 없습니다.
+Python3.10 이상 표준 라이브러리만 필요합니다.
+
+결과: 현재 TRANSFER/FILENAME_AUDIT_RESULTS/실행별새폴더
+COMPARE.html: 전체 내규와 예외 적용 후 남은 내규를 나란히 표시. 위쪽에 규칙별 적용·미발견·개수 차이 표시.
+ALL_INTERNAL.csv / RETAINED_INTERNAL.csv: 문서명,날짜 두 열.
+LATEST_ONLY.csv: 최신 판정 문서. 단일파일 예외는 날짜가 비어 있어도 최신으로 표시.
+EXCEPTION_RESULTS.csv: 예외별 적용 상태와 해당 파일 수.
+EXCEPTION_CHANGES.csv: 일반 R2 규칙과 비교해 예외로 제목/날짜/판정이 달라진 원본.
+AUDIT_DETAIL.csv / AUDIT.json: 원본 경로·판정 이유·규칙ID·적용 전 판정·날짜 정밀도.
+APPLIED_EXCEPTIONS.json / SUMMARY.json: 그 실행에 사용한 예외 사본과 원본 설정 SHA-256.
+RUN_STATUS.json: COMPLETE / COMPLETE_WITH_REVIEW / FAILED.
+지속 로그: 현재 TRANSFER/FILENAME_AUDIT_RUNS/실행별폴더/console.log 및 exit_status.txt.
+재실행은 새 결과를 만들고 과거 결과를 덮어쓰지 않습니다.
+HTML은 Jupyter에서 다운로드한 다음 브라우저로 열어 비교합니다.
+
+예외는 FILENAME_EXCEPTIONS.json 한 파일에서만 관리합니다.
+ZIP 안 RUN.txt 옆의 파일을 읽습니다. 별도 첨부 TXT를 직접 실행할 때도 JSON을 같은 폴더에 둡니다.
+코드 속에 사용자 문서명/지정 날짜를 숨겨 두거나 설정이 없을 때 다른 내장 예외로 대체하지 않습니다.
+
+등록한 규칙:
+- 그룹위험관리 세칙: 기존 자동 최신 판정 유지. 날짜를 새로 추정하지 않음.
+- 대차업무준칙: 2026-05-04 선택.
+- 삼성POP골든랩 관리준칙: "삼성POP골든랩 관리준칙_2023년 5월 개정(최종)" 파일 선택. 확장자와 공백 차이는 무시. 표시 날짜는 2023-05, 일자 생성 없음.
+- 선물옵션 리스크관리 관리준칙 / 선물옵션 리스크관리준칙: 본문, [별첨1], [별첨2] ... 별개 문서. 별첨 번호별로 각각 날짜 비교. 파일명에 제목이 없으면 정확히 일치하는 직계 폴더명도 사용.
+- 위탁증거금 징수지침: 두 문서 모두 유지. 두 개보다 많이 발견되어도 임의로 버리지 않고 개수 차이 보고.
+- 인덱스북: 2026-05-29 선택.
+- 주식운용준칙: 2021-07-23 선택.
+- 투자리스크관리준칙: 2016-01-11 선택.
+- 폴더에 실제 문서파일이 한 개면 최신 취급. 현재 입력 목록의 경로 기준이며 Office 임시파일은 세지 않음.
+
+지정 판본이 없으면 해당 가족을 검토 보존하고 TARGET_NOT_FOUND를 표시합니다.
+실제 원문이 없는 판본·잘못된 설정·해시 불일치는 예외로 우회하지 않습니다.
+개별 문서 지정/두 문서 유지 규칙이 단일파일 폴더 규칙보다 우선합니다.
+문서명이 정확히 맞지 않아 미발견으로 표시되면 원본명 또는 폴더명을 확인해 JSON의 titles만 보완할 수 있습니다.
+이름 일치는 공백/밑줄/하이픈 차이를 정규화하며, 임의 유사명/개명을 추정하지 않습니다.
+"그룹위험관리 세칙"은 명시 별칭인 그룹위험관리기준시행세칙/그룹위험관리시행세칙도 같은 확인 규칙에 연결됩니다.
+
+나중에 예외 전체를 끄고 일반 규칙으로 실행:
+bash ./GENOS_FILENAME_AUDIT_20261015_R3/GENOS_FILENAME_AUDIT_20261015_R3_RUN.txt compare --no-exceptions
+이 옵션은 단일파일 폴더 예외도 함께 끕니다. 설정 파일이 없어도 동작합니다.
+특정 예외만 빼려면 JSON의 rules에서 해당 객체를 제거합니다. 단일파일 예외는 single_file_folder_is_latest를 false로 바꿉니다.
+새 설정은 다음 실행에서 적용되고 과거 결과의 설정 사본은 보존합니다.
+다른 설정 파일은 compare --exceptions '/확인한/설정파일.json'으로 명시합니다.
+설정 누락/문법오류/중복 규칙/겹치는 명칭은 실패 처리하며, 예외 없이 성공한 것처럼 넘어가지 않습니다.
+
+원본 폴더를 직접 조사하는 별도 모드:
+bash ./GENOS_FILENAME_AUDIT_20261015_R3/GENOS_FILENAME_AUDIT_20261015_R3_RUN.txt compare --raw-root '/확인한/내규루트'
+위 경로만 실제 내규 폴더로 바꿉니다. 다른 자료가 섞인 상위 폴더를 넣지 않습니다.
+기본 모드는 선택된 구조화 generation의 내규이며 아직 구조화되지 않은 RAW 전체를 뜻하지 않습니다.
+
+SAMPLE의 결과는 사용자 지정 명칭/판본과 검사용 모의 구판본으로 생성한 예시입니다.
+현장 문서 전수 결과가 아니며 실제 GENOS 문서 수·적용률은 위 compare 실행으로 확인합니다.
+이번 결과를 RAG 검색 제외 설정에 자동 적용하지 않습니다.

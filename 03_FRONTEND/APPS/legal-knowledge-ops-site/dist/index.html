@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="법률 지식 운영실 — 배치부터 온톨로지 검증까지 연결하는 예시 데이터 기반 UI 프로토타입">
+  <meta name="theme-color" content="#132c38"><title>법률 지식 운영실 · Knowledge Operations</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%230c817f'/%3E%3Cpath d='M10 11v18m0-8 17-10M10 21l17 8' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="workspaces.css?v=2"><script defer src="fixtures.js?v=2"></script><script defer src="graph.js?v=2"></script><script defer src="workspaces.js?v=2"></script><script defer src="app.js?v=2"></script>
+</head>
+<body>
+  <a class="skip" href="#main">본문으로 이동</a>
+  <aside id="sidebar">
+    <a class="brand" href="#pipeline"><span class="brand-icon">K<span>·</span></span><span>법률 지식 운영실<small>KNOWLEDGE OPERATIONS</small></span></a>
+    <div class="workspace-tag"><span class="status-dot"></span> 디자인 워크스페이스 <span>⌄</span></div>
+    <div class="nav-label">운영 워크플로우</div><nav id="nav" aria-label="주 메뉴"></nav>
+    <div class="side-note"><span class="orbit">↗</span><b>지식을 검토하고,<br>다시 검증합니다.</b><p>배치 → 검토 → 지식 관리 → 시뮬레이션</p></div>
+    <div class="side-foot"><span class="avatar">D</span><div>디자인 검토자<small>예시 데이터 · 개인 체험</small></div><span class="foot-mark">v4</span></div>
+  </aside>
+  <div id="scrim"></div>
+  <div class="shell">
+    <header class="topbar"><button class="icon-btn mobile-menu" id="menu-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button><div class="breadcrumb">워크스페이스 <span>/</span> <b id="crumb">배치 모니터</b></div><div class="top-right"><span class="demo-pill"><span class="status-dot"></span> UI PROTOTYPE</span><button class="icon-btn" id="about-button" aria-label="프로토타입 안내">ⓘ</button></div></header>
+    <main id="main" tabindex="-1"></main>
+    <footer>예시 문서·예시 수치로 구성한 화면입니다. 변경은 이 탭에만 저장되며 Oracle·Dataiku·RAG에 반영되지 않습니다.</footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="about"><button class="icon-btn close-modal" aria-label="닫기">×</button><span class="eyebrow">이 화면에 관하여</span><h2>업무 흐름을 함께 검토하는 공간</h2><p>여섯 관리 화면과 승인·편집 동선을 체험할 수 있습니다. 실제 업무 데이터, 계정 정보, 내부 문서는 포함하지 않았습니다.</p><p>시뮬레이션은 결과 화면의 예시이며 실제 법률 판단이나 RAG 실행 결과가 아닙니다. 새 탭에서는 별도의 체험 상태로 시작합니다.</p><button class="btn primary close-modal">확인했습니다</button></dialog>
+</body></html>

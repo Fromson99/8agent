@@ -46,6 +46,8 @@ _BINDING: dict[str, Any] | None = None
 _APP_BOOTSTRAP_LOCK = threading.Lock()
 _WARMUP_LOCK = threading.Lock()
 _WARMUP_STATE: dict[str, Any] = {"state": "NOT_STARTED"}
+_WARMUP_HEARTBEAT_SECONDS = 15.0
+_AD_WORKER_RECOVERY: dict[str, Any] = {"state": "DISABLED"}
 _PROCESS_INSTANCE_ID = uuid.uuid4().hex
 _BARE_UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 
@@ -65,7 +67,7 @@ _GET_ALLOWLIST = frozenset(
         "/v1/rag/links",
     }
 )
-_POST_ALLOWLIST = frozenset({"/v1/rag/ask"})
+_POST_ALLOWLIST = frozenset({"/v1/rag/ask", "/v1/workflows/run", "/v1/workflows/resume", "/v1/basis-links/proposals", "/v1/basis-links/reviews"})
 _API_TYPES = frozenset(
     {
         "PING",
@@ -76,6 +78,10 @@ _API_TYPES = frozenset(
         "HEALTH",
         "RAG_SEARCH",
         "RAG_ASK",
+        "BASIS_LINKS_LIST", "BASIS_LINKS_PROPOSE", "BASIS_LINKS_REVIEW", "BASIS_LINKS_HISTORY", "BASIS_MIGRATION_STATUS",
+        "WORKFLOW_RUN",
+        "WORKFLOW_RESUME",
+        "WORKFLOW_STATUS",
         "LEGAL_AGENT",
         "ELS_QUERY",
         "PIPELINE_BOOTSTRAP_EXTERNAL",
@@ -201,16 +207,9 @@ def _genos_v5_environment_binding(request_profile=None):
     from semantic_runtime.legal_agent.transport import GenosTransport
     from semantic_runtime.legal_agent.workflow_tiers_policy import DEFAULT_PROFILE, profile
 
-    raw_output_tokens = os.environ.get("GENOS_RAG_MAX_OUTPUT_TOKENS", "").strip()
-    if raw_output_tokens:
-        try:
-            output_tokens = int(raw_output_tokens)
-        except ValueError as exc:
-            raise ValueError("GENOS_RAG_MAX_OUTPUT_TOKENS must be a positive integer") from exc
-        if output_tokens < 1:
-            raise ValueError("GENOS_RAG_MAX_OUTPUT_TOKENS must be a positive integer")
-    else:
-        output_tokens = DEFAULT_PROFILE["max_output_tokens"]
+    # GENOS owns its model/context limit. Retired environment caps must not
+    # silently restore an application output limit on an existing revision.
+    output_tokens = None
 
     request_profile = _genos_v5_admission_profile({**(request_profile or DEFAULT_PROFILE),
         'bounded_source_selection_enabled': True})
@@ -317,6 +316,9 @@ def _local_release() -> tuple[Path, Path, dict[str, Any]]:
 
 
 def _resolve_binding() -> tuple[Path, Path, dict[str, Any]]:
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if dp_enabled():
+        raise RuntimeError('Oracle query bindings are pinned by the request factory; generation restoration is disabled')
     explicit = _explicit_generation()
     if explicit is not None:
         return explicit
@@ -378,11 +380,32 @@ def _provider(root: Path, runtime: Path, manifest: dict[str, Any]):
     )
 
 
+def _oracle_factory():
+    global _APP, _BINDING
+    from semantic_runtime.oracle_query_service import Factory
+    if _APP is None:
+        _APP=Factory(sys.modules.get(__name__) or SimpleNamespace(**globals()))
+        _BINDING=dict(_APP.binding)
+    if not isinstance(_APP,Factory):
+        raise RuntimeError('data provider changed; restart before selecting Oracle')
+    return _APP
+
+
 def application():
     """Create and cache the ASGI app after verifying code and generation binding."""
 
     global _APP, _BINDING
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if dp_enabled():
+        return _oracle_factory().application()
+    if getattr(_APP,'is_oracle_query_factory',False):
+        raise RuntimeError('data provider changed; restart before selecting SQLite')
     if _APP is not None:
+        from semantic_runtime.oracle_dp import enabled as dp_enabled, environment_binding as dp_environment_binding
+        if dp_enabled() != ((_BINDING or {}).get('mode') == 'oracle-dp'):
+            raise RuntimeError('data provider changed; restart this process before reusing the application')
+        if dp_enabled() and dp_environment_binding() != _BINDING.get('dp_environment_binding'):
+            raise RuntimeError('Oracle DP release/connection/cache settings changed; restart this process')
         obs.event(log, "runtime.cache.hit", binding=_BINDING)
         return _APP
     with obs.step(log, "binding.resolve"):
@@ -478,14 +501,14 @@ def application():
                     raise ValueError(selected_implementation+" requires LEGAL_AGENT_PROFILE and LEGAL_AGENT_PROFILE_SHA256")
                 options["legal_agent_profile"] = profile(load_bound(code_root, {
                     "path": profile_path, "sha256": profile_hash}), require_model=True)
-            elif selected_implementation in {"legal-agent-tools-v5", "legal-agent-unified-v6"} and binding.get("mode") in ("genos-generation", "genos-data-current"):
+            elif selected_implementation in {"legal-agent-tools-v5", "legal-agent-unified-v6"} and binding.get("mode") in ("genos-generation", "genos-data-current", "oracle-dp"):
                 environment_binding = (_genos_v5_environment_binding(
                     _json(code_root / "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json"))
                     if selected_implementation == "legal-agent-unified-v6"
                     else _genos_v5_environment_binding())
                 if environment_binding is not None:
                     options["legal_agent_profile"], options["legal_agent_transport"] = environment_binding
-        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current'):
+        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp'):
             from semantic_runtime.legal_agent.workflow_tiers_policy import profile as v5_profile
             configured_profile = options.get('legal_agent_profile') or _json(code_root / ('00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json' if selected_implementation=='legal-agent-unified-v6' else '00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json'))
             options['legal_agent_profile'] = v5_profile(_genos_v5_wait_profile(
@@ -520,13 +543,13 @@ def application():
             **options,
         )
         if not (selected_implementation == 'legal-agent-tools-v5' and
-                binding.get('mode') in ('genos-generation', 'genos-data-current')):
+                binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp')):
             agent = getattr(getattr(getattr(_APP, 'state', None), 'pipeline', None), 'term_agent', None)
             effective_profile = getattr(agent, 'profile', None) or getattr(agent, 'limits', None) or getattr(agent, 'config', {}).get('limits', {})
             obs.event(log, 'runtime.request_budget', wall_seconds=effective_profile.get('wall_seconds'),
                       implementation=selected_implementation, binding_mode=binding['mode'],
                       timeout_revision='timeout-sync-20260928-r1')
-        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current'):
+        if selected_implementation in ('legal-agent-tools-v5','legal-agent-unified-v6') and binding.get('mode') in ('genos-generation', 'genos-data-current', 'oracle-dp'):
             # ASGITransport does not drive FastAPI lifespan. Recover completed
             # FINAL journals in the background so this cannot delay a new ask.
             loaded_app = _APP
@@ -592,6 +615,27 @@ def _normalize(data: dict[str, Any]) -> dict[str, Any]:
             "path": "/v1/rag/search",
             "params": {key: data[key] for key in ("q", "doc_id", "limit", "scope", "team_id") if key in data},
         }
+    if api_type in {"BASIS_LINKS_PROPOSE", "BASIS_LINKS_REVIEW"}:
+        return {"op":"call","method":"POST","path":"/v1/basis-links/"+("proposals" if api_type=="BASIS_LINKS_PROPOSE" else "reviews"),
+                "json":data.get("json",{k:v for k,v in data.items() if k!="API_TYPE"})}
+    if api_type == "BASIS_LINKS_LIST":
+        return {"op":"call","method":"GET","path":"/v1/basis-links","params":{k:data[k] for k in ("internal_document_id","as_of") if k in data}}
+    if api_type in {"BASIS_LINKS_HISTORY","BASIS_MIGRATION_STATUS"}:
+        ident=data.get("link_id" if api_type=="BASIS_LINKS_HISTORY" else "migration_id","")
+        if not isinstance(ident,str) or not re.fullmatch("[a-f0-9]{32,64}",ident):return {"op":"invalid-api-type","API_TYPE":api_type}
+        return {"op":"call","method":"GET","path":("/v1/basis-links/"+ident+"/history" if api_type=="BASIS_LINKS_HISTORY" else "/v1/basis-migrations/"+ident)}
+    if api_type in {"WORKFLOW_RUN", "WORKFLOW_RESUME"}:
+        body = data.get("json")
+        if body is None:
+            body = {key:value for key,value in data.items() if key != "API_TYPE"}
+        return {"op":"call","method":"POST",
+                "path":"/v1/workflows/"+("run" if api_type=="WORKFLOW_RUN" else "resume"),"json":body}
+    if api_type == "WORKFLOW_STATUS":
+        run_id = data.get("run_id","")
+        if not isinstance(run_id,str) or not re.fullmatch("[a-f0-9]{32}",run_id):
+            return {"op":"invalid-api-type","API_TYPE":api_type}
+        return {"op":"call","method":"GET","path":"/v1/workflows/runs/"+run_id,
+                "params":{key:data[key] for key in ('session_id','team_id') if key in data}}
     if api_type in {"RAG_ASK", "LEGAL_AGENT", "ELS_QUERY"}:
         body = data.get("json")
         if body is None:
@@ -601,7 +645,10 @@ def _normalize(data: dict[str, Any]) -> dict[str, Any]:
             if control in {"WARMUP", "WARMUP_STATUS"}:
                 return {"op": control.lower()}
         if api_type in {"LEGAL_AGENT", "ELS_QUERY"} and isinstance(body, dict):
-            removed = {"channel", "memory_authorization"} if body.get("memory") is True else {"channel", "session_id", "request_id", "user_id", "memory_authorization"}
+            is_workflow = bool(body.get("workflow_id")) or bool(re.match(r"^\s*대사\s*[:：]",str(body.get("question",body.get("q","")))))
+            has_session = (isinstance(body.get('session_id'),str) and body['session_id'] not in ('','sess-anonymous')
+                           and bool(body.get('team_id') or os.environ.get('TEAM_ID')))
+            removed = {"channel", "memory_authorization"} if body.get("memory") is True or is_workflow or has_session else {"channel", "session_id", "request_id", "user_id", "memory_authorization"}
             body = {key: value for key, value in body.items() if key not in removed}
         return {"op": "call", "method": "POST", "path": "/v1/rag/ask", "json": body}
     if api_type == "PIPELINE_BOOTSTRAP_EXTERNAL":
@@ -635,10 +682,16 @@ def _ping() -> dict[str, Any]:
 
 def _warm_resources():
     """Use the same request-local resource path, without asking a model a question."""
-    if not (os.environ.get("GENOS_GENERATION", "").strip() or
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if dp_enabled():
+        with _APP_BOOTSTRAP_LOCK:
+            return _oracle_factory().warmup()
+    if not (dp_enabled() or os.environ.get("GENOS_GENERATION", "").strip() or
             os.environ.get("GENOS_DATA_ROOT", "").strip()):
         raise ValueError("warmup requires an explicit GENOS data selection")
     app = _bootstrap_application()
+    from semantic_runtime.preparation_progress import current as preparation
+    preparation.update('warmup.resources.verify')
     if (_BINDING or {}).get("mode") == "local-release":
         raise ValueError("warmup cannot fall back to a local frozen release")
     from semantic_runtime.document_agent import ServingDocumentAgent
@@ -661,14 +714,29 @@ def _warm_resources():
             with agent.resources(scope) as (_, _, _, matcher):
                 validate_structure(matcher,scope)
                 tokenize("용어 색인 준비")
-            return {"generation_path": str(store.path), "document_count": len(scope)}
+            return {"generation_path": str(store.path), "document_count": len(scope),
+                    "data_provider": (_BINDING or {}).get("data_provider", "generation"),
+                    "dp_release_id": (_BINDING or {}).get("release_id") if (_BINDING or {}).get("mode")=="oracle-dp" else None,
+                    "nfs_source_used": (_BINDING or {}).get("nfs_source_used"),
+                    "cache_hit": (_BINDING or {}).get("cache_hit")}
         finally:
             store.close()
 
 
 def _run_warmup():
+    from semantic_runtime.preparation_progress import current as preparation
     started = time.perf_counter()
+    preparation.clear()
+    preparation.update('warmup.resources')
+    stopped = threading.Event()
+    def heartbeat():
+        while not stopped.wait(_WARMUP_HEARTBEAT_SECONDS):
+            obs.event(log, 'warmup.progress', worker_id=_PROCESS_INSTANCE_ID,
+                      progress=preparation.snapshot())
+    monitor = threading.Thread(target=heartbeat, daemon=True, name='genos-warmup-progress')
+    obs.event(log, 'warmup.started', worker_id=_PROCESS_INSTANCE_ID)
     try:
+        monitor.start()
         with obs.step(log, "warmup.resources"):
             detail = _warm_resources()
         state = {"state": "READY", **detail}
@@ -676,12 +744,19 @@ def _run_warmup():
         obs.event(log, "warmup.failed", level=logging.ERROR, exc_info=True,
                   error_type=type(exc).__name__)
         state = {"state": "FAILED", "error_type": type(exc).__name__}
+    finally:
+        stopped.set()
+        if monitor.ident is not None:
+            monitor.join(timeout=1)
     state["duration_ms"] = int((time.perf_counter() - started) * 1000)
+    state['progress'] = preparation.snapshot()
     with _WARMUP_LOCK:
         _WARMUP_STATE.update(state)
+    obs.event(log, 'warmup.finished', worker_id=_PROCESS_INSTANCE_ID, **state)
 
 
 def _warmup(start=False):
+    from semantic_runtime.preparation_progress import current as preparation
     with _WARMUP_LOCK:
         if start and _WARMUP_STATE["state"] in {"NOT_STARTED", "FAILED"}:
             _WARMUP_STATE.clear()
@@ -694,8 +769,11 @@ def _warmup(start=False):
             except RuntimeError:
                 _WARMUP_STATE.update(state="FAILED", error_type="RuntimeError")
         state = dict(_WARMUP_STATE)
+    if state['state'] == 'RUNNING':
+        state['progress'] = preparation.snapshot()
     return {"status": 202 if state["state"] == "RUNNING" else 200,
             "body": {**state, "process_id": os.getpid(), "worker_id": _PROCESS_INSTANCE_ID,
+                     "ad_worker_recovery": dict(_AD_WORKER_RECOVERY),
                      "process_local": True}}
 
 
@@ -817,6 +895,8 @@ async def _call(data: dict[str, Any]) -> dict[str, Any]:
     allowed = (method == "GET" and path in _GET_ALLOWLIST) or (
         method == "POST" and path in _POST_ALLOWLIST
     )
+    allowed = allowed or (method=="GET" and re.fullmatch(r"/v1/(?:basis-links(?:/[a-f0-9]{32,64}/history)?|basis-migrations/[a-f0-9]{32,64})",path) is not None)
+    allowed = allowed or (method=="GET" and re.fullmatch(r"/v1/workflows/runs/[a-f0-9]{32}",path) is not None)
     if not allowed:
         obs.event(log, "route.rejected", level=logging.WARNING, method=method, path=path)
         return {"status": 403, "body": {"error": "route not allowed"}}
@@ -939,7 +1019,8 @@ def _ad_control():
     """Load administration from the selected release, independent of legal bootstrap."""
     code_root = _ROOT
     pointer = _ROOT / '01_DATA/ACTIVE/local/ACTIVE_RELEASE.json'
-    if not (os.environ.get('GENOS_GENERATION') or os.environ.get('GENOS_DATA_ROOT')) and pointer.is_file():
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if not (dp_enabled() or os.environ.get('GENOS_GENERATION') or os.environ.get('GENOS_DATA_ROOT')) and pointer.is_file():
         active = _json(pointer)
         manifest_path = _ROOT / active['manifest_path']
         if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != active['release_manifest_sha256']:
@@ -947,15 +1028,15 @@ def _ad_control():
         manifest = _json(manifest_path)
         code_root = _ROOT / manifest['code_root']
     config = _json(code_root / '00_SYSTEM/PIPELINE.json')
-    if not config.get('ad_management', {}).get('enabled'):
+    if config.get('ad_management', {}).get('enabled') is not True:
         # No management writes using an old release after rollback.
         from types import SimpleNamespace
         def disabled(data, *_):
             b = data.get('json') if isinstance(data.get('json'),dict) else data
-            if str(b.get('question', b.get('q',''))).strip() == '[AD모드 시작]':
-                return {'status':200,'body':{'response_schema':'ad-mode-v1','ad_mode':False,'answer_status':'error','text':'AD_RELEASE: selected release does not enable AD administration.'}}
+            if str(b.get('question', b.get('q',''))).strip() in ('[AD모드 시작]','[AD모드 종료]'):
+                return {'status':200,'body':{'response_schema':'ad-mode-v1','ad_mode':False,'answer_status':'error','text':'AD_DISABLED: 관리 모드는 비활성화되어 있습니다. 일반 질문을 입력해 주세요.'}}
             return None
-        return SimpleNamespace(intercept=disabled,start_worker=lambda *_:None)
+        return SimpleNamespace(enabled=False,intercept=disabled,start_worker=lambda *_:None)
     if code_root == _ROOT:
         return importlib.import_module('semantic_runtime.ad_gateway')
     package = '_ad_release_' + hashlib.sha256(str(code_root).encode()).hexdigest()[:16]
@@ -966,8 +1047,20 @@ def _ad_control():
     return importlib.import_module(package+'.ad_gateway')
 
 
-async def service(config: dict, data: dict) -> dict[str, Any]:
+async def _service(config: dict, data: dict) -> dict[str, Any]:
     """GENOS JSON gateway contract with one correlated event stream per request."""
+    payload = data if isinstance(data, dict) else {}
+    request_id = obs.new_request_id(payload.get('request_id'))
+    obs.event(log, 'service.entered', request_id=request_id,
+              worker_id=_PROCESS_INSTANCE_ID,
+              api_type=str(payload.get('API_TYPE') or payload.get('op') or '')[:64])
+    control = _normalize(payload).get('op')
+    if control in {'warmup', 'warmup_status'}:
+        # Pure process-local controls must not wait for AD/SQL/NFS initialization.
+        result = _warmup(start=control == 'warmup')
+        obs.event(log, 'warmup.status', request_id=request_id, worker_id=_PROCESS_INSTANCE_ID,
+                  state=result['body']['state'], progress=result['body'].get('progress', {}))
+        return result
     # GENOS_CACHE_DIAGNOSTICS_HOOK_V1
     if isinstance(data, dict) and str(data.get("API_TYPE", "")).strip().upper() == "CACHE_DIAGNOSTICS":
         from semantic_runtime.cache_diagnostics import collect as _collect_cache_diagnostics
@@ -986,9 +1079,13 @@ async def service(config: dict, data: dict) -> dict[str, Any]:
     intercept, start_worker = gateway.intercept, gateway.start_worker
     runtime_value = os.environ.get('GENOS_RUNTIME_DIR','').strip()
     ad_runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT/'90_RUNTIME/semantic')
-    start_worker(ad_runtime, application)
-    from semantic_runtime.ad_request_report import intercept as reported_ad_intercept
-    ad_result = await reported_ad_intercept(gateway, data if isinstance(data,dict) else {},ad_runtime,application)
+    if getattr(gateway, 'enabled', True) is False:
+        # Only recognize explicit disabled commands; no session lookup, worker or AD report.
+        ad_result = intercept(data if isinstance(data,dict) else {},ad_runtime,application)
+    else:
+        start_worker(ad_runtime, application)
+        from semantic_runtime.ad_request_report import intercept as reported_ad_intercept
+        ad_result = await reported_ad_intercept(gateway, data if isinstance(data,dict) else {},ad_runtime,application)
     if ad_result is not None:return ad_result
     if str(data.get('API_TYPE','')).upper()=='AD_PROBE':return {'status':200,'body':{'ad_handled':False}}
     # Transport-only identifiers never enter legal schemas, context or logs.
@@ -1006,7 +1103,7 @@ async def service(config: dict, data: dict) -> dict[str, Any]:
         shared_root = ""
     runtime_value = os.environ.get("GENOS_RUNTIME_DIR", "").strip()
     runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT / "90_RUNTIME/semantic")
-    capture = request_report.capture_events(request_id) if shared_root else nullcontext([])
+    capture = request_report.capture_events(request_id, detailed=True) if shared_root else nullcontext([])
     with capture as events, obs.context(request_id=request_id, api_type=api_type):
         report_context = request_report.DeferredReport(
             Path(shared_root), runtime, request_id=request_id, api_type=api_type,
@@ -1072,15 +1169,61 @@ async def _reported_dispatch(config, data, payload, question_body, started, repo
         result = {**result, 'body': views().public_response(body, status=status, request_id=request_id)}
     return result
 
+async def service(config: dict, data: dict) -> dict[str, Any]:
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if not dp_enabled():
+        return await _service(config,data)
+    from semantic_runtime.oracle_query_service import request_context,external_runtime
+    from semantic_runtime.oracle_dp_io import DPError
+    control=_normalize(data if isinstance(data,dict) else {}).get('op')
+    if control=='ping':
+        return {'status':200,'body':{'status':'ok','data_provider':'oracle','app_loaded':_APP is not None}}
+    try:
+        if control not in ('warmup','warmup_status'):
+            external_runtime()
+        with request_context():
+            return await _service(config,data)
+    except DPError as exc:
+        obs.event(log,'oracle.request.failed',level=logging.ERROR,exc_info=True)
+        return {'status':503,'body':{'error':'Oracle request unavailable','code':'ORACLE_QUERY_ERROR',
+                                   'detail':obs._redact_secrets(str(exc))}}
+
+
 __all__ = ["application", "service"]
+
+
+def _recover_ad_worker():
+    """Schedule recovery must not hold the service module's import lock on NFS."""
+    global _AD_WORKER_RECOVERY
+    _AD_WORKER_RECOVERY = {'state': 'RUNNING'}
+    obs.event(log, 'ad.worker.recovery.started', worker_id=_PROCESS_INSTANCE_ID)
+    try:
+        gateway = _ad_control()
+        if getattr(gateway, 'enabled', True) is False:
+            _AD_WORKER_RECOVERY = {'state': 'DISABLED'}
+            obs.event(log, 'ad.worker.recovery.disabled', worker_id=_PROCESS_INSTANCE_ID)
+            return
+        from semantic_runtime.oracle_dp import enabled as dp_enabled
+        if dp_enabled():
+            from semantic_runtime.oracle_query_service import external_runtime
+            external_runtime()
+        gateway.start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
+    except Exception as exc:
+        _AD_WORKER_RECOVERY = {'state': 'FAILED', 'error_type': type(exc).__name__}
+        obs.event(log, 'ad.worker.recovery.failed', level=logging.ERROR, exc_info=True,
+                  worker_id=_PROCESS_INSTANCE_ID, error_type=type(exc).__name__)
+    else:
+        _AD_WORKER_RECOVERY = {'state': 'COMPLETE'}
+        obs.event(log, 'ad.worker.recovery.finished', worker_id=_PROCESS_INSTANCE_ID)
 
 # The GENOS revision imports service.py once per worker. Start its expensive
 # immutable resource preparation while the worker is idle after deployment.
 # Questions still work if the platform imports lazily at first request; in that
 # case the first real request may pay the cold cost. Each worker warms itself.
-if (os.environ.get("GENOS_GENERATION", "").strip() or os.environ.get("GENOS_DATA_ROOT", "").strip()) and os.environ.get("GENOS_AUTO_WARMUP", "1").strip().lower() not in {"0", "false", "off"}:
+if (os.environ.get("DP", "").strip().lower() in {"1", "true", "oracle"} or os.environ.get("GENOS_GENERATION", "").strip() or os.environ.get("GENOS_DATA_ROOT", "").strip()) and os.environ.get("GENOS_AUTO_WARMUP", "1").strip().lower() not in {"0", "false", "off"}:
     _warmup(start=True)
 
 # Recover SQL schedules at code-serving worker import, including after restart.
 if os.environ.get("AD_WORKER_ENABLED", "1") != "0":
-    _ad_control().start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
+    _AD_WORKER_RECOVERY = {'state': 'RUNNING'}
+    threading.Thread(target=_recover_ad_worker, daemon=True, name='genos-ad-worker-recovery').start()

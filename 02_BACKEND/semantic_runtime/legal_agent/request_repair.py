@@ -74,7 +74,12 @@ def bind_gap(gap, session):
         if resolved['status'] == 'MATCH':
             expected = []
             for pair in resolved['pairs']:
-                blocks = ur.blocks(session, pair['document_id'], pair['unit_id'], 'subtree')
+                if pair.get('source_partition') is not None:
+                    from . import tool_availability
+                    plan, unavailable = tool_availability.article_plan(session, sq.read_identity(pair))
+                    blocks = [] if unavailable else plan[1]['block_ids']
+                else:
+                    blocks = ur.blocks(session, pair['document_id'], pair['unit_id'], 'subtree')
                 if not blocks:
                     expected = []; break
                 expected.extend({'document_id': pair['document_id'], **span}
@@ -88,11 +93,13 @@ def bind_gap(gap, session):
                     for d in hit['values'] if d in session.scope}
             coordinates = find_coordinates(target_text)
             indexed_complete=False
-            if len(docs)==1 and len(coordinates)==1:
+            if (len(docs)==1 and len(coordinates)==1
+                    and coordinates[0].coordinate.unit=='조'
+                    and '부칙' not in target_text):
                 did=next(iter(docs))
                 # A missing index entry is not source absence if the stored tree
                 # lacks coordinate bindings. Partial/legacy trees stay unknown.
-                nodes=[(key,u) for key,u in session.matcher.units.items() if key[0]==did
+                nodes=[(key,u) for key,u in (session.matcher.units.for_document(did) if hasattr(session.matcher.units,'for_document') else session.matcher.units.items()) if key[0]==did
                        and (u.get('family')=='kr_article' or bool(coordinates[0].coordinate.chain))]
                 indexed_complete=bool(nodes) and all(
                     u.get('coordinate_scope') is not None
@@ -124,11 +131,17 @@ def bind_gaps(value, session, rounds):
             if prior is None or prior['issue_id'] != gap['issue_id']:
                 raise ProposalError('unknown or different-issue previous gap')
             old_target = prior.get('target_binding', {})
+            if prior.get('target_binding_hash') != gap['target_binding_hash']:
+                raise ContractError('previous gap source authorization or generation changed')
             if gap['target_binding']['status'] == 'UNLOCATED' and not raw.get('missing_target'):
                 gap.update(identity_key=previous, target_binding=deepcopy(old_target))
                 gap['missing_target'] = prior.get('missing_target', '')
             elif gap['identity_key'] != previous:
-                raise ProposalError('previous gap refers to a different document, scope or version')
+                # This is a continuation of the same issue, not an assertion
+                # that two source coordinates are identical. Keep the newly
+                # resolved target, but retain the investigation allowance.
+                # Raw proposals and prior targets remain in the decision journal.
+                gap['identity_key'] = previous
         out['gaps'][n] = gap
     return out
 
@@ -180,14 +193,26 @@ def may_reopen(gap, state):
 def progress_facts(state):
     """Content-based progress, independent of presentation/action/branch IDs."""
     from .evidence_inventory import intervals
-    facts = set()
+    facts = {'definition:'+ident for ident in state.get('definition_visible_ids',[])}
     for row in state.get('laws', {}).values(): facts.add('law:' + row['document_id'])
+    for did, page in state.get('document_term_exploration', {}).get('documents', {}).items():
+        if page.get('status') == 'READY':
+            facts.add('term-page:' + digest([did, page['binding'], page.get('cursor')]))
+            facts.update('term-candidate:' + digest([did, r['source_id']]) for r in page.get('items', []))
     for group in state.get('groups', {}).values():
         hit = group['hit']; facts.add('candidate:' + digest([hit['document_id'], hit['source_id']]))
     for item in state.get('structure_page', {}).get('items', []):
         facts.add('location:' + digest([item.get('document_id'), item.get('unit_id')]))
     refs = list(state.get('basis_history', {}))
-    for did, spans in spans_by_document(state, refs).items():
+    acquired = spans_by_document(state, refs)
+    # Native read receipts are content progress before the next model delivery.
+    # Keep presentation/adoption flags unchanged; previews have no receipts here.
+    for record in state.get('selected', {}).values():
+        did = record.get('document_id')
+        if did:
+            acquired.setdefault(did, []).extend(p for e in record.get('evidence', [])
+                                                for p in e.get('spans', []))
+    for did, spans in acquired.items():
         for bid, ranges in intervals(spans).items():
             for lo, hi in ranges: facts.add('delivered:' + digest([did, bid, lo, hi]))
     for group in state.get('groups', {}).values():
@@ -205,11 +230,8 @@ def progress_facts(state):
 
 
 def record_progress(state):
-    current = progress_facts(state)
-    known = set(state.get('request_progress', []))
-    changed = bool(current - known)
-    state['request_progress'] = sorted(known | current)
-    return changed
+    from ..research_state import OriginalProgress
+    return OriginalProgress(state).observe(progress_facts(state))
 
 
 def seed_gap_receipts(round_):
@@ -228,8 +250,9 @@ def seed_gap_receipts(round_):
 def validate_resolutions(investigation, value, data):
     gaps = {g['gap_id']: g for g in data.get('assessment_gaps', [])}
     rows = value.get('gap_resolutions') or []
-    if len(rows) != len(gaps) or {r['gap_id'] for r in rows} != set(gaps):
-        raise ProposalError('FINISH must address every open gap exactly once')
+    ids=[r['gap_id'] for r in rows]
+    if len(ids)!=len(set(ids)) or set(ids)-set(gaps):
+        raise ProposalError('gap resolutions must name unique known gaps')
     current = investigation.current_gap_round() or {}
     receipts = {r['id']: r for r in current.get('action_receipts', []) if r['status'] == 'COMPLETED'}
     state = investigation.p
@@ -250,24 +273,105 @@ def validate_resolutions(investigation, value, data):
                 raise ProposalError('NOT_AVAILABLE requires completed exact-target absence; unrelated reads, empty fulltext or partial lookup are UNRESOLVED')
             continue
         if status != 'RESOLVED': raise ProposalError('unknown gap resolution')
-        adopted = {ref for group in state['groups'].values() if group['status'] == 'ACTIVE'
-                   for issue, d in group.get('issue_decisions', {}).items()
-                   if issue == gap['issue_id'] and d['status'] in ('ADOPT', 'KEEP')
-                   for ref in d.get('basis_refs', [])}
-        adopted.update(ref for d in value.get('branch_decisions', [])
-                       if gap['issue_id'] in d['issue_refs'] and d['status'] in ('ADOPT', 'KEEP')
-                       for ref in d['basis_refs'])
         refs = set(row.get('basis_refs', []))
         # The current presentation is validated against the immutable original by
         # the existing page/decision gate; expose it to the coverage check too.
         checked = deepcopy(state)
         from .evidence_inventory import acknowledge
         for page in data.get('sources', []): acknowledge(investigation.s, checked, page, data['presentation_id'])
-        if not refs or not refs <= adopted or not covers_target(gap['target_binding'], checked, refs):
-            raise ProposalError('RESOLVED requires adopted original spans covering this exact missing target; another article is insufficient')
+        delivered={ref for ref,page in checked.get('basis_history',{}).items() if page.get('accepted') and page.get('spans')}
+        if not refs or not refs <= delivered:
+            raise ProposalError('RESOLVED requires actual delivered original references; target sufficiency is the model judgment')
         actions = set(row.get('action_refs', []))
-        if actions and any(a not in receipts or row['gap_id'] not in receipts[a]['gap_ids'] for a in actions):
+        if actions and any(a not in receipts or (receipts[a]['gap_ids'] and row['gap_id'] not in receipts[a]['gap_ids']) for a in actions):
             raise ProposalError('resolution action receipt is not completed for this gap')
+
+
+UNATTEMPTED_GAP = 'UNATTEMPTED_ASSESSMENT_GAP'
+
+
+def gap_review_capacity(investigation):
+    """One correction plus subsequent assessment, within the existing reserve."""
+    budget = investigation.s.repo.budget()
+    if budget['model_limit'] - budget['finalization_reserve'] - budget['model_reserved'] < 2:
+        return 'INVESTIGATION_BUDGET'
+    if investigation.left() <= max(1, investigation.s.profile['selection_time_reserve_seconds']):
+        return 'FINALIZATION_TIME_RESERVE'
+    return None
+
+
+def is_unattempted_gap(error):
+    from .output_contract import diagnostics
+    return any(row['code'] == UNATTEMPTED_GAP for row in diagnostics(error)['issues'])
+
+
+def validate_unattempted_gap_finish(investigation, value, data, actions):
+    """Check an omitted executable investigation, never legal sufficiency.
+
+    Read receipts and delivered spans count without adoption. A failed attempt
+    also counts as an attempt, but never as resolution or proof of absence.
+    This validator is pure; the existing decision owner records and repairs it.
+    """
+    if not investigation.modern or value['next_action'] != 'FINISH': return
+    current = investigation.current_gap_round()
+    if not current: return
+    from . import evidence_inventory as inventory, tool_availability as available
+    from . import output_contract as output
+    presented = spans_by_document(investigation.p, list(investigation.p.get('basis_history', {})))
+    for page in data.get('sources', []):
+        presented.setdefault(page['document_id'], []).extend(page.get('spans', []))
+    for record in investigation.p.get('selected', {}).values():
+        if record.get('document_id'):
+            presented.setdefault(record['document_id'], []).extend(
+                span for evidence in record.get('evidence', []) for span in evidence.get('spans', []))
+    resolutions = {r['gap_id']: r['status'] for r in value.get('gap_resolutions', [])}
+    menus = {r['gap_id']: r for r in data.get('gap_targets', [])}
+    missing = []
+    for gap in data.get('assessment_gaps', []):
+        gid = gap['gap_id']
+        if not gap.get('material') or gap['kind'] == 'MISSING_FACT': continue
+        # The preceding resolution validator owns receipts; NOT_NEEDED is an
+        # explicit model reassessment whose reason is preserved, not host proof.
+        if resolutions.get(gid) in ('NOT_NEEDED', 'RESOLVED', 'NOT_AVAILABLE'): continue
+        target = gap.get('target_binding', {})
+        expected = target.get('expected', [])
+        if expected and all(inventory.covers([s for s in expected if s['document_id'] == did],
+                presented.get(did, [])) for did in {s['document_id'] for s in expected}): continue
+        menu = menus.get(gid, {})
+        handles = [h for h in menu.get('read_actions', []) + menu.get('navigation_actions', []) if h in actions]
+        # Do not turn a filtered/forbidden/over-budget tool into a repair demand.
+        handles = [h for h in handles if available.navigation_reason(investigation, actions[h], data) is None]
+        if not handles: continue
+        identities = [actions[h]['identity'] for h in handles]
+        documents = {i['document_id'] for i in identities if i.get('document_id')}
+        sources = set(target.get('source_ids', []))
+        attempted = False
+        for receipt in current.get('action_receipts', []):
+            if receipt['action'] == 'TARGET_STRUCTURE_LOOKUP':
+                outcome = receipt.get('outcome') or {}
+                if (receipt['status'] == 'COMPLETED' and gid in receipt.get('gap_ids', [])
+                        and outcome.get('target_key') == gap['gap_key'] and outcome.get('absence_proven') is True):
+                    attempted = True
+                continue
+            if receipt['status'] not in ('COMPLETED', 'FAILED'): continue
+            for chosen in receipt.get('targets', []):
+                ident = chosen.get('identity', {})
+                if (chosen.get('id') in handles or
+                        (sources and ident.get('source_id') in sources) or
+                        (receipt['action'] in ('SEARCH_STRUCTURE', 'OPEN_STRUCTURE', 'SEARCH_BODY')
+                         and ident.get('document_id') in documents)):
+                    attempted = True
+            if receipt['action'] == 'RESEARCH' and gid in receipt.get('gap_ids', []): attempted = True
+        if attempted: continue
+        missing.append({'gap_id': gid, 'missing_target': gap.get('missing_target'), 'available_actions': handles})
+    if missing:
+        raise output.OutputContractError(
+            'FINISH leaves an executable assessment target uninvestigated. Choose an offered investigation '
+            'action, or explicitly reassess that gap as NOT_NEEDED with a reason. Preserve unresolved gaps; '
+            'do not invent evidence or mark an unread target resolved.',
+            [output.issue(UNATTEMPTED_GAP, '/next_action', related=['/gap_resolutions'],
+                expected={'unattempted_gaps': missing, 'max_corrections': 1, 'same_evidence_scope': True})],
+            category='DECISION_CONFLICT')
 
 
 def add_target_actions(investigation, actions):
@@ -288,9 +392,14 @@ def add_target_actions(investigation, actions):
         for pair in target.get('pairs', []) if target.get('status') == 'EXACT' else []:
             sid = [s for s in target['source_ids']
                    if investigation.s.tools.sources[s]['document_id'] == pair['document_id']
-                   and s in investigation.s.matcher._unit_sources(pair['document_id'], pair['unit_id'])]
+                   and (pair.get('source_id') is None or pair['source_id']==s)
+                   and (s in investigation.s.matcher._unit_sources(pair['document_id'], pair['unit_id'])
+                        if pair['unit_id'] is not None else pair.get('source_partition')=={'scope_unit_id':None}
+                        and investigation.s.tools.sources[s]['unit_id'] is None)]
             if len(sid) != 1: continue
             identity = {'document_id': pair['document_id'], 'source_id': sid[0], 'unit_id': pair['unit_id']}
+            if pair.get('source_partition') is not None:
+                identity['source_partition']=deepcopy(pair['source_partition'])
             ident = lc.token(investigation.s, 'T', ['READ_ARTICLES', identity])
             actions[ident] = {'id': ident, 'action': 'READ_ARTICLES', 'identity': identity,
                              'label': pair['document_name'] + ' ' + pair['coordinate'] + ' 부족 원문 읽기'}
@@ -328,6 +437,10 @@ def annotate_reused_reads(investigation, data, actions):
             offer = group['offer'] if action['action'] in ('READ_PARENT', 'VIEW_SAVED_SOURCE') else next(
                 (o for o in ur.offers(investigation.s, group['hit']) if o['id'] == identity.get('scope')), None)
             if offer is None: continue
+            if action['action']=='VIEW_SAVED_SOURCE':
+                selected=investigation.p['selected'].get(gid)
+                if selected is None:continue
+                offer=selected['offer']
             block_ids = offer['block_ids']
         else:
             did = identity.get('document_id'); uid = identity.get('unit_id')
@@ -375,36 +488,45 @@ def recoverable_tool_failure(error):
     Hash/ACL/schema errors and unknown model transmission outcomes remain fatal.
     Inspect wrapped causes because relation tools preserve their original error.
     """
-    import errno
-    import sqlite3
-    from .errors import BudgetExhausted, TransportError
-    seen = set(); current = error; transient = False; rejected = False
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
-        if isinstance(current, (ContractError, BudgetExhausted, TransportError, PermissionError)):
-            return None
-        if isinstance(current, ProposalError): rejected = True
-        if isinstance(current, TimeoutError): transient = True
-        if isinstance(current, OSError) and current.errno in (errno.EAGAIN, errno.ETIMEDOUT, errno.ECONNRESET):
-            transient = True
-        if isinstance(current, sqlite3.OperationalError) and getattr(current, 'sqlite_errorcode', None) in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
-            transient = True
-        current = current.__cause__
-    return 'ACTION_REJECTED' if rejected else 'SOURCE_TEMPORARILY_UNAVAILABLE' if transient else None
+    from .tool_outcome import classify_exception
+    kind,_ = classify_exception(error)
+    return {'PROPOSAL':'ACTION_REJECTED','TRANSIENT':'SOURCE_TEMPORARILY_UNAVAILABLE'}.get(kind)
 
 
 def record_tool_failure(investigation, decision, actions, step, error):
     code = recoverable_tool_failure(error)
     if code is None: return False
+    from . import tool_policy as tp
+    from .tool_outcome import exception_outcome
+    import time
+    from .tool_availability import navigation_reason
+    kind=decision['next_action']
+    spec=tp.require_registered('ending' if kind in ('DECIDE','FINISH','PENDING') else 'navigation',kind)
+    outcome=exception_outcome(error,action={'tool':kind,'args':{'operation_key':operation_key(decision,actions)}},
+        binding_hash=investigation.p['binding'],surface=spec.surface)
+    failed_key=operation_key(decision,actions)
+    distinct=any(operation_key({'next_action':a['action'],'targets':[target],
+        'queries':decision.get('queries',[]) if a['action']==kind else [],
+        'structure_filter':decision.get('structure_filter') if a['action']==kind else None},actions)!=failed_key
+        and navigation_reason(investigation,a) is None for target,a in actions.items())
+    budget=investigation.s.repo.budget()
+    choice=tp.choose_recovery(spec,outcome,tp.RecoveryState(distinct_alternative=distinct,
+        pre_execution_rejection=code=='ACTION_REJECTED'),tp.RecoveryBudget(
+        deadline_expired=time.monotonic()>=investigation.s.context.deadline,
+        investigation_available=budget['tool_used']<budget['tool_limit']))
+    if choice.action=='STOP':return False
     row = {'operation_key': operation_key(decision, actions), 'code': code,
            'action': decision['next_action'], 'targets': deepcopy([actions[t]['identity'] for t in decision['targets']]),
            'queries': list(decision.get('queries', [])), 'step_id': step['id'],
-           'status': 'UNRESOLVED', 'absence_proven': False}
+           'status': 'UNRESOLVED', 'absence_proven': False,
+           'recovery_policy':{'version':tp.VERSION,'action':choice.action,'owner':choice.owner},
+           'tool_outcome':outcome.to_dict()}
     investigation.p.setdefault('tool_failures', []).append(row)
     changed = record_progress(investigation.p)
-    investigation.p['no_progress'] = 0 if changed else investigation.p['no_progress'] + 1
+    from ..research_state import OriginalProgress
+    progress = OriginalProgress(investigation.p).advance(changed)
     step.update(status='FAILED', outcome={'failure_code': code, 'absence_proven': False, 'changed': changed},
-                progress={'changed': changed, 'unchanged_turns': investigation.p['no_progress']})
+                progress=progress)
     if investigation.control: investigation.p['state_version'] += 1
     investigation.s.repo.event('INVESTIGATION_CHAIN_STEP', step)
     # Raw exceptions stay in the server journal; the model sees typed outcomes.
@@ -455,3 +577,61 @@ def validate_failed_operation(investigation, decision, actions):
     key = operation_key(decision, actions)
     if any(f['operation_key'] == key for f in investigation.p.get('tool_failures', [])):
         raise ProposalError('same failed operation in this request; select a different offered target/query or leave UNRESOLVED')
+
+
+def no_progress_recovery(inv):
+    """Bounded discovery-to-read chain; no new budget or source progress."""
+    if not inv.modern:return None
+    saved = inv.p.get('no_progress_recovery')
+    if saved:
+        if saved['status'] not in ('RESERVED','COMPLETED'):raise ContractError('unknown no-progress recovery status')
+        if (saved['binding'] != digest(inv.p['binding']) or
+                saved['snapshot_hash'] != digest(saved['snapshot'])):
+            raise ContractError('no-progress recovery snapshot changed')
+        if saved['epoch'] != inv.p.get('investigation_epoch',0):
+            if saved['status']=='COMPLETED':return None
+            raise ContractError('no-progress recovery snapshot epoch changed')
+        if saved['status']=='RESERVED':
+            if saved['state_version'] != inv.p['state_version']:
+                raise ContractError('no-progress recovery snapshot state version changed')
+            return deepcopy(saved['snapshot'])
+        # A completed tool legitimately advances the state version. Only its
+        # immediately committed state may extend this bounded recovery chain.
+        completed = saved.get('completed_state_version')
+        if completed is None:return None  # Legacy receipts cannot gain new allowance.
+        if completed < saved['state_version'] or inv.p['state_version'] < completed:
+            raise ContractError('no-progress recovery completion state version changed')
+        if inv.p['state_version'] > completed:return None
+        if saved.get('selection_count',1)>=3:return None
+    data, actions = inv.view()
+    useful = {'READ_ARTICLES','READ_SCOPE','READ_PARENT','SEARCH_BODY','SEARCH_STRUCTURE','RETRY_LAW_STRUCTURE',
+              'RESEARCH','FOLLOW_CONNECTION','OPEN_LAW','OPEN_STRUCTURE','BROWSE_STRUCTURE',
+              'NEXT_ARTICLES','NEXT_LAWS','NEXT_STRUCTURE','NEXT_HITS'}
+    if not any(a['action'] in useful for a in actions.values()):return None
+    def targets(menu):
+        return {digest([a['action'],a.get('identity')]) for a in menu.values() if a['action'] in useful}
+    offered=targets(actions)
+    seen=set(saved.get('offered_targets',targets(saved['snapshot'][1]))) if saved else set()
+    if saved and not offered-seen:return None
+    phase = 'source-law-navigation-'+str(inv.p['turn']+1)
+    snapshot = [deepcopy(data),deepcopy(actions),phase]
+    history=deepcopy(saved.get('history',[])) if saved else []
+    if saved:history.append({k:saved[k] for k in ('phase','snapshot_hash','status','unchanged_turns')})
+    inv.p['no_progress_recovery'] = {'status':'RESERVED','binding':digest(inv.p['binding']),
+        'state_version':inv.p['state_version'],'epoch':inv.p.get('investigation_epoch',0),'snapshot':snapshot,'snapshot_hash':digest(snapshot),
+        'unchanged_turns':inv.p['no_progress'],'phase':phase,
+        'selection_count':saved.get('selection_count',1)+1 if saved else 1,
+        'offered_targets':sorted(seen|offered),'history':history}
+    inv.s.repo.event('INVESTIGATION_NO_PROGRESS_RECOVERY',{
+        'snapshot_hash':digest(snapshot),'unchanged_turns':inv.p['no_progress'],
+        'max_selections':3,'selection_count':inv.p['no_progress_recovery']['selection_count'],
+        'counter_reset':False,'budget':inv.s.repo.budget()})
+    inv.save()
+    return deepcopy(snapshot)
+
+
+def finish_no_progress_recovery(state, phase):
+    saved = state.get('no_progress_recovery')
+    if saved and saved['status']=='RESERVED' and saved['phase']==phase:
+        saved['status']='COMPLETED'
+        saved['completed_state_version']=state['state_version']

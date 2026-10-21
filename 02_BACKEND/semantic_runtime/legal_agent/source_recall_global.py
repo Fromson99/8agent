@@ -17,9 +17,8 @@ POLICY = {'query_top_k': 64, 'seed_limit': 64, 'reference_seeds': 16,
 
 
 def query_variants(question):
-    context = re.findall(r'\(업무\s*문맥\s*:\s*(.*?)\)', question, re.S)
-    variants = [question, *context, question.splitlines()[0]]
-    return list(dict.fromkeys(v.strip() for v in variants if v.strip()))[:3]
+    """Unmodified fallback query; never infer intent from parentheses or a line."""
+    return [question.strip()] if question.strip() else []
 
 
 def spans_complete(source, evidence):
@@ -67,8 +66,9 @@ def evidence_packets(question, evidence, limit=50000):
 class SourceRecall:
     def __init__(self, sources):
         self.s = sources
-        self.allowed = {sid for sid, source in sources.tools.sources.items()
-                        if source['document_id'] in sources.scope}
+        catalogue=sources.tools.sources
+        self.allowed = (catalogue.ids_for_documents(sources.scope) if hasattr(catalogue,'ids_for_documents') else
+                        {sid for sid, source in catalogue.items() if source['document_id'] in sources.scope})
         self.scores = defaultdict(float)
         self.routes = defaultdict(list)
         self.limits = []
@@ -89,7 +89,7 @@ class SourceRecall:
         q = self.s.context.request['question']
         query_receipts = []
         plan = getattr(self.s, 'recall_query_plan', {'queries': [], 'law_names': []})
-        queries = list(dict.fromkeys(query_variants(q) + plan['queries']))
+        queries = list(dict.fromkeys(plan['queries'] or query_variants(q)))
         protected = []
         for variant in queries:
             self.check_time()
@@ -122,7 +122,9 @@ class SourceRecall:
             exact = {normalize(c.coordinate.canonical_surface()) for c in find_coordinates(variant)}
             paired = []
             if named and exact:
-                for (did, uid), coord in self.s.matcher.stored_coordinates.items():
+                coordinates=self.s.matcher.stored_coordinates
+                rows=(row for did in sorted(named) for row in coordinates.for_document(did)) if hasattr(coordinates,'for_document') else coordinates.items()
+                for (did, uid), coord in rows:
                     if did in named and coord and normalize(coord.canonical_surface()) in exact:
                         paired.extend(self.s.matcher._unit_sources(did, uid))
             for sid in dict.fromkeys(paired):

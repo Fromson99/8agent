@@ -37,15 +37,17 @@ def provider_request(body: dict) -> dict:
         for key in ('anyOf', 'oneOf', 'allOf', 'prefixItems'):
             for child in node.get(key, []): adapt(child)
     adapt(((payload.get('response_format') or {}).get('json_schema') or {}).get('schema'))
-    from .wire_schema import factor_schema
+    from .wire_schema import factor_schema, navigation_shape
     envelope=(payload.get('response_format') or {}).get('json_schema')
     if envelope and isinstance(envelope.get('schema'),dict):
-        envelope['schema']=factor_schema(envelope['schema'])
+        envelope['schema']=factor_schema(navigation_shape(envelope['schema']))
     return payload
 
 
 class LocalGemmaTransport:
     """Stable import name for release compatibility; model is policy-bound."""
+    wire_projection = 'external-navigation-shape-server-validation-v1'
+
     def __init__(self, code_root: Path, workspace_root: Path):
         self.code_root = Path(code_root).resolve()
         self.grant_path = self.code_root / '00_SYSTEM/LEGAL_AGENT/local-gemma-public.json'
@@ -90,10 +92,36 @@ class LocalGemmaTransport:
         return {'verified': True, 'mode': 'local-public-qwen38-policy',
                 'model': self.binding['model'], 'policy_sha256': self.policy_hash}
 
+    def authorize_workflow(self, request, binding):
+        grant = self.grant.get('workflow_authorization') or {}
+        if (_sha(self.grant_path) != self.grant_hash or _sha(self.policy_path) != self.policy_hash
+                or grant.get('authorized_by') != 'user' or not grant.get('authorization_text')
+                or request.get('workflow_id') not in grant.get('workflow_ids',['risk_team_compare_workflow'])
+                or request['principal']['team_id'] not in grant.get('teams', [])
+                or not request['document_ids'] or set(request['document_ids'])-set(grant.get('document_ids', []))
+                or binding['generation_id'] != grant.get('generation_id')
+                or binding['store_sha256'] != grant.get('store_sha256')
+                or binding['generation_manifest_sha256'] != grant.get('generation_manifest_sha256')):
+            raise ContractError('workflow source/model authorization mismatch')
+        return {'kind':'USER_AUTHORIZED_WORKFLOW', 'grant_sha256':self.grant_hash,
+                'policy_sha256':self.policy_hash, 'scope_document_ids':request['document_ids'],
+                'generation_id':binding['generation_id'], 'store_sha256':binding['store_sha256'],
+                'principal':request['principal'], 'public_question_asserted':False}
+
     def authorize(self, query, request, manifest, *, public_question: bool):
         if _sha(self.grant_path) != self.grant_hash or _sha(self.policy_path) != self.policy_hash:
             raise ContractError('local Qwen3.8 policy changed during serving')
         scope = set(query['scope']['document_version_ids'])
+        from .workflow_execution import authorization
+        parent = authorization()
+        if parent is not None:
+            if (parent.get('kind') != 'USER_AUTHORIZED_WORKFLOW' or parent['grant_sha256'] != self.grant_hash
+                    or parent['policy_sha256'] != self.policy_hash or not scope
+                    or scope-set(parent['scope_document_ids'])
+                    or manifest['generation_id'] != parent['generation_id']
+                    or manifest['store_sha256'] != parent['store_sha256']):
+                raise ContractError('child RAG workflow authorization mismatch')
+            return {**parent, 'scope_document_ids':sorted(scope)}
         allowed = set(self.public_scope)
         if (not public_question or not request['use_llm'] or not scope or scope-allowed
                 or len(allowed) != len(self.public_scope)
@@ -106,6 +134,11 @@ class LocalGemmaTransport:
 
     def validate_authorization(self, context):
         receipt = context.binding.get('external_authorization') or {}
+        if context.request.get('workflow_id'):
+            expected = self.authorize_workflow(context.request, context.binding)
+            if receipt != expected or context.binding['model'] != self.binding:
+                raise ContractError('workflow model authorization drift')
+            return
         expected = self.authorize(context.query, context.request, {
             'generation_id': context.binding['generation_id'],
             'store_sha256': context.binding['store_sha256'],
@@ -127,7 +160,9 @@ class LocalGemmaTransport:
                 response = client.post(self.policy['endpoint']+'/chat/completions',
                                        headers={'Authorization': 'Bearer '+self._key}, json=payload)
         except httpx.HTTPError as exc:
-            raise TransportError('local Qwen3.8 transmission failed', retryable=False, unknown=True) from exc
+            preaccept=isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))
+            raise TransportError('local Qwen3.8 transmission failed: '+type(exc).__name__,
+                retryable=preaccept, unknown=not preaccept) from exc
         try:
             data = response.json()
         except ValueError as exc:
@@ -143,12 +178,23 @@ class LocalGemmaTransport:
         if data.get('provider') != 'Parasail' or data.get('model') != self.binding['model']:
             raise ContractError('local Qwen3.8 response model/provider mismatch')
         choices = data.get('choices') or []
+        if ((data.get('usage') or {}).get('completion_tokens_details') or {}).get('reasoning_tokens') or any(
+                choice.get('message', {}).get('reasoning') for choice in choices):
+            raise ContractError('local Qwen3.8 reasoning was not disabled')
+        if len(choices) == 1 and choices[0].get('finish_reason') in ('length', 'content_filter', 'refusal'):
+            from .model_contract import structured_content
+            from .output_contract import OutputContractError
+            try:
+                structured_content(data)
+            except OutputContractError as error:
+                # Let the existing decision owner see the same typed cause as
+                # GENOS. Preserve the complete provider envelope for the journal.
+                error.response = envelope
+                raise
         if len(choices) != 1 or choices[0].get('finish_reason') != 'stop':
             error = ProposalError('local Qwen3.8 returned an incomplete response')
             error.response = envelope
             raise error
-        if ((data.get('usage') or {}).get('completion_tokens_details') or {}).get('reasoning_tokens') or choices[0].get('message', {}).get('reasoning'):
-            raise ContractError('local Qwen3.8 reasoning was not disabled')
         return envelope
 
 

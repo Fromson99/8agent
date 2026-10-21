@@ -1,0 +1,38 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "--tb=short",
+    "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime-02",
+    "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_02.xml",
+    "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py::test_interrupted_profile_and_index_transactions_recover"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 2.0037785489985254,
+  "peak_group_rss_bytes": 4284416,
+  "min_available_bytes": 13454249984,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TEST_RESOURCES_02.json",
+    "rss_gib": 2.0,
+    "as_gib": 4.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10.0,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime-02",
+      "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_02.xml",
+      "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py::test_interrupted_profile_and_index_transactions_recover"
+    ]
+  },
+  "samples_sha256": "40381ea6610b39694f30aee80d0c8cbfed75a267afc423d1727db3261ccbe1e8"
+}

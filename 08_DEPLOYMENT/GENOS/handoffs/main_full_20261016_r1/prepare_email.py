@@ -1,0 +1,96 @@
+"""Validate sealed handoff and prepare the explicitly authorized Samsung email."""
+import base64
+import hashlib
+import io
+import json
+from pathlib import Path
+import re
+import subprocess
+import zipfile
+
+ROOT = Path(__file__).resolve().parent
+VERSION = "GENOS_MAIN_FULL_20261016_R1"
+NAMES = [f"{VERSION}.zip", f"{VERSION}_RUN.txt", f"{VERSION}_WORKFLOW_PASTE_ALL.txt",
+         "GUIDE_UTF8.txt", "FILENAME_EXCEPTIONS.json", "VALIDATION.json", "SHA256SUMS.txt"]
+BANNED = {".js", ".jsx", ".mjs", ".cjs"}
+assert not (ROOT / "EMAIL_SENT.json").exists(), "Already sent; inspect evidence before any repeat"
+sealed = json.loads((ROOT / "SEALED.json").read_text())
+for name, record in sealed["files"].items():
+    raw = (ROOT / name).read_bytes()
+    assert len(raw) == record["bytes"] and hashlib.sha256(raw).hexdigest() == record["sha256"], name
+for line in (ROOT / "SHA256SUMS.txt").read_text().splitlines():
+    expected, name = line.split(maxsplit=1)
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+
+scanned = []
+def inspect_archive(raw, label):
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        assert archive.testzip() is None, label
+        scanned.append({"archive": label, "members": len(archive.infolist())})
+        for member in archive.infolist():
+            assert Path(member.filename).suffix.lower() not in BANNED, member.filename
+            if member.filename.lower().endswith(".zip"):
+                inspect_archive(archive.read(member), label + "/" + member.filename)
+
+inspect_archive((ROOT / NAMES[0]).read_bytes(), NAMES[0])
+with zipfile.ZipFile(ROOT / NAMES[0]) as archive:
+    for name in NAMES[1:6]:
+        matches = [n for n in archive.namelist() if Path(n).name == name]
+        assert len(matches) == 1, name
+        assert archive.read(matches[0]) == (ROOT / name).read_bytes(), name
+run = (ROOT / NAMES[1]).read_text()
+embedded = re.findall(r"raw=base64.b64decode\('([A-Za-z0-9+/=]+)'\)", run)
+assert len(embedded) == 1
+inspect_archive(base64.b64decode(embedded[0], validate=True), "RUN embedded payload")
+subprocess.run(["bash", "-n", str(ROOT / NAMES[1])], check=True)
+
+body = f"""<!doctype html><html><body>
+<p>요청하신 <strong>최신 MAIN76 전체 코드 + 최신 문서 RAG 필터 적용본</strong>을 보냅니다.</p>
+<p>이번에는 이전 <strong>GENOS_LATEST_SELECTION_20261015_R1 대신 {VERSION}</strong>을 사용해 주세요.
+사진의 llm.py 구버전 때문에 멈춘 부분 패치 방식에서 전체 코드 백업·교체 방식으로 변경했습니다.
+MAIN76 evidence-complete-comparison-20261016-r1을 기준으로 최신 문서 선택/파일명 예외와 기존 GENOS 출력 상한 제거·추가 사실 안내 문구를 포함했습니다.</p>
+<p><strong>1. 파일을 업로드한 실제 TRANSFER 폴더에서 실행</strong></p>
+<pre>python3 -m zipfile -e ./{VERSION}.zip ./{VERSION}
+bash ./{VERSION}/{VERSION}_RUN.txt check
+bash ./{VERSION}/{VERSION}_RUN.txt install</pre>
+<p>check 성공 후 install을 실행해 주세요. 기존 ~/DEV checkout에 적용하며, NFS 원본 DB·색인·manifest,
+.env·.venv·Git 이력·기존 GENOS_SERVING_PATHS 설정은 보존합니다. 데이터 재구축은 필요 없습니다.
+ZIP 안 RUN.txt와 별도 첨부 RUN.txt는 같은 완전한 실행 파일입니다.</p>
+<p>MAIN_FULL_APPLIED/종료코드 0을 확인합니다. 처음부터 로그는 TRANSFER/main-full-r1-logs,
+상태·백업 경로는 main-full-r1-state/STATUS.json에 남습니다.
+전체/남은 문서 비교는 main-full-r1-state/COMPARE/COMPARE.html 및 CSV에서 확인합니다.</p>
+<p><strong>2. 기존 DEV에서 변경 파일 검토·commit 후, 원래 TRANSFER에서 gate 실행</strong></p>
+<pre>bash ./{VERSION}/{VERSION}_RUN.txt gate</pre>
+<p>gate 통과한 commit을 push하고 같은 commit의 코드서빙 새 리비전을 배포한 뒤 SSE를 재시작합니다.
+실행 상태·백업·.env 및 관련 없는 변경은 commit하지 않습니다.</p>
+<p><strong>3. 워크플로우 편집기 저장</strong></p>
+<p><strong>{VERSION}_WORKFLOW_PASTE_ALL.txt</strong> 전체를 기존 워크플로우 Python 단계에 반영하고 저장합니다.
+이는 ZIP 적용/Git push와 별도입니다. 현장 질의와 warmup은 <strong>워크플로우 테스트 화면</strong>에서 확인합니다.</p>
+<p>중단 후에는 같은 TRANSFER에서 같은 RUN의 install로 재개합니다. 원복은 같은 RUN의 undo이며,
+자세한 적용·검증·원복 방법은 GUIDE_UTF8.txt를 참고해 주세요.</p>
+<p>로컬 모의 설치·재개·정확한 원복, 실제 서비스 진입점 및 같은 committed checkout gate를 검증했습니다.
+실제 GENOS 반입·새 리비전·내부 모델 응답은 현장 확인 전 미확인입니다.</p>
+<p>첨부 7개: 전체 교체 ZIP, 완전한 실행 TXT, 워크플로우 편집기본, 안내, 파일명 예외, 검증 기록, SHA-256 목록.</p>
+<p>ZIP SHA-256: {sealed['files'][NAMES[0]]['sha256']}</p>
+</body></html>"""
+parts = [{"mime_type": "text/html", "charset": "UTF-8", "body": {"content": body}}]
+bindings = []
+for name in NAMES:
+    path = ROOT / name
+    assert path.suffix.lower() not in BANNED
+    raw = path.read_bytes()
+    mime = {".zip": "application/zip", ".json": "application/json"}.get(path.suffix, "text/plain")
+    parts.append({"mime_type": mime, "content_disposition": "attachment", "filename": name,
+                  "body": {"base64_url_content": base64.urlsafe_b64encode(raw).decode()}})
+    bindings.append({"name": name, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(), "mime_type": mime})
+args = {"to": "hyungjininfocz.son@partner.samsung.com",
+        "subject": "[GENOS] MAIN76 전체 코드 교체 + 최신 문서 RAG 필터 (2026-10-16 R1)",
+        "payload": {"mime_type": "multipart/mixed", "parts": parts}, "response_fields": ["id", "thread_id", "label_ids"]}
+(ROOT / "EMAIL_BODY_UTF8.html").write_text(body, encoding="utf-8")
+(ROOT / "EMAIL_ATTACHMENT_BINDING.json").write_text(json.dumps(bindings, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+(ROOT / "EMAIL_ARGS.json").write_text(json.dumps(args, ensure_ascii=False), encoding="utf-8")
+check = {"to": args["to"], "subject": args["subject"], "attachments": bindings,
+         "args_characters": len((ROOT / "EMAIL_ARGS.json").read_text()), "sealed_files": len(sealed["files"]),
+         "archive_scan": scanned, "javascript_exclusions": "PASS", "bash_syntax": "PASS"}
+(ROOT / "EMAIL_PRECHECK.json").write_text(json.dumps(check, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+print(json.dumps(check, ensure_ascii=False))

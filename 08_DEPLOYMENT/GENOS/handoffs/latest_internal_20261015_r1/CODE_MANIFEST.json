@@ -1,0 +1,75 @@
+{
+  "format": "8agent-code/1",
+  "scope": "latest-internal-build-only",
+  "files": [
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_representations.py",
+      "sha256": "f910ae9e4eb3df983bd8a26056272b405c0aaa9d7c50b7b15ae3e254845928db",
+      "bytes": 9288
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_corpus.py",
+      "sha256": "1cc7632e99af63c8e57fab9a27853885154fa5916a0553d6afe309aee45f7b52",
+      "bytes": 19130
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/team_raw.py",
+      "sha256": "3035a298f88ccc9350f3f65137b98cc696765e8d6062be7635397baad3d2b9ca",
+      "bytes": 21997
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "sha256": "b079e8a3d8a4f0c53c6063158d0a98dc050ed4cee5b62f6cd94989f23d449a73",
+      "bytes": 26495
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_release.py",
+      "sha256": "dc30466233e540978e3685c27d9ee6e2acc8aeea048e67e43eba4b945bbdc8ed",
+      "bytes": 62001
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_data_stages.py",
+      "sha256": "b1d17e8703bdf391d51df65d52eeddeca0833be84f99ad7cbe53d1078aacda86",
+      "bytes": 15307
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/composed_build.py",
+      "sha256": "096028b896cb3cf4d6c3db4be7830e3ad4c4bcbb1e1dd68782aac000c7b9de7d",
+      "bytes": 9607
+    }
+  ],
+  "required_files": [
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "sha256": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_stages.py",
+      "sha256": "f8a43a6410b57c1fd99130f1606c8d34706d2523b64df5241016ae4ac09c0d97"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_doc.py",
+      "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_status.py",
+      "sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/structure_selection.py",
+      "sha256": "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/raw_preprocess.py",
+      "sha256": "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d"
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_release_gate.py",
+      "sha256": "af1339d7e99fdca44b472198aa98fd15bd64cfc3acf3aa95e1f96c3f6c3a6dec"
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+      "sha256": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498"
+    }
+  ]
+}

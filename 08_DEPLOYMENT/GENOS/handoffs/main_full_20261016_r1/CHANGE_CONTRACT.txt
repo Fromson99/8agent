@@ -1,0 +1,40 @@
+요청: 최신 MAIN에 RAG 최신 문서 필터를 포함해 기존 DEV 코드를 전체 갱신한다.
+대상: GENOS 반입 자료. 현재 외부 세션에서 GENOS 실행/배포는 불가능하다.
+
+실행 연결:
+TRANSFER RUN TXT → 봉인 패키지 해시 확인 → 기존 DEV Git root/고정 세대 확인 →
+선택 MAIN 전체 코드·GENOS 호환 변경의 엔진 pin/의존성 확인 → 기존 genos_code_replace.install →
+기존 lawrag.pipeline.search_selection plan/apply → 설치 코드 확인 → status → 같은 committed checkout의 genos_release_gate.
+검색 필터는 MAIN76의 filename-search-selection-v2이며 사용자 승인 예외는 변경하지 않는다.
+
+입력: 선택 MAIN76 release.json/338파일, 봉인 GENOS OUTPUT_UNLIMITED/FACT_REASON의 정확한 변경 구간,
+봉인 LATEST_SELECTION 구축 의존성, 기록된 Git 기준 소스, 현장 GENOS_SERVING_PATHS/세대.
+출력: 전체 코드, 변경 전 파일 백업/권한, 원복 영수증, 선택 계획/표/영수증, 비교 HTML/CSV, 지속 로그/exit 상태.
+소비자: 기존 service.service 및 SSE/backend, 별도 GENOS 워크플로우 Python 편집기.
+
+실패와 담당:
+- 패키지/선택 코드/엔진 해시 불일치: 설치 진입부에서 적용 전 차단. 모델 재시도/해시 재작성 없음.
+- 기존 DEV의 코드 버전 차이: 사용자의 전체 교체 지시에 따라 파일 바이트/권한을 백업 후 교체.
+  데이터/비밀/고정 NFS 설정/이력/목록 외 파일은 보존한다. 이전 패치 조합 allowlist는 요구하지 않는다.
+- 원문 세대/고정 설정 해시 불일치: identity 담당이 중단. CURRENT/manifest 자동 교정 없음.
+- 동시 실행: 기존 코드 교체 lock의 nonblocking 취득 한 번. 대기·자동 재호출 없음.
+- 코드 적용 예외: 기존 교체기 rollback 담당. 강제 종료로 남은 APPLYING은 동일 영수증 검증 후 한 번 원복하고 재설치.
+- 필터 적용 실패: 기존 selector가 선택표 원복/영수증을 맡고, wrapper는 CODE_APPLIED_SELECTION_FAILED를 보존.
+  같은 install 요청을 사용자가 재실행하면 동일 plan/코드 binding으로 재개한다. 자동 무한 재시도 없음.
+- 선택표 적용 직후 응답/프로세스 소실: 사전 intent의 원래 해시·기존 영수증 목록과 실제 target/receipt를 비교해
+  이번 작업의 유일한 영수증을 회수한다. 모호하면 중단한다. 이전 선택표를 임의로 자기 작업의 원복 대상으로 삼지 않는다.
+- 설치 후 새 사용자 코드 변경: 재설치/원복 전에 차단하고 해당 파일/선택표를 보존한다.
+- gate 실패: push/리비전 배포 완료로 표시하지 않는다.
+
+예산: 실제 모델/외부 API 호출 0. 설치/선택표 명령별 물리 실행 1회, 자동 반복 호출 0.
+대용량 NFS 검증에는 임의 시간 상한을 추가하지 않는다. 요청 모델/도구 횟수와 deadline은 기존 GENOS 설정을 유지한다.
+길이 상한 제거는 기존 봉인 변경의 유지이며 모델 서버의 자체 한도를 해제하지 않는다.
+
+검증: 두 배치(DEV 안 TRANSFER/별도 TRANSFER), 사진의 llm.py hash, 임의 기존 코드,
+R1 실패 재현, 실제 ZIP 해제/독립 TXT, check/설치/재설치/status/commit/gate/undo,
+코드 이동 직후 강제 종료, 선택표 실패, 적용 영수증 응답 소실, 설치 후 코드 변경 차단,
+원문 DB/manifest/환경/원래 파일 보존, 설치된 동일 코드의 원문→선택→API 및 service.service TLS 부팅.
+실행 결과와 실패 기록은 VALIDATION.json 및 failures/를 따른다.
+
+상태: 로컬 MAIN 포인터/기존 릴리스는 변경하지 않는다. 신규 모델·프롬프트·검색 효과 비교/품질 인증을 하지 않는다.
+GENOS 코드 적용, 선택표 적용, commit/push, 새 코드서빙 리비전, 편집기 저장, 워크플로우 현장 성공은 각각 별도다.

@@ -1,0 +1,75 @@
+Oracle 개발계 CLEAN R2 — QUERY_RECORD_KEY 수정 / 2026-10-20
+
+사용할 파일
+  LEGAL_ORACLE_CLEAN_IMPORT_20261020_R2.zip
+  DATAIKU_CLEAN_IMPORT_RUN.txt
+
+1. 작은 R2 코드 ZIP을 기존 Dataiku Managed Folder LEGAL_DATA_ZIP_IMPORT에 추가 업로드합니다.
+   데이터 ZIP/분할 파일은 다시 올리거나 병합하지 않습니다.
+   기존 R1 코드, restored 데이터, 실패 로그는 그대로 둡니다.
+
+2. 오류가 난 CLEAN 노트북의 커널을 재시작합니다.
+   DATAIKU_CLEAN_IMPORT_RUN.txt 전체를 새 셀에 붙여 실행합니다.
+   R1 Python 모듈이 메모리에 남아 있으면 KERNEL_BINDING으로 중단하므로 커널 재시작이 필요합니다.
+   ACTION = "plan", RECOVER_R1_PLAN = True가 기본입니다.
+   FOLDER_ID와 ORACLE_CONNECTION은 기존 값을 유지합니다.
+   WORK_DIR 자동 탐색이 안 되면 기존 로그에 나온 legal-existing-zip-r2-work 절대경로를 입력합니다.
+   ZIP은 코드가 검증 후 code-clean-r2에 풉니다. 기존 code-clean-r1을 덮어쓰지 않습니다.
+
+3. R1_PLAN_RECOVERY → CLEAN_PLAN_READY를 확인합니다.
+   R1의 정확한 코드/데이터/연결과 QUERY_RECORD_KEY 실패가 일치하고,
+   계획 저장·삭제·INSERT에 진입하지 않은 경우에만 자동으로 이어받습니다.
+   원래 state.json은 state.r1-key-failure.json에 보존합니다.
+   최초 기한과 누적 SQL 호출을 유지하며 상태·calls.jsonl·데이터를 지워 우회하지 않습니다.
+   새로운 작업은 R1_PLAN_RECOVERY 없이 CLEAN_PLAN_READY가 나옵니다.
+   이 단계는 Oracle 데이터를 삭제·삽입하지 않습니다.
+
+4. 계획의 before_counts / after_counts / delete_tables를 확인한 뒤
+   ACTION = "replace"로 바꾸고 같은 TXT 전체를 실행합니다.
+   기존 동작대로 아래 7테이블의 모든 버전을 삭제 후 순차 배치 INSERT합니다.
+     SIDDA.LEGAL_SRC_DOCUMENT_A
+     SIDDA.LEGAL_SRC_SOURCE_UNIT_A
+     SIDDA.LEGAL_SRC_BLOCK_PAYLOAD_A
+     SIDDA.LEGAL_RAG_ASSET_PART_A
+     SIDDA.LEGAL_RAG_RELEASE_A
+     SIDDA.LEGAL_RAG_QUERY_ROW_A
+     SIDDA.LEGAL_RAG_QUERY_RELEASE_A
+   ACTIVE와 STATE는 보존하고, ACTIVE 사용 중이면 삭제 전에 중단합니다.
+   DELETE 커밋 후 기존 DB 내용을 자동 복구하지 않습니다. 검증된 원본으로 재적재하는 작업입니다.
+
+5. R2 적재 중 중단되면 같은 코드/WORK_DIR에서 ACTION = "resume"으로 재개합니다.
+   완료된 삭제를 반복하지 않으며 응답이 불명확한 마지막 묶음만 대조합니다.
+   CLEAN_RESET_UNCONFIRMED는 반복 삭제하지 않고 실제 Oracle 트랜잭션 확인이 필요한 상태입니다.
+   R1에서 이미 삭제/INSERT에 진입한 작업은 이번 자동 복구 대상이 아닙니다.
+   R1 계획 실패 복구 후에도 1회 6시간, 최초 7일, 누적 SQL 호출 제한을 유지합니다.
+
+수정 내용
+- 일반 자산의 보조 조회 키가 UTF-8 512바이트를 넘으면 sha256:해시로 색인합니다.
+- VALUE_JSON과 원본 SQLite의 값은 자르거나 변경하지 않습니다. 행을 건너뛰지 않습니다.
+- 문서 접근권한용 DOCUMENT_ID는 해시로 바꾸거나 비우지 않습니다.
+- 대응 조회 코드는 동일 해시로 후보를 찾고, 원래 값 전체로 다시 비교합니다.
+  긴 CLOB 값은 DBMS_LOB.COMPARE로 비교합니다. 해시 일치만으로 같은 값으로 판정하지 않습니다.
+- 한도 위반이 남으면 파일/테이블/행 번호/필드/바이트 길이를 표시하고 실제 값은 출력하지 않습니다.
+- 새 테이블, 열 확장, 제약 해제, 자동 활성화는 하지 않습니다.
+
+로그
+  <기존 WORK_DIR>/oracle-clean-r1/events.jsonl
+  <기존 WORK_DIR>/oracle-clean-r1/calls.jsonl
+  <기존 WORK_DIR>/oracle-clean-r1/state.json
+  <기존 WORK_DIR>/oracle-clean-r1/state.r1-key-failure.json
+  <기존 WORK_DIR>/oracle-clean-r1/plan.json
+  기존 LOG_CLEAN_RUN.txt도 그대로 사용합니다. 일반 R3 로그 조회기는 대상이 다릅니다.
+  PLAN_QUERY/FTS_POSTINGS_SORT는 실제 조회 데이터 준비 단계이며 시간이 걸릴 수 있습니다.
+
+완료 상태
+  CLEAN_LOAD_COUNTS_CONFIRMED
+성공한 INSERT·종류별/전체 건수·입력 해시·릴리스 메타데이터 확인 상태입니다.
+full_body_readback=false: Oracle 전체 본문을 다시 다운로드해 대조한 결과는 아닙니다.
+현장 Oracle19/JDBC 실행 및 전체 소요 시간은 로컬 검사로 확정하지 않았습니다.
+
+서빙 연결
+이번 ZIP은 Dataiku 적재 수정본이며 GENOS 서빙을 자동 수정하지 않습니다.
+새 긴 키를 실제 조회하려면 함께 수정한 oracle_query_db.py와 oracle_query_catalog.py를
+다음 GENOS 코드 인계본에 포함해 검증해야 합니다. 파일·해시는 SERVING_COMPATIBILITY.txt와
+CODE_PINS.json에 있습니다. 기존 구 조회 코드로 새 릴리스를 활성화하지 마세요.
+현재 MAIN/ACTIVE/STATE/Git push/GENOS 리비전은 변경하지 않습니다.

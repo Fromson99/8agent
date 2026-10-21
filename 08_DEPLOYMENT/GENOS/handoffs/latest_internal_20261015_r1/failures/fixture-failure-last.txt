@@ -1,0 +1,328 @@
+Traceback (most recent call last):
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/latest_internal_20261015_r1/test_delivery.py", line 104, in <module>
+    records=main(records)
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/latest_internal_20261015_r1/test_delivery.py", line 71, in main
+    run([sys.executable,'-m','pytest','-q','05_TESTS/CONTRACTS/test_latest_internal_versions.py',
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         '--basetemp',str(work/'pytest')],cwd=dev)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/latest_internal_20261015_r1/test_delivery.py", line 45, in run
+    if ok and p.returncode:raise AssertionError(p.stdout+'\n'+p.stderr)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ..............F                                                          [100%]
+=================================== FAILURES ===================================
+____________ test_latest_structure_merge_index_and_search_consumer _____________
+
+scope = {'type': 'http', 'http_version': '1.1', 'method': 'GET', 'path': '/v1/rag/document/read', ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x79d86955f5e0>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x79d869584670>
+
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+        response_started = False
+    
+        async def sender(message: Message) -> None:
+            nonlocal response_started
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+>           await app(scope, receive, sender)
+
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:144: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:706: in app
+    raw_response = await run_endpoint_function(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:354: in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:2641: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:1033: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/app.py:199: in document_read
+    return read(store,doc_id,unit_id=unit_id,offset=offset,limit=limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/document_browser.py:58: in read
+    doc = document(store, document_id)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+store = <semantic_runtime.storage.Store object at 0x79d8696d4c30>
+document_id = '1aa8babe191db987'
+
+    def document(store, document_id):
+        row = store.db.execute('SELECT document_id,name,source_artifact_sha256 FROM document WHERE document_id=?',
+                               (document_id,)).fetchone()
+        if row is None:
+>           raise KeyError(document_id)
+E           KeyError: '1aa8babe191db987'
+
+02_BACKEND/semantic_runtime/document_browser.py:39: KeyError
+
+During handling of the above exception, another exception occurred:
+
+self = <starlette.middleware.errors.ServerErrorMiddleware object at 0x79d8695752b0>
+scope = {'type': 'http', 'http_version': '1.1', 'method': 'GET', 'path': '/v1/rag/document/read', ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x79d86955f5e0>
+send = <function _TestClientTransport.handle_request.<locals>.send at 0x79d86955f950>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        response_started = False
+    
+        async def _send(message: Message) -> None:
+            nonlocal response_started, send
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+>           await self.app(scope, receive, _send)
+
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/routing.py:660: in __call__
+    await self.middleware_stack(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:2734: in app
+    await route.handle(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:1281: in handle
+    await super().handle(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/routing.py:158: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:59: in wrapped_app
+    response = await handler(conn, exc)  # type: ignore[arg-type]
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/app.py:116: in missing
+    return JSONResponse(status_code=404,content=legal_error_payload(exc, status=404))
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/app.py:28: in legal_error_payload
+    public = views().public_failure(request_id, status=status, exc=exc)
+             ^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def views():
+        # Read the adapter bundled with this exact release, not a working-tree module.
+        import importlib.util,sys,hashlib
+        path=Path(__file__).resolve().parents[2]/'08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py'
+        name='_chat_views_'+hashlib.sha256(str(path).encode()).hexdigest()[:16]
+        if name not in sys.modules:
+            spec=importlib.util.spec_from_file_location(name,path)
+>           module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module)
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/latest-internal-delivery-icy2q7ng/DEV/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py'
+
+02_BACKEND/semantic_runtime/chat_adapter.py:32: FileNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/latest-internal-delivery-icy2q7ng/pytest/test_latest_structure_merge_in0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x79d8accd2360>
+term_glossary = PosixPath('/tmp/latest-internal-delivery-icy2q7ng/pytest/test_latest_structure_merge_in0/dictionary')
+
+    def test_latest_structure_merge_index_and_search_consumer(tmp_path, monkeypatch, term_glossary):
+        from lawrag.pipeline.term_generation import build_generation
+        from lawrag.pipeline.term_serving_bundle import verify_assets
+        from semantic_runtime.storage import Store
+        from semantic_runtime.term_index import TermIndex
+        monkeypatch.setenv('STRUCTURE_RECIPE_VLM', 'off')
+        raw = tmp_path / 'RAW'
+        old = docx(raw / 'internal/모의규정(20190710).docx', '폐기예시옛본문 고유문자열')
+        new = docx(raw / 'internal/모의규정(20220331).docx', '영업일은 은행이 영업하는 날을 말한다. 최신예시본문')
+        plan, report = genos_corpus.collect(raw, only_internal=True, skip_invalid=True,
+                                           latest_internal_versions=True, emit=lambda _: None)
+        assert report['ok'] and len(plan['files']) == 1
+        r = plan['files'][0]
+        folder, _ = genos_stages.structure(r, plan, tmp_path, {'synthetic': 'no-model'}, 30, lambda _: None)
+        genos_stages.verify_structure(folder)
+        # Same selected bytes resume, a changed input is refused before cache reuse.
+        assert genos_stages.structure(r, plan, tmp_path, {'synthetic': 'no-model'}, 30, lambda _: None)[0] == folder
+        write(tmp_path / 'LOGS/latest/structure-selection.json', {
+            'schema_version': 'structure-selection-v1', 'inputs_sha256': digest(plan), 'completed': True,
+            'expected_document_ids': [r['document_id']],
+            'documents': {r['document_id']: {'key': folder.name, 'receipt_sha256': sha(folder / 'structure-receipt.json')}}})
+        with pytest.raises(ValueError, match='cannot merge base'):
+            document_release.selected_sources(tmp_path, 'latest', [tmp_path / 'old-generation'])
+        sources, _ = document_release.selected_sources(tmp_path, 'latest', [])
+        merged = document_release.merge_sources(sources, tmp_path / 'merged')
+        build_generation(merged, term_glossary, tmp_path / 'built', serving=True)
+        generation = tmp_path / 'built/generation'
+        assert verify_assets(generation)['verified']
+        with closing(Store(generation)) as store:
+            ids = [v[0] for v in store.db.execute('SELECT document_id FROM document')]
+            assert ids == [sha(new)[:16]] and sha(old)[:16] not in ids
+            texts = ' '.join(v[0] for v in store.db.execute('SELECT text FROM source_block'))
+            assert '최신예시본문' in texts and '폐기예시옛본문' not in texts
+            payload = json.loads(store.db.execute('SELECT json FROM document').fetchone()[0])
+            assert payload['document_metadata']['filename_version']['date'] == '20220331'
+            index = TermIndex(generation / 'navigation', store)
+            tools = index.tools(ids)
+            try:
+                assert tools.search(['fixture:day'], ids)
+            finally:
+                tools.db.close()
+        assert old.exists() and new.exists() and not (tmp_path / 'generations/CURRENT.json').exists()
+        from fastapi.testclient import TestClient
+        from test_legal_agent_v5 import app_for
+        with TestClient(app_for(tmp_path / 'api', generation)) as client:
+            listed = client.get('/v1/rag/documents')
+            assert listed.status_code == 200
+            assert {d['id'] for d in listed.json()['documents']} == {sha(new)[:16]}
+            found = client.get('/v1/rag/search', params={'q': '영업일'})
+            assert found.status_code == 200 and sha(old)[:16] not in found.text
+            assert client.get('/v1/rag/document/read', params={'doc_id': sha(new)[:16]}).status_code == 200
+>           assert client.get('/v1/rag/document/read', params={'doc_id': sha(old)[:16]}).status_code == 404
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+05_TESTS/CONTRACTS/test_latest_internal_versions.py:216: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/testclient.py:482: in get
+    return super().get(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/testclient.py:454: in request
+    return super().request(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/testclient.py:356: in handle_request
+    raise exc
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/testclient.py:353: in handle_request
+    portal.call(self.app, scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/anyio/from_thread.py:338: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.14/concurrent/futures/_base.py:450: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.14/concurrent/futures/_base.py:395: in __get_result
+    raise self._exception
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/anyio/from_thread.py:263: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/applications.py:90: in __call__
+    await self.middleware_stack(scope, receive, send)
+/home/jin/8-AGENT/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:176: in __call__
+    response = await self.handler(request, exc)  # type: ignore[assignment, arg-type]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/app.py:137: in unexpected_failure
+    return JSONResponse(status_code=500, content=legal_error_payload(exc, status=500))
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+exc = FileNotFoundError(2, 'No such file or directory'), request_id = None
+status = 500
+
+    def legal_error_payload(exc, request_id=None, *, status=None):
+        from .legal_agent.investigation_diagnostics import exception_diagnostics
+        from .chat_adapter import views
+        request_id = request_id or obs._CONTEXT.get().get('request_id')
+>       public = views().public_failure(request_id, status=status, exc=exc)
+                 ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_chat_views_3fe73e8f4c8ebbaf' has no attribute 'public_failure'
+
+02_BACKEND/semantic_runtime/app.py:28: AttributeError
+----------------------------- Captured stdout call -----------------------------
+GENERATION link-documents.start elapsed=0.0s phase=0.0s
+GENERATION link-documents.done elapsed=0.0s phase=0.0s
+GENERATION publish-source.start elapsed=0.0s phase=0.0s
+GENERATION publish-source.done elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.start elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.done elapsed=0.0s phase=0.0s
+GENERATION compile-navigation.start elapsed=0.0s phase=0.0s
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.003s thread_cpu=0.003s
+NAVIGATION documents.start elapsed=0.004s thread_cpu=0.004s
+NAVIGATION references.start elapsed=0.015s thread_cpu=0.015s
+NAVIGATION reference-witnesses.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION audit-separation.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION done elapsed=0.003s thread_cpu=0.003s
+GENERATION compile-navigation.done elapsed=0.0s phase=0.0s
+GENERATION compile-fulltext.start elapsed=0.0s phase=0.0s
+FULLTEXT build indexed_sources=1 elapsed=0.4s
+GENERATION compile-fulltext.done elapsed=0.4s phase=0.4s
+GENERATION verify-navigation.done elapsed=0.4s phase=0.0s
+GENERATION publish-generation.done elapsed=0.4s phase=0.0s
+----------------------------- Captured stderr call -----------------------------
+{"ts": "2026-10-15T04:25:08.058437+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready"}
+{"ts": "2026-10-15T04:25:08.060037+00:00", "level": "INFO", "logger": "genos.index", "event": "tools.cache.ready", "path": "/tmp/latest-internal-delivery-icy2q7ng/pytest/test_latest_structure_merge_in0/built/generation/navigation", "previous_event": "glossary.pool.ready", "previous_step": null, "previous_log_ms": 0.26}
+{"ts": "2026-10-15T04:25:08.468167+00:00", "level": "INFO", "logger": "genos.folder_catalogue", "event": "folder_catalogue.ready"}
+{"ts": "2026-10-15T04:25:08.470313+00:00", "level": "INFO", "logger": "genos.team_scope", "event": "catalogue.cache.ready", "cache_hit": false, "document_count": 1, "sql_count": 1}
+{"ts": "2026-10-15T04:25:08.471737+00:00", "level": "INFO", "logger": "genos.index", "event": "tools.cache.ready", "path": "/tmp/latest-internal-delivery-icy2q7ng/pytest/test_latest_structure_merge_in0/built/generation/navigation", "previous_event": "catalogue.cache.ready", "previous_step": null, "previous_log_ms": 0.104}
+{"ts": "2026-10-15T04:25:08.472902+00:00", "level": "INFO", "logger": "genos.matcher", "event": "matcher.cache.ready", "previous_event": "tools.cache.ready", "previous_step": null, "previous_log_ms": 0.169}
+{"ts": "2026-10-15T04:25:08.474643+00:00", "level": "INFO", "logger": "genos.fulltext", "event": "fulltext.connection.facts", "diagnostic_revision": "fulltext-diagnostics-20260928-r1", "process_id": 95175, "index_bytes": 24576, "connect_ms": 0.264, "facts_ms": 0.1, "sqlite_version": "3.46.1", "indexed_source_count": 1, "page_size": 4096, "cache_size": -2000, "mmap_size": null, "temp_store": 0, "query_plan": ["SCAN source_fts VIRTUAL TABLE INDEX 32:rM3"], "uses_temp_sort": false, "previous_event": "matcher.cache.ready", "previous_step": null, "previous_log_ms": 0.112}
+------------------------------ Captured log call -------------------------------
+INFO     genos.glossary:observability.py:298 glossary.pool.ready
+INFO     genos.index:observability.py:298 tools.cache.ready
+INFO     genos.folder_catalogue:observability.py:298 folder_catalogue.ready
+INFO     genos.team_scope:observability.py:298 catalogue.cache.ready
+INFO     genos.index:observability.py:298 tools.cache.ready
+INFO     genos.matcher:observability.py:298 matcher.cache.ready
+INFO     genos.fulltext:observability.py:298 fulltext.connection.facts
+=============================== warnings summary ===============================
+05_TESTS/CONTRACTS/test_latest_internal_versions.py::test_latest_structure_merge_index_and_search_consumer
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 05_TESTS/CONTRACTS/test_latest_internal_versions.py::test_latest_structure_merge_index_and_search_consumer
+1 failed, 14 passed, 1 warning in 1.62s
+
+

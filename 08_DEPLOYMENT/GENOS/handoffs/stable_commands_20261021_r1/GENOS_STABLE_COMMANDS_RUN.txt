@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+TASK_HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p ./stable-command-install-logs
+TASK_LOG="./stable-command-install-logs/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"' EXIT
+exec > >(tee -a "$TASK_LOG") 2>&1
+if [[ $# == 0 ]]; then set -- check; fi
+python3 "$TASK_HERE/installer.py" "$@"

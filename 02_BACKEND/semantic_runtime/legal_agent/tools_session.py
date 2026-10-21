@@ -133,21 +133,11 @@ class ToolsSession(LegalSession):
                        'actions': sorted({o['args_hash'] for o in self.work.observations(self.profile['max_tool_actions']) if o['status'] in ('OK','PARTIAL')})})
 
     def investigate(self):
-        from .tools_policy import metadata_only_request
-        plain_catalogue = metadata_only_request(self.context.request['question'])
-        if not self.context.request['use_llm'] or plain_catalogue:
+        if not self.context.request['use_llm']:
             self.work.event('REQUEST_ROUTED', {
                 'mode': 'BROWSE', 'agent_required': True,
                 'reason': '현재 요청 범위에서 문서 목록을 확인합니다.'})
             target = self.sources.root
-            if plain_catalogue:
-                from ..folder_navigation import request as parse_catalogue
-                filters = parse_catalogue(self.context.request['question'])
-                documents, offset = [], 0
-                while offset is not None:
-                    page = self.sources.source.navigator.catalogue(self.sources.scope, **filters, offset=offset, limit=500)
-                    documents.extend(d['id'] for d in page['documents']); offset = page['next_offset']
-                target = self.sources.handle('F', {'documents': sorted(documents), 'filter': filters})
             self.sources.execute({'tool': 'browse', 'args': {'target': target, 'relation': 'self',
                 'view': 'outline', 'depth': 1, 'cursor': None}, 'reason': '모델 미사용 자료 목록'}, 'metadata')
             self.metadata_only = True

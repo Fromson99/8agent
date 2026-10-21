@@ -1,0 +1,190 @@
+추가 조회 데이터만 50MB 미만으로 반출 → Dataiku → Oracle
+LEGAL_ORACLE_QUERY_PARTS_20261020_R1 / 2026-10-20
+
+0. 이번 파일의 용도와 이전 사례
+
+이 ZIP은 실행 코드입니다. 운영 데이터는 들어 있지 않습니다.
+GENOS 코드스페이스에서 이 코드를 실행하면 실제 추가 조회 데이터 ZIP/조각이 생성됩니다.
+서빙 checkout 설치, Git commit/push, 리비전 배포는 이 데이터 이동 작업에 필요하지 않습니다.
+
+확인한 과거 기록:
+- 10/6 NFS 읽기·데이터 이관 R7: 코드스페이스에서 운영 공유 경로를 읽고 DEV/TRANSFER로 ZIP 생성.
+  당시 ~/DEV의 실제 경로는 /workspace였고 /workspace도 NFS였습니다.
+- 10/7 SPLIT_TRANSFER_ZIP: ZIP을 49,000,000바이트씩 나누고 각 조각/원본 SHA-256 확인.
+- 10/7 현장 병합 기록: /workspace/TRANSFER/genos-rag-data-20261007T002029Z-7c0b050f_verified.zip 생성,
+  종료0 및 원본 전체 SHA 일치 확인. 당시 한 조각에 붙은 1바이트는 원본 해시 대조 후 복구했습니다.
+  이번 도구는 바이트를 자동 잘라내지 않습니다. 크기/해시가 다른 조각은 다시 전송하세요.
+
+이번에는 과거의 전체 NFS/runtime 백업을 반복하지 않습니다.
+서빙이 사용하던 같은 generation을 코드스페이스에서 읽고, 기존 게시 엔진의 조회용 행으로
+변환한 query-data.db 하나만 ZIP으로 압축합니다. 원본 파일 자체와 공유 경로를 수정하지 않습니다.
+
+추가 4테이블의 처리:
+- SIDDA.LEGAL_RAG_QUERY_ROW_A: 구조/용어/정의/참조/전문검색/검증 조회 행을 적재합니다.
+- SIDDA.LEGAL_RAG_QUERY_RELEASE_A: 전체 행 대조 성공 후 완료 버전을 적재합니다.
+- SIDDA.LEGAL_RAG_QUERY_ACTIVE_A: 이번 코드가 변경하지 않습니다. 서빙 전환은 별도입니다.
+- SIDDA.LEGAL_RAG_QUERY_STATE_A: 기존 대화·대사·AD 이력을 넣지 않습니다.
+원문 3테이블 및 기존 ASSET_PART/RELEASE 2테이블은 SELECT만 하며 재이관하지 않습니다.
+조회 행에는 검색용 정규화 텍스트 등이 포함될 수 있습니다. 데이터 크기는 현장에서 확인됩니다.
+
+1. 준비 — 실제 TRANSFER 위치에서 실행
+
+메일 첨부 LEGAL_ORACLE_QUERY_PARTS_20261020_R1.zip을 실제 사용하는 TRANSFER에 올립니다.
+코드스페이스 터미널에서 그 폴더를 현재 위치로 엽니다. ~/TRANSFER 등 절대경로를 추정하지 않습니다.
+별도 첨부 TXT는 ZIP 안에도 같은 내용으로 들어 있습니다.
+
+python3 -m zipfile -e ./LEGAL_ORACLE_QUERY_PARTS_20261020_R1.zip ./query-transfer-tools
+
+아래 명령은 모두 같은 TRANSFER 위치에서 실행합니다. DEV로 먼저 이동하지 않습니다.
+메일 TXT를 쉘에 통째로 붙이는 대신 압축을 푼 TXT를 bash로 실행합니다.
+
+2. 코드스페이스에서 원본 확인
+
+bash ./query-transfer-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R1/CODESPACE_QUERY_50MB_RUN.txt check --output /workspace/QUERY_TRANSFER_20261020_R1
+
+기본 원본은 이전 현장 이관에서 확인된 경로입니다:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+
+기본값이 현재 사용 중인 원본과 다르면 check와 export 양쪽에
+--generation /실제/Oracle에_이관했던/generation
+을 붙입니다. 날짜가 최신인 폴더/CURRENT를 자동 선택하지 않습니다.
+SOURCE_READABLE은 파일 읽기·해시 확인 결과입니다. 현재 서빙 리비전이나 Oracle 게시 완료를
+인증하지 않습니다. Dataiku의 check에서 기존 Oracle 완료 버전과 일치하는지 확인합니다.
+
+3. 추가 데이터 추출 + ZIP + 50MB 미만 조각 생성
+
+bash ./query-transfer-tools/LEGAL_ORACLE_QUERY_PARTS_20261020_R1/CODESPACE_QUERY_50MB_RUN.txt export --output /workspace/QUERY_TRANSFER_20261020_R1
+
+완료 시 EXPORT_COMPLETE와 download_dir가 출력됩니다.
+결과:
+/workspace/QUERY_TRANSFER_20261020_R1/query-data.db
+/workspace/QUERY_TRANSFER_20261020_R1/query-data.zip
+/workspace/QUERY_TRANSFER_20261020_R1/download/query-data.zip.part000001
+/workspace/QUERY_TRANSFER_20261020_R1/download/query-data.zip.part000002
+... 마지막 조각까지
+/workspace/QUERY_TRANSFER_20261020_R1/download/parts-manifest.json
+
+각 조각은 최대 49,000,000바이트(십진수49MB)입니다. 50MiB=52,428,800바이트를 쓰지 않습니다.
+조각 각각은 단독 압축해제 가능한 ZIP이 아닙니다. Dataiku 코드가 순서대로 합쳐 복원합니다.
+많은 데이터가 있더라도 실제 조각 수/총 용량/소요시간은 미리 단정하지 않습니다.
+
+4. 코드스페이스 화면에서 다운로드
+
+VS Code형 화면:
+- 왼쪽 파일 탐색기에서 /workspace/QUERY_TRANSFER_20261020_R1/download를 엽니다.
+- query-data.zip.part000001부터 마지막 조각까지 각 파일을 우클릭 → Download로 받습니다.
+- parts-manifest.json도 받습니다.
+
+JupyterLab형 화면:
+- 왼쪽 파일 목록에서 같은 download 폴더를 찾습니다.
+- 각 조각과 parts-manifest.json을 우클릭 → Download합니다.
+
+현재 IDE의 파일 탐색 범위에 /workspace가 없으면 실제 IDE에서 보이는 쓰기 가능한 폴더를
+--output에 지정하고 check부터 실행합니다. 기존 완료 폴더/로그는 보존합니다.
+폴더 전체 다운로드는 하나의 큰 ZIP으로 재압축될 수 있으므로 조각 파일별로 다운로드합니다.
+원본 query-data.db와 큰 query-data.zip은 다운로드할 필요가 없습니다.
+전송하면서 파일명/확장자를 바꾸지 않습니다. 모든 조각을 같은 묶음에서 가져옵니다.
+
+5. Dataiku에 업로드
+
+Dataiku 프로젝트 Flow에서 New dataset → Folder로 Managed Folder를 만들거나 사용 가능한 폴더를 선택합니다.
+그 폴더의 최상위에 다음을 각각 업로드합니다:
+- LEGAL_ORACLE_QUERY_PARTS_20261020_R1.zip (메일로 받은 작은 코드 ZIP)
+- parts-manifest.json
+- query-data.zip.part000001부터 마지막 조각까지 전부
+
+추가 테이블 4개와 조회 인덱스가 만들어져 있고, 사용하려는 Oracle 연결에
+기존 LEGAL_RAG_RELEASE_A 및 조회 4테이블 SELECT, QUERY_ROW/QUERY_RELEASE INSERT 권한이 필요합니다.
+SQL 노트북에서 9개 CREATE문을 다시 실행하지 않습니다.
+
+Dataiku Code → Notebooks → Python의 새 노트북/새 커널을 엽니다.
+첨부 DATAIKU_QUERY_IMPORT_RUN.txt 전체를 한 Python 코드 셀에 붙입니다.
+또는 코드 ZIP 안의 DATAIKU_QUERY_IMPORT.ipynb를 가져옵니다.
+SQL 노트북과 bash 터미널에 붙이는 코드가 아닙니다.
+
+셀 맨 위에서 설정할 값:
+FOLDER_ID = Managed Folder의 실제 ID
+ORACLE_CONNECTION = 사진의 AIDP(Oracle) 연결에 대응하는 정확한 Dataiku 연결 이름
+WORK_DIR = 재시작 뒤에도 남는 쓰기 가능한 기록/복원 폴더
+
+비밀번호를 코드에 적지 않습니다. Dataiku에 저장된 Oracle 연결을 사용합니다.
+Managed Folder가 S3 등 원격이거나 컨테이너에서 실행되어도 다운로드 스트림을 사용합니다.
+SQLite 복원 파일은 Dataiku 실행 환경의 파일 경로에 필요하므로 WORK_DIR 공간을 확보합니다.
+WORK_DIR 기본값 ./legal-query-transfer-work의 실제 위치는 노트북 실행 폴더 기준입니다.
+재시도할 때 WORK_DIR/연결명/폴더를 바꾸어 이전 기한과 기록을 우회하지 않습니다.
+
+6. Dataiku 실행 순서
+
+같은 셀의 ACTION 값을 바꾸어 한 번씩 실행합니다. 동시에 두 셀/두 커널로 적재하지 않습니다.
+
+a. ACTION = "restore"
+   코드/조각 다운로드 → 각 조각 크기·SHA → 전체 ZIP SHA → DB SHA → DB 내부 행/버전 검증.
+   RESTORED_AND_VERIFIED가 나오면 다음 단계입니다. Oracle 쓰기는 없습니다.
+
+b. ACTION = "check"
+   실제 연결 사용자·DB·서비스 이름 출력, 기존 Oracle 원문 완료 릴리스와 패키지 버전 대조,
+   추가 4테이블의 열/PK/FK/JSON검사/4인덱스 확인.
+   READY_TO_IMPORT가 나오면 다음 단계입니다. INSERT 권한의 실제 성공은 publish에서 확인합니다.
+   RELEASE_MISSING이면 기존에 올린 원문과 이번 generation/검색 선택표가 다른지 확인합니다.
+   기존 5테이블을 다시 이관하거나 완료행을 임의 생성해 통과시키지 않습니다.
+
+c. ACTION = "publish"
+   20행/약4MiB 단위로 QUERY_ROW 삽입 또는 동일 행 재사용 → 전체 열/JSON 읽기 대조.
+   모든 종류의 행 수와 전체 건수가 맞으면 QUERY_RELEASE를 게시하고 다시 읽어 확인합니다.
+   COMPLETE가 나오면 조회 데이터 적재 완료입니다. ACTIVE/STATE는 그대로입니다.
+
+d. ACTION = "status"
+   완료 버전과 모든 조회 행의 내용/건수를 다시 읽어 대조합니다.
+   QUERY_PUBLICATION_VERIFIED를 확인하고 release_id와 실행 기록을 보관합니다.
+   기존 SQL Explore의 미리보기는 새로고침해야 최신 행이 보일 수 있습니다.
+
+GENOS 서빙 환경의 DP_QUERY_RELEASE_ID/채널 선택 및 워크플로우 테스트는 별도 단계입니다.
+이관 완료를 코드서빙 배포/실제 응답 성공으로 간주하지 않습니다.
+
+7. 중단·재개·원복
+
+추출 중 중단:
+- 동일 코드·동일 generation·동일 --output으로 export를 다시 실행합니다.
+- 이미 저장된 행을 원본에서 다시 읽어 비교하며 이어갑니다. 이전 입력과 다른 행은 거부합니다.
+- export-state.json의 최초7일 기한을 유지합니다. 1회 최대21600초(6시간) 검사이며,
+  파일 해시/압축처럼 한 작업이 진행 중이면 그 I/O 호출을 즉시 끊는 강제 타이머는 아닙니다.
+- 기존 완료 DB/조각은 동일 해시일 때 재사용합니다. 다른 파일은 덮어쓰지 않습니다.
+
+조각 누락/해시 불일치:
+- 해당 조각을 코드스페이스 원본에서 다시 다운로드/업로드합니다.
+- 실패 부분파일을 완료본으로 바꾸거나 manifest 해시를 새로 쓰지 않습니다.
+- WORK_DIR의 잘못된 파일은 확인 후 별도 보존 위치로 옮긴 뒤 같은 restore를 재실행합니다.
+
+Oracle 중단/권한/연결 오류:
+- 원인을 해결하고 같은 WORK_DIR에서 같은 ACTION="publish"를 다시 실행합니다.
+- DB가 쓰기를 끝낸 뒤 응답만 끊겨도 다음 실행에서 동일 행을 대조하여 중복 삽입을 막습니다.
+- 매번 처음부터 읽고 확인하므로 시간은 다시 걸릴 수 있습니다. 최초7일/누적100만 SQL 한도는 유지됩니다.
+- PAUSED이면 1회 시간을 1~21600초 범위에서 조정할 수 있습니다. 최초 기한이 끝나면 기록을 검토합니다.
+- 해시/버전/행 충돌은 자동 수정하지 않습니다. ACTIVE를 변경하지 않으므로 기존 서빙 선택은 유지됩니다.
+- 실패한 부분 QUERY_ROW는 비활성 버전으로 남습니다. 삭제/기존 데이터 덮어쓰기는 이 도구에 없습니다.
+
+로그:
+- 코드스페이스 명령 시작부터 ./query-transfer-command-logs/run-*.log, 종료 코드 기록
+- 출력 폴더 events.jsonl, export-state.json, source-check.json
+- Dataiku WORK_DIR/oracle-import/<원문릴리스>/state.json, calls.jsonl, events.jsonl
+- SQL 호출 기록에는 SQL/값의 원문 대신 해시와 성공·불명 상태를 남깁니다.
+
+8. 자원과 검증 범위
+
+데이터 작업은 한 프로세스로 순차 실행합니다. 코드스페이스 실행기는 해당 작업 프로세스만
+주소 공간6GiB로 제한하고 가용RAM/디스크가512MiB 아래이면 작업을 보류합니다.
+SQLite는 작은 캐시를 쓰고 원본·조각은 스트리밍 처리합니다. 한 문서 구조 또는 한 큰 값은 메모리에 올라갑니다.
+주소 공간 한도에 걸리면 실패 로그를 남기며 원본과 부분 저장물을 보존합니다.
+
+코드스페이스: 조회 DB + 압축 ZIP + ZIP과 같은 총 크기의 조각 공간이 필요합니다.
+Dataiku: 다운로드 조각 + 병합 ZIP + 복원 DB + 로그 공간이 필요합니다.
+DB의 실제 팽창률은 원본 색인에 따라 달라지므로 고정 용량을 보장하지 않습니다.
+완료 후 필요 없는 작업용 복사본 정리는 사용자가 다운로드/적재 검증 후 판단합니다.
+
+이 외부 세션은 GENOS 내부 운영 데이터/현재 리비전/Dataiku JDBC 연결에 접속하지 않습니다.
+동봉 VALIDATION.json은 로컬 검증 결과이며 현장 대용량 이관 성공을 뜻하지 않습니다.
+코드 전달 ZIP에는 운영 DB·질문·인증키·.env·JavaScript 파일을 포함하지 않습니다.
+
+공식 Dataiku 문서:
+https://doc.dataiku.com/dss/latest/connecting/managed_folders.html
+https://developer.dataiku.com/latest/concepts-and-examples/sql.html

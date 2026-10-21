@@ -1,0 +1,69 @@
+원문 선택 실패 뒤 답변 중단 수정 — GENOS_NAVIGATION_DELIVERY_20261021_R1
+
+이번 ZIP을 사용하세요. 이전 READABLE R2의 표시 수정과 10분 제한을 포함합니다.
+MAIN96, MAIN96+10분 패치, READABLE R1 또는 R2 위에 추가 적용할 수 있습니다.
+현재 적용 상태를 모르면 check가 알려진 코드인지 먼저 확인하며 다른 수정은 덮어쓰지 않습니다.
+
+이번 수정
+- MODEL_DECISION_UNRESOLVED 후 이미 모델에 전달한 검증 원문까지 누락하여
+  SOURCE_INVESTIGATION_INCOMPLETE / 422로 답변이 중단되는 연결 결함을 수정했습니다.
+- 선택 판단이 거절되어도 전달 확인 기록이 있는 원문은 기존 판단 단계로 넘깁니다.
+  원문을 자동 채택하거나 충분한 법률 답변으로 승인하지 않습니다.
+- 선택 실패·미확인·권한·원문 일치·해시·문맥 한도와 기존 재시도 예산을 보존합니다.
+- 원문 전달 대상이 없을 때도 전달했다고 표시하던 진단 문구를 바로잡았습니다.
+- 실제 최초 선택 응답의 구체 오류는 제공된 사진에 없어 미확인입니다.
+
+적용 — 실제 업로드한 TRANSFER 폴더를 현재 작업 위치로 사용
+ZIP과 별도 RUN.txt를 업로드한 그 폴더에서 실행하세요. TRANSFER의 절대 위치는 가정하지 않습니다.
+코드 적용 대상은 기존 Git checkout ~/DEV입니다. 다르면 모든 명령에 같은 --root /실제/checkout 을 추가하세요.
+
+python3 -m zipfile -e ./GENOS_NAVIGATION_DELIVERY_20261021_R1.zip ./GENOS_NAVIGATION_DELIVERY_20261021_R1
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt check
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt apply
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt gate
+
+check/apply는 실제 checkout과 Python 경로·버전, 코드 상태를 기록합니다.
+apply는 백업 후 적용합니다. .env·ignore·현장 경로·데이터·기존 작업 명령은 보존합니다.
+로그는 현재 TRANSFER의 navigation-delivery-r1-logs에 첫 명령부터 남습니다.
+코드 변경을 검토하고 실제 checkout에서 COMMIT_PATHS.txt의 변경과 git diff --check를 확인하여 commit합니다.
+그다음 TRANSFER에서 실행하세요.
+
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt gate-code
+
+현재 SQLite/NFS 운영이면 실제 선택 generation을 같은 checkout에서 검증합니다. Oracle 모드에는 이 명령을 사용하지 않습니다.
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt gate-sqlite
+
+PASS한 commit을 push하고 동일 commit으로 코드서빙 리비전을 배포하세요.
+코드 적용·Git push·리비전 배포는 별도 단계입니다. 이 패치는 데이터 generation을 생성하거나 교체하지 않습니다.
+서빙 코드/세대/리비전은 실제 현장 로그로 확인해야 합니다.
+
+워크플로우 Python 편집기
+이번 원문 전달 수정 자체는 편집기 변경이 없습니다.
+첨부 GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt는 이전 READABLE R1/R2와 동일합니다.
+이미 적용했다면 다시 바꾸지 마세요. 아직 READABLE 편집기본을 적용하지 않았다면
+이전 Python 단계 전체를 백업하고 해당 TXT 내용으로 전체 교체·저장/반영하세요.
+이 파일은 편집기용 Python입니다. bash로 실행하지 않습니다.
+
+현장 확인 — 워크플로우 테스트 화면만 사용
+새 코드서빙 리비전에서 실패했던 질문을 새 요청으로 실행하세요.
+전달 원문이 있는 경우 판단·답변으로 이어지는지, 원문 인용이 실제 내용과 일치하는지,
+선택 실패와 미확인이 내부 기록에 보존되는지 확인하세요.
+원문이 없거나 권한/무결성 검증이 실패한 경우에는 여전히 중단합니다.
+구 코드에 결속된 실패 요청·기록을 임의 변경하거나 새 코드로 강제 재개하지 않습니다.
+
+재실행·원복 — TRANSFER에서
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt status
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt apply
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt rollback
+
+중단 뒤 apply 재실행은 기존 백업과 설치 기록을 이어받습니다.
+rollback은 적용 직전 코드로 복원하며 이후 다른 수정이 있으면 자동 덮어쓰지 않습니다.
+설치 폴더의 backup·INSTALL_STATE.json·ROOT_BINDING.json과 로그를 보존하세요.
+코드서빙 리비전도 이전 검증 리비전으로 별도 복귀해야 합니다.
+
+검증·범위
+작업 코드 신규14+관련19=33검사 통과, 기존 전송 재개 검사1실패는 수정 전에도 재현했습니다.
+정확한 인계 ZIP의 설치·재실행·중단복구·변조 거부·원복 및 설치 코드 API 검증은
+동봉 HANDOFF_VALIDATION.txt와 별도 DELIVERY_VALIDATION.json에 기록합니다.
+선택 MAIN96·실제 데이터·GENOS 현장 리비전은 변경하지 않았습니다.
+실제 GENOS 내부 모델과 현장 질문 성공은 아직 검증하지 않았습니다.

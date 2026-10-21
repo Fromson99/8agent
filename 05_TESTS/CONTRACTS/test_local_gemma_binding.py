@@ -15,7 +15,9 @@ ROOT = Path(__file__).resolve().parents[2]
 def test_local_gemma_public_scope_and_question_assertion(monkeypatch):
     monkeypatch.setenv('OPEN_ROUTER', 'test-only-key')
     transport = LocalGemmaTransport(ROOT, ROOT)
-    manifest = json.loads((ROOT / '01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/manifest.json').read_text())
+    active=json.loads((ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json').read_text())
+    release=json.loads((ROOT/active['manifest_path']).read_text())
+    manifest=json.loads((ROOT/release['data_path']/'manifest.json').read_text())
     approved = transport.public_scope[0]
     private = next(d for d in manifest['scope']['document_version_ids'] if d not in transport.public_scope)
     request = {'question': '정관 변경의 결의요건은?', 'document_ids': [approved], 'use_llm': True}

@@ -22,6 +22,21 @@ def conditions(state):
             'source_category': state.get('source_category', 'all')}
 
 
+def comparison_context():
+    """Route hints are bound to requested fields, never reused legal conclusions."""
+    from .workflow_execution import task_context
+    task=task_context() or {}
+    if not task.get('comparison_fields'):return None
+    research=task.get('research_task')
+    return {'contract':'comparison-route-context-v1','side':task['source_category'],
+        'fields':task['comparison_fields'],
+        'research': None if not research else {
+            'fields':research['requested_fields'],'operation':research['operation'],
+            'target':{k:research['target_locator'].get(k) for k in ('document_id','unit_id','source_id','reference_id')} if research['target_locator'] else None,
+            'anchors':[{k:a[k] for k in ('origin_side','document_id','source_id','generation_id','source_artifact_hash','spans_hash')} for a in research['anchor_refs']]},
+        'role':'READ_ROUTE_HINT_ONLY','comparison_conclusion_reuse':False}
+
+
 def source_binding(binding):
     return {key: binding.get(key) for key in ('generation', 'store_sha256', 'unit_index_sha256')}
 
@@ -127,6 +142,8 @@ def finalize(cases, result, principal):
                    'selection_ref': route['payload']['judgment_refs']['SELECT']},
         'execution': 'DIRECT_SOURCE_ENTRIES_THEN_CURRENT_SELECTION_AND_ASSESSMENT',
         'legal_claim_reuse': False, 'discarded_exploration_replayed': False}
+    context=comparison_context()
+    if context is not None:path['comparison_context']=context
     value = {'id': unit, 'topic': state['task'], 'question': state['task'], 'completeness': 'OPEN',
         'unresolved': ['현재 질문의 적용과 충분성은 원문을 다시 확보한 뒤 확인'],
         'jurisdiction': 'UNKNOWN', 'applicable_time': 'UNKNOWN', 'members': [
@@ -185,6 +202,7 @@ def lookup(host, state, principal, *, question=None):
         except (MemoryError, OSError):
             continue
         path = value['core_evidence_route']
+        if path.get('comparison_context')!=comparison_context():continue
         curated = path['contract'] == 'curated-core-evidence-route-v1'
         if curated and question is not None:
             # The literal current request identifies an explicitly curated seed.

@@ -1,0 +1,49 @@
+최신 문서 선택 R1 검증
+
+로컬 MAIN73 반영 및 실제 서비스10검사 통과. 선택334파일과 검증 후보 해시 일치.
+동결 후보 선택계약28건, RAW→구조화→색인→API 2경로 통과. 작업 코드28건 통과.
+GENOS 모의 설치본2개에서 선택계약56건, 신규 RAW 파이프라인/API 4경로 통과.
+실제 인계 TXT 명령47회(의도한 실패8회 포함), 동일 committed checkout gate2회, 서비스 TLS 부팅2회, 원복2회 통과.
+원본 세대·NFS 설정·운영 예산 보존. 알려지지 않은 코드/세대 변경 거부. 모델 추론0회.
+마지막 수정은 안내의 build-all 명령 표기만이며 실행 코드 동일, 최종 독립 TXT --help/셸문법 검사 통과.
+
+내규 최신 예외는 FILENAME_EXCEPTIONS.json 한 파일에서 관리합니다. 검토 보존도 is_latest=true로 유지하고 이유를 보존합니다.
+현재 로컬 내규11개는 모두 유지됩니다. 실제 GENOS 제외 수치/현장 배포/워크플로우 테스트는 아직 미확인입니다.
+
+{
+  "archive_sha256": "264bf9c76f82874c6eef12c94069f2ab34ba3d4c7c76ae0079fec78e9dbfa45f",
+  "run_sha256": "cf6643e4cdd4ba59ec8385aed3b7e6045ce434bbd12fd525fbe3e0c6e4620742",
+  "only_post_test_change": [
+    "GUIDE_UTF8.txt"
+  ],
+  "post_test_change": "correct CLI documentation only; executable files identical",
+  "standalone_help_exit": 0,
+  "field_fixture_entrypoints_passed": 2,
+  "actual_commands": 47,
+  "installed_selection_contracts": 56,
+  "installed_native_raw_structure_index_api_paths": 4,
+  "actual_field_service_tls_bootstraps": 2,
+  "committed_checkout_gates": 2,
+  "rollback": 2,
+  "models_called": 0,
+  "genos_deployed": false,
+  "local_MAIN": 73,
+  "files": {
+    "GENOS_LATEST_SELECTION_20261015_R1.zip": {
+      "sha256": "264bf9c76f82874c6eef12c94069f2ab34ba3d4c7c76ae0079fec78e9dbfa45f",
+      "bytes": 6927693
+    },
+    "GENOS_LATEST_SELECTION_20261015_R1_RUN.txt": {
+      "sha256": "cf6643e4cdd4ba59ec8385aed3b7e6045ce434bbd12fd525fbe3e0c6e4620742",
+      "bytes": 4596440
+    },
+    "FILENAME_EXCEPTIONS.json": {
+      "sha256": "818586217131955cd107094ec581a0737893dbd5fafc3caf9065011fdd96bcea",
+      "bytes": 3039
+    },
+    "GUIDE_UTF8.txt": {
+      "sha256": "fe5647392967ff9dee149b4a1073496ed251a677be9189affce65b635ba388be",
+      "bytes": 4869
+    }
+  }
+}

@@ -163,7 +163,9 @@ class RelationCards:
         if anchor.startswith('E'): labels.add('')
         evidence_text = self.s.repo.evidence(anchor)['text'] if anchor.startswith('E') else None
         # Compare small cached fields before deepcopying payloads or loading source text.
-        for definition_id, sid, key, _, _ in self.s.tools.definition_summaries:
+        summaries=(self.s.tools.definition_summaries_for(labels=labels,evidence_text=evidence_text)
+                   if hasattr(self.s.tools,'definition_summaries_for') else self.s.tools.definition_summaries)
+        for definition_id, sid, key, _, _ in summaries:
             if key not in labels and not (evidence_text is not None and key in evidence_text): continue
             source = self.s.tools.sources.get(sid)
             if not source or source['document_id'] not in self.s.scope: continue
@@ -205,7 +207,7 @@ class RelationCards:
         e = self.s.repo.evidence(anchor); did = e['document_id']
         if did not in self._structure_units_by_document:
             self._structure_units_by_document[did] = sorted(
-                ((u, unit) for (d, u), unit in self.s.matcher.units.items() if d == did),
+                ((u, unit) for (d, u), unit in (self.s.matcher.units.for_document(did) if hasattr(self.s.matcher.units,'for_document') else self.s.matcher.units.items()) if d == did),
                 key=lambda item: item[0])
         document_units = self._structure_units_by_document[did]
         uids = set()

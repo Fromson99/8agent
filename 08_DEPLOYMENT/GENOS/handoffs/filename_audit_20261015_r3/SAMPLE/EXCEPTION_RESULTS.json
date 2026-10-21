@@ -1,0 +1,84 @@
+[
+  {
+    "rule_id": "group-risk-confirm",
+    "title": "그룹위험관리 세칙",
+    "action": "confirm_auto_latest",
+    "matched_locations": 2,
+    "status": "CONFIRMED",
+    "reason": "사용자 확인: 현재 최신 판정 유지. 특정 날짜는 제공되지 않았으므로 새 날짜를 추정하지 않음.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "stock-lending-20260504",
+    "title": "대차업무준칙",
+    "action": "select_date",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정: _2026.05.04 판본을 최신으로 선택.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "samsung-pop-golden-wrap-202305",
+    "title": "삼성POP골든랩 관리준칙",
+    "action": "select_filename",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정 파일명. 날짜는 월 단위이며 일자는 생성하지 않음.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "futures-options-attachments",
+    "title": "선물옵션 리스크관리 관리준칙",
+    "action": "separate_attachments",
+    "matched_locations": 4,
+    "status": "APPLIED",
+    "reason": "사용자 지정: 본문과 [별첨1], [별첨2] 등을 서로 다른 문서로 취급.",
+    "separate_document_keys": 3,
+    "retained_locations": 3
+  },
+  {
+    "rule_id": "margin-collection-keep-both",
+    "title": "위탁증거금 징수지침",
+    "action": "keep_all",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정: 두 문서 모두 유지. 예상 개수와 다르더라도 임의로 삭제하지 않고 보고.",
+    "retained_locations": 2
+  },
+  {
+    "rule_id": "index-book-20260529",
+    "title": "인덱스북",
+    "action": "select_date",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정: 20260529 판본 선택.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "equity-management-20210723",
+    "title": "주식운용준칙",
+    "action": "select_date",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정: 20210723 판본 선택.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "investment-risk-20160111",
+    "title": "투자리스크관리준칙",
+    "action": "select_date",
+    "matched_locations": 2,
+    "status": "APPLIED",
+    "reason": "사용자 지정: 20160111 판본 선택.",
+    "retained_locations": 1
+  },
+  {
+    "rule_id": "single-file-folder",
+    "title": "폴더당 문서 한 개",
+    "action": "single_file_latest",
+    "status": "APPLIED",
+    "matched_locations": 1,
+    "retained_locations": 1,
+    "reason": "실제 경로가 있는 현재 내규 입력 목록 기준; 임시파일 제외; 명시 개별 예외 우선"
+  }
+]

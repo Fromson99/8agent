@@ -1,0 +1,44 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/installed_contract_runner.py",
+    "08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code",
+    "06_TOOLS/EXPERIMENTS/adr_0936/test_durable.py",
+    "06_TOOLS/EXPERIMENTS/adr_0936/test_generalized.py",
+    "06_TOOLS/EXPERIMENTS/adr_0936/test_host_links.py",
+    "06_TOOLS/EXPERIMENTS/adr_0936/test_lossless_wire.py",
+    "06_TOOLS/EXPERIMENTS/adr_0936/test_patch_contract.py",
+    "06_TOOLS/EXPERIMENTS/adr_0930/test_fixes.py::test_new_connected_document_read_registers_before_decision_and_preserves_prior",
+    "06_TOOLS/EXPERIMENTS/adr_0930/test_fixes.py::test_invalid_new_document_never_registers_or_reads",
+    "05_TESTS/CONTRACTS/test_main_workflow_display.py"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 12.010006371987402,
+  "peak_group_rss_bytes": 322592768,
+  "min_available_bytes": 12862537728,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/CONTRACT_RESOURCES_01.json",
+    "rss_gib": 6.0,
+    "as_gib": 8.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10.0,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-B",
+      "08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/installed_contract_runner.py",
+      "08_DEPLOYMENT/GENOS/handoffs/main90_research_20261020_r1/test-code",
+      "06_TOOLS/EXPERIMENTS/adr_0936/test_durable.py",
+      "06_TOOLS/EXPERIMENTS/adr_0936/test_generalized.py",
+      "06_TOOLS/EXPERIMENTS/adr_0936/test_host_links.py",
+      "06_TOOLS/EXPERIMENTS/adr_0936/test_lossless_wire.py",
+      "06_TOOLS/EXPERIMENTS/adr_0936/test_patch_contract.py",
+      "06_TOOLS/EXPERIMENTS/adr_0930/test_fixes.py::test_new_connected_document_read_registers_before_decision_and_preserves_prior",
+      "06_TOOLS/EXPERIMENTS/adr_0930/test_fixes.py::test_invalid_new_document_never_registers_or_reads",
+      "05_TESTS/CONTRACTS/test_main_workflow_display.py"
+    ]
+  },
+  "samples_sha256": "57de04402b19d3a42b773725e93c4dd736a2c3bf4f79876b6423277a18d89438"
+}

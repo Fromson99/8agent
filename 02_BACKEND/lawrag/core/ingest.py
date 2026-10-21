@@ -388,7 +388,7 @@ def annex_md_map(item: dict | None, manifest: Path | str | None = None) -> dict[
             if ANNEX_NUMBERED.match(s["title"])}
 
 
-def collection_manifest(path: Path | str) -> Path | None:
+def collection_manifest(path: Path | str, *, collection_root: Path | str | None = None) -> Path | None:
     """원본 경로에서 위로 거슬러 수집 manifest 를 찾는다 (RAW/<출처>/manifest.json).
 
     어느 규정의 첨부인지는 파일이 놓인 자리가 말한다. hwp5_md.manifest_index 와
@@ -396,7 +396,10 @@ def collection_manifest(path: Path | str) -> Path | None:
     """
     start = Path(path).resolve()
     start = start if start.is_dir() else start.parent
-    root = data_path().resolve()
+    root = Path(collection_root).resolve(strict=True) if collection_root is not None else data_path().resolve()
+    if collection_root is not None and not start.is_relative_to(root):
+        # Converted files outside the immutable input tree are not collection originals.
+        return None
     for candidate in [start, *start.parents]:
         found = candidate / "manifest.json"
         if found.exists():
@@ -406,13 +409,13 @@ def collection_manifest(path: Path | str) -> Path | None:
     return None
 
 
-def manifest_item_for(path: Path | str, raw: bytes) -> tuple[dict | None, Path | None]:
+def manifest_item_for(path: Path | str, raw: bytes, *, collection_root: Path | str | None = None) -> tuple[dict | None, Path | None]:
     """이 바이트열이 수집분이면 (manifest 항목, manifest 경로).
 
     본문 해시로만 잇는다 — 이름이 아니라 내용이 같아야 같은 문서다. 협회·거래소는
     조문 HTML 이 본문이므로 body_html_sha256 도 같은 자격으로 본다.
     """
-    manifest = collection_manifest(path)
+    manifest = collection_manifest(path, collection_root=collection_root)
     if manifest is None:
         return None, None
     digest = hashlib.sha256(raw).hexdigest()

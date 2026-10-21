@@ -1,0 +1,32 @@
+스키마 오류·복구 업데이트 R1을 보내드립니다.
+
+이번 첨부 GENOS_SCHEMA_RECOVERY_20261014_R1.zip을 사용해 주세요. 기존 URLLIB_TLS R1까지 적용된 코드 다음에 설치하는 업데이트입니다.
+
+중복 JSON 키, 잘린 출력, 빈 사유·상충 결정을 구분하고, RAG·AD·명시 참조·문서 구축에서 교정 담당과 재시도 한도를 통합했습니다. 권한·원문 근거·상태 검증과 기존 예산/로그 설정을 유지하며, 재개할 때 사용량과 실패 이력을 보존합니다.
+
+1. ZIP을 업로드한 실제 TRANSFER 폴더에서 시작
+압축을 풀기 위해 먼저 DEV로 이동하지 마세요. 아래 설치기가 기존 ~/DEV에 적용합니다.
+
+python3 -m zipfile -e ./GENOS_SCHEMA_RECOVERY_20261014_R1.zip ./schema-recovery-r1-package
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt check
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt apply
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt verify
+
+각 명령이 성공한 뒤 다음 명령을 실행해 주세요. check가 선행 코드/해시 차이로 실패하면 적용하지 말고 로그를 보관해 주세요. 적용 시 출력되는 BACKUP 절대경로도 보관해 주세요.
+
+2. 배포와 확인
+GUIDE_UTF8.txt의 순서에 따라 기존 ~/DEV에서 변경 파일을 검토·commit하고, 같은 checkout과 실제 선택 generation을 대상으로 gate를 통과한 뒤 push해 주세요. 새 코드서빙 리비전 배포와 별도 SSE 프로세스 재시작이 필요합니다. 질의/warmup 확인은 워크플로우 테스트 화면에서 진행합니다. 이번 패치는 원문 generation 재구축이나 추가 워크플로우 편집기 교체를 요구하지 않습니다.
+
+3. 문서 구축/참조 해소도 업데이트하는 경우
+질의 패치 확인 후 진행 중인 구축 프로세스가 종료된 상태에서, 같은 압축 해제 폴더의 BUILD_RUN을 실행합니다. 별첨 BUILD_RUN TXT는 압축 해제한 패키지 파일들이 필요합니다.
+
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt check
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt apply
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt verify
+
+BUILD_REBASE_REQUIRED가 나오면 검사를 우회하지 말고 GUIDE_UTF8.txt의 읽기 전용 코드 해시 수집 명령을 사용해 주세요. 질의와 구축의 BACKUP은 각각 따로 보관하며, 두 경로의 원복 명령은 안내 파일에 있습니다.
+
+검증 결과: 합성 계약 410개, 기존 회귀 817개, GENOS 설치 형식의 계약 239개가 통과했습니다. 로컬 MAIN62와 실제 로컬 서비스 진입점을 확인했습니다. GENOS 내부 모델·실제 배포는 아직 확인하지 않았으며, 실제 오류 빈도 감소는 현장 실행 후 확인해야 합니다.
+
+첨부 7개: 코드 ZIP, 질의용 독립 실행 TXT, 구축용 실행 TXT, 적용 안내, 검증 요약, 상세 검증 JSON, SHA256SUMS.
+ZIP SHA256: 0c98edcc74edb7596d3843acc0567ff9f90d9c3bc35d6bc16829dca34495f2be

@@ -29,9 +29,9 @@ SYSTEM = '''법률 검색 원문 선별 담당자다. 질문에 답할 때 필�
 SYSTEM += '\n각 choice의 status는 ADOPT(채택) 또는 DEFER(보류)다. 선택하지 않는 후보는 DEFER로 표시한다. reason은 설명이며 채택 상태를 대신하지 않는다.'
 
 
-SYSTEM += '\n선택 이유는30자 이내 짧은 한 구절로 쓴다. 쟁점은 최대4개, 각30자 이내로 간결하게 쓴다. 질문에 없는 대상·조건을 가정해 보완하지 마라. 연결 관계만으로 필요하다고 판단하지 마라. 최초 선별은 답변에 사용할 근거를 고르는 단계다. 질문에 직접 명시된 조문도 읽을 근거로 선택해야 한다. 누락 검토에서 이미 선택한 근거가 충분한 경우에만 추가 choices=[]가 충분함을 뜻한다. 최초 선택이 비면 아직 확보한 답변 근거가 없다는 뜻이다. 무관한 후보를 강제로 선택하거나 최대 개수를 채우지 마라.'
+SYSTEM += '\n선택 이유와 쟁점을 간결하게 쓴다. 쟁점은 최대4개다. 질문에 없는 대상·조건을 가정해 보완하지 마라. 연결 관계만으로 필요하다고 판단하지 마라. 최초 선별은 답변에 사용할 근거를 고르는 단계다. 질문에 직접 명시된 조문도 읽을 근거로 선택해야 한다. 누락 검토에서 이미 선택한 근거가 충분한 경우에만 추가 choices=[]가 충분함을 뜻한다. 최초 선택이 비면 아직 확보한 답변 근거가 없다는 뜻이다. 무관한 후보를 강제로 선택하거나 최대 개수를 채우지 마라.'
 
-SYSTEM += '\n출력은 반드시 정확히 issues, choices 두 키의 JSON 객체 하나다. 형식 예: {"issues":[],"choices":[]}. 선택이 있으면 choices에 {"id":"목록에 있는 후보번호","reason":"30자 이내 선택 이유"}를 넣는다. choices 배열을 닫은 뒤 즉시 객체를 닫고 끝내라. JSON 이후 설명·공백 반복·코드펜스를 쓰지 마라.'
+SYSTEM += '\n출력은 반드시 정확히 issues, choices 두 키의 JSON 객체 하나다. 형식 예: {"issues":[],"choices":[]}. 선택이 있으면 choices에 {"id":"목록에 있는 후보번호","reason":"선택 이유"}를 넣는다. choices 배열을 닫은 뒤 즉시 객체를 닫고 끝내라. JSON 이후 설명·공백 반복·코드펜스를 쓰지 마라.'
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
@@ -249,7 +249,7 @@ def select_sources(question, record, invoke, *, remaining_seconds, max_fulltext_
             for choice in value['choices']:choice.setdefault('status','ADOPT')
         return value
     query_catalog = [{'id': v, 'query': k} for k,v in qlabels.items()]
-    first_data = {'question': question, 'task': '목차와 회수경로로 질문의 직접 쟁점을 확인할 읽을 조문 최대16개를 고른다. 다음 턴에서 선택 원문을 읽는다. 이유30자 이내, 질문 범위를 확장하지 마라.',
+    first_data = {'question': question, 'task': '목차와 회수경로로 질문의 직접 쟁점을 확인할 읽을 조문 최대16개를 고른다. 다음 턴에서 선택 원문을 읽는다. 이유를 간결하게 작성, 질문 범위를 확장하지 마라.',
                   'query_catalog': query_catalog, 'candidates': compact_view(cards)}
     first_schema = selection_schema(list(reverse), 16)
     if structural:
@@ -257,7 +257,7 @@ def select_sources(question, record, invoke, *, remaining_seconds, max_fulltext_
             'originals의 전체 원문으로 원질문의 모든 답변 요구를 확인하고 필요한 근거를 choices로 고른다. '
             '부족한 원문·정의·예외·위임이나 다른 쟁점이 있으면 needs_fulltext=true다. '
             '일부 요구만 답할 수 있어도 추가 검색한다. 원문에 없는 사실이나 규정 부재를 추측하지 않는다. '
-            '추가 근거 없이 충분할 때만 needs_fulltext=false다. 선택 이유30자 이내.')
+            '추가 근거 없이 충분할 때만 needs_fulltext=false다. 선택 이유를 간결하게 작성.')
         first_data['originals'] = cards
         first_schema['properties']['needs_fulltext'] = {'type': 'boolean'}
         first_schema['required'].append('needs_fulltext')
@@ -273,7 +273,7 @@ def select_sources(question, record, invoke, *, remaining_seconds, max_fulltext_
     if structural:
         result['needs_fulltext'] = first['needs_fulltext'] or not chosen
     if deferred and not structural:
-        second_data = {'question': question, 'task': '선택 조문의 실제 원문 구간을 읽고, 질문의 미해결 쟁점에 직접 필요한 세부 산식·위임·정의만 보류 목록에서 최대8개 복구한다. 질문에 없는 대상/사건/조건의 비교·일반 보강은 제외. 첫 선택은 유지. 부족함 없으면 choices=[]로 끝낸다. 이유30자 이내.',
+        second_data = {'question': question, 'task': '선택 조문의 실제 원문 구간을 읽고, 질문의 미해결 쟁점에 직접 필요한 세부 산식·위임·정의만 보류 목록에서 최대8개 복구한다. 질문에 없는 대상/사건/조건의 비교·일반 보강은 제외. 첫 선택은 유지. 부족함 없으면 choices=[]로 끝낸다. 이유를 간결하게 작성.',
             'first_decision': first, 'query_catalog': query_catalog,
             'selected_original_excerpts': review_cards,
             'deferred_candidates': compact_view([c for c in cards if c['id'] in deferred])}
@@ -282,7 +282,7 @@ def select_sources(question, record, invoke, *, remaining_seconds, max_fulltext_
             second_data['task'] = ('최초 선별이 비어 답변 근거가 하나도 없다. 이는 근거가 충분하다는 뜻이 아니다. '
                 '제공된 실제 원문 구간을 읽어 원질문의 직접 근거를 다시 선택하라. '
                 '원문 구간은 일부일 수 있다. 제목·경로만으로 법적 적용을 확정하지 마라. '
-                '실제로 관련된 후보가 없을 때만 빈 선택을 유지한다. 최대8개, 이유30자 이내.')
+                '실제로 관련된 후보가 없을 때만 빈 선택을 유지한다. 최대8개, 이유를 간결하게 작성.')
             second_data['selection_deviation'] = {'reason':'EMPTY_INITIAL_SELECTION',
                 'expected':'select relevant evidence before assessing sufficiency',
                 'actual':first, 'candidate_count':len(deferred)}

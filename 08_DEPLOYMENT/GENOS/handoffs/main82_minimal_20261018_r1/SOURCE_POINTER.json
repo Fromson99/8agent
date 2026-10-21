@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "basis-link-lifecycle-20261016-r1",
+  "generation": 82,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/basis-link-lifecycle-20261016-r1/release.json",
+  "release_manifest_sha256": "389ed0f3989b6ff5a5ad0d638027d2448c8c43842105d6673b771e04e76d853f",
+  "activated_at": "2026-10-16T10:20:11.158346+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "05f9b147385a110fec0ae1d3cf1a5eab5656f5bdd4254baaa2f28ee01a0fa1cd",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/실험/manifest.json",
+      "sha256": "c96f10ce2a5fef5d7ba23f09042bcf4bd7a8ae46a29a2fe77ccddfa5931ef927"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/README.md",
+      "sha256": "0ae791396950f09fabe7c013f6798e05591950f40584a7282f291e1ee31ef2b5"
+    },
+    "arm": "integrated",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/artifacts/run-001/result.json",
+      "sha256": "55cde258952cbc02c76f581ace691949cd4b4c6a0bf078926f6aef733d03d5d3"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0853-basis-wire-integration/artifacts/design/release-rebase.json",
+      "sha256": "c8cb934532a847f5127d57eb7d8271676a67c3ce11ca86f42b9abc0a7857416d"
+    }
+  }
+}

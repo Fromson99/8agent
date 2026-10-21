@@ -1,0 +1,42 @@
+{
+  "status": "LOCAL_VALIDATED_FIELD_UNVERIFIED",
+  "tests": {
+    "synthetic_and_regression": 55,
+    "real_oracle_full_sql": 1,
+    "total": 56,
+    "logs": [
+      "09_ARTIFACTS/AUDITS/20261020-oracle-full-parts/TEST_02.txt",
+      "09_ARTIFACTS/AUDITS/20261020-oracle-full-parts/LIVE_01.txt"
+    ],
+    "synthetic_max_rss_kib": 376616,
+    "live_client_max_rss_kib": 303324,
+    "oracle_container_memory_limit_gib": 3
+  },
+  "coverage": [
+    "full generation files/selection byte-preserving archive and restore",
+    "all nine DDL tables; empty Oracle to original three tables + asset/release + query rows/release",
+    "source/asset/query write acknowledgement loss and resume",
+    "interrupted export/restore and retained deadline",
+    "exact delivered Bash and Dataiku TXT restore using synthetic Managed Folder",
+    "bad/missing/extra/path traversal fragments rejected",
+    "target binding/deadline/schema/lock",
+    "final source/asset/query readback detects missing or extra remote records",
+    "actual Dataiku bridge generated SQL executed in local Oracle DB-API adapter",
+    "actual query Records selective serving port reads uploaded rows",
+    "ACTIVE/STATE unchanged; repeat publish/status do not rewrite verified completed data"
+  ],
+  "scope": "all declared source/navigation/fulltext/glossary files of the explicitly selected generation, not all workspace history",
+  "field_limits": [
+    "no access to GENOS source or live code-serving",
+    "actual Dataiku SQLExecutor2/JDBC/Managed Folder and Oracle19 not executed",
+    "production data size, runtime and peak memory not measured",
+    "raw upload files, other generations and runtime state outside this migration contract",
+    "no activation or serving deployment"
+  ],
+  "model_calls": 0,
+  "source_files": {
+    "02_BACKEND/lawrag/pipeline/oracle_full_package.py": "e8b8b6d01c3d47e1a9d5636aa44efd4b279bc1bda74109bdf5d793cf25477534",
+    "05_TESTS/CONTRACTS/test_oracle_full_package.py": "8ec69e9e4e9a9b4710fefd956ed80f36e4bb7e4b217d2861854977ff171b3fd8",
+    "05_TESTS/CONTRACTS/test_oracle_full_package_live.py": "6dd5a0409bfbd6ff5d0bf1432f6cb1ab4c0565ccd5a2245794263113b6631312"
+  }
+}

@@ -2,7 +2,19 @@
 SCRIPT = r'''
 function renderSourceTiers(bundle) {
   const root=document.getElementById('sources');root.replaceChildren();
-  if(!bundle || bundle.schema_version!=='source-tiers-v4')return;
+  if(!bundle)return;
+  if(bundle.schema_version==='workflow-source-v1'){
+    root.dataset.bundleHash=bundle.bundle_hash;
+    for(const c of bundle.sources){
+      const node=document.createElement('article');root.append(node);
+      for(const [tag,text] of [['h4',c.document_name+' · '+c.coordinate_label],
+                             ['p',c.side==='internal'?'내규':'외규'],['blockquote',c.excerpt]]){
+        const n=document.createElement(tag);n.textContent=text;node.append(n);
+      }
+    }
+    return;
+  }
+  if(bundle.schema_version!=='source-tiers-v4')return;
   root.dataset.bundleHash=bundle.bundle_hash;
   const add=(parent,tag,text)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};
   for(const [tier,label] of [['CORE','핵심 원문'],['SUPPLEMENTAL','보완 원문']]){

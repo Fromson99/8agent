@@ -1,0 +1,56 @@
+{
+  "status": "LOCAL_PASS",
+  "tests_passed": 21,
+  "environment": "Real temporary SQLite, synthetic data, simulated ORDS. No internal network or model calls.",
+  "pytest_python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "field_python_compile": {
+    "version": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "compiled": [
+      "sources/oracle_dp_assets.py",
+      "sources/oracle_dp_io.py",
+      "sources/oracle_migration.py",
+      "sources/oracle_publish.py",
+      "LEGAL_ORACLE_02_SOURCE_RUN_20261018_R1.txt",
+      "LEGAL_ORACLE_02_SOURCE_RUN_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_02_SOURCE_RUN_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_03_SOURCE_VERIFY_20261018_R1.txt",
+      "LEGAL_ORACLE_03_SOURCE_VERIFY_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_03_SOURCE_VERIFY_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt",
+      "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt embedded",
+      "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt embedded"
+    ]
+  },
+  "junit": "09_ARTIFACTS/AUDITS/oracle_transfer_20261018_r1/junit.xml",
+  "coverage": [
+    "Exact attached cells: existing sample rows -> full source run -> full verify -> assets -> complete release.",
+    "Re-execution without duplicate writes and source file hashes unchanged.",
+    "Read-only verify detects changed remote row, unverified receipt prevents publication.",
+    "Denied writes and lost commit responses: failure then explicit resume; no premature COMPLETE.",
+    "Large Unicode CLOB, empty CLOB/NULL, source/target mismatch, count mismatch, budgets and malformed responses.",
+    "DDL table names/grants match writer contract; no deletion statements."
+  ],
+  "setup_issue": "Initial pytest base-directory parent was missing; preserved junit_setup_failure.xml. Created parent then all 21 passed.",
+  "not_validated": [
+    "Oracle SQL engine DDL/PLSQL",
+    "GENOS field full transfer",
+    "Field throughput",
+    "MAIN/serving deployment"
+  ],
+  "tested_files_sha256": {
+    "GUIDE_UTF8.txt": "1eadc976d8cd847e4e06499a9fdbdf84d641c0b4b2cc8552920214952713fe84",
+    "LEGAL_ORACLE_01_TABLES_20261018_R1.txt": "a3e27b9a5346d66fb616d78437381e5c6b0e991858d1f22c8c26c2d183e1c608",
+    "LEGAL_ORACLE_02_SOURCE_RUN_20261018_R1.txt": "39380aa182eea5485744138a9e3b4a226b74777983537840f9d326444e0c60da",
+    "LEGAL_ORACLE_03_SOURCE_VERIFY_20261018_R1.txt": "206e78969c9f13949138c85c122d8791ab476fc2e3db9ab4f43982b30ba7746a",
+    "LEGAL_ORACLE_04_ASSETS_20261018_R1.txt": "eabfaf49f9913f04bab3d9e28679b7392386629f4cf74b058b8862f42d51de66",
+    "LEGAL_ORACLE_05_CHECK_SQL_20261018_R1.txt": "c171f0baf2fc6e13c8a8eecd5cf0deb6fc2cef691c5c079bdb75fe60ce364ca1",
+    "SOURCE_BINDING.json": "d4d2bcd54d2e894fa3bcd4be6b8d8f20a4479de5c7a09bfb36e037a7dc57f4c8",
+    "sources/oracle_dp_assets.py": "bcd198f6e8653096377e5a3f6e8974aa28528059fa8808a3e0860894a46eadc7",
+    "sources/oracle_dp_io.py": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+    "sources/oracle_migration.py": "eb40d1cad19b7aefeca18b7bb36c7444a140f7beae239984215a2faed76476bd",
+    "sources/oracle_publish.py": "969471e3582924b4344b14d0343eb3c732107b9d13e3407a457f0d1a007d0bc5"
+  }
+}

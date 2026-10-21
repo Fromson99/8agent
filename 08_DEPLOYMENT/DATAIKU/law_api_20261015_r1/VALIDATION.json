@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "contract_tests": 22,
+  "failures": 0,
+  "errors": 0,
+  "exact_deliverable_execution": [
+    {
+      "form": "notebook",
+      "calls": 5,
+      "second_execution_extra_calls": 0,
+      "managed_folder_files_roundtrip": 12,
+      "passed": true
+    },
+    {
+      "form": "standalone_txt",
+      "calls": 5,
+      "second_execution_extra_calls": 0,
+      "managed_folder_files_roundtrip": 12,
+      "passed": true
+    }
+  ],
+  "curl_example_mock_execution": true,
+  "python_3_9_syntax": true,
+  "notebook_code_cells": 8,
+  "no_notebook_outputs_or_secrets": true,
+  "same_code_public_api_calls": 5,
+  "same_code_public_api_all_passed": true,
+  "relay_helper_sha256": "b5f1718aa4d2a92e7525fd7809be3918990744109ebc392466c9598a59afd16e",
+  "actual_samsung_relay": "NOT_ACCESSED",
+  "actual_dataiku": "NOT_ACCESSED",
+  "GENOS": "NOT_ACCESSED"
+}

@@ -5,21 +5,21 @@
     "ModelCaseResult": {
       "type": "object",
       "properties": {
-        "case_id": {"type": "string", "minLength": 1, "maxLength": 160},
+        "case_id": {"type": "string", "minLength": 1},
         "selected_candidate_ids": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1, "maxLength": 64},
+          "items": {"type": "string", "minLength": 1},
           "maxItems": 64,
           "uniqueItems": true
         },
         "evidence_ids": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1, "maxLength": 64},
+          "items": {"type": "string", "minLength": 1},
           "maxItems": 32,
           "uniqueItems": true
         },
-        "abstain_reason": {"type": ["string", "null"], "maxLength": 2000},
-        "explanation": {"type": "string", "maxLength": 4000}
+        "abstain_reason": {"type": ["string", "null"]},
+        "explanation": {"type": "string"}
       },
       "required": ["case_id", "selected_candidate_ids", "evidence_ids", "abstain_reason", "explanation"],
       "additionalProperties": false
@@ -40,10 +40,10 @@
     "ReviewDecision": {
       "type": "object",
       "properties": {
-        "case_id": {"type": "string", "minLength": 1, "maxLength": 160},
+        "case_id": {"type": "string", "minLength": 1},
         "decision": {"type": "string", "enum": ["APPROVE", "REJECT", "UNKNOWN"]},
-        "reviewer": {"type": "string", "minLength": 1, "maxLength": 200},
-        "reason": {"type": "string", "minLength": 1, "maxLength": 4000}
+        "reviewer": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
       },
       "required": ["case_id", "decision", "reviewer", "reason"],
       "additionalProperties": false

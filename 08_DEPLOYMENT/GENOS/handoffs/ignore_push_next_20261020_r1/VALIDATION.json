@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "commands": 31,
+  "expected_failures": 3,
+  "tested_txt_sha256": "01afb14d50666dbd2e08f9740f1e47506119d934c6421f9f3e649d41c0104bc6",
+  "scenarios": [
+    "actual MAIN92 plus seven ignore profiles",
+    "locate applied package from checkout cwd",
+    "local bare remote normal push",
+    "same remote HEAD no-op",
+    "backup branch not pushed",
+    "transfer data not present in remote history",
+    "disk data preserved",
+    "dirty code stops before push",
+    "advanced remote stops without force",
+    "missing state stops",
+    "both risk_team and risk-team supported",
+    "persistent logs and exit codes"
+  ],
+  "real_remote_calls": 0,
+  "synthetic_bare_remotes_only": true,
+  "field_verified": false
+}

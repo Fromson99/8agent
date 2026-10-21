@@ -39,6 +39,8 @@ class RuntimeModel:
             if not hasattr(self.session,'structured'):
                 self.close()
                 raise MemoryError('memory requires bounded native structured model adapter')
+            self.session.sources.source.basis_factory=getattr(p,"basis_factory",None)
+            self.session.sources.source.basis_principal=self.principal
             from .completion_budget import restore
             restore(self)
             self.session.work.event('MEMORY_MODEL_SESSION',{

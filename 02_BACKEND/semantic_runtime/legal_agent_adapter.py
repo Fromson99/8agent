@@ -100,6 +100,11 @@ class ServingLegalAgent(ServingDocumentAgent):
             with self._open_session(request, query=query, run_id=run_id, release=release,
                                     runtime=runtime, external_public_question=external_public_question,
                                     requested_source_category=requested_source_category) as session:
+                from .basis_links.execution import CURRENT
+                binding=CURRENT.get()
+                source=getattr(session.sources,'source',None)
+                if binding and source is not None:
+                    source.basis_factory,source.basis_principal=binding
                 yield session
 
     @contextmanager
@@ -121,16 +126,14 @@ class ServingLegalAgent(ServingDocumentAgent):
         prepare_complete=False
         try:
             requires_model = request['use_llm']
-            if self.v2 or self.v3:
-                from .legal_agent.tools_policy import metadata_only_request
-                requires_model = requires_model and not metadata_only_request(request['question'])
             if requires_model and self.transport is None:
                 raise ContractError('explicit deployment model profile required for model execution')
             with phase('session.store'):
-                local_store = Store(self.pipeline.store.path, verify=False)
+                oracle=getattr(self.pipeline.store,'is_oracle_query',False)
+                local_store = self.pipeline.store.reopen() if oracle else Store(self.pipeline.store.path, verify=False)
             if local_store.manifest != self.pipeline.store.manifest:
                 raise ContractError('source generation binding changed')
-            source_stat = (local_store.path/'store.sqlite').stat()
+            source_stat = local_store.binding_signature() if oracle else (local_store.path/'store.sqlite').stat()
             proxy = SimpleNamespace(store=local_store, contracts=self.pipeline.contracts, unit_fulltext=getattr(self,'unit_fulltext',None))
             source_agent = ServingDocumentAgent(proxy, self.config)
             obs.event(log, 'session.resources.started')
@@ -164,6 +167,8 @@ class ServingLegalAgent(ServingDocumentAgent):
                     binding['requested_source_category'] = requested_source_category
                 with phase('session.context'):
                     context = RequestContext.create(query, request, binding, self.profile['wall_seconds'], run_id)
+                    from .legal_agent.workflow_execution import bind_context
+                    context = bind_context(context)
                 directory = Path(runtime)/'legal-agent/runs'/context.deadline_at[:10].replace('-', '')/context.run_id
                 lock_started = time.perf_counter()
                 with owner_lock(directory):
@@ -209,6 +214,8 @@ class ServingLegalAgent(ServingDocumentAgent):
                         repository_type=UnifiedRepository
                     with phase('session.journal'):
                         repo = repository_type(directory/'journal.sqlite', context, self.profile)
+                        from .legal_agent.workflow_execution import register
+                        register(repo)
                     with phase('session.sources'):
                         sources = sources_type(local_store, tools, glossary, matcher, repo, context, self.profile)
                     with phase('session.gateway'):
@@ -216,6 +223,11 @@ class ServingLegalAgent(ServingDocumentAgent):
                     try:
                         def check_sources_unchanged():
                             glossary.check_unchanged()
+                            if oracle:
+                                local_store.check_unchanged()
+                                if local_store.binding_signature()!=source_stat:
+                                    raise ContractError('Oracle request binding changed')
+                                return
                             after = (local_store.path/'store.sqlite').stat()
                             if (source_stat.st_ino, source_stat.st_size, source_stat.st_mtime_ns, source_stat.st_ctime_ns) != (after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
                                 raise ContractError('source artifact changed during request')

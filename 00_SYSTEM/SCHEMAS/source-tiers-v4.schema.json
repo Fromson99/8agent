@@ -15,8 +15,7 @@
               "properties": {
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "relation": {
                   "type": "string",
@@ -45,8 +44,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -60,15 +58,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -76,8 +72,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -100,13 +95,11 @@
               "properties": {
                 "query": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "mode": {
                   "type": "string",
@@ -120,8 +113,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -134,15 +126,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -150,8 +140,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -174,13 +163,11 @@
               "properties": {
                 "text": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "strategy": {
                   "type": "string",
@@ -194,8 +181,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -208,15 +194,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -224,8 +208,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -250,8 +233,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 160
+                    "minLength": 1
                   },
                   "minItems": 1,
                   "maxItems": 16,
@@ -259,8 +241,7 @@
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "match": {
                   "type": "string",
@@ -273,8 +254,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -287,15 +267,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -303,8 +281,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -327,13 +304,11 @@
               "properties": {
                 "locator": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "branch": {
                   "type": "string",
@@ -348,8 +323,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -362,15 +336,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -378,8 +350,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -402,20 +373,17 @@
               "properties": {
                 "query": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "cursor": {
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -427,15 +395,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -443,8 +409,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -467,8 +432,7 @@
               "properties": {
                 "evidence": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "direction": {
                   "type": "string",
@@ -482,8 +446,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -495,15 +458,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -511,8 +472,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -536,7 +496,6 @@
                 "target": {
                   "type": "string",
                   "minLength": 1,
-                  "maxLength": 160,
                   "description": "Existing D/P/U location or E evidence handle. R is a corpus and F a folder: first locate or search within it, then read a returned target."
                 },
                 "extent": {
@@ -551,8 +510,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -564,15 +522,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -580,8 +536,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -621,8 +576,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -633,15 +587,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -649,8 +601,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -673,8 +624,7 @@
               "properties": {
                 "target": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "family": {
                   "type": "string",
@@ -692,8 +642,7 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "maxLength": 160
+                  ]
                 }
               },
               "required": [
@@ -705,15 +654,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -721,8 +668,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -758,8 +704,7 @@
                 },
                 "cursor": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 }
               },
               "required": [
@@ -770,15 +715,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -786,8 +729,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -810,8 +752,7 @@
               "properties": {
                 "relation_id": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 }
               },
               "required": [
@@ -821,15 +762,13 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "question_refs": {
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -837,8 +776,7 @@
             },
             "expected_information": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -870,8 +808,7 @@
                     "properties": {
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "relation": {
                         "type": "string",
@@ -900,8 +837,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -915,15 +851,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -931,8 +865,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -955,13 +888,11 @@
                     "properties": {
                       "query": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "mode": {
                         "type": "string",
@@ -975,8 +906,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -989,15 +919,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1005,8 +933,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1029,13 +956,11 @@
                     "properties": {
                       "text": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "strategy": {
                         "type": "string",
@@ -1049,8 +974,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1063,15 +987,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1079,8 +1001,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1105,8 +1026,7 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 160
+                          "minLength": 1
                         },
                         "minItems": 1,
                         "maxItems": 16,
@@ -1114,8 +1034,7 @@
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "match": {
                         "type": "string",
@@ -1128,8 +1047,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1142,15 +1060,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1158,8 +1074,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1182,13 +1097,11 @@
                     "properties": {
                       "locator": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "branch": {
                         "type": "string",
@@ -1203,8 +1116,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1217,15 +1129,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1233,8 +1143,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1257,20 +1166,17 @@
                     "properties": {
                       "query": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       },
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "cursor": {
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1282,15 +1188,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1298,8 +1202,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1322,8 +1225,7 @@
                     "properties": {
                       "evidence": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "direction": {
                         "type": "string",
@@ -1337,8 +1239,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1350,15 +1251,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1366,8 +1265,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1391,7 +1289,6 @@
                       "target": {
                         "type": "string",
                         "minLength": 1,
-                        "maxLength": 160,
                         "description": "Existing D/P/U location or E evidence handle. R is a corpus and F a folder: first locate or search within it, then read a returned target."
                       },
                       "extent": {
@@ -1406,8 +1303,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1419,15 +1315,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1435,8 +1329,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1476,8 +1369,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1488,15 +1380,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1504,8 +1394,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1528,8 +1417,7 @@
                     "properties": {
                       "target": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "family": {
                         "type": "string",
@@ -1547,8 +1435,7 @@
                         "type": [
                           "string",
                           "null"
-                        ],
-                        "maxLength": 160
+                        ]
                       }
                     },
                     "required": [
@@ -1560,15 +1447,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1576,8 +1461,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1613,8 +1497,7 @@
                       },
                       "cursor": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -1625,15 +1508,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1641,8 +1522,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1665,8 +1545,7 @@
                     "properties": {
                       "relation_id": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -1676,15 +1555,13 @@
                   },
                   "reason": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   },
                   "question_refs": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "minItems": 0,
                     "maxItems": 64,
@@ -1692,8 +1569,7 @@
                   },
                   "expected_information": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 10000
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -1717,8 +1593,7 @@
               "properties": {
                 "goal_id": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "question_revision": {
                   "type": "integer",
@@ -1726,8 +1601,7 @@
                 },
                 "view_id": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "selections": {
                   "type": "array",
@@ -1736,8 +1610,7 @@
                     "properties": {
                       "evidence_id": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "tier": {
                         "type": "string",
@@ -1750,23 +1623,20 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 160
+                          "minLength": 1
                         },
                         "minItems": 1,
                         "maxItems": 24
                       },
                       "relevance_reason": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 400
+                        "minLength": 1
                       },
                       "relation_refs": {
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 160
+                          "minLength": 1
                         },
                         "minItems": 0,
                         "maxItems": 24
@@ -1800,13 +1670,11 @@
                     "properties": {
                       "evidence_id": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "reason": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -1825,13 +1693,11 @@
                     "properties": {
                       "evidence_id": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 160
+                        "minLength": 1
                       },
                       "reason": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 10000
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -1866,13 +1732,11 @@
             "properties": {
               "evidence": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "summary": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "disposition": {
                 "type": "string",
@@ -1892,13 +1756,11 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "question_ref": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "basis_spans": {
                 "type": "array",
@@ -1907,13 +1769,11 @@
                   "properties": {
                     "evidence": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "block_id": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "start_cp": {
                       "type": "integer",
@@ -1939,8 +1799,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -1969,13 +1828,11 @@
             "properties": {
               "relation_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "question_ref": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "decision": {
                 "type": "string",
@@ -1987,15 +1844,13 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "source_evidence": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -2005,8 +1860,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -2019,13 +1873,11 @@
                   "properties": {
                     "evidence": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "block_id": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "start_cp": {
                       "type": "integer",
@@ -2057,18 +1909,15 @@
               },
               "scope_note": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "substitution_note": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "exception_note": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -2099,8 +1948,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         }
       },
       "required": [
@@ -2123,15 +1971,13 @@
             "properties": {
               "text": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "evidence": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 64,
@@ -2141,8 +1987,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 64,
@@ -2152,8 +1997,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 10000
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64
@@ -2162,8 +2006,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -2186,8 +2029,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 10000
+            "minLength": 1
           },
           "minItems": 0,
           "maxItems": 64
@@ -2209,8 +2051,7 @@
             "properties": {
               "claim": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "verdict": {
                 "type": "string",
@@ -2225,8 +2066,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -2234,13 +2074,11 @@
               },
               "issue": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "actions": {
                 "type": "array",
@@ -2257,8 +2095,7 @@
                           "properties": {
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "relation": {
                               "type": "string",
@@ -2287,8 +2124,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2302,15 +2138,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2318,8 +2152,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2342,13 +2175,11 @@
                           "properties": {
                             "query": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "mode": {
                               "type": "string",
@@ -2362,8 +2193,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2376,15 +2206,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2392,8 +2220,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2416,13 +2243,11 @@
                           "properties": {
                             "text": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "strategy": {
                               "type": "string",
@@ -2436,8 +2261,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2450,15 +2274,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2466,8 +2288,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2492,8 +2313,7 @@
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "minLength": 1,
-                                "maxLength": 160
+                                "minLength": 1
                               },
                               "minItems": 1,
                               "maxItems": 16,
@@ -2501,8 +2321,7 @@
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "match": {
                               "type": "string",
@@ -2515,8 +2334,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2529,15 +2347,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2545,8 +2361,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2569,13 +2384,11 @@
                           "properties": {
                             "locator": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "branch": {
                               "type": "string",
@@ -2590,8 +2403,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2604,15 +2416,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2620,8 +2430,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2644,20 +2453,17 @@
                           "properties": {
                             "query": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             },
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "cursor": {
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2669,15 +2475,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2685,8 +2489,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2709,8 +2512,7 @@
                           "properties": {
                             "evidence": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "direction": {
                               "type": "string",
@@ -2724,8 +2526,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2737,15 +2538,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2753,8 +2552,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2778,7 +2576,6 @@
                             "target": {
                               "type": "string",
                               "minLength": 1,
-                              "maxLength": 160,
                               "description": "Existing D/P/U location or E evidence handle. R is a corpus and F a folder: first locate or search within it, then read a returned target."
                             },
                             "extent": {
@@ -2793,8 +2590,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2806,15 +2602,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2822,8 +2616,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2863,8 +2656,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2875,15 +2667,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2891,8 +2681,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -2915,8 +2704,7 @@
                           "properties": {
                             "target": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             },
                             "family": {
                               "type": "string",
@@ -2934,8 +2722,7 @@
                               "type": [
                                 "string",
                                 "null"
-                              ],
-                              "maxLength": 160
+                              ]
                             }
                           },
                           "required": [
@@ -2947,15 +2734,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -2963,8 +2748,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -3000,8 +2784,7 @@
                             },
                             "cursor": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 10000
+                              "minLength": 1
                             }
                           },
                           "required": [
@@ -3012,15 +2795,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -3028,8 +2809,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -3052,8 +2832,7 @@
                           "properties": {
                             "relation_id": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 160
+                              "minLength": 1
                             }
                           },
                           "required": [
@@ -3063,15 +2842,13 @@
                         },
                         "reason": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         },
                         "question_refs": {
                           "type": "array",
                           "items": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 160
+                            "minLength": 1
                           },
                           "minItems": 0,
                           "maxItems": 64,
@@ -3079,8 +2856,7 @@
                         },
                         "expected_information": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 10000
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -3101,8 +2877,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64,
@@ -3139,8 +2914,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "minItems": 0,
               "maxItems": 64,
@@ -3148,8 +2922,7 @@
             },
             "reason": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             }
           },
           "required": [
@@ -3171,15 +2944,13 @@
       "properties": {
         "claim": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160
+          "minLength": 1
         },
         "evidence": {
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 160
+            "minLength": 1
           },
           "minItems": 1,
           "maxItems": 64,
@@ -3187,8 +2958,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         },
         "requested_resolution": {
           "type": "string",
@@ -3228,8 +2998,7 @@
         },
         "reason": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         },
         "state_revision": {
           "type": "integer",
@@ -3302,8 +3071,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 10000
+            "minLength": 1
           },
           "minItems": 0,
           "maxItems": 64
@@ -3349,8 +3117,7 @@
           "properties": {
             "run_id": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 160
+              "minLength": 1
             },
             "revision": {
               "type": "integer",
@@ -3358,8 +3125,7 @@
             },
             "hash": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 10000
+              "minLength": 1
             },
             "complete": {
               "type": "boolean"
@@ -3393,8 +3159,7 @@
       "properties": {
         "goal_id": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160
+          "minLength": 1
         },
         "question_revision": {
           "type": "integer",
@@ -3402,8 +3167,7 @@
         },
         "view_id": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160
+          "minLength": 1
         },
         "selections": {
           "type": "array",
@@ -3412,8 +3176,7 @@
             "properties": {
               "evidence_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "tier": {
                 "type": "string",
@@ -3426,23 +3189,20 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 1,
                 "maxItems": 24
               },
               "relevance_reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 400
+                "minLength": 1
               },
               "relation_refs": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 24
@@ -3476,13 +3236,11 @@
             "properties": {
               "evidence_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -3501,13 +3259,11 @@
             "properties": {
               "evidence_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -3541,8 +3297,7 @@
         },
         "goal_id": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 160
+          "minLength": 1
         },
         "question_revision": {
           "type": "integer",
@@ -3570,18 +3325,15 @@
             "properties": {
               "coordinate_label": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "open_url": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "selection_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "selection_version": {
                 "type": "integer",
@@ -3589,8 +3341,7 @@
               },
               "goal_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "question_revision": {
                 "type": "integer",
@@ -3598,13 +3349,11 @@
               },
               "view_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "evidence_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "tier": {
                 "type": "string",
@@ -3615,15 +3364,13 @@
               },
               "relevance_reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "relation_refs": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 160
+                  "minLength": 1
                 },
                 "minItems": 0,
                 "maxItems": 64
@@ -3638,21 +3385,18 @@
               },
               "document_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "document_name": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "coordinate": {
                 "type": "object"
               },
               "generation_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "source_store_sha256": {
                 "type": "string",
@@ -3664,8 +3408,7 @@
               },
               "source_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "spans": {
                 "type": "array",
@@ -3674,18 +3417,15 @@
                   "properties": {
                     "span_id": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "evidence_id": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "block_id": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 160
+                      "minLength": 1
                     },
                     "start_cp": {
                       "type": "integer",
@@ -3701,8 +3441,7 @@
                     },
                     "text": {
                       "type": "string",
-                      "minLength": 1,
-                      "maxLength": 10000
+                      "minLength": 1
                     },
                     "span_hash": {
                       "type": "string",
@@ -3726,8 +3465,7 @@
               },
               "excerpt": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "coverage": {
                 "type": "string",
@@ -3738,21 +3476,18 @@
               },
               "remaining_range": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               },
               "open_target": {
                 "type": "object",
                 "properties": {
                   "generation_id": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 160
+                    "minLength": 1
                   },
                   "document_id": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 160
+                    "minLength": 1
                   },
                   "unit_id": {
                     "type": [
@@ -3812,8 +3547,7 @@
             "properties": {
               "selection_id": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 160
+                "minLength": 1
               },
               "version": {
                 "type": "integer",
@@ -3821,8 +3555,7 @@
               },
               "reason": {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 10000
+                "minLength": 1
               }
             },
             "required": [
@@ -3837,8 +3570,7 @@
         },
         "candidates_url": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 10000
+          "minLength": 1
         },
         "candidate_counts": {
           "type": "object",

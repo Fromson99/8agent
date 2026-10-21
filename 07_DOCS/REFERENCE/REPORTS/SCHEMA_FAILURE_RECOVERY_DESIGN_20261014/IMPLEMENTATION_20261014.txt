@@ -1,0 +1,71 @@
+모델 출력 오류·복구 전체 구현 결과 — 2026-10-14
+
+작업 코드 통합과 로컬 MAIN62 반영을 완료했다. GENOS 인계 패키지와 설치본 검증은 준비했으며,
+실제 현장 반입·내부 모델·리비전·워크플로우/구축 실행은 미확인이다.
+
+무엇을 바꿨는가
+1. JSON 구문/스키마/필드 간 판단/근거·권한/상태·발행 검증을 구분한다.
+   중복 JSON key·NaN/Infinity·잘린 응답·공백 사유·상충 branch를 코드와 JSON 위치로 보고한다.
+   이번 사진의 duplicate branch or missing reason은 두 원인을 합친 검증 메시지였다.
+   원본 모델 응답이 없으므로 사진만으로 어느 쪽인지는 확정하지 않았고 두 경우를 합성 검사했다.
+2. 기존 배열·전체 결정 계약을 유지하고, 완전 동일한 중복만 보정한다.
+   다른 근거/상태/사유의 충돌을 임의로 합치거나 이유·법률 결론을 만들어 채우지 않는다.
+   provider 전송 projection과 서버 검증을 분리하고 schema/codec/원본·보정 hash를 남긴다.
+3. 같은 결정의 교정 담당을 한 곳으로 정하고 최초+최대1회 교정만 허용한다.
+   요청의 총 호출/deadline을 공유한다. 재개 시 교정 횟수·실패·완료 receipt를 초기화하지 않는다.
+   예약 후 결과 불명은 자동 재호출하지 않고, 이미 일부 송신한 답변에 새 생성 결과를 이어 붙이지 않는다.
+4. RAG의 입력/탐색/선택/명시 참조/ASSESS/COMPOSE, AD의 닫힌 명령·lease,
+   구축 reference-resolution 및 recipe의 실제 검증 소비자에 연결했다.
+   TypeError/KeyError 같은 코드 결함을 모델의 잘못으로 간주해 반복 호출하지 않는다.
+   일부 도구 성공은 확인된 revision/완료 receipt만 유지하고 실패를 원문 부재로 바꾸지 않는다.
+5. recipe v38은 기존 build-data-stages → ingest → revise_pdf 실행 경로를 사용한다.
+   기존 tag lock 아래 영속 호출 원장을 저장해 재개해도 문서별 총 호출 예산을 유지한다.
+   승인된 창을 보존하며 구 namespace/원문/실패 이력을 삭제하지 않는다.
+   숨은 HTTP400 schema→prompt fallback을 제거하고 실제 호출 수/종료 원인을 기록한다.
+6. 기존 공개 실패 안내, 조건/예외·출처/인용·ACL·revision·성공 발행·shortcut/wiki 검증을 유지한다.
+   P0~P6의 선언 범위는 작업 코드와 로컬 MAIN에 연결했다. key 기반 객체 출력과 sparse patch는
+   원래 설계의 조건부 후보이므로 활성화하지 않았다. 실제 모델 오류 빈도 감소는 별도 측정 대상이다.
+
+기존 설계의 이유와 이력
+PLAN.md/HISTORY.md/REVIEW.md/EVIDENCE.json/VALIDATION.json의 설계 당시 기록은 변경하지 않았다.
+H01~H17의 사건과 I01~I15 불변조건은 IMPLEMENTATION_RESULT.json의 검사 연결에 남겼다.
+폐기된 옛 스키마를 되살리거나 현재 canonical 계약을 약화시키지 않았다.
+기존 input metrics·request_report 변경과 다른 작업 파일을 보존했다. 수정 파일만 사전 hash 확인 후
+복사했으며 전체 snapshot 덮어쓰기를 하지 않았다. 32개 제품 모듈과 관련 검사·엔진 pin을 통합했다.
+
+검증
+ADR0776: 격리 개발. 초기 실패/기준 실패/수정 revision을 그대로 보존. MAIN 미승격 개발 기록.
+ADR0777: 완료된 동일 코드로 실행 전 고정한 합성400 JSON/종료 조합 + 영속 상태10종 = 410/410.
+기존 회귀817통과/0실패. test_chosen_unit_local_completion.py의 폐기 경로1개는 수집 제외로 기록했다.
+기존 복구4실패를 포함한 구 fixture의 보장 목적을 현행 API/저장 계약에서 다시 검사했다.
+실제 모델 호출0회이며 합성 계약의 통과 수를 법률 정답률이나 모델 성능으로 계산하지 않았다.
+validate --final은 두 ADR 모두 통과. 전역 graph의 기존8오류는 그대로이며 이번 작업의 새 오류0개.
+다른 과거 ADR의 오류를 임의로 고치거나 통과 처리하지 않았다.
+
+로컬 MAIN
+선택 릴리스: schema-recovery-20261014-r1, 포인터 generation 62.
+검증 후보·작업·선택 릴리스의 서빙302파일 SHA-256이 같고 원문 세대/검색 정책은 유지했다.
+실제 새 WSL service.service에서 HEALTH/RAG_SEARCH/목록 RAG_ASK 200 및 BudgetExhausted의
+실패 응답500·공개 메시지 경계를 확인했다. 내부 진단 문구를 사용자 응답에 노출하지 않았다.
+외부 기본 모델과 GENOS 내부 모델은 별도이며 이 검사에서는 실제 모델을 호출하지 않았다.
+quality_certified=false: 계약/배선 반영이며 실제 법률 품질 인증이 아니다.
+로컬 롤백: .venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py rollback --confirm-main
+이 명령은 저장된 이전 릴리스로 선택을 되돌린다. 원문·완료 상태·실패 원장은 보존한다.
+
+GENOS 인계
+08_DEPLOYMENT/GENOS/handoffs/schema_recovery_20261014_r1/GENOS_SCHEMA_RECOVERY_20261014_R1.zip
+같은 폴더의 GUIDE_UTF8.txt, 독립 RUN.txt, SHA256SUMS.txt를 함께 사용한다.
+질의/AD20파일: 알려진 선행330 inventory. 동결 코드와18파일 동일, 현장용2파일의 차이는 명시했다.
+현장에 없던 wiki-recall을 켜지 않고, 기존 중복 traceback 생략을 보존한다.
+구축 전용12파일은 동결 코드와 동일하며 별도 BUILD_RUN으로 적용한다.
+구축은261개 의존/자산 및 사전 파일 해시가 맞아야 한다. 다른 현장 버전은 쓰기 전에 중단하며
+build_check.py가 코드 경로/해시만 기록한다. 구 v36a/v37과 같다고 추정하지 않는다.
+
+설치본 질의178계약 + 구축61계약 =239개 통과. 실제 RUN 설치3시나리오 통과.
+질의53명령: 적용/재적용/검증/원복, 변조 거부4회, 같은 committed checkout generation gate2회.
+localhost TLS 성공2회 및 미신뢰 인증서 거부2회. 실제 GENOS/외부망 호출은0회.
+구축8명령: 미확인 변경 거부/적용/재적용/검증/설치본 검사/원복. 질의 inventory는 보존했다.
+TRANSFER의 실제 업로드 위치에서 상대경로로 실행하고 기존 ~/DEV에 적용한다.
+현장 Python/의존성·Git commit/push·실제 generation 경로/해시·코드서빙 리비전·SSE 재시작·
+워크플로우/구축 성공은 현장 기록으로 확인해야 한다. 실제 GENOS에 접근하거나 메일을 보내지 않았다.
+Git main 병합/commit은 수행하지 않았다. ADR 완료·작업 통합·로컬 MAIN 반영과 구분한다.

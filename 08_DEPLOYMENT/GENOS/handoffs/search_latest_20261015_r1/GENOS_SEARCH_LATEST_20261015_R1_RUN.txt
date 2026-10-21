@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SEARCH_PACKAGE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SEARCH_LOG="./search-latest-$(date +%Y%m%dT%H%M%S)-$$.log"
+exec > >(tee -a "$SEARCH_LOG") 2>&1
+trap 'rc=$?; echo "SEARCH_LATEST EXIT=$rc LOG=$SEARCH_LOG"; exit "$rc"' EXIT
+printf 'TRANSFER=%s\nPACKAGE=%s\n' "$PWD" "$SEARCH_PACKAGE"
+python3 "$SEARCH_PACKAGE/run.py" "$@"

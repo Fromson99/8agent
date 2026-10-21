@@ -1,0 +1,15 @@
+{
+  "observed_working_differences": {
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": {
+      "selected": "bd0cdcd295a209694c2692602b1310f1050b817ebe39ed8bddf1fe87759b400c",
+      "working": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5"
+    },
+    "02_BACKEND/semantic_runtime/oracle_query_db.py": {
+      "selected": "63a9ba9ae70999069dc00f05d469d7efdeedcf63d62989e16925c4e9ac0d4d25",
+      "working": "0513d03aba513c8e13addf28ce1dd4a3d7618f16716abf909f8aa160a202c6b3"
+    }
+  },
+  "selected_release_unchanged": true,
+  "action": "Keep handoff bound to immutable selected MAIN92. Preserve separate working changes.",
+  "preparation_check_failure": "An overbroad check required the mutable work tree to equal the selected immutable release; package bytes remained unchanged."
+}

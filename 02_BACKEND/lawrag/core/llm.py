@@ -383,10 +383,14 @@ class LLM:
             ex.images = len(blocks)
         ex.model = model
         temperature = self._temperature
+        from semantic_runtime.legal_agent.minimal_output import Projection, INSTRUCTIONS
+        projection = Projection(schema)
+        schema = projection.wire
+        system += '\n'+INSTRUCTIONS
 
         def _payload(mode: str) -> dict:
             sys_text = system
-            if mode == "prompt":
+            if mode in ("prompt", "json_object"):
                 sys_text = (system + "\n\n[출력 형식] 아래 JSON Schema 를 만족하는 "
                             "JSON 객체 **하나만** 출력한다. 설명·머리말·코드 울타리 없이 "
                             "JSON 만.\n" + json.dumps(schema, ensure_ascii=False))
@@ -587,6 +591,11 @@ class LLM:
                 return None
             from semantic_runtime.legal_agent.output_contract import strict_json
             ex.parsed = strict_json(text)
+            if self.backend in ('local', 'genos', 'openrouter'):
+                from semantic_runtime.legal_agent.minimal_output import Projection
+                projection = Projection(schema)
+                ex.parsed = projection.expand(ex.parsed)
+                ex.normalizations.append(projection.receipt)
             return ex.parsed
         except Exception as exc:                       # 호출·파싱 실패를 삼키지 않는다
             from semantic_runtime.legal_agent.output_contract import diagnostics

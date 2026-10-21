@@ -1,0 +1,58 @@
+GENOS 전체 내규 조사 R3 — 계획 중 문서 구조 오류 건너뛰기
+
+사진 오류: BASIS_STRUCTURE / 상위 구조의 범위가 하위를 포함하지 않습니다.
+저장된 문서 구조의 부모/자식 원문 범위가 맞지 않아 계획 전에 중단되었습니다.
+R2의 조사 중 오류 건너뛰기만으로는 이 계획 오류를 처리하지 못했습니다.
+R3은 구조 오류 문서를 ID·제목·원문 해시·사유와 함께 실패로 보존하고 나머지를 조사합니다.
+원문/구조를 임의 수정하지 않습니다. 오류 문서의 연결 여부는 미확인입니다.
+
+1. 받은 ZIP을 실제 사용 중인 TRANSFER 폴더에 올리고 그 폴더의 터미널에서 실행:
+
+python3 -m zipfile -e ./GENOS_BASIS_QUICK_20261020_R3.zip .
+bash ./BASIS_RUN.txt all
+
+기존 R2 간편 명령 대신 R3을 사용합니다. ZIP 해제는 실행용 BASIS_RUN.txt를 R3으로 교체합니다.
+기존 R4/ENTRY_FIX 패키지 폴더와 runtime 작업 폴더는 그대로 두세요. 삭제하지 마세요.
+원래 실행기가 선택한 checkout·코드·세대·권한·설정이 그대로인 경우,
+R2 ALL_PLAN과 이미 만든 하위 계획·완료 결과·실패 이력은 보존하고 이어갑니다.
+명령 버전 변경은 COORDINATOR_UPGRADE.json에 별도로 기록합니다.
+이 명령은 DEV 적용/push/코드서빙 배포를 수행하지 않습니다.
+
+기존에 작업 이름을 따로 지정했다면 동일한 이름으로:
+bash ./BASIS_RUN.txt all 기존작업이름
+
+2. 진행 상태:
+bash ./BASIS_RUN.txt status all
+
+3. 결과 HTML:
+bash ./BASIS_RUN.txt report all
+
+현재 TRANSFER의 basis-report-all/INDEX.html을 열면 결과와 구조 실패 목록을 확인할 수 있습니다.
+각 parts/part-*/STRUCTURE_CHECK.json에도 실패 문서와 원인을 남깁니다.
+failed에 구조 실패가 포함되며, 하나라도 실패/부분 결과가 있으면 전체 상태는 partial, 종료코드는 2입니다.
+종료2는 누락을 숨기지 않기 위한 부분 완료 표시이며 이후 문서를 중단했다는 뜻은 아닙니다.
+종료1은 코드·권한·해시·자원·알 수 없는 오류 등으로 실제 중단한 경우입니다. 로그를 확인하세요.
+
+4. 나중에 완전히 새로운 전체 조사:
+bash ./BASIS_RUN.txt all all2
+bash ./BASIS_RUN.txt status all2
+bash ./BASIS_RUN.txt report all2
+
+같은 all은 같은 작업을 재개하므로 이미 구조 실패로 제외된 문서에 새 모델 호출을 하지 않습니다.
+문서 구조를 수정한 새 데이터 세대를 선택했다면 기존 작업에 섞지 말고 새 이름으로 계획합니다.
+
+5. 기존 일부 문서 조사 명령도 유지:
+bash ./BASIS_RUN.txt new job1 3
+bash ./BASIS_RUN.txt resume job1
+bash ./BASIS_RUN.txt report job1
+
+이번 구조 오류 격리는 all 전체 작업 경로에 적용합니다. 개별 new/plan은 기존 원래 실행기 동작입니다.
+코드/엔진 해시 확인: bash ./BASIS_RUN.txt check
+검토용 이관 묶음: bash ./BASIS_RUN.txt export all
+
+전체 범위는 선택 세대에서 risk_team이 접근 가능한 최신 내규 중 본문이 있는 문서입니다.
+각 내규를 조사해 대응 외규 연결 후보를 JSON으로 저장합니다. 승인·운영 SQLite 반영은 기존 검토 이관 절차입니다.
+이 SQLite 배치 인계는 현장 기존 작업을 이어가는 도구이며 Oracle 요청별 조회 목표 구조와 별도입니다.
+
+검증 범위: 합성 원문과 봉인된 실제 checkout/service를 사용하는 로컬 명령 검증.
+실제 GENOS 데이터 구조 원인·내부 모델·전체 완주는 현장 확인이 필요합니다.

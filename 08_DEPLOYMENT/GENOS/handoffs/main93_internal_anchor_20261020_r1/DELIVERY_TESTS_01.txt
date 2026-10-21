@@ -1,0 +1,126 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________________ test_transfer[preserved-config-interruption] _________________
+
+tmp_path = PosixPath('/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime/test_transfer_preserved_config0')
+mode = 'preserved-config-interruption'
+
+    @pytest.mark.parametrize('mode',['preserved-config-interruption','no-config-standalone'])
+    def test_transfer(tmp_path,mode):
+        root=tmp_path/'actual checkout';root.mkdir()
+        with zipfile.ZipFile(H.parent/'main92_cumulative_20261020_r1/code.zip') as z:z.extractall(root)
+        config='00_SYSTEM/GENOS_SERVING_PATHS.json'
+        if mode.startswith('preserved'):
+            p=root/config;p.write_bytes(enc({'schema_version':'genos-serving-paths-v1','selection':'operator-fixed',
+                'generation':str(tmp_path/'OFFLINE_SOURCE_GENERATION'),'runtime':str(tmp_path/'EXTERNAL_NFS'),
+                'state':None,'generation_manifest_sha256':'0'*64}))
+        else:(root/config).unlink(missing_ok=True)
+        kept={'.env':b'SYNTHETIC=private-test-value\n','unrelated.py':b'# user helper\n','01_DATA/source.txt':b'preserved source',
+            '02_BACKEND/GENERATIONS/old/frozen.py':b'# frozen history\n'}
+        for n,b in kept.items():p=root/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+        for row in json.loads((root/'00_SYSTEM/WORKSPACE.json').read_bytes())['roots']:(root/row['canonical_path']).mkdir(parents=True,exist_ok=True)
+        before={str(p.relative_to(root)):p.read_bytes() for p in root.rglob('*') if p.is_file()}
+        transfer=tmp_path/'uploaded TRANSFER files';transfer.mkdir()
+        shutil.copyfile(H/(NAME+'.zip'),transfer/(NAME+'.zip'))
+        env={**os.environ,'PATH':str(R/'.venv/bin')+':'+os.environ['PATH'],'GENOS_DEV_ROOT':str(root),
+             'GENOS_AUTO_WARMUP':'0','AD_WORKER_ENABLED':'0','PYTHONDONTWRITEBYTECODE':'1'}
+        for k in list(env):
+            if k.startswith(('DP','ORACLE_','LLMOPS_')):env.pop(k)
+        trace=[]
+        def run(args,ok=True):
+            out=subprocess.run(list(map(str,args)),cwd=transfer,env=env,text=True,capture_output=True,timeout=180)
+            trace.append({'argv':list(map(str,args)),'exit':out.returncode,'stdout':out.stdout,'stderr':out.stderr})
+            (H/('DELIVERY_'+mode+'.json.gz')).write_bytes(gzip.compress(enc(trace),mtime=0))
+            assert (out.returncode==0)==ok,out.stdout+out.stderr
+            return out
+        run(['git','init','-q',root]);run(['git','-C',root,'config','user.name','Synthetic Validation']);run(['git','-C',root,'config','user.email','validation@example.invalid'])
+        names=[n for n in before if n!='.env' and '/agent6/corpus/' not in n]
+>       run(['git','-C',root,'add','--',*names]);run(['git','-C',root,'commit','-qm','synthetic prior checkout'])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ['git', '-C', PosixPath('/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime/test_transfer_preserved_config0/actual checkout'), 'add', '--', 'service.py', ...]
+ok = True
+
+    def run(args,ok=True):
+        out=subprocess.run(list(map(str,args)),cwd=transfer,env=env,text=True,capture_output=True,timeout=180)
+        trace.append({'argv':list(map(str,args)),'exit':out.returncode,'stdout':out.stdout,'stderr':out.stderr})
+        (H/('DELIVERY_'+mode+'.json.gz')).write_bytes(gzip.compress(enc(trace),mtime=0))
+>       assert (out.returncode==0)==ok,out.stdout+out.stderr
+E       AssertionError: The following paths are ignored by one of your .gitignore files:
+E         01_DATA/source.txt
+E         02_BACKEND/GENERATIONS/old
+E         CODE_MANIFEST.json
+E         hint: Use -f if you really want to add them.
+E         hint: Disable this message with "git config set advice.addIgnoredFile false"
+E         
+E       assert (1 == 0) == True
+E        +  where 1 = CompletedProcess(args=['git', '-C', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1...se -f if you really want to add them.\nhint: Disable this message with "git config set advice.addIgnoredFile false"\n').returncode
+
+08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py:34: AssertionError
+_____________________ test_transfer[no-config-standalone] ______________________
+
+tmp_path = PosixPath('/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime/test_transfer_no_config_standa0')
+mode = 'no-config-standalone'
+
+    @pytest.mark.parametrize('mode',['preserved-config-interruption','no-config-standalone'])
+    def test_transfer(tmp_path,mode):
+        root=tmp_path/'actual checkout';root.mkdir()
+        with zipfile.ZipFile(H.parent/'main92_cumulative_20261020_r1/code.zip') as z:z.extractall(root)
+        config='00_SYSTEM/GENOS_SERVING_PATHS.json'
+        if mode.startswith('preserved'):
+            p=root/config;p.write_bytes(enc({'schema_version':'genos-serving-paths-v1','selection':'operator-fixed',
+                'generation':str(tmp_path/'OFFLINE_SOURCE_GENERATION'),'runtime':str(tmp_path/'EXTERNAL_NFS'),
+                'state':None,'generation_manifest_sha256':'0'*64}))
+        else:(root/config).unlink(missing_ok=True)
+        kept={'.env':b'SYNTHETIC=private-test-value\n','unrelated.py':b'# user helper\n','01_DATA/source.txt':b'preserved source',
+            '02_BACKEND/GENERATIONS/old/frozen.py':b'# frozen history\n'}
+        for n,b in kept.items():p=root/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+        for row in json.loads((root/'00_SYSTEM/WORKSPACE.json').read_bytes())['roots']:(root/row['canonical_path']).mkdir(parents=True,exist_ok=True)
+        before={str(p.relative_to(root)):p.read_bytes() for p in root.rglob('*') if p.is_file()}
+        transfer=tmp_path/'uploaded TRANSFER files';transfer.mkdir()
+        shutil.copyfile(H/(NAME+'.zip'),transfer/(NAME+'.zip'))
+        env={**os.environ,'PATH':str(R/'.venv/bin')+':'+os.environ['PATH'],'GENOS_DEV_ROOT':str(root),
+             'GENOS_AUTO_WARMUP':'0','AD_WORKER_ENABLED':'0','PYTHONDONTWRITEBYTECODE':'1'}
+        for k in list(env):
+            if k.startswith(('DP','ORACLE_','LLMOPS_')):env.pop(k)
+        trace=[]
+        def run(args,ok=True):
+            out=subprocess.run(list(map(str,args)),cwd=transfer,env=env,text=True,capture_output=True,timeout=180)
+            trace.append({'argv':list(map(str,args)),'exit':out.returncode,'stdout':out.stdout,'stderr':out.stderr})
+            (H/('DELIVERY_'+mode+'.json.gz')).write_bytes(gzip.compress(enc(trace),mtime=0))
+            assert (out.returncode==0)==ok,out.stdout+out.stderr
+            return out
+        run(['git','init','-q',root]);run(['git','-C',root,'config','user.name','Synthetic Validation']);run(['git','-C',root,'config','user.email','validation@example.invalid'])
+        names=[n for n in before if n!='.env' and '/agent6/corpus/' not in n]
+>       run(['git','-C',root,'add','--',*names]);run(['git','-C',root,'commit','-qm','synthetic prior checkout'])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ['git', '-C', PosixPath('/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/delivery-runtime/test_transfer_no_config_standa0/actual checkout'), 'add', '--', 'service.py', ...]
+ok = True
+
+    def run(args,ok=True):
+        out=subprocess.run(list(map(str,args)),cwd=transfer,env=env,text=True,capture_output=True,timeout=180)
+        trace.append({'argv':list(map(str,args)),'exit':out.returncode,'stdout':out.stdout,'stderr':out.stderr})
+        (H/('DELIVERY_'+mode+'.json.gz')).write_bytes(gzip.compress(enc(trace),mtime=0))
+>       assert (out.returncode==0)==ok,out.stdout+out.stderr
+E       AssertionError: The following paths are ignored by one of your .gitignore files:
+E         01_DATA/source.txt
+E         02_BACKEND/GENERATIONS/old
+E         CODE_MANIFEST.json
+E         hint: Use -f if you really want to add them.
+E         hint: Disable this message with "git config set advice.addIgnoredFile false"
+E         
+E       assert (1 == 0) == True
+E        +  where 1 = CompletedProcess(args=['git', '-C', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1...se -f if you really want to add them.\nhint: Disable this message with "git config set advice.addIgnoredFile false"\n').returncode
+
+08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py:34: AssertionError
+=========================== short test summary info ============================
+FAILED 08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py::test_transfer[preserved-config-interruption]
+FAILED 08_DEPLOYMENT/GENOS/handoffs/main93_internal_anchor_20261020_r1/test_delivery.py::test_transfer[no-config-standalone]
+2 failed in 1.18s

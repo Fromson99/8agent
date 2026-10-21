@@ -1,0 +1,36 @@
+{
+  "policy": "internal-filename-audit-v2",
+  "status": "COMPLETE",
+  "counts_by_location": {
+    "OLDER": 2,
+    "LATEST": 10,
+    "EXCLUDED": 5,
+    "KEEP": 2
+  },
+  "all_locations": 19,
+  "retained_locations": 12,
+  "latest_title_date_pairs": 10,
+  "internal_physical_documents": 19,
+  "physical_exclusion_candidates": 7,
+  "binding": {
+    "mode": "USER_NAMED_CASES_WITH_SYNTHETIC_PRIOR_VERSIONS",
+    "field_inventory": false,
+    "exceptions": {
+      "sha256": "bebe4f339b1aa8e99358e370781b262b4d8e54eecc9abff72dbbb078e3a0cea8",
+      "revision": "user-20261015-r1",
+      "enabled": true
+    }
+  },
+  "model_calls": 0,
+  "source_modified": false,
+  "rag_applied": false,
+  "exception_warning_count": 0,
+  "exception_changed_locations": 12,
+  "before_exception_counts": {
+    "OLDER": 9,
+    "LATEST": 7,
+    "REVIEW": 3
+  },
+  "date_century_rule": "00..69 => 2000..2069; 70..99 => 1970..1999",
+  "filename_date_is_effective_date": false
+}

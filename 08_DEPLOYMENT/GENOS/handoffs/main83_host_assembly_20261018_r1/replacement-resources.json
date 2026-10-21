@@ -1,0 +1,34 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--tb=short",
+    "05_TESTS/CONTRACTS/test_genos_code_replacement.py",
+    "05_TESTS/CONTRACTS/test_genos_release_gate.py"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 2.0035935060004704,
+  "peak_group_rss_bytes": 4182016,
+  "min_available_bytes": 14063693824,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main83_host_assembly_20261018_r1/replacement-resources.json",
+    "rss_gib": 2.0,
+    "as_gib": 3.0,
+    "min_available_gib": 2,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "05_TESTS/CONTRACTS/test_genos_code_replacement.py",
+      "05_TESTS/CONTRACTS/test_genos_release_gate.py"
+    ]
+  },
+  "samples_sha256": "c66b331952b7829050dc3724071291fc0a8be7f9a5c6de2e54c53f21130b691d"
+}

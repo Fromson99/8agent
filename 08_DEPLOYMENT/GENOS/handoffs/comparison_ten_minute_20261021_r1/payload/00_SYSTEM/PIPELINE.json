@@ -1,0 +1,1893 @@
+{
+  "schema_version": "pipeline-v1",
+  "authorities": {
+    "glossary_authoring": "00_SYSTEM/GLOSSARY_PIPELINE.json",
+    "pipeline": "00_SYSTEM/PIPELINE.json",
+    "data_packages": "01_DATA/CONTRACTS/README.md",
+    "source_sets": "01_DATA/SOURCE_SETS",
+    "runtime_activation": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "model_policy": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
+    "experiment_policy": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
+    "change_policy": "00_SYSTEM/PIPELINE.md",
+    "document_ingestion": "07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md",
+    "runtime_schema": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+    "golden_evaluation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_GOLDEN_EVALUATION.md",
+    "document_build": "07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md",
+    "document_release": "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md",
+    "document_release_stages": "07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md",
+    "task_harness": "07_DOCS/REFERENCE/OPERATIONS/TASK_HARNESS.md",
+    "raw_preparation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md",
+    "document_navigation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_TOOLS.md",
+    "rag_team_selection": "07_DOCS/REFERENCE/OPERATIONS/GENOS_LEGAL_AGENT_TEAMS.md",
+    "legal_agent": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_DOUBLE_HARNESS.md",
+    "tool_exploration": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_V5.md",
+    "reference_resolution": "07_DOCS/REFERENCE/OPERATIONS/REFERENCE_RESOLUTION.md",
+    "reference_resolution_openrouter_profile": "00_SYSTEM/LEGAL_AGENT/reference-qwen-openrouter.json",
+    "navigation_storage": "07_DOCS/REFERENCE/OPERATIONS/NAVIGATION_STORAGE.md",
+    "legal_llm_wiki": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_LLM_WIKI.md",
+    "unified_legal_agent": "07_DOCS/REFERENCE/OPERATIONS/UNIFIED_LEGAL_AGENT_20261002.md",
+    "minimum_unit_fulltext": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md",
+    "oracle_query_serving": "09_ARTIFACTS/AUDITS/20261019-oracle-query/IMPLEMENTATION_UTF8.txt"
+  },
+  "contracts": {
+    "runtime.request": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Request"
+    },
+    "runtime.retrieved": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Retrieved"
+    },
+    "runtime.selected": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Selected"
+    },
+    "runtime.assembled": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Assembled"
+    },
+    "runtime.result": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Result"
+    },
+    "runtime.loadrequest": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "LoadRequest"
+    },
+    "runtime.generation": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Generation"
+    },
+    "feedback.event": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Event"
+    },
+    "feedback.proposal": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_definition": "Proposal"
+    },
+    "legal.control": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json",
+      "schema_sha256": "ef70c6986353e3d5d80df64cead9b6836bbda371248faabc49306f648debfafe",
+      "schema_definition": "Control"
+    },
+    "legal.control-v2": {
+      "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v2.schema.json",
+      "schema_sha256": "43a96d24c9a5678657536d6387b640bdb86865e9ccdfd064a3f6d54f1c85cc29",
+      "schema_definition": "Control"
+    },
+    "reference_resolution.output": {
+      "schema_path": "00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json",
+      "schema_sha256": "ba74d27d1863590bf368e082f2d46fe1091b53ee43dd1077cc5f855af00d2e14",
+      "schema_definition": "ReferenceResolutionOutput"
+    },
+    "legal.control-v3": {
+      "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v3.schema.json",
+      "schema_sha256": "7cbe0b7a56f4e298373028bb60f2a4b37eecacabe22ec403a40896e0f5764d7a",
+      "schema_definition": "Control"
+    },
+    "legal.control-v4": {
+      "schema_path": "00_SYSTEM/SCHEMAS/source-tiers-v4.schema.json",
+      "schema_sha256": "d8502cd8170aad945863c5ee044670dc1cb7d7f5a5cf32d332a042c2eeb81939",
+      "schema_definition": "Control"
+    },
+    "legal.control-v5": {
+      "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v5.schema.json",
+      "schema_sha256": "52d7f6ce4b8ea538ff6c911f579f952119aa880da6ec5c550c88f8b761c9eaa5",
+      "schema_definition": "Control"
+    },
+    "legal.case-binding-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/unified-case-memory-v1.schema.json",
+      "schema_sha256": "5ff112b164ec72d5e2635fb29c7a97a86e2863e0705252ad8f3a6dce838b3ddb",
+      "schema_definition": "CaseBinding"
+    }
+  },
+  "slots": {
+    "term-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "term-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "term-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "term-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result"
+      }
+    },
+    "term-load": {
+      "kind": "INDEXER",
+      "inputs": {
+        "request": "runtime.loadrequest"
+      },
+      "outputs": {
+        "generation": "runtime.generation"
+      }
+    },
+    "term-feedback": {
+      "kind": "FEEDBACK",
+      "inputs": {
+        "event": "feedback.event"
+      },
+      "outputs": {
+        "proposal": "feedback.proposal"
+      }
+    },
+    "legal-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control"
+      }
+    },
+    "legal-v2-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-v2-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-v2-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-v2-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control-v2"
+      }
+    },
+    "legal-v3-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-v3-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-v3-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-v3-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control-v3"
+      }
+    },
+    "legal-v4-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-v4-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-v4-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-v4-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control-v4"
+      }
+    },
+    "legal-v5-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-v5-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-v5-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-v5-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control-v5"
+      }
+    },
+    "legal-v6-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "legal-v6-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "legal-v6-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "legal-v6-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control-v5"
+      }
+    }
+  },
+  "engines": {
+    "term-retrieve@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "sha256": "deabb482bb68117532657015cc2969b630d3cdcad5c82347997b01fec979f433"
+    },
+    "term-select@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "sha256": "68faec0051ebc4e796b9a72a7a0cb02e887f77e045da5e624b8182a56da68ce5"
+    },
+    "term-assemble@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "sha256": "ad81e37fb1fe040970aeb8ad87b381a5fb2cf3aca3cb29c4579add4034c07289"
+    },
+    "term-answer@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "sha256": "776e71d4e0ef83c696488c14f98bce9464b2c782849acba4ccf4b7444f58891c"
+    },
+    "term-feedback@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "sha256": "ac82769d8c3952b6278ccf454edcef05186dcbadbccb1966c63f0a6370f5db8d"
+    },
+    "term-load@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "sha256": "77edbcb0531f380c5c519e2784d88b13c098a1f80a3e0d76aa0fe1db6182dd22"
+    },
+    "legal-retrieve@candidate-v1": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+      "sha256": "4a491d0320f0670884171df7fbbd96db07ffec8bcaa7e7f52f556c639876c1cd"
+    },
+    "legal-select@candidate-v1": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+      "sha256": "13f323b83bc56138427595552660e7b8d26a29ae2610325b60261f4f27e2f817"
+    },
+    "legal-assemble@candidate-v1": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+      "sha256": "973523c41f1da628f02e21e4be9326b5fdbec6df0c8e59d358776c3960719cc6"
+    },
+    "legal-answer@candidate-v1": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+      "sha256": "ae8a790cb12fcf77b17e35f28d3426ff15ae46e18c7044d38a652becb96747b8"
+    },
+    "legal-v2-retrieve@2.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+      "sha256": "54bb746337db07d0ee7d8183249fcbf88ee258d918449ad600ede940dfa85b48"
+    },
+    "legal-v2-select@2.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+      "sha256": "dfe0b137f0b0f0bf146676061024e3bc2d4995176618387d404e20ba5d7fa72b"
+    },
+    "legal-v2-assemble@2.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+      "sha256": "661e4be666d87cb3795383367054bee4d1a100a86cafcdef72faec424c1fe683"
+    },
+    "legal-v2-answer@2.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+      "sha256": "c7c6b1cbb6e9bc94b22ad207e8db2677a7586a29733274d0d161476e2d443c50"
+    },
+    "legal-v3-retrieve@3.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+      "sha256": "520196fca36c392bef25e2ea7f7d16b07b7d729b67a4118a6685809b80e7f556"
+    },
+    "legal-v3-select@3.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+      "sha256": "f01006e896e91d70aa024876b88382f5d70cc12113576218f40781b1ccfbaa8e"
+    },
+    "legal-v3-assemble@3.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+      "sha256": "3ce6f7ef0f4249062e64547f52c6e9d34d029b51096ffff68d2a958992a91cd1"
+    },
+    "legal-v3-answer@3.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+      "sha256": "56b7732b5fd87e11954ad06f581c83d7e338d6f2a71dba9380ceea667f26fbf8"
+    },
+    "legal-v4-retrieve@4.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+      "sha256": "233d3f955ef419ba737cf12a30169ba66cb1ae84905b079c0799baf133bd5208"
+    },
+    "legal-v4-select@4.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+      "sha256": "22955a0b4d230895ace5761f1b882081d2439507f4bf4e8762c7e98dda899245"
+    },
+    "legal-v4-assemble@4.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+      "sha256": "9b5204099cc727b4f4ba16e8021f0ef399e33b400cef39e107bc65dd4511b593"
+    },
+    "legal-v4-answer@4.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+      "sha256": "78a832080327a6e781a36795948d3c6eb93ea671bcf2ba1329c7a310a07f8323"
+    },
+    "legal-v5-retrieve@5.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+      "sha256": "24bf09fac007f21513f803d6142f89e4f2dc17c2251d42da09509e95aea6db68"
+    },
+    "legal-v5-select@5.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+      "sha256": "b217626bc5f7d423daa9337df9565b4bf9e4cb275b7aae093975346088d2824a"
+    },
+    "legal-v5-assemble@5.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+      "sha256": "3d2f709ee4b003cb4ba12b25facb17a928591d40a16ffb6a66a6541e27828e42"
+    },
+    "legal-v5-answer@5.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+      "sha256": "673265309a090989a400b7c0d92f19d8b06c215b7e9b147f430246969b83a94f"
+    },
+    "legal-v6-retrieve@6.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+      "sha256": "1af112958b54559fa8c21ab62c0218f355fb576f89db1684ab8858b66adaeb22"
+    },
+    "legal-v6-select@6.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+      "sha256": "cea1299095208c642d995c1d87e6a095be433df702b43c06ee5a862e9547874b"
+    },
+    "legal-v6-assemble@6.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+      "sha256": "9842e6939d00f12cf3b61fcd44f6d93b3d2748f1cf505572611cfdb3ef4f227b"
+    },
+    "legal-v6-answer@6.0.0": {
+      "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+      "sha256": "7b0e98f6a93bfd03e91989fc3107aad0e52b396086df755413c305ad59964f65"
+    }
+  },
+  "profiles": {
+    "legal-rag": {
+      "mode": "serving",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v5-retrieve",
+          "engine": "legal-v5-retrieve@5.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation/navigation",
+                "manifest_sha256": "c3e04ca16003b58f63e5d71b80fa422fef8fb05ba8875a7c11b1258828a7ee7e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 1024,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 100000
+              },
+              "implementation": "legal-agent-unified-v6",
+              "fulltext": {
+                "path": "fulltext",
+                "manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+                "navigation_index_sha256": "e8737e0171c84f2064f98c928f4954c45adef6831b82027ae842810428396e03"
+              },
+              "glossary": {
+                "schema_version": "glossary-serving-v2",
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "1af468ebbd21456d9e15fd58db68cb02057dad6e5a6dc6a906515376148b0123",
+                "cache_receipt": "c9b659444abbf59fa56ea155820aab5f2cce774250cb7442591a639fcd032055.json",
+                "cache_receipt_sha256": "d8c330e56e1c528982b87ce16b54a2c462f6361b589ba91dec37eb28e577c284"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-8729f978a28924cb8c5b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-8729f978a28924cb8c5b.json",
+                  "sha256": "e287e7d4cc176c9a508ab484c8b5e351b88ff53c63ceeff87c68b67db6b1ce65"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-8729f978a28924cb8c5b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-8729f978a28924cb8c5b.json",
+                  "sha256": "5c5b7a0fab845b970abf1dc03eab475401570f38834bb53905181251ba753179"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v5.json",
+                  "sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+                  "sha256": "e16e5ce8f6f8fef95263078fa32e3a731d50d080986b307201b695a850c625b9"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v5-select",
+          "engine": "legal-v5-select@5.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v5-assemble",
+          "engine": "legal-v5-assemble@5.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v5-answer",
+          "engine": "legal-v5-answer@5.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-feedback": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "event": "feedback.event"
+      },
+      "nodes": [
+        {
+          "id": "feedback",
+          "slot": "term-feedback",
+          "engine": "term-feedback@1.0.0",
+          "bindings": {
+            "event": "$input.event"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "proposal": "feedback.proposal"
+      }
+    },
+    "legal-load": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.loadrequest"
+      },
+      "nodes": [
+        {
+          "id": "load",
+          "slot": "term-load",
+          "engine": "term-load@1.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "generation": "load.generation"
+      }
+    },
+    "legal-agent-rag-v1": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-retrieve",
+          "engine": "legal-retrieve@candidate-v1",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+                "manifest_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "legal-agent-v1",
+              "fulltext": {
+                "navigation_index_sha256": "92b972df068defd881baa38b4a66da36928d778a8c1614603d64e4d7427b0de8",
+                "path": "fulltext",
+                "manifest_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v1.json",
+                  "sha256": "b6ed749d6eb8e58c67b48057ae1f5aacb0b123286a82050ab1943eb98abf45fd"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-source-only.json",
+                  "sha256": "182f0b707de88e7be10556f71e6663abe2998958765e94552236c7e6a55b153a"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-select",
+          "engine": "legal-select@candidate-v1",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-assemble",
+          "engine": "legal-assemble@candidate-v1",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-answer",
+          "engine": "legal-answer@candidate-v1",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-agent-rag-v2": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v2-retrieve",
+          "engine": "legal-v2-retrieve@2.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+                "manifest_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "legal-agent-tools-v2",
+              "fulltext": {
+                "navigation_index_sha256": "92b972df068defd881baa38b4a66da36928d778a8c1614603d64e4d7427b0de8",
+                "path": "fulltext",
+                "manifest_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v2.json",
+                  "sha256": "e53f3c202c809faf944eaec13f8a65ffd4c7f3256b9bee08715c1e6a796b4be7"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v2.json",
+                  "sha256": "fb95ac10850643888ddc5113e6100a2a1d7f498f0115d9783717f6e9c79b8203"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v2-select",
+          "engine": "legal-v2-select@2.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v2-assemble",
+          "engine": "legal-v2-assemble@2.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v2-answer",
+          "engine": "legal-v2-answer@2.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "document-navigation-rag-v1": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "term-retrieve",
+          "engine": "term-retrieve@1.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+                "manifest_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "document-navigation-v1",
+              "fulltext": {
+                "navigation_index_sha256": "92b972df068defd881baa38b4a66da36928d778a8c1614603d64e4d7427b0de8",
+                "path": "fulltext",
+                "manifest_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "term-select",
+          "engine": "term-select@1.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "term-assemble",
+          "engine": "term-assemble@1.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "term-answer",
+          "engine": "term-answer@1.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-agent-rag-v3": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v3-retrieve",
+          "engine": "legal-v3-retrieve@3.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+                "manifest_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "legal-agent-tools-v3",
+              "fulltext": {
+                "navigation_index_sha256": "92b972df068defd881baa38b4a66da36928d778a8c1614603d64e4d7427b0de8",
+                "path": "fulltext",
+                "manifest_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v3.json",
+                  "sha256": "111350304c5353101dbbca1105b723c7346201fa4fd2a56a2c88967d7e6f88cd"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v3.json",
+                  "sha256": "da4dc25cdf0c2c9d46fb4c0208a6b9391db04eb98777a1d484ba08fc3978e0b7"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v3-select",
+          "engine": "legal-v3-select@3.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v3-assemble",
+          "engine": "legal-v3-assemble@3.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v3-answer",
+          "engine": "legal-v3-answer@3.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-agent-rag-v4": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v4-retrieve",
+          "engine": "legal-v4-retrieve@4.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+                "manifest_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "legal-agent-tools-v4",
+              "fulltext": {
+                "navigation_index_sha256": "92b972df068defd881baa38b4a66da36928d778a8c1614603d64e4d7427b0de8",
+                "path": "fulltext",
+                "manifest_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v4.json",
+                  "sha256": "ca2354848367cf99d8142d179524ea799024ecea6ee9cb37dd35f6dc464fab30"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v4.json",
+                  "sha256": "05abda28d293b1a0bc9d7a4d77f29fe62d0960ebe3e5a7a4d1d9c0a34858f647"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v4-select",
+          "engine": "legal-v4-select@4.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v4-assemble",
+          "engine": "legal-v4-assemble@4.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v4-answer",
+          "engine": "legal-v4-answer@4.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-agent-rag-v5": {
+      "mode": "serving",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v5-retrieve",
+          "engine": "legal-v5-retrieve@5.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation/navigation",
+                "manifest_sha256": "f13dd90a5a247712c653473d3d981dfd84027ea094fcd9e3e59dc241898e0ab3"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 1024,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 100000
+              },
+              "implementation": "legal-agent-tools-v5",
+              "fulltext": {
+                "path": "fulltext",
+                "manifest_sha256": "a96f53466a3295dfec5e6655122417cf02024ba7b087387c058e20944867477b",
+                "navigation_index_sha256": "34b3f4f5f22e35932a80d6c421c64d421a483a21fb7198cd3957d3a998f45acc"
+              },
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "157c19c65b674af7c16c6ed313aad0af845bef783dfe52fc4ab83679fa23bcd7"
+                },
+                {
+                  "generation_id": "term-source-1acfbe06921527e74a0b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+                  "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v5.json",
+                  "sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+                  "sha256": "e16e5ce8f6f8fef95263078fa32e3a731d50d080986b307201b695a850c625b9"
+                }
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v5-select",
+          "engine": "legal-v5-select@5.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v5-assemble",
+          "engine": "legal-v5-assemble@5.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v5-answer",
+          "engine": "legal-v5-answer@5.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-agent-rag-v6": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "legal-v6-retrieve",
+          "engine": "legal-v6-retrieve@6.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation/navigation",
+                "manifest_sha256": "c3e04ca16003b58f63e5d71b80fa422fef8fb05ba8875a7c11b1258828a7ee7e"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_calls": 14,
+                "max_actions": 1024,
+                "wall_seconds": 1800,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 100000
+              },
+              "implementation": "legal-agent-unified-v6",
+              "fulltext": {
+                "path": "fulltext",
+                "manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+                "navigation_index_sha256": "e8737e0171c84f2064f98c928f4954c45adef6831b82027ae842810428396e03"
+              },
+              "glossary": {
+                "schema_version": "glossary-serving-v2",
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "1af468ebbd21456d9e15fd58db68cb02057dad6e5a6dc6a906515376148b0123",
+                "cache_receipt": "c9b659444abbf59fa56ea155820aab5f2cce774250cb7442591a639fcd032055.json",
+                "cache_receipt_sha256": "d8c330e56e1c528982b87ce16b54a2c462f6361b589ba91dec37eb28e577c284"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-8729f978a28924cb8c5b",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-8729f978a28924cb8c5b.json",
+                  "sha256": "e287e7d4cc176c9a508ab484c8b5e351b88ff53c63ceeff87c68b67db6b1ce65"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
+                }
+              ],
+              "alias_projections": [
+                {
+                  "generation_id": "term-source-8729f978a28924cb8c5b",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-8729f978a28924cb8c5b.json",
+                  "sha256": "5c5b7a0fab845b970abf1dc03eab475401570f38834bb53905181251ba753179"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
+                }
+              ],
+              "legal_agent": {
+                "domain": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-v5.json",
+                  "sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05"
+                },
+                "profile": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+                  "sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc"
+                },
+                "catalogue": {
+                  "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+                  "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+                }
+              },
+              "unified_orchestration": {
+                "entrypoint": "semantic_runtime.legal_agent.coordinator.run_case",
+                "case_store": "runtime/semantic/case-memory/cases-v3.sqlite",
+                "native_journal_version": 6,
+                "checkpoints": [
+                  "INTENT",
+                  "PLAN",
+                  "RECALL",
+                  "READ",
+                  "SELECT",
+                  "ASSESS",
+                  "COMPOSE"
+                ],
+                "knowledge_authority": "CaseRepository",
+                "wiki_consumers": [
+                  "legal_wiki"
+                ],
+                "activation": "NOT_ACTIVATED",
+                "legal_quality": "NOT_MEASURED"
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "legal-v6-select",
+          "engine": "legal-v6-select@6.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "legal-v6-assemble",
+          "engine": "legal-v6-assemble@6.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "legal-v6-answer",
+          "engine": "legal-v6-answer@6.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    }
+  },
+  "stage_schemas": [
+    {
+      "id": "LOAD",
+      "label": "원문 적재",
+      "contracts": [
+        "runtime.loadrequest",
+        "runtime.generation"
+      ],
+      "profiles": [
+        "legal-load"
+      ]
+    },
+    {
+      "id": "RAG",
+      "label": "용어·원문 탐색",
+      "contracts": [
+        "runtime.request",
+        "runtime.result"
+      ],
+      "profiles": [
+        "legal-rag"
+      ]
+    },
+    {
+      "id": "FEEDBACK",
+      "label": "피드백",
+      "contracts": [
+        "feedback.event",
+        "feedback.proposal"
+      ],
+      "profiles": [
+        "legal-feedback"
+      ]
+    }
+  ],
+  "shortcut_v4": {
+    "schema_version": "shortcut-runtime-v1",
+    "status": "INTEGRATION_CANDIDATE",
+    "features": {
+      "capture": true,
+      "compile": true,
+      "hint": true,
+      "procedure": true,
+      "judgment": true,
+      "core_evidence_route": true,
+      "bounded_recall": true
+    },
+    "store": "workspace runtime/semantic/case-memory/SHORTCUT_CURRENT.json or explicit default cases-v4.sqlite",
+    "producer": "semantic_runtime.pipeline ingress → legal_agent.unified_runtime.open_cases",
+    "consumer": "lawrag.pipeline.legal_wiki_compiler",
+    "entrypoints": [
+      "/v1/rag/ask",
+      "/v1/rag/memory/query",
+      "pipeline.py action-memory build --mode shortcut-v4",
+      "pipeline.py unified-memory --store-version 4",
+      "/v1/rag/memory/command"
+    ],
+    "storage_contract": "SQLite state: local WAL or NFS/CIFS DELETE; synchronous FULL; SQLite file locks and BEGIN IMMEDIATE serialize writers; filesystem locking/fsync requires field validation; explicit new generation schema migration",
+    "nightly": {
+      "entrypoint": "pipeline.py action-memory build --mode shortcut-v4",
+      "window": "Asia/Seoul 00:00–06:00",
+      "scope": "trusted principal file",
+      "default_publication": "DRAFT",
+      "retries": 3,
+      "batch_size_max": 8
+    },
+    "core_route_contract": {
+      "schema_version": "core-evidence-route-v1",
+      "producer": "unified_runtime.execute after successful publication",
+      "consumer": "existing law_candidates.discover then native current selection/assessment",
+      "multi_turn": "current goal revision and accepted route head; old immutable knowledge retained; pending corrections hide old routes",
+      "storage": "existing sw_unit/sw_knowledge/sw_member/sw_dependency and append-only trace; no SQL schema migration",
+      "scope": "same current task/facts/category plus document ACL and source generation/index"
+    },
+    "common_catalogue": {
+      "contract": "curated-source-package-v1",
+      "publication": "explicit operator --common; one application catalogue",
+      "scope": "all authenticated consumers; current document ACL and generation/fulltext binding required",
+      "private_history": "existing user/team sessions, facts and native routes remain private",
+      "entrypoints": [
+        "pipeline.py unified-memory package-check/package-import/package-verify/package-retire --store-version 4 --common"
+      ],
+      "storage": "existing cases-v4.sqlite sw_* relations; no SQL schema change",
+      "projection": "one common legal_wiki projection; per-request reads recheck permissions",
+      "external_model_reuse": false
+    },
+    "bounded_recall": {
+      "policy": "bounded-wiki-recall-v1",
+      "producer": "published sw_knowledge → enqueue(projection) → extractive card/token projection",
+      "consumer": "request_entry or memory-intent existing call selects up to2 source routes; RECALL revalidates originals",
+      "lookup_limit": 1,
+      "offered_limit": 3,
+      "context_chars": 2400,
+      "model_calls_added": 0,
+      "storage": "reconstructible sw_recall_card/sw_recall_term; immutable authority unchanged; old release ignores additive tables",
+      "backfill": "pipeline.py unified-memory recall-rebuild --store-version 4",
+      "fallback": "no candidate, rejected, stale or unavailable: normal discovery",
+      "external": "public_only and current source/document scope required; internal CM excluded"
+    }
+  },
+  "ad_management": {
+    "enabled": false,
+    "contract": "ad-sql-control-v1",
+    "entry": "[AD모드 시작]",
+    "exit": "[AD모드 종료]",
+    "storage": "selected shortcut SQL store; normalized ad_* relations; no Redis",
+    "entrypoints": [
+      "service.service AD_PROBE",
+      "GENOS chat adapter",
+      "GENOS workflow"
+    ],
+    "worker": "durable SQL ad_schedule/ad_job; same wiki compiler; internal model only",
+    "language_contract": "ad-language-v2",
+    "interpretation": "GENOS internal LLM for every active AD turn except exact entry/exit; no legal-agent routing or external fallback",
+    "context": "SQL session/history metadata and bounded previews; read_table/read_context scoped segments; latest segment plus compact notes",
+    "language_state": "ad_language_turn claim and full source context; ad_language_call per-inference input/output/receipt; no write lock during inference",
+    "output": "ad-mode-v1 text Markdown plus escaped table_html; GENOS workflow/chat scroll container; list/detail continuation",
+    "read_contract": {
+      "view_rows": 8,
+      "string_chars": 2000,
+      "preview_chars": 160,
+      "notes_chars": 2000,
+      "max_model_calls": 32,
+      "incomplete": "AD_CONTEXT_INCOMPLETE; no final command executed"
+    }
+  },
+  "genos_operator_paths": {
+    "config": "00_SYSTEM/GENOS_SERVING_PATHS.json",
+    "consumer": "service.py: SQLite generation binding or DP=oracle request factory",
+    "operator_setup": "SQLite: generated by oneclick; Oracle: .env.genos.example connection, query channel and external runtime settings",
+    "local_without_config": "existing selection unchanged",
+    "oracle_query": "Dataiku: python3 06_TOOLS/pipeline.py oracle-query create-schema/publish/activate; inputs=verified generation + completed source release; output=immutable query release + revisioned channel; consumer=service.py -> oracle_query_service.Factory -> request-pinned Oracle source/search ports; local Oracle contract verified, GENOS unverified"
+  },
+  "document_build": {
+    "schema_version": "document-build-policy-v1",
+    "default_mode": "native-no-models",
+    "entrypoint": "06_TOOLS/pipeline.py build-all",
+    "raw_selection": "Common filename_versions policy before structure; only is_latest internal rows admitted",
+    "structure": {
+      "entrypoint": "build-data-stages --stage structure --structure-vlm off --pdf-conversion off --pdf-parser local",
+      "method": "native XML/HTML/HWPX/DOCX/HWP parsers; preserve PDF source parser contracts",
+      "llm_vlm_calls": 0
+    },
+    "source_merge": "document-release prepare; default glossary-corpus-policy=replace; no review execution",
+    "connections_index": {
+      "entrypoint": "document-release reindex --from-run-id PREPARED --run-id NEW",
+      "implementation": "06_TOOLS/OFFLINE/genos_reindex_only.py",
+      "handoff": "08_DEPLOYMENT/GENOS/handoffs/reference_build_20261003_r1/GENOS_REFERENCE_BUILD_GUIDE_UTF8.txt",
+      "handoff_sha256": "5655d990588f33f4471a62faac6ca1ccf45939412353312add7855c4f98f5c48",
+      "policy": "prepared-reuse-serving-v1",
+      "model_calls": 0,
+      "serving_packaged": true,
+      "activated": false,
+      "storage_profile": "compact-v2",
+      "fulltext_granularity": "unit",
+      "navigation_schema": "term-navigation-index-v7",
+      "navigation_storage_schema": "term-navigation-storage-v4",
+      "audit_profile": "factorized-v1",
+      "navigation_audit_generation": "retain validated spans and catalogue candidates; replay evidence product; integer legacy origins",
+      "navigation_audit_storage": "lossless-gzip-after-verified-build; transient SQLite restore for offline checks"
+    },
+    "reviewed_mode": "explicit --with-model-review preserves previous build",
+    "genos_field_validation": "NOT_RUN",
+    "incremental_append": {
+      "entrypoint": "document-release append --base-generation BASE --delta-generation DELTA --delta-fulltext FTS --output NEW",
+      "implementation": "02_BACKEND/lawrag/pipeline/document_append.py",
+      "verification": "document-release verify-append --output NEW",
+      "contract": "document-append-v1; compact-v2 source/navigation and unit fulltext; same glossary; disjoint document IDs",
+      "policy": "Index delta only; copy base rows; reuse glossary assets; resolve only new reference sources; parent-linked audit; no activation"
+    },
+    "incremental_definitions": {
+      "entrypoint": "document-release augment-definitions --base-generation BASE --output NEW [--document-id ID]",
+      "implementation": "02_BACKEND/lawrag/pipeline/naming_definition_append.py",
+      "verification": "document-release verify-definitions --output NEW",
+      "contract": "naming-definition-append-v1; exact inline naming witness plus existing deterministic reference; unresolved scope; canonical_approval=false",
+      "policy": "Append definition and definition_reference only. Preserve all existing rows, reuse original text/glossary/fulltext; consumers: existing definition lookup and reference tools; no retrieval priority change or activation."
+    },
+    "risk_basis_append": {
+      "entrypoint": "06_TOOLS/pipeline.py basis-links seed-risk",
+      "implementation": "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py",
+      "contract": "risk-basis-json-review-v3",
+      "scope": "One RAG-visible 위험관리기준시행세칙; four user-selected ADR0954 relationships only",
+      "selection": "Existing GENOS_SERVING_PATHS generation/runtime; SQLite RAG latest filter and team scope; no filename reselection",
+      "outputs": "Existing review job/CANDIDATES.json and RISK_FIXED_<operation>.json; no direct SQLite write",
+      "consumer": "Common basis_batch_artifacts capture/report/export/review/apply; HTML and REVIEWED bundle combine discovery and fixed links; only selected import writes SQLite",
+      "index_rebuild": false,
+      "automatic_discovery": false,
+      "genos_field_validation": "NOT_RUN"
+    },
+    "latest_internal_versions": true,
+    "require_latest_selection": true
+  },
+  "workflows": {
+    "schema_version": "workflow-registry-v1",
+    "enabled": true,
+    "runtime": "02_BACKEND/workflow/runtime.py",
+    "rag_port": "02_BACKEND/semantic_runtime/workflow_bridge.py",
+    "registered": [
+      {
+        "id": "risk_team_compare_workflow",
+        "version": "1.20.4",
+        "manifest": "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json",
+        "sha256": "97718ae5203213b170780d0ff3e6a871626096fc848b1f3fd1fb34066efed4a6"
+      },
+      {
+        "id": "internal_basis_discovery_workflow",
+        "version": "1.2.0",
+        "manifest": "02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json",
+        "sha256": "e8c3bf13f6b71391677520372d62d5e585fcf1d28a1b6b3c364bc7567b303d85"
+      }
+    ],
+    "entrypoints": [
+      "/v1/workflows/run",
+      "/v1/workflows/resume",
+      "/v1/workflows/runs/{run_id}",
+      "/v1/rag/ask:대사"
+    ],
+    "consumes": [
+      "selected source generation",
+      "term/definition/reference index"
+    ],
+    "produces": [
+      "workflow-result-v1",
+      "exact source receipts",
+      "durable checkpoint"
+    ],
+    "state_namespace": "runtime/semantic/workflows",
+    "basis_batch": {
+      "entrypoint": "06_TOOLS/pipeline.py basis-batch",
+      "scope_policy": "parent-overlap-v1",
+      "selection": "existing-latest-visible-team",
+      "storage": "existing external runtime/basis-links/authority.sqlite",
+      "retrieval": "unreviewed candidate exact-source read; no automatic approval",
+      "commands": [
+        "list",
+        "plan",
+        "run",
+        "resume",
+        "status",
+        "export"
+      ]
+    }
+  }
+}

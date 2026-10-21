@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p ./risk-fixed-review-logs
+LOG="./risk-fixed-review-logs/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$LOG") 2>&1
+trap 'RC=$?; printf "%s\n" "$RC" > "$LOG.exit"; printf "RISK_FIXED_REVIEW_EXIT=%s LOG=%s\n" "$RC" "$LOG"' EXIT
+python3 "$HERE/runner.py" "${1:-inspect-fixed}" "${@:2}"

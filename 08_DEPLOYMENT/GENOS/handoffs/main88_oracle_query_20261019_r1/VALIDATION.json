@@ -1,0 +1,84 @@
+{
+  "status": "PASS_LOCAL_FIELD_UNVERIFIED",
+  "main_release": "answer-first-followup-20261019-r1",
+  "main_pointer_generation": 88,
+  "main_pointer_unchanged": true,
+  "payload_files": 1301,
+  "code_zip_sha256": "f7056ef497790b2684972aa1c56fb49c3e6af34deeb2539cdb27f7bef8ede1ac",
+  "merged_contracts": {
+    "passed": 120,
+    "warnings": 2,
+    "product_modules_from_packaged_code": 268,
+    "seconds": 41.72,
+    "scope": [
+      "Oracle selective query",
+      "SQLite compatibility",
+      "MAIN88 answer-first and follow-up",
+      "team/session identity",
+      "actual service entry",
+      "deployment path override regression"
+    ]
+  },
+  "delivery": [
+    {
+      "status": "PASS",
+      "commands": 23,
+      "exact_rollback": true,
+      "preserved_data": true,
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-02/test_transfer_preserved_config0/actual checkout",
+      "code_zip_sha256": "2246fe549f0cde7d42f8be286b2290e4320d33bde17273ff2d247249f5dc007c",
+      "source_generation_opened": false,
+      "mode": "preserved-config-interruption"
+    },
+    {
+      "status": "PASS",
+      "commands": 20,
+      "exact_rollback": true,
+      "preserved_data": true,
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main88_oracle_query_20261019_r1/pytest-delivery-02/test_transfer_no_config_standa0/actual checkout",
+      "code_zip_sha256": "c654ba6556e42fc51071eebfe228bc0a7f97be1b09e4e302a97689752f697062",
+      "source_generation_opened": false,
+      "mode": "no-config-standalone"
+    }
+  ],
+  "python_311": {
+    "status": "PASS",
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11",
+    "modules": 752,
+    "code_zip_sha256": "f7056ef497790b2684972aa1c56fb49c3e6af34deeb2539cdb27f7bef8ede1ac"
+  },
+  "prior_oracle_sql_evidence": {
+    "path": "09_ARTIFACTS/AUDITS/20261019-oracle-query",
+    "final_tests_sha256": "99c7121aa465ed60ae051503f2032be0908a9f321cd3a098e2d686138996e0fb",
+    "passed": 59,
+    "real_oracle_sql_cases": 1,
+    "oracle_version": "23",
+    "this_package_reran_live_oracle": false,
+    "limits": "Local driver replaces ORDS HTTP; scripted model; synthetic NFS proof; no field Oracle19/ORDS/model/NFS certification"
+  },
+  "integration_fix": "Oracle mode ignores retained SQLite deployment-path configuration; preserves explicit external runtime/state paths",
+  "failures_preserved": [
+    "MERGED_CONTRACTS_01.txt: 113 pass/7 fixture-root failures; isolated workspace directories and product workflow imports fixed in harness",
+    "DELIVERY_TESTS_01.txt: installer smoke referenced a nonexistent module name; corrected to oracle_query_db before final installation tests"
+  ],
+  "field": {
+    "code_commit": null,
+    "code_serving_revision": null,
+    "query_release_id": null,
+    "query_pointer_revision": null,
+    "workflow_test": "NOT_RUN"
+  },
+  "not_done": [
+    "GENOS apply/push/deploy",
+    "Dataiku schema creation/publication/activation",
+    "daily Dataiku schedule",
+    "internal LLM and full corpus performance"
+  ],
+  "evidence": {
+    "MERGED_CONTRACTS_02.txt": "320ae6f4f408a6bc04209e2774cbda28e0e280a40a360ca8e88debfea1a66547",
+    "DELIVERY_TESTS_02.txt": "eeafb174b2cce552e1b092a5af25863a4f194156424a14d893d45fa0d3e7332f",
+    "PYTHON311.json": "e0f9f929fb562352d97624e0bdc2d174a4c86ae7042ec3e0b38c9a6d87ba4980",
+    "INTEGRATION_OVERRIDES.json": "d29fbf562891dccb0cdf0e87f8bfff85cc393b93682c4a08080bce7c050f0826"
+  }
+}

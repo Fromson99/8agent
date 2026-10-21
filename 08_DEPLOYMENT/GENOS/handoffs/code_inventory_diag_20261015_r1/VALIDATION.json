@@ -1,0 +1,81 @@
+{
+  "revision": "GENOS_CODE_INVENTORY_DIAG_20261015_R1",
+  "actual_txt_runs": 10,
+  "passed": 10,
+  "records": [
+    {
+      "case": "known_r3",
+      "attempt": 1,
+      "status": "KNOWN_PREDECESSOR",
+      "exit_code": 0,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "known_r3",
+      "attempt": 2,
+      "status": "KNOWN_PREDECESSOR",
+      "exit_code": 0,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "known_r4",
+      "attempt": 1,
+      "status": "KNOWN_PREDECESSOR",
+      "exit_code": 0,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "unknown_inventory",
+      "attempt": 1,
+      "status": "UNSUPPORTED_INVENTORY",
+      "exit_code": 2,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "drift",
+      "attempt": 1,
+      "status": "CHECKOUT_DRIFT_OR_UNREADABLE",
+      "exit_code": 2,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "missing_manifest",
+      "attempt": 1,
+      "status": "DIAGNOSTIC_INCOMPLETE",
+      "exit_code": 3,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "invalid_manifest",
+      "attempt": 1,
+      "status": "DIAGNOSTIC_INCOMPLETE",
+      "exit_code": 3,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "sensitive_path",
+      "attempt": 1,
+      "status": "CHECKOUT_DRIFT_OR_UNREADABLE",
+      "exit_code": 2,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "known_output",
+      "attempt": 1,
+      "status": "KNOWN_FACT_REASON_OUTPUT",
+      "exit_code": 0,
+      "code_bytes_and_modes_preserved": true
+    },
+    {
+      "case": "engine_mismatch",
+      "attempt": 1,
+      "status": "ENGINE_BINDING_FAILED",
+      "exit_code": 2,
+      "code_bytes_and_modes_preserved": true
+    }
+  ],
+  "python": "/home/jin/8-AGENT/.venv/bin/python",
+  "model_calls": 0,
+  "genos_connections": 0,
+  "field_status": "NOT_VERIFIED"
+}

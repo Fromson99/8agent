@@ -1,0 +1,148 @@
+{
+  "status": "PASS",
+  "main_generation": 87,
+  "main_release": "cm-read-continuity-20261019-r1",
+  "scope": "Technical verification of the exact cumulative MAIN87 code package in isolated local GENOS-style checkouts.",
+  "payload_files": 1284,
+  "selected_serving_files_unchanged": 370,
+  "workflow_versions": {
+    "risk_team_compare_workflow": "1.10.0",
+    "internal_basis_discovery_workflow": "1.0.0"
+  },
+  "installed_contracts_passed": 426,
+  "replacement_gate_contracts_passed": 17,
+  "legacy_cases_deselected": 4,
+  "current_stream_fixture_cases_passed": 2,
+  "legacy_disposition": {
+    "working_reproduced": 4,
+    "product_changes": false,
+    "record": "failures/legacy-fixtures-001/RECEIPT.json",
+    "sha256": "a04b337e329008cce87d2ee523cb01514b22bb656c4ff7dd35d6468e491ff9ae"
+  },
+  "installation_scenarios": {
+    "prior_main84": {
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/pytest-runtime/run-003/test_actual_delivery_prior_mai0/DEV",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "ea3632932abf96251241591294263aee88ad41945501935f860d71bfa14c606f",
+      "transcript_sha256": "16b1240ba5de7ef177c67f3c68a9b6c40c542fe0a98175de7137fe8c2036da41",
+      "commands": 22,
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "legacy_interrupted": {
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/pytest-runtime/run-002/test_actual_delivery_legacy_in0/DEV",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "c52cade77f0d843a57fb0066926270a4c02aefb801149e808c9dc4b83bdaff1c",
+      "transcript_sha256": "19f4eeee89d7148078908d4a8d20a2e599da5b627f99007f5f341cabe72d531a",
+      "commands": 23,
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    },
+    "oracle_dp": {
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/pytest-runtime/run-002/test_actual_delivery_oracle_dp0/DEV",
+      "exact_rollback": true,
+      "data_preserved": true,
+      "installed_archive": "7f1da7940be87f4063459709bb53e58cb59a256462775e1578764cdfea8f7cbe",
+      "transcript_sha256": "84a5bde22f6d4e6bd5450d780b7f2a8d9ebc8a98b5235f8b6cbca148ddf7ca5a",
+      "commands": 21,
+      "tls_service_boots": 1,
+      "committed_code_gates": 1,
+      "committed_generation_gates": 1
+    }
+  },
+  "python311": {
+    "status": "PASS",
+    "compiled_modules": 733,
+    "workflow_editor": true,
+    "python": "3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]",
+    "executable": "/home/jin/.local/bin/python3.11"
+  },
+  "resources": {
+    "replacement-resources.json": {
+      "peak_group_rss_bytes": 4341760,
+      "min_available_bytes": 13581754368,
+      "seconds": 2.003235533993575,
+      "sha256": "9d6373017689d0f0616fe4a81f782ddcbdc48b9c6e46174adf5f0ee3f4aef36e"
+    },
+    "delivery-resources.json": {
+      "peak_group_rss_bytes": 1122631680,
+      "min_available_bytes": 12475445248,
+      "seconds": 158.14091604300484,
+      "sha256": "37c1f25817bab1d1dbd9a58d9d9d607b8cd837ef82a5f9f90ff6d9f70e943345"
+    },
+    "failures/legacy-fixtures-001/delivery-resources.json": {
+      "returncode": 1,
+      "peak_group_rss_bytes": 1090486272,
+      "min_available_bytes": 12498317312,
+      "seconds": 262.22844677299145,
+      "sha256": "c735d2aab7c198a1f055e521c654261c35b59b2bd37a121e7d6f97e0008602e0"
+    },
+    "working-repro-resources.json": {
+      "returncode": 1,
+      "peak_group_rss_bytes": 279683072,
+      "min_available_bytes": 13426589696,
+      "seconds": 4.004668084002333,
+      "sha256": "cfa0b3cd64b75e582e43b0ce44fe2e16a5f0c75817fa8db9b86b1fb8f39ab6d5"
+    },
+    "current-stream-resources.json": {
+      "returncode": 0,
+      "peak_group_rss_bytes": 240840704,
+      "min_available_bytes": 13369790464,
+      "seconds": 4.005080540999188,
+      "sha256": "ed04c262feea7cad6d809bc9c85e8739ca1041e2cc1f6ebb52aa6294c46bef1f"
+    }
+  },
+  "heavy_workers": 1,
+  "active_consumer_record": {
+    "path": "active-consumer.json",
+    "sha256": "785a3a5b476bb554d28b165f00419a6cd8597b2f729697b3ec230077b85a0d09",
+    "checks": 10,
+    "executed_during_main87_qualification": true
+  },
+  "prior_actual_execution_evidence": {
+    "local_main_implementation": {
+      "path": "08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/IMPLEMENTATION_RESULT.json",
+      "sha256": "6eaa96c19cdcf2e2741aae3b4c5d75ec91a9ec111785b075a3e047f49596398e"
+    },
+    "cm8_actual_model": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0895-committed-answer-consistency/artifacts/run-001/result.json",
+      "sha256": "5a30608d3c4ca252786fc0ff3a9d9c10c642661b1214d24dfa75fc267db14747"
+    },
+    "independent_qualification": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0896-cm-read-continuity-qualification/artifacts/run-001/result.json",
+      "sha256": "5341cdde4396096d665872d9b1c71dcc39e0617f38370a3fe6dc89a2d7a1e02f"
+    },
+    "actual_workflow": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0897-main87-workflow-live/RESULT.txt",
+      "sha256": "ac056fba1c503f1e5047b3c0513ae54ca521a42395f7462def4000d5bb7865ec"
+    }
+  },
+  "new_model_calls": 0,
+  "local_main_pointer_changed": false,
+  "default_install_data_access": "Existing fixed config and small generation manifest only; no DB/index scan or data/selection mutation.",
+  "test_harness_sha256": {
+    "test_delivery.py": "d3080ac8e2512aa050d74adaeaf72bed660cafa4444166f4f94ca391c8e9bb00",
+    "installed_contract_runner.py": "a4734e5362b3802a11912e8d2ad886ac02d3b2481db253b8602701c48752106a",
+    "code_smoke.py": "8e3cc9e8f62c0772565c91d41d6381c9d12f86d006d312ca3786dad550f45c55",
+    "test_current_stream.py": "65482c763456d855a133c8442b40cffd473fafe8d74bce720426587dd70b207a",
+    "diagnose_legacy.py": "2b0d0ff401bbe24597a291a18dc747eed4605bfe1650d3f078d01d928a7e13b4"
+  },
+  "failures_preserved": [
+    "failures/test-directory-001/RECEIPT.json",
+    "failures/legacy-fixtures-001/RECEIPT.json"
+  ],
+  "genos_field_status": "NOT_VERIFIED",
+  "limitations": [
+    "GENOS installation, internal model, actual Oracle, push, revision, and workflow editor verification remain field steps.",
+    "Local MAIN87 CM8 returned 8 responses with 7 core answers satisfied; CM003 interpretation remains unresolved.",
+    "The actual local workflow completed with partial status and two DEFERRED rows, 12 model calls, about 550 seconds, and 21685 answer characters.",
+    "Referenced internal rule acquisition, source classification, applicability judgments and repetitive lengthy output still need improvement.",
+    "The NFS generation gate does not establish Oracle provider/release/cache correctness; confirm the selected provider in the field workflow.",
+    "Repository preflight reports a pre-existing blank line at ARCHITECTURE.md:431; that unrelated file is preserved.",
+    "Final sealed ZIP execution is recorded separately in FINAL_VERIFICATION.json."
+  ]
+}

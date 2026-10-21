@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-20",
+  "source_generation_recorded": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "workspace_recorded": "/workspace",
+  "evidence": [
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/nfs_read_probe_20261006_r7/GUIDE_UTF8.txt",
+      "meaning": "codespace reads shared NFS generation; ZIP output under DEV/TRANSFER; historical directions superseded for current TRANSFER invocation",
+      "sha256": "23f1d4c7546f34921f6d09b08195518d0c2c976862a7dcf53c200681e8334b6f"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/zip_parts_bash_20261007_r4/SPLIT_TRANSFER_ZIP.txt",
+      "meaning": "49000000 byte pieces, per-part and original SHA verification",
+      "sha256": "93b491efcaa68912eed83ca9a35efe28315d5d37c7131faaaf2eaaf4b42432bc"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/zip_parts_recovery_20261007_r1/FIELD_RECOVERY_VERIFIED.json",
+      "meaning": "field user screenshot: verified rejoined ZIP at /workspace/TRANSFER, exit0, source SHA matched after explicit one-byte recovery; current importer refuses changed parts",
+      "sha256": "5fcc476b8b8a2d4bf32b2d98c5620b77a43a075becdca7041492438f7b13b402"
+    }
+  ]
+}

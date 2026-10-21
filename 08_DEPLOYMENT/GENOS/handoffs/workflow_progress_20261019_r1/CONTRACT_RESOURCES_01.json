@@ -1,0 +1,48 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/installed_contract_runner.py",
+    "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code",
+    "05_TESTS/CONTRACTS/test_workflow_answer_delivery.py",
+    "05_TESTS/CONTRACTS/test_workflow_progress_logging.py",
+    "05_TESTS/CONTRACTS/test_main_source_cards.py",
+    "05_TESTS/CONTRACTS/test_workflow_source_cards.py",
+    "05_TESTS/CONTRACTS/test_main_workflow_display.py",
+    "05_TESTS/REGRESSION/core/test_genos_request_report.py",
+    "05_TESTS/CONTRACTS/test_genos_answer_stream.py",
+    "05_TESTS/CONTRACTS/test_readable_process_trace.py",
+    "05_TESTS/CONTRACTS/test_workflow_progress_api.py",
+    "-k",
+    "not gateway and not real_service and not actual_service"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 8.00823137000043,
+  "peak_group_rss_bytes": 296951808,
+  "min_available_bytes": 13191155712,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/CONTRACT_RESOURCES_01.json",
+    "rss_gib": 3.0,
+    "as_gib": 5.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10.0,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/installed_contract_runner.py",
+      "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/test-code",
+      "05_TESTS/CONTRACTS/test_workflow_answer_delivery.py",
+      "05_TESTS/CONTRACTS/test_workflow_progress_logging.py",
+      "05_TESTS/CONTRACTS/test_main_source_cards.py",
+      "05_TESTS/CONTRACTS/test_workflow_source_cards.py",
+      "05_TESTS/CONTRACTS/test_main_workflow_display.py",
+      "05_TESTS/REGRESSION/core/test_genos_request_report.py",
+      "05_TESTS/CONTRACTS/test_genos_answer_stream.py",
+      "05_TESTS/CONTRACTS/test_readable_process_trace.py",
+      "05_TESTS/CONTRACTS/test_workflow_progress_api.py",
+      "-k",
+      "not gateway and not real_service and not actual_service"
+    ]
+  },
+  "samples_sha256": "674422c74352f95d611e5df55ca7421b6b8a2d79cad27299ad01a5d3e631f342"
+}

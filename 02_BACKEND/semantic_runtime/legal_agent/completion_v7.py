@@ -24,7 +24,7 @@ def assessment_schema(issues,materials,options,facts,previous_keys=()):
     for key in ('conclusion','details'):
         del claim['properties'][key];claim['required'].remove(key)
     claim['properties']['content_contract']={'const':CONTENT}
-    claim['properties']['explanation']={'type':'string','maxLength':3000}
+    claim['properties']['explanation']={'type':'string'}
     claim['required'].append('explanation')
     structured,narrative=deepcopy(claim),deepcopy(claim)
     structured['properties']['rule']=deepcopy(claim['properties']['rule']['anyOf'][1])

@@ -1,0 +1,33 @@
+{
+  "old_sha256": "9970ec3491936cc623594956843317333ce4e3afc7d6b9a109e7a4d32936b050",
+  "new_sha256": "faf4c25273daca5c3fcb3d3215c61aaebcf3ce91798096c30b677e678ad30d09",
+  "changed_functions": [
+    "prepared",
+    "verify",
+    "main"
+  ],
+  "change_reasons": {
+    "prepared": "Print actual inventory signature on unsupported state; preserve refusal",
+    "verify": "Rename applied-version diagnostic to R2",
+    "main": "Use R2 backup artifact directory"
+  },
+  "unchanged": [
+    "sha",
+    "encoded",
+    "path_at",
+    "atomic",
+    "locked",
+    "inventory",
+    "rebind",
+    "verify_bindings",
+    "normalized_inventory",
+    "signature",
+    "budget_transform",
+    "local_verification",
+    "field_identity",
+    "apply",
+    "undo"
+  ],
+  "no_integrity_checks_removed": true,
+  "product_module_from_sealed_r1": true
+}

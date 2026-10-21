@@ -26,88 +26,109 @@
     "navigation_storage": "07_DOCS/REFERENCE/OPERATIONS/NAVIGATION_STORAGE.md",
     "legal_llm_wiki": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_LLM_WIKI.md",
     "unified_legal_agent": "07_DOCS/REFERENCE/OPERATIONS/UNIFIED_LEGAL_AGENT_20261002.md",
-    "minimum_unit_fulltext": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md"
+    "minimum_unit_fulltext": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md",
+    "oracle_query_serving": "09_ARTIFACTS/AUDITS/20261019-oracle-query/IMPLEMENTATION_UTF8.txt"
   },
   "contracts": {
     "runtime.request": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Request"
     },
     "runtime.retrieved": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Retrieved"
     },
     "runtime.selected": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Selected"
     },
     "runtime.assembled": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Assembled"
     },
     "runtime.result": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Result"
     },
     "runtime.loadrequest": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "LoadRequest"
     },
     "runtime.generation": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Generation"
     },
     "feedback.event": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Event"
     },
     "feedback.proposal": {
       "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
-      "schema_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "schema_sha256": "3a570fffded6d46ef0e7f8ef048795af080cb5783dbda40c17c98947f71eeaea",
       "schema_definition": "Proposal"
     },
     "legal.control": {
       "schema_path": "00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json",
-      "schema_sha256": "ef70c6986353e3d5d80df64cead9b6836bbda371248faabc49306f648debfafe",
+      "schema_sha256": "9fec7e28c33349716740f8abd597c580ac26fc3f8702d9c51f869e5602d9d389",
       "schema_definition": "Control"
     },
     "legal.control-v2": {
       "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v2.schema.json",
-      "schema_sha256": "43a96d24c9a5678657536d6387b640bdb86865e9ccdfd064a3f6d54f1c85cc29",
+      "schema_sha256": "aee459bc738792f9e39007d49b4483d6cad4426409b8aa4cc092efeab96cc269",
       "schema_definition": "Control"
     },
     "reference_resolution.output": {
       "schema_path": "00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json",
-      "schema_sha256": "ba74d27d1863590bf368e082f2d46fe1091b53ee43dd1077cc5f855af00d2e14",
+      "schema_sha256": "3720a08c24786c35f7b6abc4facd678ee750b34db5dd5852d5f6514cc9c0d08e",
       "schema_definition": "ReferenceResolutionOutput"
     },
     "legal.control-v3": {
       "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v3.schema.json",
-      "schema_sha256": "7cbe0b7a56f4e298373028bb60f2a4b37eecacabe22ec403a40896e0f5764d7a",
+      "schema_sha256": "e67d231f9ff7817cac94d662ba73cedb79e28eb9b1e7f01c96ac82154a3a3384",
       "schema_definition": "Control"
     },
     "legal.control-v4": {
       "schema_path": "00_SYSTEM/SCHEMAS/source-tiers-v4.schema.json",
-      "schema_sha256": "d8502cd8170aad945863c5ee044670dc1cb7d7f5a5cf32d332a042c2eeb81939",
+      "schema_sha256": "e5593d4fe601918a53191c8977ef3ccf53abdfedc7010a3fede8cbe7e4fcd413",
       "schema_definition": "Control"
     },
     "legal.control-v5": {
       "schema_path": "00_SYSTEM/SCHEMAS/tool-exploration-v5.schema.json",
-      "schema_sha256": "52d7f6ce4b8ea538ff6c911f579f952119aa880da6ec5c550c88f8b761c9eaa5",
+      "schema_sha256": "6f7b9def25952892fa71e90d30d340a3eba5fd6fca731a2c31a1c9737799b223",
       "schema_definition": "Control"
     },
     "legal.case-binding-v1": {
       "schema_path": "00_SYSTEM/SCHEMAS/unified-case-memory-v1.schema.json",
       "schema_sha256": "5ff112b164ec72d5e2635fb29c7a97a86e2863e0705252ad8f3a6dce838b3ddb",
       "schema_definition": "CaseBinding"
+    },
+    "legal-knowledge.definition-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-knowledge/definition-v1.schema.json",
+      "schema_sha256": "ebc9af52bfb21558c418219863f3738cb3be7bd1cacb15150548d16ad58aa7ab"
+    },
+    "legal-knowledge.command-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-knowledge/command-v1.schema.json",
+      "schema_sha256": "86b851de03aa0a105bb2f678e729a3d2294c6f4ca139bb6311276c1e67cad309"
+    },
+    "legal-knowledge.reference-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-knowledge/reference-v1.schema.json",
+      "schema_sha256": "369bf7caa85278981cc0fb95089aee5f4644e49505b6b9eefc12aa40c7d7c748"
+    },
+    "legal-knowledge.source-binding-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-knowledge/source-binding-v1.schema.json",
+      "schema_sha256": "201ec58a6c55b3615922ad9b6e24a9a3c2aa9b16ab301701fdaf5eb42ae8354d"
+    },
+    "legal-knowledge.plan-v1": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-knowledge/plan-v1.schema.json",
+      "schema_sha256": "24811eeeaf9fb9f6c4ba7f86ad2d2053429dc5cebdcabb443931dab1a8f57d10"
     }
   },
   "slots": {
@@ -391,123 +412,123 @@
   "engines": {
     "term-retrieve@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
-      "sha256": "d15790e13ec6768ad0a7476bb52262cd63ef043beec29a77d3c627c1afc4e394"
+      "sha256": "a3a9065e230f496afa919aafb76b6bf39fcd542c1fd49b1ba8f7a193bfff89bd"
     },
     "term-select@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
-      "sha256": "70648c1d368ef7ef2534e8b59de6d58887e53fa3175c95959b4950125afd6583"
+      "sha256": "1dca7207bcdb1e85fa9387bbb6ca1ec3629220c63a8759e741dda441f0c7f28d"
     },
     "term-assemble@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
-      "sha256": "cdfad7f14f442071cec7f6ad3b9e4f3b380246aee22c06057fbf1523dbefe1cf"
+      "sha256": "74e351854f3be15a964eade2c074b5c6246dfcbf5e616a41fee04e74a28f965d"
     },
     "term-answer@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
-      "sha256": "45718102fc7e8c64ddb189f92c553a9be3a036250228b120afb1f9313547f198"
+      "sha256": "6026dce4cdad012bc8f09886f105d3f9f1aee7a4d5537459996211577b9a0a8c"
     },
     "term-feedback@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
-      "sha256": "62d767626cefbdafd001429ddbb17974b88c9eb56fefc2d4ee1c281ee75127dc"
+      "sha256": "b9605930c6c5b19cb14463736ad2bb8acfa02e46b5e2c6f533f634a57f78faae"
     },
     "term-load@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
-      "sha256": "de70209fded676480814333e1a568879bdf7972beaf11c485035d0b1854c7476"
+      "sha256": "42ec173bf9d293ebb17725ce57fbc7b5eedac25646a0aa78a71d90d672672da8"
     },
     "legal-retrieve@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
-      "sha256": "31f0e2cc16f3b277e9a9d2b28a2d84fe1d8bbb88d40676ad4365b9dacdb21def"
+      "sha256": "078f7b7b1c0d62c2581917a753445e8dec4bc6aaeb8d6a5d08d29a68f3d914c4"
     },
     "legal-select@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
-      "sha256": "f62184c04766cc38ece1ec1fbc8b2327e1a24f225106f4986f12f166615de3c9"
+      "sha256": "998433a8cf56e3f22d63043326ca651f04b87f99342d02facc409194ca98e4fe"
     },
     "legal-assemble@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
-      "sha256": "8bc2633b3039ee50601d7296e9e421ca1b967454f121e0ad3f8d899135a66c9d"
+      "sha256": "f9e3ddc494d2a0fa336097c96cd9a14da15079abae87e5f410940ccfb727c6bd"
     },
     "legal-answer@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
-      "sha256": "6f649ebae6e9ff5cc5c68fc6ddc7a7084e46a2c47fe46e88a551c0735bd54a4e"
+      "sha256": "f5a08cc47d85c77a028b6e7f2a847dc1f31595e4f607b3314a664881f1efba7b"
     },
     "legal-v2-retrieve@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
-      "sha256": "c99be290d4e946d19cb677ad5a085688e36ac8ff4ea5c34687e3493a1fcfee84"
+      "sha256": "f1e138dea7971436861b84e356d763e61bce30536191149bb4daaa0c60ddfdc6"
     },
     "legal-v2-select@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
-      "sha256": "0889d15f1cb9820190ee37c6a039c65b32ea828aee56907470bc8f4608ff4b8c"
+      "sha256": "5bab8eed93fb6e9f5d61bdf5ec4f69e5b6996c50445f034e47e845e3297e26fb"
     },
     "legal-v2-assemble@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
-      "sha256": "f6fcd1c04f2dbde7d6df955e93a1d764af271a3a21fc0b02a3f7173c0bc388bb"
+      "sha256": "7a0d28b2a0be34509a324e7dfedab447a5640ba742e9154869a912a692e82cf9"
     },
     "legal-v2-answer@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
-      "sha256": "74fa0b28fbc49147a2889b77df1db9cc39430c97a21bf24da3d133d37488fed4"
+      "sha256": "a8f4db32a428b8b15963fc801ebe30592a96d92678e4ff128c3aa56361a42b03"
     },
     "legal-v3-retrieve@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
-      "sha256": "78e513dff972224f38bb775e125487267192c9b8cdd6abdae515947c1e30f189"
+      "sha256": "ee5015b46c3efdbf105f66b80707d64f3a6419797233aaad4d816f08f3d8be9a"
     },
     "legal-v3-select@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
-      "sha256": "0ff0097153f1e1e6cd115b9a4c81e2d0c04a13a97f5e66ebc12add779774373c"
+      "sha256": "9ff0714de283b6c787ae7992049b2887f96ded96aaa2e32603f9232bc75f8aab"
     },
     "legal-v3-assemble@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
-      "sha256": "41dbd8d3c5a3011a83100d72464986c8ed762ec6fcc3a78c6eb7b2f06cb896cc"
+      "sha256": "d48503f96417220a474a848c3365f358f5aab7435640d68435542d03da06f071"
     },
     "legal-v3-answer@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
-      "sha256": "1a7ce4d5cc276c1b6460f2e1b96f3d49f186c8f9a4fb6fab62e49d55ee552afd"
+      "sha256": "c7da74d28d517669e33b57768c4025d5ae05b29e6122cbdc096b495fb68f5acb"
     },
     "legal-v4-retrieve@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
-      "sha256": "072b1bc039664fe1cc8701402a63cd4a4742bf7068c9bdebb716591d4ac9ba30"
+      "sha256": "94df27cf298438ba72721ec4c15925423b284c9a769028357d063e9ed78d4d29"
     },
     "legal-v4-select@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
-      "sha256": "7dd8939469dcbb08de1acfde1275bbf07a1089ffe854e228e75be68f1aa1c5ed"
+      "sha256": "c9c5b5a4c2d658556401b7de8cbbe1056da578c90f7bcb700dfe25f0fa5cc164"
     },
     "legal-v4-assemble@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
-      "sha256": "443a70615ffadda19b46b872c1d3b0e5ff725a43f35296772581f91b9093c6a1"
+      "sha256": "9f9a6f969d592ec53db545ebb3ee50b3d6d84fce86c0f0f77b7cbff07d3c775d"
     },
     "legal-v4-answer@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
-      "sha256": "e0ea94649c7d5e198aa2adfef1c2a771d0ba7979aa3e8d7eb93cdf4b7aad7a49"
+      "sha256": "60aa2282f6d65f59d3a475b73684a53b6dc7e9414856012d5bc37b0563a660b3"
     },
     "legal-v5-retrieve@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
-      "sha256": "55d2e5dfdf28325ae8ac3cb66ba64210536c8eebb97d82934a379a8b9e743ebc"
+      "sha256": "577c00717b0cb3bc8e1c6548f7d2607cdcf70d0ae1a240f01acae139a2287bd9"
     },
     "legal-v5-select@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
-      "sha256": "7fef5343aa9d5a38f7c3f2c1cc554af234882eac646cf88b7ab1e7142f547358"
+      "sha256": "760bdf615ae3e5db0607872cc423b8d3413129b3696350bf2a76b66f9e1bcfdb"
     },
     "legal-v5-assemble@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
-      "sha256": "ceb06c36263edae1432d203c0137da0530d6c38a4ea8bace7459d2773222b66d"
+      "sha256": "941f8464a2c0544e544547327c8349d0c6e7007c2aa30b0f40b710e586e067de"
     },
     "legal-v5-answer@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
-      "sha256": "00189ef89e88147204f0b96caa4bc3b555fba1891ba5d9e06d589cbecc7e4ddf"
+      "sha256": "a1a22dcdcce965cb836c21ce12033429e91bf630d53549feb352ab637f7275e8"
     },
     "legal-v6-retrieve@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
-      "sha256": "9ed8434f8b62f46c9458e54ce6bda32e9c23bcf8e56dc53f970c12044043038d"
+      "sha256": "a06cca9dc8fbcb3987764bf228d461e6b20162a4cc6160831cb5a8580de3adea"
     },
     "legal-v6-select@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
-      "sha256": "32d57fd5268979d27eed6bf6825fcec70bead1a0702c3c46f724c8f262f7c19a"
+      "sha256": "b026e7a8491a9c97f557320e7ef014a277868c3eef204c22ab1924e6e5e1f3d6"
     },
     "legal-v6-assemble@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
-      "sha256": "38202a8fa54179df28c5dbcf04f78ab9b260aa16322107c4f9c2792eff9e6da9"
+      "sha256": "f1cffd8fce717177251f6c76b7ca1c44862228218cbcad0fd28c0d355d853e5e"
     },
     "legal-v6-answer@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
-      "sha256": "72e3c08d7de89edacf80f86e76f8b9b55bb3215476a252df579bf5d72c0f94ce"
+      "sha256": "8fc131ab84e41c222fcaa45126758837b05f7dab938669a97e5f26fc46f5cd7d"
     }
   },
   "profiles": {
@@ -565,6 +586,16 @@
                   "generation_id": "term-source-8729f978a28924cb8c5b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-8729f978a28924cb8c5b.json",
                   "sha256": "e287e7d4cc176c9a508ab484c8b5e351b88ff53c63ceeff87c68b67db6b1ce65"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -572,6 +603,16 @@
                   "generation_id": "term-source-8729f978a28924cb8c5b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-8729f978a28924cb8c5b.json",
                   "sha256": "5c5b7a0fab845b970abf1dc03eab475401570f38834bb53905181251ba753179"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -719,6 +760,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -731,6 +782,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -836,6 +897,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -848,6 +919,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -953,6 +1034,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -965,6 +1056,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ]
             }
@@ -1060,6 +1161,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -1072,6 +1183,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -1177,6 +1298,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -1189,6 +1320,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -1294,6 +1435,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "bdb20f5014db4f783e3607f0b5c0c104e3550d38c7963c99be4eeaa97fc3ebd4"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -1306,6 +1457,16 @@
                   "generation_id": "term-source-1acfbe06921527e74a0b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
                   "sha256": "3b1265c0e16fc13b2486387eeb770008100feebd142ff0a776d3075191216f9a"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -1407,6 +1568,16 @@
                   "generation_id": "term-source-8729f978a28924cb8c5b",
                   "path": "01_DATA/PROJECTIONS/document-origins/term-source-8729f978a28924cb8c5b.json",
                   "sha256": "e287e7d4cc176c9a508ab484c8b5e351b88ff53c63ceeff87c68b67db6b1ce65"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "7a1bfbecebaa5ab1e6ed66c76b26dc6029facdc1b1420003ec586d9011f25361"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "5034d464342e120cca3fa02e37de76159ca7aa953048efd56c94ee639cde9ef6"
                 }
               ],
               "alias_projections": [
@@ -1414,6 +1585,16 @@
                   "generation_id": "term-source-8729f978a28924cb8c5b",
                   "path": "01_DATA/PROJECTIONS/document-aliases/term-source-8729f978a28924cb8c5b.json",
                   "sha256": "5c5b7a0fab845b970abf1dc03eab475401570f38834bb53905181251ba753179"
+                },
+                {
+                  "generation_id": "term-source-0b8e8924b31b3aa8b722",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-source-0b8e8924b31b3aa8b722.json",
+                  "sha256": "741f2090af882329db30f97e5a59cace7436dd9331c1aeed99c38db84fb51952"
+                },
+                {
+                  "generation_id": "term-append-f559a3fee4cc57be2bbd",
+                  "path": "01_DATA/PROJECTIONS/document-aliases/term-append-f559a3fee4cc57be2bbd.json",
+                  "sha256": "a00a5478585f780cef4d83ca4ac97b100a210c501b2c203bfbe3fa5a319a4ad6"
                 }
               ],
               "legal_agent": {
@@ -1423,7 +1604,7 @@
                 },
                 "profile": {
                   "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
-                  "sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2"
+                  "sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc"
                 },
                 "catalogue": {
                   "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
@@ -1587,7 +1768,7 @@
     }
   },
   "ad_management": {
-    "enabled": true,
+    "enabled": false,
     "contract": "ad-sql-control-v1",
     "entry": "[AD모드 시작]",
     "exit": "[AD모드 종료]",
@@ -1614,15 +1795,16 @@
   },
   "genos_operator_paths": {
     "config": "00_SYSTEM/GENOS_SERVING_PATHS.json",
-    "consumer": "service.py startup plus generation manifest verification",
-    "operator_setup": "generated by oneclick; no manual environment variables",
-    "local_without_config": "existing selection unchanged"
+    "consumer": "service.py: SQLite generation binding or DP=oracle request factory",
+    "operator_setup": "SQLite: generated by oneclick; Oracle: .env.genos.example connection, query channel and external runtime settings",
+    "local_without_config": "existing selection unchanged",
+    "oracle_query": "Dataiku: python3 06_TOOLS/pipeline.py oracle-query create-schema/publish/activate; inputs=verified generation + completed source release; output=immutable query release + revisioned channel; consumer=service.py -> oracle_query_service.Factory -> request-pinned Oracle source/search ports; local Oracle contract verified, GENOS unverified"
   },
   "document_build": {
     "schema_version": "document-build-policy-v1",
     "default_mode": "native-no-models",
     "entrypoint": "06_TOOLS/pipeline.py build-all",
-    "raw_selection": "CATALOG/TEAM_LAYOUT.json unless --document-scope is explicit",
+    "raw_selection": "Common filename_versions policy before structure; only is_latest internal rows admitted",
     "structure": {
       "entrypoint": "build-data-stages --stage structure --structure-vlm off --pdf-conversion off --pdf-parser local",
       "method": "native XML/HTML/HWPX/DOCX/HWP parsers; preserve PDF source parser contracts",
@@ -1647,6 +1829,97 @@
       "navigation_audit_storage": "lossless-gzip-after-verified-build; transient SQLite restore for offline checks"
     },
     "reviewed_mode": "explicit --with-model-review preserves previous build",
-    "genos_field_validation": "NOT_RUN"
+    "genos_field_validation": "NOT_RUN",
+    "incremental_append": {
+      "entrypoint": "document-release append --base-generation BASE --delta-generation DELTA --delta-fulltext FTS --output NEW",
+      "implementation": "02_BACKEND/lawrag/pipeline/document_append.py",
+      "verification": "document-release verify-append --output NEW",
+      "contract": "document-append-v1; compact-v2 source/navigation and unit fulltext; same glossary; disjoint document IDs",
+      "policy": "Index delta only; copy base rows; reuse glossary assets; resolve only new reference sources; parent-linked audit; no activation"
+    },
+    "incremental_definitions": {
+      "entrypoint": "document-release augment-definitions --base-generation BASE --output NEW [--document-id ID]",
+      "implementation": "02_BACKEND/lawrag/pipeline/naming_definition_append.py",
+      "verification": "document-release verify-definitions --output NEW",
+      "contract": "naming-definition-append-v1; exact inline naming witness plus existing deterministic reference; unresolved scope; canonical_approval=false",
+      "policy": "Append definition and definition_reference only. Preserve all existing rows, reuse original text/glossary/fulltext; consumers: existing definition lookup and reference tools; no retrieval priority change or activation."
+    },
+    "risk_basis_append": {
+      "entrypoint": "06_TOOLS/pipeline.py basis-links seed-risk",
+      "implementation": "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py",
+      "contract": "risk-basis-json-review-v3",
+      "scope": "One RAG-visible 위험관리기준시행세칙; four user-selected ADR0954 relationships only",
+      "selection": "Existing GENOS_SERVING_PATHS generation/runtime; SQLite RAG latest filter and team scope; no filename reselection",
+      "outputs": "Existing review job/CANDIDATES.json and RISK_FIXED_<operation>.json; no direct SQLite write",
+      "consumer": "Common basis_batch_artifacts capture/report/export/review/apply; HTML and REVIEWED bundle combine discovery and fixed links; only selected import writes SQLite",
+      "index_rebuild": false,
+      "automatic_discovery": false,
+      "genos_field_validation": "NOT_RUN"
+    },
+    "latest_internal_versions": true,
+    "require_latest_selection": true
+  },
+  "workflows": {
+    "schema_version": "workflow-registry-v1",
+    "enabled": true,
+    "runtime": "02_BACKEND/workflow/runtime.py",
+    "rag_port": "02_BACKEND/semantic_runtime/workflow_bridge.py",
+    "registered": [
+      {
+        "id": "risk_team_compare_workflow",
+        "version": "1.20.8",
+        "manifest": "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json",
+        "sha256": "4d71e225a41e3c16e64a7718dde3f62a98357c87a382921d23ea71b906a55c37"
+      },
+      {
+        "id": "internal_basis_discovery_workflow",
+        "version": "1.2.1",
+        "manifest": "02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json",
+        "sha256": "9150a40649b99984b1af68b66b5e7e9851c0129a5cc917368787e3f83fe715bd"
+      }
+    ],
+    "entrypoints": [
+      "/v1/workflows/run",
+      "/v1/workflows/resume",
+      "/v1/workflows/runs/{run_id}",
+      "/v1/rag/ask:대사"
+    ],
+    "consumes": [
+      "selected source generation",
+      "term/definition/reference index"
+    ],
+    "produces": [
+      "workflow-result-v1",
+      "exact source receipts",
+      "durable checkpoint"
+    ],
+    "state_namespace": "runtime/semantic/workflows",
+    "basis_batch": {
+      "entrypoint": "06_TOOLS/pipeline.py basis-batch",
+      "scope_policy": "parent-overlap-v1",
+      "selection": "existing-latest-visible-team",
+      "storage": "existing external runtime/basis-links/authority.sqlite",
+      "retrieval": "unreviewed candidate exact-source read; no automatic approval",
+      "commands": [
+        "list",
+        "plan",
+        "run",
+        "resume",
+        "status",
+        "export"
+      ]
+    }
+  },
+  "legal_knowledge": {
+    "schema_version": "legal-knowledge-v1",
+    "management_enabled": false,
+    "consumer_mode": "off",
+    "producer": "pipeline.py legal-knowledge command / /v1/legal-knowledge/commands",
+    "consumers": [
+      "semantic_runtime.legal_agent.knowledge_bridge",
+      "/legal-knowledge/"
+    ],
+    "storage": "injected-oracle-repository",
+    "status": "WORKING_CODE_OPT_IN; ORACLE_SITE_AND_MAIN_NOT_ACTIVATED"
   }
 }

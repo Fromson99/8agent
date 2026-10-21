@@ -89,7 +89,7 @@ def assessment_schema(issues, materials, options, *, contract=None, facts=()):
     schema = obj({
         'claims': {'type': 'array', 'maxItems': 12, 'items': obj({
             'claim_id': {'type': 'string', 'pattern': '^C[1-9][0-9]*$'},
-            'issue_refs': refs(ids, 1), 'text': {'type': 'string', 'minLength': 1, 'maxLength': 3000},
+            'issue_refs': refs(ids, 1), 'text': {'type': 'string', 'minLength': 1},
             'evidence_refs': refs([o['id'] for o in options], 1)})},
         'disposition': {'type': 'string', 'enum': ['ANSWER', 'LIMITED_ANSWER', 'NEEDS_INVESTIGATION']},
         'issue_assessments': {'type': 'array', 'items': obj({
@@ -102,7 +102,7 @@ def assessment_schema(issues, materials, options, *, contract=None, facts=()):
             'reason': {'type': 'string', 'minLength': 1},
             'material_id': {'anyOf': [{'type': 'string', 'enum': list(materials)}, {'type': 'null'}]} if materials else {'type': 'null'},
             'material': {'type': 'boolean'},
-            'missing_target': {'type': 'string', 'maxLength': 160},
+            'missing_target': {'type': 'string'},
             'suggested_action': {'type': 'string', 'enum': GAP_ACTIONS}})}})
     if contract == CONTRACT:
         claim = schema['properties']['claims']['items']
@@ -295,7 +295,7 @@ def verify_span_claim(claim, sources):
         raise ContractError('claim quote differs from source-span compilation')
 
 
-GAP_WORDS = {'MISSING_FACT': '추가 사실 확인이 필요합니다',
+GAP_WORDS = {'MISSING_FACT': '해당 사안에 적용할 결론을 하나로 확정하려면 추가 사실 정보가 필요합니다',
              'VERSION_AMBIGUOUS': '적용 시점과 판본 확인이 필요합니다',
              'WRONG_SUBJECT': '질문의 주체와 적용 범위를 추가로 확인해야 합니다',
              'UNREAD_SAVED': '확보한 자료의 원문 확인이 남아 있습니다',
@@ -340,9 +340,56 @@ def refresh_limitations(value, issues, stop_reason=None, *, closed=None, notes=(
         items.append({'id': 'L-stop', 'kind': 'EXECUTION_LIMIT', 'issue_id': None,
                       'text': '확인한 원문 범위에서 답변하며, 나머지 범위는 확인하지 못했습니다.'})
     value['limitation_items'] = list({r['id']: r for r in items}.values())
-    value['limitations'] = [r['text'] for r in value['limitation_items']]
+    # Detailed gap identities stay separate; identical display text is emitted once.
+    value['limitations'] = list(dict.fromkeys(r['text'] for r in value['limitation_items']))
     value['stop_reason'] = stop_reason
     return value
+
+
+SOURCE_REPLY_CONTRACT = 'verified-source-excerpt-reply-v1'
+
+
+def source_excerpt_reply(sources):
+    """Return exact delivered spans as observations, never as legal claims."""
+    options = evidence_options(sources)
+    rows = []
+    for source in sources:
+        spans = [deepcopy(o) for o in options if o['source_id'] == source['source_id']]
+        if spans:
+            rows.append({'source_id': source['source_id'],
+                'document_name': source.get('document_name') or source['document_id'],
+                'heading': source.get('heading', ''), 'span_receipts': spans})
+    if not rows:
+        raise ContractError('source excerpt reply requires verified delivered originals')
+    return {'schema_version': SOURCE_REPLY_CONTRACT, 'sources': rows,
+            'legal_conclusion_confirmed': False, 'absence_proven': False}
+
+
+def verify_source_excerpt_reply(assessment, sources):
+    from .investigation_contracts import coverage
+    if (assessment.get('source_excerpt_reply') != source_excerpt_reply(sources)
+            or assessment['claims'] or assessment['disposition'] != 'LIMITED_ANSWER'
+            or assessment.get('answer_coverage') != coverage(assessment)
+            or assessment.get('answer_coverage') == 'COVERED'
+            or any(r['status'] == 'COVERED' for r in assessment['issue_assessments'])):
+        raise ContractError('source excerpt reply differs from unresolved assessment or originals')
+
+
+def render_source_excerpt_reply(assessment):
+    from html import escape
+    reply = assessment['source_excerpt_reply']
+    if (reply.get('schema_version') != SOURCE_REPLY_CONTRACT or assessment['claims']
+            or reply.get('legal_conclusion_confirmed') is not False
+            or reply.get('absence_proven') is not False or not reply.get('sources')):
+        raise ContractError('invalid source excerpt reply')
+    blocks = ['확보한 자료만으로 질문의 결론을 확정하기는 어렵습니다. '
+              '확인한 원문과 아직 확인하지 못한 범위를 정리합니다.']
+    for row in reply['sources']:
+        title = ' · '.join(x for x in (row['document_name'], row['heading']) if x)
+        quotes = '\n\n'.join('\n'.join('> ' + escape(line) for line in span['text'].split('\n'))
+                             for span in row['span_receipts'])
+        blocks.append('**확인한 원문: ' + escape(title) + '**\n\n' + quotes)
+    return '\n\n'.join(blocks)
 
 
 def internal_schema(base, stage):
@@ -352,6 +399,12 @@ def internal_schema(base, stage):
     if stage == 'COMPOSE':
         extra.update(composition_plan={'type': 'object'}, assessment_hash={'type': 'string'})
     schema['properties'].update(assessment_basis={'type':'object'},model_proposal={'type':'object'})
+    schema['properties']['source_excerpt_reply'] = obj({
+        'schema_version': {'const': SOURCE_REPLY_CONTRACT},
+        'sources': {'type': 'array', 'minItems': 1, 'items': obj({
+            'source_id': {'type': 'string'}, 'document_name': {'type': 'string'},
+            'heading': {'type': 'string'}, 'span_receipts': {'type': 'array', 'minItems': 1}})},
+        'legal_conclusion_confirmed': {'const': False}, 'absence_proven': {'const': False}})
     schema['properties'].update(extra)
     schema['required'] += list(extra)
     schema['properties']['limitations']['maxItems'] = 64
@@ -398,7 +451,9 @@ def render(assessment, plan):
     if plan.get('layout') not in ('paragraphs', 'bullets', 'table'):
         raise ContractError('unknown composition layout')
     sections = plan.get('issue_sections') if assessment.get('completion_contract', V1) != V1 else None
-    if plan.get('presentation') == 'grounded-narrative-v1':
+    if assessment.get('source_excerpt_reply'):
+        text = render_source_excerpt_reply(assessment)
+    elif plan.get('presentation') == 'grounded-narrative-v1':
         from .narrative_answer import render as render_narrative
         text = render_narrative(assessment, plan)
     elif sections:
@@ -460,6 +515,7 @@ def _render_sections(claims, sections, layout):
 
 def compose(assessment, plan):
     return {**({'assessment_basis': deepcopy(assessment['assessment_basis'])} if 'assessment_basis' in assessment else {}),
+            **({'source_excerpt_reply': deepcopy(assessment['source_excerpt_reply'])} if 'source_excerpt_reply' in assessment else {}),
             'text': render(assessment, plan), 'claims': deepcopy(assessment['claims']),
             'limitations': deepcopy(assessment['limitations']),
             'completion_contract': assessment.get('completion_contract', V1),
@@ -473,6 +529,7 @@ def verify_composition(assessment, answer):
     if (contract not in KNOWN or answer.get('completion_contract') != contract
             or answer.get('assessment_hash') != digest(assessment)
             or answer.get('claims') != assessment['claims']
+            or answer.get('source_excerpt_reply') != assessment.get('source_excerpt_reply')
             or answer.get('limitations') != assessment['limitations']
             or answer.get('limitation_items') != assessment['limitation_items']
             or answer.get('stop_reason') != assessment.get('stop_reason')
@@ -507,7 +564,7 @@ def progress_signature(state):
 
 def rule_schema(evidence_ids, facts):
     """Request-local model observation; never a new legal source schema."""
-    text = {'type':'string','minLength':1,'maxLength':1000}
+    text = {'type':'string','minLength':1}
     conditions = obj({'id':{'type':'string','pattern':'^T[1-9][0-9]*$'},
         'text':text,'evidence_refs':refs(evidence_ids,1)})
     groups = obj({'id':{'type':'string','pattern':'^G[1-9][0-9]*$'},

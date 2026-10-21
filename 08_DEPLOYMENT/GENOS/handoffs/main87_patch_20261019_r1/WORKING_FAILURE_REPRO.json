@@ -1,0 +1,54 @@
+[
+  {
+    "nodeid": "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-13]",
+    "outcome": "failed",
+    "error": "minimal output branch: minimal output branch: minimal output conflicts with host constant: action_refs"
+  },
+  {
+    "nodeid": "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-14]",
+    "outcome": "failed",
+    "error": "minimal output branch: minimal output branch: minimal output conflicts with host constant: action_refs"
+  },
+  {
+    "nodeid": "05_TESTS/CONTRACTS/test_genos_output_unlimited.py::test_native_streaming_output_is_uncapped_and_interruption_never_publishes[False]",
+    "outcome": "failed",
+    "error": "assert (False)\n +  where False = <05_TESTS.CONTRACTS.test_genos_output_unlimited.test_native_streaming_output_is_uncapped_and_interruption_never_publishes.<locals>.Transport object at 0x747b3ff22270>.streamed",
+    "http_status": 502,
+    "response": {
+      "request_id": "6b0972ce73344dc2a12178bdd81320c8",
+      "answer_status": "failed",
+      "message": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (502)",
+      "failure_reason": "technical",
+      "display_policy_revision": "public-display-v5",
+      "error_code": "502"
+    },
+    "phases": [
+      "source-request-route",
+      "memory-resolve",
+      "memory-command-check",
+      "memory-intent",
+      "source-law-navigation-1-read-choice"
+    ]
+  },
+  {
+    "nodeid": "05_TESTS/CONTRACTS/test_genos_output_unlimited.py::test_native_streaming_output_is_uncapped_and_interruption_never_publishes[True]",
+    "outcome": "failed",
+    "error": "assert (False)\n +  where False = <05_TESTS.CONTRACTS.test_genos_output_unlimited.test_native_streaming_output_is_uncapped_and_interruption_never_publishes.<locals>.Transport object at 0x747b3fdcacf0>.streamed",
+    "http_status": 502,
+    "response": {
+      "request_id": "cdb6fa38aed94bdcae5b9db8a582d828",
+      "answer_status": "failed",
+      "message": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (502)",
+      "failure_reason": "technical",
+      "display_policy_revision": "public-display-v5",
+      "error_code": "502"
+    },
+    "phases": [
+      "source-request-route",
+      "memory-resolve",
+      "memory-command-check",
+      "memory-intent",
+      "source-law-navigation-1-read-choice"
+    ]
+  }
+]

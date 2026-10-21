@@ -1,0 +1,40 @@
+대사 근거 전달 최적화 — 로컬 MAIN74 반영 완료 (2026-10-15)
+
+구현
+- 자식 RAG가 읽은 전체 원문 대신, 반환한 SELECT/ASSESS 판단에 결속된 채택 span만 전달합니다.
+- 원문 좌표·해시·권한을 검사하고 새 정규 evidence ID로 묶습니다. 중복 원문은 합치고 각 claim의 조건·예외 의존성과 출처를 보존합니다.
+- 과거 조사 기록은 자식 journal에 보존합니다. 현재 revision의 근거만 비교에 활성화합니다.
+- 비교 입력을 제한된 묶음으로 전달하고 실제 표시한 ID만 검증에 허용합니다. 불완전한 조건·판본으로 부합/상충을 확정하지 않습니다.
+- 필요한 문맥은 이미 읽은 원문에서 먼저 복원합니다. 추가 조사는 같은 사건과 총 예산을 유지합니다.
+- 최종 표에서 인용한 근거만 표시합니다. 비교 미완료 결과는 채택된 자식 근거만 제한적으로 표시합니다.
+- 사용자 질문과 조사 지시를 분리했습니다. 인용은 원문 선택지로 제약하며 잘못된 인용을 사후 잘라 통과시키지 않습니다.
+- 기존 정의 연결 최초 검색과 최신 문서 선택을 유지했습니다. workflow 버전1.1.0입니다.
+
+측정
+- 같은 ADR0795 자식 반환 기록을 재생: 전달94→16근거, 원문45088→1132자, 비교 입력128976→26301자.
+- 채택 판단의 의존 조문11개를 모두 보존했습니다. 이 집합은 법률 정답 집합이 아닙니다.
+- 의미상 필요한 문맥은 추가될 수 있으므로 최종 근거 개수를 고정한 정책은 아닙니다.
+
+검증
+- 동결 코드278계약, UI4검사 통과. 작업 코드101계약 통과.
+- 후보 실제 로컬 서비스12검사, 활성 MAIN 실제 로컬 서비스12검사 통과.
+- 통제된 모델 응답을 쓰는 실제 native API에서 내규 RAG→외규 RAG→근거 관계→비교→표시 및 재시작/복구를 검사했습니다.
+- 실제 Qwen 결과는 별도입니다. ADR0800 7호출/136.02초, partial, 비교0행입니다.
+  양측의 사용자 인용 오류는 해소했지만 내규 탐색 제안이 target과 exploration을 중복/누락했고,
+  외규 호출은 전송 결과 미확인으로 중단됐습니다. 임의 재전송하거나 성공 근거로 기록하지 않았습니다.
+  해당 실패 응답의 상태·중복·새 프로세스 재사용과 추가 호출0을 확인했습니다.
+- 실제 유동성 정답 및 필요한 내규·외규 조문 회수 성공은 미해결입니다. 실제 LLM 대사 성공으로 보고하지 않습니다.
+- ADR0797~0800의 기각 결과는 그대로 보존했습니다. ADR0801은 구현 코드 변경 없이 기능·실패·표시·서비스 경계로 사전 동결한 별도 감사입니다.
+- ADR0801 final validation 통과. 전체 graph 기존 오류8개 외 이 작업의 새 오류 없음.
+
+실제 연결
+- release: workflow-adopted-evidence-20261015-r1
+- pointer generation: 74
+- manifest SHA256: 9d1f6ea93dfaafb42c27a92d98764d38cef4ffaff9bf4941d56e9c834d039c9a
+- serving code: 08_DEPLOYMENT/RELEASES/workflow-adopted-evidence-20261015-r1/code
+- data: 01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation
+- 선택336파일과 검증 후보 hash가 동일합니다. 다른 작업 코드 차이는 working-integration.json에 보존했습니다.
+- 실제 서비스 binding/프로필/검색 정책/원문 세대: artifacts/active-consumer-v2.json 및 active-verification.json.
+- 적용 영수증: artifacts/main-apply-receipt.json. 이전 MAIN73 포인터는 릴리스 rollback/ACTIVE_RELEASE.json에 보존합니다.
+- 현재 선택이 이 릴리스인 것을 확인한 뒤 원복 명령: .venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py rollback --confirm-main
+- Git main 병합/푸시, GENOS 반입·배포는 수행하지 않았습니다.

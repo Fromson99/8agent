@@ -9,7 +9,7 @@ from . import observability as obs
 
 log = obs.get_logger('rag')
 
-_QUESTION_SOURCE_PREFIX = re.compile(r'^\s*(내규|외규)(?=$|\s|[:,：，])\s*[:,：，]?\s*')
+_QUESTION_SOURCE_PREFIX = re.compile(r'^\s*(내규|외규)\s*[:,：，]\s*')
 
 
 def route_question(question):
@@ -22,17 +22,13 @@ def route_question(question):
     remainder = question[match.end():].strip()
     if not remainder:
         raise ValueError('source prefix requires a question')
-    from .folder_navigation import request as catalogue_request
-    catalogue = catalogue_request(remainder)
-    if catalogue and not catalogue['title_query'] and not catalogue['provider']:
-        # The explicit prefix owns the source category, even when the rest of
-        # the question repeats (or mistypes) a category name.
-        remainder = '전체 문서 목록'
     return remainder, 'internal' if match.group(1) == '내규' else 'external'
 
 class Pipeline:
     def __init__(self,root,store,provider=None,vector=None,*,implementation=None,legal_agent_profile=None,legal_agent_transport=None):
         self.store=store;self.contracts=Contracts(root);self.provider=provider
+        if self.contracts.pipeline.get('document_build', {}).get('require_latest_selection'):
+            store.selection.require_latest()
         config=next(x for x in self.contracts.pipeline['profiles']['legal-rag']['nodes'] if x['id']=='retrieve')['parameters']['term_agent']
         if not config.get('enabled'):raise ValueError('term navigation is required')
         config = {**config}
@@ -140,10 +136,10 @@ class Pipeline:
             from .legal_agent.shortcut_ingress import capture
             return capture(self,question,documents,use_llm,scope,execution_context,team_id,admission_lease)
         if self.profile_id=='legal-agent-rag-v6':
-            from .legal_agent.coordinator import run_case, system_request
+            from .legal_agent.coordinator import run_case
             from .stage_runner import StageRunner
             StageRunner(self).verify_profile()
-            if use_llm and not system_request(question):
+            if use_llm:
                 options=dict(execution_context or {})
                 if 'runtime' not in options:
                     from lawrag.platform.workspace import load_layout

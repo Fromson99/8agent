@@ -1,0 +1,24 @@
+CLEAN R2 query-key reader contract
+
+New table metadata: lookup_encoding = sha256-overflow-v1
+Applies to generic relational assets' LOOKUP_ID / OWNER_ID / TARGET_ID only.
+DOCUMENT_ID remains the original bounded scope key.
+UTF-8 values of at most 512 bytes keep their previous physical key.
+Longer values use "sha256:" + SHA256(canonical JSON string).
+Full original values stay in VALUE_JSON; row identity still includes full values.
+
+Required maintained serving modules (included byte-for-byte in runtime/):
+  semantic_runtime/oracle_query_catalog.py
+  semantic_runtime/oracle_query_db.py
+Exact SHA-256: CODE_PINS.json.
+
+The reader leaves legacy manifests unchanged, encodes the physical candidate
+predicate only for the declared new policy, and retains exact JSON-field equality.
+An original value that happens to equal another value's digest string therefore
+does not become a false match. Large CLOB equality uses DBMS_LOB.COMPARE.
+Authorization scope, release binding and JSON_TABLE ERROR ON ERROR remain.
+
+Dataiku does not install these modules into GENOS ~/DEV or deploy a revision.
+Include these exact validated changes in the next serving code package before
+activating the new Oracle release. Do not replace unrelated current serving files
+with an old package snapshot. Actual field revision and Oracle19 SQL remain unverified.

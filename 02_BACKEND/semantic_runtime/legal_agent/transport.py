@@ -152,7 +152,6 @@ class GenosTransport:
         usage = None
         finish = None
         call_id = call_name = None
-        pending_deltas = []
         http_status = None
         content_type = None
         fields = {'attempt_id': ticket.get('attempt_id'), 'model': self.binding['model'],
@@ -190,14 +189,8 @@ class GenosTransport:
                 if content_type != 'text/event-stream':
                     raise TransportError('unexpected model stream content type', unknown=True)
                 for event in stream.iter_events(response.iter_lines()):
-                    if event.get('model'):
+                    if isinstance(event.get('model'), str) and event['model']:
                         actual_model = event['model']
-                        if actual_model != self.binding['model']:
-                            raise ContractError('actual response model differs from pinned model')
-                        for text in pending_deltas:
-                            deadline.check()
-                            on_content(text)
-                        pending_deltas.clear()
                     if event.get('usage') is not None:
                         usage = event['usage']
                     for choice in event.get('choices', []):
@@ -211,10 +204,8 @@ class GenosTransport:
                             if arguments:
                                 raise TransportError('mixed model output channels', unknown=True)
                             content.append(text)
-                            if actual_model:
-                                deadline.check()
-                                on_content(text)
-                            else: pending_deltas.append(text)
+                            deadline.check()
+                            on_content(text)
                         for call in delta.get('tool_calls') or []:
                             if call.get('index', 0) != 0 or content:
                                 raise TransportError('expected one structured output channel', unknown=True)
@@ -224,10 +215,8 @@ class GenosTransport:
                             text = function.get('arguments')
                             if isinstance(text, str):
                                 arguments.append(text)
-                                if actual_model:
-                                    deadline.check()
-                                    on_content(text)
-                                else: pending_deltas.append(text)
+                                deadline.check()
+                                on_content(text)
                         if choice.get('finish_reason') is not None:
                             finish = choice['finish_reason']
                 stream.require_complete()

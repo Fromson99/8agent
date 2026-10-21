@@ -1,0 +1,27 @@
+MAIN95 ignore 재발 복구 패치 — 완료 기록
+원인: MAIN95 누적 ZIP이 오래된 부모 code.zip의 .gitignore/genosIgnore를 그대로 상속했다. 서빙393파일 검증에는 이 포장 정책이 포함되지 않았고 인계 검사에도 휴지통 fixture가 없어서, 이전 ignore 수정 회귀를 발견하지 못했다. 실제 발송 ZIP에서 두 파일 모두 .Trash 규칙이 빠진 것을 확인했다.
+사진: MAIN95 CODE_SMOKE/CODE_APPLIED 뒤 /workspace의 git add .가 .Trash-1001 CSV 파일을 처리했다. CRLF는 줄바꿈 경고이며 push/리비전 성공 증거가 아니다.
+이전 IGNORE R1과 NEXT R2의 이력·데이터 목록 오류도 확인했다. 이번 목록은 MAIN951313파일이며 agent6/corpus 빌드 자료를 강제로 추적시키지 않는다.
+
+수정:
+- MAIN95에 덧붙이는 작은 패치. 기존 ignore 프로필에 필요한 제외 규칙만 추가, 현장 사용자 규칙과 백업 보존.
+- Git 로컬 info/exclude에도 같은 규칙을 보존. 옛 누적 설치가 두 ignore 파일을 다시 덮은 경우에도 Git add에서 휴지통/이관 파일이 빠지는 것을 실제 Git으로 확인.
+- clean-stage는 HEAD에 없는 새 휴지통·이관 임시 파일만 index에서 제외하고 ignore 프로필을 stage한다. 디스크 파일과 다른 staged 변경은 유지한다.
+- index 백업·lock·원자 교체·HEAD 결속·중단 복구·정확한 undo-stage를 제공. 다른 Git 작업의 lock은 삭제하지 않는다.
+- 현재 HEAD에 이미 있는 금지 데이터는 COMMITTED_DATA.json으로 보고하고 index/이력을 바꾸지 않는다. commit/amend/push/force-push 자동 실행 없음.
+- MAIN95+ignore 전용 gate와 기존 선택 세대용 gate-sqlite를 연결. 이전 MAIN95 gate의 고정 ignore 해시와 혼용하지 않는다.
+
+검증:
+최종 제품 코드의8시나리오100명령(의도된 실패10회) 통과. 최종 ZIP/독립TXT14명령, 실제 staging/재실행/중단 복구/원복/전체1313코드 gate 통과. JavaScript0개.
+초기 실패 주입 fixture 오류와 검토 중 발견한 후속 Git lock 정리 경합은 기록을 보존했다. 최종 코드로8시나리오를 모두 재실행했다.
+현장 generation 성공 검사는 실행하지 않았다. 테스트는 generation 누락 실패가 성공으로 바뀌지 않는 경로만 확인했다.
+MAIN95 포인터와 서빙393파일, 원본 데이터·모델·검색 설정은 그대로다. 실제 GENOS 적용/commit/push/리비전/내부 모델은 미확인.
+
+발송:
+수신자 hyungjininfocz.son@partner.samsung.com
+SENT 1a15bba88ef7464a
+제목 [GENOS] MAIN95 ignore 재발 복구 — 짧은 패치노트 (2026-10-21 R1)
+본문과3첨부(ZIP, 완전한 실행TXT, PATCH_NOTE.txt)의 이름/형식/바이트 크기를 재조회했다. 원래 첨부는 SHA256 봉인, 수신 완료/현장 적용을 의미하지 않는다.
+실행은 PATCH_NOTE.txt대로 실제 업로드한 TRANSFER에서 한다. /workspace는 사진의 기존 checkout이다.
+다음 누적 인계에서는 이관/휴지통 규칙을 가진 현재 포장 프로필을 포함하고, 설치 후 실제 Git add에 휴지통·이관 fixture가 제외되는 검사까지 유지해야 한다. 이전 봉인 ZIP을 수정하거나 그 파일의 PASS를 새 포장 정책의 증거로 전용하지 않는다.
+완료 임시 checkout은 무손실 압축과 파일별 해시를 확인한 뒤 보관한다: RUNTIME_ARCHIVE.json.

@@ -12,6 +12,17 @@ from .. import observability as obs
 log = obs.get_logger('source_reader')
 
 
+
+def canonical_evidence(origin, spans):
+    """Shared canonical receipt builder; database bookkeeping is never identity."""
+    e = {k:origin[k] for k in ('source_id','document_id','unit_id','generation_id',
+        'source_artifact_hash','role','temporal_status','metadata')}
+    e['spans'] = [{k:s[k] for k in ('block_id','start_cp','end_cp','text','block_hash','span_hash')} for s in spans]
+    e['text_hash'] = text_hash('\n'.join(s['text'] for s in e['spans']))
+    e['evidence_id'] = 'E'+digest(e)[:28]
+    return e
+
+
 class SourceSession:
     def __init__(self, store, tools, glossary, matcher, repo, context, profile):
         self.store, self.tools, self.glossary, self.matcher = store, tools, glossary, matcher
@@ -194,8 +205,7 @@ class SourceSession:
                  'metadata': {'document_name': s['document_name'], 'heading': s.get('heading', ''),
                               'read_location':getattr(self,'_progress_labels',{}).get(progress_key,s.get('heading','')),
                               'source_store_sha256': self.store.manifest['store_sha256']}, 'spans': spans}
-            e['evidence_id'] = 'E'+digest(e)[:28]
-            evidence.append(e)
+            evidence.append(canonical_evidence(e, spans))
         return evidence, next_position
 
     def execute(self, action):
@@ -206,6 +216,7 @@ class SourceSession:
         name, args = action['tool'], action['args']
         size = self.profile['page_size']
         items, evidence, next_position, status = [], [], None, 'OK'
+        failure = None
         try:
             if name == 'list_documents':
                 value = self.navigator.catalogue(self.scope, title_query=args['query'], offset=offset, limit=size)
@@ -214,7 +225,8 @@ class SourceSession:
                 next_position = value['next_offset']
             elif name in ('list_structure', 'locate_provision'):
                 did = self.resolve(args['document'], 'D')
-                units = [(u, v) for (d, u), v in self.matcher.units.items() if d == did]
+                rows=self.matcher.units.for_document(did) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()
+                units = [(u, v) for (d, u), v in rows if d == did]
                 if name == 'locate_provision':
                     q = normalized(args['coordinate'])
                     units = [(u, v) for u, v in units if q in (normalized(v.get('coordinate_key') or ''), normalized(v.get('surface') or ''))]
@@ -304,9 +316,15 @@ class SourceSession:
             if time.monotonic() >= self.context.deadline:
                 raise DeadlineExceeded('source query deadline exceeded') from exc
             status, items, evidence = 'ERROR', [], []
+            from .tool_outcome import failure_details
+            failure = failure_details(exc)
+            seq=self.repo.event('SOURCE_QUERY_FAILED',{'tool':name,'failure':failure,'cause_message':str(exc)})
+            failure['failure_ref']='event:'+str(seq)
         result = {'status': status, 'items': items, 'evidence_ids': [e['evidence_id'] for e in evidence],
                   'next_cursor': self.cursor(key, next_position) if next_position is not None else None,
                   'coverage': {'document_ids': list(self.scope), 'complete': next_position is None and status not in ('ERROR','UNRESOLVED'),
                                'meaning': 'this operation only; not proof of regulatory absence'},
                   'error_code': 'SOURCE_QUERY_ERROR' if status == 'ERROR' else None}
+        if failure is not None:
+            result['failure'] = failure
         return self.repo.record_observation(action, result, evidence, verify=self.verify)

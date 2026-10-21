@@ -1,0 +1,41 @@
+{
+  "schema_version": "design-validation-v1",
+  "status": "PASS_DOCUMENT_CHECKS_ONLY",
+  "choice_count": 37,
+  "matrix_scenario_count": 49,
+  "candidate_choice_scenario_cells": 684,
+  "bound_source_files": 63,
+  "existing_test_references": 31,
+  "navigation_and_memory_catalogues_match_source": true,
+  "existing_test_symbols_resolve": true,
+  "relative_links_checked": [
+    "SOURCE_BINDING.json",
+    "POLICY_DESIGN.json",
+    "FAILURE_MATRIX.json",
+    "../../OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+    "../SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/IMPLEMENTATION_20261014.txt",
+    "../../../../08_DEPLOYMENT/GENOS/handoffs/tool_availability_20261014_r1/VALIDATION_SUMMARY.txt",
+    "../../../../GENOS.md"
+  ],
+  "handoff_source_hashes_match": true,
+  "new_runtime_tests_run": false,
+  "new_model_calls": 0,
+  "implementation_status": "NOT_IMPLEMENTED",
+  "independent_review": false,
+  "mermaid_check": {
+    "parsed": true,
+    "rendered": true,
+    "version": "11.4.1"
+  },
+  "notes": [
+    "설계 명세·기존 검사 nodeid·소스 지문 무결성 검사만 수행",
+    "신규 planned nodeid는 구현 전이므로 존재를 요구하지 않음",
+    "런타임 커버리지·의미 품질·GENOS 현장 성공의 증거가 아님"
+  ],
+  "artifact_sha256": {
+    "POLICY_DESIGN.json": "86dd6aa0c6cae06bd6ceeefba2fbbfb5e65987c687e4ae57d31851194c8f8787",
+    "README.md": "bfce2bd4025c7c9d024f31d43742f46643041ac98e860b9b053b3c0821dfde2d",
+    "FAILURE_MATRIX.json": "083b1547c7181869bc51cab819b72a327b1b39b48b6bbca9e441ab60645d31d2",
+    "SOURCE_BINDING.json": "3c244a7f7aaf7236b6a565550b22450a3e7166f31bc1436455a89b01cef2ef0a"
+  }
+}

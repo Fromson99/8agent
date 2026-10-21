@@ -1,0 +1,328 @@
+{
+  "source_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "internal-anchor-comparison-20261020-r1",
+    "generation": 93,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/internal-anchor-comparison-20261020-r1/release.json",
+    "release_manifest_sha256": "ced707a72139553a686e0e5dd12342825146b3b168487f6f7d034e0e1d6fc393",
+    "activated_at": "2026-10-20T12:47:12.267637+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506"
+  },
+  "exact_main_files": 393,
+  "main_differences": [],
+  "base_code_zip_sha256": "035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6",
+  "changes": {
+    "00_SYSTEM/PIPELINE.json": {
+      "before": "9bbd48ceed8d62ad6958013be1c2c13d51fdb85e15147f6833da08888f4aaf3d",
+      "after": "6dac624656e5aa38e27101d5b4184772b7db865e788ada104afe5b22b99d99c8"
+    },
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json": {
+      "before": "2b012e50f3ff8327904662ee765cf7255e73757dd437fa61d92eca1515caafd2",
+      "after": "e8a4ad650ee9bc58d0af109156305c89979c3ac956207596c9ffa2dde386f6ef"
+    },
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json": {
+      "before": "58b66118f390241e028bbe1809d0cd39d31e22887129cc04994bcd78e1e8c9d9",
+      "after": "def220eb5a0914031fe43387c40d5dc32ab98c9643d9adc4bc2fd35901c65fb0"
+    },
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json": {
+      "before": "8f5b4b7c8de84f32932cc41973b86792d3a68e445ce90fb657de7e6c1b86f738",
+      "after": "4ffd93cf0d3dfbeb4c36977d6e2a2882003d65fb0bd453158f8784d4833267c6"
+    },
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json": {
+      "before": "463e14576932c6b7ca4907a1e06bf2e2872c50763b419c764e03916ed2f6e9d7",
+      "after": "d8c0debe9feef8a6e220909742dc5e43de630ceaba7211329dc7d77592fdd826"
+    },
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json": {
+      "before": "e9dc10fd90a90b3cfa0fd0b10e7b79eb06000fbb9feb113c968d23f81aa882ba",
+      "after": "7704881bb4ff1fe3e45f3dc79760973c56c3a566c9dd9f9ea77d3ade969ffb46"
+    },
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json": {
+      "before": "762375beba29378d3950e31adbe67d4415f7356bc5e73e88f653322e755f9363",
+      "after": "2fd65cf97304b53efd94916d0c36667c6147a3d693d915dd73bed089e3d64238"
+    },
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json": {
+      "before": "cd8df952035d45ce2a949e2aed41ed0342b3290ba28e0111e52e8928dc93ce74",
+      "after": "bb4378b35a55e9102488070870dc756dd6bcd2612b8628aab4e89e7179776472"
+    },
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json": {
+      "before": "a85f205607cbe15e022c31e4e2cca63f72e5c194dd9f509a2afbdf62fcf079fe",
+      "after": "f2001a78ec59569fd330a1886235503ff6bcba51d704a333c39ed2f62b0a9334"
+    },
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json": {
+      "before": "29b28b7acac644b8e4b2f75e85ec4449c3a214742818a5789b3db98a46e3641a",
+      "after": "936740552a4d7cfa1fa493bac022bbd3fd070500d09d10c35f23a0404e4ec652"
+    },
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json": {
+      "before": "53806393b7507bdad2aa8c8bfa758b4218e81a966857a8fa876af1b173a414a8",
+      "after": "4660a1a1cd1cc844457a57b881de6367c4f8a47f48c96a0249ac8d1cdb15731e"
+    },
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json": {
+      "before": "2794bfdb99a8d1b10fe76fdf40b3bd727f82a529bfc9996dc84a6162e7a14a2a",
+      "after": "b942d19798a330e730310e3329e2f28e89309a304169da69dea36ee52a4c3de5"
+    },
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json": {
+      "before": "3aa8a94a1f18bdb8dca6219e9815690fbdbe3d7e525cab09f9ac32152c649116",
+      "after": "1018c0aed48114a54aec273977a7af96a02902be8bf868817e6687ff3a16138c"
+    },
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json": {
+      "before": "749bbd28f85a3587eddb746655c34a76ffa070c7f3140484faec6c3e1e349717",
+      "after": "d7d1688e71f79bddf4ee92097755714542cc5b8d54efd74ad456bfa471dedd49"
+    },
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json": {
+      "before": "a62a68e94de09664bb9b6a64d9606cffdb7c6ac9fff4d636f202037772aefc53",
+      "after": "62b541af151063078ed7b2eb427dc983b27bf77a64cdeb397630d6780e124e29"
+    },
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json": {
+      "before": "2d81e1d10b68791357ecd978debca589f639358b18835d4ccfd4bc7c8d91da58",
+      "after": "f91b50b1c3494ce422ce2e1563a6c176c7aa9198916aeff918070c3fb225179e"
+    },
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json": {
+      "before": "70d2d4c95c95a6b4f6a672aeebf643597022d15eea9b7a5566c0962c6fe5c692",
+      "after": "884551066787bc64e020018e23b6c20caf0630125c344fa24674d9f9770effa8"
+    },
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json": {
+      "before": "273590311a6bbf25c77eec7a5c97d7d2095dbad2c1fcb2a93a5c90d14eec6607",
+      "after": "ca6260b50e5b406b6b975b5e9d5310f6d5fdb5bc7af2723bff1d03f5bc3589ed"
+    },
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json": {
+      "before": "07fb94ff821de09f6063f6a3d58ef55828f6f46d269c55870aec8956b71f503d",
+      "after": "bd1d98ba8281cc6552414cf17478e2741621a73cd76fc9334a66d1e998e4df6d"
+    },
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json": {
+      "before": "4dc19b7856676ef4a99e2d3ed936379384e1d68f60c48b51475c3b9f325e698e",
+      "after": "def0ad624caf2f3a5625d82d553874be6ac55195bd5ce473a8b53ddc9d581f1e"
+    },
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json": {
+      "before": "1cf06c3154e108c333f641efc187aa525a141dc622ab4a64b22d0771d1cf6ecf",
+      "after": "671861f3b44997e670e16905aa34e6a2968a54e481c85779d437ecda62411092"
+    },
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json": {
+      "before": "8e7327916f0dc550556c4b06b40c5b6eda39488661b998a9b8ee8097bc8b915c",
+      "after": "f08e2d93bfecc2b62e96446faa2db3accdb23f295d091d0fb24ffb565854bc4f"
+    },
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json": {
+      "before": "0bfa1da9c25ad355f232a8518fe467b13fa4680256a17b613c95dcc9edad01ce",
+      "after": "c5c36018975af7b500f0e660983d6d125de56801328088b0f0998e354f9652f2"
+    },
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json": {
+      "before": "c774a8d7921f98e9a91835eb5b0f96bb3a9bec4b4e2466a09e55e77134821957",
+      "after": "6b35947b2403d64b92808e9d90092a52d088b31cff5fdbdd65bea4a96e99038e"
+    },
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json": {
+      "before": "ee77e9204694241f8bc23f2ca4e4fcda1727c73674d00aa5469831b143a426a7",
+      "after": "52b35ae0e309c6d13c35ad8d88830e6541dff71af89e33a12b7cdfc46fdc57a6"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json": {
+      "before": "f89ecf8cc95be3accf7ffc4301c5a0d533794a2d06d93b640d116e1337e14154",
+      "after": "33e4c1c30798b2e853d41a9d41ccfd0be7b35531f6e42b187e385ab132c6d35e"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json": {
+      "before": "b1016d1226fec5a68be115ea9024ce3dd5326f8db5e4caf005627e0e6f0f75ad",
+      "after": "5af1d41a9bcaca00ed8fbd2a4014d2901bb04e0464f8e700608c009cff42c9a7"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json": {
+      "before": "93fffcc33f9f680fbdd5440b876b116a7c0c073b1e333d5c5f62d8671514ee62",
+      "after": "bfa7b7db557d2b7715fcf75820921d654e57f8bc4d1ed34557955f936be54ebb"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json": {
+      "before": "dafa2a1f45562d9ba7611819c5d09d96359e6efc125545949b490afe582175f1",
+      "after": "6efa10dab25dd85ededa357eb6b705dbe2a8d656cbef4e0d18329d878a45b5e7"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json": {
+      "before": "501425996b1f749a8757dd045e11bd40875dfe6206614eabccb1e5adfd7a5f16",
+      "after": "3e5c3bdd7c60731624edd64f9156897f813eb3586e2bc5da9289492718bc6289"
+    },
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json": {
+      "before": "12bd31bea599e72f66793a445a2cdd93aefafc9a663a9bf7b78c3fa19c99fffe",
+      "after": "5a2bc88fd5e792a5266b8a0b3f0cd6393941f3036fe0f3ff18ac37063e464d60"
+    },
+    "02_BACKEND/lawrag/pipeline/basis_lifecycle.py": {
+      "before": "c40de99a4c3a1687d338bbfdc2bc27faf45104ef2a563fa5fada5a777eb8108c",
+      "after": "1dbb9542fd4dbb5acb875aa809b2b5c6fb2c81cf560bf648033366c6ec34cc33"
+    },
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py": {
+      "before": "550a0d51134a7f61a0a8d467d01cd36ee7657ab6ef251205da36285672aa2629",
+      "after": "f3b053bfb23034788a251a7e54c8c0c58674e38c6fe68d88a64f1700cd8f44ad"
+    },
+    "02_BACKEND/semantic_runtime/app.py": {
+      "before": "459a50434d416f2865d3c38c843bf5b34979fe11c4f2b1443148ded566aa1bd1",
+      "after": "5b8ea1664445a0b644722a4af1c984fa49743716b48ca40c78b99bf944173d23"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/api.py": {
+      "before": "763bf5626f0a426f984977a984ec7a9c0f5cb96b6d7b9b7d20dc710d67496c1a",
+      "after": "be7c1674f86de93c77e78dfdc0413630c1ebfe940f856c7f12fc22fd138bd446"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/integration.py": {
+      "before": "bffe5a86aec1b849584593fb2650492b83d6dd9185b3396dfadce129c203b91c",
+      "after": "fa22f69a2a2617c9921589cd23c832cd1bda80c46b514097687acbf5144ac7b7"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/repository.py": {
+      "before": "36397609b163ec921793d5a567caf89331eae6083a4d48e339ea9ad0ca203916",
+      "after": "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/resolver.py": {
+      "before": "d3d52ec7938f0e677f6b9fa35c7f91ebd5e89c72246b6f10ea48f78dec472622",
+      "after": "de6e478205ac16313694d5cc1fb0eb24594a0cbe9eddd24f45b6e41de25cd2ad"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/service.py": {
+      "before": "33cfd7b0081c4452e3c8d77d332c705f6230f69465f3e1104dd4e6784f78b834",
+      "after": "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/source_handoff.py": {
+      "before": "2700b8c14a5a1cbd44ebb84107f7933662cfd2e13a71b44236f735bcd0fa6df4",
+      "after": "4e5d4923b6a61e17856ad4667464af47911d9b5ad7bb75186c21ebf860a7984d"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py": {
+      "before": "2889297fb30d6624d273f6f143fb1b1aefe6d5e53163c2d72fc0ee081c3eb907",
+      "after": "49591a868a1e14d4d9a99ef2310a2e0e3c81b9da6ee805f1dda00637650b3325"
+    },
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": {
+      "before": "bd0cdcd295a209694c2692602b1310f1050b817ebe39ed8bddf1fe87759b400c",
+      "after": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5"
+    },
+    "02_BACKEND/semantic_runtime/oracle_query_db.py": {
+      "before": "63a9ba9ae70999069dc00f05d469d7efdeedcf63d62989e16925c4e9ac0d4d25",
+      "after": "9769af6307ab43bc9605e51f3c3b32c968ce31234da891003550a32410b57f2c"
+    },
+    "02_BACKEND/semantic_runtime/progress.py": {
+      "before": "9126902935702557753146acb440ead4ceeaef41de26750cab51e9190d6c00a2",
+      "after": "cdb70eeeae497d49676a30a6ac0c7cad5ec08c3efe1cf06d76e49edeac6ccdcd"
+    },
+    "02_BACKEND/semantic_runtime/workflow_evidence.py": {
+      "before": "009d8220aa5744f19f99f7ab66ea89df54b56c59f741f1ea8177622b8323f26b",
+      "after": "b46f64dc79f07d9e7b994e6796ddc5009d9240b3b20dee1e901eca2c58d6a637"
+    },
+    "02_BACKEND/semantic_runtime/workflow_rag.py": {
+      "before": "a569179ec0f21908ee27333fc58bb5a9483f495ecaed21c8a6230d521e804fff",
+      "after": "4de700a6d100b982bfc44d4e437d3d238f23a5a1acca74ae449b393278cd8434"
+    },
+    "02_BACKEND/workflow/internal_basis_discovery_workflow/contracts.py": {
+      "before": "6c108d38b450dfacc9c8b9107ec6a0cfb3b9c4de6baa32b4293de527dcfc3666",
+      "after": "30c17e56de220183ac921dc5f502a6fb183d1c1c0a1e9ef89048d2f3bc346380"
+    },
+    "02_BACKEND/workflow/internal_basis_discovery_workflow/flow.py": {
+      "before": "35cf7a30e2065d521f9c6a52c9455412427dec5c3a3df15599281c3b0d7d8827",
+      "after": "2fece9a8301ebe8c5438a76f088dbc5d1e0ed8a4fef2adff5b5505f6c3c9a068"
+    },
+    "02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json": {
+      "before": "f3dfe11f0c715c1179f15ef76f90f6e8958387c317421eaed3db9696ef07007f",
+      "after": "b58059b2c974b99e0ba0ea245947a04aa3ba0e0408113e0a1a1ded7db26deb17"
+    },
+    "02_BACKEND/workflow/internal_basis_discovery_workflow/report.py": {
+      "before": "82b83a7546c580ecfb1529fe4202eabef449ae377f4159ecadb9f3f488fb803f",
+      "after": "ccc7009f5540d6b28db88964dcf273084649c27c342e28b761fb9c9a4e8ab0c5"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/basis.py": {
+      "before": "86eef2b0311c6a280faa86dc38138807d39507326a449a113501e478d109a912",
+      "after": "6aaedc26d01786d62f70eeee879be85834bf559e9f45db3e300c80da8823a740"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json": {
+      "before": "e9ae61e5da661bb3026efef318e4825cde922538f1c7cd88fbb02fabf05eae13",
+      "after": "e71476aba0e82c485f7eb8d8a4cb5f64e43b9e65eb3d23a6e9931d7b705712ac"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/query_scope.py": {
+      "before": "98bb81218de873b6f31faac116a966c7fe3274823668f03aee1c034a24482444",
+      "after": "acbe5109813de92eb4cbce28abc69145eefa46e15f3afccc6d7c6b0ef88b96cc"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py": {
+      "before": "8bf2715f18419a55cca47a88b943015fdb1f0091500d1b9544df8429a6cb91c9",
+      "after": "dabf28a93924607d3c6be98cc1ed8e5642809b402134152eb9e8a20630c1ba76"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py": {
+      "before": "6adc7591f489b2ebcf4eefad30b30ccbc734c7262e5277ac2f93446df525a93f",
+      "after": "93aa004e84502fb64e877edebdbb304c32efcc0dedc3a92c6358fb4a74bfa4cf"
+    },
+    "06_TOOLS/pipeline.py": {
+      "before": "842253f7e4e208436c259738ffcd55ff8d8e65e5b047a0777508a637a3846459",
+      "after": "59935dc3a8ddf127edefcdc9e98be612939b444a61f58f10e5b7d21db1460edb"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "before": "f4f3193f04fbb4d49733e61d91f30d49877359265b5f169a5f1287e7d40f3cd5",
+      "after": "5076495cd72a12aec6cabd44e9ea137ea19e8aec880f0fa00ca1184d86c7ac36"
+    },
+    "02_BACKEND/lawrag/pipeline/basis_batch.py": {
+      "before": null,
+      "after": "2f06f1bf8fa43824cdf1eff6c2cb4828e2d132123fed01f469e7f4b17eecfb68"
+    },
+    "02_BACKEND/semantic_runtime/basis_links/grouping.py": {
+      "before": null,
+      "after": "d923042fadc586db9966ab032ddb5732568c80391312d1919bb516295823b13d"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/concept_report.py": {
+      "before": null,
+      "after": "8030a0caa7d5fa0c95df1dc75dd302b5400ef816d522894a97253e7dc5e45800"
+    },
+    "02_BACKEND/workflow/risk_team_compare_workflow/concepts.py": {
+      "before": null,
+      "after": "04778afcffa427d63b5363dcb74db17510bd309b3a132a5d51b01d8bfeed67cd"
+    },
+    "02_BACKEND/lawrag/pipeline/oracle_transfer_progress.py": {
+      "before": null,
+      "after": "38d4c264efac33f92fa48d3f0176735ae5e1f6c3da6a71de70c57ebc67106de1"
+    },
+    "02_BACKEND/lawrag/pipeline/basis_batch_report.py": {
+      "before": null,
+      "after": "be260f951c4792cff74539d42e9ccd67bb48f2e992636f6f3c3a8131aa8ef99c"
+    },
+    "02_BACKEND/lawrag/pipeline/basis_batch_candidates.py": {
+      "before": null,
+      "after": "31f8eaa2c80578e813bb46054708c3832b9dce125522b98a58f67dff4a355553"
+    },
+    "02_BACKEND/lawrag/pipeline/basis_batch_artifacts.py": {
+      "before": null,
+      "after": "896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe"
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": {
+      "before": null,
+      "after": "b4b57b246800d032fbeed971d5a9e4f3dc83c025291e4d6c4fe49b065d84ed51"
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_sqlite.py": {
+      "before": null,
+      "after": "9f346cc8cba5c6ed558e6a981c639c0e65e7df47d69640460cc02b7707c08825"
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": {
+      "before": null,
+      "after": "d87a344aa03a3bd92e6c00a879c4cdbb5eae78d3ca1cd8fb71e8bdc87efe86aa"
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_staging.py": {
+      "before": null,
+      "after": "874a32ece76c1e00962e6e83bbeda166fcb38d0bd0c0c72c2483658589ac42f6"
+    },
+    "02_BACKEND/lawrag/pipeline/risk_basis_sql.py": {
+      "before": null,
+      "after": "bf757ce3e0fe57d8048519d56b25772e91fc0342d2b659705d2e243fab4e5382"
+    }
+  },
+  "excluded_legacy_build_data": {
+    "02_BACKEND/lawrag/agents/agent6/corpus/manifest.json": "e09936dd0c4388e04fe9ff63d07b2f30cbec4202a99bb163aff9898fe746bf44",
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml": "190fbb50d3b45e8cbdd9645bde8f13fab9eab2baa860e66b0c30b221011da951",
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml": "18e42559a1fe6eedd2c8f76930681ea4a30362c646d6e3873c0df030a95b7338",
+    "02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml": "c7782cb82f5d5c5837d7d0a61d3fb620315f95cf34272cabeacdc6b15c0019e6",
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json": "b8127ad0f83490e7b5ad88379507d3e847c74339522f5fe0e4dc2aa14751a38e",
+    "02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json": "b5357853a99b5debbd6abd22603ed36cb0eb25d10eb6e538692377261115dd09"
+  },
+  "extra_tools": [
+    "06_TOOLS/pipeline.py",
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py",
+    "02_BACKEND/lawrag/pipeline/oracle_transfer_progress.py",
+    "02_BACKEND/lawrag/pipeline/basis_batch_report.py",
+    "02_BACKEND/lawrag/pipeline/basis_batch_candidates.py",
+    "02_BACKEND/lawrag/pipeline/basis_lifecycle.py",
+    "02_BACKEND/lawrag/pipeline/basis_batch.py",
+    "02_BACKEND/lawrag/pipeline/basis_batch_artifacts.py",
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py",
+    "02_BACKEND/lawrag/pipeline/risk_basis_sqlite.py",
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py",
+    "02_BACKEND/lawrag/pipeline/risk_basis_staging.py",
+    "02_BACKEND/lawrag/pipeline/risk_basis_sql.py"
+  ],
+  "field_checkout": "~/DEV, resolve physical existing Git checkout",
+  "field_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_codeserving_revision": null,
+  "field_verified": false
+}

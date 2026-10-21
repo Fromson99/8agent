@@ -1,0 +1,135 @@
+기술 부록: 앞선 작업 코드의 검증 기록입니다. 본 반입본의 버전/적용 상태는 GUIDE_UTF8.txt와 VALIDATION.json을 우선하십시오.
+
+Oracle 직접 조회 — 작업 코드 및 현장 적용 안내 (2026-10-19)
+
+구현 상태
+DP=oracle은 service.py → oracle_query_service.Factory → 요청별 Oracle 조회로 연결했다.
+원문·색인 전체 다운로드, 서빙 디스크의 데이터 SQLite, 요청 간 본문/색인 캐시는 없다.
+DP=sqlite 또는 DP 미설정의 기존 SQLite/NFS 세대 경로는 유지한다.
+로컬 작업 코드의 변경이다. 이 작업은 선택 포인터와 현장 코드서빙 리비전을 바꾸지 않았다.
+작업 시작 시 MAIN87이었고 완료 시 별도 ADR-0917의 MAIN88 선택을 확인했다.
+MAIN88 manifest의 service.py는 이전 해시이며 새 oracle_query 모듈을 포함하지 않는다.
+이 파일은 설치 ZIP이 아니며, 새 반입 ZIP·Git push·현장 배포·메일 발송은 수행하지 않았다.
+
+실행 구조
+1. Dataiku가 수집 → 구조화 → 용어/관계/색인 생성 → 원문 이관 검증을 수행한다.
+2. 조회 게시기가 같은 검증 세대의 색인/관계를 Oracle 조회 행으로 게시한다.
+   SQLite 파일은 Dataiku의 게시 입력으로만 사용한다. 서빙으로 전달하지 않는다.
+3. COMPLETE 조회 릴리스의 채널 포인터를 활성화한다.
+4. 코드서빙은 요청 시작 때 채널의 조회 릴리스 ID와 revision을 한 번 선택한다.
+   검색·관계·원문·답변 근거는 이 버전과 문서 접근 범위에 묶는다.
+5. 필요한 행/본문만 요청 중 메모리에서 사용하며 요청이 끝나면 해당 자원을 닫는다.
+   DB 데이터 블록 캐시는 Oracle이 관리한다. 별도 공유 결과 캐시는 추가하지 않았다.
+
+추가 Oracle 테이블 / DDL
+SIDDA.LEGAL_RAG_QUERY_RELEASE_A : 완료 조회 릴리스 manifest
+SIDDA.LEGAL_RAG_QUERY_ROW_A     : 검색/관계/구조 행, 토큰 위치, 원본 행 검증 해시
+SIDDA.LEGAL_RAG_QUERY_ACTIVE_A  : 채널별 활성 릴리스와 증가하는 revision
+SIDDA.LEGAL_RAG_QUERY_STATE_A   : JSON 상태 CAS 포트; 기존 이력 소비자는 NFS 유지
+DDL은 옆의 ORACLE_QUERY_DDL.sql과 동일하다. 기존 테이블 DROP/ALTER를 하지 않는다.
+논리 데이터 owner는 SIDDA이며 ORACLE_ORDS_SCHEMA=b04는 기존 ORDS 접속 설정이다.
+두 이름을 동일하게 바꾸어 넣지 않는다. 실제 현장 계정 권한/SQL 지원은 확인이 필요하다.
+
+데이터와 실행 상태의 저장 위치
+원문·용어·관계·검색 색인: Oracle.
+대화·사건·대사·AD 상태와 요청 로그: 코드서빙 외부의 기존 NFS/CIFS.
+사용자가 원문/색인의 서빙 저장 금지를 명시했고, 추가 상태 위치 답변이 없어 기존 외부
+NFS 이력을 유지하는 가정을 작업 중 알린 뒤 연결했다. STATE 테이블로 이력을 이관한 것은 아니다.
+GENOS_RUNTIME_DIR는 절대경로이며 실제 NFS/CIFS 마운트여야 한다.
+GENOS_SHARED_LOG_DIR를 지정하면 그 경로도 같은 외부 마운트 조건을 검사한다.
+로컬 디렉터리, tmpfs, 마운트가 빠진 경로는 거부한다. 로컬 파일로 대체하지 않는다.
+Oracle 모드 시스템 진단은 stdout을 사용하며 로컬 log spool을 만들지 않는다.
+검색어 토큰화와 작은 스키마 메타데이터 해석에는 메모리 전용 SQLite를 사용한다.
+여기에 원문·색인 파일을 로딩하거나 영속 저장하지 않는다.
+
+필수 의존성 / 코드
+requirements.txt에 sqlglot==30.23.0을 고정했다. 망분리 반입 시 기존 오프라인 의존성
+절차에 이 wheel을 포함해야 한다. python-oracledb는 로컬 Oracle 테스트 전용이며
+현장 서비스는 기존 ORDS 클라이언트를 사용하므로 새 DB 드라이버 설치가 필요 없다.
+핵심 진입점: service.py, semantic_runtime/oracle_query*.py,
+lawrag/pipeline/oracle_query_publish.py 및 oracle_query_navigation_publish.py.
+기존 검색/관계/원문/발행 소비자와 작업 엔진 manifest도 함께 수정했다.
+새 파일 일부만 옮기거나 이전 ENGINE manifest와 혼합하지 않는다.
+검증 코드 파일 목록과 SHA-256은 CODE_MANIFEST.json에 기록한다.
+
+Dataiku 적용 순서 — 코드와 의존성이 설치된 뒤 Dataiku 코드 루트에서 실행
+현장 명령은 python3이다. .venv/bin/python은 외부 WSL 개발용이며 현장 명령이 아니다.
+1) python3 06_TOOLS/pipeline.py oracle-query check-schema --log-dir <스키마확인로그>
+2) python3 06_TOOLS/pipeline.py oracle-query create-schema --log-dir <스키마생성로그>
+3) python3 06_TOOLS/pipeline.py oracle-query publish --generation <Dataiku검증세대폴더> --source-release-id <기존원문릴리스ID> --log-dir <게시로그폴더>
+4) 결과 status=COMPLETE, 새 release_id, receipt를 보존한다.
+5) 최초 활성화:
+   python3 06_TOOLS/pipeline.py oracle-query activate --channel main --release-id <새조회릴리스ID> --expected-revision 0 --log-dir <활성화로그폴더>
+6) 이후 갱신:
+   python3 06_TOOLS/pipeline.py oracle-query activate --channel main --release-id <새조회릴리스ID> --expected-revision <현재revision> --expected-release-id <현재조회릴리스ID> --log-dir <새활성화로그폴더>
+꺾쇠 값은 실제 현장 receipt/경로로 바꾼다. 로그는 Dataiku 작업 저장소에 둔다.
+기존 인증 노트북 desk도 재사용할 수 있다:
+  from lawrag.pipeline.oracle_query_publish import schema_from_notebook, from_notebook
+  schema_from_notebook(desk, create=True)
+  from_notebook(desk, generation=<검증세대경로>, source_release_id=<기존원문릴리스ID>)
+인증 정보는 화면·로그·첨부에 출력하지 않는다.
+
+코드서빙 환경 설정
+DP=oracle
+DP_QUERY_CHANNEL=main
+GENOS_RUNTIME_DIR=<실제 외부 NFS/CIFS runtime 경로>
+GENOS_SHARED_LOG_DIR=<실제 외부 요청 로그 경로>
+ORACLE_ORDS_SCHEMA, ORACLE_ORDS_CLIENT_ID, ORACLE_ORDS_CLIENT_SECRET,
+ORACLE_ORDS_BASE_URL은 기존 검증된 접속 값을 유지한다.
+내부 모델/워크플로우/팀 설정도 기존 연결을 사용한다. 시작 명령은 python3 main_router.py.
+특정 버전을 고정하려면 DP_QUERY_CHANNEL을 지우고 DP_QUERY_RELEASE_ID=<조회릴리스ID>를 사용한다.
+두 설정을 동시에 지정하면 실패한다. 둘 다 없으면 main 채널을 선택한다.
+DP_RELEASE_ID와 DP_CACHE_DIR는 새 서빙 경로에서 사용하지 않는다.
+원문 릴리스 ID와 새 조회 릴리스 ID는 서로 다르며 혼용하지 않는다.
+
+주기 갱신과 원복
+Dataiku 배치가 변경 자료를 처리한 뒤 원문 이관 → 조회 게시 → 검증 → 채널 활성화를 순서대로 실행한다.
+조회 릴리스 ID는 게시 내용의 해시로 생성된다. 사람이 매번 새 ID를 만드는 방식이 아니다.
+채널을 쓰면 서빙 환경변수를 배치마다 수정할 필요가 없다. 새 요청부터 새 버전을 선택한다.
+진행 중 요청은 이전 버전을 끝까지 사용한다. 기존 불변 릴리스는 자동 삭제하지 않는다.
+게시 실패/중단은 이전 활성 버전을 유지한다. 동일 로그/receipt로 게시를 재개한다.
+활성화 충돌 또는 응답 유실은 현재 포인터를 조회 대조하고 결과를 확정하며 맹목 재시도하지 않는다.
+원복은 같은 activate 명령에 이전 완료 조회 릴리스 ID와 현재 revision/릴리스 ID를 넣는다.
+revision은 원복할 때도 증가한다. 코드 원복은 이전 검증 코드 commit/리비전으로 별도 수행한다.
+이번 작업은 게시/활성화 명령까지 연결했다. 운영 Dataiku 스케줄 등록·법제처 변경분 수집은 실행하지 않았다.
+현재 게시기는 검증 세대를 전체 순회한다. 배치의 대규모 게시 시간/용량과 변경 행만 공유하는 최적화는 미검증이다.
+이 전체 순회는 Dataiku에서 수행하며 코드서빙의 시작/요청 경로에는 없다.
+
+현장 검증과 반입 경계
+이 Codex 환경에서 내부 GENOS/ORDS에 접근할 수 없다.
+현장 검증은 워크플로우 테스트 화면에서 WARMUP_STATUS와 실제 근거 질문으로 수행한다.
+새 코드의 준비 결과에 mode=oracle-query, source_downloaded=false, serving_data_cache=false,
+query_release_id/query_pointer_revision이 표시되는지 확인한다.
+로그의 oracle.release.selected와 원문·검색·실제 답변 인용을 같은 요청으로 대조한다.
+HEALTH=200이나 준비 완료만으로 실제 답변 성공을 확정하지 않는다.
+워크플로우 편집기 반영은 코드 Git push/배포와 별도다. 기존 연결에서 상태 명령을 차단한다면
+해당 편집기 리비전도 확인해야 한다. 플랫폼 MODEL/가드레일 오류를 이 코드 변경이 해결했다는 뜻은 아니다.
+반입 ZIP을 만들 때는 실제 TRANSFER 업로드 위치에서 상대경로로 풀고 check/apply하는 TXT가 필요하다.
+코드 적용 대상은 기존 checkout(기본 ~/DEV, 현장 확인 경로가 있으면 그 실제 경로)이다.
+현장 사진에서는 /workspace와 ~/DEV 심볼릭 링크 문제가 있었으므로 적용 대상을 추정하지 않는다.
+백업·파일 지문 확인·Git commit/push·서빙 리비전 선택을 각각 기록한다.
+구 genos_release_gate.py는 파일 generation용이므로 Oracle 검증 통과로 대신 표시하지 않는다.
+Oracle은 게시 source/query release pin, 실제 push 코드 manifest, 현장 schema/조회/워크플로우 검증이 필요하다.
+
+검증 결과와 한계
+합성 계약·SQLite 회귀 58개 통과, 실제 로컬 Oracle 23 연동 검사 1개 통과.
+실제 Oracle SQL로 DDL/게시/조회/범위 제한/CLOB/빈 문자열·NULL/포인터/상태 CAS를 실행했다.
+SQLite FTS5와 Oracle의 결과 순서·BM25 점수를 비교했고 원본 세대 파일을 치운 상태에서
+v6 모의 모델의 READY 답변/인용과 실제 service.py HEALTH/검색/원문 호출을 확인했다.
+모델은 scripted transport, ORDS HTTP 포장은 로컬 드라이버 대체, 외부 NFS mount 증명은
+합성 대체다. 별도 테스트에서 로컬/tmpfs 거부와 외부 마운트 판별을 검사했다.
+내부 ORDS HTTP·인증·응답 형식, 현장 Oracle 19 실행, 실제 NFS 장애/재개, background recovery,
+현장 LLM 답변, 전체 데이터 성능은 미검증이다. 검색 효과나 법률 정확도 실험이 아니다.
+최초 SQLite 재사용 회귀는 옛 cross-session 기대값 때문에 실패했다. 현재 team-session-v1은
+다른 채팅의 경험을 숨긴다. 같은 세션의 수정/복원/확정/재사용과 다른 세션 접근 거부로 검사했다.
+실패 로그와 수정 전 상태는 이 감사 디렉터리에 보존했다. 전체 저장소 테스트 완료를 뜻하지 않는다.
+
+실패/복구 계약
+Oracle SQL 계층의 자동 재시도는 없다. 요청 deadline과 총 SQL 호출 예산을 공유한다.
+권한/버전/해시 불일치, 응답 절단, 결과 예산 초과는 빈 검색이나 원문 부재로 바꾸지 않는다.
+기존 오류/부분 실행/재개 이력과 요청 상태는 외부 저장소에 남긴다.
+Oracle unavailable는 service 진입점에서 명시적 오류로 반환하며 SQLite 전체 복원으로 우회하지 않는다.
+
+참고 문서
+SQLite FTS5: https://www.sqlite.org/fts5.html
+Oracle 19c JSON_TABLE: https://docs.oracle.com/en/database/oracle/oracle-database/19/adjsn/function-JSON_TABLE.html

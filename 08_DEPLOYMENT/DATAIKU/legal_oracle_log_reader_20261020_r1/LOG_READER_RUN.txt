@@ -1,0 +1,52 @@
+# 같은 Dataiku 프로젝트의 별도 Python 노트북에서 실행하세요.
+# 실행 중인 이관 노트북의 커널을 재시작하거나 이관 셀을 다시 실행하지 마세요.
+# 이 코드는 로그만 한 번 읽습니다. 반복 실행해 최신 상태를 확인할 수 있습니다.
+from pathlib import Path
+from datetime import datetime
+import json
+
+BASE_DIR = "/data/dataiku/design/jupyter-run/dku-workdirs/LEGAL_RAG"
+
+
+def show_logs(base):
+    folders = sorted(Path(base).glob(
+        "*/legal-existing-zip-r2-work/oracle-import-r3"
+    ))
+    if len(folders) != 1:
+        print("찾은 로그 폴더:", [str(p) for p in folders])
+        raise RuntimeError("로그 위치를 하나로 확인하지 못했습니다. 이 결과를 보내주세요.")
+
+    logs = folders[0]
+    print("조회 시각:", datetime.now())
+    print("로그 위치:", logs)
+
+    for path in sorted((logs / "source").glob("*/state.json")):
+        state = json.loads(path.read_text())
+        print("\n원문 이관 상태:", state.get("status"))
+        print("마지막 갱신:", datetime.fromtimestamp(path.stat().st_mtime))
+        print("대조 완료 행:",
+              {k: v.get("rows", 0)
+               for k, v in state.get("tables", {}).items()})
+
+    files = [logs / "events.jsonl"]
+    files += sorted((logs / "source").glob("*/calls.jsonl"))
+    for path in files:
+        if not path.is_file():
+            continue
+        print("\n최근 로그:", path.relative_to(logs))
+        with path.open("rb") as f:
+            f.seek(0, 2)
+            end = f.tell()
+            start = max(0, end - 16384)
+            f.seek(start)
+            raw = f.read(16384)
+        # 중간부터 읽었다면 잘린 첫 줄을 버립니다.
+        if start:
+            raw = raw.partition(b"\n")[2]
+        lines = raw.decode("utf-8", errors="replace").splitlines()
+        print("\n".join(lines[-5:]))
+
+    print("\n읽기 전용 조회 완료. 최신 상태를 보려면 이 조회 셀만 다시 실행하세요.")
+
+
+show_logs(BASE_DIR)

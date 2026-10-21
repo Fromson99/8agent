@@ -1,0 +1,69 @@
+{
+  "schema_version": "kv-cache-design-document-validation-v1",
+  "checked_at": "2026-10-14T08:26:36.418495+00:00",
+  "status": "PASS",
+  "checks": {
+    "local_links_resolve": true,
+    "active_pointer_unchanged": true,
+    "release_manifest_unchanged": true,
+    "all_302_selected_and_working_files_match": true,
+    "data_manifest_unchanged": true,
+    "source_snapshot_unchanged": true,
+    "historical_regression_files_exist": true
+  },
+  "file_artifacts": {
+    "PLAN.md": {
+      "sha256": "d11ab867d70aea46924ed50dc9a4c43a5c6a65af7e7e7fae3ee19cb990a422ec",
+      "bytes": 43179,
+      "lines": 355
+    },
+    "REVIEW.md": {
+      "sha256": "4b7c54ebf1907c24533bdfbfb3214d846aebad57a41626238826a35c2550ba65",
+      "bytes": 4844,
+      "lines": 31
+    },
+    "EVIDENCE.json": {
+      "sha256": "60405e329e0db4fe6ac2c6b253aaa8f573ef42e1d86a85e652f68d927595ec82",
+      "bytes": 59918
+    }
+  },
+  "local_link_count": 21,
+  "invalid_links": [],
+  "source_files_changed_since_capture": [],
+  "validation_scope": "document links, static function names, source hashes and selected release consistency only",
+  "not_run": [
+    "product tests",
+    "performance experiment",
+    "model calls",
+    "MAIN promotion",
+    "GENOS field checks"
+  ],
+  "self_review": "REVIEW.md; same author, not independent review",
+  "validation_attempts": [
+    {
+      "checked_at": "2026-10-14T08:26:18.658055+00:00",
+      "status": "NEEDS_REVIEW",
+      "invalid_links": [
+        {
+          "document": "PLAN.md",
+          "label": "VALIDATION.json",
+          "target": "VALIDATION.json",
+          "exists": false
+        }
+      ],
+      "cause": "The validation file was first created after its own link was checked; recheck after creation."
+    },
+    {
+      "status": "PASS",
+      "checks": {
+        "local_links_resolve": true,
+        "active_pointer_unchanged": true,
+        "release_manifest_unchanged": true,
+        "all_302_selected_and_working_files_match": true,
+        "data_manifest_unchanged": true,
+        "source_snapshot_unchanged": true,
+        "historical_regression_files_exist": true
+      }
+    }
+  ]
+}

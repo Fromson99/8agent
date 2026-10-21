@@ -1,0 +1,32 @@
+GENOS_SEARCH_SELECTION_TRANSFER_20261021_R1 검증 결과
+
+실행 TXT 두 개를 ZIP에서 풀어 실제 bash로 순차 실행했습니다.
+합성 원문 데이터/격리 DEV: 35명령 통과(안전 차단 예상 거부12회 포함).
+- 파일 부재 → DEV ZIP 생성 → NFS 선택 파일 적용; 첫 단계의 NFS 불변
+- 동일 ZIP/동일 적용 재실행, 상태 조회, 적용 전 검사
+- 적용 직후 영수증 연결이 끊긴 중단 상태에서 기존 before/after 영수증 복구
+- 구형 v1 → v2 적용과 원래 파일/권한의 정확한 원복
+- 기존 유효 v2의 무변경 적용, 소유하지 않은 변경의 원복 거부
+- 파일/패키지 변조, 잘못된 데이터 경로, ZIP 경로 탈출, ZIP 해시 오류 차단
+- ZIP 생성 후 NFS 파일 변경, stale 해시, 심볼릭 링크, 동시 실행 차단
+- DEV 경로 이동 시 예외 정책 파일 위치만 재결속 후 적용/원복
+- ZIP 생성 후 데이터 메타데이터 변경 차단
+- 모든 명령 전후 합성 store.sqlite/manifest.json 해시 불변
+- 새 파일의 manifest 읽기 권한 및 기존 파일 0640 권한의 적용/원복 보존
+
+기존 선택/최신판 계약 검사: 28통과·2실패.
+2실패는 test_search_selection.py의 legacy/compact-v2 API 검사가 구형 v1 선택을
+적용한 뒤 현행 require_latest_selection=true 초기화를 요구하기 때문입니다.
+이번 작업은 제품 코드를 바꾸지 않았으며 해당 구형 fixture를 고치거나 통과로 계산하지 않았습니다.
+test_latest_document_policy.py의 최신판 v2 실제 API 두 형식 검사는 통과했습니다.
+같은 Store/Selection의 문서 목록·검색·구판 접근 차단·최신판 원문 열람·health 소비자를 검사합니다.
+공통 activate의 쓰기 후 실패 자동 원복·stale 계획·원문 보존 검사도 통과했습니다.
+
+참조 선택 코드/정책9파일은 MAIN90 및 MAIN95 전달본과 동일 SHA-256입니다.
+Python3.11/3.12 문법 호환을 확인하며 실행 로그에 실제 sys.executable/Python 버전을 남깁니다.
+도구 ZIP 안의 TXT와 별도 첨부 TXT는 같은 바이트입니다. JavaScript 첨부는 없습니다.
+
+검증 한계: 로컬 합성 데이터이며 실제 GENOS/NFS 파일 권한·내부 모델·배포 리비전·질문 성공은 미검증입니다.
+대형 원문 DB 전체 해시/전체 서빙 E2E를 인증하지 않습니다. 명령은 문서 메타데이터를 비교하고
+기존 Store/Selection 검사를 수행합니다. 원문/색인 재구축, 모델 호출, MAIN 전환, 제품 코드 수정은 없습니다.
+사진의 멀티턴 세션 ID 누락은 별도 문제입니다.

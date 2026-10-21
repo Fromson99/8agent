@@ -1,0 +1,58 @@
+대사 답변·출처 표시 수정 — workflow 1.20.6
+
+이전 READABLE R1 대신 이 R2를 사용하세요. R1 설치 전/후 모두 적용할 수 있습니다.
+R1에서 누락한 본문 속 [C4][C60] 같은 임시 인용 번호 처리를 보완했습니다.
+
+수정 내용
+- 본문·검토 의견·추가 확인의 [C숫자]를 제거하고, 검증한 구조화 인용의 내규/외규 문서 번호로 출처를 표시합니다. 원문·사용자 질문의 같은 문자와 저장된 모델 출력은 보존합니다.
+- 반복되는 미완료 상태 문구와 E+해시 내부 식별자를 화면에 직접 표시하지 않습니다.
+- 내규/외규 출처 번호를 문서·판본별로 통일하고 긴 원문은 펼치기/접기로 제공합니다.
+- 5열 표를 내규 출처·원문 / 외규 출처·원문 / 검토 의견의 3열로 정리합니다.
+- 마무리 답변을 작성한 경우, 그 문단이 실제 인용한 근거로 표를 구성합니다. 이전에 멈춘 항목 검토 표를 그대로 붙여 외규 연결을 못 찾았다고 표시하던 불일치를 제거합니다.
+- 문단에 인용한 내규와 외규를 같은 표에 표시하는 것은 직접 법적 연결을 새로 확정하는 처리가 아닙니다. 실제 적용·예외·유효성의 미확인 내용은 추가 확인에 보존합니다.
+- 원문의 숫자·각주·표 구분자·줄바꿈은 보존합니다. 모델·검색·예산·상태/권한/해시 검사는 유지합니다.
+- 이전 10분 제한 패치까지 포함합니다. MAIN96, MAIN96+10분 제한 패치 또는 READABLE R1 위에 적용할 수 있습니다. 기존 STABLE_COMMANDS/BASIS_FIXED_LOCAL·ignore·.env·데이터를 보존합니다.
+
+적용 순서 — 실제 업로드한 TRANSFER를 현재 작업 위치로 사용
+기존 Git checkout 적용 대상은 기본 ~/DEV입니다. 다르면 모든 명령에 --root /실제/checkout 을 동일하게 추가합니다.
+python3 -m zipfile -e ./GENOS_COMPARISON_READABLE_20261021_R2.zip ./GENOS_COMPARISON_READABLE_20261021_R2
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt check
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt gate
+
+apply는 실제 checkout의 파일을 백업 후 적용합니다. 다른 코드·후속 수정은 자동 덮어쓰지 않습니다.
+checkout에서 COMMIT_PATHS.txt에 해당하는 변경과 git diff --check를 확인하고 commit합니다.
+다시 TRANSFER에서 실행합니다.
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt gate-code
+현재 SQLite/NFS 운영이면 동일 checkout의 실제 선택 세대 검사도 수행합니다. Oracle 모드에는 사용하지 않습니다.
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt gate-sqlite
+PASS한 commit을 push하고 같은 commit으로 코드서빙 리비전을 배포합니다.
+
+워크플로우 편집기 — R1 미적용이면 변경 필수
+R1 편집기 TXT와 R2 편집기 TXT는 동일합니다. 이미 R1 TXT를 전체 적용했다면 다시 바꾸지 않아도 됩니다.
+아직 적용하지 않았다면 코드 ZIP 설치와 별도로, 기존 Python 단계 전체를 백업한 뒤
+GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt 내용을 Python 편집기에 전체 교체하고 저장/반영합니다.
+이 TXT는 Python 코드입니다. bash로 실행하지 않습니다. 기존 환경변수와 플랫폼 입력 연결은 유지합니다.
+백엔드와 편집기의 답변 표시 리비전: workflow-readable-sources-20261021-r1
+편집기를 바꾸지 않으면 구 출처 목록이 다시 붙거나 원문 표기가 달라질 수 있습니다.
+
+워크플로우 테스트 화면에서 새 질문으로 확인
+1. 본문 속 [C4][C60] 같은 임시 번호와 E+긴 해시, 폴더 경로, 반복 미완료 문구가 노출되지 않는지 확인합니다.
+2. 출처 문서명을 클릭해 원문이 펼쳐지고 다시 접히는지 확인합니다.
+3. 본문 출처 번호와 근거 표가 같고, 한쪽만 인용한 문단에는 반대쪽 출처가 임의 연결되지 않는지 확인합니다.
+4. 원문의 숫자/별표/각주/줄바꿈과 추가 확인 사항을 확인합니다.
+5. 저장 결과 재조회와 스트리밍 최종 답변이 일치하는지 확인합니다.
+이전 리비전에 결속된 실행은 원래 코드와 기록으로 보존하고 새 요청으로 확인합니다.
+
+재실행·원복 — TRANSFER에서
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt status
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt apply
+bash ./GENOS_COMPARISON_READABLE_20261021_R2/GENOS_COMPARISON_READABLE_20261021_R2_RUN.txt rollback
+백업·INSTALL_STATE.json·지속 로그를 보존합니다. rollback은 적용 직전 checkout 파일로 복원합니다.
+코드서빙 리비전과 워크플로우 편집기도 각각 백업한 이전 버전으로 복원해야 합니다.
+
+검증·상태
+같은 코드·manifest의 합성 계약/API/service/표시 검사와 최종 ZIP 설치·원복 결과는 HANDOFF_VALIDATION.txt에 기록합니다.
+로컬 선택 MAIN96, 실제 데이터, Git commit/push와 GENOS 리비전은 이번 작업에서 변경하지 않았습니다.
+GENOS 접근·현장 렌더러의 HTML 접기 지원·실제 내부 모델 결과는 미검증입니다.
+실제 질의·warmup은 워크플로우 테스트 화면에서만 확인합니다.

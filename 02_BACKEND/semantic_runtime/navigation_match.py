@@ -195,15 +195,10 @@ class ReverseMatcher:
         for name, value in self._build(store_db, source_tools, glossary).items():
             setattr(self, name, value)
 
-    def _build(self, store_db, source_tools, glossary):
+    def _load_documents(self, store_db):
         self.documents = {r['document_id']: r['name'] for r in store_db.execute(
             'SELECT document_id,name FROM document ORDER BY document_id')}
-        self.structures, self.document_names = SurfaceIndex(), SurfaceIndex()
-        self.body = MorphIndex()
-        self.units, self.members = {}, defaultdict(set)
-        self.sources = {}
-        for row in source_tools.db.execute("SELECT id,document_id,json_extract(json,'$.unit_id') AS unit_id,json_extract(json,'$.heading') AS heading FROM source"):
-            self.sources[row['id']] = dict(row)
+        self.document_names = SurfaceIndex()
         # Document titles and official abbreviations name a law; folder and file labels
         # below only locate it. Only title spans shadow glossary terms in starts().
         self.title_keys = set()
@@ -236,6 +231,15 @@ class ReverseMatcher:
             for alias in aliases:
                 self.document_names.add(alias, did)
                 self.title_keys.add(norm(alias))
+
+    def _build(self, store_db, source_tools, glossary):
+        self._load_documents(store_db)
+        self.structures = SurfaceIndex()
+        self.body = MorphIndex()
+        self.units, self.members = {}, defaultdict(set)
+        self.sources = {}
+        for row in source_tools.db.execute("SELECT id,document_id,json_extract(json,'$.unit_id') AS unit_id,json_extract(json,'$.heading') AS heading FROM source"):
+            self.sources[row['id']] = dict(row)
         for r in store_db.execute('SELECT document_id,unit_id,parent_id,json FROM source_unit'):
             u = json.loads(r['json']); key = (r['document_id'], str(r['unit_id']))
             self.units[key] = {'parent': str(r['parent_id']) if r['parent_id'] is not None else None,

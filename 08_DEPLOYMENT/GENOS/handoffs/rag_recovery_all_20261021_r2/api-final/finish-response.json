@@ -1,0 +1,1680 @@
+{
+  "answer": {
+    "claims": [],
+    "generation_id": "term-source-2a2e5ca09bee96c47a59",
+    "id": "answer:56d89a70bc614e7da7ebb21f42cef766",
+    "provider_receipt": {
+      "assessment_review_policy": "disabled",
+      "assessment_review_status": "SKIPPED",
+      "backend": "legal_agent",
+      "claim_review_status": "UNREVIEWED",
+      "final_review_policy": "disabled",
+      "final_review_status": "SKIPPED",
+      "model": {
+        "adapter_version": "fixture-v1",
+        "endpoint_identity": "no-network",
+        "max_input_bytes": 500000,
+        "model": "synthetic-contract",
+        "provider": "fixture",
+        "trust_zone": "internal"
+      },
+      "quality_certified": false,
+      "unified": true
+    },
+    "query_id": "query:b0cf6ffc0ab045d98f2504a840e6b430",
+    "schema_version": "term-runtime-v1",
+    "scope": {
+      "document_version_ids": [
+        "d"
+      ]
+    },
+    "source_store_sha256": "2519d5a6598fe6c66fd4970bf85aebe69b740c37359a26d2e6350671e9923038",
+    "text": "확보한 자료만으로 질문의 결론을 확정하기는 어렵습니다. 확인한 원문과 아직 확인하지 못한 범위를 정리합니다.\n\n**확인한 원문: 모의승인규정 · 제1조 정의**\n\n> 제1조 업무 절차: 승인 후 보고한다.\n\n확인 범위\n\n- 모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다.",
+    "unresolved": [
+      {
+        "reason": "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+      }
+    ]
+  },
+  "assembly": {
+    "context": [
+      {
+        "ancestors": [
+          {
+            "title": "제1조 정의"
+          }
+        ],
+        "document_id": "d",
+        "document_name": "모의승인규정",
+        "id": "article:bbb3b79da72c6250f25c3377",
+        "text": "제1조 업무 절차: 승인 후 보고한다."
+      }
+    ],
+    "data_status": "DRAFT",
+    "term_agent": {
+      "accepted_outcome": {
+        "answer_coverage": "INSUFFICIENT",
+        "assessment_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED"
+      },
+      "answer_coverage": "INSUFFICIENT",
+      "case": {
+        "experience_id": null,
+        "judgment_refs": {
+          "ASSESS": {
+            "choice_id": "Da38f0c67ca33c06074c570f6d5fc",
+            "entity_id": "case:ASSESS",
+            "kind": "case_stage",
+            "payload_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "COMPOSE": {
+            "choice_id": "D00691734163aa4738b9f9a032c40",
+            "entity_id": "case:COMPOSE",
+            "kind": "case_stage",
+            "payload_hash": "52fced01e78e5c79885de7176f3d717765cb7fbf29283b05b413a041f5b2f5d9",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "INTENT": {
+            "choice_id": "D33b0cec2d728b246bc6b63b4cad4",
+            "entity_id": "case:INTENT",
+            "kind": "case_stage",
+            "payload_hash": "b87f41552b5376bf38923b2578da0bbee34d9b3595c8a82bb578120925b13c5d",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "PLAN": {
+            "choice_id": "D70ca4231cc66a5d1dd0bd43eac12",
+            "entity_id": "case:PLAN",
+            "kind": "case_stage",
+            "payload_hash": "262fcdcee42631e4d651428c19ee962dbfd1d55fb2e66f23423b1aa7a692009c",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "READ": {
+            "choice_id": "Defc858c9c9d19b6baef4c0459fd3",
+            "entity_id": "case:READ",
+            "kind": "case_stage",
+            "payload_hash": "f74a56a1844ee680ef0a1c60b66d229aedc7d05c29aaf66e382d8392f0a3cd1a",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "RECALL": {
+            "choice_id": "Db20ad686dfbf7a009879b6317d30",
+            "entity_id": "case:RECALL",
+            "kind": "case_stage",
+            "payload_hash": "8e0814cc017a6a4fe058ec785f72bdf2f033ad8625f89e6216ce524bd8d05ee8",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "SELECT": {
+            "choice_id": "D2fde2873d0cee51aad204b773381",
+            "entity_id": "case:SELECT",
+            "kind": "case_stage",
+            "payload_hash": "e2a28f4a57f123205dd4d504ce0eb3f35014e390caea47868334c537abe54582",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 2
+          }
+        },
+        "question_id": "G313815a2e2a4474e96cc6398508ae14f",
+        "revision": 1,
+        "route_id": 1,
+        "status": "READY"
+      },
+      "citation_integrity": "ORIGINAL_SPANS",
+      "completed_with_unresolved_connections": false,
+      "completion_contract": "investigation-completion-v8",
+      "completion_policy": "ALLOW_UNRESOLVED_CONNECTIONS",
+      "control_contract": "investigation-control-v2",
+      "evidence_inventory": [
+        {
+          "acquired_complete": true,
+          "article_delivered_complete": true,
+          "availability": "DELIVERED",
+          "decisions": {},
+          "delivered_complete": true,
+          "document_id": "d",
+          "material_id": "Baea197c016f2467cc23afef5cf11",
+          "path": "모의승인규정 제1조",
+          "reason": "모의 적용 대상 원문 확인",
+          "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+          "source_id": "article:bbb3b79da72c6250f25c3377",
+          "status": "READ"
+        }
+      ],
+      "final": true,
+      "gaps": [
+        {
+          "identity_key": "Kdd5c6e3a2907b74d9b0a",
+          "issue_id": "Q1",
+          "kind": "MISSING_SOURCE",
+          "material": true,
+          "material_id": null,
+          "missing_target": "모의승인규정 제2조",
+          "reason": "모의 적용 범위 원문을 아직 읽지 않았다.",
+          "suggested_action": "READ_SCOPE",
+          "target_binding": {
+            "absence_proven": false,
+            "document_candidates": [
+              "d"
+            ],
+            "expected": [
+              {
+                "block_hash": "c133f52cf5f0f189bcd323402e62e0e3d980ea2f5035d3651349161a28996b01",
+                "block_id": "1",
+                "document_id": "d",
+                "end_cp": 30,
+                "start_cp": 0
+              }
+            ],
+            "lookup": {
+              "pairs": [
+                {
+                  "coordinate": "제2조",
+                  "document_id": "d",
+                  "document_name": "모의승인규정",
+                  "question_span": {
+                    "end": 10,
+                    "start": 7,
+                    "text": "제2조"
+                  },
+                  "unit_id": "1"
+                }
+              ],
+              "reason": "EXACT_DOCUMENT_COORDINATE",
+              "source_ids": [
+                "article:81a39be87217e43e1e1050ae"
+              ],
+              "status": "MATCH"
+            },
+            "pairs": [
+              {
+                "coordinate": "제2조",
+                "document_id": "d",
+                "document_name": "모의승인규정",
+                "question_span": {
+                  "end": 10,
+                  "start": 7,
+                  "text": "제2조"
+                },
+                "unit_id": "1"
+              }
+            ],
+            "source_ids": [
+              "article:81a39be87217e43e1e1050ae"
+            ],
+            "status": "EXACT",
+            "text": "모의승인규정 제2조"
+          },
+          "target_binding_hash": "6091f4539bbf000c78841743e541b0a7e1e29244f1b354e219abc15e4ff9e051"
+        }
+      ],
+      "investigation_chain": {
+        "contract": "investigation-action-chain-v1",
+        "current_frame": "Hd85fad9570968c83752393403dd4",
+        "entry_frame_id": "Hf06cc4daee7cb2a4c919b7baeace",
+        "entry_search": {
+          "queries": [
+            "모의승인규정 제1조"
+          ],
+          "reason": "현재 질문의 원문 근거를 찾기 위한 실행된 검색 계획",
+          "reason_origin": "SYSTEM_ENTRY"
+        },
+        "judgments": [],
+        "memory_rule": "과거 메뉴로 돌아가도 확보 원문·채택·보류·후속 판단을 되돌리지 않는다",
+        "steps": [
+          {
+            "action": "READ_ARTICLES",
+            "basis_refs": [],
+            "from_frame": "Hf06cc4daee7cb2a4c919b7baeace",
+            "id": "S179d831e3a8159ba74ce8faf41d6",
+            "judgment_refs": [],
+            "kind": "NAVIGATION",
+            "notes": "",
+            "number": 1,
+            "outcome": {
+              "adopted": [],
+              "deferred_or_excluded": [],
+              "delivered_pages": 0,
+              "new_laws": [],
+              "new_reads": [
+                "모의승인규정 제1조 정의"
+              ],
+              "window": "read"
+            },
+            "previous_step": null,
+            "progress": {
+              "changed": true,
+              "unchanged_turns": 0
+            },
+            "queries": [],
+            "reason": "모의 적용 대상 원문 확인",
+            "receipt": "S179d831e3a8159ba74ce8faf41d6",
+            "status": "APPLIED",
+            "sufficiency_reason": "선택한 조사 후 원문으로 판단한다.",
+            "targets": [
+              {
+                "action": "READ_ARTICLES",
+                "id": "Ta9ef62196b01a3d02fb136cfeb85",
+                "identity": {
+                  "document_id": "d",
+                  "source_id": "article:bbb3b79da72c6250f25c3377",
+                  "unit_id": "0"
+                },
+                "label": "모의승인규정 제1조 전체 원문 읽기"
+              }
+            ]
+          }
+        ]
+      },
+      "investigation_status": "COMPLETED",
+      "issue_assessments": [
+        {
+          "issue_id": "Q1",
+          "reason": "판단 상태 INSUFFICIENT; 근거 주장 0개, 미확인 1개.",
+          "status": "INSUFFICIENT"
+        }
+      ],
+      "judgment_view": {
+        "content_sha256": "df2b061a140005096f7c1d46cb7d8c339bc053b33cd4c80be74037382fb758e1",
+        "question_id": "G313815a2e2a4474e96cc6398508ae14f",
+        "question_revision": 1,
+        "revision": "judgment-view-20261007-completion-r1",
+        "route_id": 1,
+        "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+        "schema_version": "judgment-view-v1",
+        "stages": [
+          {
+            "actions": [
+              "질문의 조사 목적과 검색 개념 정리"
+            ],
+            "concepts": [
+              "승인"
+            ],
+            "data": [],
+            "decisions": [
+              "모의 적용 기준 확인"
+            ],
+            "facts": [],
+            "id": "1",
+            "judgment_ref": {
+              "choice_id": "D33b0cec2d728b246bc6b63b4cad4",
+              "entity_id": "case:INTENT",
+              "kind": "case_stage",
+              "payload_hash": "b87f41552b5376bf38923b2578da0bbee34d9b3595c8a82bb578120925b13c5d",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "질문 이해",
+            "stage": "INTENT",
+            "status": "이번 요청 수행"
+          },
+          {
+            "actions": [
+              "현재 질문과 지정 문서 범위로 검색 계획 구성"
+            ],
+            "data": [],
+            "decisions": [
+              "검색어: 모의승인규정 제1조"
+            ],
+            "documents": [
+              "모의승인규정"
+            ],
+            "id": "2",
+            "judgment_ref": {
+              "choice_id": "D70ca4231cc66a5d1dd0bd43eac12",
+              "entity_id": "case:PLAN",
+              "kind": "case_stage",
+              "payload_hash": "262fcdcee42631e4d651428c19ee962dbfd1d55fb2e66f23423b1aa7a692009c",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "검색 계획",
+            "processing": "고정 처리",
+            "stage": "PLAN",
+            "status": "이번 요청 수행"
+          },
+          {
+            "actions": [
+              "검색 기록에서 읽을 후보 수집"
+            ],
+            "data": [
+              {
+                "action": "읽을 후보로 선택",
+                "coordinate": "제1조 정의",
+                "document_name": "모의승인규정",
+                "source_id": "article:bbb3b79da72c6250f25c3377"
+              }
+            ],
+            "decisions": [],
+            "id": "3",
+            "judgment_ref": {
+              "choice_id": "Db20ad686dfbf7a009879b6317d30",
+              "entity_id": "case:RECALL",
+              "kind": "case_stage",
+              "payload_hash": "8e0814cc017a6a4fe058ec785f72bdf2f033ad8625f89e6216ce524bd8d05ee8",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "자료 검색",
+            "stage": "RECALL",
+            "status": "이번 요청 수행"
+          },
+          {
+            "actions": [
+              "원문을 열람하고 출처·버전·원문 범위 확인",
+              "모의승인규정 · 해당 단위 본문 열람"
+            ],
+            "data": [
+              {
+                "action": "원문 열람",
+                "coordinate": "제1조",
+                "document_name": "모의승인규정",
+                "quote": "제1조 업무 절차: 승인 후 보고한다.",
+                "source_id": "article:bbb3b79da72c6250f25c3377"
+              }
+            ],
+            "decisions": [],
+            "id": "4",
+            "judgment_ref": {
+              "choice_id": "Defc858c9c9d19b6baef4c0459fd3",
+              "entity_id": "case:READ",
+              "kind": "case_stage",
+              "payload_hash": "f74a56a1844ee680ef0a1c60b66d229aedc7d05c29aaf66e382d8392f0a3cd1a",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "원문 확인",
+            "stage": "READ",
+            "status": "이번 요청 수행"
+          },
+          {
+            "actions": [
+              "읽은 원문에서 답변에 사용할 근거 선택",
+              "READ_ARTICLES · 모의 적용 대상 원문 확인"
+            ],
+            "completion_contract": "investigation-completion-v8",
+            "completion_policy": "ALLOW_UNRESOLVED_CONNECTIONS",
+            "data": [
+              {
+                "action": "답변 근거 채택",
+                "coordinate": "제1조 정의",
+                "document_name": "모의승인규정",
+                "reason": "모의 적용 대상 원문 확인",
+                "source_id": "article:bbb3b79da72c6250f25c3377"
+              }
+            ],
+            "decisions": [
+              "모의승인규정 · 모의 적용 대상 원문 확인"
+            ],
+            "id": "5",
+            "inventory": [
+              {
+                "acquired_complete": true,
+                "article_delivered_complete": true,
+                "availability": "DELIVERED",
+                "decisions": {},
+                "delivered_complete": true,
+                "document_id": "d",
+                "material_id": "Baea197c016f2467cc23afef5cf11",
+                "path": "모의승인규정 제1조",
+                "reason": "모의 적용 대상 원문 확인",
+                "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+                "source_id": "article:bbb3b79da72c6250f25c3377",
+                "status": "READ"
+              }
+            ],
+            "investigation_chain": {
+              "contract": "investigation-action-chain-v1",
+              "current_frame": "Hd85fad9570968c83752393403dd4",
+              "entry_frame_id": "Hf06cc4daee7cb2a4c919b7baeace",
+              "entry_search": {
+                "queries": [
+                  "모의승인규정 제1조"
+                ],
+                "reason": "현재 질문의 원문 근거를 찾기 위한 실행된 검색 계획",
+                "reason_origin": "SYSTEM_ENTRY"
+              },
+              "judgments": [],
+              "memory_rule": "과거 메뉴로 돌아가도 확보 원문·채택·보류·후속 판단을 되돌리지 않는다",
+              "steps": [
+                {
+                  "action": "READ_ARTICLES",
+                  "basis_refs": [],
+                  "from_frame": "Hf06cc4daee7cb2a4c919b7baeace",
+                  "id": "S179d831e3a8159ba74ce8faf41d6",
+                  "judgment_refs": [],
+                  "kind": "NAVIGATION",
+                  "notes": "",
+                  "number": 1,
+                  "outcome": {
+                    "adopted": [],
+                    "deferred_or_excluded": [],
+                    "delivered_pages": 0,
+                    "new_laws": [],
+                    "new_reads": [
+                      "모의승인규정 제1조 정의"
+                    ],
+                    "window": "read"
+                  },
+                  "previous_step": null,
+                  "progress": {
+                    "changed": true,
+                    "unchanged_turns": 0
+                  },
+                  "queries": [],
+                  "reason": "모의 적용 대상 원문 확인",
+                  "receipt": "S179d831e3a8159ba74ce8faf41d6",
+                  "status": "APPLIED",
+                  "sufficiency_reason": "선택한 조사 후 원문으로 판단한다.",
+                  "targets": [
+                    {
+                      "action": "READ_ARTICLES",
+                      "id": "Ta9ef62196b01a3d02fb136cfeb85",
+                      "identity": {
+                        "document_id": "d",
+                        "source_id": "article:bbb3b79da72c6250f25c3377",
+                        "unit_id": "0"
+                      },
+                      "label": "모의승인규정 제1조 전체 원문 읽기"
+                    }
+                  ]
+                }
+              ]
+            },
+            "judgment_ref": {
+              "choice_id": "D2fde2873d0cee51aad204b773381",
+              "entity_id": "case:SELECT",
+              "kind": "case_stage",
+              "payload_hash": "e2a28f4a57f123205dd4d504ce0eb3f35014e390caea47868334c537abe54582",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 2
+            },
+            "label": "근거 선택",
+            "laws": [
+              {
+                "article_count": null,
+                "branches": [
+                  {
+                    "delivery": 0,
+                    "id": "Baea197c016f2467cc23afef5cf11",
+                    "law_id": "Lfaebfda01a9563cdd10d180ed881",
+                    "matched_coordinates": [
+                      "제1조"
+                    ],
+                    "reason": "모의 적용 대상 원문 확인",
+                    "source_id": "article:bbb3b79da72c6250f25c3377",
+                    "status": "READ"
+                  }
+                ],
+                "document_id": "d",
+                "generation_id": "term-source-2a2e5ca09bee96c47a59",
+                "id": "Lfaebfda01a9563cdd10d180ed881",
+                "name": "모의승인규정",
+                "selection": {
+                  "basis_refs": [],
+                  "issue_refs": [
+                    "Q1"
+                  ],
+                  "law_id": "Lfaebfda01a9563cdd10d180ed881",
+                  "origin": "EXPLICIT_READ_OR_ADOPTION",
+                  "reason": "모의 적용 대상 원문 확인",
+                  "status": "INVESTIGATE"
+                },
+                "unit_count": null
+              }
+            ],
+            "limitations": [],
+            "return_points": [
+              {
+                "arrived_after": null,
+                "id": "Hf06cc4daee7cb2a4c919b7baeace",
+                "kind": "NAVIGATION",
+                "laws": [
+                  "모의승인규정"
+                ],
+                "number": 1,
+                "originals": [],
+                "reference_groups": 0,
+                "search_queries": [
+                  "모의승인규정 제1조"
+                ]
+              },
+              {
+                "arrived_after": "S179d831e3a8159ba74ce8faf41d6",
+                "id": "Hd85fad9570968c83752393403dd4",
+                "kind": "NAVIGATION",
+                "laws": [
+                  "모의승인규정"
+                ],
+                "number": 2,
+                "originals": [
+                  "제1조 정의"
+                ],
+                "reference_groups": 0,
+                "search_queries": [
+                  "모의승인규정 제1조"
+                ]
+              }
+            ],
+            "source_inventory": [
+              {
+                "availability": "DELIVERED",
+                "decisions": {},
+                "document_id": "d",
+                "material_id": "Baea197c016f2467cc23afef5cf11",
+                "path": "모의승인규정 제1조",
+                "reason": "모의 적용 대상 원문 확인",
+                "receipt": {
+                  "acquired_complete": true,
+                  "acquired_spans": [
+                    {
+                      "block_hash": "1de2f4ae95570772cb9cf3d2b2df24d8ff721acc9039c57651d5ef35df039e23",
+                      "block_id": "0",
+                      "end_cp": 21,
+                      "evidence_id": "Ec78d0b0bc8c7afd2580279599c82",
+                      "ordinal": 0,
+                      "span_hash": "1de2f4ae95570772cb9cf3d2b2df24d8ff721acc9039c57651d5ef35df039e23",
+                      "start_cp": 0,
+                      "text": "제1조 업무 절차: 승인 후 보고한다."
+                    }
+                  ],
+                  "ancestor_context_spans": [],
+                  "article_delivered_complete": true,
+                  "contract": "investigation-evidence-v2",
+                  "delivered_complete": true,
+                  "delivered_pages_count": 1,
+                  "delivered_spans": [
+                    {
+                      "block_id": "0",
+                      "end_cp": 21,
+                      "evidence_id": "Ec78d0b0bc8c7afd2580279599c82",
+                      "start_cp": 0,
+                      "text": "제1조 업무 절차: 승인 후 보고한다."
+                    },
+                    {
+                      "block_id": "0",
+                      "end_cp": 21,
+                      "evidence_id": "Ec78d0b0bc8c7afd2580279599c82",
+                      "start_cp": 0,
+                      "text": "제1조 업무 절차: 승인 후 보고한다."
+                    }
+                  ],
+                  "document_id": "d",
+                  "expected_spans": [
+                    {
+                      "block_hash": "1de2f4ae95570772cb9cf3d2b2df24d8ff721acc9039c57651d5ef35df039e23",
+                      "block_id": "0",
+                      "end_cp": 21,
+                      "start_cp": 0
+                    }
+                  ],
+                  "generation_id": "term-source-2a2e5ca09bee96c47a59",
+                  "pages_total": 1,
+                  "path": "모의승인규정 제1조",
+                  "scope": {
+                    "article_complete": true,
+                    "block_count": 1,
+                    "block_ids": [
+                      "0"
+                    ],
+                    "chars": 21,
+                    "description": "이 단위와 그 아래 모든 항·호·목",
+                    "extent": "subtree",
+                    "id": "subtree:0",
+                    "label": "제1조",
+                    "unit_id": "0"
+                  },
+                  "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+                  "semantic_quality_certified": false,
+                  "source_id": "article:bbb3b79da72c6250f25c3377"
+                },
+                "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+                "source_id": "article:bbb3b79da72c6250f25c3377",
+                "status": "READ"
+              }
+            ],
+            "stage": "SELECT",
+            "status": "이번 요청 수행",
+            "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED"
+          },
+          {
+            "actions": [
+              "선택한 원문을 현재 조건에 적용"
+            ],
+            "answer_coverage": "INSUFFICIENT",
+            "completion_contract": "investigation-completion-v8",
+            "data": [],
+            "decisions": [],
+            "gaps": [
+              {
+                "identity_key": "Kdd5c6e3a2907b74d9b0a",
+                "issue_id": "Q1",
+                "kind": "MISSING_SOURCE",
+                "material": true,
+                "material_id": null,
+                "missing_target": "모의승인규정 제2조",
+                "reason": "모의 적용 범위 원문을 아직 읽지 않았다.",
+                "suggested_action": "READ_SCOPE",
+                "target_binding": {
+                  "absence_proven": false,
+                  "document_candidates": [
+                    "d"
+                  ],
+                  "expected": [
+                    {
+                      "block_hash": "c133f52cf5f0f189bcd323402e62e0e3d980ea2f5035d3651349161a28996b01",
+                      "block_id": "1",
+                      "document_id": "d",
+                      "end_cp": 30,
+                      "start_cp": 0
+                    }
+                  ],
+                  "lookup": {
+                    "pairs": [
+                      {
+                        "coordinate": "제2조",
+                        "document_id": "d",
+                        "document_name": "모의승인규정",
+                        "question_span": {
+                          "end": 10,
+                          "start": 7,
+                          "text": "제2조"
+                        },
+                        "unit_id": "1"
+                      }
+                    ],
+                    "reason": "EXACT_DOCUMENT_COORDINATE",
+                    "source_ids": [
+                      "article:81a39be87217e43e1e1050ae"
+                    ],
+                    "status": "MATCH"
+                  },
+                  "pairs": [
+                    {
+                      "coordinate": "제2조",
+                      "document_id": "d",
+                      "document_name": "모의승인규정",
+                      "question_span": {
+                        "end": 10,
+                        "start": 7,
+                        "text": "제2조"
+                      },
+                      "unit_id": "1"
+                    }
+                  ],
+                  "source_ids": [
+                    "article:81a39be87217e43e1e1050ae"
+                  ],
+                  "status": "EXACT",
+                  "text": "모의승인규정 제2조"
+                },
+                "target_binding_hash": "6091f4539bbf000c78841743e541b0a7e1e29244f1b354e219abc15e4ff9e051"
+              }
+            ],
+            "id": "6",
+            "issue_assessments": [
+              {
+                "issue_id": "Q1",
+                "reason": "판단 상태 INSUFFICIENT; 근거 주장 0개, 미확인 1개.",
+                "status": "INSUFFICIENT"
+              }
+            ],
+            "judgment_ref": {
+              "choice_id": "Da38f0c67ca33c06074c570f6d5fc",
+              "entity_id": "case:ASSESS",
+              "kind": "case_stage",
+              "payload_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "적용 판단",
+            "limitation_items": [
+              {
+                "id": "L2ea94b153fd7d23e614d",
+                "issue_id": "Q1",
+                "kind": "MISSING_SOURCE",
+                "missing_target": "모의승인규정 제2조",
+                "navigation_status": "UNRESOLVED",
+                "text": "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+              }
+            ],
+            "limitations": [
+              "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+            ],
+            "stage": "ASSESS",
+            "status": "이번 요청 수행"
+          },
+          {
+            "actions": [
+              "확인된 판단 문장·제한 사항을 선택한 형식으로 배치"
+            ],
+            "completion_contract": "investigation-completion-v8",
+            "data": [],
+            "decisions": [],
+            "id": "7",
+            "judgment_ref": {
+              "choice_id": "D00691734163aa4738b9f9a032c40",
+              "entity_id": "case:COMPOSE",
+              "kind": "case_stage",
+              "payload_hash": "52fced01e78e5c79885de7176f3d717765cb7fbf29283b05b413a041f5b2f5d9",
+              "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+              "version": 1
+            },
+            "label": "답변 작성",
+            "limitation_items": [
+              {
+                "id": "L2ea94b153fd7d23e614d",
+                "issue_id": "Q1",
+                "kind": "MISSING_SOURCE",
+                "missing_target": "모의승인규정 제2조",
+                "navigation_status": "UNRESOLVED",
+                "text": "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+              }
+            ],
+            "limitations": [
+              "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+            ],
+            "processing": "고정 처리",
+            "stage": "COMPOSE",
+            "status": "이번 요청 수행"
+          }
+        ]
+      },
+      "law_navigation": {
+        "branches": [
+          {
+            "delivery": 0,
+            "id": "Baea197c016f2467cc23afef5cf11",
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "matched_coordinates": [
+              "제1조"
+            ],
+            "reason": "모의 적용 대상 원문 확인",
+            "source_id": "article:bbb3b79da72c6250f25c3377",
+            "status": "READ"
+          }
+        ],
+        "contract": "law-candidate-navigation-v3",
+        "has_more_laws": false,
+        "law_decisions": [
+          {
+            "basis_refs": [],
+            "issue_refs": [
+              "Q1"
+            ],
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "origin": "EXPLICIT_READ_OR_ADOPTION",
+            "reason": "모의 적용 대상 원문 확인",
+            "status": "INVESTIGATE"
+          }
+        ],
+        "law_total": 1,
+        "laws": [
+          {
+            "article_count": null,
+            "document_id": "d",
+            "generation_id": "term-source-2a2e5ca09bee96c47a59",
+            "id": "Lfaebfda01a9563cdd10d180ed881",
+            "name": "모의승인규정",
+            "unit_count": null
+          }
+        ],
+        "query_fingerprint": "78dd2f625c2e08ccfd8ec5df8aeaee11b1160a853f66cca064ded9d1a97213aa"
+      },
+      "ontology_legal_coverage": "DISCOVERY_UNTIL_REVIEWED_IMPORT",
+      "reference_navigation": {
+        "actions": [],
+        "batches": [],
+        "groups": [],
+        "history": [],
+        "limits": [],
+        "pending": false,
+        "seen_target_ids": [],
+        "unresolved": []
+      },
+      "request_routing": {
+        "answer": "",
+        "mode": "CASE",
+        "reason": "모의 적용 범위 확인"
+      },
+      "return_points": [
+        {
+          "arrived_after": null,
+          "id": "Hf06cc4daee7cb2a4c919b7baeace",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 1,
+          "originals": [],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        },
+        {
+          "arrived_after": "S179d831e3a8159ba74ce8faf41d6",
+          "id": "Hd85fad9570968c83752393403dd4",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 2,
+          "originals": [
+            "제1조 정의"
+          ],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        }
+      ],
+      "semantic_quality_certified": false,
+      "source_reply_contract": "verified-source-excerpt-reply-v1",
+      "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED",
+      "text_integrity": "VERIFIED_SOURCE_EXCERPTS",
+      "unified": true
+    },
+    "unresolved": [
+      "모의승인규정의 적용 기준은? — 모의승인규정 제2조: 추가 조사 중 확보하지 못했습니다."
+    ]
+  },
+  "case_id": "team-session-v1:3e8150f960abd7e013fbbbac89cf6c703188cd9407a8c27a317f00ce9e0887b1",
+  "case_revision": 0,
+  "executed": [
+    "INTENT",
+    "PLAN",
+    "RECALL",
+    "READ",
+    "SELECT",
+    "SELECT",
+    "ASSESS",
+    "COMPOSE"
+  ],
+  "experience_id": null,
+  "goal_id": "G313815a2e2a4474e96cc6398508ae14f",
+  "intake_id": "bb05312ddb6b4bccde94fd09f437c698fb9c166c64e09c14868af819e43f25da",
+  "investigation_id": "inv:0814540392914a3a9209850e14aae991",
+  "investigation_revision": 2,
+  "knowledge_id": null,
+  "method_id": "CASE_START",
+  "quality_certified": false,
+  "query": {
+    "generation_id": "term-source-2a2e5ca09bee96c47a59",
+    "id": "query:b0cf6ffc0ab045d98f2504a840e6b430",
+    "question": "모의승인규정의 적용 기준은?",
+    "scope": {
+      "document_version_ids": [
+        "d"
+      ]
+    }
+  },
+  "question_id": "G313815a2e2a4474e96cc6398508ae14f",
+  "question_revision": 1,
+  "release": null,
+  "request": {
+    "document_ids": [
+      "d"
+    ],
+    "question": "모의승인규정의 적용 기준은?",
+    "use_llm": true
+  },
+  "request_id": "r1",
+  "response_schema": "legal-agent-shortcut-response-v1",
+  "retrieval": {
+    "candidates": [
+      {
+        "adopted_spans": [
+          {
+            "block_id": "0",
+            "end_cp": 21,
+            "evidence_id": "Ec78d0b0bc8c7afd2580279599c82",
+            "start_cp": 0,
+            "text": "제1조 업무 절차: 승인 후 보고한다."
+          }
+        ],
+        "article_complete": true,
+        "document_id": "d",
+        "document_name": "모의승인규정",
+        "evidence_ids": [
+          "Ec78d0b0bc8c7afd2580279599c82"
+        ],
+        "heading": "제1조 정의",
+        "read_scopes": [],
+        "source_id": "article:bbb3b79da72c6250f25c3377",
+        "text": "제1조 업무 절차: 승인 후 보고한다.",
+        "unit_id": "0"
+      }
+    ],
+    "generation_id": "term-source-2a2e5ca09bee96c47a59",
+    "routes": {},
+    "term_agent": {
+      "accepted_outcome": {
+        "answer_coverage": "INSUFFICIENT",
+        "assessment_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED"
+      },
+      "answer_coverage": "INSUFFICIENT",
+      "case": {
+        "experience_id": null,
+        "judgment_refs": {
+          "ASSESS": {
+            "choice_id": "Da38f0c67ca33c06074c570f6d5fc",
+            "entity_id": "case:ASSESS",
+            "kind": "case_stage",
+            "payload_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "COMPOSE": {
+            "choice_id": "D00691734163aa4738b9f9a032c40",
+            "entity_id": "case:COMPOSE",
+            "kind": "case_stage",
+            "payload_hash": "52fced01e78e5c79885de7176f3d717765cb7fbf29283b05b413a041f5b2f5d9",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "INTENT": {
+            "choice_id": "D33b0cec2d728b246bc6b63b4cad4",
+            "entity_id": "case:INTENT",
+            "kind": "case_stage",
+            "payload_hash": "b87f41552b5376bf38923b2578da0bbee34d9b3595c8a82bb578120925b13c5d",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "PLAN": {
+            "choice_id": "D70ca4231cc66a5d1dd0bd43eac12",
+            "entity_id": "case:PLAN",
+            "kind": "case_stage",
+            "payload_hash": "262fcdcee42631e4d651428c19ee962dbfd1d55fb2e66f23423b1aa7a692009c",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "READ": {
+            "choice_id": "Defc858c9c9d19b6baef4c0459fd3",
+            "entity_id": "case:READ",
+            "kind": "case_stage",
+            "payload_hash": "f74a56a1844ee680ef0a1c60b66d229aedc7d05c29aaf66e382d8392f0a3cd1a",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "RECALL": {
+            "choice_id": "Db20ad686dfbf7a009879b6317d30",
+            "entity_id": "case:RECALL",
+            "kind": "case_stage",
+            "payload_hash": "8e0814cc017a6a4fe058ec785f72bdf2f033ad8625f89e6216ce524bd8d05ee8",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "SELECT": {
+            "choice_id": "D2fde2873d0cee51aad204b773381",
+            "entity_id": "case:SELECT",
+            "kind": "case_stage",
+            "payload_hash": "e2a28f4a57f123205dd4d504ce0eb3f35014e390caea47868334c537abe54582",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 2
+          }
+        },
+        "question_id": "G313815a2e2a4474e96cc6398508ae14f",
+        "revision": 1,
+        "route_id": 1,
+        "status": "READY"
+      },
+      "citation_integrity": "ORIGINAL_SPANS",
+      "completed_with_unresolved_connections": false,
+      "completion_contract": "investigation-completion-v8",
+      "completion_policy": "ALLOW_UNRESOLVED_CONNECTIONS",
+      "control_contract": "investigation-control-v2",
+      "evidence_inventory": [
+        {
+          "acquired_complete": true,
+          "article_delivered_complete": true,
+          "availability": "DELIVERED",
+          "decisions": {},
+          "delivered_complete": true,
+          "document_id": "d",
+          "material_id": "Baea197c016f2467cc23afef5cf11",
+          "path": "모의승인규정 제1조",
+          "reason": "모의 적용 대상 원문 확인",
+          "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+          "source_id": "article:bbb3b79da72c6250f25c3377",
+          "status": "READ"
+        }
+      ],
+      "final": true,
+      "gaps": [
+        {
+          "identity_key": "Kdd5c6e3a2907b74d9b0a",
+          "issue_id": "Q1",
+          "kind": "MISSING_SOURCE",
+          "material": true,
+          "material_id": null,
+          "missing_target": "모의승인규정 제2조",
+          "reason": "모의 적용 범위 원문을 아직 읽지 않았다.",
+          "suggested_action": "READ_SCOPE",
+          "target_binding": {
+            "absence_proven": false,
+            "document_candidates": [
+              "d"
+            ],
+            "expected": [
+              {
+                "block_hash": "c133f52cf5f0f189bcd323402e62e0e3d980ea2f5035d3651349161a28996b01",
+                "block_id": "1",
+                "document_id": "d",
+                "end_cp": 30,
+                "start_cp": 0
+              }
+            ],
+            "lookup": {
+              "pairs": [
+                {
+                  "coordinate": "제2조",
+                  "document_id": "d",
+                  "document_name": "모의승인규정",
+                  "question_span": {
+                    "end": 10,
+                    "start": 7,
+                    "text": "제2조"
+                  },
+                  "unit_id": "1"
+                }
+              ],
+              "reason": "EXACT_DOCUMENT_COORDINATE",
+              "source_ids": [
+                "article:81a39be87217e43e1e1050ae"
+              ],
+              "status": "MATCH"
+            },
+            "pairs": [
+              {
+                "coordinate": "제2조",
+                "document_id": "d",
+                "document_name": "모의승인규정",
+                "question_span": {
+                  "end": 10,
+                  "start": 7,
+                  "text": "제2조"
+                },
+                "unit_id": "1"
+              }
+            ],
+            "source_ids": [
+              "article:81a39be87217e43e1e1050ae"
+            ],
+            "status": "EXACT",
+            "text": "모의승인규정 제2조"
+          },
+          "target_binding_hash": "6091f4539bbf000c78841743e541b0a7e1e29244f1b354e219abc15e4ff9e051"
+        }
+      ],
+      "investigation_chain": {
+        "contract": "investigation-action-chain-v1",
+        "current_frame": "Hd85fad9570968c83752393403dd4",
+        "entry_frame_id": "Hf06cc4daee7cb2a4c919b7baeace",
+        "entry_search": {
+          "queries": [
+            "모의승인규정 제1조"
+          ],
+          "reason": "현재 질문의 원문 근거를 찾기 위한 실행된 검색 계획",
+          "reason_origin": "SYSTEM_ENTRY"
+        },
+        "judgments": [],
+        "memory_rule": "과거 메뉴로 돌아가도 확보 원문·채택·보류·후속 판단을 되돌리지 않는다",
+        "steps": [
+          {
+            "action": "READ_ARTICLES",
+            "basis_refs": [],
+            "from_frame": "Hf06cc4daee7cb2a4c919b7baeace",
+            "id": "S179d831e3a8159ba74ce8faf41d6",
+            "judgment_refs": [],
+            "kind": "NAVIGATION",
+            "notes": "",
+            "number": 1,
+            "outcome": {
+              "adopted": [],
+              "deferred_or_excluded": [],
+              "delivered_pages": 0,
+              "new_laws": [],
+              "new_reads": [
+                "모의승인규정 제1조 정의"
+              ],
+              "window": "read"
+            },
+            "previous_step": null,
+            "progress": {
+              "changed": true,
+              "unchanged_turns": 0
+            },
+            "queries": [],
+            "reason": "모의 적용 대상 원문 확인",
+            "receipt": "S179d831e3a8159ba74ce8faf41d6",
+            "status": "APPLIED",
+            "sufficiency_reason": "선택한 조사 후 원문으로 판단한다.",
+            "targets": [
+              {
+                "action": "READ_ARTICLES",
+                "id": "Ta9ef62196b01a3d02fb136cfeb85",
+                "identity": {
+                  "document_id": "d",
+                  "source_id": "article:bbb3b79da72c6250f25c3377",
+                  "unit_id": "0"
+                },
+                "label": "모의승인규정 제1조 전체 원문 읽기"
+              }
+            ]
+          }
+        ]
+      },
+      "investigation_status": "COMPLETED",
+      "issue_assessments": [
+        {
+          "issue_id": "Q1",
+          "reason": "판단 상태 INSUFFICIENT; 근거 주장 0개, 미확인 1개.",
+          "status": "INSUFFICIENT"
+        }
+      ],
+      "law_navigation": {
+        "branches": [
+          {
+            "delivery": 0,
+            "id": "Baea197c016f2467cc23afef5cf11",
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "matched_coordinates": [
+              "제1조"
+            ],
+            "reason": "모의 적용 대상 원문 확인",
+            "source_id": "article:bbb3b79da72c6250f25c3377",
+            "status": "READ"
+          }
+        ],
+        "contract": "law-candidate-navigation-v3",
+        "has_more_laws": false,
+        "law_decisions": [
+          {
+            "basis_refs": [],
+            "issue_refs": [
+              "Q1"
+            ],
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "origin": "EXPLICIT_READ_OR_ADOPTION",
+            "reason": "모의 적용 대상 원문 확인",
+            "status": "INVESTIGATE"
+          }
+        ],
+        "law_total": 1,
+        "laws": [
+          {
+            "article_count": null,
+            "document_id": "d",
+            "generation_id": "term-source-2a2e5ca09bee96c47a59",
+            "id": "Lfaebfda01a9563cdd10d180ed881",
+            "name": "모의승인규정",
+            "unit_count": null
+          }
+        ],
+        "query_fingerprint": "78dd2f625c2e08ccfd8ec5df8aeaee11b1160a853f66cca064ded9d1a97213aa"
+      },
+      "ontology_legal_coverage": "DISCOVERY_UNTIL_REVIEWED_IMPORT",
+      "reference_navigation": {
+        "actions": [],
+        "batches": [],
+        "groups": [],
+        "history": [],
+        "limits": [],
+        "pending": false,
+        "seen_target_ids": [],
+        "unresolved": []
+      },
+      "request_routing": {
+        "answer": "",
+        "mode": "CASE",
+        "reason": "모의 적용 범위 확인"
+      },
+      "return_points": [
+        {
+          "arrived_after": null,
+          "id": "Hf06cc4daee7cb2a4c919b7baeace",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 1,
+          "originals": [],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        },
+        {
+          "arrived_after": "S179d831e3a8159ba74ce8faf41d6",
+          "id": "Hd85fad9570968c83752393403dd4",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 2,
+          "originals": [
+            "제1조 정의"
+          ],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        }
+      ],
+      "semantic_quality_certified": false,
+      "source_reply_contract": "verified-source-excerpt-reply-v1",
+      "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED",
+      "text_integrity": "VERIFIED_SOURCE_EXCERPTS",
+      "unified": true
+    },
+    "vector_status": "NOT_USED"
+  },
+  "revision": 1,
+  "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+  "selection": {
+    "discarded_ids": [],
+    "method": "term-agent",
+    "selected": [
+      {
+        "ancestors": [
+          {
+            "title": "제1조 정의"
+          }
+        ],
+        "document_id": "d",
+        "document_name": "모의승인규정",
+        "id": "article:bbb3b79da72c6250f25c3377",
+        "text": "제1조 업무 절차: 승인 후 보고한다."
+      }
+    ],
+    "term_agent": {
+      "accepted_outcome": {
+        "answer_coverage": "INSUFFICIENT",
+        "assessment_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED"
+      },
+      "answer_coverage": "INSUFFICIENT",
+      "case": {
+        "experience_id": null,
+        "judgment_refs": {
+          "ASSESS": {
+            "choice_id": "Da38f0c67ca33c06074c570f6d5fc",
+            "entity_id": "case:ASSESS",
+            "kind": "case_stage",
+            "payload_hash": "a359ff9c4e8bc640ac90986b58d9f19e7139a2a7ffa246b519d952b3252ce65b",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "COMPOSE": {
+            "choice_id": "D00691734163aa4738b9f9a032c40",
+            "entity_id": "case:COMPOSE",
+            "kind": "case_stage",
+            "payload_hash": "52fced01e78e5c79885de7176f3d717765cb7fbf29283b05b413a041f5b2f5d9",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "INTENT": {
+            "choice_id": "D33b0cec2d728b246bc6b63b4cad4",
+            "entity_id": "case:INTENT",
+            "kind": "case_stage",
+            "payload_hash": "b87f41552b5376bf38923b2578da0bbee34d9b3595c8a82bb578120925b13c5d",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "PLAN": {
+            "choice_id": "D70ca4231cc66a5d1dd0bd43eac12",
+            "entity_id": "case:PLAN",
+            "kind": "case_stage",
+            "payload_hash": "262fcdcee42631e4d651428c19ee962dbfd1d55fb2e66f23423b1aa7a692009c",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "READ": {
+            "choice_id": "Defc858c9c9d19b6baef4c0459fd3",
+            "entity_id": "case:READ",
+            "kind": "case_stage",
+            "payload_hash": "f74a56a1844ee680ef0a1c60b66d229aedc7d05c29aaf66e382d8392f0a3cd1a",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "RECALL": {
+            "choice_id": "Db20ad686dfbf7a009879b6317d30",
+            "entity_id": "case:RECALL",
+            "kind": "case_stage",
+            "payload_hash": "8e0814cc017a6a4fe058ec785f72bdf2f033ad8625f89e6216ce524bd8d05ee8",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 1
+          },
+          "SELECT": {
+            "choice_id": "D2fde2873d0cee51aad204b773381",
+            "entity_id": "case:SELECT",
+            "kind": "case_stage",
+            "payload_hash": "e2a28f4a57f123205dd4d504ce0eb3f35014e390caea47868334c537abe54582",
+            "run_id": "56d89a70bc614e7da7ebb21f42cef766",
+            "version": 2
+          }
+        },
+        "question_id": "G313815a2e2a4474e96cc6398508ae14f",
+        "revision": 1,
+        "route_id": 1,
+        "status": "READY"
+      },
+      "citation_integrity": "ORIGINAL_SPANS",
+      "completed_with_unresolved_connections": false,
+      "completion_contract": "investigation-completion-v8",
+      "completion_policy": "ALLOW_UNRESOLVED_CONNECTIONS",
+      "control_contract": "investigation-control-v2",
+      "evidence_inventory": [
+        {
+          "acquired_complete": true,
+          "article_delivered_complete": true,
+          "availability": "DELIVERED",
+          "decisions": {},
+          "delivered_complete": true,
+          "document_id": "d",
+          "material_id": "Baea197c016f2467cc23afef5cf11",
+          "path": "모의승인규정 제1조",
+          "reason": "모의 적용 대상 원문 확인",
+          "scope_id": "57c828a712c199fcb729eb1ea74563a7366401ef7473349b7ed51b80b937f72c",
+          "source_id": "article:bbb3b79da72c6250f25c3377",
+          "status": "READ"
+        }
+      ],
+      "final": true,
+      "gaps": [
+        {
+          "identity_key": "Kdd5c6e3a2907b74d9b0a",
+          "issue_id": "Q1",
+          "kind": "MISSING_SOURCE",
+          "material": true,
+          "material_id": null,
+          "missing_target": "모의승인규정 제2조",
+          "reason": "모의 적용 범위 원문을 아직 읽지 않았다.",
+          "suggested_action": "READ_SCOPE",
+          "target_binding": {
+            "absence_proven": false,
+            "document_candidates": [
+              "d"
+            ],
+            "expected": [
+              {
+                "block_hash": "c133f52cf5f0f189bcd323402e62e0e3d980ea2f5035d3651349161a28996b01",
+                "block_id": "1",
+                "document_id": "d",
+                "end_cp": 30,
+                "start_cp": 0
+              }
+            ],
+            "lookup": {
+              "pairs": [
+                {
+                  "coordinate": "제2조",
+                  "document_id": "d",
+                  "document_name": "모의승인규정",
+                  "question_span": {
+                    "end": 10,
+                    "start": 7,
+                    "text": "제2조"
+                  },
+                  "unit_id": "1"
+                }
+              ],
+              "reason": "EXACT_DOCUMENT_COORDINATE",
+              "source_ids": [
+                "article:81a39be87217e43e1e1050ae"
+              ],
+              "status": "MATCH"
+            },
+            "pairs": [
+              {
+                "coordinate": "제2조",
+                "document_id": "d",
+                "document_name": "모의승인규정",
+                "question_span": {
+                  "end": 10,
+                  "start": 7,
+                  "text": "제2조"
+                },
+                "unit_id": "1"
+              }
+            ],
+            "source_ids": [
+              "article:81a39be87217e43e1e1050ae"
+            ],
+            "status": "EXACT",
+            "text": "모의승인규정 제2조"
+          },
+          "target_binding_hash": "6091f4539bbf000c78841743e541b0a7e1e29244f1b354e219abc15e4ff9e051"
+        }
+      ],
+      "investigation_chain": {
+        "contract": "investigation-action-chain-v1",
+        "current_frame": "Hd85fad9570968c83752393403dd4",
+        "entry_frame_id": "Hf06cc4daee7cb2a4c919b7baeace",
+        "entry_search": {
+          "queries": [
+            "모의승인규정 제1조"
+          ],
+          "reason": "현재 질문의 원문 근거를 찾기 위한 실행된 검색 계획",
+          "reason_origin": "SYSTEM_ENTRY"
+        },
+        "judgments": [],
+        "memory_rule": "과거 메뉴로 돌아가도 확보 원문·채택·보류·후속 판단을 되돌리지 않는다",
+        "steps": [
+          {
+            "action": "READ_ARTICLES",
+            "basis_refs": [],
+            "from_frame": "Hf06cc4daee7cb2a4c919b7baeace",
+            "id": "S179d831e3a8159ba74ce8faf41d6",
+            "judgment_refs": [],
+            "kind": "NAVIGATION",
+            "notes": "",
+            "number": 1,
+            "outcome": {
+              "adopted": [],
+              "deferred_or_excluded": [],
+              "delivered_pages": 0,
+              "new_laws": [],
+              "new_reads": [
+                "모의승인규정 제1조 정의"
+              ],
+              "window": "read"
+            },
+            "previous_step": null,
+            "progress": {
+              "changed": true,
+              "unchanged_turns": 0
+            },
+            "queries": [],
+            "reason": "모의 적용 대상 원문 확인",
+            "receipt": "S179d831e3a8159ba74ce8faf41d6",
+            "status": "APPLIED",
+            "sufficiency_reason": "선택한 조사 후 원문으로 판단한다.",
+            "targets": [
+              {
+                "action": "READ_ARTICLES",
+                "id": "Ta9ef62196b01a3d02fb136cfeb85",
+                "identity": {
+                  "document_id": "d",
+                  "source_id": "article:bbb3b79da72c6250f25c3377",
+                  "unit_id": "0"
+                },
+                "label": "모의승인규정 제1조 전체 원문 읽기"
+              }
+            ]
+          }
+        ]
+      },
+      "investigation_status": "COMPLETED",
+      "issue_assessments": [
+        {
+          "issue_id": "Q1",
+          "reason": "판단 상태 INSUFFICIENT; 근거 주장 0개, 미확인 1개.",
+          "status": "INSUFFICIENT"
+        }
+      ],
+      "law_navigation": {
+        "branches": [
+          {
+            "delivery": 0,
+            "id": "Baea197c016f2467cc23afef5cf11",
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "matched_coordinates": [
+              "제1조"
+            ],
+            "reason": "모의 적용 대상 원문 확인",
+            "source_id": "article:bbb3b79da72c6250f25c3377",
+            "status": "READ"
+          }
+        ],
+        "contract": "law-candidate-navigation-v3",
+        "has_more_laws": false,
+        "law_decisions": [
+          {
+            "basis_refs": [],
+            "issue_refs": [
+              "Q1"
+            ],
+            "law_id": "Lfaebfda01a9563cdd10d180ed881",
+            "origin": "EXPLICIT_READ_OR_ADOPTION",
+            "reason": "모의 적용 대상 원문 확인",
+            "status": "INVESTIGATE"
+          }
+        ],
+        "law_total": 1,
+        "laws": [
+          {
+            "article_count": null,
+            "document_id": "d",
+            "generation_id": "term-source-2a2e5ca09bee96c47a59",
+            "id": "Lfaebfda01a9563cdd10d180ed881",
+            "name": "모의승인규정",
+            "unit_count": null
+          }
+        ],
+        "query_fingerprint": "78dd2f625c2e08ccfd8ec5df8aeaee11b1160a853f66cca064ded9d1a97213aa"
+      },
+      "ontology_legal_coverage": "DISCOVERY_UNTIL_REVIEWED_IMPORT",
+      "reference_navigation": {
+        "actions": [],
+        "batches": [],
+        "groups": [],
+        "history": [],
+        "limits": [],
+        "pending": false,
+        "seen_target_ids": [],
+        "unresolved": []
+      },
+      "request_routing": {
+        "answer": "",
+        "mode": "CASE",
+        "reason": "모의 적용 범위 확인"
+      },
+      "return_points": [
+        {
+          "arrived_after": null,
+          "id": "Hf06cc4daee7cb2a4c919b7baeace",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 1,
+          "originals": [],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        },
+        {
+          "arrived_after": "S179d831e3a8159ba74ce8faf41d6",
+          "id": "Hd85fad9570968c83752393403dd4",
+          "kind": "NAVIGATION",
+          "laws": [
+            "모의승인규정"
+          ],
+          "number": 2,
+          "originals": [
+            "제1조 정의"
+          ],
+          "reference_groups": 0,
+          "search_queries": [
+            "모의승인규정 제1조"
+          ]
+        }
+      ],
+      "semantic_quality_certified": false,
+      "source_reply_contract": "verified-source-excerpt-reply-v1",
+      "stop_reason": "UNATTEMPTED_GAP_REVIEW_EXHAUSTED",
+      "text_integrity": "VERIFIED_SOURCE_EXCERPTS",
+      "unified": true
+    }
+  },
+  "session_id": "repro-finish",
+  "status": "READY",
+  "execution_stats": {
+    "schema_version": "rag-execution-stats-v1",
+    "count_basis": "transport-attempts",
+    "llm_calls": 6,
+    "calls": [
+      {
+        "number": 1,
+        "purpose": "model",
+        "duration_ms": 0
+      },
+      {
+        "number": 2,
+        "purpose": "sources",
+        "duration_ms": 0
+      },
+      {
+        "number": 3,
+        "purpose": "assessment",
+        "duration_ms": 0
+      },
+      {
+        "number": 4,
+        "purpose": "sources",
+        "duration_ms": 0
+      },
+      {
+        "number": 5,
+        "purpose": "sources",
+        "duration_ms": 0
+      },
+      {
+        "number": 6,
+        "purpose": "assessment",
+        "duration_ms": 0
+      }
+    ],
+    "memory": {
+      "basis": "process-rss-sampled-during-request",
+      "interval_ms": 100,
+      "start_bytes": 176926720,
+      "peak_observed_bytes": 178147328,
+      "latest_bytes": 178147328,
+      "samples": 19,
+      "exclusive_request_allocation": false
+    },
+    "llm_duration_ms": 0,
+    "timing_complete": true,
+    "request_duration_ms": 1862
+  }
+}

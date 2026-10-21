@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>업무 검토 지식</title><link rel="stylesheet" href="/legal-knowledge/styles.css"><script defer src="/legal-knowledge/app.js"></script></head>
+<body><header><div class="eyebrow">LEGAL KNOWLEDGE</div><h1>업무 검토 지식</h1><p>확인할 사항과 근거를 함께 관리합니다.</p><div id="connection">연결 확인 중</div></header>
+<main><aside><div class="row"><h2>지식 목록</h2><button id="new">새 검토 방법</button></div>
+<label>목록 종류<select id="namespace"><option value="definition">검토 지식</option><option value="release">게시 이력</option><option value="feedback">수정 의견</option></select></label>
+<div id="list"></div><button id="more" hidden>다음 목록</button></aside>
+<section><div class="row"><h2 id="heading">새 검토 방법</h2><span id="version">초안</span></div>
+<form id="editor"><label>지식 종류<select id="kind"><option value="METHOD">검토 방법</option><option value="FIELD">확인할 입력</option><option value="APPLICATION">업무별 적용</option><option value="WIKI_LINK">기존 위키 연결</option><option value="SHORTCUT_LINK">기존 실행 사례 연결</option></select></label><label>이름<input id="title" required maxlength="2000" placeholder="예: 기한 연장 승인 검토"></label>
+<label>검토 목적<textarea id="description" required placeholder="어떤 업무에서 무엇을 확인하나요?"></textarea></label>
+<label>적용 범위<select id="business-mode"><option value="UNSPECIFIED">범위 미확인</option><option value="VALUES">지정 업무</option><option value="ANY_REVIEWED">범용으로 검토됨</option></select></label><label>업무<input id="business" placeholder="예: 신용공여"></label>
+<label>찾을 때 사용할 표현<input id="terms" placeholder="기한 연장, 승인 주체"></label>
+<label>확인 사항 <span class="muted">한 줄에 하나씩</span><textarea id="steps" rows="5" placeholder="승인 주체 확인&#10;예외와 별첨 확인"></textarea></label>
+<details><summary>근거·연결 및 고급 편집</summary><p class="muted">원문과 기존 위키의 판본·위치를 고정합니다. 기존 자료를 복사하지 않습니다.</p><textarea id="definition" rows="16" spellcheck="false" aria-label="전체 지식 계약"></textarea><button type="button" id="apply-json">고급 편집 내용 사용</button></details>
+<div class="actions"><button type="submit" id="save" class="primary">초안 저장</button><button type="button" id="impact">변경 영향</button><button type="button" id="prepare">게시 준비</button></div></form>
+<div id="publication"><h3>게시</h3><p>게시 준비가 완료된 정확한 버전만 적용됩니다. 질문 적용은 별도 설정을 따릅니다.</p>
+<details><summary>시스템이 선택한 원문 버전</summary><label>원문 세대<input id="generation" readonly></label><label>원문 저장소 해시<input id="source-hash" readonly></label><label>전문 색인 해시<input id="index-hash" readonly></label></details>
+<label>검토·변경 이유<input id="review-note" placeholder="변경 범위와 확인한 근거"></label>
+<div class="actions"><button id="publish">준비한 버전 게시</button><button id="rollback">선택한 게시 이력 복원</button><button id="retire">게시 사용 중지</button></div></div>
+<div class="feedback"><h3>수정 의견</h3><label>실행 기록 ID<input id="request-ref"></label><label>의견<textarea id="feedback"></textarea></label><button id="send-feedback">의견 등록</button></div>
+<div class="row"><h3>처리 결과</h3><button id="check-operation">마지막 작업 상태 확인</button></div><p id="message" role="status" aria-live="polite">초안 저장 후 변경 영향을 확인하고 게시해 주세요.</p><pre id="result"></pre></section></main></body></html>

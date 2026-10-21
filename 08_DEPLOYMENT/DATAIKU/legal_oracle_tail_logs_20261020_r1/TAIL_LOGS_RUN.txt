@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Run in a NEW terminal on the SAME Dataiku server as the migration.
+set -euo pipefail
+shopt -s nullglob
+
+TASK_LOG_DIRS=(
+  /data/dataiku/design/jupyter-run/dku-workdirs/LEGAL_RAG/*/legal-existing-zip-r2-work/oracle-import-r3
+)
+if [ "${#TASK_LOG_DIRS[@]}" -ne 1 ]; then
+  printf '로그 폴더가 %s개입니다. 자동 선택하지 않습니다.\n' "${#TASK_LOG_DIRS[@]}"
+  if [ "${#TASK_LOG_DIRS[@]}" -gt 0 ]; then
+    printf '%s\n' "${TASK_LOG_DIRS[@]}"
+  fi
+  printf '이관 중인 Dataiku 서버의 터미널인지, 경로와 읽기 권한을 확인하세요.\n'
+  exit 1
+fi
+
+TASK_LOG_FILES=(
+  "${TASK_LOG_DIRS[0]}/events.jsonl"
+  "${TASK_LOG_DIRS[0]}"/source/*/calls.jsonl
+)
+for TASK_LOG_FILE in "${TASK_LOG_FILES[@]}"; do
+  if [ ! -f "$TASK_LOG_FILE" ] || [ ! -r "$TASK_LOG_FILE" ]; then
+    printf '읽을 수 없는 로그: %s\n' "$TASK_LOG_FILE"
+    exit 1
+  fi
+done
+printf '로그 위치: %s\n' "${TASK_LOG_DIRS[0]}"
+printf '최근 10줄과 새 로그를 표시합니다. 이 터미널에서 Ctrl+C를 누르면 조회만 종료됩니다.\n'
+exec tail -n 10 -F -- "${TASK_LOG_FILES[@]}"

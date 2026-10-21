@@ -38,14 +38,17 @@ def validate_current(repo,result,store,*,allowed_documents=None):
         return validate_case(repo,result,store,allowed_documents=allowed_documents)
     validate_saved(repo,result)
     if repo.VERSION not in (4,5):return
-    current=json.loads((store.path/'manifest.json').read_text())
+    oracle=getattr(store,'is_oracle_query',False)
+    if oracle: store.check_unchanged()
+    current=store.manifest if oracle else json.loads((store.path/'manifest.json').read_text())
     for key in ('generation_id','store_sha256','export_allowed'):
         if current[key]!=repo.binding[key]: raise ContractError('source binding changed before publication/open')
     try:
-        verify_store_binding(store.path/'store.sqlite', current['store_sha256'])
+        if not oracle: verify_store_binding(store.path/'store.sqlite', current['store_sha256'])
     except ValueError as exc:
         raise ContractError('source store changed') from exc
     allowed=set(current['scope']['document_version_ids'])
+    if oracle: allowed &= store.oracle_request.sources.allowed
     if allowed_documents is not None: allowed &= set(allowed_documents)
     if set(repo.binding['scope']['document_version_ids'])-allowed:
         raise ContractError('request source scope no longer authorized')

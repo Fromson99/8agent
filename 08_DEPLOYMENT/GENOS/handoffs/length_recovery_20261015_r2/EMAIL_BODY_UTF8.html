@@ -1,0 +1,13 @@
+<div style="font-family:Arial,sans-serif;line-height:1.7">
+<p>사진에서 확인한 <code>Unrecorded new module already exists; preserved: 00_SYSTEM/SCHEMAS/pipeline-v1.schema.json</code> 설치 오류를 수정한 누적 R2입니다.</p>
+<p><b>이전 GENOS_LENGTH_RECOVERY_20261014_R1 대신 이번 GENOS_LENGTH_RECOVERY_20261015_R2.zip을 사용해 주세요.</b> 앞선 상황별 도구 전수 점검(TOOL_AVAILABILITY), 도구 실패 복구(TOOL_RECOVERY), length 복구를 모두 포함하므로 세 패치를 순서대로 적용할 필요가 없습니다. 선행 조건은 기존 SCHEMA_RECOVERY R1 이상 알려진 코드 구성입니다.</p>
+<p>사진의 R1 check/apply는 코드 쓰기 전에 중단됐으므로 그 실패 자체를 되돌리는 원복은 필요 없습니다. R2는 기존 코드 목록에 빠진 두 스키마가 확인된 Git 원본 또는 봉인된 목표 파일의 정확한 해시와 일치할 때만 원본을 백업하고 반영합니다. 원복 시 원래 파일과 권한, 기존 코드 목록을 복원합니다. 현장 파일의 실제 해시는 사진에 없으므로 알 수 없는 버전이면 계속 보존하고 경로·해시·크기를 로그에 남깁니다.</p>
+<p><b>실제 업로드한 TRANSFER 폴더에서</b> 아래를 한 단계씩 실행하세요. 코드 적용 대상은 기존 <code>~/DEV</code>이며, TRANSFER의 절대 위치를 추정하거나 먼저 DEV로 이동하지 않습니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_LENGTH_RECOVERY_20261015_R2.zip ./GENOS_LENGTH_RECOVERY_20261015_R2
+bash ./GENOS_LENGTH_RECOVERY_20261015_R2/GENOS_LENGTH_RECOVERY_20261015_R2_RUN.txt install</pre>
+<p><code>install</code>이 사전 검사 → 백업 → 적용 → 검증을 수행하고 실패하면 즉시 멈춥니다. 처음부터 현재 TRANSFER의 <code>length-recovery-r2-logs</code>에 로그와 종료 상태를 남깁니다. 출력된 BACKUP 경로를 보관하세요. ZIP 내부와 별도로 첨부한 실행 TXT는 완전히 같습니다.</p>
+<p>성공 후 기존 DEV에서 변경 검토·commit → 실제 선택 generation으로 RUN gate → 해당 commit push → 새 코드서빙 리비전 배포·SSE 재시작 순서입니다. 구체적인 gate·원복 명령은 GUIDE_UTF8.txt에 있습니다. 이번 패치에는 데이터 재구축이나 추가 워크플로우 편집기 변경이 필요 없습니다. 최종 질의 확인은 워크플로우 테스트 화면에서 진행하세요.</p>
+<p><b>확인한 결과:</b> 설치·실패 차단·원복 계약 15개와 실제 TXT/서비스/배포 게이트 통합 2개 통과, 실제 TXT 48명령 및 두 구성의 동일 committed checkout generation gate와 localhost 서비스 부팅을 확인했습니다. 설치본 계약/API 1148개 통과, 기존 표시 정책 기대 차이는 각 구성 1건으로 유지했고 새 회귀는 없습니다. R1의 제품 코드와 1320 입력/출력 지문은 동일하며 로컬 MAIN66은 유지했습니다.</p>
+<p>GENOS 반입·배포 및 내부 모델의 실제 질문 성공은 아직 확인하지 않았습니다. <code>UNRECORDED_FILE_UNKNOWN</code>이 나오면 기존 파일을 삭제하거나 해시를 수동 변경하지 말고 해당 로그로 확인해야 합니다. R1을 이미 성공적으로 적용한 현장은 설치기 수정을 위해 재설치할 필요가 없습니다.</p>
+<p>첨부: R2 ZIP, 독립 실행 TXT, 적용·원복 안내, 수정 보고서, 검증 요약·상세 JSON, SHA-256 목록.</p>
+</div>

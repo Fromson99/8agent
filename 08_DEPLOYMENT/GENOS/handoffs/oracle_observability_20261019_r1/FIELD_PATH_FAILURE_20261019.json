@@ -1,0 +1,24 @@
+{
+  "status": "FIELD_INSTALL_BLOCKED_BEFORE_CODE_WRITE",
+  "evidence": "User photo F5FA0898-12F5-42BD-87A7-6DA289566B07/1-사진-1.jpg",
+  "observed": {
+    "previous_installer_code_root": "/workspace",
+    "transfer_cwd": "/workspace/TRANSFER",
+    "logging_installer_failure": "ValueError: Symlink refused: /home/genos/DEV",
+    "subsequent_cwd": "/workspace",
+    "subsequent_failure": "FileNotFoundError for relative ZIP; RUN.txt not found"
+  },
+  "code_trace": "install.py plain(args.root.expanduser().absolute()) rejects symlinks before Git-root validation and code writes. RUN.txt forwards --root unchanged.",
+  "recovery": {
+    "cwd": "/workspace/TRANSFER",
+    "run_txt": "./GENOS_ORACLE_LOGGING_20261019_R1/GENOS_ORACLE_LOGGING_20261019_R1_RUN.txt",
+    "explicit_root": "/workspace",
+    "actions_in_order": ["check", "apply", "status"],
+    "stop_on_failure": true,
+    "subsequent_gate_root": "/workspace",
+    "code_changes_required": false,
+    "sealed_attachments_changed": false
+  },
+  "field_recovery_verified": false,
+  "field_deployment_verified": false
+}

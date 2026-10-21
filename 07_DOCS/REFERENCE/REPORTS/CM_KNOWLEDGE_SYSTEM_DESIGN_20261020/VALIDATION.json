@@ -1,0 +1,113 @@
+{
+  "schema_version": "cm-knowledge-design-validation-v1",
+  "checked_at": "2026-10-20T05:00:56.173842+00:00",
+  "kind": "DOCUMENT_CONSISTENCY_ONLY",
+  "checks": [
+    {
+      "check": "question_ids_exact_coverage",
+      "result": "PASS",
+      "rows": 156
+    },
+    {
+      "check": "question_source_consistency_and_duplicate",
+      "result": "PASS"
+    },
+    {
+      "check": "method_and_scope_vocabularies",
+      "result": "PASS",
+      "method_usage": {
+        "APPLICABILITY": 125,
+        "COMPARE": 17,
+        "DISTINGUISH": 15,
+        "HISTORY": 7,
+        "LOOKUP": 34,
+        "PROCEDURE": 57,
+        "QUANTITY": 58,
+        "REDRAFT": 1,
+        "RESPONSE": 14
+      }
+    },
+    {
+      "check": "referenced_source_paths",
+      "result": "PASS",
+      "count": 47
+    },
+    {
+      "check": "existing_entrypoint_symbols_ast",
+      "result": "PASS",
+      "files": 7
+    },
+    {
+      "check": "current_code_claims_fixed_catalogue_and_condition_ops",
+      "result": "PASS"
+    },
+    {
+      "check": "active_release_manifest_hash",
+      "result": "PASS"
+    },
+    {
+      "check": "markdown_local_links",
+      "result": "PASS",
+      "links": 6
+    },
+    {
+      "check": "abbreviated_json_examples_syntax_only",
+      "result": "PASS",
+      "count": 4
+    },
+    {
+      "check": "document_whitespace_and_language",
+      "result": "PASS"
+    },
+    {
+      "check": "source_fingerprints_unchanged_during_final_review",
+      "result": "PASS",
+      "count": 47
+    },
+    {
+      "check": "balanced_code_fences_and_final_links",
+      "result": "PASS"
+    }
+  ],
+  "self_review": {
+    "independent": false,
+    "findings_corrected": [
+      "Clarified abbreviated JSON examples are not full wire schemas.",
+      "Separated current source ACTIVE contract from proposed combined serving binding.",
+      "Kept current journal as sole mutable request state.",
+      "Preserved question_only, incomplete transcription and duplicate-question status.",
+      "Separated source enumeration completion from semantic sufficiency.",
+      "Specified ACL intersection and metadata visibility.",
+      "Specified three-valued Boolean propagation and conflict preservation.",
+      "Added plan assembly algorithm and explicit boundary of replaced versus remaining LLM decisions."
+    ],
+    "remaining": [
+      "Runtime and Oracle schema changes are proposals.",
+      "Actual model quality, latency and operator editing time are not measured.",
+      "Field semantics and legal conditions require source-grounded business review.",
+      "No GENOS field verification."
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "README.md",
+      "sha256": "ec57a79ae68bfd45bc4c15c8d149bfa7687055fd9e644d6324f6e52c451d8ca1",
+      "bytes": 30671
+    },
+    {
+      "path": "CONTRACTS.md",
+      "sha256": "33a81147c3ae436bd50d45512864eab2d6d56c7836d69f72165819f079bb44da",
+      "bytes": 36243
+    },
+    {
+      "path": "QUESTION_REQUIREMENTS.tsv",
+      "sha256": "8bd46bc6ea5f62c43aabea49dd83b11b969dc727a2a2676499a99e79729815c0",
+      "bytes": 26542
+    },
+    {
+      "path": "EVIDENCE.json",
+      "sha256": "a71fbe8333eed696eb6078720cc8a27cf569554402fd787a52ec3d1ecd752fa2",
+      "bytes": 13044
+    }
+  ]
+}

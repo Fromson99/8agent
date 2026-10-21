@@ -41,6 +41,9 @@ def parser():
                    help='Maximum glossary model jobs per invocation (1..1000)')
     p.add_argument('--retry-review-failed', action='store_true')
     p.add_argument('--exclude-internal', action='store_true')
+    p.add_argument('--filename-exceptions', type=Path, help='Explicit single JSON selection policy')
+    p.add_argument('--latest-internal-versions', action='store_true', default=True,
+                   help='Select internal filename versions before structure; rebuild a fresh selection without base generations')
     p.add_argument('--glossary-dir', type=Path, help='Explicit previously reviewed glossary; completion receipt required')
     p.add_argument('--glossary-corpus-policy', choices=['append', 'replace'],
                    help='How the selected glossary document evidence is combined with this run')
@@ -62,6 +65,9 @@ def parser():
 
 def run(argv=None, *, call=None):
     args, rest = parser().parse_known_args(argv)
+    if args.exclude_internal: args.latest_internal_versions = False
+    if args.latest_internal_versions and args.base_generation:
+        parser().error('--latest-internal-versions cannot merge old base generations or exclude internal inputs; rebuild the complete intended RAW scope')
     if args.no_models is None:
         args.no_models = build_policy() == 'native-no-models'
     args.glossary_corpus_policy = args.glossary_corpus_policy or ('replace' if args.no_models else 'append')
@@ -118,6 +124,9 @@ def run(argv=None, *, call=None):
              '--execute' if args.execute else '--check-only']
     if args.exclude_internal:
         stage.append('--exclude-internal')
+    if args.latest_internal_versions:
+        stage.append('--latest-internal-versions')
+    if args.filename_exceptions: stage += ['--filename-exceptions', str(args.filename_exceptions)]
     if args.no_models:
         if any(token.split('=', 1)[0] in {'--structure-vlm', '--pdf-conversion', '--pdf-parser'} for token in rest):
             parser().error('--no-models owns --structure-vlm/--pdf-conversion/--pdf-parser')

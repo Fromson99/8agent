@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "commands": 32,
+  "intentional_failure_checks": 4,
+  "python311_syntax": true,
+  "bash_syntax": true,
+  "scenarios": [
+    "standalone TXT extraction",
+    "explicit zip extraction and extracted TXT",
+    "append preserves site rules",
+    "7 optional profiles",
+    "idempotence",
+    "interrupted apply resume",
+    "index untouched by installer",
+    "tracked transfer detection",
+    "synthetic unpublished commit cleanup preserves data",
+    "1306-file MAIN92 base plus ignore/config committed gate",
+    "runtime drift rejection",
+    "payload tamper rejection",
+    "post-apply user-edit rejection",
+    "exact undo and repeated undo",
+    "persistent logs and exit status"
+  ],
+  "trace_sha256": "67164190b6d9072fc644c8b541639bf42817da1558f9efb3c87d7a8885d5d7c1",
+  "base_code_zip_sha256": "035298d52dc5fcd44f5c977216fea32db1cb4fd80d834623d2127251f0ed50b6",
+  "model_calls": 0,
+  "genos_field_verified": false,
+  "remote_calls": 0,
+  "initial_failure": "Standalone launcher re-extracted ZIP and masked a tampered payload; changed to reuse complete extraction and reject changed payload. Final 32-command verification passed."
+}

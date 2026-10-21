@@ -1,0 +1,2424 @@
+{
+  "schema_version": "kv-cache-main62-design-evidence-v1",
+  "captured_at": "2026-10-14T08:25:02.089634+00:00",
+  "scope": "read-only current release binding and design sources; no performance experiment",
+  "git_head": "9b2b55f93320bc5a39732d8ae58ee3d92a2c0106",
+  "active": {
+    "pointer_path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "pointer_sha256": "7c68658c7f4484ee5440587a557972319af45f07ef6d1733b12aeebec73276ba",
+    "release_id": "schema-recovery-20261014-r1",
+    "generation": 62,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/release.json",
+    "manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+    "code_root": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/code",
+    "selected_file_count": 302,
+    "manifest_matches_pointer": true,
+    "selected_code_mismatches": [],
+    "working_code_differences": [],
+    "data_path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation",
+    "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+    "data_manifest_matches_release": true,
+    "source_generation_id": "term-source-8729f978a28924cb8c5b",
+    "whole_source_data_rehashed": false,
+    "profile_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2"
+  },
+  "historical_qualification": {
+    "source": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/run-001/result.json",
+    "synthetic_cases": 410,
+    "synthetic_correct": 410,
+    "regressions_passed": 817,
+    "excluded_or_skipped": 1,
+    "rerun_this_task": false,
+    "real_model_calls_in_historical_result": 0,
+    "regression_files": [
+      {
+        "path": "05_TESTS/CONTRACTS/test_ad_language.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_assessment_gap_action.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_batch_reference_navigation.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_chosen_unit_local_completion.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_compact_reference_menu_repair.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_completion_boundary_adr0679.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_completion_v4.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_genos_answer_stream.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_genos_model_stream_completion.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_genos_wire_schema.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_investigation_completion_adr0678.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_law_navigation_state_contract_adr0661.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_legal_agent_v5.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_legal_agent_v5_numbers.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_legal_agent_v5_sources.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_main50_request_repair.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_memory_adapters_v2.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_model_input_metrics.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_narrative_answer.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_native_completion_consumer_adr0680.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_navigation_input_compaction.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_numbered_source_lines.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_output_contract_recovery.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_reference_resolution.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_token_answer_stream.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_unified_legal_agent.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_unified_memory_recovery.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/CONTRACTS/test_wire_repair.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_genos_response_completion.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_output_contract_build.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_basic.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_compact.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_evidence.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_opinion_adjudication.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_output.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_pages.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_region_ladder.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_regions.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_runtime.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_template.py",
+        "exists": true
+      },
+      {
+        "path": "05_TESTS/REGRESSION/core/test_recipe_warning_pass.py",
+        "exists": true
+      }
+    ]
+  },
+  "historical_service_evidence": {
+    "source": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/main-service-smoke.json",
+    "sha256": "9bcbbbc08ab4bf7f968d679f7a86e12f12f0440ce0d42a671adc06e65bfdbca6",
+    "fresh_service_started_this_task": false,
+    "execution_binding": {
+      "mode": "local-release",
+      "release_id": "schema-recovery-20261014-r1",
+      "generation": 62,
+      "release_manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+      "code_sha256": "23fccd3e5b5e6f14214ccc1138031635bb86d4888df07c6fb2c5beb6de099d1b",
+      "profile_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+      "source_generation_id": "term-source-8729f978a28924cb8c5b",
+      "fulltext_manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+      "search_policy_sha256": "949c449188a1bb1f25c289f2be0a137137c94f04dce6851be521821c825bbe79",
+      "schema_sha256": "c80ecb2f73c797b0d42136520eb83b4beacc557251a289fb3f9b156d6fb0d34a",
+      "process_instance_id": "8da17851a0344cd08954856afb6d44f6",
+      "process_id": 436660,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "3d74971f2f1e0f4051439486a243e295b8cc46679c354e14e2af4ca2e98ed1f4",
+      "service_entry_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c"
+    }
+  },
+  "actions_this_task": {
+    "product_code_modified": false,
+    "model_calls": 0,
+    "performance_experiments": 0,
+    "product_tests_executed": 0,
+    "new_adr_reserved": false,
+    "main_changed": false,
+    "genos_access_attempted": false,
+    "subagents_used": false
+  },
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "3fc008d4ed6c73fc81248f5b3492443f3a2dc4e2a5ec95fb5a5f438ff55862c8",
+      "bytes": 20581,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "1a89afc1f587a31a8c78bbfca9e6b06631d3f35a14662aa8c190b086514ac3d7",
+      "bytes": 231237,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "service.py",
+      "sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c",
+      "bytes": 53425,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_sha",
+          "line": 101
+        },
+        {
+          "name": "_json",
+          "line": 106
+        },
+        {
+          "name": "_require_pecab_generation",
+          "line": 113
+        },
+        {
+          "name": "_genos_v5_wait_profile",
+          "line": 137
+        },
+        {
+          "name": "_genos_v5_admission_profile",
+          "line": 149
+        },
+        {
+          "name": "_investigation_profile",
+          "line": 154
+        },
+        {
+          "name": "_investigation_budget",
+          "line": 183
+        },
+        {
+          "name": "_genos_v5_environment_binding",
+          "line": 192
+        },
+        {
+          "name": "_explicit_generation",
+          "line": 234
+        },
+        {
+          "name": "_data_generation",
+          "line": 255
+        },
+        {
+          "name": "_local_release",
+          "line": 282
+        },
+        {
+          "name": "_resolve_binding",
+          "line": 319
+        },
+        {
+          "name": "_source_only_provider",
+          "line": 327
+        },
+        {
+          "name": "_provider",
+          "line": 345
+        },
+        {
+          "name": "application",
+          "line": 381
+        },
+        {
+          "name": "_bootstrap_application",
+          "line": 566
+        },
+        {
+          "name": "_normalize",
+          "line": 572
+        },
+        {
+          "name": "_ping",
+          "line": 624
+        },
+        {
+          "name": "_warm_resources",
+          "line": 636
+        },
+        {
+          "name": "_run_warmup",
+          "line": 669
+        },
+        {
+          "name": "_warmup",
+          "line": 684
+        },
+        {
+          "name": "_connections",
+          "line": 702
+        },
+        {
+          "name": "_diagnostics",
+          "line": 713
+        },
+        {
+          "name": "_upload_paths",
+          "line": 724
+        },
+        {
+          "name": "_pipeline",
+          "line": 747
+        },
+        {
+          "name": "_call",
+          "line": 814
+        },
+        {
+          "name": "_dispatch",
+          "line": 907
+        },
+        {
+          "name": "_ad_control",
+          "line": 938
+        },
+        {
+          "name": "service",
+          "line": 969
+        },
+        {
+          "name": "_reported_dispatch",
+          "line": 1021
+        }
+      ]
+    },
+    {
+      "path": "service/service.py",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5",
+      "bytes": 1498,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": []
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "c3689de07fe0a28109893ef555690522bf578bfcd54a8d05579b1641cbecc91e",
+      "bytes": 48497,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "8db54195bd2e051959c27685c0779cbd4214978afd868b89acbdd242a4bf498b",
+      "bytes": 62378,
+      "selected_manifest_member": true,
+      "selected_equals_working": true
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "bytes": 3014,
+      "selected_manifest_member": true,
+      "selected_equals_working": true
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab",
+      "bytes": 3350,
+      "selected_manifest_member": true,
+      "selected_equals_working": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "bytes": 1831,
+      "selected_manifest_member": true,
+      "selected_equals_working": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "23661c4c54650ecfbf3e9db9326eb3b450c05982547958b838b57cc7832f6df1",
+      "bytes": 16471,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "ServingLegalAgent",
+          "line": 23
+        },
+        {
+          "name": "ServingLegalAgent.__init__",
+          "line": 24
+        },
+        {
+          "name": "ServingLegalAgent.retrieve",
+          "line": 71
+        },
+        {
+          "name": "ServingLegalAgent.admit",
+          "line": 79
+        },
+        {
+          "name": "ServingLegalAgent.open_session",
+          "line": 96
+        },
+        {
+          "name": "ServingLegalAgent._open_session",
+          "line": 106
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "sha256": "316ba81a8da823953493a3849d2fd0ec8b14e3bd52693ea38e14f87838775a47",
+      "bytes": 63312,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "final_response_summary",
+          "line": 39
+        },
+        {
+          "name": "_finalizer_worker",
+          "line": 64
+        },
+        {
+          "name": "_start_finalizers",
+          "line": 78
+        },
+        {
+          "name": "DeferredReport",
+          "line": 87
+        },
+        {
+          "name": "DeferredReport.__init__",
+          "line": 96
+        },
+        {
+          "name": "DeferredReport.__enter__",
+          "line": 113
+        },
+        {
+          "name": "DeferredReport._initialize_live",
+          "line": 130
+        },
+        {
+          "name": "DeferredReport.__exit__",
+          "line": 185
+        },
+        {
+          "name": "DeferredReport.detach",
+          "line": 197
+        },
+        {
+          "name": "DeferredReport.complete",
+          "line": 205
+        },
+        {
+          "name": "DeferredReport._event",
+          "line": 217
+        },
+        {
+          "name": "DeferredReport.finalize",
+          "line": 222
+        },
+        {
+          "name": "_human_value",
+          "line": 328
+        },
+        {
+          "name": "_model_reply",
+          "line": 339
+        },
+        {
+          "name": "_tool_summary",
+          "line": 364
+        },
+        {
+          "name": "_live_value",
+          "line": 397
+        },
+        {
+          "name": "_live_diagnostic_value",
+          "line": 407
+        },
+        {
+          "name": "_fulltext_diagnostic_value",
+          "line": 430
+        },
+        {
+          "name": "_LiveLog",
+          "line": 447
+        },
+        {
+          "name": "_LiveLog.__init__",
+          "line": 450
+        },
+        {
+          "name": "_LiveLog.handle",
+          "line": 475
+        },
+        {
+          "name": "_LiveLog.flush_batch",
+          "line": 480
+        },
+        {
+          "name": "_LiveLog._write_failed",
+          "line": 485
+        },
+        {
+          "name": "_LiveLog.start",
+          "line": 491
+        },
+        {
+          "name": "_LiveLog.stop",
+          "line": 494
+        },
+        {
+          "name": "_LiveLog._heartbeat_loop",
+          "line": 500
+        },
+        {
+          "name": "_LiveLog.write_detail",
+          "line": 505
+        },
+        {
+          "name": "_LiveLog.queue_detail",
+          "line": 529
+        },
+        {
+          "name": "_LiveLog.poll_journal",
+          "line": 537
+        },
+        {
+          "name": "_LiveLog._poll_journal",
+          "line": 541
+        },
+        {
+          "name": "_LiveLog.heartbeat",
+          "line": 744
+        },
+        {
+          "name": "_LiveLog.emit",
+          "line": 765
+        },
+        {
+          "name": "live_log",
+          "line": 822
+        },
+        {
+          "name": "safe_live_log",
+          "line": 854
+        },
+        {
+          "name": "_RequestCapture",
+          "line": 868
+        },
+        {
+          "name": "_RequestCapture.__init__",
+          "line": 869
+        },
+        {
+          "name": "_RequestCapture.emit",
+          "line": 874
+        },
+        {
+          "name": "capture_events",
+          "line": 890
+        },
+        {
+          "name": "_scrub",
+          "line": 903
+        },
+        {
+          "name": "_decode_json_columns",
+          "line": 916
+        },
+        {
+          "name": "_journal",
+          "line": 927
+        },
+        {
+          "name": "write_report",
+          "line": 964
+        },
+        {
+          "name": "_one_line",
+          "line": 1033
+        },
+        {
+          "name": "_event_time",
+          "line": 1039
+        },
+        {
+          "name": "_action_line",
+          "line": 1046
+        },
+        {
+          "name": "format_readable_report",
+          "line": 1057
+        },
+        {
+          "name": "write_readable_report",
+          "line": 1164
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/observability.py",
+      "sha256": "00cb1dc975327fb7de384167becb26486125e04f497f3b03ef266ec9f8e00b29",
+      "bytes": 14065,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_secret_values",
+          "line": 41
+        },
+        {
+          "name": "_redact_secrets",
+          "line": 51
+        },
+        {
+          "name": "_safe_fields",
+          "line": 58
+        },
+        {
+          "name": "prepared_record",
+          "line": 88
+        },
+        {
+          "name": "JsonFormatter",
+          "line": 114
+        },
+        {
+          "name": "JsonFormatter.format",
+          "line": 115
+        },
+        {
+          "name": "AsyncHandler",
+          "line": 133
+        },
+        {
+          "name": "AsyncHandler.__init__",
+          "line": 135
+        },
+        {
+          "name": "AsyncHandler.handle",
+          "line": 144
+        },
+        {
+          "name": "AsyncHandler.emit",
+          "line": 148
+        },
+        {
+          "name": "AsyncHandler._write",
+          "line": 174
+        },
+        {
+          "name": "AsyncHandler.drain",
+          "line": 202
+        },
+        {
+          "name": "AsyncHandler.finish",
+          "line": 206
+        },
+        {
+          "name": "AsyncHandler.close",
+          "line": 211
+        },
+        {
+          "name": "_BatchStream",
+          "line": 216
+        },
+        {
+          "name": "_BatchStream.emit",
+          "line": 217
+        },
+        {
+          "name": "_BatchStream.flush_batch",
+          "line": 219
+        },
+        {
+          "name": "cpu_pressure",
+          "line": 222
+        },
+        {
+          "name": "environment_facts",
+          "line": 235
+        },
+        {
+          "name": "configure",
+          "line": 250
+        },
+        {
+          "name": "get_logger",
+          "line": 272
+        },
+        {
+          "name": "event",
+          "line": 277
+        },
+        {
+          "name": "new_request_id",
+          "line": 304
+        },
+        {
+          "name": "context",
+          "line": 312
+        },
+        {
+          "name": "step",
+          "line": 322
+        },
+        {
+          "name": "safe_error",
+          "line": 353
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/stdlib_http.py",
+      "sha256": "9aaff8fc4d2e7fc91a18319307e46504748464b59bf7fcb4f0bf8fb42cd30b96",
+      "bytes": 7818,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "is_timeout",
+          "line": 28
+        },
+        {
+          "name": "Timeout",
+          "line": 34
+        },
+        {
+          "name": "Deadline",
+          "line": 39
+        },
+        {
+          "name": "Deadline.__init__",
+          "line": 40
+        },
+        {
+          "name": "Deadline.check",
+          "line": 46
+        },
+        {
+          "name": "Deadline.limit",
+          "line": 50
+        },
+        {
+          "name": "Deadline.register",
+          "line": 54
+        },
+        {
+          "name": "Deadline._close",
+          "line": 63
+        },
+        {
+          "name": "Deadline.cancel",
+          "line": 73
+        },
+        {
+          "name": "run_with_deadline",
+          "line": 81
+        },
+        {
+          "name": "_Connection",
+          "line": 103
+        },
+        {
+          "name": "_Connection.__init__",
+          "line": 104
+        },
+        {
+          "name": "_Connection.connect",
+          "line": 108
+        },
+        {
+          "name": "_Connection.send",
+          "line": 114
+        },
+        {
+          "name": "_HTTPConnection",
+          "line": 121
+        },
+        {
+          "name": "_HTTPSConnection",
+          "line": 125
+        },
+        {
+          "name": "_HTTPHandler",
+          "line": 129
+        },
+        {
+          "name": "_HTTPHandler.__init__",
+          "line": 130
+        },
+        {
+          "name": "_HTTPHandler.http_open",
+          "line": 134
+        },
+        {
+          "name": "_HTTPSHandler",
+          "line": 138
+        },
+        {
+          "name": "_HTTPSHandler.__init__",
+          "line": 139
+        },
+        {
+          "name": "_HTTPSHandler.https_open",
+          "line": 144
+        },
+        {
+          "name": "_NoRedirect",
+          "line": 148
+        },
+        {
+          "name": "_NoRedirect.redirect_request",
+          "line": 149
+        },
+        {
+          "name": "Response",
+          "line": 153
+        },
+        {
+          "name": "Response.__init__",
+          "line": 154
+        },
+        {
+          "name": "Response._before_read",
+          "line": 159
+        },
+        {
+          "name": "Response.read",
+          "line": 166
+        },
+        {
+          "name": "Response.iter_lines",
+          "line": 179
+        },
+        {
+          "name": "open_response",
+          "line": 190
+        },
+        {
+          "name": "BufferedResponse",
+          "line": 216
+        },
+        {
+          "name": "BufferedResponse.__init__",
+          "line": 217
+        },
+        {
+          "name": "BufferedResponse.json",
+          "line": 222
+        },
+        {
+          "name": "Client",
+          "line": 226
+        },
+        {
+          "name": "Client.request",
+          "line": 228
+        },
+        {
+          "name": "Client.close",
+          "line": 234
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "sha256": "64d99602ba11b8c094e6777f6d8d91f9196c8b1a0093d41823cd287c955c753b",
+      "bytes": 32390,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "compact_wire_view",
+          "line": 24
+        },
+        {
+          "name": "compact_evidence_metadata",
+          "line": 55
+        },
+        {
+          "name": "compact_original_text",
+          "line": 69
+        },
+        {
+          "name": "compact_empty_arrays",
+          "line": 103
+        },
+        {
+          "name": "_count",
+          "line": 117
+        },
+        {
+          "name": "_response_diagnostics",
+          "line": 121
+        },
+        {
+          "name": "available_tool_schema",
+          "line": 180
+        },
+        {
+          "name": "ModelGateway",
+          "line": 202
+        },
+        {
+          "name": "ModelGateway.__init__",
+          "line": 203
+        },
+        {
+          "name": "ModelGateway.request",
+          "line": 224
+        },
+        {
+          "name": "ModelGateway.validate_output",
+          "line": 262
+        },
+        {
+          "name": "ModelGateway.generate",
+          "line": 265
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "sha256": "96271cf17b178c01a1042f02082cead338e2d38243fe00d00d45b5d8192213e1",
+      "bytes": 29944,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_Protocol",
+          "line": 26
+        },
+        {
+          "name": "_Protocol.__init__",
+          "line": 27
+        },
+        {
+          "name": "_Protocol.schema",
+          "line": 31
+        },
+        {
+          "name": "_Protocol.validate",
+          "line": 34
+        },
+        {
+          "name": "_Gateway",
+          "line": 45
+        },
+        {
+          "name": "_Gateway.request",
+          "line": 46
+        },
+        {
+          "name": "BoundedSourceSession",
+          "line": 66
+        },
+        {
+          "name": "BoundedSourceSession.__init__",
+          "line": 67
+        },
+        {
+          "name": "BoundedSourceSession.prepare_navigation_context",
+          "line": 78
+        },
+        {
+          "name": "BoundedSourceSession.plan_request_search",
+          "line": 88
+        },
+        {
+          "name": "BoundedSourceSession.structured",
+          "line": 102
+        },
+        {
+          "name": "BoundedSourceSession.prepare_source_recall",
+          "line": 164
+        },
+        {
+          "name": "BoundedSourceSession.persist_bounded_selection",
+          "line": 169
+        },
+        {
+          "name": "BoundedSourceSession.prepare_question_plan",
+          "line": 226
+        },
+        {
+          "name": "BoundedSourceSession.investigate",
+          "line": 241
+        },
+        {
+          "name": "BoundedSourceSession.catalogue_pages",
+          "line": 343
+        },
+        {
+          "name": "BoundedSourceSession.catalogue_observation",
+          "line": 358
+        },
+        {
+          "name": "BoundedSourceSession.metadata",
+          "line": 419
+        },
+        {
+          "name": "BoundedSourceSession.answer_and_review",
+          "line": 438
+        },
+        {
+          "name": "BoundedSourceSession.select",
+          "line": 446
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/model_contract.py",
+      "sha256": "fe45c17a3fb8f9d8cdeab1b4f7038b62699a6709dff29206d6335a26789b67d5",
+      "bytes": 6756,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "request_metrics",
+          "line": 15
+        },
+        {
+          "name": "response_length_metrics",
+          "line": 45
+        },
+        {
+          "name": "genos_wire_schema",
+          "line": 67
+        },
+        {
+          "name": "structured_request",
+          "line": 89
+        },
+        {
+          "name": "structured_content",
+          "line": 97
+        },
+        {
+          "name": "structured_value",
+          "line": 122
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "fd37b10336a32fa49f22d287fa5717f4171251f23579079b8827a0d3a24a107a",
+      "bytes": 26104,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "encoded",
+          "line": 18
+        },
+        {
+          "name": "text_hash",
+          "line": 22
+        },
+        {
+          "name": "WorkRepository",
+          "line": 26
+        },
+        {
+          "name": "WorkRepository.__init__",
+          "line": 30
+        },
+        {
+          "name": "WorkRepository.close",
+          "line": 78
+        },
+        {
+          "name": "WorkRepository.transaction",
+          "line": 82
+        },
+        {
+          "name": "WorkRepository.navigation_batch",
+          "line": 103
+        },
+        {
+          "name": "WorkRepository.navigation_row",
+          "line": 117
+        },
+        {
+          "name": "WorkRepository.navigation_save",
+          "line": 126
+        },
+        {
+          "name": "WorkRepository.navigation_handle",
+          "line": 140
+        },
+        {
+          "name": "WorkRepository.flush_navigation",
+          "line": 154
+        },
+        {
+          "name": "WorkRepository.run",
+          "line": 163
+        },
+        {
+          "name": "WorkRepository.budget",
+          "line": 166
+        },
+        {
+          "name": "WorkRepository.event",
+          "line": 169
+        },
+        {
+          "name": "WorkRepository.head",
+          "line": 185
+        },
+        {
+          "name": "WorkRepository.heads",
+          "line": 194
+        },
+        {
+          "name": "WorkRepository.invalidate",
+          "line": 200
+        },
+        {
+          "name": "WorkRepository.put",
+          "line": 213
+        },
+        {
+          "name": "WorkRepository.evidence",
+          "line": 244
+        },
+        {
+          "name": "WorkRepository.visible",
+          "line": 260
+        },
+        {
+          "name": "WorkRepository.check_view",
+          "line": 270
+        },
+        {
+          "name": "WorkRepository.save_view",
+          "line": 281
+        },
+        {
+          "name": "WorkRepository.reserve_attempt",
+          "line": 294
+        },
+        {
+          "name": "WorkRepository.attempt_sent",
+          "line": 313
+        },
+        {
+          "name": "WorkRepository.finish_attempt",
+          "line": 319
+        },
+        {
+          "name": "WorkRepository.reserve_tool",
+          "line": 333
+        },
+        {
+          "name": "WorkRepository.record_observation",
+          "line": 339
+        },
+        {
+          "name": "WorkRepository.observations",
+          "line": 363
+        },
+        {
+          "name": "WorkRepository.snapshot",
+          "line": 368
+        },
+        {
+          "name": "WorkRepository.frontier",
+          "line": 372
+        },
+        {
+          "name": "WorkRepository.enqueue",
+          "line": 375
+        },
+        {
+          "name": "WorkRepository.finish_frontier",
+          "line": 384
+        },
+        {
+          "name": "WorkRepository.save_artifact",
+          "line": 391
+        },
+        {
+          "name": "WorkRepository.dependency_hash",
+          "line": 400
+        },
+        {
+          "name": "WorkRepository.assert_assembly_current",
+          "line": 404
+        },
+        {
+          "name": "WorkRepository.apply_proposal",
+          "line": 409
+        },
+        {
+          "name": "WorkRepository.fail",
+          "line": 438
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py",
+      "sha256": "0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e",
+      "bytes": 9331,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "RelationsRepository",
+          "line": 11
+        },
+        {
+          "name": "RelationsRepository.transaction",
+          "line": 16
+        },
+        {
+          "name": "RelationsRepository.assessment_id",
+          "line": 33
+        },
+        {
+          "name": "RelationsRepository.notice",
+          "line": 36
+        },
+        {
+          "name": "RelationsRepository.notices",
+          "line": 39
+        },
+        {
+          "name": "RelationsRepository.record_notice",
+          "line": 42
+        },
+        {
+          "name": "RelationsRepository.enqueue_system",
+          "line": 57
+        },
+        {
+          "name": "RelationsRepository.save_view",
+          "line": 65
+        },
+        {
+          "name": "RelationsRepository.reserve_attempt",
+          "line": 92
+        },
+        {
+          "name": "RelationsRepository.item_visible",
+          "line": 126
+        },
+        {
+          "name": "RelationsRepository.coverage",
+          "line": 132
+        },
+        {
+          "name": "RelationsRepository.stop_pending",
+          "line": 146
+        },
+        {
+          "name": "RelationsRepository.fail",
+          "line": 157
+        },
+        {
+          "name": "RelationsRepository.dependency_hash",
+          "line": 162
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/navigation_input.py",
+      "sha256": "4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851",
+      "bytes": 6387,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "NavigationReferences",
+          "line": 24
+        },
+        {
+          "name": "NavigationReferences.__init__",
+          "line": 25
+        },
+        {
+          "name": "NavigationReferences._map",
+          "line": 44
+        },
+        {
+          "name": "NavigationReferences.view",
+          "line": 49
+        },
+        {
+          "name": "NavigationReferences.schema",
+          "line": 50
+        },
+        {
+          "name": "NavigationReferences.decode",
+          "line": 63
+        },
+        {
+          "name": "NavigationReferences.restore",
+          "line": 67
+        },
+        {
+          "name": "NavigationReferences.receipt",
+          "line": 68
+        },
+        {
+          "name": "compact_cards",
+          "line": 71
+        },
+        {
+          "name": "expand_cards",
+          "line": 102
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "180215d1dde6578322463561a675fff4a041b37cd9df8070e17421bfd209636e",
+      "bytes": 14730,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "pointer",
+          "line": 19
+        },
+        {
+          "name": "issue",
+          "line": 23
+        },
+        {
+          "name": "OutputContractError",
+          "line": 29
+        },
+        {
+          "name": "OutputContractError.__init__",
+          "line": 30
+        },
+        {
+          "name": "DecisionConflict",
+          "line": 37
+        },
+        {
+          "name": "DecisionConflict.__init__",
+          "line": 39
+        },
+        {
+          "name": "PartialOperationError",
+          "line": 44
+        },
+        {
+          "name": "PartialOperationError.__init__",
+          "line": 46
+        },
+        {
+          "name": "repairable",
+          "line": 51
+        },
+        {
+          "name": "diagnostics",
+          "line": 57
+        },
+        {
+          "name": "strict_json",
+          "line": 81
+        },
+        {
+          "name": "schema_issue",
+          "line": 124
+        },
+        {
+          "name": "validate_shape",
+          "line": 130
+        },
+        {
+          "name": "decision_issues",
+          "line": 146
+        },
+        {
+          "name": "validate_decisions",
+          "line": 179
+        },
+        {
+          "name": "owner_for",
+          "line": 186
+        },
+        {
+          "name": "ContractSpec",
+          "line": 207
+        },
+        {
+          "name": "ContractSpec.from_schema",
+          "line": 214
+        },
+        {
+          "name": "ContractSpec.receipt",
+          "line": 217
+        },
+        {
+          "name": "DecisionJournal",
+          "line": 223
+        },
+        {
+          "name": "DecisionJournal.__init__",
+          "line": 232
+        },
+        {
+          "name": "DecisionJournal.state",
+          "line": 240
+        },
+        {
+          "name": "DecisionJournal._put",
+          "line": 258
+        },
+        {
+          "name": "DecisionJournal.transaction",
+          "line": 268
+        },
+        {
+          "name": "DecisionJournal.reserve",
+          "line": 271
+        },
+        {
+          "name": "DecisionJournal.reject",
+          "line": 286
+        },
+        {
+          "name": "DecisionJournal.accept",
+          "line": 292
+        },
+        {
+          "name": "bounded_decision",
+          "line": 297
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "sha256": "b94578cb4d7d325117c7c1cfd14baece810e5ae098949c37082046890277b25c",
+      "bytes": 157818,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_strings",
+          "line": 106
+        },
+        {
+          "name": "_object",
+          "line": 116
+        },
+        {
+          "name": "decision_schema",
+          "line": 120
+        },
+        {
+          "name": "gap_id",
+          "line": 254
+        },
+        {
+          "name": "numbered_tokens",
+          "line": 259
+        },
+        {
+          "name": "search_key",
+          "line": 265
+        },
+        {
+          "name": "prior_summary",
+          "line": 269
+        },
+        {
+          "name": "repair_contract",
+          "line": 286
+        },
+        {
+          "name": "correction_schema",
+          "line": 320
+        },
+        {
+          "name": "corrected_decision",
+          "line": 336
+        },
+        {
+          "name": "Investigation",
+          "line": 340
+        },
+        {
+          "name": "Investigation.__init__",
+          "line": 345
+        },
+        {
+          "name": "Investigation.save",
+          "line": 474
+        },
+        {
+          "name": "Investigation.record_search_outcome",
+          "line": 478
+        },
+        {
+          "name": "Investigation.adopted_basis",
+          "line": 492
+        },
+        {
+          "name": "Investigation.open_gap_round",
+          "line": 500
+        },
+        {
+          "name": "Investigation.current_gap_round",
+          "line": 516
+        },
+        {
+          "name": "Investigation.close_gap_round",
+          "line": 520
+        },
+        {
+          "name": "Investigation.issue_evidence",
+          "line": 538
+        },
+        {
+          "name": "Investigation.gap_leads",
+          "line": 554
+        },
+        {
+          "name": "Investigation.recent_rejections",
+          "line": 578
+        },
+        {
+          "name": "Investigation.page_document",
+          "line": 586
+        },
+        {
+          "name": "Investigation.recovery_key",
+          "line": 594
+        },
+        {
+          "name": "Investigation.recovery_blocked",
+          "line": 597
+        },
+        {
+          "name": "Investigation.recovery_view",
+          "line": 605
+        },
+        {
+          "name": "Investigation.observe_navigation",
+          "line": 619
+        },
+        {
+          "name": "Investigation.left",
+          "line": 647
+        },
+        {
+          "name": "Investigation.add_laws",
+          "line": 650
+        },
+        {
+          "name": "Investigation.add_reads",
+          "line": 658
+        },
+        {
+          "name": "Investigation.active_records",
+          "line": 680
+        },
+        {
+          "name": "Investigation.reference_signature",
+          "line": 687
+        },
+        {
+          "name": "Investigation.read_records",
+          "line": 692
+        },
+        {
+          "name": "Investigation.plan_pages",
+          "line": 699
+        },
+        {
+          "name": "Investigation.render_page",
+          "line": 728
+        },
+        {
+          "name": "Investigation.article_menu",
+          "line": 745
+        },
+        {
+          "name": "Investigation.bind_reference_delivery",
+          "line": 767
+        },
+        {
+          "name": "Investigation.reference_overview",
+          "line": 779
+        },
+        {
+          "name": "Investigation.location",
+          "line": 811
+        },
+        {
+          "name": "Investigation.restore",
+          "line": 814
+        },
+        {
+          "name": "Investigation.reference_menu",
+          "line": 826
+        },
+        {
+          "name": "Investigation.reference_decision",
+          "line": 832
+        },
+        {
+          "name": "Investigation.view",
+          "line": 837
+        },
+        {
+          "name": "Investigation.snapshot",
+          "line": 962
+        },
+        {
+          "name": "Investigation.step_outcome",
+          "line": 966
+        },
+        {
+          "name": "Investigation.execute",
+          "line": 978
+        },
+        {
+          "name": "Investigation.build_view",
+          "line": 1029
+        },
+        {
+          "name": "Investigation.inspect_references",
+          "line": 1224
+        },
+        {
+          "name": "Investigation.validate",
+          "line": 1235
+        },
+        {
+          "name": "Investigation.search_rounds_used",
+          "line": 1379
+        },
+        {
+          "name": "Investigation.validate_gap_resolutions",
+          "line": 1382
+        },
+        {
+          "name": "Investigation.coverage_gate",
+          "line": 1433
+        },
+        {
+          "name": "Investigation.execute_tool",
+          "line": 1442
+        },
+        {
+          "name": "Investigation.fulltext_args",
+          "line": 1687
+        },
+        {
+          "name": "Investigation.fulltext_terms",
+          "line": 1692
+        },
+        {
+          "name": "Investigation.open_hits",
+          "line": 1695
+        },
+        {
+          "name": "Investigation.result",
+          "line": 1705
+        },
+        {
+          "name": "Investigation.reject_decision",
+          "line": 1761
+        },
+        {
+          "name": "Investigation.model_view",
+          "line": 1771
+        },
+        {
+          "name": "Investigation.batch_pages",
+          "line": 1784
+        },
+        {
+          "name": "Investigation.bounded_model_view",
+          "line": 1825
+        },
+        {
+          "name": "Investigation.request_decision",
+          "line": 1857
+        },
+        {
+          "name": "Investigation.bounded_result",
+          "line": 1972
+        },
+        {
+          "name": "Investigation.run",
+          "line": 1991
+        },
+        {
+          "name": "select",
+          "line": 2060
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "sha256": "a0460e95e915e6fa7d1c8c4208d680d2a133cbbbf6a9e72778a8cd62c55c0084",
+      "bytes": 6139,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "profile",
+          "line": 14
+        },
+        {
+          "name": "domain",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "sha256": "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea",
+      "bytes": 18701,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "policy",
+          "line": 15
+        },
+        {
+          "name": "validate_policy",
+          "line": 19
+        },
+        {
+          "name": "enabled",
+          "line": 47
+        },
+        {
+          "name": "allowed",
+          "line": 51
+        },
+        {
+          "name": "index",
+          "line": 78
+        },
+        {
+          "name": "token",
+          "line": 84
+        },
+        {
+          "name": "hit_shape",
+          "line": 90
+        },
+        {
+          "name": "structure_hit",
+          "line": 95
+        },
+        {
+          "name": "search_queries",
+          "line": 114
+        },
+        {
+          "name": "discover",
+          "line": 128
+        },
+        {
+          "name": "prepare",
+          "line": 208
+        },
+        {
+          "name": "parent_offer",
+          "line": 224
+        },
+        {
+          "name": "siblings",
+          "line": 237
+        },
+        {
+          "name": "structured_discovery",
+          "line": 246
+        },
+        {
+          "name": "fulltext_scope_keys",
+          "line": 276
+        },
+        {
+          "name": "scoped_read_unit",
+          "line": 298
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+      "sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "bytes": 4133,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "restore",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7",
+      "bytes": 15527,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "open_cases",
+          "line": 13
+        },
+        {
+          "name": "result_port",
+          "line": 41
+        },
+        {
+          "name": "run",
+          "line": 123
+        },
+        {
+          "name": "execute",
+          "line": 141
+        },
+        {
+          "name": "finish_shortcut",
+          "line": 202
+        },
+        {
+          "name": "procedure_replayable",
+          "line": 211
+        },
+        {
+          "name": "project",
+          "line": 222
+        },
+        {
+          "name": "bind_system_result",
+          "line": 233
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "sha256": "c146bbe194cabe80d24b6577380a90b45b50690d6b2b9594dcee6adbf4ea45a8",
+      "bytes": 6433,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "UnifiedRag",
+          "line": 9
+        },
+        {
+          "name": "UnifiedRag.__init__",
+          "line": 10
+        },
+        {
+          "name": "UnifiedRag.open",
+          "line": 24
+        },
+        {
+          "name": "UnifiedExecution",
+          "line": 44
+        },
+        {
+          "name": "UnifiedExecution.bind_previous",
+          "line": 45
+        },
+        {
+          "name": "UnifiedExecution.invoke",
+          "line": 61
+        },
+        {
+          "name": "UnifiedExecution.record",
+          "line": 67
+        },
+        {
+          "name": "UnifiedExecution.host_stages_before",
+          "line": 85
+        },
+        {
+          "name": "UnifiedExecution.rebind",
+          "line": 89
+        },
+        {
+          "name": "UnifiedExecution.stage",
+          "line": 93
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py",
+      "sha256": "7059a6b6d48f4af2133f46e126cdb67c362ba50a74faad85868462238d9c6b0c",
+      "bytes": 4699,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "RuntimeModel",
+          "line": 10
+        },
+        {
+          "name": "RuntimeModel.__init__",
+          "line": 12
+        },
+        {
+          "name": "RuntimeModel.invoke",
+          "line": 16
+        },
+        {
+          "name": "RuntimeModel.ensure",
+          "line": 23
+        },
+        {
+          "name": "RuntimeModel.close",
+          "line": 47
+        },
+        {
+          "name": "factory",
+          "line": 52
+        },
+        {
+          "name": "public_result",
+          "line": 60
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "sha256": "791dc0438cb7302a9da948ab0af40dd68e66da315fa0b116d74071dcab276335",
+      "bytes": 29549,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "SourceInvestigationIncomplete",
+          "line": 30
+        },
+        {
+          "name": "SourceInvestigationIncomplete.__init__",
+          "line": 34
+        },
+        {
+          "name": "evidence_schema",
+          "line": 40
+        },
+        {
+          "name": "NativeRag",
+          "line": 52
+        },
+        {
+          "name": "NativeRag.__init__",
+          "line": 53
+        },
+        {
+          "name": "NativeRag.catalogue",
+          "line": 59
+        },
+        {
+          "name": "NativeRag.question",
+          "line": 63
+        },
+        {
+          "name": "NativeRag.retrieval_question",
+          "line": 68
+        },
+        {
+          "name": "NativeRag.documents",
+          "line": 74
+        },
+        {
+          "name": "NativeRag.open",
+          "line": 86
+        },
+        {
+          "name": "NativeRag.verify",
+          "line": 96
+        },
+        {
+          "name": "NativeExecution",
+          "line": 105
+        },
+        {
+          "name": "NativeExecution.completion_limits",
+          "line": 107
+        },
+        {
+          "name": "NativeExecution.__init__",
+          "line": 110
+        },
+        {
+          "name": "NativeExecution.selected_originals",
+          "line": 112
+        },
+        {
+          "name": "NativeExecution.control",
+          "line": 120
+        },
+        {
+          "name": "NativeExecution.completion",
+          "line": 123
+        },
+        {
+          "name": "NativeExecution.schema",
+          "line": 125
+        },
+        {
+          "name": "NativeExecution.invoke",
+          "line": 143
+        },
+        {
+          "name": "NativeExecution.verify_claims",
+          "line": 155
+        },
+        {
+          "name": "NativeExecution.stage",
+          "line": 167
+        },
+        {
+          "name": "NativeExecution._stage",
+          "line": 171
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "sha256": "5e786ede74a62a209b8fe4a31559405a6e4b5e344518158e477aa9df8ad8e59b",
+      "bytes": 25462,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "gap_history",
+          "line": 47
+        },
+        {
+          "name": "reference_leads",
+          "line": 62
+        },
+        {
+          "name": "CompletionExecution",
+          "line": 82
+        },
+        {
+          "name": "CompletionExecution.completion_stage",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v8.py",
+      "sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df",
+      "bytes": 6907,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "assessment_schema",
+          "line": 26
+        },
+        {
+          "name": "as_v7",
+          "line": 43
+        },
+        {
+          "name": "compile_claim",
+          "line": 49
+        },
+        {
+          "name": "prepare",
+          "line": 55
+        },
+        {
+          "name": "materialize",
+          "line": 90
+        },
+        {
+          "name": "verify_content",
+          "line": 97
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/narrative_answer.py",
+      "sha256": "e4156582f4b8bdd720513e5f89a04125e3a848af6fa3ed96180138983b8bc4e3",
+      "bytes": 13383,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "enabled",
+          "line": 34
+        },
+        {
+          "name": "schema",
+          "line": 38
+        },
+        {
+          "name": "paragraph",
+          "line": 50
+        },
+        {
+          "name": "checked",
+          "line": 59
+        },
+        {
+          "name": "input_data",
+          "line": 73
+        },
+        {
+          "name": "plan",
+          "line": 93
+        },
+        {
+          "name": "render",
+          "line": 100
+        },
+        {
+          "name": "ParagraphStream",
+          "line": 108
+        },
+        {
+          "name": "ParagraphStream.__init__",
+          "line": 114
+        },
+        {
+          "name": "ParagraphStream.feed",
+          "line": 123
+        },
+        {
+          "name": "TokenStream",
+          "line": 162
+        },
+        {
+          "name": "TokenStream.__init__",
+          "line": 169
+        },
+        {
+          "name": "TokenStream._send",
+          "line": 178
+        },
+        {
+          "name": "TokenStream._before_text",
+          "line": 182
+        },
+        {
+          "name": "TokenStream.feed",
+          "line": 224
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/transport.py",
+      "sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "bytes": 15818,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_error_details",
+          "line": 22
+        },
+        {
+          "name": "GenosTransport",
+          "line": 65
+        },
+        {
+          "name": "GenosTransport.__init__",
+          "line": 66
+        },
+        {
+          "name": "GenosTransport.from_environment",
+          "line": 76
+        },
+        {
+          "name": "GenosTransport._request",
+          "line": 84
+        },
+        {
+          "name": "GenosTransport.send_once",
+          "line": 139
+        },
+        {
+          "name": "GenosTransport._stream_request",
+          "line": 144
+        },
+        {
+          "name": "GenosTransport.send_stream_once",
+          "line": 264
+        },
+        {
+          "name": "GenosTransport.validate_model",
+          "line": 268
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py",
+      "sha256": "d10e7306805060504a8c794e57704621cda1a140155de4b077d3c3be657e4eb3",
+      "bytes": 8577,
+      "selected_manifest_member": true,
+      "selected_equals_working": true,
+      "definition_index": [
+        {
+          "name": "_sha",
+          "line": 16
+        },
+        {
+          "name": "provider_request",
+          "line": 20
+        },
+        {
+          "name": "LocalGemmaTransport",
+          "line": 47
+        },
+        {
+          "name": "LocalGemmaTransport.__init__",
+          "line": 49
+        },
+        {
+          "name": "LocalGemmaTransport.public_scope",
+          "line": 86
+        },
+        {
+          "name": "LocalGemmaTransport.validate_model",
+          "line": 89
+        },
+        {
+          "name": "LocalGemmaTransport.authorize",
+          "line": 93
+        },
+        {
+          "name": "LocalGemmaTransport.validate_authorization",
+          "line": 107
+        },
+        {
+          "name": "LocalGemmaTransport.send_once",
+          "line": 117
+        }
+      ]
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099",
+      "bytes": 19479,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_PROMPT_COMPACTION_20260928.md",
+      "sha256": "d24075669abb3b76e5b5f1e2f60947210e75984daf820f384d2d9b4207b3fe81",
+      "bytes": 7498,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/PLAN.md",
+      "sha256": "db949877d13ba8f4b17731de777e812c9cb35939af4d855bc54d7067e97a75c7",
+      "bytes": 50068,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/HISTORY.md",
+      "sha256": "211bd03fc54cc005494f3eb85e5790abf2293523ee60f6c76b1bbd1493b9f0cb",
+      "bytes": 12787,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/REVIEW.md",
+      "sha256": "aa2a01833cf65e7110763ee0b3de391d02dc172b1e45b64265539fd35d08f106",
+      "bytes": 6996,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/IMPLEMENTATION_RESULT.json",
+      "sha256": "24ce35cd29a204b70bfdc0b538d3e9e9a8a0f42e51dbb19a18699a5c3c7aa4ba",
+      "bytes": 10489,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/IMPLEMENTATION_20261014.txt",
+      "sha256": "2b50108be27edc7b0b3444a0d706dcd253888be2f94f64b57882e8930915e0f9",
+      "bytes": 6631,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/README.md",
+      "sha256": "fa69809534eb4081fe193653775c1b107433373b0df4e2545e3188704a825b2f",
+      "bytes": 3979,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/run-001/result.json",
+      "sha256": "721fcbf7d1e095fa720dc9fcaaeb5f1104b08a064136c820a30b507f8ec18bbc",
+      "bytes": 1273,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/design/regression-selection.json",
+      "sha256": "8f3cbb176c7231766390b8b2b742d631ab50eadb52a77052a161b8a06d971d0f",
+      "bytes": 2614,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/main-service-smoke.json",
+      "sha256": "9bcbbbc08ab4bf7f968d679f7a86e12f12f0440ce0d42a671adc06e65bfdbca6",
+      "bytes": 3331,
+      "selected_manifest_member": false
+    },
+    {
+      "path": "06_TOOLS/EXPERIMENTS/adr_0777/audit.py",
+      "sha256": "2e787a980d1000f226c03465acb9e3de466b60287b59702fe2af8e4af5af647e",
+      "bytes": 2976,
+      "selected_manifest_member": false,
+      "definition_index": [
+        {
+          "name": "put",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/EXPERIMENTS/adr_0777/run_tests.py",
+      "sha256": "3328b81858a6c23d8f346196cda29d25f1ece6996118448ef7fd57603cca25c5",
+      "bytes": 1629,
+      "selected_manifest_member": false,
+      "definition_index": []
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/schema_recovery_20261014_r1/VALIDATION.json",
+      "sha256": "656b0dc13b600e033a51d5dc0e8f67b85771f6a2f57ca44eb69ebee1c5cfd285",
+      "bytes": 5241,
+      "selected_manifest_member": false
+    }
+  ],
+  "public_sources": [
+    {
+      "url": "https://docs.vllm.ai/en/stable/design/prefix_caching/",
+      "supports": "exact preceding token context and KV block reuse, not actual GENOS configuration",
+      "checked_date": "2026-10-14"
+    },
+    {
+      "url": "https://docs.vllm.ai/en/stable/features/automatic_prefix_caching/",
+      "supports": "prefill reuse and decode limitation, not a local speed forecast",
+      "checked_date": "2026-10-14"
+    }
+  ],
+  "limitations": [
+    "No live model performance or hit-rate measurement.",
+    "No current GENOS serving revision, backend settings, or field quality verified.",
+    "Historical tests are not a fresh run.",
+    "Future candidate must be based on the active baseline at implementation time."
+  ]
+}

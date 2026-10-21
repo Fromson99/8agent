@@ -1,0 +1,45 @@
+Dataiku Streamlit 지식 운영 콘솔 — Python 실행본
+2026-10-22 / 기존 Streamlit 시안 R2와 동일한 실행 코드
+
+이 묶음을 사용하세요
+- DATAIKU_STREAMLIT_KNOWLEDGE_20261022_R1.zip
+- 별도 첨부 DATAIKU_STREAMLIT_APP.txt: app.py와 바이트까지 동일한 전체 Python 코드
+- 별도 첨부 START_HERE.txt: 이 안내
+.js / .jsx / .mjs / .cjs 파일 및 별도 프런트엔드 빌드 도구를 포함하지 않습니다.
+
+Dataiku에서 실행
+1. 기존 Oracle 조회 예시와 같은 Dataiku 프로젝트의 Webapps를 엽니다.
+2. New webapp > Code webapp > An empty Streamlit app을 선택합니다.
+   이미 만든 Streamlit 웹앱이 있다면 현재 Python 코드를 먼저 백업하고 그 웹앱을 사용해도 됩니다.
+3. Settings > Backend > Code env에서 Streamlit이 설치된 Python 환경을 선택합니다.
+   이 코드의 검증 버전은 streamlit==1.50.0이며 requirements.txt에 기록했습니다.
+   Dataiku 내장 dataiku 모듈을 사용합니다. 외부 PyPI의 동명 패키지를 따로 설치하지 마세요.
+4. Python 편집기에 DATAIKU_STREAMLIT_APP.txt 전체를 붙여 넣고 Save 합니다.
+   압축을 푼 app.py 내용도 동일합니다. 별도 소스 파일·CSS·JS·이미지 업로드는 필요 없습니다.
+5. Preview에서 6개 메뉴를 확인합니다.
+   배치 모니터 / 구조화 누락 승인 / 숏컷 승인 / Legal Wiki / 온톨로지 관리 / 시뮬레이션.
+
+ZIP 자체를 Managed Folder에 올리는 것만으로 웹앱이 자동 실행되지는 않습니다.
+위의 Streamlit 웹앱 Python 편집기에 전체 코드 한 번을 붙여 넣는 방식입니다.
+Gmail에서 받은 ZIP은 소스·안내 보관용이며 TXT만 열어 붙여 넣어도 동일한 화면을 실행합니다.
+GENOS ~/DEV 설치·Git push·코드서빙 리비전 변경은 이 화면 실행에 필요하지 않습니다.
+
+실제 동작 범위
+- 첫 화면부터 여섯 메뉴, 예시 검토·위키 초안·온톨로지 편집·시뮬레이션 결과 미리보기가 동작합니다.
+- 현재 운영 콘솔 시안입니다. 목록·원문·집계·시뮬레이션 결과는 합성 예시이며, 수정은 현재 세션에만 남습니다.
+- 실제 배치 실행·승인 저장·위키 게시·온톨로지 게시·RAG·LLM 실행 API는 연결되지 않았습니다.
+- 배치 모니터의 Oracle 점검은 Dataiku SQLExecutor2를 통한 읽기 전용 조회입니다.
+  기존 AIDP 연결을 기본으로 사용하며 자동 조회하지 않습니다. 실제 환경의 연결 이름·권한은 현장에서 확인해야 합니다.
+- Oracle 오류가 있어도 나머지 UI 시안은 사용할 수 있습니다. DB 오류와 조회 실패를 성공으로 표시하지 않습니다.
+- 현재 로컬 MAIN99 및 GENOS 코드·데이터는 이 메일/화면 패키지에서 변경하지 않습니다.
+
+확인/복원
+Save 후 Preview에서 첫 화면과 여섯 메뉴를 확인합니다.
+오류가 나면 Dataiku 웹앱 Backend log의 오류 종류와 Python/Streamlit 버전을 확인합니다.
+이전 화면으로 돌아가려면 백업한 Python 코드와 이전 Code env를 복원하고 Save 합니다.
+실제 Dataiku 현장 화면/Oracle 접속 성공은 이 외부 개발 환경에서 확인하지 못했습니다.
+
+Dataiku 공식 실행 방법
+https://developer.dataiku.com/latest/tutorials/webapps/streamlit/getting-started/index.html
+공식 안내의 기본 조건은 Dataiku 14.3.0 이상, Python 3.9 이상과 Streamlit 설치 환경입니다.
+현장에서는 사용 중인 Dataiku와 호환되는 Code env를 선택하세요.

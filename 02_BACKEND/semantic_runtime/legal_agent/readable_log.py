@@ -60,6 +60,10 @@ def failure_rows(value):
           '오류 메시지: '+json.dumps(value.get('error_message'),ensure_ascii=False),
           '발생 위치: '+json.dumps(value.get('location'),ensure_ascii=False)]
     if isinstance(value.get('investigation'),dict):rows.extend(diagnostic_rows(value['investigation']))
+    if isinstance(value.get('tool_outcome'),dict):
+        outcome=value['tool_outcome']
+        rows.append('도구 실패 상태: '+json.dumps({k:outcome.get(k) for k in
+            ('failure_kind','cause_code','execution','effects','receipt_refs','remaining_target_refs','failure_ref')},ensure_ascii=False))
     if value.get('traceback'):rows.append('전체 traceback:\n'+str(value['traceback']))
     rows.append('전체 실패 상세:\n'+json.dumps(value,ensure_ascii=False,indent=2,default=str))
     return rows
@@ -290,8 +294,8 @@ def decision_rows(value, view):
         add({'KEEP':'원문 묶음 유지','EXCLUDE':'읽은 원문 묶음 제외','DEFER':'원문 묶음 보류'}.get(choice.get('status'),'원문 묶음 판단'),
             branches.get(choice.get('branch_id'),{}).get('article','제시된 원문 묶음'),choice.get('reason'))
     if value.get('next_action'):add('법령 조사 다음 행동',value['next_action'],value.get('reason'))
-    if value.get('mode') in ('CASE','DIRECT') and 'answer' in value:
-        add('안내 답변' if value['mode']=='DIRECT' else '법률·문서 요청 처리',
+    if value.get('mode') in ('CASE','DIRECT','BROWSE') and 'answer' in value:
+        add({'DIRECT':'안내 답변','BROWSE':'문서 목록 조회','CASE':'법률·문서 요청 처리'}[value['mode']],
             value.get('answer') or '기존 사건 처리로 연결',value.get('reason'))
     for plan in objects(value.get('plans')):
         if plan.get('agent_required') is False:

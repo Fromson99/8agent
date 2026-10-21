@@ -1,0 +1,48 @@
+.....{"ts": "2026-10-16T08:46:50.787125+00:00", "level": "ERROR", "logger": "genos.app", "event": "request.error", "request_id": "78157ba9f24244ca852d609f44cfb6e9", "error_type": "MemoryError", "failure_diagnostics": {"error_code": "MemoryError", "error_type": "semantic_runtime.legal_agent.corrected_memory.MemoryError", "error_message": "session owner mismatch", "stage": null, "location": {"file": "[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 170, "function": "identity"}, "traceback": "Traceback (most recent call last):\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py\", line 42, in wrapped_app\n    await app(scope, receive, sender)\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/fastapi/routing.py\", line 144, in app\n    response = await f(request)\n               ^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/fastapi/routing.py\", line 706, in app\n    raw_response = await run_endpoint_function(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/fastapi/routing.py\", line 354, in run_endpoint_function\n    return await run_in_threadpool(dependant.call, **values)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/starlette/concurrency.py\", line 34, in run_in_threadpool\n    return await anyio.to_thread.run_sync(func)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/anyio/to_thread.py\", line 65, in run_sync\n    return await get_async_backend().run_sync_in_worker_thread(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py\", line 2641, in run_sync_in_worker_thread\n    return await future\n           ^^^^^^^^^^^^\n  File \"[REDACTED]/.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py\", line 1033, in run\n    result = context.run(func, *args)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/app.py\", line 298, in ask\n    result = execute_ask(body, request)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/app.py\", line 396, in execute_ask\n    run=pipeline.run(question,docs,use_llm,scope,execution_context={\n        'run_id':ident,'release':release,'runtime':runtime,'publish':True,\n        'defer_publication':deferred,\n        'external_public_question':external is not None and use_llm,**case_options},**team_options)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/pipeline.py\", line 134, in run\n    return self._run(question,documents,use_llm,scope,execution_context=execution_context,\n           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                     team_id=team_id,admission_lease=lease)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/pipeline.py\", line 163, in _run\n    return run_case(self,body,principal,options,admission_lease)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/coordinator.py\", line 16, in run_case\n    return unified_run(pipeline,body,principal,options,lease)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py\", line 130, in run\n    with cases.owner(body,principal):return execute(pipeline,body,principal,options,cases)\n                                            ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py\", line 146, in execute\n    result=cases.execute(body,principal)\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/case_repository.py\", line 57, in execute\n    self.identity(body['session_id'],principal)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"[REDACTED]/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py\", line 170, in identity\n    raise MemoryError('session owner mismatch')\nsemantic_runtime.legal_agent.corrected_memory.MemoryError: session owner mismatch\n", "output_contract": {"contract_version": "output-contract-v1", "category": "IMPLEMENTATION_FAILURE", "repairable": false, "issues": []}}}
+.............F.                                                     [100%]
+=================================== FAILURES ===================================
+____ test_u01_source_scope_correction_recorrection_restores_original_event _____
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:247: in _checked_workspace_path
+    info = current.lstat()
+           ^^^^^^^^^^^^^^^
+/usr/lib/python3.14/pathlib/__init__.py:662: in lstat
+    return os.lstat(self)
+           ^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/99_ARCHIVE'
+
+During handling of the above exception, another exception occurred:
+05_TESTS/CONTRACTS/test_unified_legal_agent.py:321: in test_u01_source_scope_correction_recorrection_restores_original_event
+    app=create_app(tmp_path,mixed_generation,contracts_root=ROOT,provider=object(),implementation='legal-agent-unified-v6',
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/installed_contract_runner.py:18: in create
+    return original(*args,**kw)
+           ^^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/semantic_runtime/app.py:60: in create_app
+    runtime=Path(runtime_root) if runtime_root is not None else root/layout.path('runtime').relative_to(layout.root)/'semantic'
+                                                                     ^^^^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:701: in path
+    self._validate_environment_routing()
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:634: in _validate_environment_routing
+    _relative, _validation_raw, validation = _load_bound_final_receipt(
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:2847: in _load_bound_final_receipt
+    _validate_live_canonical_root_bindings(
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:1561: in _validate_live_canonical_root_bindings
+    _canonical_root_directory(
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:1188: in _canonical_root_directory
+    relative, path = _checked_workspace_path(
+08_DEPLOYMENT/GENOS/handoffs/main_full_20261016_r2/validation-main81-baseline/02_BACKEND/lawrag/platform/workspace.py:250: in _checked_workspace_path
+    raise LayoutError(f"{field} does not exist: {relative}")
+E   lawrag.platform.workspace.LayoutError: canonical root 'archive' does not exist: 99_ARCHIVE
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1345: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u01_source_scope_correction_recorrection_restores_original_event
+1 failed, 19 passed, 2 warnings in 10.83s
+INSTALLED_CONTRACT_IMPORTS PASS; modules=204

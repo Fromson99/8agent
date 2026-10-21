@@ -1,0 +1,22 @@
+--- before/02_BACKEND/semantic_runtime/oracle_dp_io.py
++++ after/02_BACKEND/semantic_runtime/oracle_dp_io.py
+@@ -91,8 +91,9 @@
+ 
+ class SQL:
+     """One physical call per request; no retry. Journal excludes text/bind values."""
+-    def __init__(self, client, *, journal, binding, max_calls=1000000, seconds=3600):
++    def __init__(self, client, *, journal, binding, max_calls=1000000, seconds=3600, progress=None):
+         self.client, self.binding = client, binding
++        self.progress = progress
+         self.journal = Path(journal)
+         self.journal.parent.mkdir(parents=True, exist_ok=True)
+         self.max_calls, self.deadline, self.calls = max_calls, time.monotonic() + seconds, 0
+@@ -109,6 +110,8 @@
+             f.write(canonical({'binding': self.binding, 'call': self.calls, 'at': time.time(),
+                                'status': status, **extra}) + '\n')
+             f.flush(); os.fsync(f.fileno())
++        if self.progress is not None:
++            self.progress.sql(status, self.calls)
+ 
+     def request(self, statement, binds=(), *, write=False, limit=100):
+         if self.calls >= self.max_calls or time.monotonic() >= self.deadline:

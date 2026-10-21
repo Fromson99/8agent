@@ -1,0 +1,36 @@
+{
+  "kind": "preserved-existing-fix-not-new-experiment",
+  "source_experiment": "ADR-0930/fixed",
+  "source_revision": "rev-007",
+  "source_snapshot": "02_BACKEND/lawrag/research/candidates/adr_0930/fixed/revisions/rev-007/snapshot",
+  "base_release": "connected-source-selection-20261019-r2",
+  "included_files": [
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py"
+  ],
+  "before_sha256": "958ed4e06724e44502bd101bf8e3092e84d17a60202c13a06a381632a48778fb",
+  "after_sha256": "e8af96e2008fb78865753b0bf8088fdf94c49566675911044cccf51dc1051cb6",
+  "patch_sha256": "547f190816d5faac8dd01e7b44aed098444b4d1cdd91df42705552682645a037",
+  "excluded_pf_changes": [
+    "02_BACKEND/semantic_runtime/comparison_research_bridge.py",
+    "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py",
+    "02_BACKEND/workflow/adapters/projection.py"
+  ],
+  "checks": {
+    "apply_matches_tested_rp_file": true,
+    "reverse_matches_baseline": true
+  },
+  "existing_validation": {
+    "test_file": "06_TOOLS/EXPERIMENTS/adr_0930/test_fixes.py",
+    "test_file_sha256": "a86bd8711671aa3a4787bfd589b9c9bb65e740ff59345ab0a18b79ae25b67553",
+    "rp_test_count": 5,
+    "report": "04_EXPERIMENTS/ADR/ADR-0930-connected-read-review-fix/artifacts/tests-009-final-regression.txt",
+    "standalone_rp_only_serving_candidate_tested": false
+  },
+  "active_pointer_sha256": "6cff72e6a3e8fd988030184cf654c25157ac8f64f4061f11e86ab24ef52ebd9c",
+  "working_file_sha256": "958ed4e06724e44502bd101bf8e3092e84d17a60202c13a06a381632a48778fb",
+  "new_model_calls": 0,
+  "product_loadable": false,
+  "working_product_changed": false,
+  "main_activated": false,
+  "genos_changed": false
+}

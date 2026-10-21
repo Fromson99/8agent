@@ -1,0 +1,32 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test_delivery.py",
+    "--basetemp=08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installation-002-fixtures"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 150.1344433659997,
+  "peak_group_rss_bytes": 538247168,
+  "min_available_bytes": 13593436160,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installation-002-resources.json",
+    "rss_gib": 3.0,
+    "as_gib": 5.0,
+    "min_available_gib": 3.0,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/test_delivery.py",
+      "--basetemp=08_DEPLOYMENT/GENOS/handoffs/session_identity_20261019_r1/installation-002-fixtures"
+    ]
+  },
+  "samples_sha256": "c541e2648877a3019e470b34c5497090b1f3b9cdd5884a937565bb0c5723fe91"
+}

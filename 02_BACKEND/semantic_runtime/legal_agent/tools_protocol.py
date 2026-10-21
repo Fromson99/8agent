@@ -29,7 +29,7 @@ DEFINITIONS = {
         'candidate_decisions': arr(obj({'candidate': ID, 'decision': enum('PARK', 'REOPEN'), 'reason': S})),
         'route_decisions': arr(obj({'route': ID, 'decision': enum('REJECT', 'RESTORE', 'DEFER'), 'reason': S})),
         'question_updates': arr(obj({'question_refs': {**IDS, 'minItems': 1}, 'interpretation': S,
-                                    'missing_fact': {'type': ['string', 'null'], 'maxLength': 10000}, 'reason': S})),
+                                    'missing_fact': {'type': ['string', 'null']}, 'reason': S})),
         'intent': enum('CONTINUE', 'DRAFT', 'CLARIFY', 'STOP_PARTIAL'), 'reason': S}),
     'Draft': obj({'paragraphs': arr(obj({'text': S, 'evidence': {**IDS, 'minItems': 1},
                                         'question_refs': {**IDS, 'minItems': 1}, 'fact_dependencies': arr(S)}), 0, 32),

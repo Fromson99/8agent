@@ -1,0 +1,74 @@
+재판단 추가 통합 누적 패치 — GENOS_RAG_RECOVERY_ALL_20261021_R2
+
+이번 R2는 앞서 보낸 RAG_RECOVERY_ALL R1을 대체합니다. 이전 NAVIGATION_DELIVERY R1, READABLE R1/R2/R3, ASSESS 원문 제한 답변과 이번 재판단 수정을 모두 포함합니다.
+이전 ZIP들을 차례로 적용할 필요가 없습니다. MAIN96 또는 알려진 앞선 누적 패치 위에 한 번 적용하세요.
+기존 대사 10분 제한도 포함합니다. 다른 미확인 수정이 있으면 check에서 중단하여 덮어쓰지 않습니다.
+
+통합한 수정
+1. 원문 선택 미완료: 선택 응답 검증이 실패해도 이미 전달·검증된 원문 기록을 다음 판단에 연결합니다.
+   선택 실패·미판단 상태를 남기며 읽지 않은 원문을 추가하거나 선택 성공으로 바꾸지 않습니다.
+2. 출처·표 표시: 생성 설명의 임시 C번호를 정리하고 일반질문 그래프와 같은 독립 펼치기를 사용합니다.
+   근거 표의 같은 행에 내규/외규 출처·정확 원문·의견을 연결합니다. 원문 자체의 문자는 보존합니다.
+3. 이번 ASSESS 근거 부족 반복: 검증된 판단이 claims=[]이어도 확보한 원문이 있으면
+   정확 원문·출처·미확인 범위를 제한 답변으로 전달합니다. 추가 모델 호출이나 임의 법률 결론은 없습니다.
+   원래 부족 상태, 권한·원문·해시 검사를 보존하고 성공 답변/숏컷으로 자동 등록하지 않습니다.
+   원문 전무, 스키마·전송 실패 등 모든 오류를 답변으로 바꾸는 패치는 아닙니다.
+
+4. 추가 조사를 요청받았지만 행동0회로 FINISH하는 실행 누락은 기존 수정 담당자가 1회 재판단합니다.
+   현재 허용된 도구로 확인 가능한 미열람 대상에만 적용합니다. 수정에서 원문 도구를 선택하거나
+   이유를 갖춘 NOT_NEEDED 재판단을 할 수 있습니다. 같은 충돌 반복은
+   UNATTEMPTED_GAP_REVIEW_EXHAUSTED로 기록하고 읽은 원문·미확인을 제한 답변으로 보존합니다.
+   이미 읽은 원문, 조회 실패, 권한/시간/호출 한계를 무시하여 무한 재조사하지 않습니다.
+
+적용 — ZIP을 실제 업로드한 TRANSFER 폴더에서 시작
+코드 적용 대상은 기존 Git checkout ~/DEV입니다. TRANSFER의 절대 경로는 가정하지 않습니다.
+checkout이 다르면 아래 bash 명령마다 같은 --root /실제/checkout 을 추가하세요.
+
+python3 -m zipfile -e ./GENOS_RAG_RECOVERY_ALL_20261021_R2.zip ./GENOS_RAG_RECOVERY_ALL_20261021_R2
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt check
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt apply
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt gate
+
+Python은 현장의 python3를 사용하며 실제 실행 경로·버전을 로그에 남깁니다. 기존 서비스 의존성을 사용합니다.
+apply는 먼저 백업합니다. .env·ignore·현장 경로·데이터·기존 보조 명령을 보존합니다.
+첫 실행부터 TRANSFER/rag-recovery-all-r2-logs에 출력과 종료 상태를 저장합니다.
+COMMIT_PATHS.txt에 적용 코드 목록이 있습니다. 실제 checkout에서 변경과 git diff --check를 확인하여 commit하세요.
+그다음 TRANSFER에서 아래 gate-code를 실행합니다. 검증된 같은 commit을 push하고 코드서빙 리비전을 배포하세요.
+
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt gate-code
+
+현재 현장이 SQLite/NFS를 사용 중일 때만 실제 선택 generation을 다음 명령으로 별도 검증합니다.
+Oracle 모드에는 이 명령을 사용하지 않습니다. 이 패치는 데이터를 생성/교체하거나 Oracle 전환을 수행하지 않습니다.
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt gate-sqlite
+
+워크플로우 Python 편집기
+동봉 GENOS_COMPARISON_READABLE_WORKFLOW_ALL.txt는 이전 READABLE 편집기 TXT와 동일합니다.
+이미 적용했다면 재교체할 필요가 없습니다. 아직 미적용이면 기존 Python 단계 전체를 백업한 뒤
+이 TXT 내용으로 전체 교체·저장/반영하세요. bash로 실행하는 파일이 아닙니다.
+코드 ZIP 적용·Git push·코드서빙 리비전 배포·워크플로우 편집기 반영은 각각 별도 단계입니다.
+
+현장 확인 — 워크플로우 테스트 화면에서만
+새 리비전에서 사진의 질문을 새 요청으로 실행하여 원문 선택 미완료 뒤 확보한 원문이 전달되는지 확인하세요.
+질문: 내규 보유·인수 분리 시 인수위험관리준칙과 투자위험관리준칙 중 어느 규정을 적용해야 하는지.
+추가 원문이 필요하다는 판단 뒤 조사 없이 종료할 때 1회 재판단과 후속 원문 조회가 있는지 확인하세요.
+반복 충돌이면 종료 사유와 확인한 원문·출처·미확인 범위가 제한 답변으로 나오는지 확인하세요.
+‘답변에 사용한 내규·외규 근거 펼치기’와 ‘함께 확인한 원문’을 열고 닫아 표·원문을 확인하세요.
+기존 일반질문의 그래프·처리 상세도 확인합니다. 과거 저장된 답변 문자열은 자동 갱신되지 않습니다.
+현장 로그의 코드 commit·선택 세대·서빙 리비전과 결과를 함께 보관하세요.
+
+재실행·원복 — 같은 TRANSFER에서
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt status
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt apply
+bash ./GENOS_RAG_RECOVERY_ALL_20261021_R2/GENOS_RAG_RECOVERY_ALL_20261021_R2_RUN.txt rollback
+
+중단 뒤 apply는 기존 백업·상태를 이어받습니다. rollback은 이번 통합본 적용 직전 코드로 복원합니다.
+그 뒤 다른 수정이 생겼으면 자동 원복을 거부합니다. backup·INSTALL_STATE.json·ROOT_BINDING.json·로그를 보관하세요.
+원복 후 재설치는 새 폴더에 다시 풀어 시작하세요. 서빙 리비전도 이전 검증 리비전으로 별도 복귀해야 합니다.
+
+검증과 적용 상태
+기존 봉인 RAG_RECOVERY_ALL R1 / workflow1.20.6에 이번 검증 runtime3파일을 결합하고 engine/PIPELINE pin을 재계산했습니다.
+세 파일의 수정 전 바이트는 R1과 같고, 수정 후 바이트는 앞선 재현 검증의 불변 기록에서 읽었습니다.
+로컬 MAIN97에는 같은 수정이 포함되어 있습니다. 이 현장 패키지는 MAIN97 전체 교체본이 아니며,
+별도 멀티턴 범위 기능/workflow1.20.7은 포함하지 않습니다. 서로 다른 조합의 검증 결과를 혼동하지 않습니다.
+이 최종 ZIP의 설치 코드 자체로 다시 검사합니다. 결과는 HANDOFF_VALIDATION.txt와 DELIVERY_VALIDATION.json/SEALED.json으로 결속합니다.
+로컬 MAIN97 선택·실제 데이터는 유지합니다. GENOS 반입·commit/push·리비전·내부 모델·현장 질문/클릭은 미검증입니다.

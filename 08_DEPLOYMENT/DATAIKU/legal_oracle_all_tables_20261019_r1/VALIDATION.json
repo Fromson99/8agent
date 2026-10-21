@@ -1,0 +1,35 @@
+{
+  "status": "STATIC_CONTRACT_MATCHED_FIELD_EXECUTION_NOT_PERFORMED",
+  "tables": 9,
+  "explicit_indexes": 4,
+  "metadata_selects": 5,
+  "total_columns": 46,
+  "checks": [
+    "All 13 CREATE statements match maintained DDL contracts after explicit source owner/table/PK name mapping",
+    "Source 3 tables match current oracle_dp_io owner, table names, column set and PK column order",
+    "No executable DROP/TRUNCATE/ALTER/DML/GRANT",
+    "SQL and TXT bytes identical"
+  ],
+  "source_table_mapping": "SIDDS.*_S -> SIDDA.*_A; source PK constraint names include _A to avoid historical name conflicts",
+  "inputs": {
+    "09_ARTIFACTS/AUDITS/20261016-legal-agent-rag-source-first/CREATE_RAG_SOURCE_TABLES.sql": "ed172fa0c6a6aed71c36a32a20c7fe025e4c6cc1daef7ad5de8f28596ced9331",
+    "08_DEPLOYMENT/DATAIKU/legal_oracle_dp_20261016_r1/DP_EXTRA_TABLES.sql": "2b3a4ae13e13375de62e7473063c14c9301144370bbd397e2961197d1a82ecd2",
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": "bd0cdcd295a209694c2692602b1310f1050b817ebe39ed8bddf1fe87759b400c",
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf"
+  },
+  "outputs": {
+    "LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.sql": {
+      "bytes": 10499,
+      "sha256": "e6cc9b39149858ed3acad449224f84e59a15b13c9cdbb288dc80f2d183bc33fd"
+    },
+    "LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.txt": {
+      "bytes": 10499,
+      "sha256": "e6cc9b39149858ed3acad449224f84e59a15b13c9cdbb288dc80f2d183bc33fd"
+    }
+  },
+  "limits": [
+    "No GENOS/Oracle connection or DDL execution",
+    "Existing field objects, grants, storage quota and Oracle execution remain unverified",
+    "Existing tables require structure comparison before skipping CREATE"
+  ]
+}

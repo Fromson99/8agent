@@ -1,7 +1,35 @@
 # 데이터 입력·생성
 
+로컬 MAIN73은 `latest-selection-20261015-r1/generation`을 선택한다. MAIN72의 불변 소스/색인 파일을 공유하고 독립 선택표에서 최신 내규만 노출한다. 신규 RAW 구축은 최신 선택 후 `document_metadata.is_latest`를 저장한다. [검증·한계](../04_EXPERIMENTS/ADR/ADR-0796-latest-document-pipeline-search/MAIN_RESULT.txt).
+
+MAIN72의 정의·명시 참조 최초 탐색 연결은 데이터를 재구축하지 않고 기존 색인을 소비한다. [실제 연결 검증](../04_EXPERIMENTS/ADR/ADR-0794-definition-entry-storage-binding/MAIN_RESULT.txt).
+
+2026-10-15 로컬 MAIN72는 MAIN71과 동일한 `TERM_RELEASES/risk-committee-team-metadata-20261015-r1/generation`을 선택한다. MAIN70의 추가 준칙에서 누락된 표준 팀 필드를 교정하여 위험관리팀 기본 선택에 포함했다. 기존1,546문서에 정정한 **위험관리위원회운영준칙**(2016-08-23)1문서를 추가하고 명명 정의635건·정의–명시 참조635건을 보강했다. 기존 전체 원문·FTS는 재구축하지 않았다. 이전 오제공 내규는 이력으로 보존하고 선택 세대에는 넣지 않았다. 사용자 승인 Qwen 호출은 별도 문서·세대 결속으로 허용하며 내부 자료의 공개 구분은 유지한다. 현재 적용 판본과 실제 모델 회수 정확도는 미확인이다. [선택·검증·원복](../04_EXPERIMENTS/ADR/ADR-0792-risk-committee-team-metadata/MAIN_RESULT.txt).
+
+2026-10-15 명명 정의만 보강하는 증분 명령을 추가했다.
+`pipeline.py document-release augment-definitions --base-generation BASE --output NEW`는 기존
+SQLite의 ‘조문에 따른/에서 정하는 …(이하 X이라/라 한다)’ 원문과 해소된 명시 참조를 검증해
+`definition` 및 `definition_reference`에만 추가한다. `--document-id ID`로 범위를 한정할 수 있다.
+원문·전문검색·용어집은 재구축하지 않으며 기존 DB를 보존한 갱신본과 추가/보류 원장을 만든다.
+`document-release verify-definitions --output NEW`로 검증한다. 기존 정의 조회·참조 탐색 도구가
+소비하며 일반 검색의 우선 회수 정책 및 MAIN 선택은 별도다.
+[실행 계약](../09_ARTIFACTS/AUDITS/20261015-naming-definition-append/WORK_CONTRACT.txt).
+
+2026-10-15 이전 오제공 자료 등록 이력: Risk팀 대사 구현용으로 제공 DOCX를 `risk-compare-input-20261015-r1` SourceSet에 등록하고 `risk-compare-docx-20261015-r1-index` 새 세대1547문서를 구축·검증했다. 기존1546문서 원문 해시와 활성 MAIN66은 보존했다. 사진 전사/2018판본의 현재 유효성은 미확인이며 외부 반출 불가다. 이 세대는 기본 선택 전환 전 상태다. [데이터·코드 연결과 검증](../09_ARTIFACTS/AUDITS/20261015-risk-team-compare-workflow/IMPLEMENTATION_RESULT.txt).
+
+2026-10-15 추가: **기존 SQLite에서 구버전이 검색되지 않게 하는 작업은 재구축하지 않는다.**
+`pipeline.py search-selection`으로 문서 메타데이터를 읽어 구버전 제외 설정을 적용한다.
+원본 DB·색인·RAW를 보존하며 코드 배포/프로세스 재시작 후 적용된다.
+[빠른 제외·원복 안내](../08_DEPLOYMENT/GENOS/handoffs/search_latest_20261015_r1/GUIDE_UTF8.txt).
+아래 `--latest-internal-versions`와 새 구축 설명은 이후 신규 데이터 구축에 해당한다.
+
 현재 전체 흐름은 [ARCHITECTURE](../00_SYSTEM/ARCHITECTURE.md), 데이터 계약은 [DATA_MODEL](../00_SYSTEM/DATA_MODEL.md)을 따른다.
 경로는 `lawrag.platform.workspace`의 논리 `data` root로 해결한다. 완료 세대·RAW·원문 해시는 보존한다.
+
+2026-10-15 `build-all`/`build-data-stages --latest-internal-versions`로 같은 폴더·문서명의
+내규 `(YYYYMMDD)` 최신 판본만 새 구축에 선택할 수 있다. 기본 전체 판본 정책은 유지하며
+구버전 RAW는 삭제하지 않는다. 새 run ID·전체 RAW 범위로 구조화/색인 후 별도 세대 전환이
+필요하다. [규칙과 GENOS 실행 안내](../08_DEPLOYMENT/GENOS/handoffs/latest_internal_20261015_r1/GUIDE_UTF8.txt).
 
 2026-09-17 팀별 작업 입력을 `RAW/internal/<team>`, `RAW/external/<team>`으로 배치했다.
 `CATALOG/TEAM_LAYOUT.json`이 있으면 신규 기본 구축은 이 작업 트리를 선택한다.
@@ -124,3 +152,7 @@ GENOS PDF 파싱은 [전처리기 ID/URL 환경 설정](../07_DOCS/REFERENCE/OPE
 새 입력은 출처·문서 ID·버전·해시·공개/내부·실제/모의 구분을 기록하고 RAW에서 검증한다. 외부·내부 데이터는 DatasetPackage와 명시적 SourceSet 범위를 보존한다. DRAFT 생성은 배포 승인이나 데이터 반출 승인을 뜻하지 않는다. 내부 데이터 처리는 망분리 GENOS에서 수행한다.
 
 `TERM_RELEASES/<run>`은 명시적으로 선택한 기존 세대와 이번 문서의 통합 후보다. 기존 문서 유지는 `build-all --base-generation <path>`로 지정한다. 신규 세대·문서 간 참조·검토·활성화/롤백은 [추가 문서 연결](../07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md)을 따른다.
+
+2026-10-15 사용자가 정정한 사진 3장을 `RAW/internal/risk_team/위험관리위원회운영준칙/`에 보존하고 `위험관리위원회운영준칙.docx`로 전사했다. 2016-08-23 개정, 본문 10조 및 부칙 2개이며 현재 유효성은 미확인이다. `risk-committee-append-20261015-r1` SourceSet/명시 scope로 새 문서만 구조화하고 29개 구조 단위의 fulltext를 만들었다. `TERM_RELEASES/risk-committee-append-20261015-r1/combined/generation`은 선택 MAIN66의 1,546문서 색인에 이 문서 1개를 추가한 개발용 세대다. 이전 오제공 내규는 이력으로 보존하며 이 추가 세대에 포함하지 않는다. 이 추가 등록 당시에는 활성 MAIN/GENOS 포인터를 유지했다. 이후 로컬 선택은 위 MAIN72 기록을 따른다.
+
+전체 재색인 없이 추가하려면 신규 문서만 `term_generation.build_generation(..., serving=False, storage_profile='compact-v2', audit_profile='factorized-v1')`로 만들고 `unit_fulltext.build`로 신규 단위 색인을 생성한 뒤 `06_TOOLS/pipeline.py document-release append --base-generation BASE --delta-generation DELTA --delta-fulltext FTS --output NEW`를 사용한다. 용어집은 BASE 구축의 정확한 선택 버전을 사용한다. `document-release verify-append --output NEW`로 검증한다. 기존 `prepare/reindex/build-all`의 전체 재구축 방식과 구분한다. 입력·감사·실패 계약은 [DATA_MODEL의 증분 결합](../00_SYSTEM/DATA_MODEL.md), 이번 실행 기록은 `09_ARTIFACTS/AUDITS/20261015-risk-committee-append/`에 있다.

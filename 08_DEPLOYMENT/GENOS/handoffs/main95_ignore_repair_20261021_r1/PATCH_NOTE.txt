@@ -1,0 +1,21 @@
+MAIN95 ignore 복구 패치 — 2026-10-21
+
+원인: MAIN95 누적 ZIP에 이전 ignore 수정이 빠져, 설치가 .gitignore/genosIgnore를 옛 내용으로 되돌렸습니다. 사진의 CRLF 문구는 줄바꿈 경고이고, 핵심은 휴지통이 git add에 포함된 것입니다.
+수정: 기존 제외 규칙에 휴지통·이관/임시 DB 규칙을 추가합니다. Git 로컬 info/exclude에도 남겨 누적 코드 설치 후의 Git 재추가를 방어합니다. 원문/DB 파일은 지우지 않습니다.
+정리: HEAD에 없는 새 휴지통·이관 파일만 staging에서 빼고 ignore 파일을 stage합니다. 다른 staged 코드 변경은 보존합니다. 현재 커밋에 이미 포함된 데이터는 자동 수정하지 않고 중단합니다.
+
+ZIP을 실제 업로드한 TRANSFER 폴더에서 실행하세요. /workspace는 이번 사진에서 확인한 기존 checkout(~/DEV의 실제 경로)입니다.
+python3 -m zipfile -e ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1.zip ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1
+bash ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1/GENOS_MAIN95_IGNORE_REPAIR_20261021_R1_RUN.txt repair --root /workspace
+
+repair는 check → apply → clean-stage → status 순서로 실행하며 실패하면 멈춥니다.
+완료 후 git -C /workspace diff --cached --stat 로 기존 코드와 ignore 변경을 검토해 commit하세요. git add .를 다시 할 필요는 없습니다.
+commit 뒤에는 기존 MAIN95의 gate-code 대신 이번 패치의 gate를 사용하세요. ignore 변경 후의 1313코드 목록/의존성 해시를 검사합니다. 과거 문제였던 별도 corpus 빌드 자료를 강제로 add하지 않습니다.
+bash ./GENOS_MAIN95_IGNORE_REPAIR_20261021_R1/GENOS_MAIN95_IGNORE_REPAIR_20261021_R1_RUN.txt gate --root /workspace
+현재 SQLite/NFS 운영이면 같은 명령의 gate를 gate-sqlite로 바꿔 기존 설정의 선택 세대도 검증하세요. Oracle 직접 조회 운영은 gate 후 기존 조회 검증을 유지하며 전체 데이터 복원을 하지 않습니다.
+검증한 commit의 push·서빙 리비전 배포·워크플로우 테스트는 기존 절차대로 별도 수행합니다.
+
+이번 것은 MAIN95에 덧붙이는 작은 패치입니다. 이전 IGNORE/NEXT R1·R2 실행기 대신 이번 패치를 사용하고, 과거 패키지/STATE는 보존하세요. MAIN95 본체 apply/undo를 다시 실행하기 전에는 이번 ignore 변경의 상태를 먼저 확인하세요.
+로그: TRANSFER/genos-main95-ignore-repair-r1-logs. 백업/상태: 패키지의 STATE.json, INDEX_BEFORE.bin, STAGE_STATE.json. 이 폴더를 지우지 마세요.
+원복이 필요하고 아직 후속 index/commit 변경이 없다면 RUN.txt undo-stage --root /workspace 후 RUN.txt undo --root /workspace 순서입니다. 후속 변경은 덮어쓰지 않고 중단합니다. commit/amend/push/force-push는 패치가 실행하지 않습니다.
+서빙 코드·MAIN95 포인터·데이터·모델은 바꾸지 않습니다. GENOS 현장 적용 성공은 아직 미확인입니다.

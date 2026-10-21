@@ -147,7 +147,7 @@ def test_unnamed_ambiguous_definitions_do_not_expose_arbitrary_first_page():
     hints = navigation_context('자기자본 정의', m, [str(i) for i in range(9)],
                                matches=matches)
     assert hints['definition_candidates_ambiguous']
-    assert hints['definitions'] == []
+    assert {d['definition_id'] for d in hints['definitions']} == {str(i) for i in range(9)}
     assert hints['terms'][0]['label'] == '자기자본'
 
 
@@ -195,6 +195,11 @@ class StructuralTransport(Transport):
 
     def send_once(self, *, body, ticket):
         view = json.loads(body['messages'][1]['content'])['view']
+        if view.get('source_stage') == 'source-query-plan':
+            self.calls.append(body)
+            return wire({'mode':'SEARCH','law_names':['모의승인규정'],'queries':[view['question']],
+                'answer':'','reason':'모의 모델이 요청의 조문을 선택','document_category':'all',
+                'browse_view':'documents','title_query':'','inspect_documents':False})
         if view.get('source_stage') == 'source-triage' and 'originals' in view:
             self.calls.append(body)
             self.structural_views.append(view)
@@ -203,7 +208,7 @@ class StructuralTransport(Transport):
         return super().send_once(body=body, ticket=ticket)
 
 
-def test_bounded_exact_structure_skips_fulltext_and_query_planner(tmp_path, structured_generation, monkeypatch):
+def test_model_selected_exact_structure_skips_fulltext(tmp_path, structured_generation, monkeypatch):
     transport = StructuralTransport()
     app = app_for(tmp_path, structured_generation, transport, settings())
     p = app.state.pipeline
@@ -221,7 +226,7 @@ def test_bounded_exact_structure_skips_fulltext_and_query_planner(tmp_path, stru
             assert transport.structural_views
             assert '원칙상 이사회 승인을 받아야 한다.' in transport.structural_views[0]['originals'][0]['excerpts'][0]['text']
             phases = [json.loads(b['messages'][1]['content'])['view'].get('source_stage') for b in transport.calls]
-            assert phases == ['source-triage', 'bounded-question-plan']
+            assert phases == ['source-query-plan', 'source-triage', 'bounded-question-plan']
             assert s.source_selection_record['final_ids'] == s.source_recall_record['read_complete']
             assert all(h['payload']['selection_basis'] == 'STRUCTURE_FULL_ORIGINAL_COVERAGE_CHECK'
                        for h in s.work.heads('source_selection', current=True))
@@ -259,8 +264,8 @@ def test_exact_structure_ask_publishes_original_source(tmp_path, structured_gene
     app = app_for(tmp_path, structured_generation, StructuralTransport(),
                   {**settings(), 'final_review_enabled': False})
     try:
-        ask = next(r.endpoint for r in app.routes if r.path == '/v1/rag/ask')
-        result = ask({'question': '모의승인규정 제1조의 승인 대상은?', 'document_ids': ['d']})
+        ask = app.state.pipeline.run
+        result = ask('모의승인규정 제1조의 승인 대상은?', ['d'])
         assert result['answer']['claims']
         meta = result['assembly']['term_agent']
         assert not meta['structure_first_search']['fulltext_fallback']
@@ -309,17 +314,19 @@ class ToolsTransport(Transport):
         return super().send_once(body=body, ticket=ticket)
 
 
-def test_model_tool_loop_also_receives_exact_originals_before_search(tmp_path, structured_generation, monkeypatch):
-    transport = ToolsTransport()
-    app = app_for(tmp_path, structured_generation, transport, {**PROFILE, 'final_review_enabled': False})
+def test_model_tool_loop_receives_question_before_any_automatic_originals(tmp_path, structured_generation, monkeypatch):
+    app = app_for(tmp_path, structured_generation, ToolsTransport(), {**PROFILE, 'final_review_enabled': False})
     p = app.state.pipeline
     try:
         request = {'question': '모의승인규정 제1조의 승인 대상은?', 'document_ids': ['d'], 'use_llm': True}
         with p.term_agent.open_session(request, query=p.plan(request['question'], ['d']), runtime=tmp_path/'runtime') as s:
-            monkeypatch.setattr(s.sources.matcher.fulltext, 'rank', lambda *args: pytest.fail('do not search before inspecting originals'))
-            s.investigate()
-            assert s.structure_prefetch['read_complete']
-            assert s.work.heads('source_selection', current=True)
-            assert not s.limitations, s.limitations
+            def inspect_first(phase, *args, **kwargs):
+                assert phase == 'investigate'
+                assert not s.work.evidence() and not s.work.observations(1)
+                assert s.context.request['question'] == request['question']
+                raise RuntimeError('first model decision reached')
+            monkeypatch.setattr(s, 'generate_checked', inspect_first)
+            with pytest.raises(RuntimeError, match='first model decision reached'):
+                s.investigate()
     finally:
         p.store.close()

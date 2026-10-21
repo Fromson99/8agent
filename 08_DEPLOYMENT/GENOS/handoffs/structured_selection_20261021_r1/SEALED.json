@@ -1,0 +1,32 @@
+{
+  "archive": "GENOS_STRUCTURED_SELECTION_20261021_R1.zip",
+  "archive_sha256": "7626106329d6fe9570a4b845e0a2c6f25d9b165b62c1b4919a8e2cc03c0f5648",
+  "validation_sha256": "a2abb71d252cc8d33a432b720ec4a0e946c415400d45d26ffd7022444525c3d7",
+  "code_manifest_sha256": "f5dcc5bf11fd494fe4388a559d474208a405b7b9acc85255b7d9b2dd272fb7f4",
+  "qualified_contracts": 199,
+  "installed_contracts": 80,
+  "installer_commands": 22,
+  "local_main_generation": 99,
+  "release_manifest_sha256": "5ab6f3ff2461218a3b561a63a1ab4d299710c412d8cec038991bc6a16dba67c1",
+  "all419_working_candidate_selected_packaged_installed_match": true,
+  "candidate_exact_read_cases": 32,
+  "candidate_total_cases": 32,
+  "physical_model_requests": 64,
+  "model_responses": 63,
+  "provider_errors": [
+    {
+      "arm": "baseline",
+      "case_id": "set-11",
+      "error": {
+        "type": "ExperimentProviderError",
+        "message": "OpenRouter HTTP 429; response saved without request headers",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/jin/8-AGENT/06_TOOLS/EXPERIMENTS/adr_0974/run_case.py\", line 82, in <module>\n    entry.run(repo,context)\n    ~~~~~~~~~^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/law-name-recovery-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_entry.py\", line 194, in run\n    output.bounded_decision(work,'request-entry',data,request_schema,propose,check,\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        identity={'request':repo._entry_body,'principal':repo._entry_principal,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            'binding':repo.executor.binding,'view':data})\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/law-name-recovery-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/output_contract.py\", line 356, in bounded_decision\n    value = invoke(payload, attempt)\n  File \"/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/law-name-recovery-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_entry.py\", line 173, in propose\n    return repo.invoke(SYSTEM+SEARCH_SCOPE_PROMPT+('\\n'+SCOPE_PROMPT+' 이번 통합 입력에서는 배경을 context_quotes에만 작성한다.' if scoped else '')+recall_prompt+task_prompt,\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        payload,request_schema,'request-entry' if not attempt else 'request-entry-repair')\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/06_TOOLS/EXPERIMENTS/adr_0974/run_case.py\", line 67, in invoke\n    return client.generate(system,data,schema,phase=phase)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/02_BACKEND/lawrag/research/experiment_client.py\", line 340, in generate\n    return super().generate(system, data, schema, phase=phase)\n           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/02_BACKEND/lawrag/research/experiment_client.py\", line 187, in generate\n    return self._call(messages,schema,phase)\n           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jin/8-AGENT/02_BACKEND/lawrag/research/experiment_client.py\", line 294, in _call\n    raise ExperimentProviderError(f'OpenRouter HTTP {response.status_code}; response saved without request headers',\n                                  response=envelope,retryable=response.status_code in (408,409,429,500,502,503,504))\nlawrag.research.experiment_client.ExperimentProviderError: OpenRouter HTTP 429; response saved without request headers\n"
+      }
+    }
+  ],
+  "quality_certified": false,
+  "GENOS_field_verified": false,
+  "GENOS_commit": null,
+  "GENOS_serving_revision": null,
+  "data_modified": false
+}

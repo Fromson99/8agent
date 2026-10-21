@@ -1,0 +1,67 @@
+{
+  "version": "GENOS_BASIS_BATCH_20261020_R2",
+  "change_scope": "installer root handling only; all 53 code patch files byte-identical to sealed R1",
+  "prior_code_evidence": {
+    "status": "PASS",
+    "test_result": "126 passed, 2 deselected",
+    "tests": "09_ARTIFACTS/AUDITS/20261020-basis-batch/TEST_03.txt",
+    "known_baseline_failures": {
+      "count": 2,
+      "test": "test_search_selection.py::test_existing_database_search_and_actual_api [legacy, compact-v2]",
+      "cause": "old v1 selection fixture rejected by existing latest-v2 requirement",
+      "reproduced_on_unmodified_MAIN92": true,
+      "record": "BASELINE_SELECTION.txt"
+    },
+    "source_control": "working integration; no Git commit/push",
+    "validation_code_files": 394,
+    "delivery_changed_files": 53,
+    "all_delivery_files_equal_working": true,
+    "python_syntax": "3.11 grammar",
+    "max_rss_kib": 579896,
+    "external_model_calls": 0,
+    "GENOS_model_calls": 0,
+    "active_MAIN92_unchanged": true,
+    "all_389_selected_code_files_unchanged": true,
+    "quality_certified": false,
+    "field_VERIFIED": false,
+    "delivery_validation": {
+      "status": "PASS",
+      "shell_commands": 17,
+      "intentional_nonzero": 4,
+      "interruption_recovered": true,
+      "exact_rollback": true,
+      "data_preserved": true,
+      "zip_sha256": "d2a1bd76dc2bcfede15cad1ea4034ad7cf2d4155e6b642ce1ce02013a2602d3c"
+    },
+    "SQLite_write": "existing relationship authority only; source/navigation/fulltext unchanged",
+    "read_policy": "batch-generated PROPOSED candidates are exact-source investigation leads; no auto approval",
+    "known_limits": [
+      "Real GENOS internal model quality, latency, NFS locking/fsync and field deployment not verified",
+      "SQLite source generation and serving generation must match; mismatched version links are not reused",
+      "Terminal partial runs are not automatically given new budgets; an explicit follow-up plan is needed",
+      "Latest policy legacy test failures predate this patch"
+    ]
+  },
+  "installer_validation": {
+    "status": "PASS",
+    "shell_commands": 26,
+    "intentional_nonzero": 11,
+    "interruption_recovered": true,
+    "exact_rollback": true,
+    "data_preserved": true,
+    "R1_photo_error_reproduced": true,
+    "default_HOME_and_DEV_symlinks": true,
+    "retarget_rejected": true,
+    "nested_file_symlinks_rejected": true,
+    "invalid_roots_rejected": true,
+    "binding_symlink_rejected": true,
+    "model_calls": 0,
+    "field_GENOS_verified": false
+  },
+  "exact_final_archive_verification": "See separately attached FINAL_VERIFICATION.json; avoid self-referential ZIP hashes",
+  "python_grammar": "3.11",
+  "GENOS_field_verified": false,
+  "active_MAIN_changed": false,
+  "model_calls": 0,
+  "max_RSS_KiB_preseal": 36944
+}

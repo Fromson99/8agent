@@ -1,0 +1,25 @@
+CLEAN R1 QUERY_RECORD_KEY failure repair / 2026-10-20
+
+Failure class: deterministic projection/schema boundary; no model or experiment.
+Owner: publisher encodes oversized auxiliary keys; relational reader encodes the
+same candidate predicate and retains exact equality on the complete JSON value.
+DOCUMENT_ID remains unchanged and strictly validated for authorization.
+No truncation, missing-row skip, source edits, DDL, or automatic activation.
+Unknown encodings and invalid scope IDs fail with bounded, content-free diagnostics.
+
+Recovery owner: oracle_clean_import.run, only explicit recover_r1_plan=True with
+action=plan, exact sealed R1 code/data/target identity and original key error.
+Require no saved plan, reset, phase rows, pending write or write journal.
+Preserve original state snapshot, deadline, cumulative journal calls and binding.
+No new retry loop. Original per-run 6h, total 7-day deadline, SQL limits remain.
+An interrupted INSERT/DELETE is not eligible for this code adoption.
+
+Verification: short/long/multibyte keys, shared prefixes, digest-lookalike value,
+original content/hash preservation, exact SQL predicate and CLOB bind/comparison,
+scope filter, unknown encoding, actual R1 plan failure -> R2 plan -> load -> repeat,
+refusal of changed target/data/code, prior writes/plan, deadline exhaustion,
+delivered TXT/pins, sealed R1 bytes unchanged and working/package bytes equal.
+Use synthetic small datasets and one test process at a time. RSS observation,
+2GiB test-process stop threshold, 512MiB minimum free memory/temp-disk headroom.
+Real Dataiku/Oracle19/GENOS serving remains unverified. Reader update must be
+included in a subsequent serving handoff before activating these new query rows.

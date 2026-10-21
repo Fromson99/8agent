@@ -1,0 +1,64 @@
+{
+  "status": "VERIFIED_LOCAL_SYNTHETIC",
+  "handoff": "GENOS_SEARCH_LATEST_20261015_R1",
+  "zip_sha256": "80c47479764949ce095aaa4624c760de5dc6f6756a44b970800ead795b28ae40",
+  "sqlite_and_index_rebuilt": false,
+  "source_files_deleted": false,
+  "external_model_calls": 0,
+  "contracts": {
+    "new_search_selection": 12,
+    "api_profiles": [
+      "legal-agent-tools-v5",
+      "legal-agent-unified-v6"
+    ],
+    "storage_modes": [
+      "legacy",
+      "compact-v2 / unit FTS / factorized-v1"
+    ],
+    "related_regression_passed": 66,
+    "related_regression_existing_failures": 2,
+    "existing_failures_reproduced_before_patch": [
+      "test_genos_team_selection::test_workflow_legal_agent_through_service_to_real_v5_app (AD_PROBE versus LEGAL_AGENT expectation)",
+      "test_compact_v2_rag::test_new_storage_correction_restore_and_reuse (renamed test helper)"
+    ],
+    "separate_existing_fixture_errors_reproduced_before_patch": {
+      "test_term_tools_cache": 4,
+      "reason": "synthetic index manifest lacks generation_id"
+    },
+    "installed_contracts": 28,
+    "real_handoff_commands": 27,
+    "same_committed_checkout_generation_gates": 2
+  },
+  "safety_checks": [
+    "raw/sqlite/index/manifest bytes preserved",
+    "old versions excluded and latest retained",
+    "term and FTS search scope",
+    "source and definition and reference candidate filtering",
+    "apply twice",
+    "rollback twice",
+    "stale/changed plan rejection",
+    "invalid dates and alias conflicts retained with warnings",
+    "unknown preimage and archive tamper rejected",
+    "verification failure restores code",
+    "read-only SQLite protection",
+    "arbitrary TRANSFER path",
+    "full checkout inventory maintained",
+    "new v6 and v5 API paths"
+  ],
+  "main": {
+    "release": "length-recovery-20261015-r1",
+    "generation": 66,
+    "pointer_unchanged": true,
+    "pointer_sha256": "3aba4052dd6ccd521dd4fb50cb95354f6f1a677a39bef269450c2d7f121b511e"
+  },
+  "field": {
+    "applied": false,
+    "commit": null,
+    "revision": null,
+    "internal_data_test": "UNVERIFIED"
+  },
+  "attachments": {
+    "recursive_archive_disallowed_extensions": []
+  },
+  "delivery_transcript_sha256": "5e2dd6419390d169b13fb7205aa3b39293551fc2731292f3d7e4af281f742bce"
+}

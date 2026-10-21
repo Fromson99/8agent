@@ -1,0 +1,54 @@
+{
+  "revision": "oracle-clean-import-overflow-keys-v2",
+  "environment": "WSL Python 3.14.4; synthetic SQL boundary, actual delivered TXT and Dataiku adapter; no remote Oracle",
+  "tests": {
+    "passed": 122,
+    "failed": 0,
+    "seconds": 26.32,
+    "max_rss_kib": 456276,
+    "log": "09_ARTIFACTS/AUDITS/20261020-dataiku-clean-r2/TEST_04.txt.gz",
+    "files": [
+      "test_oracle_lookup_overflow.py",
+      "test_oracle_clean_import.py",
+      "test_oracle_query_catalog.py",
+      "test_oracle_query_export_r2.py",
+      "test_oracle_query_package.py",
+      "test_oracle_full_package.py"
+    ]
+  },
+  "checks": [
+    "exact sealed R1 QUERY_RECORD_KEY reproduction before Oracle writes",
+    "R1 failure to R2 plan/load/status through exact delivered TXT and real Dataiku adapter",
+    "original values and row identity retained; bounded SHA256 auxiliary indexes",
+    "ASCII/UTF8 512-byte boundary, multibyte Unicode, quotes, shared prefixes and digest-lookalike collisions",
+    "actual relational SQL compiler preserves original-value equality, CLOB comparison and authorization scope",
+    "original state backup, deadline, journal prefix/binding/cumulative calls retained",
+    "changed input/target/code, prior plan/write/reset/pending, expired budget and no opt-in refuse adoption",
+    "existing reset/insert recovery and duplicate-request controls; ACTIVE/STATE preserved",
+    "historical package short-key rows byte-identical; explicit new schema policy declaration"
+  ],
+  "validation_history": {
+    "TEST_01": "19 passed; 2 setup errors in synthetic R1 delegate routing. Fixed fixture dispatch; not a product workaround.",
+    "TEST_02": "29 passed.",
+    "TEST_03": "120 passed; 1 old-package comparison assertion lacked the new declared lookup policy. Asserted explicit policy difference and byte equality of every short-key row.",
+    "TEST_04": "122 passed, 0 failed."
+  },
+  "field_execution": false,
+  "oracle_engine_execution": false,
+  "source_modified": false,
+  "active_modified": false,
+  "state_modified": false,
+  "local_main_changed": false,
+  "git_push": false,
+  "genos_deployment": false,
+  "email_sent": false,
+  "completion": "CLEAN_LOAD_COUNTS_CONFIRMED",
+  "full_body_readback": false,
+  "not_verified": [
+    "Actual field Dataiku/JDBC/Oracle19 execution",
+    "Exact offending field/file in the user dataset",
+    "Large dataset throughput and remaining duration",
+    "New serving revision with paired reader changes; update required before activation"
+  ],
+  "handoff": "R2 ZIP and complete Python TXT ready; user must upload and run locally in Dataiku"
+}

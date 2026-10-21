@@ -1,0 +1,25 @@
+{
+  "classification": "Cumulative delivery restored stale ignore files",
+  "evidence": {
+    ".gitignore": {
+      "delivered_sha256": "76c8fe179d79a6056bf4017257d84146f5da2000c1c79a3222ad9f430c7719bb",
+      "working_sha256": "fd9dcb7df774bb16229ec19ce5b5edc4a9bc8c86f3cfcc531f7e8991d000dfcf",
+      "delivered_has_trash_rule": false
+    },
+    "genosIgnore": {
+      "delivered_sha256": "f7396720a4a0a5c73f64d4f9157b7ff7022391df0b865f0d2d8d3e30035173d1",
+      "working_sha256": "cd91f49c07f82a361a8f3288d9cd3c0d08408e43ceb06568c3acfc865ed0e973",
+      "delivered_has_trash_rule": false
+    }
+  },
+  "base_package": "main95_comparison_scope_20261020_r1",
+  "photo_observation": "MAIN95 apply/code smoke PASS; git add . in /workspace processed .Trash-1001 CSV files with CRLF warnings; commit/push not shown",
+  "previous_failures_reviewed": [
+    "ignore-transfer R1 additive patch",
+    "NEXT R2 code/data inventory mismatch",
+    "forced-add fixture masked ignored corpus files"
+  ],
+  "repair_scope": "Append rules to existing profiles and persistent Git info/exclude; unstage only newly added forbidden paths; preserve disk data, unrelated staged changes, history and remote",
+  "main_runtime_changed": false,
+  "GENOS_field_verified": false
+}

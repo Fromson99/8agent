@@ -1,0 +1,189 @@
+--- 02_BACKEND/semantic_runtime/storage.py field-before
++++ 02_BACKEND/semantic_runtime/storage.py R2
+@@ -86,6 +86,8 @@
+     def __init__(self,path,*,verify=True):
+         self.path=Path(path).resolve()
+         self.manifest=json.loads((self.path/'manifest.json').read_text())
++        from .search_selection import Selection
++        self.selection = Selection(self.path, self.manifest)
+         self._binding_state = self.binding_signature()
+         if self.manifest['schema_version'] not in {VERSION, 'term-source-generation-v2'}:raise ValueError('source generation migration required')
+         if verify:
+@@ -102,6 +104,13 @@
+         if tables!=expected:
+             self.db.close()
+             raise ValueError('source generation contains unexpected tables')
++        try:
++            self.selection.verify_documents(self.db)
++            self.selection.bind(self.db)
++            self.check_unchanged()
++        except BaseException:
++            self.db.close()
++            raise
+ 
+     def close(self):self.db.close()
+ 
+@@ -110,19 +119,22 @@
+         for name in ('manifest.json', 'store.sqlite'):
+             s = (self.path/name).stat()
+             states.append((s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns))
+-        return (str(self.path), digest(self.manifest), *states)
++        self.selection.check_unchanged()
++        return (str(self.path), digest(self.manifest), *states, self.selection.fingerprint)
+ 
+     def check_unchanged(self):
+         if self.binding_signature() != self._binding_state:
+             raise ValueError('source generation changed; reopen and verify before reuse')
+ 
+     def source(self,did,bid):
++        self.check_unchanged()
+         r=self.db.execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?',(did,str(bid))).fetchone()
+         if not r:raise KeyError((did,bid))
+         return dict(r)
+ 
+     def sources(self, did, bids):
+         """Bounded batch read preserving caller order, duplicates and missing-ID errors."""
++        self.check_unchanged()
+         ids = [str(b) for b in bids]
+         found = {}
+         for start in range(0, len(ids), 800):
+@@ -143,6 +155,7 @@
+                 'blocks':[source],'unresolved_reason':'SOURCE_WITHOUT_STRUCTURAL_UNIT'}
+ 
+     def section(self,did,uid):
++        self.check_unchanged()
+         r=self.db.execute('SELECT json FROM source_unit WHERE document_id=? AND unit_id=?',(did,str(uid))).fetchone()
+         if not r:raise KeyError((did,uid))
+         unit=json.loads(r[0]);lo,hi=unit['span'];ancestors=[];current=str(uid);seen=set()
+--- 02_BACKEND/semantic_runtime/term_index.py field-before
++++ 02_BACKEND/semantic_runtime/term_index.py R2
+@@ -40,7 +40,10 @@
+     source_binding = digest({k: v for k, v in store.manifest.items()
+                              if k not in {'navigation', 'fulltext', 'fulltext_derivation'}})
+     key = (str(path), signature(manifest), signature(sqlite),
+-           store.manifest['store_sha256'], source_binding, expected_manifest_sha256)
++           store.manifest['store_sha256'], source_binding, expected_manifest_sha256,
++           getattr(getattr(store, 'selection', None), 'fingerprint', None),
++           getattr(getattr(store, 'selection', None), 'state', None))
++    if hasattr(store, 'check_unchanged'): store.check_unchanged()
+     with _SERVING_CACHE_LOCK:
+         cached = _SERVING_CACHE.get(key)
+         if cached is None:
+@@ -495,6 +498,7 @@
+ 
+ class TermIndex:
+     def __init__(self,path,store):
++        self.selection = getattr(store, 'selection', None)
+         path=Path(path);self.manifest=json.loads((path/'manifest.json').read_text())
+         m=self.manifest
+         if m.get('schema_version') not in {'term-navigation-index-v2','term-navigation-index-v3','term-navigation-index-v4','term-navigation-index-v5','term-navigation-index-v6','term-navigation-index-v7'}:raise ValueError('unsupported term index schema')
+@@ -510,6 +514,11 @@
+         self.cache_binding()
+         db=POOL.connect(self.path/'navigation.sqlite', expected=self.manifest['index_sha256'])
+         db.row_factory=sqlite3.Row
++        try:
++            if self.selection is not None: self.selection.bind(db, navigation=True)
++        except BaseException:
++            db.close()
++            raise
+         return db
+ 
+     def cache_signature(self):
+@@ -520,12 +529,18 @@
+                      for p in files)
+ 
+     def cache_binding(self):
++        if self.selection is not None: self.selection.check_unchanged()
+         if self.cache_signature()!=self._cache_signature:
+             raise ValueError('navigation changed; reopen and verify')
+         return (str(self.path.resolve()), self._cache_signature, self.manifest['generation_id'],
+-                self.manifest['source_store_sha256'], self.manifest['index_sha256'])
++                self.manifest['source_store_sha256'], self.manifest['index_sha256'],
++                self.selection.fingerprint if self.selection is not None else None)
+ 
+     def tools(self,scope):
++        if self.selection is not None:
++            self.selection.check_unchanged()
++            if set(scope) & self.selection.excluded:
++                raise ValueError('search scope contains excluded document versions')
+         # This cache belongs to the verified TermIndex, so generation/file-state
+         # invalidation of cached_serving_index also invalidates these data.
+         with self._tools_lock:
+--- 02_BACKEND/semantic_runtime/app.py field-before
++++ 02_BACKEND/semantic_runtime/app.py R2
+@@ -131,6 +131,8 @@
+         return {'status':'ok','runtime':'term-runtime-v1','release':release,
+                 'generation_id':store.manifest['generation_id'],'data_status':store.manifest['data_status'],
+                 'counts':store.manifest['counts'],'legacy_fallback':False,
++                'search_selection':{'sha256':store.selection.fingerprint,
++                    'excluded_documents':len(store.selection.excluded)},
+                 'quality_certified':False,'vector':'NOT_USED',
+                 'llm_model':model,'rag_mode':pipeline.term_agent.config.get('implementation','term-agent-v1'),'term_agent_quality_certified':False,'external_export_allowed':store.manifest['export_allowed'],'document_aliases':aliases}
+ 
+@@ -139,12 +141,13 @@
+         return pipeline.retrieve(pipeline.plan(q,[doc_id] if doc_id else None,scope,team_id=team_id),limit)
+ 
+     def team_documents(team_id):
+-        from .team_scope import select_documents
+-        return set(select_documents(store,team_id)) if team_id is not None else None
++        from .team_scope import select_documents, prepared_catalogue
++        return set(select_documents(store,team_id)) if team_id is not None else set(prepared_catalogue(store)['ids'])
+ 
+     def check_team_document(doc_id,team_id):
+         allowed=team_documents(team_id)
+         if allowed is not None and doc_id not in allowed:
++            if team_id is None: raise KeyError(doc_id)
+             raise ValueError('document outside selected team')
+ 
+     @app.get('/v1/rag/teams')
+@@ -211,6 +214,7 @@
+             from .legal_agent.source_candidates import inventory
+             current=json.loads((store.path/'manifest.json').read_text())
+             allowed=set(current['scope']['document_version_ids'])&set(repo.binding['scope']['document_version_ids'])
++            allowed -= store.selection.excluded
+             candidates=[e for e in inventory(repo) if e['document_id'] in allowed]
+             labels={'DISCOVERED_NOT_READ':'발견 · 원문 미열람','READ_UNSELECTED':'열람 · 미채택','PENDING':'추가 판단 대기'}
+             items=''.join('<li>'+escape(e['document_name']+' · '+str(e['coordinate'] or e['unit_id'])+' · '+labels[e['status']])+('</li>') for e in candidates[offset:offset+20])
+@@ -253,9 +257,8 @@
+ 
+     @app.get('/v1/rag/links')
+     def links(source_id:str,team_id:str|None=None):
+-        from .term_index import ro
+         allowed=team_documents(team_id)
+-        db=ro(pipeline.term_agent.get_index().path/'navigation.sqlite')
++        db=pipeline.term_agent.get_index().resident_connect()
+         try:
+             if allowed is not None:
+                 source=db.execute('SELECT document_id FROM source WHERE id=?',(source_id,)).fetchone()
+--- 02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py field-before
++++ 02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py R2
+@@ -32,6 +32,10 @@
+               'public_question':options.get('external_public_question') is True}
+     principal=options.get('principal') or {'user_id':'ephemeral:'+body['session_id'],
+         'team_id':team_id or 'request','document_ids':body['document_ids'],'authenticated':False}
++    from ..team_scope import prepared_catalogue
++    if not set(body['document_ids']) <= prepared_catalogue(pipeline.store)['ids']:
++        raise ValueError('request includes unavailable or excluded document versions')
++    selection = getattr(getattr(pipeline.store, 'selection', None), 'fingerprint', None)
+     options.update(case_body=body,principal=principal,_shortcut_ingress=True)
+     from .shortcut_store import selected_store
+     repo=ShortcutRepository(selected_store(options['runtime']))
+@@ -40,7 +44,8 @@
+         noncase=not use_llm or system_request(question)
+         if noncase and intake['status']=='COMPLETED' and intake['response']:
+             saved=json.loads(intake['response'])
+-            if saved.get('generation')==pipeline.store.manifest['store_sha256']:
++            if (saved.get('generation')==pipeline.store.manifest['store_sha256'] and
++                    saved.get('search_selection')==selection):
+                 # System results contain no adopted legal judgment. Document ACL is
+                 # still checked on every replay, and a new source generation misses.
+                 if set(body['document_ids'])<=set(principal['document_ids']):return saved['envelope']
+@@ -57,6 +62,7 @@
+                     {'intake_id':intake['id'],'run_id':value.get('run_id'),'legal_judgment':False},session=body['session_id'])
+                 value={**value,'intake_id':intake['id'],'investigation_id':case['id']}
+                 repo.db.execute("UPDATE sw_intake SET status='COMPLETED',response=? WHERE id=?",(
+-                    encoded({'envelope':value,'generation':pipeline.store.manifest['store_sha256']}),intake['id']))
++                    encoded({'envelope':value,'generation':pipeline.store.manifest['store_sha256'],
++                             'search_selection':selection}),intake['id']))
+         return value
+     finally:repo.close()

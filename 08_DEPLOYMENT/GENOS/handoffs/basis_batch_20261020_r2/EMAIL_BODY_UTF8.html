@@ -1,0 +1,10 @@
+<p>사진에서 발생한 <code>Symlink path refused: /home/genos/DEV</code> 오류 수정본 R2입니다.</p>
+<p>제가 만든 설치기가 정상적인 DEV 연결 경로까지 차단했습니다. 사진의 두 명령은 코드 적용 전에 중단된 위치입니다. R2는 DEV의 실제 Git checkout 경로를 확인해 사용하고, 이후 연결 대상이 바뀌면 중단합니다. 기존 코드 해시 검사·백업·재실행·원복은 유지했습니다.</p>
+<p><b>앞서 보낸 BASIS_BATCH R1 대신 첨부한 R2 ZIP과 RUN.txt를 사용하세요.</b> R1 폴더는 그대로 두고 새 R2 폴더에 풉니다. R2 ZIP에 필요한 패치 전체가 있어 R1을 먼저 실행할 필요가 없습니다.</p>
+<p>업로드한 실제 TRANSFER 폴더에서 아래 순서로 실행하세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_BASIS_BATCH_20261020_R2.zip ./GENOS_BASIS_BATCH_20261020_R2
+bash ./GENOS_BASIS_BATCH_20261020_R2/GENOS_BASIS_BATCH_20261020_R2_RUN.txt check
+bash ./GENOS_BASIS_BATCH_20261020_R2/GENOS_BASIS_BATCH_20261020_R2_RUN.txt apply</pre>
+<p>정상 적용 뒤에는 같은 R2 RUN.txt로 <code>list</code> → <code>plan --count 3</code> → <code>run</code> 순서입니다. 중간 로그와 종료 코드는 현재 TRANSFER의 <code>basis-batch-r2-logs/</code>에 남습니다. 로그 첫 부분에 요청 경로와 실제 checkout 경로를 함께 표시합니다.</p>
+<p>RAG 기능 코드 53개는 검증한 R1과 바이트 단위로 동일합니다. 기존 SQLite 관계 증분 추가·최신 내규 필터·기본 job·예산·재개 방식은 유지하며 전체 재색인은 없습니다. 대사 워크플로우의 코드서빙 리비전과 편집기 전체본 반영은 기존 안내처럼 별도입니다.</p>
+<p>실제 전달 ZIP/TXT로 로컬 모의 checkout 27개 명령을 검증했습니다. 사진의 오류 재현, HOME/DEV 연결 경로, 적용·재적용·중단 후 재개·정확한 원복, 경로 변경/파일 링크/변조 차단을 확인했습니다. 실제 GENOS 내부 모델·현장 실행·배포는 아직 확인하지 않았습니다. 상세 절차와 검증 기록을 첨부했습니다.</p>

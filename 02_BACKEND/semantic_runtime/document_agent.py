@@ -18,6 +18,11 @@ log = obs.get_logger('resources')
 class ServingDocumentAgent(ServingNavigationAgent):
     @contextmanager
     def resources(self, scope):
+        if getattr(self.pipeline.store,'is_oracle_query',False):
+            from .oracle_query_resources import resources
+            with resources(self,scope) as opened:
+                yield opened
+            return
         with obs.step(log, 'resources.index'):
             index = self.get_index()
         with obs.step(log, 'resources.tools'):
@@ -62,7 +67,11 @@ class ServingDocumentAgent(ServingNavigationAgent):
         with self.resources(scope) as (index, tools, glossary, matcher):
             # The current HTTP contract has no authenticated user/session identity.
             # Keep interpretation proposals inside this request; never share aliases.
-            with TemporaryDirectory(prefix='rag-document-request-') as folder:
+            temporary_root=None
+            if getattr(self.pipeline.store,'is_oracle_query',False):
+                temporary_root=self.pipeline.runtime_dir/'request-mappings'
+                temporary_root.mkdir(parents=True,exist_ok=True)
+            with TemporaryDirectory(prefix='rag-document-request-',dir=temporary_root) as folder:
                 agent = MappedAgent(self.pipeline, glossary, index, matcher,
                                     self.config.get('limits'),
                                     ledger=Path(folder)/'mappings.sqlite', actor=plan['id'],

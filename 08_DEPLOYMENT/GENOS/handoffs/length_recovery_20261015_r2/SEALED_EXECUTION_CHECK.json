@@ -1,0 +1,32 @@
+{
+  "revision": "GENOS_LENGTH_RECOVERY_20261015_R2",
+  "zip_sha256": "d90c194b91e4440c95e5ef603571ba1b503cc70f2f2d2dcfd5c25cf8259acd66",
+  "tested_root": "/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea0/DEV",
+  "steps": [
+    {
+      "argv": [
+        "/home/jin/8-AGENT/.venv/bin/python",
+        "-m",
+        "zipfile",
+        "-e",
+        "./GENOS_LENGTH_RECOVERY_20261015_R2.zip",
+        "./GENOS_LENGTH_RECOVERY_20261015_R2"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "./GENOS_LENGTH_RECOVERY_20261015_R2/GENOS_LENGTH_RECOVERY_20261015_R2_RUN.txt",
+        "check"
+      ],
+      "returncode": 0,
+      "stdout": "LENGTH_RECOVERY_LOG=/tmp/genos-r2-transfer-g34jp9_2/length-recovery-r2-logs/20261015T000302Z-16648.log\nCHECKOUT_PATH {\"configured\": \"/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea0/DEV\", \"cwd\": \"/tmp/genos-r2-transfer-g34jp9_2\", \"exists\": true, \"is_directory\": true, \"is_symlink\": false}\nCHECKOUT_RESOLVED=/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea0/DEV\nKNOWN_UNRECORDED_SCHEMA {\"path\": \"00_SYSTEM/SCHEMAS/pipeline-v1.schema.json\", \"before_sha256\": \"8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755\", \"bytes\": 6216, \"after_sha256\": \"68f5863a0ab387e319c8533bd360b620536eeceeea3b56ca369a3a8e5ab09c26\", \"inventory_before\": \"ABSENT\", \"evidence\": [{\"git_commit\": \"9b2b55f93320bc5a39732d8ae58ee3d92a2c0106\", \"path\": \"00_SYSTEM/SCHEMAS/pipeline-v1.schema.json\"}]}\nKNOWN_UNRECORDED_SCHEMA {\"path\": \"00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json\", \"before_sha256\": \"8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc\", \"bytes\": 4791, \"after_sha256\": \"8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc\", \"inventory_before\": \"ABSENT\", \"evidence\": [{\"git_commit\": \"9b2b55f93320bc5a39732d8ae58ee3d92a2c0106\", \"path\": \"00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json\"}, {\"sealed_delivery\": \"GENOS_LENGTH_RECOVERY_20261014_R1\", \"path\": \"00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json\"}]}\nENGINE_BINDINGS PASS; engines=30\nCHECK PASS; modified paths=59\n{\"code_root\": \"/tmp/pytest-of-jin/pytest-0/test_install_service_api_repea0/DEV\", \"sys_executable\": \"/home/jin/8-AGENT/.venv/bin/python3\", \"python\": \"3.14.4\", \"generation\": null, \"generation_manifest_sha256\": null, \"git_commit\": \"a217f26d790468869051c5f8acf618f14846c0ab\", \"code_serving_revision\": null, \"workflow_test\": \"NOT_RUN\"}\nLENGTH_RECOVERY_EXIT=0 LOG=/tmp/genos-r2-transfer-g34jp9_2/length-recovery-r2-logs/20261015T000302Z-16648.log\n",
+      "stderr": ""
+    }
+  ],
+  "status": "PASS",
+  "field_status": "NOT_VERIFIED"
+}

@@ -282,6 +282,10 @@ class RawHandler(logging.Handler):
 def install(component="python"):
     """Call before importing FastAPI/runtime to capture import/environment failures."""
     global _INSTANCE
+    if os.environ.get('DP','').strip().lower() in ('oracle','1','true'):
+        # Oracle serving has no local data/log spool. Structured stdout and
+        # explicitly configured external request journals remain available.
+        return None
     if not enabled():
         return None
     with _INSTALL_LOCK:

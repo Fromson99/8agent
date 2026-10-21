@@ -67,21 +67,8 @@ class ObligationSession(TiersSession):
     final_review_advisory = True
 
     def investigate(self):
-        # The GENOS environment profile may use the model-driven tool loop rather
-        # than bounded selection. Give that loop the same verified originals first.
-        from .tools_policy import metadata_only_request
-        if (not getattr(self, '_structure_prefetched', False) and self.context.request['use_llm']
-                and not metadata_only_request(self.context.request['question'])):
-            self._structure_prefetched = True
-            from .structure_query import resolve
-            route = resolve(self.context.request['question'], self.sources.matcher, self.sources.scope)
-            self.work.event('STRUCTURE_QUERY_RESOLVED', route)
-            if route['status'] == 'MATCH':
-                from .source_recall import SourceRecall
-                self.sources.structure_query_route = route
-                record = SourceRecall(self.sources).prepare()
-                self.structure_prefetch = {'route': route, 'read_complete': record['read_complete'],
-                                           'read_partial': record['read_partial']}
+        # Coordinates and term matches are navigation hints. The model chooses
+        # whether and which originals to read through the existing tool loop.
         return super().investigate()
 
     def generate_checked(self, phase, name, commit, *, extra=None, initial_view=None, required=None):

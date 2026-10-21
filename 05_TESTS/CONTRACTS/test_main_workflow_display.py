@@ -88,7 +88,7 @@ def test_workflow_reuses_backend_display_and_cards_without_re_rendering(backend,
     assert result['workflow_display_binding']['producer'] == 'main_workflow'
 
 
-@pytest.mark.parametrize('changed', ['request_id', 'answer', 'display', 'revision'])
+@pytest.mark.parametrize('changed', ['request_id', 'answer', 'display', 'revision', 'answer_revision'])
 def test_stale_or_modified_backend_display_is_rejected(backend, changed):
     raw, _ = response_body('/json', TestClient(main_workflow.app))
     view = workflow()
@@ -100,6 +100,7 @@ def test_stale_or_modified_backend_display_is_rejected(backend, changed):
         request_id = 'display-r1'
         if changed == 'answer':current['answer']['text'] = '현재 요청의 다른 답변'
         elif changed == 'display':current['workflow_display']['text'] = '임의 수정'
+        elif changed == 'answer_revision':current['workflow_display']['answer_display_revision'] = 'older'
         else:current['workflow_display']['judgment_display_revision'] = 'older'
     assert view._bound_workflow_display(current, request_id) is None
 

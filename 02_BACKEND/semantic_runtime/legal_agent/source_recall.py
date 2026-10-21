@@ -19,29 +19,14 @@ POLICY = {**SCOPED_POLICY, 'source_limit':288, 'action_limit':1024, 'source_char
 log = obs.get_logger('legal_agent.source_recall')
 
 def query_variants(question):
-    context = re.findall(r'\(업무\s*문맥\s*:\s*(.*?)\)', question, re.S)
-    variants = [question, *context, question.splitlines()[0]]
-    return list(dict.fromkeys(v.strip() for v in variants if v.strip()))[:3]
+    """Unmodified fallback query; never infer intent from parentheses or a line."""
+    return [question.strip()] if question.strip() else []
 
 
 
 def focused_queries(question, plan):
-    """Remove exact catalogue names, and retain explicit quantified noun phrases."""
-    extra = []
-    for query in plan['queries']:
-        short = query
-        for name in sorted(plan['law_names'], key=len, reverse=True):
-            short = short.replace(name, ' ')
-        short = ' '.join(short.split())
-        if len(short) >= 2 and short != query:
-            extra.append(short)
-    line = question.splitlines()[0]
-    numeric = []
-    for match in re.finditer(r'\d+(?:\.\d+)?\s*(?:개월|퍼센트|억원|만원|명|인|년|일|원|%|배|개)(?:\s*(?:이상|이하|초과|미만|이내|이전|이후))?', line):
-        terms = [t for t in question_terms(line[max(0, match.start()-40):match.start()]) if len(t)>1 and not t.isdigit()]
-        if terms:
-            numeric.append(terms[-1]+' '+match.group())
-    return list(dict.fromkeys(query_variants(question)+plan['queries']+extra[:4]+numeric[:2]))[:13]
+    """Execute the model's search terms without inventing numeric/topic variants."""
+    return list(dict.fromkeys(plan['queries'] or query_variants(question)))
 
 
 def unresolved_coordinate_candidates(frame, locator, matcher, scope):
@@ -55,7 +40,7 @@ def unresolved_coordinate_candidates(frame, locator, matcher, scope):
     index = getattr(matcher, '_source_recall_coordinate_index_v1', None)
     if index is None:
         index = defaultdict(list)
-        for (did, uid), coord in matcher.stored_coordinates.items():
+        for (did, uid), coord in ((row for d in sorted(scope) if matcher.documents.get(d,'').endswith(kind.group(1)) for row in matcher.stored_coordinates.for_document(d)) if hasattr(matcher.stored_coordinates,'for_document') else matcher.stored_coordinates.items()):
             name = matcher.documents.get(did, '')
             if not coord: continue
             for suffix in ('시행령','시행규칙'):
@@ -70,7 +55,7 @@ def unresolved_coordinate_candidates(frame, locator, matcher, scope):
 
 def preserve_source_choices(branches, allowed, limit):
     chosen = list(dict.fromkeys(sid for branch in branches for sid in branch))
-    if len(chosen)>limit or set(chosen)-set(allowed):
+    if len(chosen)>limit or any(sid not in allowed for sid in chosen):
         raise ContractError('source union cannot silently drop or escape a branch selection')
     if any(not set(branch).issubset(chosen) for branch in branches):
         raise ContractError('source union lost a parent choice')
@@ -123,8 +108,9 @@ class SourceRecall:
     def __init__(self, sources):
         self.s = sources
         scope = set(sources.scope)
-        self.allowed = {sid for sid, source in sources.matcher.sources.items()
-                        if source['document_id'] in scope}
+        catalogue=sources.matcher.sources
+        self.allowed = (catalogue.ids_for_documents(scope) if hasattr(catalogue,'ids_for_documents') else
+                        {sid for sid, source in catalogue.items() if source['document_id'] in scope})
         self.scores = defaultdict(float)
         self.routes = defaultdict(list)
         self.limits = []
@@ -203,7 +189,7 @@ class SourceRecall:
             exact = {normalize(c.coordinate.canonical_surface()) for c in find_coordinates(variant)}
             paired = []
             if named and exact:
-                for (did, uid), coord in self.s.matcher.stored_coordinates.items():
+                for (did, uid), coord in ((row for d in sorted(named) for row in self.s.matcher.stored_coordinates.for_document(d)) if hasattr(self.s.matcher.stored_coordinates,'for_document') else self.s.matcher.stored_coordinates.items()):
                     if did in named and coord and normalize(coord.canonical_surface()) in exact:
                         paired.extend(self.s.matcher._unit_sources(did, uid))
             for sid in dict.fromkeys(paired):
@@ -292,9 +278,12 @@ class SourceRecall:
 
     def _discover_articles(self):
         from .structure_query import resolve
-        route = getattr(self.s, 'structure_query_route', None)
+        from . import query_scope as qs, structure_selection as ss
+        selected_sets = (qs.active(self.s) or {}).get('selections', [])
+        route = ss.route(selected_sets, self.s.matcher, self.s.scope) if selected_sets else getattr(self.s, 'structure_query_route', None)
         if route is None:
             route = resolve(self.s.context.request['question'], self.s.matcher, self.s.scope)
+        route = qs.filter_route(self.s, route)
         if route['status'] == 'MATCH' and not getattr(self.s, 'force_fulltext_recall', False):
             selected = route['source_ids']
             if set(selected) - self.allowed:
@@ -339,7 +328,9 @@ class SourceRecall:
             return prepare(self)
         # Article FTS and unit FTS share the same structural READ contract.
         # Reference-only candidates are acquired after a typed group decision.
-        if getattr(self.s.matcher, 'unit_fulltext', None) is None and getattr(self.s.repo, 'VERSION', 5) != 6:
+        from .query_scope import active
+        if (getattr(self.s.matcher, 'unit_fulltext', None) is None and
+                getattr(self.s.repo, 'VERSION', 5) != 6 and not (active(self.s) or {}).get('selections')):
             return self._legacy_prepare()
         self.s.batch_reference_navigation = True
         from .unit_reading import prepare

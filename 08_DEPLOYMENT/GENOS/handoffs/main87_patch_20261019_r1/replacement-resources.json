@@ -1,0 +1,32 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "05_TESTS/CONTRACTS/test_genos_code_replacement.py",
+    "05_TESTS/CONTRACTS/test_genos_release_gate.py"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 2.003235533993575,
+  "peak_group_rss_bytes": 4341760,
+  "min_available_bytes": 13581754368,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/replacement-resources.json",
+    "rss_gib": 2.0,
+    "as_gib": 3.0,
+    "min_available_gib": 2,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "05_TESTS/CONTRACTS/test_genos_code_replacement.py",
+      "05_TESTS/CONTRACTS/test_genos_release_gate.py"
+    ]
+  },
+  "samples_sha256": "630dd1019902c40839c9c2fba2f8f63cf99131980fe2502dc699b1a498956d1e"
+}

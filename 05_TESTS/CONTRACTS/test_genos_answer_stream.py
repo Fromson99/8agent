@@ -93,20 +93,26 @@ def test_transport_preserves_complete_response_usage_and_private_reasoning(monke
     assert body['usage'] == {'completion_tokens': 20} and result['stream_events']
 
 
-def test_stream_disconnect_is_unknown_and_never_a_completed_answer(monkeypatch):
-    t, requests = transport(monkeypatch, [frame({'content': '{"paragraphs":[{"text":"일부 답변'})])
+@pytest.mark.parametrize('model_id', ['fixture-model', 'server-alias', None])
+def test_stream_disconnect_is_unknown_and_never_a_completed_answer(monkeypatch, model_id):
+    t, requests = transport(monkeypatch, [frame({'content': '{"paragraphs":[{"text":"일부 답변'}, model=model_id)])
     rows = []
     with pytest.raises(TransportError, match='before completion') as failure:
         t.send_stream_once(body={'stream': True}, ticket={'remaining_seconds': 2}, on_content=DraftText(rows.append).feed)
     assert failure.value.unknown and len(requests) == 1 and rows == ['일부 답변']
 
 
-def test_stream_model_mismatch_is_rejected_before_display(monkeypatch):
-    t, _ = transport(monkeypatch, [frame({'content': '{"paragraphs":[{"text":"다른 모델'}, model='wrong')])
+@pytest.mark.parametrize('model_id', ['fixture-model', 'server-alias', None])
+def test_genos_stream_model_metadata_does_not_block_display(monkeypatch, model_id):
+    t, requests = transport(monkeypatch, [
+        frame({'content': '{"paragraphs":[{"text":"정상 본문"}]}'}, model=model_id),
+        frame({}, finish='stop', model=model_id), 'data: [DONE]\n\n'])
     rows = []
-    with pytest.raises(ContractError):
-        t.send_stream_once(body={'stream': True}, ticket={'remaining_seconds': 2}, on_content=DraftText(rows.append).feed)
-    assert not rows
+    result = t.send_stream_once(body={'stream': True}, ticket={'remaining_seconds': 2},
+                               on_content=DraftText(rows.append).feed)
+    assert rows == ['정상 본문'] and len(requests) == 1
+    assert result['body_json']['model'] == model_id
+    assert result['stream_events'][0]['model'] == model_id
 
 
 def test_buffered_gateway_keeps_same_single_request(monkeypatch):
@@ -147,8 +153,8 @@ def test_workflow_changed_or_failed_result_is_explicit(monkeypatch):
         async def emit(event,value,**kw): sent.append((event,value))
         d.emit = emit
         await d.answer_delta({'schema_version': 'rag-answer-delta-v1', 'seq': 1, 'text': '일부 본문'})
-        await d.finish('지금 답변을 만들지 못했습니다.')
-        assert '답변 작성 결과' in ''.join(x for e,x in sent if e == 'token')
+        await d.finish('지금 답변을 만들지 못했습니다.',failed=True)
+        assert '답변 전달 미완료' in ''.join(x for e,x in sent if e == 'token')
         with pytest.raises(ValueError):
             await d.answer_delta({'schema_version': 'rag-answer-delta-v1', 'seq': 3, 'text': '누락'})
     asyncio.run(run())

@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "schema_version": "basis-artifacts-handoff-validation-v1",
+  "zip_sha256": "84f2251639458427683aa2f53f6588d57c7944243fde7bfaf0a36257f3a4785e",
+  "zip_bytes": 50411,
+  "code_requirements_sha256": "bae0edeca6e710977fe5f71f45c69556fbe9feeae54ccda679326e87e6049bb9",
+  "baseline": "sealed R3, 394 files",
+  "tool": {
+    "runner.py": "f5383949776c2c01661912824333de829e9e156e89c7fc0d140343ac09233ba3",
+    "basis_batch_artifacts.py": "896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe",
+    "basis_batch_report.py": "be260f951c4792cff74539d42e9ccd67bb48f2e992636f6f3c3a8131aa8ef99c",
+    "basis_batch_candidates.py": "31f8eaa2c80578e813bb46054708c3832b9dce125522b98a58f67dff4a355553",
+    "basis_batch.py": "ffc9e5bd2ce85db458ad59233ed129bfe7a22d2009d348ea4e12d7fc80cc069e"
+  },
+  "tests": {
+    "contracts_and_legacy_regression": 49,
+    "actual_stage_service_boot": 1,
+    "shell_commands": 17,
+    "maximum_rss_kib": 373204
+  },
+  "model_calls": {
+    "external": 0,
+    "GENOS": 0,
+    "scripted_test_double": true
+  },
+  "field_status": "NOT_RUN",
+  "working_tree_newer_recovery": "preserved; not included in sealed R3 batch runner",
+  "main_pointer_modified": false,
+  "source_corpus_reindexed": false,
+  "sql_import_requires_review": true,
+  "raw_sql_bypass_rejected": true,
+  "json_candidates_never_write_serving_authority": true,
+  "output_statuses": [
+    "read_only_report",
+    "staged_json",
+    "operator_selected_import",
+    "transaction_receipt",
+    "append_only_revoke"
+  ],
+  "python_compatibility": "Python 3.11 AST; execution on local Python 3.14; field 3.11 unverified"
+}

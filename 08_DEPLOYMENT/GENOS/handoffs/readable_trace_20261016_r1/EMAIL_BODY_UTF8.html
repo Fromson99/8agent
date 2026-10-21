@@ -1,0 +1,27 @@
+<!doctype html><html><body>
+<p>요청하신 <strong>vi용 LLM 전체 과정 로그와 중복 오류 표시 개선본</strong>을 보냅니다.</p>
+<p><strong>앞서 보낸 GENOS_MAIN_FULL_20261016_R1 전체 반입본을 기존 ~/DEV에 설치한 다음 적용하는 추가 패치</strong>입니다.
+해당 코드가 아니거나 다른 수정이 있으면 기존 파일을 보존하고 중단합니다. 기존 MAIN76 기능·최신 문서 선택·GENOS 설정을 유지합니다.</p>
+<p>요청마다 <strong>*.trace.txt</strong>에 agent/서비스 단계별로 문단을 나누어 전체 과정을 누적합니다.
+실제 전송 프롬프트·LLM 응답·호출 시간·입력/출력 토큰을 기록하고,
+<strong>찾은 정보</strong>와 <strong>실제 프롬프트에 들어간 정보</strong>를 따로 표시합니다.
+같은 traceback은 최초 한 번만 펼치고 이후 ERR-0001 같은 번호를 참조합니다.</p>
+<p><strong>첨부를 업로드한 실제 TRANSFER 폴더에서 실행</strong></p>
+<pre>python3 -m zipfile -e ./GENOS_READABLE_TRACE_20261016_R1.zip ./GENOS_READABLE_TRACE_20261016_R1
+bash ./GENOS_READABLE_TRACE_20261016_R1/GENOS_READABLE_TRACE_20261016_R1_RUN.txt check
+bash ./GENOS_READABLE_TRACE_20261016_R1/GENOS_READABLE_TRACE_20261016_R1_RUN.txt apply</pre>
+<p>각 단계의 READABLE_TRACE_EXIT=0을 확인하고 진행합니다. 별도 RUN.txt는 ZIP 안과 동일한 완전한 실행 파일입니다.
+로그는 TRANSFER/readable-trace-r1-logs, 백업·적용 receipt는 readable-trace-r1-state에 남습니다.</p>
+<p>기존 DEV에서 이번 변경만 검토·commit한 뒤 같은 TRANSFER에서 실행합니다.</p>
+<pre>bash ./GENOS_READABLE_TRACE_20261016_R1/GENOS_READABLE_TRACE_20261016_R1_RUN.txt gate</pre>
+<p>gate가 통과한 동일 commit을 push하고 코드서빙 새 리비전을 배포한 후 SSE를 재시작합니다.
+이번 패치에는 워크플로우 편집기 변경이나 데이터 재구축이 없습니다. 현장 확인은 <strong>워크플로우 테스트 화면</strong>에서 합니다.</p>
+<p>기존 GENOS_SHARED_LOG_DIR의 날짜/팀/legal_agent 또는 ad_mode 폴더에서 요청의 *.trace.txt를 vi로 열면 됩니다.
+기존 요약 TXT/JSON에도 상세 경로가 표시됩니다. vi에서 /프롬프트에 들어간 정보, /찾은 정보, /오류 요약으로 이동할 수 있습니다.</p>
+<p><strong>확인 사항:</strong> 작업 코드 106건, 설치된 코드 계약 33건씩(ZIP·별도 TXT),
+설치 중단 복구·재실행·원복·실제 서비스 진입점·동일 checkout 배포 전 검사를 로컬 모의 환경에서 통과했습니다.
+GENOS 현장 적용·내부 모델 결과는 아직 미확인입니다. 사진의 약 180초 timeout 자체를 해결한 변경은 아닙니다.
+RAG는 실행 중 누적되며 AD 상세 기록은 작업 종료 뒤 생성됩니다.</p>
+<p>첨부 6개: 패치 ZIP, 완전한 실행 TXT, 적용·원복 안내, 모의 로그 예시, 검증 결과, SHA-256 목록.</p>
+<p>ZIP SHA-256: c927b34d9ab6918e12bfc67a3a5ec55bdf3e989d1928e0bbd8a69ad1e3964015</p>
+</body></html>

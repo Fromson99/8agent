@@ -1,0 +1,25 @@
+MAIN96 — 사용하지 않는 관리자 모드 차단
+
+원인: 일반 질문에서 관리 세션을 먼저 검사해, 요청 team_id가 있어도 별도 서버 TEAM_ID를 요구했습니다.
+수정: 기존 ad_management.enabled=false. 일반 질의의 관리 세션·workspace 검사, 관리 시작/종료, 자동 예약 복구를 차단합니다. 코드는 삭제하지 않습니다.
+내규·외규 대사와 확정 연결, 팀·문서 범위, 기존 원문·관계·관리 이력은 유지합니다.
+MAIN95 + ignore 추가 패치 위에 적용하는 작은 코드 패치입니다. ignore와 .env/현장 경로·데이터를 덮어쓰지 않습니다. MAIN95 누적 ZIP 재설치는 필요 없습니다.
+
+실제 업로드한 TRANSFER 폴더를 현재 위치로 두고 실행하세요. 사진에서 확인한 기존 checkout은 /workspace입니다.
+python3 -m zipfile -e ./GENOS_MAIN96_AD_DISABLED_20261021_R1.zip ./GENOS_MAIN96_AD_DISABLED_20261021_R1
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt check --root /workspace
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt apply --root /workspace
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt gate --root /workspace
+
+위 apply는 코드만 적용합니다. 기존 관리 예약/세션을 삭제하거나 정상 법률 질문의 권한을 해제하지 않습니다. 옛 프로세스가 실행 중이면 새 코드서빙 리비전 배포 전까지 옛 코드가 동작합니다.
+확인한 변경을 기존 checkout에서 commit한 뒤, TRANSFER에서 아래 검사를 실행하세요.
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt gate-code --root /workspace
+현재 SQLite/NFS 운영이면 선택 세대까지 검사하세요. Oracle 운영에서는 이 명령을 쓰지 않습니다.
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt gate-sqlite --root /workspace
+PASS 커밋을 push하고 같은 커밋으로 코드서빙 리비전을 배포한 다음, 워크플로우 테스트 화면에서 일반 질문/대사를 확인합니다. 워크플로우 편집기 변경은 없습니다.
+기존 MAIN95/ignore 패치의 고정 코드 gate 대신 이번 gate를 사용합니다. ignore 규칙·로컬 exclude는 유지됩니다.
+
+재실행: 같은 apply로 이어서 확인합니다. 로그/백업/INSTALL_STATE.json을 지우지 마세요.
+원복: bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt rollback --root /workspace
+원복 코드는 관리 모드가 다시 켜진 MAIN95이며 이번 오류도 다시 발생할 수 있습니다. 원복 후에도 별도 commit/push/리비전 변경이 필요합니다.
+GENOS 현장 적용·배포·내부 모델 결과는 아직 확인하지 않았습니다.

@@ -12,13 +12,22 @@ class UnifiedRag(NativeRag):
         self.model=model;self.domain=catalogue
         from ..contracts import cached_code_sha
         code=digest({name:cached_code_sha(Path(__file__).with_name(name)) for name in
-            ('wiki_recall.py','law_title_hints.py','request_entry.py','corrected_memory.py','memory_methods.py','memory_rag.py','case_repository.py','knowledge_repository.py',
+            ('structure_selection.py','query_scope.py','law_name_recovery.py','knowledge_bridge.py','wiki_recall.py','law_title_hints.py','request_entry.py','corrected_memory.py','memory_methods.py','memory_rag.py','case_repository.py','knowledge_repository.py',
              'domain_control.py','procedure_memory.py','wiki_execution.py','core_evidence_route.py','shortcut_cases.py','unified_rag.py','unified_runtime.py','unified_publication.py',
              'source_recall.py','source_recall_global.py','source_selection.py','unit_reading.py','unit_selection.py','unit_relations.py','relation_read_policy.py',
-             'law_candidates.py','law_navigation.py','investigation_chain.py','evidence_inventory.py','investigation_contracts.py','completion_contracts.py','completion_execution.py','completion_v5.py','request_repair.py','completion_budget.py','memory_binding.py')})
+             'source_handoff.py','source_investigation.py','comparison_research.py','workflow_execution.py','law_candidates.py','law_navigation.py','investigation_chain.py','evidence_inventory.py','investigation_contracts.py','completion_contracts.py','completion_execution.py','completion_v5.py','request_repair.py','completion_budget.py','memory_binding.py')})
         self.binding.update(catalogue_hash=catalogue.hash,method_policy_hash=catalogue.method_hash,
             profile=digest(pipeline.term_agent.profile),code=code,
             pipeline=digest(pipeline.contracts.pipeline))
+
+    def scope_state(self,state,command,utterance):
+        from . import query_scope as qs
+        change=command.get('search_scope_change')
+        if change is None:return state
+        scope=qs.resolve(change,state.get('search_scope'),self.model.ensure().sources.matcher,
+            state['document_ids'],utterance)
+        if scope is not None or 'search_scope' in state:state={**state,'search_scope':scope}
+        return state
 
     @contextmanager
     def open(self,state,principal,body):
@@ -33,10 +42,15 @@ class UnifiedRag(NativeRag):
             request={**s.context.request,'question':current})
         s.sources.context=s.context;s.sources.scope=docs;s.sources.scope_set=frozenset(docs)
         s.sources.source.context=s.context;s.sources.source.scope=docs
+        from . import query_scope as qs
+        qs.attach(s.sources,state.get('search_scope'))
+        s.work.event('DIRECT_SEARCH_SCOPE_BOUND',{'scope':state.get('search_scope')})
         s.sources.root=s.sources.handle('R',{'documents':docs})
         s.work.event('CASE_EXECUTION_CONTEXT',{'request_id':body['request_id'],
             'session_id':body['session_id'],'state_hash':digest(state),'documents':docs})
         execution=getattr(self,'execution_class',UnifiedExecution)(self,s,state,principal)
+        from .knowledge_bridge import prepare
+        prepare(self,s.work,current,principal,docs)
         yield execution
         s.check_sources_unchanged()
 
@@ -52,6 +66,8 @@ class UnifiedExecution(NativeExecution):
         self.host.verify({'binding':read['binding'],'evidence':list(all_evidence.values())})
         for raw in all_evidence.values():
             if raw['document_id'] not in self.s.sources.scope:continue
+            from . import query_scope as qs
+            if qs.active(self.s.sources) and not {str(p['block_id']) for p in raw['spans']} <= qs.permitted_blocks(self.s.sources,raw['source_id']):continue
             current={**raw,'evidence_id':'E'+digest([self.s.context.run_id,raw['evidence_id']])[:28]}
             self.s.sources.source.verify(current);evidence.append(current)
         if evidence:
@@ -59,6 +75,9 @@ class UnifiedExecution(NativeExecution):
                 {'status':'REUSED','origin_binding':read['binding']},evidence,verify=self.s.sources.source.verify)
 
     def invoke(self,system,data,schema,phase,*,timeout=None):
+        from .knowledge_bridge import augment
+        data,knowledge_prompt=augment(data,getattr(self.host,'knowledge_plan',None))
+        system+=knowledge_prompt
         if hasattr(self,'domain_choice'):
             data={**data,'domain_choice':self.domain_choice,'catalogue':self.host.domain.value,
                 'concept_policy':'Unregistered labels are discovery observations, never reviewed ontology concepts.'}

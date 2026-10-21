@@ -1,0 +1,93 @@
+GENOS term-releases 정리 전 경량 확인 — 2026-10-16 R1
+
+2026-10-16 사용자 추가 지시: 지금 대규모 I/O를 일으키지 않는다.
+이 지시에 따라 전체 해시/du/DB/색인 검증과 재시작 안내를 기본 절차에서 제거했습니다.
+
+현재 판단
+사진의 GENOS_GENERATION은 financial-risk-success-20261005-schema-r2/generation을
+가리킵니다. 전체 157G, 보존 세대 약 5.5G는 사용자가 제공한 값이며 이번에는 다시
+용량을 스캔하지 않습니다. 나머지는 정리 후보지만 즉시 삭제 가능 판정은 아닙니다.
+현재 서버의 RAM/로컬 snapshot 때문에 과거 폴더 없이 응답해도 재시작 뒤 정상 동작까지
+보장되지 않습니다. 대량 삭제 또한 파일 수만큼 메타데이터 I/O를 일으킵니다.
+
+지금 실행할 명령 — 경로와 작은 메타데이터만 확인
+첨부 ZIP을 실제 TRANSFER에 올리고 그 폴더에서 다음과 같이 풉니다. 코드 설치는 없습니다.
+
+python3 -m zipfile -e ./GENOS_TERM_RELEASE_STORAGE_20261016_R1.zip ./GENOS_TERM_RELEASE_STORAGE_20261016_R1
+bash ./GENOS_TERM_RELEASE_STORAGE_20261016_R1/GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt check
+
+아래의 나머지 명령도 계속 같은 ZIP 해제 폴더의 TXT를 사용합니다.
+별도 첨부 TXT는 ZIP 안 파일과 동일한 완전한 실행 파일입니다. 단독 TXT로 이미
+check를 실행했다면 그 기존 TXT와 상태 폴더로 계속하고 두 위치를 섞지 않습니다.
+
+METADATA_CHECK_PASS 및 STORAGE_EXIT=0을 확인합니다.
+이 명령은 기존 ~/DEV/00_SYSTEM/GENOS_SERVING_PATHS.json과 보존 세대의 manifest만
+본문으로 읽고, 선택된 자산 경로/파일 속성 및 term-releases 직계 목록을 확인합니다.
+다른 checkout이면 --dev /실제/checkout을 명시합니다. 코드를 자동으로 선택하지 않습니다.
+Success 폴더 전체와 그 안의 SEARCH_SELECTION을 보존합니다.
+
+I/O 범위
+- 설정 JSON은 최대 64KiB, 세대 manifest와 도구 자체 기록은 파일당 최대 1MiB입니다.
+- 도구가 직접 읽는 이 입력들의 합계는 명령당 최대 2MiB이며 초과하면 중단합니다.
+  로그의 metadata_bytes_read는 이 직접 읽기 합계입니다. Python/셸 시작과 OS/NFS
+  메타데이터 및 로그 기록까지 포함한 전체 장치 I/O 상한을 보장하는 수치는 아닙니다.
+- DB/색인/용어집 본문을 읽지 않고 코드 본문 해시, du, 재귀 find/walk, 전체 해시,
+  모델/API 호출, warmup, 서버 재시작, 대용량 복사, 영구 삭제를 수행하지 않습니다.
+- 작은 계획/로그 기록과 stat/디렉터리 조회에도 소량의 I/O는 발생합니다.
+- 전체 하위 링크·모든 데이터 바이트·현재 실행 중인 코드서빙 리비전은 검증하지 않습니다.
+  METADATA_CHECK_PASS는 데이터 무결성이나 서비스 정상 작동 인증이 아닙니다.
+
+경로 격리를 하기로 한 경우 — 별도 명령, 자동 실행되지 않음
+동시 구축/발행/세대 전환이 없는 때, 같은 파일을 같은 TRANSFER에서 실행합니다.
+
+bash ./GENOS_TERM_RELEASE_STORAGE_20261016_R1/GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt isolate
+bash ./GENOS_TERM_RELEASE_STORAGE_20261016_R1/GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt verify
+
+ISOLATED와 ISOLATED_METADATA_PASS, 각각 STORAGE_EXIT=0을 확인합니다.
+계획에 적힌 과거 세대만 다음 형제 폴더로 이동합니다.
+/nfs-root/diamo/8-agent/term-releases-quarantine-20261016-r1
+
+Success 세대는 폴더 전체를 원위치에 둡니다. 사진의 full-80k-002-no-llm-,
+fulltext-repair-, pecab-workflow-smoke-, smoke- 계열 이외의 새 폴더는 자동 이동하지
+않습니다. 루트의 일반 파일도 보존합니다. 같은 NFS에서 폴더 이름/위치만 변경합니다.
+파일을 복사하거나 파일별로 순회하지 않으며, 아직 여유 공간을 늘리지 않습니다.
+덮어쓰기 없는 Linux renameat2(RENAME_NOREPLACE)를 사용하며 NFS/시스템에서
+지원하지 않으면 복사나 강제 덮어쓰기로 대체하지 않고 멈춥니다.
+이동은 소량의 메타데이터 변경이지만, 해당 옛 경로를 쓰는 다른 작업이 있다면 영향을
+받을 수 있습니다. 현재 도구는 모든 실행 프로세스/다른 서버의 참조를 조사하지 않습니다.
+verify 역시 메타데이터만 재확인합니다. payload_content_verified=false,
+workflow=UNVERIFIED, deletion_ready=false 상태를 유지합니다.
+
+문제 또는 중단 시 원복
+bash ./GENOS_TERM_RELEASE_STORAGE_20261016_R1/GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt status
+bash ./GENOS_TERM_RELEASE_STORAGE_20261016_R1/GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt restore
+
+RESTORED와 STORAGE_EXIT=0을 확인합니다. 이동 직후 기록 저장이 실패해도 양쪽
+디렉터리의 실제 식별자로 중단 위치를 판별합니다. isolate/restore 재실행은 이미
+옮긴 항목을 다시 옮기지 않습니다. 원래 위치에 같은 이름이 생기거나 격리본의
+식별자가 달라지면 덮어쓰지 않고 멈춥니다. 로그와 양쪽 폴더를 보존합니다.
+코드/설정이 변해 isolate/verify가 차단되어도 데이터 원복은 가능합니다.
+지금은 부하 때문에 재시작을 자동 수행하거나 권하지 않습니다.
+
+나중에 최종 확인할 사항
+부하를 감당할 수 있는 시점에 같은 코드/설정으로 코드서빙 작업자를 모두 새 프로세스로
+시작하고, 워크플로우 테스트 화면의 새 세션에서 용어 정의, 원문 검색/열람/인용,
+문서 간 참조와 실제 사용하는 저장/재개 기능을 확인해야 합니다.
+화면 새로고침이나 새 대화만으로는 서버 캐시가 비워지지 않습니다.
+이 검사는 캐시 재적재에 따른 대량 읽기가 발생할 수 있어 지금 단계에서는 실행하지 않습니다.
+현재 코드스페이스 검사와 실제 코드서빙 리비전/내부 모델 성공을 구분합니다.
+과거 재구축 입력·롤백·원본/감사 이력의 별도 보존 필요성도 확인한 뒤 격리본을
+최종 정리합니다. 이번 TXT에는 영구 삭제 기능을 넣지 않았습니다.
+
+기록
+실행 TXT 옆 term-release-storage-r1-state/PLAN.json에 대상 목록/식별자와
+작은 설정/manifest 지문 및 코드/자산 파일 속성을 고정합니다. 전체 코드나 DB의
+바이트 해시를 검증했다는 의미가 아닙니다. 기존 계획은 check로 덮어쓰지 않습니다.
+term-release-storage-r1-logs/*.log는 최초 단계부터 출력/오류/종료코드를 저장합니다.
+term-release-storage-r1-state/events.jsonl은 동작 의도/결과/실패를 누적합니다.
+VERIFY-*.json은 각각의 메타데이터 검사 결과이며 실제 서비스는 UNVERIFIED입니다.
+키/전체 환경변수/원문 내용은 출력하지 않습니다. Python 실행 경로와 버전을 남깁니다.
+
+로컬 검증
+경량 명령의 정상/중복/중단/원복/충돌/링크/입력 크기 제한/DB·코드 미열람을 검사합니다.
+현장 GENOS에 접속하거나 격리/삭제/재시작한 것은 아닙니다. 자세한 결과는 VALIDATION.json.

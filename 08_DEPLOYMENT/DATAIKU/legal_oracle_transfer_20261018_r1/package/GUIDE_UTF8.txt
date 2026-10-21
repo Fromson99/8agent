@@ -1,0 +1,84 @@
+법규 RAG 데이터 전체 이관 묶음 — 2026-10-18 R1
+
+새로 필요한 테이블은 2개입니다. 기존 원문 3개와 합쳐 총 5개입니다.
+이 메일의 01~05 파일을 순서대로 사용합니다. 이전 원문/게시 셀을 따로 찾아 섞을 필요 없습니다.
+02와 04의 처리 코드는 앞서 검증한 2026-10-16 R1과 같습니다. 03은 별도 전체 대조용 셀입니다.
+
+대상과 범위
+- 기존: SIDDA.LEGAL_SRC_DOCUMENT_A / LEGAL_SRC_SOURCE_UNIT_A / LEGAL_SRC_BLOCK_PAYLOAD_A
+- 추가: SIDDA.LEGAL_RAG_ASSET_PART_A / LEGAL_RAG_RELEASE_A
+- Oracle 로그인 계정: 현장에서 확인한 BAIP04APP. ORDS alias b04를 사용한 성공한 R6 연결을 재사용합니다.
+- SIDDA는 테이블 소유자입니다. 로그인 계정이나 ORDS alias를 SIDDA로 바꾸지 않습니다.
+- 원본: /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation/store.sqlite
+- 원문 3테이블과 해당 generation에 선언된 navigation/fulltext/용어집/용어집 캐시를 이관합니다.
+  원본 SQLite의 source_block은 block_payload를 복원하는 VIEW여서 별도 Oracle 테이블로 중복 복사하지 않습니다.
+- 이 묶음의 '전체'는 위 선택한 RAG generation의 원문과 검색 자산입니다.
+  NFS 전체 디렉터리, RAW PDF, 과거 generation, 대화/피드백/실행 로그 DB는 포함하지 않습니다.
+  Oracle에서 그래프 노드/관계마다 직접 질의하는 최종 스키마와는 별도인 5테이블 저장 계약입니다.
+
+1. Dataiku에서 추가 SQL 실행
+LEGAL_ORACLE_01_TABLES_20261018_R1.txt를 엽니다.
+기존 AIDP SQL 노트북에서 CREATE TABLE 2문장을 각각 별도 Query로 실행합니다.
+성공 후 GRANT 2문장은 SIDDA 소유자 또는 권한 담당자가 실행합니다.
+BAIP04APP에는 기존 원문 3개와 추가 2개 모두 SELECT, INSERT가 필요합니다.
+기존 테이블/표본 데이터를 삭제하지 않습니다. 이미 같은 이름이 있으면 05 목록과 열 정의를 확인합니다.
+Dataiku Dataset은 필요하면 AIDP / Schema SIDDA / 위 실제 Table 이름으로 등록합니다.
+Dataset을 등록하는 것과 Oracle 테이블 생성은 별개입니다.
+
+2. GENOS에서 원문 전체 이관
+조회/표본 INSERT에 성공한 01_DATAIKU_ORDS_STEP_BY_STEP_R6.ipynb를 사용합니다.
+그 노트북에서 연결이 살아 있는 같은 커널에 새 Code 셀을 만들고
+LEGAL_ORACLE_02_SOURCE_RUN_20261018_R1.txt 전체를 붙여넣어 실행합니다.
+인증된 desk를 사용하므로 client ID/secret은 이 파일에 넣지 않습니다. bash로 실행하지 않습니다.
+첫 출력의 SOURCE_COUNTS, DATASET_VERSION, DP_MIGRATION_RECEIPT를 보관합니다.
+status=SOURCE_COMPLETE이면 원문 3개가 이관됐습니다. PAUSED면 같은 셀을 다시 실행합니다.
+이미 있는 표본/전체 행은 동일 기본키와 전체 값이 같을 때만 재사용합니다.
+다른 값은 덮어쓰지 않고 실패 원인과 기록 경로를 남깁니다. 원본은 읽기 전용입니다.
+
+3. 원문 전체 재조회·대조
+02가 SOURCE_COMPLETE가 된 다음, 같은 커널의 새 Code 셀에
+LEGAL_ORACLE_03_SOURCE_VERIFY_20261018_R1.txt 전체를 붙여넣고 실행합니다.
+기본 6시간 한도이며 Oracle에 쓰지 않고 원문 모든 행/모든 열/CLOB/건수를 다시 대조합니다.
+status=VERIFIED와 SOURCE_TRANSFER_VERIFIED=3/3을 확인한 뒤 04로 진행합니다.
+VERIFY가 PAUSED면 처음부터 다시 대조합니다. 필요한 경우 셀 상단 RUN_SECONDS를 늘려 재실행합니다.
+이 단계의 진행 위치는 이어지지 않으며 최초 작업의 7일 기한과 누적 호출 한도는 유지됩니다.
+단순 COUNT 일치만으로 전체 내용 검증이 끝났다고 판단하지 않습니다.
+
+4. 색인·용어집 자산 업로드
+같은 커널의 새 Code 셀에 LEGAL_ORACLE_04_ASSETS_20261018_R1.txt 전체를 붙여넣고 실행합니다.
+03의 LEGAL_FULL_TRANSFER_RESULT['receipt']를 자동 사용합니다.
+커널을 재시작했다면 먼저 R6 연결을 확인하고, 이 셀의 TRANSFER_RECEIPT에
+03에서 저장한 실제 VERIFIED 기록 경로를 직접 넣습니다. 임의 새 경로를 만들지 않습니다.
+자산은 기존 파일 바이트를 압축·분할하여 저장하며 재색인/재임베딩하지 않습니다.
+기본 1시간 한도 PAUSED면 같은 셀을 다시 실행해 저장된 분할 이후부터 이어갑니다.
+status=COMPLETE와 DP_RELEASE_ID=<64자리 값>을 보관합니다.
+모든 자산을 검증한 뒤 완료 버전을 마지막에 등록합니다. 실패/부분 업로드를 완료로 표시하지 않습니다.
+
+5. Dataiku 확인
+LEGAL_ORACLE_05_CHECK_SQL_20261018_R1.txt의 SELECT를 각각 실행합니다.
+03의 버전/건수와 04의 DP_RELEASE_ID를 대조합니다.
+Explore에 이전 0행 화면이 남아 있으면 샘플 새로고침(Save and Refresh Sample)을 실행합니다.
+이번 묶음은 데이터 이관용입니다. 코드 적용·MAIN 선택·서빙 리비전 배포·DP 환경변수 전환은 실행하지 않습니다.
+이관 완료와 'NFS 없이 Oracle에서 가져와 답변'하는 워크플로우 시험 완료는 별도로 확인해야 합니다.
+
+중단·복구
+- 02 이관은 검증 완료한 배치, 04 업로드는 검증 완료한 분할의 기록을 유지합니다.
+- 통신 오류/권한 오류는 FAILED 기록을 확인한 뒤 동일 셀로 명시적으로 재개합니다.
+  응답을 못 받았어도 먼저 저장 여부와 전체 내용을 확인하므로 동일 데이터를 무조건 다시 넣지 않습니다.
+- 원본/접속 대상/설정 로그 경로는 중간에 바꾸지 않습니다. 02/04 각각 최초 7일·누적 SQL 100만 회 한도입니다.
+  기한/한도 초과나 다른 값 충돌은 기록을 지우거나 한도를 초기화하지 말고 원인을 확인합니다.
+- 개별 원문 값은 최대 64MiB입니다. 별도 vectors 항목이 있는 generation은 이 계약에서 미지원으로 중단합니다.
+  원문을 자르거나 지원하지 않는 색인을 몰래 제외하지 않습니다.
+- 인증값/본문을 진단 메일에 붙이지 말고 오류 종류·상태·receipt 경로를 남깁니다.
+
+ZIP 사용
+첨부 ZIP을 실제 업로드한 TRANSFER 폴더를 현재 작업 위치로 두고:
+python3 -m zipfile -e ./LEGAL_ORACLE_TRANSFER_20261018_R1.zip ./LEGAL_ORACLE_TRANSFER_20261018_R1
+풀린 폴더의 01~05 TXT를 위 순서대로 사용합니다. 별도 첨부 TXT도 같은 내용입니다.
+~/DEV 설치나 Git push는 이 데이터 이관 묶음의 실행에 필요하지 않습니다.
+sources/는 검토용 원본 Python입니다. 노트북 TXT에는 필요한 코드가 포함되어 있습니다.
+
+검증 범위
+로컬 실제 임시 SQLite와 모의 Oracle/ORDS로 첨부 셀의 실행·재조회·업로드와 실패/재개를 검사합니다.
+결과는 VALIDATION.json에 기록합니다. 망분리 GENOS/Oracle에는 접속하지 않았습니다.
+실제 Oracle SQL 엔진의 DDL/PLSQL 실행, 현장 전체 건수·속도·서빙 동작은 현장 실행 결과로 확인해야 합니다.

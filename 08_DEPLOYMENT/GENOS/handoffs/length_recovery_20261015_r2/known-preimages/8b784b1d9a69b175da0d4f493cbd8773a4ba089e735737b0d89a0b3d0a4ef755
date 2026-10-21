@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "pipeline-v1"
+      ]
+    },
+    "authorities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "schema_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_definition": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "schema_path",
+          "schema_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "slots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "AUDITOR",
+              "EXTRACTOR",
+              "COMPILER",
+              "INDEXER",
+              "QUERY_PLANNER",
+              "RETRIEVER",
+              "ASSEMBLER",
+              "ANSWERER",
+              "FEEDBACK",
+              "MIGRATOR"
+            ]
+          },
+          "inputs": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "outputs": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "inputs",
+          "outputs"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "engines": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "manifest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "manifest",
+          "sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "enum": [
+              "tool",
+              "research",
+              "serving"
+            ]
+          },
+          "status": {
+            "enum": [
+              "READY",
+              "MIGRATION_REQUIRED"
+            ]
+          },
+          "inputs": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "slot": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "engine": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "bindings": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "string",
+                    "pattern": "^(\\$input|[a-z][a-z0-9_-]*)\\.[a-z][a-z0-9_-]*$"
+                  }
+                },
+                "parameters": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "id",
+                "slot",
+                "engine",
+                "bindings",
+                "parameters"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "outputs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "mode",
+          "status",
+          "inputs",
+          "nodes",
+          "outputs"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stage_schemas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "enum": [
+              "DATA_INPUT",
+              "PROCESS",
+              "LOAD",
+              "RAG",
+              "FEEDBACK"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contracts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "profiles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "contracts",
+          "profiles"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "authorities",
+    "contracts",
+    "slots",
+    "engines",
+    "profiles"
+  ],
+  "additionalProperties": false
+}

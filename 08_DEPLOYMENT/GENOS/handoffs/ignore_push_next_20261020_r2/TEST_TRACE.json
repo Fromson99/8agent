@@ -1,0 +1,479 @@
+[
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q",
+      "-b",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "."
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "ls-files"
+    ],
+    "exit": 0,
+    "stdout": ".env.example\n.env.genos.example\n.env.onsite.example\n.gitignore\n00_SYSTEM/ARCHITECTURE.md\n00_SYSTEM/DATA_MODEL.md\n00_SYSTEM/EXPERIMENT_MODEL_POLICY.json\n00_SYSTEM/FILENAME_EXCEPTIONS.json\n00_SYSTEM/GLOSSARY_KNOWLEDGE_SOURCES.json\n00_SYSTEM/GLOSSARY_PIPELINE.json\n00_SYSTEM/GLOSSARY_SCHEMA.json\n00_SYSTEM/INTERNAL_LAYOUT.json\n00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json\n00_SYSTEM/LEGAL_AGENT/domain-v1.json\n00_SYSTEM/LEGAL_AGENT/domain-v2.json\n00_SYSTEM/LEGAL_AGENT/domain-v3.json\n00_SYSTEM/LEGAL_AGENT/domain-v4.json\n00_SYSTEM/LEGAL_AGENT/domain-v5.json\n00_SYSTEM/LEGAL_AGENT/local-gemma-public.json\n00_SYSTEM/LEGAL_AGENT/profile-source-only.json\n00_SYSTEM/LEGAL_AGENT/profile-tools-v2.json\n00_SYSTEM/LEGAL_AGENT/profile-tools-v3.json\n00_SYSTEM/LEGAL_AGENT/profile-tools-v4.json\n00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json\n00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json\n00_SYSTEM/LEGAL_AGENT/reference-qwen-openrouter.json\n00_SYSTEM/LEGAL_AGENT/reference-qwen-public.json\n00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/SKILL.md\n00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/package.json\n00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/references/adoption.md\n00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/references/failure-map.md\n00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/validation.json\n00_SYSTEM/LEGAL_SCHEMA.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v9.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v10.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v11.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v12.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v13.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v14.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v15.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v16.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v17.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v18.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v19.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v5.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v6.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v7.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v8.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v9.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-audit-archive-workspace-r4.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-factorized-audit-workspace-r5.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-input-exclusions-workspace-r6.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-native-ingestion-compact-workspace-r3.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-native-ingestion-workspace-r1.json\n00_SYSTEM/MIGRATION/ACTIVATIONS/20261008-native-ingestion-workspace-r2.json\n00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v6.json\n00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v7.json\n00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2.json\n00_SYSTEM/MIGRATION/KNOWN_GAPS.md\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v10.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v11.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v12.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v13.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v14.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v15.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v16.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v17.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v18.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v19.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v8.json\n00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v9.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-audit-archive-workspace-r4.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-factorized-audit-workspace-r5.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-input-exclusions-workspace-r6.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-native-ingestion-compact-workspace-r3.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-native-ingestion-workspace-r1.json\n00_SYSTEM/MIGRATION/OVERLAYS/20261008-native-ingestion-workspace-r2.json\n00_SYSTEM/MIGRATION/PLAN.md\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v10.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v11.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v12.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v13.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v14.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v15.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v16.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v17.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v18.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v19.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v5.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v6.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v7.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v8.json\n00_SYSTEM/MIGRATION/PLANS/20260904-code-v9.json\n00_SYSTEM/MIGRATION/PLANS/20261008-audit-archive-workspace-r4.json\n00_SYSTEM/MIGRATION/PLANS/20261008-factorized-audit-workspace-r5.json\n00_SYSTEM/MIGRATION/PLANS/20261008-input-exclusions-workspace-r6.json\n00_SYSTEM/MIGRATION/PLANS/20261008-native-ingestion-compact-workspace-r3.json\n00_SYSTEM/MIGRATION/PLANS/20261008-native-ingestion-workspace-r1.json\n00_SYSTEM/MIGRATION/PLANS/20261008-native-ingestion-workspace-r2.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.plan.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-audit-archive-workspace-r4.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-audit-archive-workspace-r4.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-audit-archive-workspace-r4.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-factorized-audit-workspace-r5.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-factorized-audit-workspace-r5.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-factorized-audit-workspace-r5.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-input-exclusions-workspace-r6.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-input-exclusions-workspace-r6.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-input-exclusions-workspace-r6.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-compact-workspace-r3.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-compact-workspace-r3.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-compact-workspace-r3.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r1.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r1.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r1.final-verify.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r2.copy-verify-0.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r2.dual-read-compare.json\n00_SYSTEM/MIGRATION/RECEIPTS/20261008-native-ingestion-workspace-r2.final-verify.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.completion.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v9.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v10.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v11.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v12.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v13.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v14.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v15.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v16.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v17.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v18.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v19.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v5.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v6.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v7.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v8.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v9.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-audit-archive-workspace-r4.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-factorized-audit-workspace-r5.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-input-exclusions-workspace-r6.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-native-ingestion-compact-workspace-r3.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-native-ingestion-workspace-r1.json\n00_SYSTEM/MIGRATION/RETIREMENTS/20261008-native-ingestion-workspace-r2.json\n00_SYSTEM/MIGRATION/ROOT_CLASSIFICATION.json\n00_SYSTEM/ONTOLOGY_PIPELINE.json\n00_SYSTEM/PIPELINE.json\n00_SYSTEM/PIPELINE.md\n00_SYSTEM/README.md\n00_SYSTEM/SCHEMAS/change-candidate-v1.schema.json\n00_SYSTEM/SCHEMAS/data-review-v1.schema.json\n00_SYSTEM/SCHEMAS/dataset-package-v2.schema.json\n00_SYSTEM/SCHEMAS/definition-projection-v1.schema.json\n00_SYSTEM/SCHEMAS/feedback-event-v1.schema.json\n00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json\n00_SYSTEM/SCHEMAS/grounded-answer-v1.schema.json\n00_SYSTEM/SCHEMAS/legacy-shadow-descriptor-v1.schema.json\n00_SYSTEM/SCHEMAS/legal-agent-case-memory-v1.draft.sql\n00_SYSTEM/SCHEMAS/legal-agent-domain-catalogue-v1.draft.sql\n00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.examples.json\n00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.schema.json\n00_SYSTEM/SCHEMAS/legal-agent-domain-journal-v1.draft.sql\n00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json\n00_SYSTEM/SCHEMAS/legal-ontology-lifecycle-v1.schema.json\n00_SYSTEM/SCHEMAS/legal-semantic-v2.schema.json\n00_SYSTEM/SCHEMAS/moleg-knowledge-record-v1.schema.json\n00_SYSTEM/SCHEMAS/pipeline-common-v1.schema.json\n00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json\n00_SYSTEM/SCHEMAS/pipeline-feedback-v2.schema.json\n00_SYSTEM/SCHEMAS/pipeline-v1.schema.json\n00_SYSTEM/SCHEMAS/query-shortcut-v1.schema.json\n00_SYSTEM/SCHEMAS/query-shortcut-v2.schema.json\n00_SYSTEM/SCHEMAS/rag-content-snapshot-compact-v1.schema.json\n00_SYSTEM/SCHEMAS/rag-content-snapshot-v1.schema.json\n00_SYSTEM/SCHEMAS/rag-lexical-index-identity-v1.schema.json\n00_SYSTEM/SCHEMAS/rag-qdrant-runtime-binding-v1.schema.json\n00_SYSTEM/SCHEMAS/rag-retrieval-runtime-v1.schema.json\n00_SYSTEM/SCHEMAS/rag-stage-v2.schema.json\n00_SYSTEM/SCHEMAS/rag-structure-artifact-v1.schema.json\n00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json\n00_SYSTEM/SCHEMAS/release-activation-plan-v1.schema.json\n00_SYSTEM/SCHEMAS/release-manifest-v1.schema.json\n00_SYSTEM/SCHEMAS/retrieval-hits-v1.schema.json\n00_SYSTEM/SCHEMAS/runtime-embedding-binding-v1.schema.json\n00_SYSTEM/SCHEMAS/runtime-llm-binding-v1.schema.json\n00_SYSTEM/SCHEMAS/semantic-contract-report-v1.schema.json\n00_SYSTEM/SCHEMAS/semantic-runtime-ports-v1.schema.json\n00_SYSTEM/SCHEMAS/semantic-storage-v1.schema.json\n00_SYSTEM/SCHEMAS/semantic-store-descriptor-v1.schema.json\n00_SYSTEM/SCHEMAS/shortcut-experience-v1.draft.sql\n00_SYSTEM/SCHEMAS/source-document-v1.schema.json\n00_SYSTEM/SCHEMAS/source-set-v1.schema.json\n00_SYSTEM/SCHEMAS/source-tiers-v4.schema.json\n00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json\n00_SYSTEM/SCHEMAS/tool-exploration-v2.schema.json\n00_SYSTEM/SCHEMAS/tool-exploration-v3.schema.json\n00_SYSTEM/SCHEMAS/tool-exploration-v5.schema.json\n00_SYSTEM/SCHEMAS/unified-case-memory-v1.schema.json\n00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v2.schema.json\n00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v3.schema.json\n00_SYSTEM/SCHEMAS/workspace-copy-plan-v1.schema.json\n00_SYSTEM/SCHEMAS/workspace-layout-activation-v1.schema.json\n00_SYSTEM/SCHEMAS/workspace-layout-activation-v2.schema.json\n00_SYSTEM/SCHEMAS/workspace-legacy-retirement-authorization-v1.schema.json\n00_SYSTEM/SCHEMAS/workspace-migration-phase-receipt-v4.schema.json\n00_SYSTEM/STAGE_SCHEMAS.md\n00_SYSTEM/WORKSPACE.json\n02_BACKEND/ENGINES/README.md\n02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/1.0.0/select.json\n02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/2.0.0/select.json\n02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/3.0.0/select.json\n02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/4.0.0/select.json\n02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/5.0.0/select.json\n02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json\n02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json\n02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json\n02_BACKEND/ENGINES/legal_agent/6.0.0/select.json\n02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.json\n02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.py\n02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.json\n02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.py\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/answer.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/assemble.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/feedback.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/load.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/open-template.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/retrieve.json\n02_BACKEND/ENGINES/semantic_runtime/1.0.0/select.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/load.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json\n02_BACKEND/ENGINES/term_runtime/1.0.0/select.json\n02_BACKEND/PIPELINE/README.md\n02_BACKEND/PIPELINE/active_legal.py\n02_BACKEND/PIPELINE/engine_host.py\n02_BACKEND/lawrag/__init__.py\n02_BACKEND/lawrag/agents/__init__.py\n02_BACKEND/lawrag/agents/agent6/README.md\n02_BACKEND/lawrag/agents/agent6/__init__.py\n02_BACKEND/lawrag/agents/agent6/checklist/items/A-01.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/A-02.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/A-03.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/A-04.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/A-05.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-06.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-07.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-08.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-09.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-10.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-11.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-12.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-13.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-14.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/B-15.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/C-16.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/C-17.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/C-18.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/C-19.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-20.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-21.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-22.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-23.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-24.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/D-25.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/E-26.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/E-27.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/F-28.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/F-29.yaml\n02_BACKEND/lawrag/agents/agent6/checklist/items/F-30.yaml\n02_BACKEND/lawrag/agents/agent6/corpus/manifest.json\n02_BACKEND/lawrag/agents/agent6/formats/decree.format.json\n02_BACKEND/lawrag/agents/agent6/formats/kofia_rule.format.json\n02_BACKEND/lawrag/agents/agent6/formats/statute.format.json\n02_BACKEND/lawrag/agents/agent6/formats/transcript.format.json\n02_BACKEND/lawrag/agents/agent6/glossary/decree.glossary.yaml\n02_BACKEND/lawrag/agents/agent6/glossary/kofia_rule.glossary.yaml\n02_BACKEND/lawrag/agents/agent6/glossary/statute.glossary.yaml\n02_BACKEND/lawrag/agents/agent6/glossary/transcript.glossary.yaml\n02_BACKEND/lawrag/agents/agent6/src/__init__.py\n02_BACKEND/lawrag/agents/agent6/src/aggregate.py\n02_BACKEND/lawrag/agents/agent6/src/basis.py\n02_BACKEND/lawrag/agents/agent6/src/cli.py\n02_BACKEND/lawrag/agents/agent6/src/context_asm.py\n02_BACKEND/lawrag/agents/agent6/src/corpus_build.py\n02_BACKEND/lawrag/agents/agent6/src/harvest.py\n02_BACKEND/lawrag/agents/agent6/src/judge.py\n02_BACKEND/lawrag/agents/agent6/src/llm_cache.py\n02_BACKEND/lawrag/agents/agent6/src/preprocess.py\n02_BACKEND/lawrag/agents/agent6/src/report.py\n02_BACKEND/lawrag/agents/agent6/src/schema.py\n02_BACKEND/lawrag/agents/agent6/src/transcript.py\n02_BACKEND/lawrag/agents/agent6/src/when.py\n02_BACKEND/lawrag/api/.env.example\n02_BACKEND/lawrag/api/README.md\n02_BACKEND/lawrag/api/__init__.py\n02_BACKEND/lawrag/api/legalclosure_presenter.py\n02_BACKEND/lawrag/api/ops.py\n02_BACKEND/lawrag/api/routers/__init__.py\n02_BACKEND/lawrag/api/routers/agent6.py\n02_BACKEND/lawrag/api/routers/expc.py\n02_BACKEND/lawrag/api/routers/experiments.py\n02_BACKEND/lawrag/api/routers/formats.py\n02_BACKEND/lawrag/api/routers/general_search.py\n02_BACKEND/lawrag/api/routers/glossary.py\n02_BACKEND/lawrag/api/routers/golden.py\n02_BACKEND/lawrag/api/routers/knowledge.py\n02_BACKEND/lawrag/api/routers/lineage.py\n02_BACKEND/lawrag/api/routers/logs.py\n02_BACKEND/lawrag/api/routers/pipeline.py\n02_BACKEND/lawrag/api/routers/rag.py\n02_BACKEND/lawrag/api/routers/review.py\n02_BACKEND/lawrag/api/routers/structure.py\n02_BACKEND/lawrag/api/structure_app.py\n02_BACKEND/lawrag/api/viewer/agent6/index.html\n02_BACKEND/lawrag/api/viewer/agent6/styles.css\n02_BACKEND/lawrag/api/viewer/bindings/index.html\n02_BACKEND/lawrag/api/viewer/bindings/styles.css\n02_BACKEND/lawrag/api/viewer/evolution/index.html\n02_BACKEND/lawrag/api/viewer/evolution/styles.css\n02_BACKEND/lawrag/api/viewer/expc/index.html\n02_BACKEND/lawrag/api/viewer/expc/styles.css\n02_BACKEND/lawrag/api/viewer/experiments/index.html\n02_BACKEND/lawrag/api/viewer/experiments/styles.css\n02_BACKEND/lawrag/api/viewer/glossary/index.html\n02_BACKEND/lawrag/api/viewer/glossary/styles.css\n02_BACKEND/lawrag/api/viewer/golden/index.html\n02_BACKEND/lawrag/api/viewer/golden/styles.css\n02_BACKEND/lawrag/api/viewer/home/index.html\n02_BACKEND/lawrag/api/viewer/home/styles.css\n02_BACKEND/lawrag/api/viewer/knowledge/index.html\n02_BACKEND/lawrag/api/viewer/knowledge/styles.css\n02_BACKEND/lawrag/api/viewer/lineage/index.html\n02_BACKEND/lawrag/api/viewer/lineage/styles.css\n02_BACKEND/lawrag/api/viewer/links/index.html\n02_BACKEND/lawrag/api/viewer/links/styles.css\n02_BACKEND/lawrag/api/viewer/logs/index.html\n02_BACKEND/lawrag/api/viewer/logs/styles.css\n02_BACKEND/lawrag/api/viewer/pipeline/index.html\n02_BACKEND/lawrag/api/viewer/pipeline/styles.css\n02_BACKEND/lawrag/api/viewer/rag/debug.html\n02_BACKEND/lawrag/api/viewer/rag/index.html\n02_BACKEND/lawrag/api/viewer/rag/styles.css\n02_BACKEND/lawrag/api/viewer/rules/index.html\n02_BACKEND/lawrag/api/viewer/rules/styles.css\n02_BACKEND/lawrag/api/viewer/shared/enterprise.css\n02_BACKEND/lawrag/api/viewer/shared/refresh.css\n02_BACKEND/lawrag/api/viewer/shared/ui.css\n02_BACKEND/lawrag/api/viewer/structure/index.html\n02_BACKEND/lawrag/api/viewer/structure/styles.css\n02_BACKEND/lawrag/core/README.md\n02_BACKEND/lawrag/core/__init__.py\n02_BACKEND/lawrag/core/action_memory.py\n02_BACKEND/lawrag/core/batch.py\n02_BACKEND/lawrag/core/casereview/__init__.py\n02_BACKEND/lawrag/core/casereview/binding.py\n02_BACKEND/lawrag/core/casereview/model.py\n02_BACKEND/lawrag/core/casereview/pipeline.py\n02_BACKEND/lawrag/core/cli.py\n02_BACKEND/lawrag/core/defpatterns.py\n02_BACKEND/lawrag/core/docx_native.py\n02_BACKEND/lawrag/core/docx_ooxml.py\n02_BACKEND/lawrag/core/domain_graph/__init__.py\n02_BACKEND/lawrag/core/domain_graph/__main__.py\n02_BACKEND/lawrag/core/domain_graph/alignment.py\n02_BACKEND/lawrag/core/domain_graph/approval.py\n02_BACKEND/lawrag/core/domain_graph/builder.py\n02_BACKEND/lawrag/core/domain_graph/candidates.py\n02_BACKEND/lawrag/core/domain_graph/canonical.py\n02_BACKEND/lawrag/core/domain_graph/cli.py\n02_BACKEND/lawrag/core/domain_graph/freshness.py\n02_BACKEND/lawrag/core/domain_graph/grounding.py\n02_BACKEND/lawrag/core/domain_graph/model.py\n02_BACKEND/lawrag/core/domain_graph/normative.py\n02_BACKEND/lawrag/core/domain_graph/oql.py\n02_BACKEND/lawrag/core/domain_graph/oql_patterns.yaml\n02_BACKEND/lawrag/core/domain_graph/requirements.py\n02_BACKEND/lawrag/core/domain_graph/spanparts.py\n02_BACKEND/lawrag/core/domain_graph/store.py\n02_BACKEND/lawrag/core/domain_graph/tier1.py\n02_BACKEND/lawrag/core/domain_graph/uncertainty.py\n02_BACKEND/lawrag/core/embedding.py\n02_BACKEND/lawrag/core/fitness_gate.py\n02_BACKEND/lawrag/core/format_induce.py\n02_BACKEND/lawrag/core/format_model.py\n02_BACKEND/lawrag/core/genos_chunks.py\n02_BACKEND/lawrag/core/genos_preprocessor.py\n02_BACKEND/lawrag/core/geometry.py\n02_BACKEND/lawrag/core/glossary.py\n02_BACKEND/lawrag/core/grid_recover.py\n02_BACKEND/lawrag/core/holdout_check.py\n02_BACKEND/lawrag/core/hwp5_md.py\n02_BACKEND/lawrag/core/hwpx_md.py\n02_BACKEND/lawrag/core/hwpx_parse.py\n02_BACKEND/lawrag/core/ingest.py\n02_BACKEND/lawrag/core/internal_rules.py\n02_BACKEND/lawrag/core/lawnet.py\n02_BACKEND/lawrag/core/legal_coordinate.py\n02_BACKEND/lawrag/core/legal_generation.py\n02_BACKEND/lawrag/core/legal_graph/__init__.py\n02_BACKEND/lawrag/core/legal_graph/behavior.py\n02_BACKEND/lawrag/core/legal_graph/compiler.py\n02_BACKEND/lawrag/core/legal_graph/ids.py\n02_BACKEND/lawrag/core/legal_graph/model.py\n02_BACKEND/lawrag/core/legal_graph/validation.py\n02_BACKEND/lawrag/core/lineage.py\n02_BACKEND/lawrag/core/llm.py\n02_BACKEND/lawrag/core/logbook.py\n02_BACKEND/lawrag/core/normalize.py\n02_BACKEND/lawrag/core/parse_adapter.py\n02_BACKEND/lawrag/core/rag/README.md\n02_BACKEND/lawrag/core/rag/__init__.py\n02_BACKEND/lawrag/core/rag/_boundary.py\n02_BACKEND/lawrag/core/rag/answer.py\n02_BACKEND/lawrag/core/rag/approvals.py\n02_BACKEND/lawrag/core/rag/article_reachability.py\n02_BACKEND/lawrag/core/rag/assertion_shortcuts.py\n02_BACKEND/lawrag/core/rag/assertionfirst.py\n02_BACKEND/lawrag/core/rag/audit.py\n02_BACKEND/lawrag/core/rag/bench.py\n02_BACKEND/lawrag/core/rag/claim_citation_selector.py\n02_BACKEND/lawrag/core/rag/claimwise_nondestructive_compiler.py\n02_BACKEND/lawrag/core/rag/combinations.py\n02_BACKEND/lawrag/core/rag/companion_recovery.py\n02_BACKEND/lawrag/core/rag/compare.py\n02_BACKEND/lawrag/core/rag/conceptfirst.py\n02_BACKEND/lawrag/core/rag/controls.py\n02_BACKEND/lawrag/core/rag/definitions.py\n02_BACKEND/lawrag/core/rag/delegation.py\n02_BACKEND/lawrag/core/rag/evaluation.py\n02_BACKEND/lawrag/core/rag/evidence/__init__.py\n02_BACKEND/lawrag/core/rag/evidence_confusion.py\n02_BACKEND/lawrag/core/rag/evidence_slot_nondropping.py\n02_BACKEND/lawrag/core/rag/expand.py\n02_BACKEND/lawrag/core/rag/exploration.py\n02_BACKEND/lawrag/core/rag/framequery.py\n02_BACKEND/lawrag/core/rag/frames.py\n02_BACKEND/lawrag/core/rag/general_search.py\n02_BACKEND/lawrag/core/rag/graph.py\n02_BACKEND/lawrag/core/rag/grounded_witness.py\n02_BACKEND/lawrag/core/rag/index.py\n02_BACKEND/lawrag/core/rag/induce.py\n02_BACKEND/lawrag/core/rag/internal_compliance.py\n02_BACKEND/lawrag/core/rag/judge.py\n02_BACKEND/lawrag/core/rag/knowledge/__init__.py\n02_BACKEND/lawrag/core/rag/landings.py\n02_BACKEND/lawrag/core/rag/latent_discovery_pool.py\n02_BACKEND/lawrag/core/rag/legal_answer_checklists.py\n02_BACKEND/lawrag/core/rag/legal_conditional_closure.py\n02_BACKEND/lawrag/core/rag/legal_coordinates.py\n02_BACKEND/lawrag/core/rag/legal_evidence.py\n02_BACKEND/lawrag/core/rag/legal_graph_closure.py\n02_BACKEND/lawrag/core/rag/legal_graph_store.py\n02_BACKEND/lawrag/core/rag/legal_proposition_compiler.py\n02_BACKEND/lawrag/core/rag/legal_references.py\n02_BACKEND/lawrag/core/rag/legal_semantic_search.py\n02_BACKEND/lawrag/core/rag/legal_validity.py\n02_BACKEND/lawrag/core/rag/legalclosure.py\n02_BACKEND/lawrag/core/rag/legalclosure_runtime.py\n02_BACKEND/lawrag/core/rag/legalissue.py\n02_BACKEND/lawrag/core/rag/lexicon.py\n02_BACKEND/lawrag/core/rag/oql.py\n02_BACKEND/lawrag/core/rag/patterns.yaml\n02_BACKEND/lawrag/core/rag/promote.py\n02_BACKEND/lawrag/core/rag/proof_basis_augmenting.py\n02_BACKEND/lawrag/core/rag/proof_basis_exchange.py\n02_BACKEND/lawrag/core/rag/proof_boundary_feedback.py\n02_BACKEND/lawrag/core/rag/proposition_assessment_shadow.py\n02_BACKEND/lawrag/core/rag/provider_compatible_span_selector.py\n02_BACKEND/lawrag/core/rag/qdrant_store.py\n02_BACKEND/lawrag/core/rag/query_family_runtime.py\n02_BACKEND/lawrag/core/rag/query_grounding.py\n02_BACKEND/lawrag/core/rag/queryguide.py\n02_BACKEND/lawrag/core/rag/raw_evidence_selection.py\n02_BACKEND/lawrag/core/rag/reasoning/__init__.py\n02_BACKEND/lawrag/core/rag/recall_first_feedback.py\n02_BACKEND/lawrag/core/rag/recover.py\n02_BACKEND/lawrag/core/rag/recover_domains.py\n02_BACKEND/lawrag/core/rag/refs.py\n02_BACKEND/lawrag/core/rag/relation_navigation.py\n02_BACKEND/lawrag/core/rag/relations.py\n02_BACKEND/lawrag/core/rag/replay.py\n02_BACKEND/lawrag/core/rag/retrieval/__init__.py\n02_BACKEND/lawrag/core/rag/retrieval_feedback.py\n02_BACKEND/lawrag/core/rag/rules.py\n02_BACKEND/lawrag/core/rag/scopes.py\n02_BACKEND/lawrag/core/rag/search.py\n02_BACKEND/lawrag/core/rag/search_trace.py\n02_BACKEND/lawrag/core/rag/selective_legal_guide.py\n02_BACKEND/lawrag/core/rag/source_registry_admission.py\n02_BACKEND/lawrag/core/rag/span_feedback.py\n02_BACKEND/lawrag/core/rag/switches.py\n02_BACKEND/lawrag/core/rag/tags.py\n02_BACKEND/lawrag/core/rag/taxonomy.py\n02_BACKEND/lawrag/core/rag/term_proposals.py\n02_BACKEND/lawrag/core/rag/termexplore.py\n02_BACKEND/lawrag/core/rag/termretrieve.py\n02_BACKEND/lawrag/core/rag/tuples.py\n02_BACKEND/lawrag/core/rag/vecfirst.py\n02_BACKEND/lawrag/core/rag/vector.py\n02_BACKEND/lawrag/core/rag/verdicts.py\n02_BACKEND/lawrag/core/rag/verified_span_coverage_gate.py\n02_BACKEND/lawrag/core/rag/verified_span_selector.py\n02_BACKEND/lawrag/core/rag/wikictx.py\n02_BACKEND/lawrag/core/rag/wikiledger.py\n02_BACKEND/lawrag/core/rag/wikilife.py\n02_BACKEND/lawrag/core/rawstore.py\n02_BACKEND/lawrag/core/reading_order.py\n02_BACKEND/lawrag/core/reconcile.py\n02_BACKEND/lawrag/core/reference_coordinate.py\n02_BACKEND/lawrag/core/registry.yaml\n02_BACKEND/lawrag/core/review.py\n02_BACKEND/lawrag/core/router.py\n02_BACKEND/lawrag/core/structure/__init__.py\n02_BACKEND/lawrag/core/structure/anchors.py\n02_BACKEND/lawrag/core/structure/cli.py\n02_BACKEND/lawrag/core/structure/custom/_README.md\n02_BACKEND/lawrag/core/structure/dp.py\n02_BACKEND/lawrag/core/structure/family/__init__.py\n02_BACKEND/lawrag/core/structure/family/anchor.py\n02_BACKEND/lawrag/core/structure/family/run.py\n02_BACKEND/lawrag/core/structure/family/succession.py\n02_BACKEND/lawrag/core/structure/fingerprint.py\n02_BACKEND/lawrag/core/structure/from_format.py\n02_BACKEND/lawrag/core/structure/from_styles.py\n02_BACKEND/lawrag/core/structure/global_inner/__init__.py\n02_BACKEND/lawrag/core/structure/global_inner/nesting.py\n02_BACKEND/lawrag/core/structure/global_inner/ordinal.py\n02_BACKEND/lawrag/core/structure/global_outer/__init__.py\n02_BACKEND/lawrag/core/structure/global_outer/indent.py\n02_BACKEND/lawrag/core/structure/global_outer/ladder.py\n02_BACKEND/lawrag/core/structure/global_outer/reg_score.py\n02_BACKEND/lawrag/core/structure/guards/__init__.py\n02_BACKEND/lawrag/core/structure/guards/block_pos.py\n02_BACKEND/lawrag/core/structure/guards/construction.py\n02_BACKEND/lawrag/core/structure/guards/particle_ko.py\n02_BACKEND/lawrag/core/structure/lawxml.py\n02_BACKEND/lawrag/core/structure/lexicon.py\n02_BACKEND/lawrag/core/structure/lexicon/josa.yaml\n02_BACKEND/lawrag/core/structure/lexicon/numerals.yaml\n02_BACKEND/lawrag/core/structure/lexicon/reference_predicates.yaml\n02_BACKEND/lawrag/core/structure/model.py\n02_BACKEND/lawrag/core/structure/pipeline.py\n02_BACKEND/lawrag/core/structure/proposers/__init__.py\n02_BACKEND/lawrag/core/structure/proposers/annex.py\n02_BACKEND/lawrag/core/structure/proposers/bullet.py\n02_BACKEND/lawrag/core/structure/proposers/circled.py\n02_BACKEND/lawrag/core/structure/proposers/custom.py\n02_BACKEND/lawrag/core/structure/proposers/dot_number.py\n02_BACKEND/lawrag/core/structure/proposers/hangul_jamo.py\n02_BACKEND/lawrag/core/structure/proposers/kr_article.py\n02_BACKEND/lawrag/core/structure/proposers/kr_division.py\n02_BACKEND/lawrag/core/structure/proposers/paren_number.py\n02_BACKEND/lawrag/core/structure/proposers/roman.py\n02_BACKEND/lawrag/core/structure/proposers/style_heading.py\n02_BACKEND/lawrag/core/structure/proposers/writing_guidance.py\n02_BACKEND/lawrag/core/structure/recipe_basic.py\n02_BACKEND/lawrag/core/structure/recipe_compact.py\n02_BACKEND/lawrag/core/structure/recipe_evidence.py\n02_BACKEND/lawrag/core/structure/recipe_output.py\n02_BACKEND/lawrag/core/structure/recipe_pages.py\n02_BACKEND/lawrag/core/structure/recipe_patch.py\n02_BACKEND/lawrag/core/structure/recipe_regions.py\n02_BACKEND/lawrag/core/structure/recipe_rules.py\n02_BACKEND/lawrag/core/structure/recipe_runtime.py\n02_BACKEND/lawrag/core/structure/recipe_template.py\n02_BACKEND/lawrag/core/structure/recipe_visual_loop.py\n02_BACKEND/lawrag/core/structure/registry.py\n02_BACKEND/lawrag/core/structure/resolve.py\n02_BACKEND/lawrag/core/structure/rulehtml.py\n02_BACKEND/lawrag/core/structure/scoring.py\n02_BACKEND/lawrag/core/structure/source_lines.py\n02_BACKEND/lawrag/core/structure/synthpdf.py\n02_BACKEND/lawrag/core/structure/templates/basic_v1.json\n02_BACKEND/lawrag/core/structure/templates/disclosure_v1.json\n02_BACKEND/lawrag/core/structure/title.py\n02_BACKEND/lawrag/core/structure/viewer.py\n02_BACKEND/lawrag/core/structure/vlm_heading.py\n02_BACKEND/lawrag/core/structure_fixes.py\n02_BACKEND/lawrag/core/structurize.py\n02_BACKEND/lawrag/core/term_marker.py\n02_BACKEND/lawrag/core/terms/__init__.py\n02_BACKEND/lawrag/core/terms/__main__.py\n02_BACKEND/lawrag/core/terms/build.py\n02_BACKEND/lawrag/core/terms/candidates.py\n02_BACKEND/lawrag/core/terms/cluster.py\n02_BACKEND/lawrag/core/terms/embed.py\n02_BACKEND/lawrag/core/terms/embed_sections.py\n02_BACKEND/lawrag/core/terms/gate.py\n02_BACKEND/lawrag/core/terms/hierarchy.py\n02_BACKEND/lawrag/core/terms/judge.py\n02_BACKEND/lawrag/core/terms/relations.py\n02_BACKEND/lawrag/core/terms/stats.py\n02_BACKEND/lawrag/core/terms/suggest.py\n02_BACKEND/lawrag/core/terms/transcribe.py\n02_BACKEND/lawrag/core/typography.py\n02_BACKEND/lawrag/datasets/__init__.py\n02_BACKEND/lawrag/datasets/catalog.py\n02_BACKEND/lawrag/datasets/cutover.py\n02_BACKEND/lawrag/datasets/publisher.py\n02_BACKEND/lawrag/datasets/sync.py\n02_BACKEND/lawrag/feedback/__init__.py\n02_BACKEND/lawrag/feedback/lifecycle.py\n02_BACKEND/lawrag/feedback/shortcuts.py\n02_BACKEND/lawrag/ontology/__init__.py\n02_BACKEND/lawrag/ontology/catalog.py\n02_BACKEND/lawrag/ontology/definition_projection.py\n02_BACKEND/lawrag/ontology/lifecycle.py\n02_BACKEND/lawrag/pipeline/__init__.py\n02_BACKEND/lawrag/pipeline/action_memory.py\n02_BACKEND/lawrag/pipeline/basis_lifecycle.py\n02_BACKEND/lawrag/pipeline/batch.py\n02_BACKEND/lawrag/pipeline/collect.py\n02_BACKEND/lawrag/pipeline/collect_expc.py\n02_BACKEND/lawrag/pipeline/collect_fsc.py\n02_BACKEND/lawrag/pipeline/collect_moleg.py\n02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py\n02_BACKEND/lawrag/pipeline/collect_prec.py\n02_BACKEND/lawrag/pipeline/collect_public_glossaries.py\n02_BACKEND/lawrag/pipeline/convert.py\n02_BACKEND/lawrag/pipeline/document_append.py\n02_BACKEND/lawrag/pipeline/document_release.py\n02_BACKEND/lawrag/pipeline/document_representations.py\n02_BACKEND/lawrag/pipeline/document_scope.py\n02_BACKEND/lawrag/pipeline/failure_improvement.py\n02_BACKEND/lawrag/pipeline/fulltext_stage.py\n02_BACKEND/lawrag/pipeline/generation_build_steps.py\n02_BACKEND/lawrag/pipeline/genos_admission.py\n02_BACKEND/lawrag/pipeline/genos_all_pipeline.py\n02_BACKEND/lawrag/pipeline/genos_authoring_runtime.py\n02_BACKEND/lawrag/pipeline/genos_batch.py\n02_BACKEND/lawrag/pipeline/genos_build.py\n02_BACKEND/lawrag/pipeline/genos_corpus.py\n02_BACKEND/lawrag/pipeline/genos_doc.py\n02_BACKEND/lawrag/pipeline/genos_e2e.py\n02_BACKEND/lawrag/pipeline/genos_internal_replace.py\n02_BACKEND/lawrag/pipeline/genos_moleg_compile.py\n02_BACKEND/lawrag/pipeline/genos_progress.py\n02_BACKEND/lawrag/pipeline/genos_raw_move.py\n02_BACKEND/lawrag/pipeline/genos_staged.py\n02_BACKEND/lawrag/pipeline/genos_stages.py\n02_BACKEND/lawrag/pipeline/genos_status.py\n02_BACKEND/lawrag/pipeline/genos_structure_report.py\n02_BACKEND/lawrag/pipeline/genos_unified.py\n02_BACKEND/lawrag/pipeline/glossary_abbreviation.py\n02_BACKEND/lawrag/pipeline/glossary_alignment.py\n02_BACKEND/lawrag/pipeline/glossary_assembly.py\n02_BACKEND/lawrag/pipeline/glossary_definitions.py\n02_BACKEND/lawrag/pipeline/glossary_document_update.py\n02_BACKEND/lawrag/pipeline/glossary_enrichment.py\n02_BACKEND/lawrag/pipeline/glossary_knowledge.py\n02_BACKEND/lawrag/pipeline/glossary_learning.py\n02_BACKEND/lawrag/pipeline/glossary_legal_relations.py\n02_BACKEND/lawrag/pipeline/glossary_linking.py\n02_BACKEND/lawrag/pipeline/glossary_review.py\n02_BACKEND/lawrag/pipeline/glossary_scope.py\n02_BACKEND/lawrag/pipeline/glossary_senses.py\n02_BACKEND/lawrag/pipeline/glossary_serving.py\n02_BACKEND/lawrag/pipeline/glossary_v1.py\n02_BACKEND/lawrag/pipeline/golden.py\n02_BACKEND/lawrag/pipeline/golden_answers.html\n02_BACKEND/lawrag/pipeline/golden_authoring.html\n02_BACKEND/lawrag/pipeline/golden_authoring.py\n02_BACKEND/lawrag/pipeline/golden_exchange.py\n02_BACKEND/lawrag/pipeline/golden_registry.py\n02_BACKEND/lawrag/pipeline/golden_run.py\n02_BACKEND/lawrag/pipeline/ingest_expc.py\n02_BACKEND/lawrag/pipeline/ingest_files.py\n02_BACKEND/lawrag/pipeline/ingest_fsc.py\n02_BACKEND/lawrag/pipeline/ingest_lawxml.py\n02_BACKEND/lawrag/pipeline/ingest_naegyu.py\n02_BACKEND/lawrag/pipeline/ingest_prec.py\n02_BACKEND/lawrag/pipeline/ingest_rulehtml.py\n02_BACKEND/lawrag/pipeline/knowledge_transfer.py\n02_BACKEND/lawrag/pipeline/legal_llm_wiki.py\n02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py\n02_BACKEND/lawrag/pipeline/naming_definition_append.py\n02_BACKEND/lawrag/pipeline/native_trace.py\n02_BACKEND/lawrag/pipeline/onsite.py\n02_BACKEND/lawrag/pipeline/ontology.py\n02_BACKEND/lawrag/pipeline/oracle_migration.py\n02_BACKEND/lawrag/pipeline/oracle_publish.py\n02_BACKEND/lawrag/pipeline/oracle_query_navigation_publish.py\n02_BACKEND/lawrag/pipeline/oracle_query_publish.py\n02_BACKEND/lawrag/pipeline/raw_prepare.py\n02_BACKEND/lawrag/pipeline/raw_preprocess.py\n02_BACKEND/lawrag/pipeline/reference_model.py\n02_BACKEND/lawrag/pipeline/reference_resolution.py\n02_BACKEND/lawrag/pipeline/retry_adoption.py\n02_BACKEND/lawrag/pipeline/search_selection.py\n02_BACKEND/lawrag/pipeline/shortcut_operations.py\n02_BACKEND/lawrag/pipeline/shortcut_package.py\n02_BACKEND/lawrag/pipeline/structure_selection.py\n02_BACKEND/lawrag/pipeline/task_harness.py\n02_BACKEND/lawrag/pipeline/team_raw.py\n02_BACKEND/lawrag/pipeline/team_raw_refresh.py\n02_BACKEND/lawrag/pipeline/term_generation.py\n02_BACKEND/lawrag/pipeline/term_serving_bundle.py\n02_BACKEND/lawrag/pipeline/unified_memory.py\n02_BACKEND/lawrag/pipeline/union_file.py\n02_BACKEND/lawrag/pipeline/wiki_proposal.py\n02_BACKEND/lawrag/pipeline/wiki_triage.py\n02_BACKEND/lawrag/platform/__init__.py\n02_BACKEND/lawrag/platform/active_data.py\n02_BACKEND/lawrag/platform/experiment_store.py\n02_BACKEND/lawrag/platform/main_promotion.py\n02_BACKEND/lawrag/platform/paths.py\n02_BACKEND/lawrag/platform/release.py\n02_BACKEND/lawrag/platform/runtime_services.py\n02_BACKEND/lawrag/platform/stored_paths.py\n02_BACKEND/lawrag/platform/workspace.py\n02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/definition_patterns.py\n02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/genos_authoring.py\n02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/source_candidates.py\n02_BACKEND/lawrag/runtime/__init__.py\n02_BACKEND/lawrag/runtime/components/__init__.py\n02_BACKEND/lawrag/runtime/components/legalclosure_v2.py\n02_BACKEND/lawrag/runtime/components/ontology_rag_v1.py\n02_BACKEND/lawrag/runtime/content_snapshot.py\n02_BACKEND/lawrag/runtime/registry.py\n02_BACKEND/lawrag/runtime/retrieval_stage_ledger.py\n02_BACKEND/lawrag/sources/__init__.py\n02_BACKEND/lawrag/sources/base.py\n02_BACKEND/lawrag/sources/cite.py\n02_BACKEND/lawrag/sources/common.py\n02_BACKEND/lawrag/sources/expc.py\n02_BACKEND/lawrag/sources/fsc.py\n02_BACKEND/lawrag/sources/kofia.py\n02_BACKEND/lawrag/sources/krx.py\n02_BACKEND/lawrag/sources/lawgo.py\n02_BACKEND/lawrag/sources/lawgo_old_new.py\n02_BACKEND/lawrag/sources/moleg_knowledge.py\n02_BACKEND/lawrag/sources/prec.py\n02_BACKEND/semantic_runtime/__init__.py\n02_BACKEND/semantic_runtime/action_memory_store.py\n02_BACKEND/semantic_runtime/ad_backend.py\n02_BACKEND/semantic_runtime/ad_context.py\n02_BACKEND/semantic_runtime/ad_gateway.py\n02_BACKEND/semantic_runtime/ad_jobs.py\n02_BACKEND/semantic_runtime/ad_language.py\n02_BACKEND/semantic_runtime/ad_mode.py\n02_BACKEND/semantic_runtime/ad_model.py\n02_BACKEND/semantic_runtime/ad_request_report.py\n02_BACKEND/semantic_runtime/ad_store.py\n02_BACKEND/semantic_runtime/ad_table.py\n02_BACKEND/semantic_runtime/app.py\n02_BACKEND/semantic_runtime/basis_links/__init__.py\n02_BACKEND/semantic_runtime/basis_links/api.py\n02_BACKEND/semantic_runtime/basis_links/chat.py\n02_BACKEND/semantic_runtime/basis_links/contracts.py\n02_BACKEND/semantic_runtime/basis_links/execution.py\n02_BACKEND/semantic_runtime/basis_links/integration.py\n02_BACKEND/semantic_runtime/basis_links/migration.py\n02_BACKEND/semantic_runtime/basis_links/native.py\n02_BACKEND/semantic_runtime/basis_links/oracle.py\n02_BACKEND/semantic_runtime/basis_links/repository.py\n02_BACKEND/semantic_runtime/basis_links/resolver.py\n02_BACKEND/semantic_runtime/basis_links/service.py\n02_BACKEND/semantic_runtime/basis_links/sources.py\n02_BACKEND/semantic_runtime/basis_links/temporal.py\n02_BACKEND/semantic_runtime/basis_links/ui.html\n02_BACKEND/semantic_runtime/cache_diagnostics.py\n02_BACKEND/semantic_runtime/chat_adapter.py\n02_BACKEND/semantic_runtime/compact_handles.py\n02_BACKEND/semantic_runtime/compact_storage.py\n02_BACKEND/semantic_runtime/comparison_research_bridge.py\n02_BACKEND/semantic_runtime/contracts.py\n02_BACKEND/semantic_runtime/control.py\n02_BACKEND/semantic_runtime/deployment_paths.py\n02_BACKEND/semantic_runtime/document_agent.py\n02_BACKEND/semantic_runtime/document_aliases.py\n02_BACKEND/semantic_runtime/document_browser.py\n02_BACKEND/semantic_runtime/document_navigation.py\n02_BACKEND/semantic_runtime/document_roles.py\n02_BACKEND/semantic_runtime/execution_metrics.py\n02_BACKEND/semantic_runtime/expression_mapping.py\n02_BACKEND/semantic_runtime/factorized_audit.py\n02_BACKEND/semantic_runtime/feedback.py\n02_BACKEND/semantic_runtime/filename_versions.py\n02_BACKEND/semantic_runtime/folder_navigation.py\n02_BACKEND/semantic_runtime/full_glossary.py\n02_BACKEND/semantic_runtime/full_glossary_connections.py\n02_BACKEND/semantic_runtime/fulltext.py\n02_BACKEND/semantic_runtime/genos.py\n02_BACKEND/semantic_runtime/genos_backend.py\n02_BACKEND/semantic_runtime/genos_index.py\n02_BACKEND/semantic_runtime/inherited_navigation.py\n02_BACKEND/semantic_runtime/learning_store.py\n02_BACKEND/semantic_runtime/legal_agent/__init__.py\n02_BACKEND/semantic_runtime/legal_agent/answer_stream.py\n02_BACKEND/semantic_runtime/legal_agent/audit_summary.py\n02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py\n02_BACKEND/semantic_runtime/legal_agent/case_repository.py\n02_BACKEND/semantic_runtime/legal_agent/comparison_research.py\n02_BACKEND/semantic_runtime/legal_agent/completion_budget.py\n02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py\n02_BACKEND/semantic_runtime/legal_agent/completion_execution.py\n02_BACKEND/semantic_runtime/legal_agent/completion_v5.py\n02_BACKEND/semantic_runtime/legal_agent/completion_v6.py\n02_BACKEND/semantic_runtime/legal_agent/completion_v7.py\n02_BACKEND/semantic_runtime/legal_agent/completion_v8.py\n02_BACKEND/semantic_runtime/legal_agent/composer.py\n02_BACKEND/semantic_runtime/legal_agent/connected_exploration.py\n02_BACKEND/semantic_runtime/legal_agent/context.py\n02_BACKEND/semantic_runtime/legal_agent/conversation_linker.py\n02_BACKEND/semantic_runtime/legal_agent/coordinator.py\n02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py\n02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py\n02_BACKEND/semantic_runtime/legal_agent/decision_projection.py\n02_BACKEND/semantic_runtime/legal_agent/deferred_publication.py\n02_BACKEND/semantic_runtime/legal_agent/definition_entry.py\n02_BACKEND/semantic_runtime/legal_agent/domain.py\n02_BACKEND/semantic_runtime/legal_agent/domain_control.py\n02_BACKEND/semantic_runtime/legal_agent/errors.py\n02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py\n02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py\n02_BACKEND/semantic_runtime/legal_agent/final_review_notes.py\n02_BACKEND/semantic_runtime/legal_agent/gate.py\n02_BACKEND/semantic_runtime/legal_agent/gateway.py\n02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py\n02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py\n02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py\n02_BACKEND/semantic_runtime/legal_agent/investigation_leads.py\n02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py\n02_BACKEND/semantic_runtime/legal_agent/journal-v2.sql\n02_BACKEND/semantic_runtime/legal_agent/journal-v3.sql\n02_BACKEND/semantic_runtime/legal_agent/journal-v4.sql\n02_BACKEND/semantic_runtime/legal_agent/journal-v5.sql\n02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql\n02_BACKEND/semantic_runtime/legal_agent/journal.sql\n02_BACKEND/semantic_runtime/legal_agent/judgment_view.py\n02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py\n02_BACKEND/semantic_runtime/legal_agent/law_candidates.py\n02_BACKEND/semantic_runtime/legal_agent/law_navigation.py\n02_BACKEND/semantic_runtime/legal_agent/law_title_hints.py\n02_BACKEND/semantic_runtime/legal_agent/local_gemma.py\n02_BACKEND/semantic_runtime/legal_agent/memory_binding.py\n02_BACKEND/semantic_runtime/legal_agent/memory_identity.py\n02_BACKEND/semantic_runtime/legal_agent/memory_methods.py\n02_BACKEND/semantic_runtime/legal_agent/memory_rag.py\n02_BACKEND/semantic_runtime/legal_agent/minimal_output.py\n02_BACKEND/semantic_runtime/legal_agent/model_contract.py\n02_BACKEND/semantic_runtime/legal_agent/model_stream.py\n02_BACKEND/semantic_runtime/legal_agent/narrative_answer.py\n02_BACKEND/semantic_runtime/legal_agent/navigation_input.py\n02_BACKEND/semantic_runtime/legal_agent/numbered_references.py\n02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py\n02_BACKEND/semantic_runtime/legal_agent/obligation_repository.py\n02_BACKEND/semantic_runtime/legal_agent/output_contract.py\n02_BACKEND/semantic_runtime/legal_agent/packer.py\n02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py\n02_BACKEND/semantic_runtime/legal_agent/protocol.py\n02_BACKEND/semantic_runtime/legal_agent/publication.py\n02_BACKEND/semantic_runtime/legal_agent/question_obligations.py\n02_BACKEND/semantic_runtime/legal_agent/readable_log.py\n02_BACKEND/semantic_runtime/legal_agent/relation_cards.py\n02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py\n02_BACKEND/semantic_runtime/legal_agent/relation_views.py\n02_BACKEND/semantic_runtime/legal_agent/relations_policy.py\n02_BACKEND/semantic_runtime/legal_agent/relations_protocol.py\n02_BACKEND/semantic_runtime/legal_agent/relations_repository.py\n02_BACKEND/semantic_runtime/legal_agent/relations_session.py\n02_BACKEND/semantic_runtime/legal_agent/relations_tools.py\n02_BACKEND/semantic_runtime/legal_agent/repository.py\n02_BACKEND/semantic_runtime/legal_agent/request_entry.py\n02_BACKEND/semantic_runtime/legal_agent/request_repair.py\n02_BACKEND/semantic_runtime/legal_agent/research_continuity.py\n02_BACKEND/semantic_runtime/legal_agent/reuse_policy.py\n02_BACKEND/semantic_runtime/legal_agent/reviewer.py\n02_BACKEND/semantic_runtime/legal_agent/session.py\n02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py\n02_BACKEND/semantic_runtime/legal_agent/shortcut_commands.py\n02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py\n02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py\n02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py\n02_BACKEND/semantic_runtime/legal_agent/source_bundle.py\n02_BACKEND/semantic_runtime/legal_agent/source_candidates.py\n02_BACKEND/semantic_runtime/legal_agent/source_handoff.py\n02_BACKEND/semantic_runtime/legal_agent/source_investigation.py\n02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py\n02_BACKEND/semantic_runtime/legal_agent/source_recall.py\n02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py\n02_BACKEND/semantic_runtime/legal_agent/source_selection.py\n02_BACKEND/semantic_runtime/legal_agent/source_tiers_ui.py\n02_BACKEND/semantic_runtime/legal_agent/source_tools.py\n02_BACKEND/semantic_runtime/legal_agent/stages.py\n02_BACKEND/semantic_runtime/legal_agent/structure_query.py\n02_BACKEND/semantic_runtime/legal_agent/successful_answer.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_policy.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_protocol.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_repository.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_session.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_tools.py\n02_BACKEND/semantic_runtime/legal_agent/tiers_views.py\n02_BACKEND/semantic_runtime/legal_agent/tool_availability.py\n02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py\n02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py\n02_BACKEND/semantic_runtime/legal_agent/tool_policy.py\n02_BACKEND/semantic_runtime/legal_agent/tools_policy.py\n02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py\n02_BACKEND/semantic_runtime/legal_agent/tools_repository.py\n02_BACKEND/semantic_runtime/legal_agent/tools_session.py\n02_BACKEND/semantic_runtime/legal_agent/transport.py\n02_BACKEND/semantic_runtime/legal_agent/unified_publication.py\n02_BACKEND/semantic_runtime/legal_agent/unified_rag.py\n02_BACKEND/semantic_runtime/legal_agent/unified_repository.py\n02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py\n02_BACKEND/semantic_runtime/legal_agent/unit_reading.py\n02_BACKEND/semantic_runtime/legal_agent/unit_relations.py\n02_BACKEND/semantic_runtime/legal_agent/unit_selection.py\n02_BACKEND/semantic_runtime/legal_agent/updates.py\n02_BACKEND/semantic_runtime/legal_agent/views.py\n02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py\n02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py\n02_BACKEND/semantic_runtime/legal_agent/wire_schema.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_tools.py\n02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py\n02_BACKEND/semantic_runtime/legal_agent_adapter.py\n02_BACKEND/semantic_runtime/legal_navigation.py\n02_BACKEND/semantic_runtime/moleg_links.py\n02_BACKEND/semantic_runtime/multi_entry_navigation.py\n02_BACKEND/semantic_runtime/navigation_agent.py\n02_BACKEND/semantic_runtime/navigation_build.py\n02_BACKEND/semantic_runtime/navigation_learning.py\n02_BACKEND/semantic_runtime/navigation_loop.py\n02_BACKEND/semantic_runtime/navigation_match.py\n02_BACKEND/semantic_runtime/navigation_storage.py\n02_BACKEND/semantic_runtime/navigation_work_state.py\n02_BACKEND/semantic_runtime/nfs_data_probe.py\n02_BACKEND/semantic_runtime/observability.py\n02_BACKEND/semantic_runtime/oracle_dp.py\n02_BACKEND/semantic_runtime/oracle_dp_assets.py\n02_BACKEND/semantic_runtime/oracle_dp_io.py\n02_BACKEND/semantic_runtime/oracle_query.py\n02_BACKEND/semantic_runtime/oracle_query_catalog.py\n02_BACKEND/semantic_runtime/oracle_query_db.py\n02_BACKEND/semantic_runtime/oracle_query_fulltext.py\n02_BACKEND/semantic_runtime/oracle_query_glossary.py\n02_BACKEND/semantic_runtime/oracle_query_index.py\n02_BACKEND/semantic_runtime/oracle_query_matcher.py\n02_BACKEND/semantic_runtime/oracle_query_request.py\n02_BACKEND/semantic_runtime/oracle_query_resources.py\n02_BACKEND/semantic_runtime/oracle_query_service.py\n02_BACKEND/semantic_runtime/oracle_query_state.py\n02_BACKEND/semantic_runtime/oracle_query_store.py\n02_BACKEND/semantic_runtime/pipeline.py\n02_BACKEND/semantic_runtime/preparation_progress.py\n02_BACKEND/semantic_runtime/process_trace.py\n02_BACKEND/semantic_runtime/progress.py\n02_BACKEND/semantic_runtime/provider.py\n02_BACKEND/semantic_runtime/query_latency.py\n02_BACKEND/semantic_runtime/reference_build.py\n02_BACKEND/semantic_runtime/reference_resolution_protocol.py\n02_BACKEND/semantic_runtime/reference_resolution_repository.py\n02_BACKEND/semantic_runtime/reference_spans.py\n02_BACKEND/semantic_runtime/relation_issues.py\n02_BACKEND/semantic_runtime/release_integration.py\n02_BACKEND/semantic_runtime/release_qualification.py\n02_BACKEND/semantic_runtime/request_journals.py\n02_BACKEND/semantic_runtime/request_report.py\n02_BACKEND/semantic_runtime/request_summary.py\n02_BACKEND/semantic_runtime/research_state.py\n02_BACKEND/semantic_runtime/resident_data.py\n02_BACKEND/semantic_runtime/runtime_cache.py\n02_BACKEND/semantic_runtime/search_selection.py\n02_BACKEND/semantic_runtime/session_identity.py\n02_BACKEND/semantic_runtime/stage_runner.py\n02_BACKEND/semantic_runtime/stages.py\n02_BACKEND/semantic_runtime/state_sqlite.py\n02_BACKEND/semantic_runtime/stdlib_http.py\n02_BACKEND/semantic_runtime/storage.py\n02_BACKEND/semantic_runtime/structure_navigation.py\n02_BACKEND/semantic_runtime/task_harness.py\n02_BACKEND/semantic_runtime/task_harness_agent.py\n02_BACKEND/semantic_runtime/task_policy.py\n02_BACKEND/semantic_runtime/team_scope.py\n02_BACKEND/semantic_runtime/term_agent.py\n02_BACKEND/semantic_runtime/term_index.py\n02_BACKEND/semantic_runtime/term_links.py\n02_BACKEND/semantic_runtime/term_morph.py\n02_BACKEND/semantic_runtime/term_references.py\n02_BACKEND/semantic_runtime/term_references_legacy.py\n02_BACKEND/semantic_runtime/term_tools.py\n02_BACKEND/semantic_runtime/typed_navigation.py\n02_BACKEND/semantic_runtime/unit_fulltext.py\n02_BACKEND/semantic_runtime/vector.py\n02_BACKEND/semantic_runtime/work_navigation.py\n02_BACKEND/semantic_runtime/workflow_bridge.py\n02_BACKEND/semantic_runtime/workflow_evidence.py\n02_BACKEND/semantic_runtime/workflow_rag.py\n02_BACKEND/workflow/__init__.py\n02_BACKEND/workflow/adapters/__init__.py\n02_BACKEND/workflow/adapters/model.py\n02_BACKEND/workflow/adapters/projection.py\n02_BACKEND/workflow/adapters/rag.py\n02_BACKEND/workflow/api.py\n02_BACKEND/workflow/contracts.py\n02_BACKEND/workflow/internal_basis_discovery_workflow/__init__.py\n02_BACKEND/workflow/internal_basis_discovery_workflow/contracts.py\n02_BACKEND/workflow/internal_basis_discovery_workflow/flow.py\n02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json\n02_BACKEND/workflow/internal_basis_discovery_workflow/report.py\n02_BACKEND/workflow/presentation.py\n02_BACKEND/workflow/registry.py\n02_BACKEND/workflow/repository.py\n02_BACKEND/workflow/risk_team_compare_workflow/__init__.py\n02_BACKEND/workflow/risk_team_compare_workflow/basis.py\n02_BACKEND/workflow/risk_team_compare_workflow/compare.py\n02_BACKEND/workflow/risk_team_compare_workflow/comparison_fields.json\n02_BACKEND/workflow/risk_team_compare_workflow/contracts.py\n02_BACKEND/workflow/risk_team_compare_workflow/flow.py\n02_BACKEND/workflow/risk_team_compare_workflow/manifest.json\n02_BACKEND/workflow/risk_team_compare_workflow/query_scope.py\n02_BACKEND/workflow/risk_team_compare_workflow/recovery.py\n02_BACKEND/workflow/risk_team_compare_workflow/report.py\n02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py\n02_BACKEND/workflow/risk_team_compare_workflow/task_board.py\n02_BACKEND/workflow/runtime.py\n03_FRONTEND/README.md\n05_TESTS/README.md\n06_TOOLS/ACTIVE_TOOLS.json\n06_TOOLS/AUDIT/legal_semantic_contract.py\n06_TOOLS/COMMANDS/GENOS_CHAT_DOCUMENT_SOURCES_DEV_APPLY_20260925.txt\n06_TOOLS/COMMANDS/GENOS_CHAT_DOCUMENT_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt\n06_TOOLS/COMMANDS/GENOS_CHAT_FINAL_PATH_DEV_APPLY_20260925.txt\n06_TOOLS/COMMANDS/GENOS_CHAT_FINAL_PATH_WORKFLOW_PASTE_ALL_20260925.txt\n06_TOOLS/COMMANDS/GENOS_CHAT_READABLE_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt\n06_TOOLS/COMMANDS/GENOS_FAIL_FAST_R3_DEV_APPLY_20260925.txt\n06_TOOLS/COMMANDS/GENOS_FAST_RESPONSE_R4_DEV_APPLY_20260925.txt\n06_TOOLS/COMMANDS/GENOS_FULLTEXT_ERROR_CHECK.txt\n06_TOOLS/COMMANDS/GENOS_FULLTEXT_ERROR_CHECK_r2.txt\n06_TOOLS/COMMANDS/GENOS_REQUEST_TIMING_HANDOFF.txt\n06_TOOLS/COMMANDS/adr_candidate.py\n06_TOOLS/COMMANDS/adr_structure.py\n06_TOOLS/COMMANDS/body_term_generation.py\n06_TOOLS/COMMANDS/build_genos_decision_compatible_handoff.py\n06_TOOLS/COMMANDS/build_genos_full_error_handoff.py\n06_TOOLS/COMMANDS/build_genos_llm_raw_handoff.py\n06_TOOLS/COMMANDS/build_genos_selective_handoff.py\n06_TOOLS/COMMANDS/build_genos_turn_intent_handoff.py\n06_TOOLS/COMMANDS/code_ship.py\n06_TOOLS/COMMANDS/composed_build.py\n06_TOOLS/COMMANDS/expc_wiki_check.py\n06_TOOLS/COMMANDS/genos_all_pipeline.py\n06_TOOLS/COMMANDS/genos_apply_all_corpus.sh\n06_TOOLS/COMMANDS/genos_apply_chat.sh\n06_TOOLS/COMMANDS/genos_apply_compatible.sh\n06_TOOLS/COMMANDS/genos_apply_data_e2e.sh\n06_TOOLS/COMMANDS/genos_apply_data_folders.sh\n06_TOOLS/COMMANDS/genos_apply_doc_skip.sh\n06_TOOLS/COMMANDS/genos_apply_e2e.sh\n06_TOOLS/COMMANDS/genos_apply_external_only.sh\n06_TOOLS/COMMANDS/genos_apply_json_length.sh\n06_TOOLS/COMMANDS/genos_apply_korean_progress.sh\n06_TOOLS/COMMANDS/genos_apply_no_revision.sh\n06_TOOLS/COMMANDS/genos_apply_schema_build.sh\n06_TOOLS/COMMANDS/genos_apply_staged_authoring.sh\n06_TOOLS/COMMANDS/genos_build.sh\n06_TOOLS/COMMANDS/genos_build_all.py\n06_TOOLS/COMMANDS/genos_build_all.sh\n06_TOOLS/COMMANDS/genos_cache_diagnostics_patch.py\n06_TOOLS/COMMANDS/genos_call.sh\n06_TOOLS/COMMANDS/genos_cm_oneclick.py\n06_TOOLS/COMMANDS/genos_cm_source_diagnose.py\n06_TOOLS/COMMANDS/genos_codespace_engine_preflight.py\n06_TOOLS/COMMANDS/genos_data.sh\n06_TOOLS/COMMANDS/genos_data_e2e.sh\n06_TOOLS/COMMANDS/genos_data_optimized.sh\n06_TOOLS/COMMANDS/genos_data_stages.py\n06_TOOLS/COMMANDS/genos_data_stages.sh\n06_TOOLS/COMMANDS/genos_data_status.py\n06_TOOLS/COMMANDS/genos_data_status.sh\n06_TOOLS/COMMANDS/genos_document_tools_check.py\n06_TOOLS/COMMANDS/genos_e2e.sh\n06_TOOLS/COMMANDS/genos_financial_union_migrate.py\n06_TOOLS/COMMANDS/genos_fulltext_repair.py\n06_TOOLS/COMMANDS/genos_fulltext_repin.py\n06_TOOLS/COMMANDS/genos_generation_e2e.py\n06_TOOLS/COMMANDS/genos_move_raw.py\n06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py\n06_TOOLS/COMMANDS/genos_pack_rag_data.sh\n06_TOOLS/COMMANDS/genos_pecab_smoke.py\n06_TOOLS/COMMANDS/genos_preflight.py\n06_TOOLS/COMMANDS/genos_prepare_code_only_git.sh\n06_TOOLS/COMMANDS/genos_rag_data_bundle.py\n06_TOOLS/COMMANDS/genos_raw_handoff.py\n06_TOOLS/COMMANDS/genos_recover_raw_nfs.py\n06_TOOLS/COMMANDS/genos_release_gate.py\n06_TOOLS/COMMANDS/genos_request_timing.py\n06_TOOLS/COMMANDS/genos_smoke.sh\n06_TOOLS/COMMANDS/genos_structure_optimized.py\n06_TOOLS/COMMANDS/genos_structure_optimized_v2.py\n06_TOOLS/COMMANDS/genos_structure_timing.py\n06_TOOLS/COMMANDS/genos_transfer_data_list.py\n06_TOOLS/COMMANDS/genos_unified_pipeline.py\n06_TOOLS/COMMANDS/legal_agent_contracts.py\n06_TOOLS/COMMANDS/legal_agent_trace.py\n06_TOOLS/COMMANDS/moleg_gap_collection.py\n06_TOOLS/COMMANDS/morph_occurrence_generation.py\n06_TOOLS/COMMANDS/prepare_data.py\n06_TOOLS/COMMANDS/publish_ontology_data.py\n06_TOOLS/COMMANDS/rag_main_promotion.py\n06_TOOLS/COMMANDS/workspace_paths.py\n06_TOOLS/OFFLINE/genos_code_replace.py\n06_TOOLS/OFFLINE/genos_unpack_internal.py\n06_TOOLS/OFFLINE/genos_unpack_internal.sh\n06_TOOLS/genos_pipeline.sh\n06_TOOLS/pipeline.py\n06_TOOLS/run_tool.py\n06_TOOLS/serve.sh\n07_DOCS/REFERENCE/OPERATIONS/DATASET_SYNC.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_ANSWER_STREAMING_20260929.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_CODE_REPLACEMENT.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_CODE_SERVING_CURRENT.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_DEPLOY.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_TOOLS.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_NATIVE_PRIMARY.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_PATCH_UPDATE.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_PECAB_FULLTEXT_20260924.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_PECAB_REQUEST_ROUTING_20260929.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_PIPELINE_GLOSSARY_HANDOFF.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_QUICKSTART.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_RECIPE_VLM.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_REQUEST_ROUTING_20260929.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_SITE_RUNBOOK.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_SYSTEM_LOGGING_20261007.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md\n07_DOCS/REFERENCE/OPERATIONS/GENOS_UNIFIED_RAW_PIPELINE.md\n07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_ALIGNMENT.md\n07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_KNOWLEDGE_BUNDLE.md\n07_DOCS/REFERENCE/OPERATIONS/ONSITE_RUNBOOK.md\n07_DOCS/REFERENCE/OPERATIONS/OPS_TRANSPORT.md\n07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md\n07_DOCS/REFERENCE/OPERATIONS/RAG_USER_DIRECTED_MAIN_20260929.md\n07_DOCS/REFERENCE/OPERATIONS/STRUCTURE_FIRST_SEARCH.md\n08_DEPLOYMENT/CONFIG/dataset_sync/README.md\n08_DEPLOYMENT/CONFIG/dataset_sync/profiles.json\n08_DEPLOYMENT/CONFIG/raw-source-packages.json\n08_DEPLOYMENT/GENOS/ORACLE_QUERY_GUIDE.txt\n08_DEPLOYMENT/GENOS/ad-mode-package.ignore\n08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore\n08_DEPLOYMENT/GENOS/pipeline.env.example\n08_DEPLOYMENT/GENOS/preprocessor/README.md\n08_DEPLOYMENT/GENOS/requirements-socketio.txt\n08_DEPLOYMENT/GENOS/requirements-sse.txt\n08_DEPLOYMENT/GENOS/start_sse.py\n08_DEPLOYMENT/GENOS/stream_app.py\n08_DEPLOYMENT/GENOS/v6-runtime.genosignore\n08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nGENOS.md\nREADME.md\ngenosIgnore\ngenosMailIgnore\ngenosNoJsIgnore\ngenos_diagnostics.py\ngenos_git_publish.sh\ngenos_install.sh\ngenos_log_runner.py\ngenos_unpack_all.sh\nmain.py\nmain_integrated.py\nmain_router.py\nmain_workflow.py\npyproject.toml\nrequirements-genos.txt\nrequirements-pipeline.txt\nrequirements-serving.txt\nrequirements.txt\nservice.py\nservice/__init__.py\nservice/service.py\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic base"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q",
+      "--bare",
+      "/tmp/genos-next-push-gvyb0jce/remote.git"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "remote",
+      "add",
+      "risk_team",
+      "/tmp/genos-next-push-gvyb0jce/remote.git"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "push",
+      "risk_team",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "To /tmp/genos-next-push-gvyb0jce/remote.git\n * [new branch]      main -> main\n"
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic bad commit"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "branch",
+      "backup/main92-before-ignore-20261020"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/home/jin/8-AGENT/.venv/bin/python",
+      "/tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1/apply_ignore.py",
+      "apply",
+      "--root",
+      "/tmp/genos-next-push-gvyb0jce/checkout"
+    ],
+    "exit": 0,
+    "stdout": "CODE_ROOT=/tmp/genos-next-push-gvyb0jce/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python VERSION=3.14.4\nIGNORE_APPLIED; Git index/history and data files unchanged\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rm",
+      "-r",
+      "--cached",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "rm 'QUERY_TRANSFER_20261020_R1/query-data.db.partial'\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "--",
+      ".gitignore",
+      "genosIgnore",
+      "genosNoJsIgnore",
+      "genosMailIgnore",
+      "08_DEPLOYMENT/GENOS/v6-runtime.genosignore",
+      "08_DEPLOYMENT/GENOS/package-v6-cumulative-r4.ignore",
+      "08_DEPLOYMENT/GENOS/ad-mode-package.ignore"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "--amend",
+      "--no-edit"
+    ],
+    "exit": 0,
+    "stdout": "[main 0a223d8] synthetic bad commit\n Date: Tue Oct 20 16:17:24 2026 +0900\n 7 files changed, 84 insertions(+)\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "0a223d859aa0ed02bdb7ce94a50fec411611f171\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/home/jin/8-AGENT/.venv/bin/python",
+      "/tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1/apply_ignore.py",
+      "gate",
+      "--root",
+      "/tmp/genos-next-push-gvyb0jce/checkout"
+    ],
+    "exit": 1,
+    "stdout": "CODE_ROOT=/tmp/genos-next-push-gvyb0jce/checkout\nPYTHON=/home/jin/8-AGENT/.venv/bin/python VERSION=3.14.4\n{\"ignore_status\": \"PASS\", \"tracked_transfer_files\": [], \"history_and_remote\": \"NOT_CHECKED\"}\n",
+    "stderr": "IGNORE_PATCH_FAILED: MAIN92/ignore committed code mismatch: 02_BACKEND/lawrag/agents/agent6/corpus/raw/KOFIA-R.meta.yaml, 02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB-D-2021.meta.yaml, 02_BACKEND/lawrag/agents/agent6/corpus/raw/KSB.meta.yaml, 02_BACKEND/lawrag/agents/agent6/corpus/structured/KOFIA-R.doc.json, 02_BACKEND/lawrag/agents/agent6/corpus/structured/KSB.doc.json\n"
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 통과: MAIN92 코드·의존성·현장 설정·ignore 일치. 원격 확인 후 일반 push를 진행합니다.\nTo /tmp/genos-next-push-gvyb0jce/remote.git\n   0c62237..0a223d8  0a223d859aa0ed02bdb7ce94a50fec411611f171 -> main\nPUSH_CONFIRMED=0a223d859aa0ed02bdb7ce94a50fec411611f171\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071724Z-566344.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "0a223d859aa0ed02bdb7ce94a50fec411611f171\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "for-each-ref",
+      "--format=%(refname)",
+      "refs/heads"
+    ],
+    "exit": 0,
+    "stdout": "refs/heads/main\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "log",
+      "--all",
+      "--format=%H",
+      "--",
+      "QUERY_TRANSFER_20261020_R1"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 통과: MAIN92 코드·의존성·현장 설정·ignore 일치. 원격 확인 후 일반 push를 진행합니다.\n이미 원격 main과 일치합니다. 다시 push하지 않습니다.\nPUSH_CONFIRMED=0a223d859aa0ed02bdb7ce94a50fec411611f171\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071724Z-566409.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "service.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic committed drift"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 중단: 필수 코드 불일치 1개: service.py\n종료코드=1 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566464.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "reset",
+      "--hard",
+      "0a223d859aa0ed02bdb7ce94a50fec411611f171"
+    ],
+    "exit": 0,
+    "stdout": "HEAD is now at 0a223d8 synthetic bad commit\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "0a223d859aa0ed02bdb7ce94a50fec411611f171\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "-u"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "synthetic removed required code"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 중단: 필수 코드 불일치 1개: 02_BACKEND/semantic_runtime/legal_agent/model_contract.py\n종료코드=1 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566506.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "reset",
+      "--hard",
+      "0a223d859aa0ed02bdb7ce94a50fec411611f171"
+    ],
+    "exit": 0,
+    "stdout": "HEAD is now at 0a223d8 synthetic bad commit\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 중단: 아직 커밋되지 않은 변경이 있습니다\n종료코드=1 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566537.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "0a223d859aa0ed02bdb7ce94a50fec411611f171\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "clone",
+      "-q",
+      "-b",
+      "main",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "/tmp/genos-next-push-gvyb0jce/other"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "remote-only.txt"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "remote advanced"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "push",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "To /tmp/genos-next-push-gvyb0jce/remote.git\n   0a223d8..d0c4802  main -> main\n"
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "d0c4802c474bf1c4b10c75f3dbc29829e7a50b3c\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 1,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 통과: MAIN92 코드·의존성·현장 설정·ignore 일치. 원격 확인 후 일반 push를 진행합니다.\n중단: 원격 main 상태가 마지막 사진과 다릅니다. 강제 push하지 않습니다.\n종료코드=1 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566595.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "rev-parse",
+      "main"
+    ],
+    "exit": 0,
+    "stdout": "d0c4802c474bf1c4b10c75f3dbc29829e7a50b3c\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 1,
+    "stdout": "중단: 적용된 ignore 패키지를 하나로 확인하지 못했습니다. 기존 패키지와 STATE.json을 보존하고 이 로그를 확인하세요.\n종료코드=1 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566636.log\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "remote",
+      "rename",
+      "risk_team",
+      "risk-team"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "--git-dir",
+      "/tmp/genos-next-push-gvyb0jce/remote.git",
+      "update-ref",
+      "refs/heads/main",
+      "0a223d859aa0ed02bdb7ce94a50fec411611f171"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/ignore_push_next_20261020_r2/GENOS_NEXT_COPY_PASTE_20261020_R2.txt"
+    ],
+    "exit": 0,
+    "stdout": "검증할 패키지: /tmp/genos-next-push-gvyb0jce/checkout/TRANSFER/GENOS_IGNORE_TRANSFER_20261020_R1\n코드 검증 통과: MAIN92 코드·의존성·현장 설정·ignore 일치. 원격 확인 후 일반 push를 진행합니다.\n이미 원격 main과 일치합니다. 다시 push하지 않습니다.\nPUSH_CONFIRMED=0a223d859aa0ed02bdb7ce94a50fec411611f171\nGit 전송 확인 완료. 다음은 GENOS 코드서빙에서 이 커밋의 리비전을 배포하는 단계입니다.\nMAIN92 워크플로우 전체 TXT를 아직 반영하지 않았다면 편집기에 교체·저장하고 워크플로우 테스트 화면에서 확인하세요.\n종료코드=0 로그=/tmp/genos-next-push-gvyb0jce/checkout/.git/genos-push-records/20261020T071725Z-566646.log\n",
+    "stderr": ""
+  }
+]

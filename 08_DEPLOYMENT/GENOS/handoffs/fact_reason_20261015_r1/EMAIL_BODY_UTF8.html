@@ -1,0 +1,25 @@
+<p>요청하신 ‘확인 범위’의 추가 사실 안내 수정본을 전달합니다.</p>
+<p><b>변경 문구</b><br>해당 사안에 적용할 결론을 하나로 확정하려면 추가 사실 정보가 필요합니다.</p>
+<p>조건별 설명 뒤에 추가 정보가 필요한 목적을 함께 표시합니다. 답변 본문과 단계별 상세 화면에 공통으로 사용되며, 제품 코드 변경은 한 줄입니다. 기존 사실 부족 상태와 탐색·복구 설정은 유지합니다.</p>
+<p><b>실행</b><br>실제로 업로드한 TRANSFER 폴더에서 아래 명령을 순서대로 실행해 주세요. 적용 대상은 기존 ~/DEV입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_FACT_REASON_20261015_R1.zip ./GENOS_FACT_REASON_20261015_R1
+bash ./GENOS_FACT_REASON_20261015_R1/GENOS_FACT_REASON_20261015_R1_RUN.txt check
+bash ./GENOS_FACT_REASON_20261015_R1/GENOS_FACT_REASON_20261015_R1_RUN.txt apply</pre>
+<p>ZIP 안과 별도 첨부 실행 TXT는 같습니다. 백업·지속 로그·재실행 확인·원복·배포 전 gate를 포함했습니다. 상세 절차는 GUIDE_UTF8.txt를 따라 주세요.</p>
+<p><b>적용 순서</b><br>앞서 받은 LENGTH_RECOVERY R2 등 복구 패치를 적용할 예정이면 먼저 완료하고, 이번 FACT_REASON R1을 마지막에 적용해 주세요. 이번 ZIP은 문구 수정만 포함합니다.</p>
+<p>적용 후 같은 DEV에서 변경 검토·commit·generation gate를 거쳐 push 및 새 코드서빙 리비전 배포가 필요합니다. 분리 SSE 사용 시 재시작합니다. 원문 재구축과 워크플로우 편집기 변경은 필요 없습니다. 워크플로우 테스트 화면에서 새 요청으로 표시를 확인해 주세요.</p>
+<p>외부 검증은 모의 데이터·모의 모델 응답으로 수행했으며 GENOS 현장 반입·배포·내부 모델 성공은 별도 확인 사항입니다. 로컬 활성 MAIN66은 유지했습니다.</p><pre>GENOS 확인 범위 안내 R1 검증
+
+제품 코드 변경: completion_contracts.py의 MISSING_FACT 고정 문구 1줄.
+알려진 기존 코드 inventory 1650종의 정확한 입력/출력 해시 결속.
+설치 실패/원복 계약 8개, 실제 TXT·서비스·generation gate 통합 2개 통과.
+작업 코드의 실제 모의 API 표시 검사 1개 통과.
+두 설치 구성의 계약/API 154개 통과·실패/skip 0.
+실제 TXT 및 checkout 명령 32회, 같은 committed checkout gate 2회,
+실제 service.service의 localhost TLS 부팅 2회, 원복 2회 확인.
+문구 표시와 기존 PARTIAL·사실 부족·중복 요청 결과 보존을 확인.
+기존 원문·검색·모델·예산·위키·로그 설정과 generation 파일 보존.
+독립 검사 초기 fixture/import와 API 검증 위치를 수정했으며 제품 코드 변화 없음.
+외부/GENOS 모델 호출 및 GENOS 접속 0. 로컬 MAIN66 유지.
+GENOS 반입·push·리비전 배포·워크플로우 실제 질의 성공은 미확인.
+</pre>

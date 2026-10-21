@@ -1,0 +1,96 @@
+{
+  "revision": "GENOS_OUTPUT_UNLIMITED_20261015_R1",
+  "request": "우리 출력길이 제한 풀어버리자",
+  "new_working_contracts_passed": 20,
+  "working_regression": {
+    "tests": 186,
+    "passed": 182,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "preexisting_failures": {
+    "scope": "Existing unrelated failures; preserved rather than hidden",
+    "workflow": {
+      "test": "test_genos_team_selection.py::test_workflow_legal_agent_through_service_to_real_v5_app",
+      "cause": "Existing workflow AD_PROBE precedes LEGAL_AGENT; old assertion sees final captured probe",
+      "preimage_service_test": "PREEXISTING_FAILURE.xml",
+      "reproduced_before_change": true
+    },
+    "gateway": {
+      "tests": [
+        "test_genos_thinking_log.py::test_single_send_records_request_flag_and_response_without_changing_body",
+        "test_genos_thinking_live_log.py::test_model_call_reaches_actual_live_log_and_summary_without_private_text (3 parameters)"
+      ],
+      "cause": "Old synthetic repo fixture lacks event() required by existing model-output contract journaling",
+      "preimage_gateway_test": "PREEXISTING_GATEWAY.xml",
+      "reproduced_before_change": true
+    },
+    "initial_working_suite": "WORKING_TESTS.xml",
+    "expanded_working_suite": "REGRESSION.xml"
+  },
+  "installer_and_delivery_contracts": {
+    "tests": 10,
+    "passed": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed_contracts": {
+    "INSTALLED_query_latency_20261007_r4": {
+      "tests": 78,
+      "passed": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r3": {
+      "tests": 78,
+      "passed": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_passes": 156,
+  "actual_txt_and_checkout_commands": 32,
+  "same_committed_checkout_generation_gates": 2,
+  "service_loopback_tls_boots": 2,
+  "rollback_verified": 2,
+  "known_predecessors": 1320,
+  "source_files": {
+    "service.py": "e7946b78b3c3df8b4d57cc3001d47684786fd2440dc0dad51f9e982449be7d64",
+    "02_BACKEND/semantic_runtime/legal_agent/domain.py": "84d0afc07fc0bb290db105b2978ae1d772020cba93ea050c64b073ee69c14f2e",
+    "02_BACKEND/semantic_runtime/legal_agent/model_contract.py": "2a1a805d644b8a1279abd194842032da6295fd4c387e33548af3b4ab5ea4b134",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "60eb0f800cbf893714b0496016afc1ea1c671194fd998c8f14035d14f08ac326",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": "d7b284f53e4b53d60ecf3599f03b950441fcc9b9296da8e4b207518d7e3ccecb",
+    "02_BACKEND/semantic_runtime/ad_model.py": "d2c4e1ab3892b963c9a9bc099dab0e97fb6770ed9f6255b18f451b72c8d6b7e6",
+    "02_BACKEND/semantic_runtime/provider.py": "da04443bc0e6cd659141f598db9c2080c68a4b73c8b64ae0aecfcd4b57e21832"
+  },
+  "output_policy": {
+    "genos_effective_max_output_tokens": null,
+    "wire_max_tokens_present": false,
+    "server_default_output_and_context_limit": "UNKNOWN",
+    "retired_env_ignored": "GENOS_RAG_MAX_OUTPUT_TOKENS",
+    "length_stop": "OUTPUT_INCOMPLETE; no repeated same-limit correction",
+    "schema_corrections": "existing bounded owner"
+  },
+  "verified_local_code_roots": [
+    "/tmp/pytest-of-jin/pytest-17/test_install_service_api_repea1/DEV",
+    "/tmp/pytest-of-jin/pytest-17/test_install_service_api_repea0/DEV"
+  ],
+  "sys_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "external_model_calls": 0,
+  "genos_connections": 0,
+  "local_main_changed": false,
+  "local_release": "length-recovery-20261015-r1",
+  "local_pointer_generation": 66,
+  "local_pointer_sha256": "3aba4052dd6ccd521dd4fb50cb95354f6f1a677a39bef269450c2d7f121b511e",
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_serving_revision": null,
+  "field_workflow_success": null,
+  "initial_validation_failures": "failures/initial-inventory-coverage and INITIAL_COLLECTION_FAILURE.xml.gz preserved; only installer coverage/test fixture handling changed"
+}

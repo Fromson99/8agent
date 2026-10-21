@@ -1,0 +1,98 @@
+# Dataiku Python Notebook의 새 Code 셀에 전체를 붙여 넣고 실행합니다.
+# 실행할 때마다 GET 1회입니다. HEAD/자동 재시도/리디렉션 추적은 없습니다.
+import getpass
+import json
+import re
+import time
+import uuid
+from pathlib import Path
+from urllib.parse import quote, quote_plus
+import requests
+
+RELAY_URL = "https://45.101.64.86:8443/law/making"
+TARGET_URL = "https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml"
+CA_PEM = ""  # 사내 CA가 필요하면 이 커널에서 읽을 수 있는 PEM 경로
+FILTERS = {"lsClsCd": "BA0103", "closing": "Y",
+           "asndOfiNm": "금융위원회", "admRulNm": "지주"}
+
+
+def photo_get():
+    oc = getpass.getpass("입법센터에 등록된 OC: ").strip()
+    cookie = getpass.getpass("현재 중계 Cookie (불필요하면 Enter): ").strip()
+    if not oc or any(c in oc + cookie for c in "\r\n\x00"):
+        raise ValueError("OC는 필수이고 인증값에 줄바꿈을 넣을 수 없습니다.")
+    if CA_PEM and not Path(CA_PEM).is_file():
+        raise ValueError("CA_PEM 파일 경로를 확인하세요.")
+    # 쿠키 전체뿐 아니라 개별 쿠키 값/URL 인코딩 형태도 출력에서 가립니다.
+    secrets = [oc, cookie] + [x.partition("=")[2].strip() for x in cookie.split(";")]
+
+    def safe(value):
+        value = str(value)
+        tokens = {v for s in secrets if s for v in (s, quote(s, safe=""), quote_plus(s))}
+        for token in sorted(tokens, key=len, reverse=True):
+            value = value.replace(token, "[REDACTED]")
+        return re.sub(r"(?i)((?:OC|JSESSIONID|Cookie|Authorization)\s*[=:]\s*)[^\s&<>\"']+",
+                      r"\1[REDACTED]", value)
+
+    out = Path("dataiku_photo_get_results") / (time.strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8])
+    out.mkdir(parents=True, mode=0o700)
+    report = {"status": "IN_FLIGHT", "method": "GET", "url": RELAY_URL,
+              "target_url": TARGET_URL, "filters": FILTERS, "automatic_retries": 0,
+              "http_status": None, "application_success": "NOT_VERIFIED"}
+
+    def save():
+        path = out / "result.json"
+        path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.chmod(0o600)
+
+    save()
+    headers = {"target_url": TARGET_URL}
+    if cookie:
+        headers["Cookie"] = cookie
+    params = dict(FILTERS, OC=oc)
+    start = time.monotonic()
+    body = bytearray()
+    encoding = "utf-8"
+    session = requests.Session()
+    session.mount("https://", requests.adapters.HTTPAdapter(max_retries=0))
+    try:
+        settings = session.merge_environment_settings(RELAY_URL, {}, True, CA_PEM or True, None)
+        report["proxy_enabled"] = bool(requests.utils.select_proxy(RELAY_URL, settings["proxies"]))
+        print("GET 요청 시작:", RELAY_URL, flush=True)
+        print("target_url:", TARGET_URL, flush=True)
+        print("연결 timeout 8초 / 응답 무수신 timeout 20초 / 자동 재시도 없음", flush=True)
+        with session.get(RELAY_URL, params=params, headers=headers, timeout=(8, 20),
+                         verify=CA_PEM or True, allow_redirects=False, stream=True) as response:
+            report.update(status="HTTP_RESPONSE_RECEIVED", http_status=response.status_code,
+                          content_type=safe(response.headers.get("Content-Type", "")))
+            save()
+            print("HTTP", response.status_code, "Content-Type:", report["content_type"], flush=True)
+            if response.encoding and response.encoding.lower() != "iso-8859-1":
+                encoding = response.encoding
+            # 응답 확인용 일부만 읽습니다. 전체 자료 수집/정상 XML 판정은 하지 않습니다.
+            for chunk in response.iter_content(1024):
+                body.extend(chunk[:max(0, 8192 - len(body))])
+                if len(body) >= 8192 or time.monotonic() - start >= 45:
+                    report["preview_limited"] = True
+                    break
+    except requests.exceptions.RequestException as exc:
+        report.update(status="TRANSPORT_ERROR", error_class=type(exc).__name__, error=safe(exc))
+    except KeyboardInterrupt:
+        report["status"] = "INTERRUPTED"
+        raise
+    finally:
+        session.close()
+        report["elapsed_seconds"] = round(time.monotonic() - start, 2)
+        report["preview_bytes"] = len(body)
+        try:
+            preview = bytes(body).decode(encoding, errors="replace")
+        except LookupError:
+            preview = bytes(body).decode("utf-8", errors="replace")
+        report["body_preview"] = safe(preview)[:4000]
+        save()
+        print(json.dumps(report, ensure_ascii=False, indent=2), flush=True)
+        print("결과 파일:", out / "result.json", flush=True)
+    return report
+
+
+PHOTO_GET_RESULT = photo_get()

@@ -1,0 +1,104 @@
+상황별 도구 전수 점검 및 수정 범위 — 2026-10-14
+
+대상과 확인 수준
+사진의 GENOS legal-agent-unified-v6 경로, profile-unified-v6 / completion-v8를 기준으로
+service → pipeline → unified runtime → corrected memory → memory_rag → law_navigation을 추적했다.
+로컬 작업 코드, 선택 MAIN62 릴리스, 기존 현장 인계 ZIP을 구분했다. 현장에 접속하지 않았다.
+422 selected team and scope have no documents는 사용자 지시대로 수정 대상에서 제외했다.
+원문 조회 실패와 출력 의미 충돌은 별개다. 모든 모델 오류를 이번 수정으로 해결한다고 주장하지 않는다.
+
+확인된 원인
+사진의 hit has no own original blocks는 READ_ARTICLES가 자체 원문 없는 구조 부모를
+acquire_batch의 exact-own 읽기에 넘겨 발생한다. 하위 노드에는 원문이 있는 합성 generation으로
+동일 경로를 재현했다. 현장의 실제 source ID/원문 generation은 사진만으로 확정할 수 없다.
+직전 MAIN62 스키마·재시도 수정은 출력 계약 담당이며, 도구의 실행 가능 범위를 닫는 수정이
+포함되어 있지 않아 이 실패를 막지 못했다. 모델 HTTP 200은 이후 도구 실행 성공을 뜻하지 않는다.
+
+전수 목록: 현행 모델에게 제시되는 선택지와 실제 소비자
+1. 탐색 16종 — law_navigation.view / decision_schema / validate / execute_tool
+READ_ARTICLES: 선택 source와 document, 요청 subtree의 원문 존재 및 canonical source 경계 확인.
+  자체 원문 없는 부모라도 같은 source의 자식 원문이 있으면 structure_hit로 실제 owning unit을
+  연결하고 요청한 전체 subtree를 유지한다. 다른 source까지 걸친 부모를 일부 범위로 축소해
+  전체를 읽었다고 표시하지 않는다. 해당 부모 읽기는 제외하고 자식 목차 탐색을 유지한다.
+READ_PARENT / READ_SCOPE: 현재 branch, 닫힌 offer, 미확보 문자와 읽기 호출 예산 확인.
+  여러 조문 묶음은 개별 읽기가 가능해도 합계 예산을 넘으면 선택 수를 제한한다.
+  첫 owning-unit 읽기, 하위 범위와 필수 부모 도입문의 물리 페이지 수까지 계산한다.
+  READ_PARENT 이어읽기는 현재까지 전달한 페이지와 현재 page_plan 범위가 맞아야 한다.
+VIEW_SAVED_SOURCE: 실제 확보한 selected 원문과 page_plan 필요. 저장한 범위와 현재 보인 범위가
+  다르면 숨기지 않는다. 이미 제시된 원문 중복 판정에 default parent 대신 실제 saved offer 사용.
+RESEARCH / SEARCH_STRUCTURE / SEARCH_BODY: 각 검색 이력의 한도와 구조 정책을 적용한다.
+  SEARCH_BODY의 누락된 한도, 과거 메뉴 복원과 gap 재조사에서 추가된 도구의 우회를 차단했다.
+OPEN_STRUCTURE / BROWSE_STRUCTURE: 허용 document와 존재하는 unit 안에서 구조 이동.
+OPEN_LAW: 허용 document/unit의 현재 본문 검색 범위. 기존 fulltext scope 검사를 유지한다.
+NEXT_LAWS / NEXT_ARTICLES / NEXT_HITS / NEXT_STRUCTURE: 현재 페이지·커서와 요청 scope 확인.
+FOLLOW_CONNECTION: 읽은 원문 anchor 필요. 후속 참조 메뉴에서 허용 source/실제 witness와
+  닫힌 읽기 범위를 검증한다. 중단된 참조 읽기의 accepted decision 재개는 유지한다.
+RETURN_TO: 실제 저장된 frame만 허용. 복원한 메뉴도 현재 예산·scope로 다시 걸러낸다.
+
+2. 참조 선택 3종 — unit_relations.menu / schema / validate / navigate
+FOLLOW: 실행 가능한 read_options만 제시한다. 소진한 읽기 예산의 scope를 제거한다.
+SKIP / DEFER: 원문 부족을 해소한 것으로 꾸미지 않고 적용 제외/판단 보류 상태를 기록한다.
+  FOLLOW 그룹 한도·문자·물리 읽기 횟수에 맞춰 제시 batch와 선택 가능 scope 수를 제한한다.
+  메뉴에서 제한한 사본과 원래 queue의 동일성을 key로 연결해 체크포인트 재개를 유지한다.
+
+3. 완료 선택 3종 — DECIDE / FINISH / PENDING
+DECIDE는 해당 branch에서 허용된 채택·유지·보류·제외를 사용한다.
+FINISH는 기존 실제 원문 basis와 현재 채택 검증을 유지한다. 이미 읽은 과거 근거도 함께 쓸 수 있다.
+PENDING은 미해결 사유를 보존한다. 성공 답변으로 바꾸거나 HTTP 코드만 바꾸지 않는다.
+출력 내용·인용·권한·generation·상태 revision 검증은 기존 소비자가 계속 수행한다.
+
+4. 사건/기억 명령 12종 — memory_methods / corrected_memory.resolve / admit / execute
+CASE_START: 새 사건 target=null. NEED_TARGET: 미특정 또는 제시된 사건의 확인 요청.
+FACT_UPDATE / PURPOSE_REVISE / RESEARCH_REPLAN / RESEARCH_REENTER: 실제 제공된 사건만 대상.
+STATE_RESTORE: 복원할 원래 이벤트가 있는 사건만 제공하고 이벤트·필드 일치 검사를 유지한다.
+ANSWER_PRESENT / HISTORY_EXPLAIN / EXPERIENCE_CONFIRM: READY 사건과 같은 revision의 검증된
+  ACTIVE route가 있어야 제공한다. 기존 명시적 저장 의도 확인과 최종화 검증도 유지한다.
+EXPERIENCE_REUSE: 제공 가능한 검증 경험이 있어야 선택 가능. 대상/knowledge ID를 닫는다.
+WIKI_RELINK: 실제 사건과 제공 가능한 경험이 있어야 선택 가능. 권한/binding 검사를 유지한다.
+  명령과 대상의 모든 조합을 열어 두지 않고 method별 가능한 target을 스키마에 결속한다.
+
+5. 최초 요청·단계·위키 선택
+request_entry: 최초 사건의 CASE_START / NEED_TARGET 계약과 기존 resumed case 우회를 유지.
+domain_control: 7개 단계별 method는 해당 단계 고정이며 DISCOVERY의 결정적 서버 선택 경로.
+wiki_recall: 권한·binding에 묶인 최대 후보 카드의 ID만 선택. 이번 패치로 비활성 기능을 켜지 않는다.
+ASSESS/COMPOSE/최종 공개 소비자: 임의 원문 조회 도구를 추가하지 않으며 실제 근거·사실·버전
+검증과 제한 답변/보류/실패 표시 연결을 유지한다.
+
+별도 경로
+구 v1/v2 tools_protocol의 browse/search/match_terms/term_occurrences/locate/lookup_definition/
+follow_reference/read/inspect와 unit_selection 조건부 fallback은 파일·호출 경로를 확인했다.
+이번 현장 v6에서 모델에 제시하는 기본 메뉴가 아니다. 현행 16종과 섞어 설명하지 않았고
+구 엔진 전면 재설계·새 품질 실험은 하지 않았다. 사용하는 기존 공유 검증기의 회귀 검사는 수행한다.
+
+실패·복구 계약
+도구 제공 전 하나의 deterministic availability 판정과 실제 실행 직전 재확인을 공통 사용한다.
+잘못된 도구 링크도 함께 제거하며 TOOL_MENU_FILTERED에 이유를 남긴다. 추가 모델 재시도 없음.
+권한·해시·상태 위반은 우회하지 않는다. 실제 읽기 실패는 기존 중단/재개 원장에 남긴다.
+이미 확보된 원문과 예산·deadline·실패 이력은 초기화하지 않는다. 미확보를 원문 부재로 승격하지 않는다.
+네트워크 중단·모델 의미 오류·실행 중 상태 변화는 여전히 발생할 수 있으며 기존 복구/최종 상태 계약으로 처리한다.
+
+검증과 상태
+실제 수정 전 navigation 코드 바이트를 별도 모듈에 로드했을 때 SEARCH_BODY 한도와
+과거 SEARCH_STRUCTURE/RESEARCH 메뉴 한도 누락 3건을 재현했다. 작업 파일은 덮어쓰지 않았다.
+합성 원문/전송으로 정상·차단·중단 재개·중복·기억/참조·API 연결을 검사한다.
+정확한 최종 수치와 동일 코드/설치본 해시 확인은 VALIDATION.json에 기록한다.
+실제 내부 LLM 품질·오류 빈도·현장 generation/코드서빙 리비전 성공은 미확인이다.
+로컬 MAIN62 포인터와 선택 릴리스는 변경하지 않는다. 현장 반입·배포·워크플로우 검증은 별도다.
+
+기존 실패 분리
+구형 source-triage 합성 출력이 현행 계약과 맞지 않는 structure_first_search API 검사 4건,
+resolver_input_contract의 예외 타입/mock event 계약 3건은 수정 전 모듈로도 같은 실패를 재현했다.
+7건의 원래 실패 로그와 XML을 보존했다. 최종 확장 회귀에는 해당 구형 구조 API 4건만 명시적으로
+제외하며, 제외 수를 숨기지 않는다. 이번 현행 v6/v7/v8 컨테이너 원문 API·중복 검사는 별도로 통과해야 한다.
+
+설치본에서 추가 발견한 숏컷 소비자 오류
+ShortcutCases는 legacy 저장 경험 후보를 제공하지 않는 구성이 있다. 해당 구성에서 모델이
+사용 불가 명령을 반복해 resolver가 최종 CLARIFY를 반환하면, 숏컷 어댑터가 이를 다시
+전체 실행 명령 스키마로 검증해 method_id 누락 오류를 발생시켰다. 일반 Memory와 같이
+최종 확인 요청을 즉시 반환하도록 연결했다. 저장 경험 사용 제한을 풀거나 실패를 성공 처리하지 않는다.
+합성 모델도 현장 설정에서 실제 제공된 명령을 따르도록 고쳐서 정상 재조사 경로를 확인한다.
+
+현장 코드 차이 보존
+shortcut_cases.py에는 과거 인계본별 request_entry/procedure lookup/hint 정책 차이가 있다.
+파일 전체를 작업 코드로 덮지 않고, 동일한 최종 CLARIFY 처리 4줄과 주석만 정확한 admit 앞에 넣는다.
+추가 guard를 제거한 바이트가 선행 파일과 완전히 같은지 확인한다. 이 차이는 SOURCE_BINDING에 기록한다.

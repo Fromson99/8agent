@@ -123,6 +123,8 @@ class NativeExecution(CompletionExecution):
     def completion(self):
         return cc.enabled(self.s.sources.profile)
     def schema(self,stage):
+        from .source_handoff import enabled as source_mode,schema as source_schema
+        if stage=='SELECT' and source_mode():return source_schema()
         if stage=='INTENT':
             value=ic.intent_schema(INTENT) if self.control else INTENT
             if self.completion:
@@ -264,6 +266,7 @@ class NativeExecution(CompletionExecution):
             result=select_sources(self.host.question(state),record,select,remaining_seconds=seconds, session=self.s.sources,
                 checkpoint=progress,
                 on_checkpoint=getattr(self,'save_selection_progress',None))
+            if result.get('terminal')=='SOURCE_HANDOFF':return result
             if result.get('status')=='pending' and not result.get('needs_fulltext'):
                 failure=SourceInvestigationIncomplete(result)
                 self.s.work.event('SOURCE_INVESTIGATION_INCOMPLETE',failure.diagnostics)

@@ -1,0 +1,11 @@
+<p>내규 파일명에서 <b>문서명과 날짜만 추출</b>해, 전체 내규와 최신 날짜만 남긴 목록을 나란히 비교하는 GENOS 검증 코드 R1을 보냅니다.</p>
+<p>날짜가 앞이나 뒤에 있어도 처리하며, 20260320 / 260320 / 2026.3.20 / 2026-03-20 / 한글 년월일을 지원합니다. .gul.docx, _clean, 조직개편, 별첨 표기는 제목 비교 키에서 제거합니다. 같은 최신 날짜의 본문·별첨은 모두 보존합니다.</p>
+<p><b>실제 업로드한 TRANSFER 폴더</b>에서 아래를 실행하세요. 기존 DEV로 이동하지 않아도 됩니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_FILENAME_AUDIT_20261015_R1.zip ./GENOS_FILENAME_AUDIT_20261015_R1
+bash ./GENOS_FILENAME_AUDIT_20261015_R1/GENOS_FILENAME_AUDIT_20261015_R1_RUN.txt check
+bash ./GENOS_FILENAME_AUDIT_20261015_R1/GENOS_FILENAME_AUDIT_20261015_R1_RUN.txt compare</pre>
+<p>기존 ~/DEV의 고정 GENOS_SERVING_PATHS 설정을 우선해 선택된 구조화 DB의 내규 이름을 전부 읽습니다. 원본 폴더 전체를 비교하려면 안내의 <code>--raw-root</code> 실행 방법을 쓰면 됩니다. Python3 표준 라이브러리만 사용합니다.</p>
+<p>실행 후 표시되는 RESULT_DIR 안의 <b>COMPARE.html</b>을 다운로드해 브라우저로 열면 왼쪽은 전체, 오른쪽은 필터링 후 목록입니다. <b>ALL_INTERNAL.csv / RETAINED_INTERNAL.csv</b>는 문서명·날짜 두 열이며, <b>LATEST_ONLY.csv</b>는 확정된 최신 목록입니다. 원본명·제외 사유는 상세 CSV에 남습니다.</p>
+<p>날짜 누락·잘못된 날짜·복수 날짜는 노란색 검토 대상으로 보존합니다. 6자리 연도는 00~69=2000~2069, 70~99=1970~1999로 고정합니다. 리스크관리위원회/위험관리위원회처럼 문서명 자체가 바뀐 경우는 자동으로 합치지 않습니다.</p>
+<p><b>이번 파일은 비교 검증용입니다.</b> 실제 RAG·원본·SQLite·색인·CURRENT·기존 DEV 코드는 변경하지 않습니다. 검색에서 구버전을 실제 제외하는 적용은 결과 확인 후 별도 단계입니다. 재구축·모델 호출·Git push·코드서빙 재배포는 필요 없습니다.</p>
+<p>로컬에서 사진 기반 사례와 경계 조건 37개, 발송 TXT 실제 명령 9회를 확인했습니다. GENOS 실제 문서 전수 실행은 현장에서 확인해야 합니다. ZIP의 SAMPLE은 대표 파일명 예시이며 실제 현장 결과가 아닙니다.</p>

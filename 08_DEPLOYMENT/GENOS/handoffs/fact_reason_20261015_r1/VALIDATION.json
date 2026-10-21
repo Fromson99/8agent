@@ -1,0 +1,76 @@
+{
+  "revision": "GENOS_FACT_REASON_20261015_R1",
+  "installer_contracts": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "delivery_integrations": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "working_fact_display_api": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed_contracts": {
+    "INSTALLED_query_latency_20261007_r4": {
+      "tests": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r3": {
+      "tests": 77,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_passes": 154,
+  "actual_txt_and_checkout_commands": 32,
+  "same_committed_checkout_generation_gates": 2,
+  "service_loopback_tls_boots": 2,
+  "rollback_verified": 2,
+  "known_predecessors": 1650,
+  "product_source_files": 1,
+  "product_source_change_lines": 1,
+  "wording": "해당 사안에 적용할 결론을 하나로 확정하려면 추가 사실 정보가 필요합니다.",
+  "preserved": [
+    "claims",
+    "MISSING_FACT",
+    "PARTIAL",
+    "source/data generation",
+    "model",
+    "search/retry limits",
+    "cache",
+    "field wiki and logging policy",
+    "existing budget overrides"
+  ],
+  "verified_local_code_roots": [
+    "/tmp/pytest-of-jin/pytest-9/test_install_service_api_repea1/DEV",
+    "/tmp/pytest-of-jin/pytest-9/test_install_service_api_repea0/DEV"
+  ],
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "sys_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "external_model_calls": 0,
+  "genos_connections": 0,
+  "local_main_changed": false,
+  "local_release": "length-recovery-20261015-r1",
+  "local_pointer_generation": 66,
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_serving_revision": null,
+  "field_workflow_success": null,
+  "field_status": "NOT_VERIFIED",
+  "initial_test_harness_issues": [
+    "Standalone fixture import was missing term_glossary; imported existing fixture.",
+    "API assertion used internal answer.limitation_items; corrected to actual assembly metadata and judgment-view consumer. Product code unchanged."
+  ]
+}

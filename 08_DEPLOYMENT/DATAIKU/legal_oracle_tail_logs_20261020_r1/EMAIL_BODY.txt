@@ -1,0 +1,18 @@
+요청하신 tail 실시간 로그 조회 파일을 보냅니다.
+
+같은 Dataiku 서버의 새 터미널에서, 첨부 TXT를 올린 폴더로 이동한 뒤 실행하세요.
+bash ./TAIL_LOGS_RUN.txt
+
+ZIP을 이용하는 경우:
+python3 -m zipfile -e ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1.zip ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1
+bash ./LEGAL_ORACLE_TAIL_LOGS_20261020_R1/TAIL_LOGS_RUN.txt
+
+최근 10줄을 보여준 뒤 events.jsonl과 현재 source 호출 로그를 tail -F로 계속 표시합니다. 이 새 조회 터미널에서 Ctrl+C를 누르면 로그 조회만 종료됩니다.
+
+GENOS 코드스페이스가 아니라 이관 노트북의 경로에 접근 가능한 Dataiku 서버 터미널이어야 합니다. 터미널 접근이 안 되면 기존 별도 로그 조회 노트북을 사용하세요. 이관 셀은 다시 실행하지 않습니다.
+
+ACKNOWLEDGED는 SQL 응답 수신, BATCH_VERIFIED는 배치 대조 완료입니다. PROGRESS의 시간 증가만으로 처리 진전을 판단하지 않습니다.
+
+현재 R4도 기존 r2-work/oracle-import-r3 경로를 사용합니다. 이 첨부는 로그 조회용이며 R4 이관 코드를 교체하지 않습니다.
+
+첨부: ZIP, 전체 실행 TXT, 안내 TXT. Bash 구문 및 ZIP 내부 파일 일치를 로컬 확인했습니다. 현장 터미널 실행은 미확인입니다.

@@ -1,0 +1,38 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "tests_passed": 69,
+  "test_log": "09_ARTIFACTS/AUDITS/20261020-deferred-query-indexes/TEST_02.txt",
+  "test_seconds": 12.23,
+  "peak_rss_kib": 349972,
+  "workers": 1,
+  "scope": [
+    "strict default unchanged",
+    "only four absent auxiliary indexes deferred with explicit boolean",
+    "PK/FK/JSON/type/column validation retained",
+    "existing incompatible index rejected",
+    "no DDL or overwrite",
+    "full publish/resume/dedup/readback and tamper rejection",
+    "exact R2 delivered check failure to exact R3 delivered check and publish",
+    "same restored inode and immutable R2 failure record",
+    "original seven-day deadline and schema calls preserved",
+    "invalid upgrade code/target/write/stages rejected"
+  ],
+  "initial_failure": {
+    "log": "09_ARTIFACTS/AUDITS/20261020-deferred-query-indexes/TEST_01.txt",
+    "passed": 66,
+    "failed": 3,
+    "cause": "Initial opt-in branch was placed in table loop, leaving index loop strict. Corrected branch to index loop; missing tables still reject."
+  },
+  "field_verified": false,
+  "live_oracle_tested": false,
+  "synthetic_sql_boundary": true,
+  "latest_data_verified": false,
+  "main_changed": false,
+  "serving_changed": false,
+  "limitations": [
+    "Dataiku JDBC/Oracle19 and real data performance not executed",
+    "Deferring lookup indexes does not certify serving readiness",
+    "R2 import with completed write stages cannot be automatically upgraded",
+    "Query publisher fingerprint changed; previous query releases can coexist"
+  ]
+}

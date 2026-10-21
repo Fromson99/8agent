@@ -1,0 +1,207 @@
+{
+  "schema_version": "workflow-logging-design-evidence-v1",
+  "created_at": "2026-10-19T09:29:32.384283+00:00",
+  "scope": "Read-only code and policy review; documentation only. Manifest comparisons do not prove field deployment.",
+  "report": "07_DOCS/REFERENCE/REPORTS/WORKFLOW_LOGGING_POLICY_20261019.md",
+  "report_sha256": "443a883d3dc308d27828917e1a089b243cc1ed848e0979562dfe86baff42dddc",
+  "selected_release": {
+    "release_id": "answer-first-followup-20261019-r1",
+    "generation": 88,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/answer-first-followup-20261019-r1/release.json",
+    "release_manifest_sha256": "7309773ac9b5fbc0ca64705b5aa1c94ae3464c1451833ae37548afa31520df6d"
+  },
+  "selected_manifest_hash_matches_pointer": true,
+  "handoff_id": "GENOS_WORKFLOW_PROGRESS_20261019_R1",
+  "field_validation": "NOT_PERFORMED",
+  "new_model_calls": 0,
+  "new_runtime_tests": "NOT_RUN_DESIGN_ONLY",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "working_sha256": "aad88fa2bdd2d302d850f344a60d15d4e4d0bd3d212aee9556328cfda7bd1ce6"
+    },
+    {
+      "path": "GENOS.md",
+      "working_sha256": "282563d982b9e776d18c9be32cfc1150ae381d64d0b7ba733a9c3ab50990ac7e",
+      "handoff_manifest_sha256": "2abce71ef2953da5a3a53c2bfbc210bf80d4f6eb5cf51c5fa4a8a92e8c9228a7",
+      "working_matches_handoff_manifest": false
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "working_sha256": "aac50a8fa07f0b5055982ed69c7686011d2c7d1b4ae4d932aa89d3066586dbbc",
+      "handoff_manifest_sha256": "c3689de07fe0a28109893ef555690522bf578bfcd54a8d05579b1641cbecc91e",
+      "working_matches_handoff_manifest": false
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "7299950a1caf0a5e1ff9f2c4856b901b874360428016aaa7bac7adcc688eafd1",
+      "selected_sha256": "21ba258d8b595c2313131a7422b241229796fbc13f7ef8ba3a8463379acbf36a",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "83bd5a0d5e162f1e0f88be1f1a1f2c906678014b1c7832730fe66a8fa8dd2a12",
+      "working_matches_handoff_manifest": false
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "working_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "selected_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "working_sha256": "a5e69020e01a6d7c052d5ca5fb07fe404070af15485ad55613e0567860e5b03a"
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/answer-first-followup-20261019-r1/release.json",
+      "working_sha256": "7309773ac9b5fbc0ca64705b5aa1c94ae3464c1451833ae37548afa31520df6d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "working_sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/RISK_TEAM_COMPARE_WORKFLOW.md",
+      "working_sha256": "df6c5c693728dc15aa52ced9a7dab488851b593a7b08d5422266696b2049e46f"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/GENOS_SYSTEM_LOGGING_20261007.md",
+      "working_sha256": "f310d7f7c41a425bf14d54e1f054dbc9a4ce93b3db7b7066562bdf18097ee642",
+      "handoff_manifest_sha256": "f310d7f7c41a425bf14d54e1f054dbc9a4ce93b3db7b7066562bdf18097ee642",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/GENOS_WORKFLOW_LIVE_CARDS_RESTORE_20261008.md",
+      "working_sha256": "7c5ccc74c3bfee79db8b493199e8a7fdd4928f05e55aa60c0d6ad9557461286a"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20261019-workflow-progress/RESULT_UTF8.txt",
+      "working_sha256": "2577164ca142e2becb3fd4f141501d94e8b05a8fdc19cb877d725d9eb61526fd"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/CODE_MANIFEST.json",
+      "working_sha256": "ff0e92227d08b9ced112bdbe4d74a206499a462a9929f24fbd2e25ba3dcfbf0a",
+      "selected_file_present": false
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/workflow_progress_20261019_r1/VALIDATION.json",
+      "working_sha256": "fd44b29ff7e532fee85e98729f8f02eb2d859520650287c55585646447049bdc",
+      "selected_file_present": false
+    },
+    {
+      "path": "service.py",
+      "working_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe",
+      "selected_sha256": "2282d07382d32e994afad93a0f9fd5cad9aba4bd09de56bcbfcf89f0a6310332",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "main_workflow.py",
+      "working_sha256": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+      "selected_sha256": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/progress.py",
+      "working_sha256": "9126902935702557753146acb440ead4ceeaef41de26750cab51e9190d6c00a2",
+      "selected_sha256": "a3bf8956ccd384d9a7bb2cf4d4f732c392173690e9f45cab92ee22bf2e48527e",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "9126902935702557753146acb440ead4ceeaef41de26750cab51e9190d6c00a2",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "working_sha256": "9e326ecaa9259f59e15a2d60e4897ca1b65d253f9282364a12b768bb2dc3b134",
+      "selected_sha256": "75736b29c30337433301329479d8e664d1fa10ea0894af18e9ed3a25905ab5b0",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "9e326ecaa9259f59e15a2d60e4897ca1b65d253f9282364a12b768bb2dc3b134",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_journals.py",
+      "working_sha256": "e75b2e9948503551e1eec9a59805a212a980c475638f7f980ed96f5e8101e3da",
+      "selected_file_present": false,
+      "handoff_manifest_sha256": "e75b2e9948503551e1eec9a59805a212a980c475638f7f980ed96f5e8101e3da",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/observability.py",
+      "working_sha256": "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e",
+      "selected_sha256": "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "working_sha256": "a8da2550e280e677f0b025cc8e28a15b22d5f6c7e83e10afa719ee9df50f9e77",
+      "selected_sha256": "a8da2550e280e677f0b025cc8e28a15b22d5f6c7e83e10afa719ee9df50f9e77",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "a8da2550e280e677f0b025cc8e28a15b22d5f6c7e83e10afa719ee9df50f9e77",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/workflow_rag.py",
+      "working_sha256": "a57bbad37ef6222c65835403038256c9dabb1bcbbfa0d75572c73111f7c90422",
+      "selected_sha256": "c94b79ea2077c95839d546c9238a7857db8aadcb9f6f3fd4e8171fd04d88e702",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "a57bbad37ef6222c65835403038256c9dabb1bcbbfa0d75572c73111f7c90422",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "working_sha256": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "selected_sha256": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "working_sha256": "1e76970d3a84a4935024f7af49590fae5dec2854d32f349313f6290f42e38862",
+      "selected_sha256": "6517ad538c538a0fcf78229aada8f0d01450ff9e2ada03aae1badd15c39ebbba",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "1e76970d3a84a4935024f7af49590fae5dec2854d32f349313f6290f42e38862",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+      "working_sha256": "f94e49f8a859e31f6eae0006d501fa4cde36e871dfdda4c0e46e6a5b4ae3e414",
+      "selected_sha256": "f94e49f8a859e31f6eae0006d501fa4cde36e871dfdda4c0e46e6a5b4ae3e414",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "f94e49f8a859e31f6eae0006d501fa4cde36e871dfdda4c0e46e6a5b4ae3e414",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json",
+      "working_sha256": "191b90d74101e987a1ea20825f726d7e4b6110c5e0872ebcf7b7b616a461d366",
+      "selected_sha256": "c0ae9afb1a52ef98272bdd44fc36705eb484e42f6c9d8e744bf449750889a630",
+      "working_matches_selected": false,
+      "handoff_manifest_sha256": "191b90d74101e987a1ea20825f726d7e4b6110c5e0872ebcf7b7b616a461d366",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/flow.py",
+      "working_sha256": "662be0c80413c4e3a256b1feda6dd51b21ca8c7ddba97c143092d85c24448732",
+      "selected_sha256": "662be0c80413c4e3a256b1feda6dd51b21ca8c7ddba97c143092d85c24448732",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "662be0c80413c4e3a256b1feda6dd51b21ca8c7ddba97c143092d85c24448732",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py",
+      "working_sha256": "31906139c5cb6242409c8435a0eea2b46add0ae4e3ce088e23e0d5253beda5ff",
+      "selected_sha256": "31906139c5cb6242409c8435a0eea2b46add0ae4e3ce088e23e0d5253beda5ff",
+      "working_matches_selected": true,
+      "handoff_manifest_sha256": "31906139c5cb6242409c8435a0eea2b46add0ae4e3ce088e23e0d5253beda5ff",
+      "working_matches_handoff_manifest": true
+    },
+    {
+      "path": "05_TESTS/CONTRACTS/test_workflow_progress_logging.py",
+      "working_sha256": "137fa1f17d7103612263da483cbc3afe5587ad2c0dadb18ce1234765e90c5a51"
+    }
+  ]
+}

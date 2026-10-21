@@ -1,0 +1,97 @@
+GENOS_WORKFLOW_PROGRESS_20261019_R1 — 대사 진행·로그·답변 표시 수정 누적본
+
+1. 사용할 버전과 수정 범위
+직전에 발송한 GENOS_MAIN88_ORACLE_QUERY_20261019_R1 누적 코드에 이번 수정만 더했습니다.
+이번 ZIP을 사용하면 앞선 누적본을 다시 순서대로 적용할 필요가 없습니다.
+10개 변경 전 소스가 직전 누적본과 정확히 일치함을 확인했고, 새 원장 탐색 모듈 1개를
+추가했습니다. 코드와 manifest/pin 합계 44파일 변경이며 그 외 1258파일은 동일합니다.
+MAIN88, Oracle 직접 조회, 기존 SQLite 모드, 팀·세션 설정과 내부 모델 설정을 유지합니다.
+로컬 선택 MAIN88이나 현장 데이터/Oracle 조회 채널을 이 설치가 변경하지는 않습니다.
+
+- 대사 부모와 내규·외규 자식 RAG 기록을 같은 요청 로그에 연결합니다.
+- 조사 단계와 확인한 문서명·조문을 채팅 진행 카드에 표시합니다.
+- 표의 줄바꿈을 보존하고 내부 ID 대신 문서명·조문을 보여줍니다.
+- 검토 의견·이유·인용 위치·미확인/상충 상태·산식 검토 이유를 유지합니다.
+- 명시 실행/재개도 SSE를 사용합니다. 최종 답변은 저장·근거 검증 후 순차 전송합니다.
+  모델이 비교안을 생성하는 동안 토큰이 실시간으로 나오는 방식은 아닙니다.
+- 부모 답변에 자식 RAG 답변을 섞지 않습니다. 전송 실패 후 모델을 다시 호출하지 않습니다.
+원래 답변/구조화 결과/정확한 원문/내부 식별자는 원장 및 JSON에 보존합니다.
+
+2. 실제 업로드한 TRANSFER에서 실행
+ZIP/TXT를 올린 TRANSFER 폴더를 현재 터미널 작업 위치로 유지합니다.
+아래 /workspace는 앞선 현장 사진에서 확인한 실제 기존 Git checkout 경로입니다.
+현재 git rev-parse --show-toplevel 결과가 다르면 확인한 기존 checkout 경로로 바꿉니다.
+~/DEV가 그 checkout을 가리키는 경우에도 실제 경로를 확인해 적용합니다.
+TRANSFER를 임의로 ~/TRANSFER나 ~/DEV/TRANSFER라고 추정하지 않습니다.
+
+python3 -m zipfile -e ./GENOS_WORKFLOW_PROGRESS_20261019_R1.zip ./GENOS_WORKFLOW_PROGRESS_20261019_R1
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt check --root /workspace
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt apply --root /workspace
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt status --root /workspace
+
+Python 3.11 이상이며 실제 실행 파일/버전을 로그로 남깁니다. 기존 패키지의 sqlglot 30.23.0을
+이미 설치했다면 deps를 반복할 필요가 없습니다. 설치하지 않은 경우에만 check 전에 실행합니다.
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt deps --root /workspace
+
+별도 첨부 RUN.txt도 ZIP 옆에서 실행하면 같은 설치기로 연결합니다.
+첫 실행부터 TRANSFER/workflow-progress-r1-logs에 지속 로그와 .log.exit 종료 코드를 남깁니다.
+패키지 폴더 STATUS.json/LAST_FAILURE.json에 상태와 실패를 보존합니다.
+기존 checkout의 09_ARTIFACTS/BACKUPS/code-replacement에 바뀐 파일 원본을 백업합니다.
+중단된 apply는 원본 복원 후 다시 적용할 수 있으며 재적용은 동일 바이트를 확인합니다.
+원문·색인·이전 세대·.env·사용자 보조 파일은 보존합니다. 이후 사용자 수정이 있으면 원복을 거부합니다.
+check 실패를 무시하고 apply하지 마십시오. 최초 ZIP 추출 실패 출력도 보존하십시오.
+
+3. 기존 checkout 검토·commit → 코드 게이트 → push → 새 코드서빙 리비전
+적용 대상 checkout에서 git diff --check와 변경 목록을 확인합니다.
+CODE_MANIFEST.json과 설치 receipt의 units를 기준으로 변경 코드만 commit합니다.
+.env·TRANSFER·데이터·로그·백업을 추가하지 않습니다. 그 뒤 TRANSFER에서 실행합니다.
+
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt gate-code --root /workspace
+
+이 명령은 APPLIED_CODE.zip과 실제 Git 추적 checkout 및 HEAD를 비교합니다.
+통과한 commit을 기존 원격으로 push하고 같은 commit의 새 코드서빙 리비전을 배포합니다.
+이 스크립트가 push나 배포를 자동 수행하지 않습니다. 기존 시작 명령은 python3 main_router.py입니다.
+후속 코드 수정이 있으면 새 commit과 게이트가 필요합니다. PASS와 실제 배포 성공을 구분합니다.
+
+4. 워크플로우 편집기 전체 코드 반영 — 반드시 별도로 수행
+첨부 GENOS_WORKFLOW_PROGRESS_20261019_R1_WORKFLOW_PASTE_ALL.txt 전체를
+기존 GENOS 워크플로우 Python 단계에 붙여 넣고 저장합니다.
+Git push/코드서빙 배포만으로 이 편집기 코드가 바뀌지 않습니다.
+기존 서비스 연결, 팀 설정, 실제 세션 전달을 유지하고 GENOS_RAG_PROGRESS_UI가 off가 아닌지 확인합니다.
+
+5. 워크플로우 테스트 화면에서 현장 확인
+코드서빙 직접 테스트 UI/API를 요구하지 않습니다. 새 채팅에서 사진의 동일 질문을 실행합니다.
+대사: 유동성비율 관련 외부규정은 무엇이고 내부 규정에는 어떻게 되어있나
+
+확인할 결과:
+- 실행 중 내규 원문/외규 원문 조사 단계 및 실제 읽은 문서명·조문이 표시됨.
+- 같은 요청 로그에 workflow.stage.changed, 부모/자식 MODEL CALL·MODEL RESPONSE와 도구 결과가 남음.
+- 답변 표가 실제 표로 보이고 긴 evidence/pair ID가 셀에 반복 노출되지 않음.
+- 의견·이유·남은 확인이 함께 표시되며 partial을 완료로 바꾸지 않음.
+- 조사 중 progress, 검증 후 answer_delta, 마지막 result 순서. 실시간 모델 생성 토큰은 아님.
+- 최종 내부 모델 품질, 프록시 버퍼링과 브라우저 표시 속도는 실제 화면에서 별도 확인.
+코드 binding이 달라진 이전 대사 실행은 강제로 재개하지 말고 보존한 뒤 새 요청으로 확인합니다.
+
+6. Oracle/SQLite 설정과 데이터
+이번 표시/로그 수정 때문에 원문·색인을 재구축하거나 조회 채널을 변경할 필요는 없습니다.
+이미 MAIN88_ORACLE_QUERY R1을 준비했다면 같은 검증된 접속·조회 선택·외부 NFS 설정을 유지합니다.
+Oracle은 필요한 데이터만 요청 중 조회하고 원문·색인을 서빙에 저장하지 않습니다.
+이전 누적본부터 처음 도입한다면 ZIP의 ORACLE_QUERY_IMPLEMENTATION_UTF8.txt와 DDL을 별도로 확인합니다.
+기존 원문 release와 조회 release를 혼동하지 않습니다. 이 설치는 DB 게시/활성화를 실행하지 않습니다.
+코드 gate PASS는 Oracle 현장 데이터 검증 PASS가 아닙니다.
+SQLite 모드를 쓰는 경우에만 실제 기존 generation으로 별도 gate-sqlite를 실행합니다.
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt gate-sqlite --root /workspace --generation <실제선택세대절대경로>
+대형 NFS 전체 검사는 부하 가능한 시점에 수행하고 코드 검사만으로 대체 완료 처리하지 않습니다.
+
+7. 원복
+bash ./GENOS_WORKFLOW_PROGRESS_20261019_R1/GENOS_WORKFLOW_PROGRESS_20261019_R1_RUN.txt undo --root /workspace
+기존 checkout의 설치 전 파일을 정확히 복원합니다. 사용자 후속 변경이 있으면 먼저 보존·검토합니다.
+원복한 코드의 commit/push/리비전과 이전 워크플로우 편집기본 복원은 별도입니다.
+기존 검증된 데이터 선택과 접속 설정도 함께 확인합니다. 의존성 wheel은 자동 제거하지 않습니다.
+
+8. 검증과 미확인 범위
+작업 코드의 126검사와 별도로 반입 코드만 import한 계약/API/SSE 검사를 수행했습니다.
+정확한 결과는 VALIDATION.json과 최종 ZIP 검증 기록에 있습니다.
+합성 문서/응답을 썼고 이번 작업의 외부/내부 실제 모델 호출은 0입니다.
+GENOS 실제 commit·리비전·Oracle 조회 release/revision·NFS·편집기 저장·내부 모델 성공은 미확인입니다.
+현장 확인 후 STATUS.json과 로그에 실제 commit/revision, 조회 버전, 요청 ID를 함께 보존하십시오.

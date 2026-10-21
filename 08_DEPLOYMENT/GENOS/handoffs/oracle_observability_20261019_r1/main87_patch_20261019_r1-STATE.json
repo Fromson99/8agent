@@ -1,0 +1,39 @@
+{
+  "root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/oracle_observability_20261019_r1/logging-install-8bew2gm3/DEV",
+  "payload_sha256": "005e549414a9a6fc224eb830d036c387c665d83812b42de73986a15424b2d6ab",
+  "status": "RESTORED",
+  "files": {
+    "service.py": {
+      "before": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+      "after": "fe4970019b20df52e36b9af2dd5f41e7226d15ef3d30837f545d8d948ca93353"
+    },
+    "02_BACKEND/semantic_runtime/oracle_dp.py": {
+      "before": "a1e2b0dfd2ef468ffc5b7ca0d945c6c85a574442b798368ee02f9a19fff6442f",
+      "after": "9effce6fbb700ca57075d3268ac068204d404b50db79ea3d8120cbeba5240708"
+    },
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": {
+      "before": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+      "after": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "before": "7ac611bb55dac65a3ef1cf7d333316bcb77beff24bb17dfc723ae3e13542e297",
+      "after": "f1cc6e8cdc79a380bac3ad3b0c5de03d5e6c71fad9e1fdb74f64abc6a79784a7"
+    },
+    "02_BACKEND/semantic_runtime/preparation_progress.py": {
+      "before": null,
+      "after": "a913aec24cb3791b0ddf13eaa298c12ca8744531206106cbba5c33fea1b21bf3"
+    },
+    "CODE_MANIFEST.json": {
+      "before": "80218ea0f22fc731bafbd58a37cdf7d1c3a6600b15416c3a9d9c412bf8174a0a",
+      "after": "155a013ce016f7bffade93662d8c3ae7ec6b27e1bdb6dcf0b5b99b771479b91a"
+    }
+  },
+  "base_family": "MAIN87",
+  "variant": "main87_patch_20261019_r1",
+  "commit": "71a00e1b0855b47da1ec9081dab4cc0e04422822",
+  "code_serving_revision": null,
+  "workflow_test": "NOT_RUN",
+  "code_zip_sha256": "46a8abbdd7f8777c0580aed7385fd5b170ae9940a770958941ef31271510a0ed",
+  "code_archive": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/oracle_observability_20261019_r1/logging-install-8bew2gm3/DEV/09_ARTIFACTS/BACKUPS/GENOS_ORACLE_LOGGING_20261019_R1/APPLIED_CODE.zip",
+  "last_gate": "gate-code"
+}

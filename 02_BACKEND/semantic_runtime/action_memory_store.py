@@ -269,14 +269,14 @@ def concept_schema(episodes,concepts):
     item={'type':'object','additionalProperties':False,'properties':{
         'episode_id':{'type':'string','enum':[e['id'] for e in episodes]},
         'concept_id':{'type':'string','enum':['']+[c['id'] for c in concepts]},
-        'label':{'type':'string','minLength':1,'maxLength':100},'definition':{'type':'string','minLength':1,'maxLength':500},
+        'label':{'type':'string','minLength':1},'definition':{'type':'string','minLength':1},
         'source_ids':{'type':'array','minItems':1,'maxItems':24,'items':{'type':'string'}},
-        'reason':{'type':'string','minLength':1,'maxLength':250}}}
+        'reason':{'type':'string','minLength':1}}}
     item['required']=list(item['properties'])
     excluded={'type':'object','additionalProperties':False,'properties':{
         'episode_id':item['properties']['episode_id'],'concept_id':item['properties']['concept_id'],
-        'purpose_label':{'type':'string','minLength':1,'maxLength':100},'source_id':{'type':'string'},
-        'reason':{'type':'string','minLength':1,'maxLength':250},'quote':{'type':'string','minLength':1,'maxLength':500}}}
+        'purpose_label':{'type':'string','minLength':1},'source_id':{'type':'string'},
+        'reason':{'type':'string','minLength':1},'quote':{'type':'string','minLength':1}}}
     excluded['required']=list(excluded['properties'])
     return {'type':'object','additionalProperties':False,'properties':{'assignments':{'type':'array','maxItems':64,'items':item},
             'exclusion_candidates':{'type':'array','maxItems':32,'items':excluded}},'required':['assignments','exclusion_candidates']}

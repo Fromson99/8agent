@@ -1,0 +1,12 @@
+완료: 후보 JSON -> HTML 검토 -> 명시적 선택 기록 -> 검토완료 ZIP -> 같은 SQLite 원문의 운영 runtime에 증분 적용.
+인계본은 GENOS_BASIS_ARTIFACTS_20261020_R1, 기존 R3 checkout을 수정하지 않는 오프라인 도구다.
+새 stage-plan/run/resume은 기존 R3 batch/workflow 진입을 JSON Repository 포트로 사용한다. 공유 관계 SQLite와 활성 marker를 쓰지 않는다.
+report/export는 실행 중 atomic JSON/SQLite committed snapshot을 읽는다. 현재 R3의 이미 저장된 SQL 결과와 새 JSON 후보를 HTML에서 구분한다.
+review --all/--ids 이후 REVIEW.json, REVIEWED.sql, *_REVIEWED.zip을 생성한다. 검토 없는 apply 차단; 검토는 이관 허용이며 원래 법률 검토 상태는 보존한다.
+동일 연결/이력 재실행 멱등, 다른 운영 revision 충돌 시 전체 거부, 적용중 응답 소실 receipt 복구, 새로 넣은 관계만 REVOKED revision으로 원복한다.
+신규/기존 회귀49검사 + 실제 ZIP/TXT stage-plan 서비스 부팅1검사 통과. 기존 실패 TEST_03(작업 중 추가된 새 오류복구 함수와 R3 불일치)은 보존했다.
+검증된 R3 배치 원본+명시적 candidate_factory 포트만 도구에 결속했다. 작업 중인 새 복구 구현은 덮어쓰지 않고 보존했다.
+도구 세 모듈은 현행 작업 코드와 동일하며, batch runner는 호환 대상 R3에 맞춘 봉인본이다. 전체 작업 코드·선택 MAIN·GENOS 운영 완료로 확대하지 않는다.
+모델 실호출 없음. SQLite 단위/실제 resolver/API/재개·중복·선택·해시·SQL 변조 및 실행 TXT 검증은 합성 원문이다.
+현재 field R3는 직접 관계 SQLite에 저장한다. 이 도구는 그 기존 행을 자동 삭제하거나 실행 중 프로세스를 전환하지 않는다.
+남은 확인: GENOS 내부 모델 실행·NFS 잠금/fsync·운영 실제 대사 화면. 코드 push/리비전 배포/로컬 MAIN 전환 없음.

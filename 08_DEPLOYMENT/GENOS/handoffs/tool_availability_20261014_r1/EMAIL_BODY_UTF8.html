@@ -1,0 +1,13 @@
+<p>현행 GENOS v6 경로의 상황별 도구 노출을 점검하고 수정한 <b>GENOS_TOOL_AVAILABILITY_20261014_R1</b>을 보냅니다.</p>
+<p><b>이번 첨부본을 사용해 주세요.</b> 앞서 보낸 DEPENDENCY_RECOVERY R1의 수정도 포함합니다. 기존 SCHEMA_RECOVERY R1 또는 DEPENDENCY_RECOVERY R1 위에 적용할 수 있어, 스키마 R1이 설치되어 있다면 중간 의존 관계 패치를 따로 적용할 필요가 없습니다.</p>
+<p>사진의 500 오류는 <code>hit has no own original blocks</code>에서 발생했습니다. 자체 본문 없는 구조 부모를 자체 원문 읽기에 넘겼을 때 같은 오류를 합성 데이터로 재현했습니다. 현장 검색 결과와 원문 generation은 사진만으로 확정할 수 없습니다. 하위 원문이 있으면 요청한 범위를 유지해 읽고, 실제로 읽을 수 없는 범위는 도구로 제공하지 않도록 고쳤습니다. 요청하신 422 팀/문서 범위 오류는 수정하지 않았습니다.</p>
+<ul><li>탐색 16종과 참조/완료 선택, 기억 명령 12종, 최초 요청·위키·단계 소비자를 점검했습니다.</li><li>검색·읽기 한도, 여러 원문의 합계 예산, 오래된 페이지 링크, 과거 메뉴 복원과 부족 근거 재조사에도 같은 실행 조건을 적용했습니다.</li><li>현재 사건·완료 상태·저장 경험이 없는 명령은 제시하지 않습니다. 숏컷 경로가 복구 종료의 확인 요청을 다시 실행 명령으로 검증하던 연결 오류도 수정했습니다. 정상 조회·확보 원문 재사용·중단 후 재개·기존 설정은 유지했습니다.</li></ul>
+<p>코드와 기존 정상 경로의 검증 결과, 원복 방법, 전체 점검 목록은 ZIP 안의 FIX_REPORT_UTF8.txt와 첨부 검증 자료에 있습니다. 실제 내부 모델 호출이나 현장 배포는 하지 않았으며 로컬 MAIN62 포인터도 변경하지 않았습니다.</p>
+<p><b>최종 검증:</b> 작업 코드 1084개 통과, 1개 skip. 수정 전에도 실패하는 구형 검사 4건은 재현 기록과 함께 제외했습니다. 설치한 두 현장 구성은 합계 400개 통과(실패/면제 0), 실제 실행 TXT 32명령, 서비스 부팅 2회와 동일 committed checkout generation gate 2회를 확인했습니다.</p>
+<p><b>ZIP을 실제 업로드한 TRANSFER 폴더에서</b> 아래 명령을 실행합니다. 코드 적용 대상은 기존 Git checkout <code>~/DEV</code>입니다. TRANSFER의 절대 위치를 추측하거나 압축 해제 전에 DEV로 이동하지 마세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_TOOL_AVAILABILITY_20261014_R1.zip ./tool-availability-r1-package
+bash ./tool-availability-r1-package/GENOS_TOOL_AVAILABILITY_20261014_R1_RUN.txt check
+bash ./tool-availability-r1-package/GENOS_TOOL_AVAILABILITY_20261014_R1_RUN.txt apply
+bash ./tool-availability-r1-package/GENOS_TOOL_AVAILABILITY_20261014_R1_RUN.txt verify</pre>
+<p>한 단계가 실패하면 다음 단계로 진행하지 않습니다. 실행 시작부터 TRANSFER 안에 로그를 남기고, 알려지지 않은 수동 변경은 덮어쓰지 않습니다. 별도로 첨부한 RUN.txt는 ZIP 안의 파일과 완전히 같습니다.</p>
+<p>이후 GUIDE_UTF8.txt의 변경 검토·commit·실제 generation gate·push·새 코드서빙 리비전 배포·SSE 재시작 순서를 따릅니다. 질의와 warmup 확인은 <b>워크플로우 테스트 화면</b>에서 수행하고 기존 성공 질문, 사진의 실패 질문, 재개 요청의 request ID를 남겨 주세요. 코드 적용과 현장 배포 성공은 별도 상태입니다.</p>

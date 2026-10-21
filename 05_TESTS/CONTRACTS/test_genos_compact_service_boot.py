@@ -27,7 +27,7 @@ def entry(monkeypatch, tmp_path):
     monkeypatch.setattr(module, '_genos_v5_environment_binding',
                         lambda *args: ({**settings(), 'max_model_attempts': 40}, ScriptedTransport()))
     yield module
-    if module._APP is not None:
+    if module._APP is not None and not getattr(module._APP,'is_oracle_query_factory',False):
         module._APP.state.pipeline.store.close()
     module.request_report._FINALIZER_QUEUE.join()
 

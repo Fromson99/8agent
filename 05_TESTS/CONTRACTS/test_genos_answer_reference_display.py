@@ -94,6 +94,8 @@ def test_stream_never_exposes_pending_citations_and_matches_completion(workflow,
 def test_workflow_run_returns_clean_text_in_all_display_modes(workflow, monkeypatch, mode):
     monkeypatch.setenv('GENOS_RAG_PROGRESS_UI', mode)
     monkeypatch.setattr(workflow, '_settings', lambda: ('http://fixture/json', 'synthetic', 2))
+    # The preflight is JSON; the Response below models only the answer SSE.
+    monkeypatch.setattr(workflow, '_post_code_serving', lambda _: {'status':200,'body':{}})
     sent = []
     async def send(self, event, value):
         if self.enabled:

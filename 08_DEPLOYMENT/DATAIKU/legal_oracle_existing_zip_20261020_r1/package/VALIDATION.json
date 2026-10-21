@@ -1,0 +1,28 @@
+{
+  "status": "LOCAL_VERIFIED_FIELD_PENDING",
+  "tests": 58,
+  "test_log": "09_ARTIFACTS/AUDITS/20261020-existing-zip/TEST_02.txt",
+  "elapsed_seconds": 15.52,
+  "max_rss_kib": 402132,
+  "swap_operations": 0,
+  "data_worker_processes": 1,
+  "cases": [
+    "actual delivered Bash split and Dataiku TXT direct ZIP/parts restore",
+    "prepopulated source/assets reused; missing query rows inserted",
+    "partial source/query data filled without replacing existing values",
+    "same job resumes; new job preserves all records",
+    "conflicting existing source rejected without writes",
+    "archive hash/path/duplicate/undeclared/eligibility failures",
+    "restore interruption and original deadline retained",
+    "split/join exact original SHA"
+  ],
+  "initial_test_failure": "TEST_01 expected zero query write-call attempts for a fresh job. Existing query SQL is guarded insert-if-absent; attempt counter is not inserted rows. Test corrected to assert complete record identity/row count. No publisher change for this assertion.",
+  "source_archive_available": false,
+  "oracle_engine": "synthetic SQL boundary only this delivery",
+  "field_dataiku_oracle19_verified": false,
+  "model_calls": 0,
+  "main_or_serving_changed": false,
+  "generation_scope": "only manifest-selected generation and its selection file; runtime excluded",
+  "publication_policy": "reuse matching version/key/content; fill missing; conflict stops; no delete/truncate or activation",
+  "prior_query_r2_publisher_preserved": true
+}

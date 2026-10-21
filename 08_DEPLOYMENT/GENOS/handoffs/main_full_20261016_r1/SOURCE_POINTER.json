@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "evidence-complete-comparison-20261016-r1",
+  "generation": 76,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/evidence-complete-comparison-20261016-r1/release.json",
+  "release_manifest_sha256": "57b1e5fd1e3553f0e786581dcdbe5411a9c9d62cff51719c90644caa27bbec64",
+  "activated_at": "2026-10-15T17:05:42.110328+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "a47c73016e6f53a5d64850699122a5618d6b994ae156e0654ef7e1e0447e5906",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0816-complete-contract-confirmation/실험/manifest.json",
+      "sha256": "c298b7b2fb67504fe85daac9b97df964e52a405d548329acbc9adb7e99e056fd"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0816-complete-contract-confirmation/README.md",
+      "sha256": "e6411b23ff70924f43c05036a7bbf2b9d7c63304b139c03e8c06373339d13ca8"
+    },
+    "arm": "connected",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0816-complete-contract-confirmation/artifacts/run-001/result.json",
+      "sha256": "d85aa466143acf52bba984083c8d3aac746d3da62e8a9f8111db1e82373f2ed0"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0816-complete-contract-confirmation/artifacts/design/release-rebase.json",
+      "sha256": "a31b9c259310f77f88d5a5d490fcf1d597f66615d653a4161d15dda2aeddebdf"
+    }
+  }
+}

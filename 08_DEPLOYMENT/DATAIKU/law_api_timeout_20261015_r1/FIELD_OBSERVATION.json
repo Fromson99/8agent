@@ -1,0 +1,19 @@
+{
+  "source": "User supplied Dataiku screenshot",
+  "source_sha256": "e6871e80200ed8a22888a426604e39139eaadfbbb075c20705f2b66feaf8794a",
+  "observed": {
+    "law_published_body": "TIMEOUT",
+    "http_status_visible": false,
+    "received_bytes": 0,
+    "following_requests": "BLOCKED_OR_BUDGET_EXHAUSTED / SKIPPED_NO_UNIQUE_CURRENT_ID"
+  },
+  "diagnosis": "Initial request timed out; subsequent calls skipped by R1 client",
+  "unknown": [
+    "Connection setup vs response wait",
+    "OC validity",
+    "Actual relay route/proxy",
+    "Network or upstream root cause"
+  ],
+  "original_exception_subtype_recoverable_from_r1_receipt": false,
+  "internal_connections_attempted_by_assistant": 0
+}

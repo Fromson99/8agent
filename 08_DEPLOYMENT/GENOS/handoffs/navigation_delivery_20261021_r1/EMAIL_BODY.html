@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><body>
+<p>사진의 <b>MODEL_DECISION_UNRESOLVED → SOURCE_INVESTIGATION_INCOMPLETE / 422</b>에 대한 원문 전달 수정본입니다.</p>
+<p>모델의 선택 응답이 거절되었을 때 이미 전달한 검증 원문까지 누락하던 코드를 수정했습니다. 원문은 판단 단계로 넘기고 선택 실패·미확인·원문/권한/해시 검사를 유지합니다. 최초 모델 응답의 구체 검증 오류는 사진에 없어 미확인입니다.</p>
+<p><b>이번 GENOS_NAVIGATION_DELIVERY_20261021_R1.zip을 사용하세요.</b> 기존 READABLE R2 표시 수정과 10분 제한도 포함하며 MAIN96, 10분 패치 또는 READABLE R1/R2 위에 적용할 수 있습니다.</p>
+<p>ZIP과 실행 TXT를 실제 업로드한 <b>TRANSFER 폴더</b>에서 아래 순서로 실행하세요. 설치 대상은 기존 Git checkout <code>~/DEV</code>입니다. 다른 위치라면 모든 명령에 같은 <code>--root /실제/checkout</code>을 붙입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_NAVIGATION_DELIVERY_20261021_R1.zip ./GENOS_NAVIGATION_DELIVERY_20261021_R1
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt check
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt apply
+bash ./GENOS_NAVIGATION_DELIVERY_20261021_R1/GENOS_NAVIGATION_DELIVERY_20261021_R1_RUN.txt gate</pre>
+<p>실제 checkout에서 변경 검토·commit 후 TRANSFER로 돌아와 <code>gate-code</code>를 실행하고, PASS한 commit을 push하여 같은 코드로 코드서빙 리비전을 배포하세요. 현재 SQLite/NFS 운영일 때의 <code>gate-sqlite</code>와 재실행·원복 명령은 첨부 PATCH_NOTE.txt에 있습니다. 코드 적용·push·리비전 배포는 각각 별도입니다.</p>
+<p><b>워크플로우 편집기:</b> 이번 원문 전달 수정 자체는 편집기 변경이 없습니다. 첨부 WORKFLOW_ALL.txt는 이전 READABLE R1/R2와 동일합니다. 이미 적용했다면 다시 바꾸지 않아도 됩니다. 아직 적용 전이면 기존 Python 단계 전체를 백업한 뒤 해당 TXT로 전체 교체·저장하세요. 편집기용 TXT는 bash로 실행하지 않습니다.</p>
+<p>새 리비전의 <b>워크플로우 테스트 화면</b>에서 실패했던 질문을 새 요청으로 확인하세요. 구 리비전에 결속된 실패 기록은 보존합니다.</p>
+<p>최종 반입본은 설치·재실행·중단복구·변조 거부·원복 52명령(예상 거부7), 설치 코드의 API·표시 검사47개를 확인했습니다. 외부/내부 모델 호출은 0입니다.</p>
+<p>첨부: 코드 ZIP, 별도 실행 TXT, 편집기 전체 TXT, 적용·원복 안내 TXT. ZIP 안에도 실행 TXT와 안내가 있습니다. 선택 MAIN96·데이터는 변경하지 않았고 GENOS 현장 반입·배포·내부 모델 결과는 아직 미검증입니다.</p>
+</body></html>

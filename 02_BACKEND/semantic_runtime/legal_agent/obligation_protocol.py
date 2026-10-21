@@ -4,7 +4,7 @@ from jsonschema import Draft202012Validator, ValidationError
 from . import workflow_tiers_protocol as base
 from .protocol import obj, arr, enum, ID
 from .errors import ProposalError
-SHORT = {'type': 'string', 'minLength': 4, 'maxLength': 400}
+SHORT = {'type': 'string', 'minLength': 4}
 REFS = {**arr(ID, 1, 64), 'uniqueItems': True}
 PLAN = obj({'demands': arr(obj({'question_refs': REFS, 'requirement': SHORT,
     'given_facts': arr(SHORT, 0, 6), 'missing_fact': {'anyOf': [SHORT, {'type': 'null'}]}}), 1, 8),
@@ -68,8 +68,8 @@ def meaningful(value):
 # A source-to-draft comparison is mandatory per reviewed source. These are
 # model observations, never server-certified legal interpretations.
 DIMENSIONS = ('concept', 'scope', 'conditions', 'exceptions', 'certainty', 'question_fit')
-SOURCE_CHECK = obj({'source': ID, 'quote': {'type':'string','minLength':2,'maxLength':2000},
-    'draft_quote': {'type':'string','minLength':2,'maxLength':2000},
+SOURCE_CHECK = obj({'source': ID, 'quote': {'type':'string','minLength':2},
+    'draft_quote': {'type':'string','minLength':2},
     'dimensions': obj({key:enum('PRESERVED','NOT_APPLICABLE','CHANGED','UNCERTAIN') for key in DIMENSIONS}),
     'reason': SHORT})
 review_check = DEFINITIONS['ReviewDecision']['properties']['checks']['items']

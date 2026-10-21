@@ -1,0 +1,52 @@
+{
+  "schema_version": "genos-storage-metadata-validation-v1",
+  "status": "LOCAL_METADATA_CHECKS_PASS",
+  "tests": {
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/GENOS/handoffs/term_release_storage_20261016_r1/test_delivery.py",
+    "passed": 14,
+    "failed": 0,
+    "duration_seconds": 0.74,
+    "actual_shell_commands": 11,
+    "expected_failure_commands": 3
+  },
+  "syntax": {
+    "bash_n": "PASS",
+    "python_3_11_ast": "PASS",
+    "executed_python": "3.14.4"
+  },
+  "scope": [
+    "same-filesystem no-replace rename",
+    "idempotent isolation and restore",
+    "failure between directory moves",
+    "lost receipt after rename",
+    "identity mismatch and destination conflict refusal",
+    "unknown directory and symlink refusal",
+    "bounded metadata input",
+    "no DB or code-body read in binding check",
+    "actual supplied TXT check/isolate/verify/restore/status"
+  ],
+  "io_policy": {
+    "read_input_budget_bytes_per_command": 2097152,
+    "config_limit_bytes": 65536,
+    "other_metadata_file_limit_bytes": 1048576,
+    "budget_excludes": "Python/shell startup, OS/NFS metadata operations, and log/receipt writes",
+    "payload_reads": false,
+    "recursive_scan": false,
+    "du": false,
+    "runtime_api_call": false,
+    "server_restart": false,
+    "permanent_delete": false
+  },
+  "genos_execution": "NOT_RUN",
+  "data_payload_validation": "NOT_RUN",
+  "service_validation": "NOT_RUN",
+  "local_main_changed": false,
+  "space_reclaimed": false,
+  "prior_failure": "failures/PRIOR_TEST_RESULT.txt",
+  "files": {
+    "GENOS_TERM_RELEASE_STORAGE_20261016_R1.txt": "7b91dd5b44679959d16c1acd35f14808d17397c47363f2a4f72e55f3011e5199",
+    "GUIDE_UTF8.txt": "9ea1970258cc2454b5fecbb8c3b2facb98a2f79eadd2800e96db8640ed7f1f68",
+    "test_delivery.py": "8127f0950ddd37bb263d32f9571589c0d42902d51f217376e6eb940b29ae2725",
+    "TEST_COMMAND_TRANSCRIPT.json": "81a8969f54c2581280c6c1cd3ae20a81ec848271762ea4b259cf009000b4531d"
+  }
+}

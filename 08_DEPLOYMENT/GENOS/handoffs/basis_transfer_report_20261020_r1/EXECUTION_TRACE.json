@@ -1,0 +1,132 @@
+[
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt",
+      "report",
+      "--output",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/LIVE.html"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:42.827882+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"report\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/dev-runtime\"}\n{\"ts\": \"2026-10-20T10:12:42.856690+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"at\":\"2026-10-20T10:12:42.859401+00:00\",\"batch_status\":\"running\",\"event\":\"basis.artifacts.snapshot\",\"full_source_hash\":false,\"links\":1,\"model_calls\":0,\"snapshot_sha256\":\"8d91d963a0e48a589a80a8d503e64498f04a932a1ede08b3b162fa1490376e40\"}\n{\"at\":\"2026-10-20T10:12:42.860217+00:00\",\"event\":\"basis.artifacts.html\",\"links\":1,\"path\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/LIVE.html\"}\nBASIS_ARTIFACT_EXIT=0 LOG=./basis-artifacts-logs/20261020T101242Z-636108.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt",
+      "export",
+      "--output",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:42.974771+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"export\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/dev-runtime\"}\n{\"ts\": \"2026-10-20T10:12:42.999513+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"at\":\"2026-10-20T10:12:43.001979+00:00\",\"batch_status\":\"running\",\"event\":\"basis.artifacts.snapshot\",\"full_source_hash\":false,\"links\":1,\"model_calls\":0,\"snapshot_sha256\":\"343e589f2996b27d818a08d06817ac7afd4e81b667310a42a0c968c9a7c68e56\"}\n{\"at\":\"2026-10-20T10:12:43.006152+00:00\",\"event\":\"basis.artifacts.html\",\"links\":1,\"path\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/.basis-export-n_wvipos/RELATIONS_OUT/LINKS.html\"}\n{\"at\":\"2026-10-20T10:12:43.008910+00:00\",\"batch_status\":\"running\",\"event\":\"basis.artifacts.exported\",\"folder\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT\",\"links\":1,\"snapshot_sha256\":\"343e589f2996b27d818a08d06817ac7afd4e81b667310a42a0c968c9a7c68e56\",\"zip\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT.zip\"}\nBASIS_ARTIFACT_EXIT=0 LOG=./basis-artifacts-logs/20261020T101242Z-636116.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "check",
+      "--local-validation"
+    ],
+    "exit": 1,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.117540+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"check\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/dev-runtime\"}\n{\"event\": \"BASIS_ARTIFACT_FAILED\", \"error_type\": \"BasisError\", \"error_code\": \"TRANSFER_REVIEW_REQUIRED\", \"message\": \"HTML 검토 후 review --all 또는 review --ids를 먼저 실행하세요.\"}\nTraceback (most recent call last):\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/runner.py\", line 47, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/runner.py\", line 42, in main\n    return module.main([*args, '--kit', str(HERE)])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 703, in main\n    value = load_reviewed(a.bundle, value)\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 572, in load_reviewed\n    require(path.is_file(), 'TRANSFER_REVIEW_REQUIRED', 'HTML 검토 후 review --all 또는 review --ids를 먼저 실행하세요.')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout/02_BACKEND/semantic_runtime/basis_links/contracts.py\", line 27, in require\n    if not condition:raise BasisError(code,message,status)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsemantic_runtime.basis_links.contracts.BasisError: HTML 검토 후 review --all 또는 review --ids를 먼저 실행하세요.\nBASIS_TRANSFER_EXIT=1 LOG=./basis-transfer-logs/20261020T101243Z-636124.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "review",
+      "--all"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.229337+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"review\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/dev-runtime\"}\n{\"at\":\"2026-10-20T10:12:43.233192+00:00\",\"event\":\"basis.artifacts.reviewed\",\"published_to_sqlite\":false,\"review_file\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT/REVIEW.json\",\"reviewed_zip\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/RELATIONS_OUT_REVIEWED.zip\",\"selected\":1,\"total\":1}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636131.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "check",
+      "--local-validation"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.345113+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"check\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"ts\": \"2026-10-20T10:12:43.370232+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"at\":\"2026-10-20T10:12:43.371575+00:00\",\"event\":\"basis.artifacts.result\",\"insert\":1,\"skip\":0,\"source_verified\":\"linked_rows\",\"status\":\"ready\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636138.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "apply",
+      "--local-validation"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.489015+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"apply\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"ts\": \"2026-10-20T10:12:43.516283+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"actor\":\"jin\",\"at\":\"2026-10-20T10:12:43.520649+00:00\",\"event\":\"basis.artifacts.result\",\"inserted\":[\"830a53851ef84c749ec19cc0bd353b50\"],\"skipped\":[],\"snapshot_sha256\":\"2febce73d12c6a42570884719e29be29e2981d7184529ea4d5e13bc333dd546e\",\"status\":\"applied\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636146.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "apply",
+      "--local-validation"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.641291+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"apply\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"ts\": \"2026-10-20T10:12:43.668985+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"actor\":\"jin\",\"at\":\"2026-10-20T10:12:43.520649+00:00\",\"event\":\"basis.artifacts.result\",\"inserted\":[\"830a53851ef84c749ec19cc0bd353b50\"],\"skipped\":[],\"snapshot_sha256\":\"2febce73d12c6a42570884719e29be29e2981d7184529ea4d5e13bc333dd546e\",\"status\":\"already_applied\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636154.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "status"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.785856+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"status\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"actor\":\"jin\",\"at\":\"2026-10-20T10:12:43.520649+00:00\",\"event\":\"basis.artifacts.result\",\"inserted\":[\"830a53851ef84c749ec19cc0bd353b50\"],\"live\":{\"830a53851ef84c749ec19cc0bd353b50\":\"PROPOSED\"},\"marker_enabled\":true,\"skipped\":[],\"snapshot_sha256\":\"2febce73d12c6a42570884719e29be29e2981d7184529ea4d5e13bc333dd546e\",\"status\":\"applied\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636162.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "rollback",
+      "--local-validation"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:43.898772+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"rollback\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"at\":\"2026-10-20T10:12:43.901277+00:00\",\"event\":\"basis.artifacts.result\",\"revoked\":[\"830a53851ef84c749ec19cc0bd353b50\"],\"snapshot_sha256\":\"2febce73d12c6a42570884719e29be29e2981d7184529ea4d5e13bc333dd546e\",\"status\":\"rolled_back\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636169.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "rollback",
+      "--local-validation"
+    ],
+    "exit": 0,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:44.005716+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"rollback\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"at\":\"2026-10-20T10:12:43.901277+00:00\",\"event\":\"basis.artifacts.result\",\"revoked\":[\"830a53851ef84c749ec19cc0bd353b50\"],\"snapshot_sha256\":\"2febce73d12c6a42570884719e29be29e2981d7184529ea4d5e13bc333dd546e\",\"status\":\"already_rolled_back\"}\nBASIS_TRANSFER_EXIT=0 LOG=./basis-transfer-logs/20261020T101243Z-636176.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "apply",
+      "--local-validation"
+    ],
+    "exit": 1,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:44.111018+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"apply\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"ts\": \"2026-10-20T10:12:44.136874+00:00\", \"level\": \"INFO\", \"logger\": \"genos.folder_catalogue\", \"event\": \"folder_catalogue.ready\"}\n{\"event\": \"BASIS_ARTIFACT_FAILED\", \"error_type\": \"BasisError\", \"error_code\": \"TRANSFER_ROLLED_BACK\", \"message\": \"이미 원복한 묶음입니다. 다시 활성화하려면 별도 검토가 필요합니다.\"}\nTraceback (most recent call last):\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/runner.py\", line 47, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/runner.py\", line 42, in main\n    return module.main([*args, '--kit', str(HERE)])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 712, in main\n    result = apply(value, script, generation, runtime, check=a.command == 'check', config=source_config)\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 450, in apply\n    require(repo.receipt(receipt_key(value, 'rollback'), value['snapshot_sha256']) is None,\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            'TRANSFER_ROLLED_BACK', '이미 원복한 묶음입니다. 다시 활성화하려면 별도 검토가 필요합니다.')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout/02_BACKEND/semantic_runtime/basis_links/contracts.py\", line 27, in require\n    if not condition:raise BasisError(code,message,status)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsemantic_runtime.basis_links.contracts.BasisError: 이미 원복한 묶음입니다. 다시 활성화하려면 별도 검토가 필요합니다.\nBASIS_TRANSFER_EXIT=1 LOG=./basis-transfer-logs/20261020T101244Z-636183.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/APPLY_RELATIONS.txt",
+      "check",
+      "--local-validation"
+    ],
+    "exit": 1,
+    "output": "{\"event\": \"ARTIFACT_CODE_GATE_PASS\", \"checkout\": \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\", \"checkout_files\": 394, \"tool_sha256\": \"896500e9bf49eb3850994267f111e6642846a24c3dba286f152f3e03d135b9fe\", \"checkout_modified\": false, \"model_calls\": 0}\n{\"at\":\"2026-10-20T10:12:44.251098+00:00\",\"code_root\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout\",\"command\":\"check\",\"event\":\"basis.artifacts.start\",\"generation\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/built/generation\",\"python\":\"/home/jin/8-AGENT/.venv/bin/python3\",\"python_version\":\"3.14.4\",\"runtime\":\"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/production-runtime\"}\n{\"event\": \"BASIS_ARTIFACT_FAILED\", \"error_type\": \"BasisError\", \"error_code\": \"TRANSFER_SQL\", \"message\": \"SQL과 연결 데이터가 다릅니다.\"}\nTraceback (most recent call last):\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/runner.py\", line 47, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/runner.py\", line 42, in main\n    return module.main([*args, '--kit', str(HERE)])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 712, in main\n    result = apply(value, script, generation, runtime, check=a.command == 'check', config=source_config)\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/OPERATING_TRANSFER/RELATIONS_OUT/basis_batch_artifacts.py\", line 433, in apply\n    require(script == sql(value), 'TRANSFER_SQL', 'SQL과 연결 데이터가 다릅니다.')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/checkout/02_BACKEND/semantic_runtime/basis_links/contracts.py\", line 27, in require\n    if not condition:raise BasisError(code,message,status)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsemantic_runtime.basis_links.contracts.BasisError: SQL과 연결 데이터가 다릅니다.\nBASIS_TRANSFER_EXIT=1 LOG=./basis-transfer-logs/20261020T101244Z-636191.log\n"
+  },
+  {
+    "args": [
+      "bash",
+      "/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/GENOS_BASIS_ARTIFACTS_20261020_R1/GENOS_BASIS_ARTIFACTS_20261020_R1_RUN.txt",
+      "report"
+    ],
+    "exit": 1,
+    "output": "{\"event\": \"BASIS_ARTIFACT_FAILED\", \"error_type\": \"ValueError\", \"error_code\": null, \"message\": \"CODE_GATE: verified R3 code required: 02_BACKEND/semantic_runtime/basis_links/resolver.py\"}\nTraceback (most recent call last):\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/GENOS_BASIS_ARTIFACTS_20261020_R1/runner.py\", line 47, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/pytest-of-jin/pytest-214/test_real_handoff_and_generate0/TRANSFER/GENOS_BASIS_ARTIFACTS_20261020_R1/runner.py\", line 31, in main\n    raise ValueError('CODE_GATE: verified R3 code required: ' + name)\nValueError: CODE_GATE: verified R3 code required: 02_BACKEND/semantic_runtime/basis_links/resolver.py\nBASIS_ARTIFACT_EXIT=1 LOG=./basis-artifacts-logs/20261020T101244Z-636199.log\n"
+  }
+]

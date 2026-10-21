@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+TASK_PACKAGE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p "$TASK_PACKAGE_DIR/logs"
+TASK_LOG="$TASK_PACKAGE_DIR/logs/run-$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_EXIT=$?; trap - EXIT; echo "DEV_SELECTION_EXIT=$TASK_EXIT LOG=$TASK_LOG"; exit "$TASK_EXIT"' EXIT
+echo "DEV_SELECTION_START=$(date -u +%FT%TZ) LOG=$TASK_LOG"
+export PYTHONDONTWRITEBYTECODE=1
+python3 - "$TASK_PACKAGE_DIR" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); h=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
+if h(p/'PACKAGE.json')!='ad97e8bb71a3200b0fb70349fe63102ad72e39cc10a452a469d9e3f2b0d07f02':raise SystemExit('PACKAGE hash mismatch')
+for name,digest in json.loads((p/'PACKAGE.json').read_text())['files'].items():
+    if h(p/name)!=digest:raise SystemExit('Package file changed: '+name)
+print('PACKAGE_VERIFIED PYTHON='+sys.executable+' VERSION='+sys.version)
+PY
+python3 "$TASK_PACKAGE_DIR/runner.py" "${@:-check}"

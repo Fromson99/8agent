@@ -1,0 +1,84 @@
+GENOS 발송 코드 통합본 R1 — 파일 누락 검사 및 최신 변경 일괄 적용
+
+이 파일 하나로 현재 사진의 GENOS/CM 서빙 계열에서 누적 코드 적용을 진행합니다.
+기존 메일을 날짜순으로 다시 실행하지 마세요. 대체된 R1/R2와 원복·진단 명령을 반복하면 최신 코드가 되돌아갈 수 있습니다.
+사진의 FACT_REASON R2는 코드 적용 성공입니다. SEARCH_LATEST R1은 경로 선택에서 적용 전 실패했습니다.
+사진에 확인된 구성은 OUTPUT_UNLIMITED 이전입니다. 출력 상한 제거도 이번 통합본에 포함합니다.
+
+1. 실제 ZIP 업로드 폴더 TRANSFER에서 아래 두 줄 실행
+python3 -m zipfile -e ./GENOS_CUMULATIVE_MAIL_20261015_R1.zip ./GENOS_CUMULATIVE_MAIL_20261015_R1
+bash ./GENOS_CUMULATIVE_MAIL_20261015_R1/GENOS_CUMULATIVE_MAIL_20261015_R1_RUN.txt install
+
+별도 RUN.txt를 올렸다면 그 TXT만 bash로 실행해도 전체 코드가 들어 있습니다.
+적용 대상은 기존 ~/DEV이며 GENOS_DEV_ROOT 또는 GENOS_DEV가 설정되어 있으면 그 기존 Git checkout입니다.
+TRANSFER 절대경로를 추정하지 않습니다. 실행 위치에서 로그와 상태를 저장합니다.
+로그: ./cumulative-mail-r1-logs/
+상태/검색 계획/편집기 전체 코드: ./cumulative-mail-r1-state/
+기존 코드 백업: 출력된 BACKUP 경로. 과거 패치 백업도 그대로 보존됩니다.
+검사만 하려면 install 대신 check. install을 다시 실행하면 적용 완료 해시를 확인하고 남은 단계만 처리합니다.
+
+2. 포함 범위
+현재 R4 상주 캐시 계열의 알려진 완전한 코드 inventory 4,840개를 검사하며 사진의 실제 지문을 포함합니다.
+RAG 최적화/선택 오류 수정, 최종 토큰 스트리밍/종료 처리, AD·요청 로그, 정상 완료 shortcut,
+판단 충돌·예외 안내, 모델 입력 계측, urllib/HTTPS, 스키마 복구, 의존 원문·도구 노출/실패/길이 복구,
+추가 사실 안내, GENOS 출력 토큰 앱 상한 제거, 기존 DB의 구버전 검색 제외를 누적 적용합니다.
+이전 공통 CM 코드·상주 캐시·로그·화면 변형·운영 예산은 알려진 현장 구성에 결속해 보존합니다.
+설치기는 완전한 입력/출력 코드 해시와 30개 엔진 연결을 확인합니다. 알 수 없는 변경을 임의로 덮어쓰지 않습니다.
+코드에 포함되어 있는 기능과 NFS의 CM 데이터 등록, 편집기 저장, 새 코드서빙 리비전 배포는 별도 상태입니다.
+메일별 반영/대체/별도 작업 분류는 MAIL_COVERAGE.json에 있습니다.
+
+3. 데이터와 경로
+서비스의 GENOS_SERVING_PATHS.json 고정 generation 및 manifest 해시를 그대로 사용합니다.
+없는 01_DATA/generations/CURRENT.json을 새로 만들지 않습니다.
+검색 제외는 기존 문서 메타데이터로 구버전 ID를 골라 generation 옆 SEARCH_SELECTION에 기록합니다.
+같은 폴더·제목의 8자리 파일명 날짜를 비교하며, 시행일을 판단하지 않습니다. 모호한 판본은 제외하지 않습니다.
+원문·SQLite·색인·generation manifest는 보존하며 재구축과 모델 호출은 없습니다.
+과거 데이터 반입/재구축/CM 등록/ZIP 병합/진단 전용 메일은 누적 코드 패치와 다릅니다.
+그 작업들을 무조건 재실행하지 않고 현재 코드를 보존합니다. 이 통합본으로 해당 데이터 작업 완료를 주장하지 않습니다.
+사진보다 오래된 비상주 R3 계열이나 별도의 로컬 구축 checkout은 이번 현장 대상이 아닙니다.
+
+4. 코드 commit 후 같은 checkout 배포 게이트
+install의 ALL_CODE_APPLIED 및 CUMULATIVE_EXIT=0을 확인합니다. 이것은 배포 완료가 아닙니다.
+아래를 같은 TRANSFER에서 실행하면 변경 파일만 확인할 수 있습니다.
+python3 - <<'PY'
+import json,pathlib,subprocess
+s=json.loads(pathlib.Path('cumulative-mail-r1-state/STATUS.json').read_text())
+r=json.loads((pathlib.Path(s['backup'])/'receipt.json').read_text());names=[x['path'] for x in r['files']]
+subprocess.run(['git','-C',s['code_root'],'diff','--check'],check=True)
+subprocess.run(['git','-C',s['code_root'],'diff','--stat','--',*names],check=True)
+print('CODE_ROOT=',s['code_root']);print('BACKUP=',s['backup'])
+PY
+
+변경 검토 후 같은 checkout에서 해당 receipt의 파일만 commit합니다. 다른 작업 파일은 함께 stage하지 않습니다.
+python3 - <<'PY'
+import json,pathlib,subprocess
+s=json.loads(pathlib.Path('cumulative-mail-r1-state/STATUS.json').read_text())
+r=json.loads((pathlib.Path(s['backup'])/'receipt.json').read_text());names=[x['path'] for x in r['files']]
+subprocess.run(['git','-C',s['code_root'],'add','--',*names],check=True)
+subprocess.run(['git','-C',s['code_root'],'commit','--only','-m','Apply verified GENOS mailed cumulative updates','--',*names],check=True)
+PY
+bash ./GENOS_CUMULATIVE_MAIL_20261015_R1/GENOS_CUMULATIVE_MAIL_20261015_R1_RUN.txt gate
+
+게이트 PASS 후 그 checkout의 기존 원격으로 git push하고, 같은 commit으로 새 코드서빙 리비전을 배포합니다.
+현재 generation/runtime·인증 설정을 유지하고 SSE 서버/세션을 재시작합니다.
+Git push·리비전 배포는 install이 자동 실행하지 않습니다.
+
+5. 워크플로우 편집기 — 이전 메일에서 빠졌을 수 있는 별도 단계
+WORKFLOW_PASTE_ALL.txt는 마지막 발송된 PUBLIC_FAILURE_GUIDANCE R1 전체 편집기 코드와 동일합니다.
+이전 SOURCE_PROVIDER R2 / SOURCE_CARDS / LIVE_CARDS 편집기 수정들을 포함한 최신 대체본입니다.
+기존 워크플로우 Python 편집기 내용을 보관하고, 이 TXT 전체를 해당 편집기에 붙여 넣어 저장합니다.
+이미 동일 코드이면 다시 바꿀 필요 없습니다. 터미널의 코드 적용이나 Git push만으로 편집기는 바뀌지 않습니다.
+이후 워크플로우 테스트 화면에서 정상 질문·기존 실패 질문·구버전 검색 제외를 확인합니다.
+코드서빙 직접 테스트 UI/API 실행을 요구하지 않습니다. 실제 리비전·request ID·응답 결과로 최종 확인합니다.
+
+6. 실패·재개·원복
+code check 실패는 쓰기 전에 중단합니다. 코드 쓰기/검증 실패는 원본을 복원하고 실패 로그를 보존합니다.
+검색 활성화 실패는 CODE_APPLIED_SELECTION_FAILED로 기록합니다. 원인 해결 후 같은 install로 재개합니다.
+generation이나 계획이 바뀌면 이전 계획을 덮어쓰지 않고 중단합니다.
+이 실행에서 적용한 검색 선택과 코드를 함께 원복하려면 같은 TRANSFER에서:
+bash ./GENOS_CUMULATIVE_MAIL_20261015_R1/GENOS_CUMULATIVE_MAIL_20261015_R1_RUN.txt undo
+후속 코드/검색 설정 변경이나 백업 변조가 있으면 원복을 거부합니다.
+원복 후 이전 검증 commit/리비전을 배포하고 SSE를 재시작합니다. 이전 워크플로우 편집기도 별도 복원합니다.
+
+현장 실행은 python3입니다. 로컬 MAIN66과 기존 배포 이력은 변경하지 않습니다.
+실제 GENOS 반입·push·리비전·편집기 저장·내부 모델 질의 성공은 현장 실행 결과로 확인합니다.

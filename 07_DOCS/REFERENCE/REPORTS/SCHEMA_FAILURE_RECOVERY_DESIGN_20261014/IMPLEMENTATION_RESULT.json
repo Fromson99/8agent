@@ -1,0 +1,253 @@
+{
+  "schema_version": "schema-recovery-implementation-v1",
+  "date": "2026-10-14",
+  "working_product_files": 32,
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "schema-recovery-20261014-r1",
+    "generation": 62,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/release.json",
+    "release_manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+    "activated_at": "2026-10-14T07:11:07.165755+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "ce4861815108bf634c853d95fc4964645193aea18356f69c5557711b1779c42b",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/실험/manifest.json",
+        "sha256": "fd7a9deeb3cdb34f547c13e3685bc508f0d96db7ec63d0172cdf5976a0441bbb"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/README.md",
+        "sha256": "fa69809534eb4081fe193653775c1b107433373b0df4e2545e3188704a825b2f"
+      },
+      "arm": "recovery",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/run-001/result.json",
+        "sha256": "721fcbf7d1e095fa720dc9fcaaeb5f1104b08a064136c820a30b507f8ec18bbc"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/design/release-rebase.json",
+        "sha256": "b52697f747e4a4fad2a65f60d88b396b3b41fe1104fd4e4d33fe886acc8643e3"
+      }
+    }
+  },
+  "selected_files": 302,
+  "code_root": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/code",
+  "qualified_candidate": {
+    "manifest_path": "02_BACKEND/lawrag/research/candidates/adr_0777/recovery/candidate.json",
+    "manifest_sha256": "83e69ea4840c64309666075937171dfa143347dfa9f502298cf1acefbb8607ff",
+    "revision_id": "rev-001",
+    "revision_sha256": "75bd760fd41fb4b605824991bb3c87d14b58b2a6e5cc33680c2524299a9329cb"
+  },
+  "source_generation_unchanged": true,
+  "actual_service": {
+    "status": "PASS",
+    "environment": "fresh WSL local service.service",
+    "pointer": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "schema-recovery-20261014-r1",
+      "generation": 62,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/release.json",
+      "release_manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+      "activated_at": "2026-10-14T07:11:07.165755+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "ce4861815108bf634c853d95fc4964645193aea18356f69c5557711b1779c42b",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/실험/manifest.json",
+          "sha256": "fd7a9deeb3cdb34f547c13e3685bc508f0d96db7ec63d0172cdf5976a0441bbb"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/README.md",
+          "sha256": "fa69809534eb4081fe193653775c1b107433373b0df4e2545e3188704a825b2f"
+        },
+        "arm": "recovery",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/run-001/result.json",
+          "sha256": "721fcbf7d1e095fa720dc9fcaaeb5f1104b08a064136c820a30b507f8ec18bbc"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0777-schema-recovery-main/artifacts/design/release-rebase.json",
+          "sha256": "b52697f747e4a4fad2a65f60d88b396b3b41fe1104fd4e4d33fe886acc8643e3"
+        }
+      }
+    },
+    "execution_binding": {
+      "mode": "local-release",
+      "release_id": "schema-recovery-20261014-r1",
+      "generation": 62,
+      "release_manifest_sha256": "f806b479865d26c6173c3fbe2b593d20579c0aadfe1d0d05dadf76d5ad6e1e90",
+      "code_sha256": "23fccd3e5b5e6f14214ccc1138031635bb86d4888df07c6fb2c5beb6de099d1b",
+      "profile_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+      "source_generation_id": "term-source-8729f978a28924cb8c5b",
+      "fulltext_manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+      "search_policy_sha256": "949c449188a1bb1f25c289f2be0a137137c94f04dce6851be521821c825bbe79",
+      "schema_sha256": "c80ecb2f73c797b0d42136520eb83b4beacc557251a289fb3f9b156d6fb0d34a",
+      "process_instance_id": "8da17851a0344cd08954856afb6d44f6",
+      "process_id": 436660,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "3d74971f2f1e0f4051439486a243e295b8cc46679c354e14e2af4ca2e98ed1f4",
+      "service_entry_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c"
+    },
+    "health_search_catalogue_statuses": [
+      200,
+      200,
+      200
+    ],
+    "failed_response_status": 500,
+    "selected_output_contract": "08_DEPLOYMENT/RELEASES/schema-recovery-20261014-r1/code/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+    "selected_files_verified": 302,
+    "data_unchanged": true,
+    "model_calls": 0,
+    "genos_deployed": false
+  },
+  "qualification": {
+    "strict_success": true,
+    "checks": {
+      "exhaustive_410_contract_cases": true,
+      "known_817_regressions_passed": true,
+      "input_evidence_and_single_owner_budgets_preserved": true,
+      "real_gateway_ad_build_api_consumers_checked": true,
+      "main61_pointer_unchanged": true,
+      "frozen_inputs_unchanged": true,
+      "all_serving_files_match": true,
+      "no_real_model_calls": true
+    },
+    "contracts_passed": 817,
+    "contracts_skipped": 1,
+    "by_arm": {
+      "baseline": {
+        "status": "complete",
+        "matrix_cases": 410,
+        "contract_correct": 24
+      },
+      "recovery": {
+        "status": "complete",
+        "matrix_cases": 410,
+        "contract_correct": 410
+      }
+    },
+    "usage": {
+      "model_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "limitations": [
+      "Exhaustive synthetic contract audit, not unseen legal accuracy or real model performance.",
+      "Known regression fixtures are supplemental, not a fresh holdout.",
+      "GENOS field installation, serving revision, internal model and workflow display remain unverified.",
+      "Keyed decision objects and sparse response patches remain conditional, not enabled.",
+      "Build components are validated on their local pipeline path separately from selected RAG serving files."
+    ]
+  },
+  "installed_contracts": 239,
+  "delivery_validation": "08_DEPLOYMENT/GENOS/handoffs/schema_recovery_20261014_r1/VALIDATION.json",
+  "history_source": "HISTORY.md H01-H17 preserved; photo causes retain PHOTO_ONLY limitation",
+  "guard_test_mapping": {
+    "I01": [
+      "test_ad_language.py",
+      "test_native_completion_consumer_adr0680.py",
+      "test_main50_request_repair.py"
+    ],
+    "I02": [
+      "test_navigation_input_compaction.py",
+      "test_legal_agent_v5_sources.py"
+    ],
+    "I03": [
+      "test_law_navigation_state_contract_adr0661.py",
+      "test_memory_adapters_v2.py"
+    ],
+    "I04": [
+      "test_batch_reference_navigation.py",
+      "test_reference_resolution.py"
+    ],
+    "I05": [
+      "test_law_navigation_one_repair_adr0663.py",
+      "test_unified_memory_recovery.py"
+    ],
+    "I06": [
+      "test_assessment_gap_action.py",
+      "test_main50_request_repair.py"
+    ],
+    "I07": [
+      "test_native_completion_consumer_adr0680.py",
+      "test_completion_boundary_adr0679.py"
+    ],
+    "I08": [
+      "test_output_contract_recovery.py",
+      "test_main50_request_repair.py"
+    ],
+    "I09": [
+      "test_output_contract_recovery.py",
+      "test_output_contract_build.py",
+      "test_ad_language.py"
+    ],
+    "I10": [
+      "test_output_contract_recovery.py",
+      "test_recipe_output.py"
+    ],
+    "I11": [
+      "test_genos_answer_stream.py",
+      "test_token_answer_stream.py",
+      "test_genos_model_stream_completion.py"
+    ],
+    "I12": [
+      "test_unified_legal_agent.py",
+      "test_unified_memory_recovery.py",
+      "actual service.service smoke"
+    ],
+    "I13": [
+      "test_unified_memory_recovery.py",
+      "test_unified_legal_agent.py"
+    ],
+    "I14": [
+      "test_completion_v4.py",
+      "test_native_completion_consumer_adr0680.py",
+      "test_recipe_runtime.py"
+    ],
+    "I15": [
+      "zero real model calls; synthetic field fixtures; field identifiers left unverified"
+    ]
+  },
+  "global_graph": {
+    "new_errors": 0,
+    "existing_errors": [
+      "ERROR: ADR-0305: invalid run purpose: ordinary local contract checks",
+      "ERROR: ADR-0444: external derived_from lacks parent record: ADR-0432-experiment-v1/navigation",
+      "ERROR: ADR-0541: declared parent not used by any arm: ADR-0539-experiment-v1/hint-plan",
+      "ERROR: ADR-0622: run run-001 artifact missing: artifacts/run-001/result.json",
+      "ERROR: ADR-0638: invalid run purpose: system integration acceptance; not a legal answer benchmark",
+      "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/baseline",
+      "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/hint-plan",
+      "ERROR: graph edge source missing: ADR-0158-experiment-v1/v2-candidate"
+    ]
+  },
+  "phases": {
+    "P0": "COMPLETE: baseline/history/guards frozen",
+    "P1": "COMPLETE: typed diagnosis",
+    "P2": "COMPLETE for canonical array contract; keyed objects and sparse patches remain conditional",
+    "P3": "COMPLETE for declared runtime paths: one owner, bounded persistent recovery",
+    "P4": "COMPLETE in working code: AD, reference, build; exact build installer prepared",
+    "P5": "COMPLETE deterministic qualification; real-model effect not measured",
+    "P6": "COMPLETE: MAIN62 and actual local API binding",
+    "P7": "HANDOFF_READY: installed-code tests passed; actual GENOS execution/deployment NOT_VERIFIED"
+  },
+  "git_main_merge": "NOT_PERFORMED",
+  "genos_deployed": false,
+  "email_sent": false,
+  "zip_sha256": "0c98edcc74edb7596d3843acc0567ff9f90d9c3bc35d6bc16829dca34495f2be"
+}

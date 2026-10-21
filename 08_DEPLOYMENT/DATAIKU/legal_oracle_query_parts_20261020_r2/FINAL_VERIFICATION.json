@@ -1,0 +1,19 @@
+{
+  "status": "VERIFIED",
+  "zip": "LEGAL_ORACLE_QUERY_PARTS_20261020_R2.zip",
+  "bytes": 195949,
+  "sha256": "693d9d63abc765e37c1f7453ae1bec7269b080b68598a734430d4c3551f98183",
+  "members": 42,
+  "python311_syntax_files": 37,
+  "bash_syntax": "PASS",
+  "notebook_txt_equal": true,
+  "all_zip_members_match_validated_package": true,
+  "runtime_matches_tested_working_sources": true,
+  "only_expected_code_changes_vs_r1": [
+    "entry.py",
+    "runtime/lawrag/pipeline/oracle_query_package.py",
+    "runtime/lawrag/pipeline/oracle_query_publish.py",
+    "runtime/lawrag/pipeline/oracle_transfer_progress.py"
+  ],
+  "operating_data_in_zip": false
+}

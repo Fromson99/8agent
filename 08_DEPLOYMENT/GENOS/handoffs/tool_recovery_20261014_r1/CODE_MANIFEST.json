@@ -1,0 +1,302 @@
+{
+  "schema_version": "genos-partial-patch-v1",
+  "revision": "GENOS_TOOL_RECOVERY_20261014_R1",
+  "prerequisite": [
+    "GENOS_SCHEMA_RECOVERY_20261014_R1",
+    "GENOS_DEPENDENCY_RECOVERY_20261014_R1",
+    "GENOS_TOOL_AVAILABILITY_20261014_R1"
+  ],
+  "gate_archive": "apply-generated BACKUP/APPLIED_CODE.zip",
+  "files": [
+    {
+      "path": "DELIVERY_TESTS.xml.gz",
+      "sha256": "707543fdaa8f22244835c34becd019eb88ff33e52762aae5be16b20297c98708",
+      "bytes": 323
+    },
+    {
+      "path": "FIX_REPORT_UTF8.txt",
+      "sha256": "80be89ecd428a922570511881da6453cf77fc33d6edc85f853f1f5ec4d052cb4",
+      "bytes": 2537
+    },
+    {
+      "path": "GENOS_TOOL_RECOVERY_20261014_R1_RUN.txt",
+      "sha256": "8b3386d0a00fee6368cf861ae5c7e30e7c192784eed4cd84f2199c7dceafdff7",
+      "bytes": 551645
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "c7c5e278173334182b777d73f3035cbb583d1469a551022bae3c4705f537b85d",
+      "bytes": 7081
+    },
+    {
+      "path": "INSTALLED_query_latency_20261007_r3.xml.gz",
+      "sha256": "723b8e2c5f485b5ae37274a77feba03729a4a060c06df3b762a942b3c600a54a",
+      "bytes": 8988
+    },
+    {
+      "path": "INSTALLED_query_latency_20261007_r4.xml.gz",
+      "sha256": "71448afc465a37adb2f5790de7d1c89090950b6de47db001a0fc39938cee2457",
+      "bytes": 8969
+    },
+    {
+      "path": "INVENTORY_BINDINGS.json.gz",
+      "sha256": "13ba9bf344d51a24f55b32daf93fe1ea1c658d7a1a49cbd46823f72fc9714e43",
+      "bytes": 66239
+    },
+    {
+      "path": "LEGACY_DISPLAY_BASELINE_query_latency_20261007_r3.json",
+      "sha256": "5e16e25fb34f5825b7d61e12a9cb5aa1cc6ce55fd2993e381eee93a9f2bdc22d",
+      "bytes": 913
+    },
+    {
+      "path": "LEGACY_DISPLAY_BASELINE_query_latency_20261007_r4.json",
+      "sha256": "60ff16560ff0d47c68d08cccd34ff7da5dc2a16edb4bc327e279242923c47800",
+      "bytes": 1105
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "cc6153d5ba3278c92bf69f3472faaf0940f658921900ba079224fff5f8c1a413",
+      "bytes": 396094
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "8a73493402a8bc5b85c14091d92831bb373eed3a95b29d7f05bbfab5479de29c",
+      "bytes": 13370
+    },
+    {
+      "path": "TESTED_DELIVERY_BINDING.json",
+      "sha256": "2ec2be4504289ab63e22061bc5671080070876bdddcde77cc2c3906c03456c14",
+      "bytes": 915
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "ba69097bdd002a1f5798d0da91c63abd5da39c23999a4a37f92abfd4915f7e18",
+      "bytes": 23931
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "3d0538ae488eec7303ca78b7eec5b66384ba393a4817d3a26951da4f69cab42f",
+      "bytes": 1334
+    },
+    {
+      "path": "apply_patch.py",
+      "sha256": "79d5906970fbb0a7c547b89daffb61d3cc0d99f5fc49d901802bdc5bc9586824",
+      "bytes": 29635
+    },
+    {
+      "path": "failures/legacy-display-baseline-query_latency_20261007_r3.xml",
+      "sha256": "42ea232fd79086caf1600da531076351024f95a28793c77a0e37feeb79a5964f",
+      "bytes": 679
+    },
+    {
+      "path": "failures/legacy-display-baseline-query_latency_20261007_r4.xml",
+      "sha256": "8775665b9c79c5903bb643c0a20c8f27e81def5f4f5a251db133f32fa0b4e236",
+      "bytes": 679
+    },
+    {
+      "path": "legacy-display-baseline-query_latency_20261007_r3.xml.gz",
+      "sha256": "c924f57527414e64d562ea386d24de070699dd836d9c62418f60138511b229f0",
+      "bytes": 369
+    },
+    {
+      "path": "legacy-display-baseline-query_latency_20261007_r4.xml.gz",
+      "sha256": "03ce4162671f33a0131e0e655d8557e2cbc8831757cc0c6e94e5da376d7fbb9c",
+      "bytes": 368
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "sha256": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+      "bytes": 16127
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+      "bytes": 52432
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "sha256": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "bytes": 1553
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py",
+      "sha256": "21e2d0f1b0cd151824294c687cffdd5e1318f458ee01b929a3511d1b7fc730ca",
+      "bytes": 8602
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py",
+      "sha256": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+      "bytes": 9633
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "sha256": "b7e938067696e7de22b2caeaa791f4bde9a9817015e96ab55fd03931580f7997",
+      "bytes": 159042
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "sha256": "c889568486a5da8aa11862cb727a47f93661351b5c2a7c78cf44009cce3a29b9",
+      "bytes": 8120
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "bytes": 16559
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "sha256": "63b6c0da29fc98c0298d834c8076e39129ed350a078273253718035fe61185b7",
+      "bytes": 28895
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/relations_tools.py",
+      "sha256": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "bytes": 30086
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "sha256": "2476d84568d8649cd95d7370e15f4b3130fb7d6314d758255ad94304831be12a",
+      "bytes": 13260
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "sha256": "8047125605d0c7fa8c4b0c43adc450dacef0920115ceee5b7bf4f6ad2950a5d8",
+      "bytes": 27090
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "sha256": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "bytes": 14630
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "cf89444ba31a89169c859c3a9719085b19d262c25bc009b17208fe82cd5695ab",
+      "bytes": 20513
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/tool_availability.py",
+      "sha256": "ab0d4500c0923e382b82eaa1a34fd23e878964e5f6ea31a91e7cd15a90dc2402",
+      "bytes": 13123
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/tool_execution_receipt.py",
+      "sha256": "c5d2858eaad71295c955bdbae7cef637e3b44dccf7fe7a3eaef0d2beb71575e5",
+      "bytes": 5667
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py",
+      "sha256": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "bytes": 9249
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/tool_policy.py",
+      "sha256": "bcbd6019edf9b3eb910ba3731261b68c0d0e3de278f9201f414ed6faddf7725b",
+      "bytes": 6180
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "d28f0081f9f2c21e97ca05c585a5c7f1b69c49880b0080b8675e56a872b30631",
+      "bytes": 25447
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "e62cbd6d1edbbc873b42c3859649d1d9b48d377f62ebf9bfda84e6be01e0e069",
+      "bytes": 37316
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "sha256": "c377759fa18c9ad1abc06f5844c8cecfd837d070c7d20248f51fd70e5c1d0837",
+      "bytes": 42834
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "sha256": "5750ed27fa2a00f2cee5b695ec75463ad92e50937a4776bebb92664aa8ae4814",
+      "bytes": 16127
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "76d13e6faea026380893614ed29407a371da670cd2a0526d96eb790e3e896dc3",
+      "bytes": 52432
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "sha256": "a7134f7673a92a60f26468bd35259877c72f6ebd975a8faf7ed26b238914369e",
+      "bytes": 1432
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py",
+      "sha256": "d9712fa822820f3138a3ef020c09d2e5149c5a942af8cf60d72da3aa05e2c39e",
+      "bytes": 7989
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/investigation_scope.py",
+      "sha256": "688d688a83ee740f985b6819d499947317d51095eed0f94d8b3af7d9f365435c",
+      "bytes": 9633
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "sha256": "8d2f681179d5cdc0ad78339002441c271de5272a4acf85f395de628af0807e85",
+      "bytes": 158918
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "sha256": "e11189043917eabca5d13526115f07b48e268f2eeec7a27f37efc09fecb3f6b7",
+      "bytes": 7960
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "ca1c13bbd01e7ed0eec65bfb432076d744dbbaf5205676623e276b7609db707e",
+      "bytes": 16559
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "sha256": "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf",
+      "bytes": 28584
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/relations_tools.py",
+      "sha256": "6a6252cf219070b256d83b141ee24831aa6405cf82e5b46fe5a6fafadacbf9ae",
+      "bytes": 29041
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "sha256": "6db19001c055565e13632d885bfae7e1b68f76d54c3464533db427f717f44281",
+      "bytes": 13158
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "sha256": "cbce8a429fc27481982f873d602cae6088dfdcfd56781e89cfc51ef431ed300f",
+      "bytes": 26446
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "sha256": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "bytes": 14630
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "70a8cd6c092abb236797aabb836ad022f4ce035703db8988c4c1a504a4e75c70",
+      "bytes": 20156
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/tool_availability.py",
+      "sha256": "4396f765c779c07aa49ec58370d4a4ab8dac1217b3d75a3a2dca0358eb586c06",
+      "bytes": 12633
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff",
+      "bytes": 23691
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "6ad853336f54b3d0daeed554f1609655d1421ecd08a666e933e137503b81225f",
+      "bytes": 36680
+    },
+    {
+      "path": "preimage/02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "sha256": "171bbed93f04233005c75b496164c14a79d6da099e4cd548c8ef42307b74e33c",
+      "bytes": 42195
+    }
+  ]
+}

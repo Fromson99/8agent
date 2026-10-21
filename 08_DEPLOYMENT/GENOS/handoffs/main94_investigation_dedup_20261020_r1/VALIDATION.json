@@ -1,0 +1,279 @@
+{
+  "status": "PASS",
+  "runtime_files": 393,
+  "runtime_matches_working_frozen_selected_handoff": true,
+  "local_MAIN": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "investigation-dedup-20261020-r1",
+    "generation": 94,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/investigation-dedup-20261020-r1/release.json",
+    "release_manifest_sha256": "9c61cfa84bed6dfc3bdcce303aefd36b441d7c74d34ca3d2e60f7f3ea82da85d",
+    "activated_at": "2026-10-20T13:35:12.270907+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "1d2d668de6f41e91a5ad31b1b68f779bbe6fcecf770c2b93319812cd47679edc"
+  },
+  "workflow": "1.20.1",
+  "local_contracts_passed": 366,
+  "local_contracts_known_failures": 6,
+  "known_failures_reproduced_on_MAIN93": {
+    "same_six_failures_on_immutable_MAIN93": true,
+    "candidate_passed": 366,
+    "candidate_failed": 6,
+    "baseline_failed": 6,
+    "failures": {
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_exact_duplicate_decision_costs_no_repair": {
+        "same_failure_markers": [
+          "ValidationError"
+        ],
+        "candidate_message": "jsonschema.exceptions.ValidationError: {'presentation_id': 'Pbf3693c2ae06419b27364133d950', 'law_decisions': [], 'branch_decisions': [{'branch_id': 'B008bf83d706c8108e362c75c3518', 'status': 'ADOPT', 'reason': '확보한 원문을 근거로 채택', 'issue_refs': ['Q1'], 'basis_refs': ['E764b1ba20da03d238711c4e2e909']}, {'branch_id': 'B008bf83d706c8108e362c75c3518', 'status': 'ADOPT', 'reason': '확보한 원문을 근거로 채택', 'issue_refs': ['Q1'], 'basis_refs': ['E764b1ba20da03d238711c4e2e909']}], 'next_action': 'FINISH', 'targets': [], 'queries': [], 'issue_refs': ['Q1'], 'basis_refs': ['E764b1ba20da03d238711c4e2e909'], 'reason",
+        "baseline_message": "jsonschema.exceptions.ValidationError: {'presentation_id': 'P543eef33dba1307afff701591191', 'law_decisions': [], 'branch_decisions': [{'branch_id': 'B008bf83d706c8108e362c75c3518', 'status': 'ADOPT', 'reason': '확보한 원문을 근거로 채택', 'issue_refs': ['Q1'], 'basis_refs': ['Ee09ee9e9feda3c168745a0a8212d']}, {'branch_id': 'B008bf83d706c8108e362c75c3518', 'status': 'ADOPT', 'reason': '확보한 원문을 근거로 채택', 'issue_refs': ['Q1'], 'basis_refs': ['Ee09ee9e9feda3c168745a0a8212d']}], 'next_action': 'FINISH', 'targets': [], 'queries': [], 'issue_refs': ['Q1'], 'basis_refs': ['Ee09ee9e9feda3c168745a0a8212d'], 'reason"
+      },
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_v5_full_native_publication_and_same_request_reuse": {
+        "same_failure_markers": [
+          "assert 422 == 200"
+        ],
+        "candidate_message": "AssertionError: {\"request_id\":\"c7fff29314604d7bb68227898aa5081e\",\"answer_status\":\"failed\",\"message\":\"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)\",\"failure_reason\":\"technical\",\"display_policy_revision\":\"public-display-v6-workflow\",\"error_code\":\"422\"}\nassert 422 == 200\n +  where 422 = <Response [422 Unprocessable Entity]>.status_code",
+        "baseline_message": "AssertionError: {\"request_id\":\"eefa5853276a4b769b74da4a69613d3f\",\"answer_status\":\"failed\",\"message\":\"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)\",\"failure_reason\":\"technical\",\"display_policy_revision\":\"public-display-v6-workflow\",\"error_code\":\"422\"}\nassert 422 == 200\n +  where 422 = <Response [422 Unprocessable Entity]>.status_code"
+      },
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_resolved_gap_accepts_previously_adopted_exact_span_without_fake_read": {
+        "same_failure_markers": [
+          "DID NOT RAISE"
+        ],
+        "candidate_message": "Failed: DID NOT RAISE ProposalError",
+        "baseline_message": "Failed: DID NOT RAISE ProposalError"
+      },
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_native_assessment_reentry_compiles_gap_and_finishes_same_request": {
+        "same_failure_markers": [
+          "assert 422 == 200"
+        ],
+        "candidate_message": "AssertionError: {\"request_id\":\"c75e2abb785c488ca7121f1a580750d9\",\"answer_status\":\"failed\",\"message\":\"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)\",\"failure_reason\":\"technical\",\"display_policy_revision\":\"public-display-v6-workflow\",\"error_code\":\"422\"}\nassert 422 == 200\n +  where 422 = <Response [422 Unprocessable Entity]>.status_code",
+        "baseline_message": "AssertionError: {\"request_id\":\"9be42e108bb248d78b3d068f288c2dd9\",\"answer_status\":\"failed\",\"message\":\"현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (422)\",\"failure_reason\":\"technical\",\"display_policy_revision\":\"public-display-v6-workflow\",\"error_code\":\"422\"}\nassert 422 == 200\n +  where 422 = <Response [422 Unprocessable Entity]>.status_code"
+      },
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_interrupted_corrective_transport_resumes_original_view_without_third_call": {
+        "same_failure_markers": [
+          "decision_retry"
+        ],
+        "candidate_message": "KeyError: 'decision_retry'",
+        "baseline_message": "KeyError: 'decision_retry'"
+      },
+      "05_TESTS.CONTRACTS.test_main50_request_repair::test_native_transient_read_failure_offers_different_route_without_false_adoption": {
+        "same_failure_markers": [
+          "actions"
+        ],
+        "candidate_message": "KeyError: 'actions'",
+        "baseline_message": "KeyError: 'actions'"
+      }
+    },
+    "code_changes_after_frozen": false
+  },
+  "handoff_contracts": 293,
+  "installation_scenarios": 2,
+  "installation_commands": 43,
+  "installed_imports": 262,
+  "syntax": {
+    "status": "PASS",
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "executable": "/home/jin/8-AGENT/.venv/bin/python",
+    "modules": 770,
+    "code_zip_sha256": "4a1644ac7f529c127ab753baff4e6e35b4812e1f73233c3890c0b385bd3feb27"
+  },
+  "local_actual_service": {
+    "status": "PASS",
+    "mode": "active",
+    "app_injected": false,
+    "checks": {
+      "all_393_serving_files_exact": true,
+      "workflow1201_enabled": true,
+      "internal_workflow_retained": true,
+      "failure_receipt_module_exact": true,
+      "internal_anchor_contract_enabled": true,
+      "projection_v12": true,
+      "changed_modules_loaded_from_selected_root": true,
+      "research_state_owner_loaded_from_selected_root": true,
+      "response_policy_loaded_from_selected_root": true,
+      "genos_response_alias_allowed": true,
+      "genos_response_missing_allowed": true,
+      "selected_data_unchanged": true,
+      "profile_unchanged": true,
+      "actual_service_health": true,
+      "public_scope_retained": true,
+      "actual_source_read": true,
+      "zero_model_calls": true,
+      "selected_generation94": true,
+      "search_binding_matches_preflight": true,
+      "model_binding_matches_preflight": true
+    },
+    "code_root": "08_DEPLOYMENT/RELEASES/investigation-dedup-20261020-r1/code",
+    "binding": {
+      "mode": "local-release",
+      "release_id": "investigation-dedup-20261020-r1",
+      "generation": 94,
+      "release_manifest_sha256": "9c61cfa84bed6dfc3bdcce303aefd36b441d7c74d34ca3d2e60f7f3ea82da85d",
+      "code_sha256": "eea035ae82a328e0e21cc5fa7832abd2f16db220574f536d06e9197db5011830",
+      "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+      "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+      "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+      "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+      "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+      "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+      "process_instance_id": "d916b343e42c4051a79f45a02fb5ef60",
+      "process_id": 704246,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+      "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+    },
+    "health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "runtime": "term-runtime-v1",
+        "release": {
+          "mode": "local-release",
+          "release_id": "investigation-dedup-20261020-r1",
+          "generation": 94,
+          "release_manifest_sha256": "9c61cfa84bed6dfc3bdcce303aefd36b441d7c74d34ca3d2e60f7f3ea82da85d",
+          "code_sha256": "eea035ae82a328e0e21cc5fa7832abd2f16db220574f536d06e9197db5011830",
+          "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+          "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+          "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+          "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+          "search_policy_sha256": "119dcfa49982337e11e23bbdb37b2b2d33092ff11d115539aff68002894076d6",
+          "schema_sha256": "737953c3a0882780036f3ecb59ee14a7f47d7bffc954b9ab9db4130d27a492a7",
+          "process_instance_id": "d916b343e42c4051a79f45a02fb5ef60",
+          "process_id": 704246,
+          "investigation_budget": {
+            "max_model_attempts": 40,
+            "finalization_reserve": 3,
+            "max_tool_actions": 1024,
+            "wall_seconds": 1800,
+            "max_no_progress": 2,
+            "investigation_model_attempts": 37,
+            "search_rounds": 8,
+            "assessment_reentry_limit": 2
+          },
+          "effective_profile_sha256": "46eb40e6e3ebf3f3d417e67363b8326870062d47b4017c41f7c611b33ca17fae",
+          "service_entry_sha256": "4831a8d3f2968e7adbc2974d2ac4a02abb8a64667c073c06817f26b969ef5cbe"
+        },
+        "generation_id": "term-metadata-733fc8666b5bb1d23e11",
+        "data_status": "DRAFT",
+        "counts": {
+          "document": 1547,
+          "source_unit": 256848,
+          "source_block": 322389
+        },
+        "legacy_fallback": false,
+        "search_selection": {
+          "sha256": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+          "excluded_documents": 0
+        },
+        "quality_certified": false,
+        "vector": "NOT_USED",
+        "llm_model": "qwen/qwen3.8-27b",
+        "rag_mode": "legal-agent-unified-v6",
+        "term_agent_quality_certified": false,
+        "external_export_allowed": false,
+        "document_aliases": {
+          "status": "STORE",
+          "store_documents": 19,
+          "projection_documents": 0,
+          "projection": null
+        }
+      }
+    },
+    "workflow_version": "1.20.1",
+    "profile_sha256": "8b89e3c171b67a7a8840ae7f315456b26ee7331c851bdf5337068fce476289bc",
+    "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+    "service_entry": "service.py",
+    "model_calls": 0,
+    "genos_executed": false
+  },
+  "code_zip_sha256": "4a1644ac7f529c127ab753baff4e6e35b4812e1f73233c3890c0b385bd3feb27",
+  "source_kind": "Synthetic contracts and real local source-only service read",
+  "new_model_calls": 0,
+  "GENOS_field_verified": false,
+  "quality_certified": false,
+  "data_profile_search_unchanged": true,
+  "limits": [
+    "No GENOS deployment, internal model, Oracle or NFS field execution",
+    "Six legacy general RAG failures remain and match the immutable MAIN93 baseline",
+    "Prior ADR verdicts and semantic/cost limitations retained",
+    "Old code-bound runs require their original revision; no forced resume"
+  ],
+  "resources": {
+    "DELIVERY_RESOURCES_01.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/delivery-runtime",
+        "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/DELIVERY_TESTS_01.xml",
+        "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/test_delivery.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 110.09868503198959,
+      "peak_group_rss_bytes": 253612032,
+      "min_available_bytes": 13324369920,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/DELIVERY_RESOURCES_01.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "--tb=short",
+          "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/delivery-runtime",
+          "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/DELIVERY_TESTS_01.xml",
+          "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/test_delivery.py"
+        ]
+      },
+      "samples_sha256": "b550f3158cafa52af1d7c8e287cfb560ff93dae2d9b705b697b338d0363f7ca1"
+    },
+    "CONTRACT_RESOURCES_01.json": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/checks.py"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "seconds": 36.03416789100447,
+      "peak_group_rss_bytes": 729870336,
+      "min_available_bytes": 12792119296,
+      "limits": {
+        "record": "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/CONTRACT_RESOURCES_01.json",
+        "rss_gib": 6.0,
+        "as_gib": 8.0,
+        "min_available_gib": 4.0,
+        "min_disk_gib": 10.0,
+        "command": [
+          "--",
+          ".venv/bin/python",
+          "-B",
+          "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/checks.py"
+        ]
+      },
+      "samples_sha256": "61cac21fc281acd599f07ab91e9e45b1f138ed91f3e1265c01bf553d1afbef66"
+    }
+  }
+}

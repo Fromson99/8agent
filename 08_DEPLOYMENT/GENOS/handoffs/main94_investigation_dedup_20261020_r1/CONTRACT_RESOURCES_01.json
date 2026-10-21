@@ -1,0 +1,26 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/checks.py"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "seconds": 36.03416789100447,
+  "peak_group_rss_bytes": 729870336,
+  "min_available_bytes": 12792119296,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/CONTRACT_RESOURCES_01.json",
+    "rss_gib": 6.0,
+    "as_gib": 8.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10.0,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-B",
+      "08_DEPLOYMENT/GENOS/handoffs/main94_investigation_dedup_20261020_r1/checks.py"
+    ]
+  },
+  "samples_sha256": "61cac21fc281acd599f07ab91e9e45b1f138ed91f3e1265c01bf553d1afbef66"
+}

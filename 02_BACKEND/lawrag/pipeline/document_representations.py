@@ -5,6 +5,7 @@ Only equal SHA-256 values establish exact duplicates; RAW is never deleted.
 """
 from __future__ import annotations
 import copy
+from datetime import datetime
 import re
 import unicodedata
 from pathlib import Path
@@ -13,6 +14,35 @@ POLICY = 'structured-primary-pdf-reference-v2'
 PRIORITY = {'.xml': 0, '.html': 1, '.htm': 1, '.hwpx': 2, '.docx': 3,
             '.pdf': 4, '.hwp': 5, '.doc': 6}
 COPY_SUFFIX = re.compile(r'\s*\(([1-9]\d{0,2})\)$')
+LATEST_INTERNAL_POLICY = 'user-approved-retained-set-latest-v2'
+DATE_SUFFIX = re.compile(r'^(?P<title>.+?)\s*\((?P<date>[0-9]{8})\)$')
+SHORT_DATE_SUFFIX = re.compile(r'^(?P<title>.+?)\s*\([0-9]{6}\)$')
+
+
+def select_latest_internal(rows, exceptions_path=None):
+    from semantic_runtime.filename_versions import select as select_versions, load_exceptions, DEFAULT_EXCEPTIONS
+    config, config_hash = load_exceptions(exceptions_path or DEFAULT_EXCEPTIONS)
+    rows = copy.deepcopy(rows)
+    inventory = [{'document_id': r['path'], 'filename': Path(r['path']).name, 'path': r['path'],
+                  'filename_source': 'raw_filename', 'source_artifact_sha256': r['sha256']}
+                 for r in rows if r['source'] == 'internal']
+    selected = {r['path']: r for r in select_versions(inventory, config)}
+    output, excluded = [], []
+    for row in rows:
+        row['input_version_policy'] = 'user-approved-retained-set-latest-v2'
+        if row['source'] != 'internal': output.append(row); continue
+        decision = selected[row['path']]
+        latest = not decision['physical_exclusion_candidate']
+        row['is_latest'] = latest
+        row['filename_version'] = {'policy': row['input_version_policy'], 'is_latest': latest,
+            'family_title': decision['title'], 'date': decision['date'], 'status': decision['status'],
+            'basis': decision['reason'], 'exception_ids': decision.get('exception_ids', []),
+            'exceptions_sha256': config_hash, 'effective_date_verified': False}
+        if latest: output.append(row)
+        else: excluded.append({'path': row['path'], 'document_id': row['document_id'], 'sha256': row['sha256'],
+            'reason': 'superseded_filename_version', 'policy': row['input_version_policy'],
+            'selection': row['filename_version'], 'original_preserved': True})
+    return output, excluded
 
 
 def metadata(row):

@@ -13,6 +13,11 @@ SCHEMA = 'genos-serving-paths-v1'
 
 
 def install(root, *, environment=None):
+    env = os.environ if environment is None else environment
+    # Oracle selects its publication per request and requires an explicit external
+    # runtime. A retained SQLite deployment binding must not override either.
+    if env.get('DP', '').strip().lower() in {'oracle', '1', 'true'}:
+        return None
     file = Path(root) / CONFIG
     if not file.exists():
         return None
@@ -29,7 +34,6 @@ def install(root, *, environment=None):
     fingerprint = value.get('generation_manifest_sha256', '')
     if len(fingerprint) != 64 or any(c not in '0123456789abcdef' for c in fingerprint):
         raise ValueError('generation manifest fingerprint required')
-    env = os.environ if environment is None else environment
     env['GENOS_GENERATION'] = value['generation']
     env['GENOS_RUNTIME_DIR'] = value['runtime']
     env.pop('GENOS_STATE_DIR', None)

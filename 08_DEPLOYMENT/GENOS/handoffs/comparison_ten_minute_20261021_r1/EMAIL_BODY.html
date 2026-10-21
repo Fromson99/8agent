@@ -1,0 +1,15 @@
+<p>대사에서 근거 탐색과 검토가 계속되다가 최종 답변 없이 끝나는 문제를 수정한 <b>workflow 1.20.4 추가 패치</b>입니다.</p>
+<ul><li><b>전체 10분:</b> 탐색·검토는 8분까지, 마지막 2분은 답변 작성·발행에 사용합니다.</li>
+<li>전체 모델 24회, 자식 조사당 6회, 추가 조사 1회, 쟁점 검토 2차로 제한합니다.</li>
+<li>한도에 도달하면 확보한 원문으로 답변을 작성합니다. 마지막 작성도 실패하면 기존 의견·실제 원문·미확인을 부분 답변으로 반환합니다.</li>
+<li>항목 누락만으로 전체 결과를 버리던 검사도 함께 완화했습니다. 인용·권한·해시 검사는 유지합니다.</li></ul>
+<p><b>MAIN96_AD_DISABLED 적용본 위에 이번 GENOS_COMPARISON_TEN_MINUTE_20261021_R1을 추가</b>하세요. 기존 STABLE_COMMANDS/BASIS_FIXED_LOCAL 패치와 함께 사용할 수 있으며 데이터·설정·ignore는 보존합니다.</p>
+<p>첨부 3개: 코드 ZIP, 별도 실행 TXT, PATCH_NOTE.txt. ZIP 안에도 실행 TXT와 안내·원복 절차가 있습니다.</p>
+<p>실제 업로드한 TRANSFER 폴더에서 아래 순서로 실행합니다. 기본 적용 대상은 기존 Git checkout <code>~/DEV</code>입니다. 실제 경로가 다르면 각 명령 뒤에 <code>--root /실제/checkout</code>을 동일하게 붙이세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_COMPARISON_TEN_MINUTE_20261021_R1.zip ./GENOS_COMPARISON_TEN_MINUTE_20261021_R1
+bash ./GENOS_COMPARISON_TEN_MINUTE_20261021_R1/GENOS_COMPARISON_TEN_MINUTE_20261021_R1_RUN.txt check
+bash ./GENOS_COMPARISON_TEN_MINUTE_20261021_R1/GENOS_COMPARISON_TEN_MINUTE_20261021_R1_RUN.txt apply
+bash ./GENOS_COMPARISON_TEN_MINUTE_20261021_R1/GENOS_COMPARISON_TEN_MINUTE_20261021_R1_RUN.txt gate</pre>
+<p>그다음 패치노트의 commit → gate-code(현재 SQLite/NFS이면 gate-sqlite도 실행) → push → 새 코드서빙 리비전 배포 순서를 따르고, 워크플로우 테스트 화면에서 대사를 확인하세요. 워크플로우 Python 편집기 변경은 없습니다. 기존 MAIN95/96 고정 코드 gate 대신 이번 gate를 사용합니다.</p>
+<p>작업 코드 145검사, 설치한 동일 코드 핵심 25검사, 전달본 설치·중단 복구·원복 36명령을 확인했습니다. 실제 모델 호출은 0이며 GENOS 현장 적용·실제 10분 실측은 아직 하지 않았습니다. 이전 프로세스에는 자동 적용되지 않습니다.</p>
+<p>재개 시 최초 기한·호출 수를 보존합니다. 근거가 없거나 무결성 검사에 실패한 경우는 답을 꾸미지 않습니다. 전체 입력 중복·스키마 크기 개선의 나머지 항목은 별도입니다.</p>

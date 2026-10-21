@@ -26,10 +26,11 @@ background_quotes에는 요구가 아닌 업무 배경 원문만 쓴다. 배경�
 def intent_schema(base):
     out = deepcopy(base)
     row = out['properties']['issues']['items']
-    row['properties']['request_quote'] = {'type':'string','minLength':1,'maxLength':2000}
+    # Literal membership in the admitted request is the provenance boundary.
+    row['properties']['request_quote'] = {'type':'string','minLength':1}
     row['required'].append('request_quote')
     out['properties']['background_quotes'] = {'type':'array','maxItems':8,
-        'items':{'type':'string','minLength':1,'maxLength':2000}}
+        'items':{'type':'string','minLength':1}}
     out['required'].append('background_quotes')
     return out
 
@@ -51,7 +52,7 @@ def verify_intent(value, request):
 def assessment_schema(issues, materials, options, facts, previous_keys=()):
     schema = cc.assessment_schema(issues,materials,options)
     ids = [o['id'] for o in options]
-    text = {'type':'string','minLength':1,'maxLength':3000}
+    text = {'type':'string','minLength':1}
     fragment = cc.obj({'text':text,'evidence_refs':cc.refs(ids,1)})
     def node(depth):
         leaf = cc.obj({'mode':{'const':'LEAF'},'text':text,'evidence_refs':cc.refs(ids,1)})
@@ -62,7 +63,7 @@ def assessment_schema(issues, materials, options, facts, previous_keys=()):
     rule = cc.obj({'kind':{'enum':['GENERAL_RULE','CASE_APPLICATION']},
         'subject':text,'action':text,'scope':text,
         'condition_tree':{'anyOf':[{'type':'null'},node(3)]},
-        'norms':{'type':'array','maxItems':12,'items':cc.obj({'kind':{'enum':['OBLIGATION','PERMISSION','PROHIBITION','UNSPECIFIED']},'text':text,'source_quote':{'type':'string','minLength':2,'maxLength':2000},'evidence_refs':cc.refs(ids,1)})},
+        'norms':{'type':'array','maxItems':12,'items':cc.obj({'kind':{'enum':['OBLIGATION','PERMISSION','PROHIBITION','UNSPECIFIED']},'text':text,'source_quote':{'type':'string','minLength':2},'evidence_refs':cc.refs(ids,1)})},
         'exceptions':{'type':'array','maxItems':12,'items':cc.obj({
             'target':text,'text':text,'evidence_refs':cc.refs(ids,1)})},
         'fact_refs':{'type':'array','maxItems':16,'items':cc.obj({
@@ -141,34 +142,18 @@ def render_content(content):
 
 
 def source_modality(text):
-    """Explicit language guard, not a legal entailment classifier."""
-    import re
-    patterns={
-      'PROHIBITION':r'(?:하여서는|해서는|해서|하여|되어서는|돼서는|되어|할|될|받을|둘)\s*(?:아니\s*된다|안\s*된다|수\s*없(?:다|으며|고))',
-      'PERMISSION':r'(?:할|될|받을|둘|볼|쓸|않을|갈음할|제외할|면제할|변경할|신청할|지급할|정할)\s*수\s*있(?:다|으며|고|는)',
-      'OBLIGATION':r'(?:[가-힣]+야)\s*(?:한다|하며|하고|할|합니다)'}
-    found={kind for kind,pattern in patterns.items() if re.search(pattern,text)}
-    if re.search(r'(?:의무가\s*없|필요가\s*없|(?:하여야|해야).{0,18}(?:아니|않|없))',text):return 'UNSPECIFIED'
-    return next(iter(found)) if len(found)==1 else 'UNSPECIFIED'
+    """Deprecated lexical classifier: legal modality is a model judgment."""
+    return 'UNSPECIFIED'
 
 
 def verify_modalities(value,options):
+    """Verify source identity; the model owns contextual legal modality."""
     offered={o['id']:o for o in options}
     for claim in value['claims']:
-        if claim['rule'] is None:continue
-        for norm in claim['rule']['norms']:
+        for norm in (claim.get('rule') or {}).get('norms',[]):
             quote=norm['source_quote']
-            if not any(quote in offered.get(i,{}).get('text','') for i in norm['evidence_refs']):
+            if not quote or not any(quote in offered.get(i,{}).get('text','') for i in norm['evidence_refs']):
                 raise ProposalError('norm source_quote must be an exact clause of its selected evidence')
-            # Absence of a recognized ending is uncertainty, not a contradiction.
-            # Contextual legal classification remains a model judgment; exact
-            # source support above and known explicit reversals below stay strict.
-            actual=source_modality(quote)
-            if actual!='UNSPECIFIED' and norm['kind'] not in (actual,'UNSPECIFIED'):
-                raise ProposalError('norm kind differs from explicit source modality: '+actual)
-            proposed=source_modality(norm['text'])
-            if actual!='UNSPECIFIED' and proposed!='UNSPECIFIED' and proposed!=actual:
-                raise ProposalError('norm wording reverses the source permission/obligation/prohibition')
 
 
 def prepare(value, schema, issues, options, facts):

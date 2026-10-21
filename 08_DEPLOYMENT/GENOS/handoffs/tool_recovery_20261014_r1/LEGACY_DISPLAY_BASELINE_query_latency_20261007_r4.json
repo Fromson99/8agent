@@ -1,0 +1,18 @@
+{
+  "preexisting": true,
+  "fixture": {
+    "kind": "query_latency_20261007_r4",
+    "label": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r5/focused-r3/narrative-r2/stream-fix-r1/success/guidance/metrics/tls/schema-recovery-r1/tool-availability-r1",
+    "path": "fixtures/predecessor-query_latency_20261007_r4.zip",
+    "sha256": "7b73440f6b27cc6c14e8384dcb4fec4533b1f3a08dfa67fcc01701df0a63e7b6"
+  },
+  "test": {
+    "classname": "05_TESTS.CONTRACTS.test_investigation_diagnostics",
+    "name": "test_complete_scoped_diagnostics_remain_internal",
+    "time": "0.025"
+  },
+  "message": "AssertionError",
+  "evidence": "failures/legacy-display-baseline-query_latency_20261007_r4.xml",
+  "cause": "Legacy full progress UI deliberately emits in-scope diagnostics. New compact-public default expectation does not match this unchanged older policy. Private cross-document records remain filtered.",
+  "code_changed": false
+}

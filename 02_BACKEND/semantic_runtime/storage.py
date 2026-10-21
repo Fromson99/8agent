@@ -86,6 +86,8 @@ class Store:
     def __init__(self,path,*,verify=True):
         self.path=Path(path).resolve()
         self.manifest=json.loads((self.path/'manifest.json').read_text())
+        from .search_selection import Selection
+        self.selection = Selection(self.path, self.manifest)
         self._binding_state = self.binding_signature()
         if self.manifest['schema_version'] not in {VERSION, 'term-source-generation-v2'}:raise ValueError('source generation migration required')
         if verify:
@@ -102,6 +104,13 @@ class Store:
         if tables!=expected:
             self.db.close()
             raise ValueError('source generation contains unexpected tables')
+        try:
+            self.selection.verify_documents(self.db)
+            self.selection.bind(self.db)
+            self.check_unchanged()
+        except BaseException:
+            self.db.close()
+            raise
 
     def close(self):self.db.close()
 
@@ -110,19 +119,22 @@ class Store:
         for name in ('manifest.json', 'store.sqlite'):
             s = (self.path/name).stat()
             states.append((s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns))
-        return (str(self.path), digest(self.manifest), *states)
+        self.selection.check_unchanged()
+        return (str(self.path), digest(self.manifest), *states, self.selection.fingerprint)
 
     def check_unchanged(self):
         if self.binding_signature() != self._binding_state:
             raise ValueError('source generation changed; reopen and verify before reuse')
 
     def source(self,did,bid):
+        self.check_unchanged()
         r=self.db.execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?',(did,str(bid))).fetchone()
         if not r:raise KeyError((did,bid))
         return dict(r)
 
     def sources(self, did, bids):
         """Bounded batch read preserving caller order, duplicates and missing-ID errors."""
+        self.check_unchanged()
         ids = [str(b) for b in bids]
         found = {}
         for start in range(0, len(ids), 800):
@@ -143,6 +155,7 @@ class Store:
                 'blocks':[source],'unresolved_reason':'SOURCE_WITHOUT_STRUCTURAL_UNIT'}
 
     def section(self,did,uid):
+        self.check_unchanged()
         r=self.db.execute('SELECT json FROM source_unit WHERE document_id=? AND unit_id=?',(did,str(uid))).fetchone()
         if not r:raise KeyError((did,uid))
         unit=json.loads(r[0]);lo,hi=unit['span'];ancestors=[];current=str(uid);seen=set()

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCHEMA_BUILD_PACKAGE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SCHEMA_BUILD_LOG="./schema-build-$(date +%Y%m%dT%H%M%S)-$$.log"
+exec > >(tee -a "$SCHEMA_BUILD_LOG") 2>&1
+trap 'rc=$?; echo "SCHEMA_BUILD EXIT=$rc LOG=$SCHEMA_BUILD_LOG"; exit "$rc"' EXIT
+printf 'TRANSFER=%s\nPACKAGE=%s\n' "$PWD" "$SCHEMA_BUILD_PACKAGE"
+python3 "$SCHEMA_BUILD_PACKAGE/build_apply.py" --root "${GENOS_DEV_ROOT:-$HOME/DEV}" "$@"

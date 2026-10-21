@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "mode": "active",
+  "checks": {
+    "actual_service_exact_candidate": true,
+    "actual_service_human_review": true,
+    "next_request_live_priority": true,
+    "actual_source_tool_exact_read": true,
+    "risk_team_compare_workflow_actual_model_authorization": true,
+    "internal_basis_discovery_workflow_actual_model_authorization": true,
+    "review_page": true,
+    "registered_discovery": true,
+    "actual_service_health": true,
+    "revocation_invalidates_used_snapshot": true
+  },
+  "code_root": "08_DEPLOYMENT/RELEASES/cm-read-continuity-20261019-r1/code",
+  "service_entry": "service.py",
+  "service_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5",
+  "app_injected": false,
+  "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+  "profile_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+  "navigation_sha256": "39e020e96866e648a9ab4aa8f42685e7bf6e7cc57ecc2ea9671d8158128a088d",
+  "search_selection_fingerprint": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+  "runtime": "04_EXPERIMENTS/ADR/ADR-0896-cm-read-continuity-qualification/artifacts/active-runtime",
+  "model_calls": 0,
+  "genos_deployed": false,
+  "health": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "runtime": "term-runtime-v1",
+      "release": {
+        "mode": "local-release",
+        "release_id": "cm-read-continuity-20261019-r1",
+        "generation": 87,
+        "release_manifest_sha256": "b3e22f04193a2084d22684ce3339df5920cdb956343bf5594faac8b72a9a1d85",
+        "code_sha256": "86db4e09feacccdef861ed97fb0d3fe462733a2c70eabb16da95c0e64351f6c1",
+        "profile_sha256": "e228caa9e69297f4538dc7bf595b372a1a9992b30c8dc74f1b0596d319ca5c1f",
+        "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+        "source_generation_id": "term-metadata-733fc8666b5bb1d23e11",
+        "fulltext_manifest_sha256": "42a9b6692f9d25041156d550ffea9027330636a8c7f8850a3a27eb35ec3e1350",
+        "search_policy_sha256": "f1c207f2bda85eebd1d0e702d78de7e25779d93d8d1735a0e08b3f90005dd2c0",
+        "schema_sha256": "d52ff854e67235460c7105978353d5b0d6287ac6e91b0e9a606daef5f4424a4b",
+        "process_instance_id": "747d7cc6bef34bfca5caf86befc37b39",
+        "process_id": 335993,
+        "investigation_budget": {
+          "max_model_attempts": 40,
+          "finalization_reserve": 3,
+          "max_tool_actions": 1024,
+          "wall_seconds": 1800,
+          "max_no_progress": 2,
+          "investigation_model_attempts": 37,
+          "search_rounds": 8,
+          "assessment_reentry_limit": 2
+        },
+        "effective_profile_sha256": "be7b95e6520290f1bf55ed917267e7f5f0693779d796eda67e6ba920b471b2b6",
+        "service_entry_sha256": "2278e64a8bc3210f6190e2229da9ff39308f3a3a98d60ff9449fa8b9ffff01a5"
+      },
+      "generation_id": "term-metadata-733fc8666b5bb1d23e11",
+      "data_status": "DRAFT",
+      "counts": {
+        "document": 1547,
+        "source_unit": 256848,
+        "source_block": 322389
+      },
+      "legacy_fallback": false,
+      "search_selection": {
+        "sha256": "1ef7244b8f1153afd8b9238fb052b74c04120e71d2c1271ded2d5b9f67d26fb6",
+        "excluded_documents": 0
+      },
+      "quality_certified": false,
+      "vector": "NOT_USED",
+      "llm_model": "qwen/qwen3.8-27b",
+      "rag_mode": "legal-agent-unified-v6",
+      "term_agent_quality_certified": false,
+      "external_export_allowed": false,
+      "document_aliases": {
+        "status": "STORE",
+        "store_documents": 19,
+        "projection_documents": 0,
+        "projection": null
+      }
+    }
+  }
+}

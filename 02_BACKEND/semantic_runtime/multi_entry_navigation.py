@@ -64,6 +64,8 @@ def freeze(value):
 
 def validate_structure(matcher, scope):
     """Cache successful checks only for the final immutable binding; mutable adapters rescan."""
+    if hasattr(matcher,'validate_structure'):
+        return matcher.validate_structure(scope)
     from .legal_agent.errors import ContractError
     prepared = getattr(matcher,'prepared_structure',None)
     reusable = prepared is not None and matcher.units is prepared['units']
@@ -98,10 +100,7 @@ def reference_resolved(value):
 
 
 def catalogue_request(question):
-    q=re.sub(r'\s+','',question).lower()
-    if any(w in q for w in ('지급기준','지급조건','승인요건','해석해','적용해','내용을')):return None
-    listing=any(w in q for w in ('전체목록','문서목록','내규목록','어떤문서','어떤게있','어떤것이있','뭐가있')) or ('db' in q and '문서' in q and '알려' in q)
-    if listing and any(w in q for w in ('문서','내규')):return 'internal' if '내규' in q else 'all'
+    """Compatibility hook: the navigation model selects catalogue operations."""
     return None
 
 
@@ -253,24 +252,7 @@ class MultiSession(previous.InheritedSession):
 class MultiAgent(previous.InheritedAgent):
     session_type=MultiSession
     def retrieve(self,plan,use_llm=True):
-        request=folders.request(plan['question'])
-        navigator=getattr(self,'navigator',None)
-        if navigator is not None and request is not None:
-            listing=navigator.catalogue(plan['scope']['document_version_ids'],context=getattr(self,'navigation_context',None),**request,limit=500)
-            self.last_navigation_context=listing['context']
-            notes=[]
-            if listing['unknown_category_count'] and request['category']!='all':notes.append('분류 미확인 문서 '+str(listing['unknown_category_count'])+'개는 내규 여부를 확정할 수 없습니다. 이 목록만으로 내규가 없다고 단정할 수 없습니다.')
-            lines=['문서명 검색 결과 '+str(listing['total'])+'개:']+[d['name']+' ['+(d.get('navigation_folder') or d['category'])+']' for d in listing['documents']]
-            if listing['next_offset'] is not None:lines.append('다음 페이지 offset: '+str(listing['next_offset']))
-            return self.local_result(plan,listing,'\n'.join(lines+notes),'CATALOG',request,notes=notes)
-        category=catalogue_request(plan['question']) if request is None else request['category']
-        if category is None:return super().retrieve(plan,use_llm)
-        if request and (request.get('title_query') or request.get('provider')):raise ValueError('folder navigator required for filtered catalogue')
-        listing=document_listing(self.matcher,plan['scope']['document_version_ids'],category);notes=[]
-        if category!='all':
-            notes.append('목록 범위: '+{'internal':'내규로 분류된 문서','external':'외부 문서로 분류된 문서','unknown':'분류가 확인되지 않은 문서'}[category]+'.')
-            if listing['unknown_category_count']:notes.append('분류 미확인 문서 '+str(listing['unknown_category_count'])+'개는 내규 여부를 확정할 수 없습니다. 이 목록만으로 내규가 없다고 단정할 수 없습니다.')
-        return self.local_result(plan,listing,'','CATALOG',{'category':category},notes=notes)
+        return super().retrieve(plan,use_llm)
     def local_result(self,plan,output,text,tool,args,*,notes=(),read=None):
         sid=read['source_id'] if read else None
         state={'status':'FINISH','stop':{'status':'catalogue' if tool=='CATALOG' else 'metadata','unresolved':list(notes)},'failure':None,'calls':0,'actions':1,'provider_receipts':[],'trace':[{'tool':tool,'args':args,'status':'OK','result':deepcopy(output),'reason':'explicit scoped metadata/coordinate request'}],'judgments':[],'adopted':[],'read_segments':[read] if read else [],'read_source_ids':[sid] if sid else [],'known_source_ids':[sid] if sid else [],'selected_ids':[sid] if sid else [],'use_llm':True,'elapsed_seconds':0,'quality_certified':False,'context_chars':[],'catalogue':{**output,'complete':output.get('complete',True)} if tool=='CATALOG' else {'complete':False,'documents':[]},'final':{'findings':[{'text':read['text'],'source_ids':[sid]}] if read else [],'evidence_ids':[sid] if sid else [],'open_questions':[{'kind':'METADATA','text':n} for n in notes] or ([] if tool=='CATALOG' or read else [{'kind':'METADATA','text':text}]),'question_for_user':'','next_action':'FINISH'},'entry_paths':[],'initial_pool_source_ids':[],'candidate_pool':{},'shown_source_ids':[],'pending_source_ids':[],'metadata_dismissals':{}}
@@ -297,40 +279,19 @@ class Conversation:
     def read_structure(self,**args):return self.navigator.read_unit(self.authorized,context=self.context,**args)
     def reset_scope(self):self.context=None
     def run(self,question,use_llm=True):
-        allowed=sorted(self.navigator.scope(self.authorized,self.context));self.agent.navigation_context=self.context;self.agent.last_navigation_context=self.context
-        if not allowed:return {'status':'EMPTY_SCOPE','answer':{'text':'현재 선택 범위에 문서가 없습니다. 검색 범위를 다시 선택해 주세요.'},'navigation_context':self.context}
-        q=folders.normalized(question);listing=folders.request(question);structured=any(w in q for w in ('목차','조문구조','문서구조'))
-        # Direct coordinates use the shared ingestion grammar via stored matches.
-        session=None;coordinates=[]
-        if listing is None and not structured and re.search(r'\d+\s*조',question):
-            session=MultiSession(self.agent.matcher,self.agent.matcher.tools,self.agent.glossary,question,allowed,self.agent.limits);coordinates=session.query_coordinates(question)
-        original=self.agent.retrieve
-        try:
-            if structured or coordinates:
-                if len(allowed)!=1:
-                    docs=self.navigator.catalogue(self.authorized,context=self.context,limit=500)
-                    text='문서를 먼저 선택해 주세요:\n'+'\n'.join(d['name']+' ('+d['id']+')' for d in docs['documents']);out=docs;kind='NEEDS_SELECTION';read=None
-                elif structured:
-                    out=self.navigator.outline(self.authorized,context=self.context,document_id=allowed[0],include_children='조문구조' in q,limit=500)
-                    text=out['document_name']+' — 저장된 구조로 만든 목차\n'+'\n'.join('  '*x['depth']+(x['surface'] or '')+' '+(x['title'] or '') for x in out['items'])
-                    if out['next_offset'] is not None:text+='\n다음 페이지 offset: '+str(out['next_offset'])
-                    kind='TOC';read=None
-                else:
-                    found=session.find_article(question,document_id=allowed[0],branch='appendix' if '부칙' in q else 'body');items=found['items'];out=found;kind='FIND_ARTICLE';read=None
-                    if len(items)==1 and found['total']==1:
-                        item=items[0];read=self.navigator.read_unit(self.authorized,context=self.context,document_id=allowed[0],unit_id=item['structure_match']['unit_id']);out=read;kind='READ_STRUCTURE';text=read['document_name']+' '+read['coordinate_key']+'\n'+read['text']
-                    elif items:text='해당 좌표가 여러 개입니다. 저장된 구조에서 하나를 선택해 주세요.'
-                    else:text='선택한 문서의 저장된 구조에서 요청한 조·항을 찾지 못했습니다.'
-                notes=[text] if kind in ('NEEDS_SELECTION','FIND_ARTICLE') else []
-                self.agent.retrieve=lambda plan,use_llm=True:self.agent.local_result(plan,out,text,kind,{'question':question,'document_ids':allowed},notes=notes,read=read)
-            result=self.pipeline.run(question,allowed,use_llm)
-        finally:
-            self.agent.retrieve=original
-            if session and session.fts:session.fts.close()
+        allowed=sorted(self.navigator.scope(self.authorized,self.context))
+        self.agent.navigation_context=self.context
+        self.agent.last_navigation_context=self.context
+        if not allowed:
+            return {'status':'EMPTY_SCOPE','answer':{'text':'현재 선택 범위에 문서가 없습니다. 검색 범위를 다시 선택해 주세요.'},'navigation_context':self.context}
+        # Explicit catalogue/outline/read API methods remain available. Free text
+        # always reaches the agent; mentioning a coordinate is not a read command.
+        result=self.pipeline.run(question,allowed,use_llm)
         state=result['retrieval']['term_agent'];meta=state.get('navigation_output')
         if meta:
-            result['answer']['text']=meta['text'];result['answer']['unresolved']=[{'reason':x} for x in meta['unresolved']]
-            self.pipeline.contracts.validate(result,'urn:8-agent:term-runtime-v1','Result')
-        self.context=self.agent.last_navigation_context;state['navigation_context']=self.context
+            result['answer']['text']=meta['text']
+            result['answer']['unresolved']=[{'reason':x} for x in meta['unresolved']]
+        self.context=self.agent.last_navigation_context
+        state['navigation_context']=self.context
         self.pipeline.contracts.validate(result,'urn:8-agent:term-runtime-v1','Result')
         return result

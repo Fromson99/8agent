@@ -111,6 +111,17 @@ def exception_diagnostics(exc, *, stage=None):
         'traceback': ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))}
     from .output_contract import diagnostics
     out['output_contract'] = diagnostics(exc)
+    from .tool_outcome import classify_exception, from_dict
+    kind,code=classify_exception(exc)
+    if getattr(exc,'read_progress',None) is not None:out['read_progress']=deepcopy(exc.read_progress)
+    current=exc;seen=set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current));outcome=getattr(current,'tool_outcome',None)
+        if outcome is not None:
+            out['tool_failure']={'kind':kind,'cause_code':code}
+            out['tool_outcome']=(from_dict(outcome) if isinstance(outcome,dict) else outcome).to_dict()
+            break
+        current=current.__cause__
     if getattr(exc, 'diagnostics', None) is not None:
         out['investigation'] = deepcopy(exc.diagnostics)
     return out

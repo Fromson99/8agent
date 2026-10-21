@@ -66,7 +66,7 @@ class DomainCatalogue:
         schema=object_schema({'method_id':choice([offer['method_id']]),'path':choice(offer['paths']),
             'concept_ids':array(choice(sorted(ids)) if ids else {'type':'string'}),
             'relation_ids':array(choice(relations) if relations else {'type':'string'}),
-            'reason':{'type':'string','minLength':1,'maxLength':600}})
+            'reason':{'type':'string','minLength':1}})
         for key in ('concept_ids','relation_ids'):schema['properties'][key].update(uniqueItems=True,maxItems=16)
         if not ids:schema['properties']['concept_ids']['maxItems']=0
         if not relations:schema['properties']['relation_ids']['maxItems']=0

@@ -1,0 +1,107 @@
+{
+  "status": "PASS_SCOPED",
+  "tests": {
+    "new_staging_contracts": 20,
+    "total_with_historical_r1_r2_contracts": 67,
+    "command_log": "TEST_REGRESSION.txt"
+  },
+  "delivery_preseal": {
+    "status": "PASS",
+    "commands": [
+      {
+        "check": "inspect",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "stage-combined",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "stage-repeated",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "combined-report",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "export",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "unreviewed-apply-blocked",
+        "exit": 1,
+        "expected": 1
+      },
+      {
+        "check": "review-all",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-check",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-apply",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-repeat",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-status",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-rollback",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "check": "production-rollback-repeat",
+        "exit": 0,
+        "expected": 0
+      }
+    ],
+    "zip_sha256": "c774e0f4559ddf8b0d3c902cf22ff1dd0ca003ad1331df977442f0f3ff3389f0",
+    "manifest_sha256": "797a6a63e16a2ff666081be202ff08046302e614906fc96511272e435afea45f",
+    "source_manifest_sha256": "37dc03ae5ac793098ce55bdf6fda5c650559f0e2899f235e68adb3085b4cce24",
+    "rows": 5,
+    "fixed_approved": 4,
+    "remaining_model_candidate": 1,
+    "checkout_modified": false,
+    "development_authority_created": false,
+    "reviewed_zip_sha256": "1a8b7ed33c56225e38a20c1cc2b7a330718be2ebcde8385e4ddd6037c1285f45",
+    "genos_verified": false,
+    "model_calls": 0,
+    "nfs_certified": false,
+    "local_validation_flag": true
+  },
+  "browser_render": {
+    "status": "UNAVAILABLE",
+    "cause": "local Chromium missing libnspr4.so; HTML rows/escaping/content checked through contracts",
+    "log": "HTML_RENDER.txt"
+  },
+  "active_release_sha256": "41af91bb949e4dde4a4314cf7b7b9a18f101fd83f7a7113e04f94d02bfebb506",
+  "main_changed": false,
+  "genos_field_run": false,
+  "model_calls": 0,
+  "source_index_writes": 0,
+  "development_authority_writes": 0,
+  "limits": [
+    "Same JSON exact selections deduplicate; operating SQLite different IDs are not semantically merged.",
+    "No automatic replacement of conflicting production history.",
+    "Actual NFS locking/fsync and internal-model answer quality remain unverified."
+  ]
+}

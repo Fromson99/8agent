@@ -1,0 +1,33 @@
+확정 연결 → HTML 확인 → 같은 SQLite 적용 (2026-10-21 R1)
+
+최신 MAIN96 적용 후 추가하는 명령 패치입니다.
+이전 STABLE_COMMANDS R1 설치 여부와 관계없이 이번 ZIP을 추가 적용합니다.
+이미 선택한 구조화·색인 세대를 사용하며 지정한 위험관리 내규·외규 연결 4건을 준비합니다.
+export/다운로드/재반입 없이 현재 설정의 같은 공유 runtime SQLite에 적용합니다.
+
+1. 첨부를 올린 실제 TRANSFER 폴더에서 설치 (기존 코드 대상: /workspace)
+python3 -m zipfile -e ./GENOS_BASIS_FIXED_LOCAL_20261021_R1.zip ./GENOS_BASIS_FIXED_LOCAL_20261021_R1
+bash ./GENOS_BASIS_FIXED_LOCAL_20261021_R1/GENOS_BASIS_FIXED_LOCAL_RUN.txt check --root /workspace
+bash ./GENOS_BASIS_FIXED_LOCAL_20261021_R1/GENOS_BASIS_FIXED_LOCAL_RUN.txt apply --root /workspace
+
+2. 확정 연결 준비 + HTML 생성
+python3 /workspace/06_TOOLS/pipeline.py basis-work local-prepare fixed-001
+
+3. 파일 탐색기에서 아래 HTML을 열어 내규·외규 연결/원문 확인
+./basis-local-fixed-001/LINKS.html
+
+4. 확인한 4건을 같은 SQLite에 적용하고 상태 확인
+python3 /workspace/06_TOOLS/pipeline.py basis-work local-apply fixed-001
+python3 /workspace/06_TOOLS/pipeline.py basis-work local-status fixed-001
+
+같은 TRANSFER에서 같은 이름 fixed-001로 재실행합니다. 이미 적용한 건은 중복 삽입하지 않습니다.
+HTML 생성 후 연결·원문·권한이 변경되면 적용을 거부합니다.
+SQLite: 현재 GENOS_SERVING_PATHS.json의 runtime/basis-links/authority.sqlite.
+상태의 live 4건 APPROVED 및 marker_enabled=true를 확인합니다.
+
+필요할 때만 원복:
+python3 /workspace/06_TOOLS/pipeline.py basis-work local-rollback fixed-001
+
+기존 전체 조사/구조화 명령은 유지하며 이 명령은 지정 확정 연결 4건용입니다.
+코드 설치와 연결 SQLite 반영은 별도 단계입니다. 모델 호출·데이터 재구축·서빙 리비전 변경은 없습니다.
+로컬 검증과 실제 GENOS 현장 실행은 구분합니다. 현장 실행 결과는 미확인입니다.

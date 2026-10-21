@@ -1,0 +1,18 @@
+--- a/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py
++++ b/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py
+@@ -1561,6 +1561,15 @@
+ 
+     def execute_tool(self, decision, data, actions):
+         availability.require_navigation(self,decision,data,actions)
++        # Connected reads can introduce a document never seen in a law search.
++        # Availability validates the whole batch before any registry mutation;
++        # registration is metadata only, not an original-read/adoption receipt.
++        for target in decision.get('targets',[]):
++            action=actions[target]
++            if action['action']=='READ_ARTICLES':
++                did=self.s.tools.sources[action['identity']['source_id']]['document_id']
++                if lc.token(self.s,'L',did) not in self.p['laws']:
++                    self.add_laws([{'document_id':did,'article_count':None,'unit_count':None}])
+         for page in data['sources']:
+             group = self.p['groups'][page['branch_id']]
+             group['delivery'] = max(group['delivery'], page['page'])

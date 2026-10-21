@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><body>
+<p>관리 모드 검사로 일반 질문이 막히던 오류를 수정한 <strong>MAIN96 추가 패치</strong>를 보냅니다.</p>
+<ul><li>관리 코드는 보존하고, 일반 질문의 관리 세션·workspace 검사와 관리 모드 진입·자동 예약 복구를 차단했습니다.</li>
+<li>세션 없는 일반 질문의 불필요한 관계 관리용 선행 검사도 제거했습니다. 대사·확정 연결·팀·문서 범위와 명시된 호스트 권한 검사는 유지합니다.</li></ul>
+<p><strong>기존 MAIN95 + ignore 패치 위에 이번 추가 패치를 적용하세요.</strong> MAIN95 누적 ZIP을 다시 설치할 필요가 없습니다. ignore·.env·현장 경로·데이터를 덮어쓰지 않습니다.</p>
+<p>실제 업로드한 <strong>TRANSFER 폴더</strong>에서 아래를 실행하세요. <code>/workspace</code>는 사진에서 확인한 기존 Git checkout입니다.</p>
+<pre>python3 -m zipfile -e ./GENOS_MAIN96_AD_DISABLED_20261021_R1.zip ./GENOS_MAIN96_AD_DISABLED_20261021_R1
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt check --root /workspace
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt apply --root /workspace
+bash ./GENOS_MAIN96_AD_DISABLED_20261021_R1/GENOS_MAIN96_AD_DISABLED_20261021_R1_RUN.txt gate --root /workspace</pre>
+<p>이후 기존 checkout에서 변경 검토·commit → 이번 패치의 <code>gate-code</code> (SQLite/NFS 운영은 <code>gate-sqlite</code>도 확인) → push → 같은 커밋으로 코드서빙 리비전 갱신 순서입니다. 기존 MAIN95/ignore의 고정 코드 gate 대신 이번 gate를 사용하세요. 워크플로우 편집기 변경은 없습니다.</p>
+<p>최종 확인은 워크플로우 테스트 화면에서 일반 질문과 대사로 진행하세요. 자세한 재실행·원복 명령은 첨부 PATCH_NOTE.txt에 있습니다.</p>
+<p><strong>검증:</strong> 관련 88개 계약 검사, 최종 ZIP/TXT 설치·중단 복구·원복 등 30개 명령 통과. 로컬 MAIN96 선택과 실제 서비스의 원문 읽기를 확인했습니다. <strong>GENOS 현장 적용·배포·내부 모델 검증은 아직 별도입니다.</strong></p>
+<p>첨부 3개: 패치 ZIP, 완전한 실행 TXT, 짧은 패치노트. 중첩 ZIP을 포함해 JavaScript 파일은 없습니다.</p>
+</body></html>

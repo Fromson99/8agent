@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "review_type": "self_review_not_independent",
+  "document_sha256": "d38a9a5849db843baf1a30a433e3c800aff06434303e9b2683c366a2f9188aea",
+  "evidence_sha256": "edc88a21c26e0b166ce2bd3ba490c08b1b42d0caea2a1a232a6f2d85128190a7",
+  "checks": {
+    "active_main73_unchanged": true,
+    "local_links_exist": true,
+    "paired_code_hashes_unchanged": true,
+    "sum_accepted_spans": true,
+    "sum_accepted_quotes": true,
+    "same_text_repeats": true,
+    "body_character_difference": true,
+    "fenced_blocks_balanced": true,
+    "no_placeholder": true,
+    "no_unintended_japanese": true
+  },
+  "model_calls": 0,
+  "new_experiment": false,
+  "limitations": [
+    "No candidate implementation, quality experiment, or performance benchmark",
+    "Historical MAIN72 counts are not current MAIN73 model results",
+    "Full prompt size and required surrounding provisions remain unmeasured",
+    "Selected MAIN73 UI lacks workflow source branch present in working tree; design includes integration and consumer verification"
+  ]
+}

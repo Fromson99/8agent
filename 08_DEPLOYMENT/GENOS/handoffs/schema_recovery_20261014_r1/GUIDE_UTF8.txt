@@ -1,0 +1,85 @@
+GENOS 스키마 오류·복구 R1 — 적용과 확인
+2026-10-14. 실제 GENOS 반입·모델 실행·리비전 배포는 미확인.
+
+변경 내용
+중복 JSON key/비정상 숫자/잘린 출력/공백 사유/상충 결정을 구분한다.
+RAG·AD·명시 참조·문서 구축의 교정 담당을 한 곳으로 정하고 최대 1회만 교정한다.
+권한·원문·인용·상태 revision은 계속 검사한다. 모르는 이유나 근거를 만들어 통과시키지 않는다.
+재개 시 사용한 예산을 보존하며 결과 불명 예약·이미 일부 송신한 답변을 자동 재생성하지 않는다.
+새 모델·원문 세대·검색 정책·조건/예외 의미를 도입하는 패키지는 아니다.
+
+1. 질의 서버/AD 설치
+사용자가 ZIP을 업로드한 TRANSFER 폴더를 현재 위치로 두고 실행한다.
+TRANSFER의 절대 위치를 추측하거나 압축을 풀기 위해 먼저 DEV로 이동하지 않는다.
+설치 대상은 기존 Git checkout인 ~/DEV이며, GENOS_DEV_ROOT를 명시한 경우 그 경로다.
+
+python3 -m zipfile -e ./GENOS_SCHEMA_RECOVERY_20261014_R1.zip ./schema-recovery-r1-package
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt check
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt apply
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt verify
+
+독립 실행 TXT도 같은 코드·명세를 내장한다. ZIP 안의 RUN과 바이트가 같다.
+처음부터 지속 로그를 남기고 적용 전에 BACKUP 절대경로를 출력한다. 그 경로를 보관한다.
+동일 패키지를 다시 apply하면 설치본을 검증한다. 미확인 수정·혼합 inventory는 교체 전에 거부한다.
+
+지원 기준은 AD_REQUEST_LOGS R2, SUCCESSFUL_SHORTCUT R1, ASSESSMENT_GAP_ACTION R2,
+PUBLIC_FAILURE_GUIDANCE R1, MODEL_INPUT_METRICS R1, URLLIB_TLS R1이 연결된 알려진 330 inventory다.
+이전 예산 확대와 표시 설정은 보존한다. 현장 상태를 자동 추정해 선행 패치를 덮어쓰지 않는다.
+check가 실패하면 현재 파일을 유지한다. 실패 로그의 inventory/hash로 실제 기준을 확인해야 한다.
+현장 request_entry에 없던 wiki-recall 기능을 이 패치에서 켜지 않는다. 일부 현장 진단의 중복
+traceback 생략도 유지한다. 이 두 파일의 호환 차이는 SOURCE_BINDING과 검증 기록에 명시되어 있다.
+
+설치 후 Git·리비전·데이터 검증
+기존 ~/DEV에서 git diff --check 및 변경 파일을 검토하고 receipt.json의 files 범위만 commit한다.
+검증한 commit의 checkout에서 아래 gate를 실행한다. BACKUP과 generation 인자는 apply 로그에
+찍힌 실제 BACKUP 및 현재 선택된 generation의 절대경로로 넣는다. 임의 최신 폴더를 선택하지 않는다.
+
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt gate "실제 BACKUP 절대경로" --generation "실제 선택 generation 절대경로"
+
+gate는 같은 checkout/commit, APPLIED_CODE.zip의 모든 파일, generation manifest와 자산을 검증한다.
+이 gate를 통과한 commit을 push하고 새 코드서빙 리비전과 별도 SSE 프로세스를 재시작한다.
+새 리비전이 같은 commit·generation을 선택하는지 확인한다. 코드 적용, Git push, generation 검증,
+리비전 배포, 요청 성공은 서로 별도 상태다. 이 패키지는 원문 generation을 재생성하지 않는다.
+
+질의/warmup은 워크플로우 테스트 화면에서만 실행한다. 코드서빙 직접 테스트 UI/API를 요구하지 않는다.
+기존 공개 실패 안내 편집기 버전을 유지한다. 이번 backend 패치로 편집기 내용을 추가 교체할 필요는 없다.
+정상 질문, 빈/중복 사유, 보정 실패, 예산 소진, 재개, 일부 스트림 후 실패의 화면과 요청 원장을 확인한다.
+같은 요청 ID의 code/profile/data/schema binding과 사용량, OUTPUT_CONTRACT 진단을 함께 남긴다.
+
+질의 코드 원복
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_RECOVERY_20261014_R1_RUN.txt undo "실제 BACKUP 절대경로"
+원복은 현재 파일/백업 해시를 모두 확인한다. 원복 후 이전 commit·리비전·같은 generation을 다시 선택한다.
+새 요청 원장을 구 코드로 강제 재사용하지 않는다. 완료·실패·원문 기록은 삭제하지 않는다.
+
+2. 문서 구축/참조 해소 설치 — 같은 ZIP의 별도 소비 경로
+질의 RUN은 build 전용 12파일을 수정하지 않는다. 위 질의 패치를 먼저 검증한 뒤, 진행 중인 구축
+프로세스를 종료/완료한 상태에서 아래를 실행한다. LLM/VLM·NFS 설정은 기존 값을 사용한다.
+
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt check
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt apply
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt verify
+
+BUILD_SOURCE_BINDING의 사전 코드 및 261개 의존/자산 해시에 맞는 checkout만 적용한다.
+구 v36a/v37 또는 다른 full-code inventory는 같다고 가정하지 않는다. 차이가 있으면 전체 쓰기 전에
+BUILD_REBASE_REQUIRED로 멈춘다. 검사를 우회하지 않고 다음 읽기 전용 결과를 보관해 정확히 재결속한다.
+
+python3 ./schema-recovery-r1-package/build_check.py --out ./SCHEMA_BUILD_INVENTORY.json
+
+이 확인 파일은 코드 경로/해시만 기록한다. 인증 설정·원문·비공개 질의를 읽지 않는다.
+이미 파일이 있으면 덮어쓰지 않으므로 다른 명시 이름을 지정한다. 실제 내부 생성 품질은 별도 확인한다.
+BUILD_RUN의 BACKUP은 질의 RUN의 BACKUP과 다르므로 각각 보관한다.
+기존 pipeline.py build-data-stages 및 reference-resolution 실행 경로를 사용한다.
+python3 06_TOOLS/pipeline.py 명령은 코드 적용 후 기존 ~/DEV에서 실행한다.
+runtime은 genos-recipe-v38-output-contract-recovery다. 같은 binding의 resume는 호출 수·승인을 보존한다.
+결과가 불명확한 예약은 자동 재전송하지 않는다. 구 run의 이력을 남긴 채 명시적으로 새 run을 시작한다.
+
+bash ./schema-recovery-r1-package/GENOS_SCHEMA_BUILD_20261014_R1_RUN.txt undo "BUILD의 실제 BACKUP 절대경로"
+
+검증 범위
+로컬 MAIN62 선택302파일과 실제 service.service의 상태/검색/목록/실패 응답을 확인했다.
+동결 합성 계약410개 및 회귀817개 통과(폐기 검사 모듈1개 수집 제외).
+현장 설치 형식의 질의 코드178개, 구축 코드61개 검사 통과. 실제 GENOS/외부 모델 호출0회.
+질의 설치2조합에서 TLS 부팅·원복·변조거부·동일 committed checkout generation gate를 확인했다.
+구축 설치도 실제 RUN으로 적용·재적용·원복·변조 거부를 확인했다.
+이 결과는 내부 모델의 실제 오류 빈도나 법률 판단 정확도 보증이 아니다.
+현장 commit·generation 절대경로/해시·리비전·워크플로우/구축 성공은 현장 receipt로 채워야 한다.

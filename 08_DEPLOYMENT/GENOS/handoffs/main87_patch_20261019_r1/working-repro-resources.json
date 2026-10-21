@@ -1,0 +1,32 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/diagnose_legacy.py",
+    "/home/jin/8-AGENT",
+    "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-13]",
+    "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-14]",
+    "05_TESTS/CONTRACTS/test_genos_output_unlimited.py::test_native_streaming_output_is_uncapped_and_interruption_never_publishes"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 4.004668084002333,
+  "peak_group_rss_bytes": 279683072,
+  "min_available_bytes": 13426589696,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/working-repro-resources.json",
+    "rss_gib": 2.0,
+    "as_gib": 3.0,
+    "min_available_gib": 2,
+    "min_disk_gib": 10,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "08_DEPLOYMENT/GENOS/handoffs/main87_patch_20261019_r1/diagnose_legacy.py",
+      "/home/jin/8-AGENT",
+      "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-13]",
+      "06_TOOLS/EXPERIMENTS/adr_0870/test_contracts.py::test_recorded_navigation_boundary[run-001-14]",
+      "05_TESTS/CONTRACTS/test_genos_output_unlimited.py::test_native_streaming_output_is_uncapped_and_interruption_never_publishes"
+    ]
+  },
+  "samples_sha256": "1e05d96f6cbb47c5313fff958e602d8625ef7b6fdfa31021de527c6cbb666a36"
+}

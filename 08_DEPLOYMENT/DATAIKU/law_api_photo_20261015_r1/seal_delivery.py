@@ -1,0 +1,62 @@
+import base64
+import hashlib
+import html
+import json
+from pathlib import Path
+import zipfile
+
+HERE = Path(__file__).resolve().parent
+OUT = HERE / 'private_delivery'
+CELL = 'DATAIKU_PHOTO_INPUTS_20261015_R1_CELL.txt'
+NB = 'DATAIKU_PHOTO_INPUTS_20261015_R1.ipynb'
+ZIP = 'DATAIKU_PHOTO_INPUTS_20261015_R1.zip'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+validation = json.loads((HERE / 'VALIDATION.json').read_text())
+assert validation['status'] == 'PASS' and validation['tests'] == 8
+assert validation['cell_sha256'] == sha((OUT / CELL).read_bytes())
+members = [CELL, NB, 'GUIDE_UTF8.txt', 'VALIDATION.json', 'SOURCE_BINDING.json', 'FIELD_OBSERVATION.json', 'TEST_TRANSCRIPT.txt']
+def raw(name): return ((OUT if name in (CELL, NB) else HERE) / name).read_bytes()
+hashes = ''.join(sha(raw(name)) + '  ' + name + '\n' for name in members)
+(OUT / 'SHA256SUMS.txt').write_text(hashes)
+with zipfile.ZipFile(OUT / ZIP, 'w', zipfile.ZIP_DEFLATED) as z:
+    for name in members:
+        assert Path(name).suffix.lower() not in {'.js', '.jsx', '.mjs', '.cjs'}
+        z.writestr('DATAIKU_PHOTO_INPUTS_20261015_R1/' + name, raw(name))
+    z.writestr('DATAIKU_PHOTO_INPUTS_20261015_R1/SHA256SUMS.txt', hashes)
+(OUT / ZIP).chmod(0o600)
+with zipfile.ZipFile(OUT / ZIP) as z:
+    assert z.testzip() is None
+    for name in members:
+        assert z.read('DATAIKU_PHOTO_INPUTS_20261015_R1/' + name) == raw(name)
+body = '''사진의 입력값을 미리 채운 Jupyter 실행본을 보냅니다. 이번 버전은 추가 OC/Cookie 입력창이 뜨지 않습니다.
+최초 curl 사진의 중계 URL, GET, OC, lsClsCd, closing, asndOfiNm, admRulNm, target_url과 두 Cookie 값을 실행 파일 맨 위 PHOTO_INPUTS에 넣었습니다. 기존 Notebook의 LAW_OC 대신 사진에서 전사한 OC/Cookie를 사용합니다. 사진 전사값이므로 원본 텍스트와 문자 단위 일치 및 세션 유효성은 미확인입니다.
+
+가장 간단한 방법: 기존 Notebook 맨 아래 새 Code 셀에 이번 DATAIKU_PHOTO_INPUTS_20261015_R1_CELL.txt 전체를 붙여 넣고 Shift+Enter 한 번 누르세요. 기존 커널 재시작이나 Run All은 필요 없습니다. 실행 TXT는 Python 셀용이며 bash 파일이 아닙니다.
+ZIP 안에는 같은 실행 TXT, 바로 가져올 수 있는 .ipynb, 상세 가이드, 검증 기록이 들어 있습니다. 이번 추가 검사는 새 파일을 사용하고 이전 결과들은 보존하세요.
+
+현재 보내주신 화면은 API 응답이 아니라 진단 결과입니다. 독립 TCP 검사에서 172.27.43.182:49822 → 45.101.64.86:8443 연결이 2026-10-15 14:23:04.435~14:23:12.443 KST 동안 시간초과됐습니다. 이어진 curl도 14:23:12.445~14:23:20.461 KST에 exit 28, HTTP 000, TCP/TLS 연결 시간 0, 수신 0바이트였습니다.
+TCP와 curl은 서로 다른 소켓입니다. 49822는 독립 TCP 검사의 포트이며 NAT 이후 주소는 담당자가 확인해야 합니다. 화면 전사이므로 원본 network_evidence_r1.json으로 최종 대조해 주세요.
+
+이것은 Cookie와 무관한 TCP 연결 문제를 조사할 근거입니다. 방화벽 차단 확정에는 해당 흐름/시각과 일치하는 DENY/DROP 로그 및 적용 정책 ID가 필요합니다. 가이드 7번에 지금 확보한 시각/IP/port를 넣은 담당자 요청문을 준비했습니다.
+
+이번 셀은 사진 입력값으로 최초 curl 요청을 1회 수행합니다. 시간 한도와 재시도 0, 최초 응답 뒤 리다이렉트 중단은 유지합니다. 응답 본문은 저장하지 않고 연결 지표를 확인하므로 HTTP 200만으로 법령 데이터 수신 성공이라고 표시하지 않습니다.
+결과는 photo_sample_replay_r1.json에 별도로 저장합니다. 기존 Notebook에서 실행했다면 8번 Managed Folder 셀만 다시 실행해 저장할 수 있습니다. 같은 결과 폴더에서 재실행하면 저장 결과만 보여줍니다.
+
+새 코드 검증 8개를 통과했고 실제 curl의 경로·쿼리·두 Cookie 전달, TXT와 Notebook 코드 동등성, 기존 Managed Folder 저장 연결을 확인했습니다. 검증은 localhost HTTPS와 가상 인증값으로 수행했으며 삼성 내부 주소와 사진 인증값으로 개발 환경에서 네트워크 호출하지 않았습니다.
+소스에는 요청하신 사진 인증값이 포함되어 있으므로 담당자에게는 인증값이 제외된 결과 JSON을 전달하면 됩니다.'''
+(HERE / 'EMAIL_BODY_UTF8.txt').write_text(body + '\n')
+parts = [{'mime_type': 'text/html', 'charset': 'UTF-8', 'body': {'content': '<div>' + ''.join('<p>' + html.escape(s).replace('\n', '<br>') + '</p>' for s in body.split('\n\n')) + '</div>'}}]
+attachments = []
+for name in [ZIP, CELL, 'GUIDE_UTF8.txt', 'FIELD_OBSERVATION.json', 'VALIDATION.json']:
+    data = (OUT / name).read_bytes() if name in (ZIP, CELL) else (HERE / name).read_bytes()
+    mime = 'application/zip' if name.endswith('.zip') else 'application/json' if name.endswith('.json') else 'text/plain'
+    parts.append({'mime_type': mime, 'filename': name, 'content_disposition': 'attachment',
+                  'body': {'base64_url_content': base64.urlsafe_b64encode(data).decode().rstrip('=')}})
+    attachments.append({'name': name, 'bytes': len(data), 'mime_type': mime, 'sha256': sha(data)})
+args = {'to': 'hyungjininfocz.son@partner.samsung.com', 'subject': '[Dataiku 사진 입력값 완성본] OC·Cookie 포함 Jupyter + TCP 실패 증거',
+        'payload': {'mime_type': 'multipart/mixed', 'parts': parts}, 'response_fields': ['id', 'thread_id', 'label_ids']}
+(OUT / 'EMAIL_ARGS.json').write_text(json.dumps(args, ensure_ascii=False)); (OUT / 'EMAIL_ARGS.json').chmod(0o600)
+(HERE / 'EMAIL_BINDING.json').write_text(json.dumps({'to': args['to'], 'subject': args['subject'], 'attachments': attachments}, ensure_ascii=False, indent=2) + '\n')
+(HERE / 'SEALED_CHECK.json').write_text(json.dumps({'archive_sha256': sha((OUT / ZIP).read_bytes()), 'members_verified': members + ['SHA256SUMS.txt'],
+                                                 'javascript_files': 0, 'validation_hash_matched': True}, ensure_ascii=False, indent=2) + '\n')
+print(json.dumps({'archive_bytes': (OUT / ZIP).stat().st_size, 'attachments': attachments}, ensure_ascii=False, indent=2))

@@ -1,0 +1,66 @@
+# Python 3 코드: 필요할 때만 별도 Notebook Code 셀에 붙여 넣습니다.
+# 기존 진단과 독립된 추가 1회 호출입니다. 기본 Notebook에는 실행할 필요가 없습니다.
+# curl 실행 파일이 Dataiku 실행 서버/컨테이너에 있어야 합니다.
+# 같은 HTTP 요청의 curl 재현용이며 결과는 커널 현재 폴더에 저장됩니다.
+import getpass
+import gzip
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import time
+from urllib.parse import urlencode
+import uuid
+import xml.etree.ElementTree as ET
+
+RELAY_ORIGIN = "https://45.101.64.86:8443"  # 개발계 샘플. 실제 승인 주소로 변경
+CA_PEM = ""  # 필요하면 Dataiku 실행 서버에서 읽을 수 있는 사내 CA 경로
+LAW_ID = "010513"
+_oc = getpass.getpass("등록된 법제처 OC: ")
+if not _oc or _oc == "test" or "\n" in _oc or "\r" in _oc:
+    raise ValueError("등록된 OC를 입력하세요.")
+if not shutil.which("curl"):
+    raise RuntimeError("이 커널에 curl이 없습니다. 기본 Notebook의 requests 방식을 사용하세요.")
+if not RELAY_ORIGIN.startswith("https://"):
+    raise ValueError("중계 URL은 HTTPS여야 합니다.")
+_url = RELAY_ORIGIN.rstrip("/") + "/law/DRF?" + urlencode({"OC": _oc, "ID": LAW_ID, "type": "XML"})
+# URL/키를 프로세스 인자나 셀 출력에 남기지 않도록 curl 설정을 표준입력으로 전달합니다.
+def _quote_config(value):
+    if any(x in value for x in ("\r", "\n", "\x00")):
+        raise ValueError("설정값에 줄바꿈이 있습니다.")
+    return '"' + value.replace('\\', '\\\\').replace('"', '\\"') + '"'
+_settings = 'url = ' + _quote_config(_url) + '\n'
+_settings += 'header = "target_url: http://www.law.go.kr/DRF/lawService.do?target=law"\n'
+if CA_PEM:
+    _settings += 'cacert = ' + _quote_config(CA_PEM) + '\n'
+_proc = subprocess.run(["curl", "--disable", "--config", "-", "--silent", "--show-error",
+                        "--connect-timeout", "8", "--max-time", "45", "--max-filesize", "12582912",
+                        "--write-out", "\n%{http_code}"], input=_settings.encode(), capture_output=True, timeout=50)
+_body, _sep, _http = _proc.stdout.rpartition(b"\n")
+_status = "CURL_FAILED"
+if _proc.returncode == 0 and _http == b"200":
+    try:
+        if b"<!DOCTYPE" in _body.upper() or b"<!ENTITY" in _body.upper():
+            raise ValueError("DTD")
+        _root = ET.fromstring(_body)
+        if (_root.tag == "법령" and _root.findtext(".//법령ID", "").lstrip("0") == LAW_ID.lstrip("0")
+            and any((x.text or "").strip() for x in _root.iter("조문내용"))):
+            _status = "BODY_OK"
+        else:
+            _status = "XML_CONTRACT_MISMATCH"
+    except (ET.ParseError, ValueError):
+        _status = "NOT_VALID_LAW_XML"
+_safe = _body.replace(_oc.encode(), b"REDACTED")
+_run = time.strftime("curl_%Y%m%dT%H%M%S_") + uuid.uuid4().hex[:8]
+_path = Path(_run)
+_path.mkdir(mode=0o700)
+(_path / "response.gz").write_bytes(gzip.compress(_safe, mtime=0))
+_report = {"status": _status, "curl_exit_code": _proc.returncode, "http_status": _http.decode("ascii", "replace"),
+           "received_bytes": len(_body), "wire_sha256": hashlib.sha256(_body).hexdigest(),
+           "saved_sha256": hashlib.sha256(_safe).hexdigest(), "credential_redacted": _safe != _body,
+           "scope": "curl 단일 공포일 본문 확인; 기본 노트북의 5개 확인과 별도"}
+(_path / "receipt.json").write_text(json.dumps(_report, ensure_ascii=False, indent=2), encoding="utf-8")
+del _oc, _url, _settings, _body, _safe, _proc
+print(_report)
+print("결과 폴더:", _path.resolve())

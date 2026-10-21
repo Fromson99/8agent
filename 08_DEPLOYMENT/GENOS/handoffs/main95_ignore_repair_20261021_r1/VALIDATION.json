@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "scenarios": 8,
+  "scenario_commands": 100,
+  "intentional_failures": 10,
+  "final": {
+    "status": "PASS",
+    "commands": 14,
+    "outer_zip_sha256": "7d4e9ddc0f2517aeb0df0608edb9ed9912e7e7aab025a7e00d3fe1d416f9c37d",
+    "javascript_files": 0,
+    "standalone_txt_identical": true,
+    "exact_index_rollback": true,
+    "files_preserved": true,
+    "main95_code_gate": true,
+    "field_verified": false,
+    "product_script_sha256": "d9c9d5c4bebf8cbb21238bbef0259f20e5c0693c38365fab50d6e9c54c906c94"
+  },
+  "resources": {
+    "command": [
+      ".venv/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime-03",
+      "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_03.xml",
+      "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py"
+    ],
+    "returncode": 0,
+    "stop_reason": null,
+    "seconds": 10.010436217009556,
+    "peak_group_rss_bytes": 113057792,
+    "min_available_bytes": 13359783936,
+    "limits": {
+      "record": "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TEST_RESOURCES_03.json",
+      "rss_gib": 2.0,
+      "as_gib": 4.0,
+      "min_available_gib": 4.0,
+      "min_disk_gib": 10.0,
+      "command": [
+        "--",
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime-03",
+        "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_03.xml",
+        "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py"
+      ]
+    },
+    "samples_sha256": "6ee6663a3c32c6c6480d226f47689da29f7be6960c576bcb382e8bf627e40fea"
+  },
+  "main95_serving_code_changed": false,
+  "data_files_deleted": 0,
+  "history_or_remote_changed_by_patch": false,
+  "field_verified": false,
+  "prior_test_failures_preserved": [
+    "First interrupted-test fixture did not inject failure; corrected and reran that case",
+    "Lock cleanup race found in review; corrected before send and reran all8 scenarios including a concurrent-lock reproduction"
+  ],
+  "tested_package_payload_hashes": {
+    "apply_ignore.py": "d9c9d5c4bebf8cbb21238bbef0259f20e5c0693c38365fab50d6e9c54c906c94",
+    "IGNORE_RULES.txt": "491debdcc145817eef39edf5e43d5ba5e06ed5d00350eda618ea9c7d5079d397",
+    "MAIN95_BASE_INVENTORY.json": "39919806b648701aa8148e8be739c2700e66620cc9557f7677880ff696faacf6",
+    "GENOS_MAIN95_IGNORE_REPAIR_20261021_R1_RUN.txt": "0df55af759efdf7e9776d37227bf710bc40e0aef0696b4950cc468be8bb615ee"
+  }
+}

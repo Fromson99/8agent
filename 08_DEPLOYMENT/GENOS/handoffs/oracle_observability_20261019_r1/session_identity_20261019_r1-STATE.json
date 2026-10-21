@@ -1,0 +1,39 @@
+{
+  "root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/oracle_observability_20261019_r1/logging-install-w7nssec1/DEV",
+  "payload_sha256": "295d62395a1d58d3c93c2e0756e29d7b3461ca38b2f3fcfa6da69ae138b2c599",
+  "status": "RESTORED",
+  "files": {
+    "service.py": {
+      "before": "ab9baf9f929dfa5c77abc3261e46923c5199e2c99442c22c406eae1903d54e00",
+      "after": "2282d07382d32e994afad93a0f9fd5cad9aba4bd09de56bcbfcf89f0a6310332"
+    },
+    "02_BACKEND/semantic_runtime/oracle_dp.py": {
+      "before": "a1e2b0dfd2ef468ffc5b7ca0d945c6c85a574442b798368ee02f9a19fff6442f",
+      "after": "9effce6fbb700ca57075d3268ac068204d404b50db79ea3d8120cbeba5240708"
+    },
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": {
+      "before": "8504dd39e220fb8f380a9aa1d4dd19c6438cc8b1805a91471d0fea10feaf2f40",
+      "after": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "before": "7f48197d50e37a78d124429846753701d70f438f0768b345ba8070f5e406370f",
+      "after": "6517ad538c538a0fcf78229aada8f0d01450ff9e2ada03aae1badd15c39ebbba"
+    },
+    "02_BACKEND/semantic_runtime/preparation_progress.py": {
+      "before": null,
+      "after": "a913aec24cb3791b0ddf13eaa298c12ca8744531206106cbba5c33fea1b21bf3"
+    },
+    "CODE_MANIFEST.json": {
+      "before": "e36a3e23e99a9c7f17c8e4271aed1ae4f59f0429cf1cd594a6074193a7ee6113",
+      "after": "7639d127dabaa8501a43680b947834605ca47c716d35df5ddabe08b30e4e5609"
+    }
+  },
+  "base_family": "MAIN87",
+  "variant": "session_identity_20261019_r1",
+  "commit": "1970c27950d43ca6ebcc63d91148fb62630ff57f",
+  "code_serving_revision": null,
+  "workflow_test": "NOT_RUN",
+  "code_zip_sha256": "aa512b366a52175652bf13aa2a2bad31a61a3cfd2770516e4817abd40d1c407c",
+  "code_archive": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/oracle_observability_20261019_r1/logging-install-w7nssec1/DEV/09_ARTIFACTS/BACKUPS/GENOS_ORACLE_LOGGING_20261019_R1/APPLIED_CODE.zip",
+  "last_gate": "gate-code"
+}

@@ -1,0 +1,79 @@
+GENOS 원문 의존 관계 오류·재개 복구 R1 — 2026-10-14
+패키지: GENOS_DEPENDENCY_RECOVERY_20261014_R1
+기존 GENOS_SCHEMA_RECOVERY_20261014_R1 질의 패치 위에 적용하는 후속 패치다.
+로컬 작업 코드 수정 및 합성 검증 완료. 로컬 MAIN62 승격·GENOS 현장 배포/질의 성공은 미확인.
+
+문제와 수정
+사진의 HTTP 200/stop은 모델 응답을 받았다는 뜻이다. 뒤의 SELECT 근거 검증은 별도다.
+현재 제공된 원문이 없는데 DEPENDENCY를 선택하거나 인용이 맞지 않아 첫 제안과 보정이
+모두 실패했다. 이전 MAIN62는 JSON·재시도 원장을 고쳤지만 이 조사 범위 계약은 그대로였다.
+1) 실제 원문이 없는 단계에서는 허용 스키마에 DEPENDENCY를 내주지 않는다.
+2) 어떤 대상/필드/원문이 잘못됐는지와 같은 조사 범위의 허용 선택지를 보정 요청에 전달한다.
+3) 최종 중단에 실제 근거 계약 원인을 보존한다. 재시도 소진 후 repairable=false를 유지한다.
+4) 같은 실패 요청의 검증된 재개에서는 최초 원문 요청 분류를 다시 호출하지 않는다.
+5) 기존 현장 패키지에서 빠졌던 조사 거절 내역/중단 사유의 최종 진단 연결을 복구한다.
+   MAIN62의 기존 소비 경로를 반영하며 각 현장 구성의 traceback 표시 설정은 유지한다.
+원문이 있는 정상 DEPENDENCY, 기존 DIRECT 주석과 v6/v7/v8 계약을 유지한다.
+허위 원문/법률 판단을 만들어 통과시키거나 실패를 성공으로 표시하지 않는다.
+원문 확보가 불가능하거나 모델이 계속 잘못 제안하면 사유가 있는 중단으로 남는다.
+
+적용 위치와 명령
+ZIP을 실제 업로드한 TRANSFER 폴더에서 다음을 실행한다.
+TRANSFER의 절대 위치를 추측하거나 먼저 DEV로 이동해 압축을 풀지 않는다.
+코드 적용 대상은 기존 Git checkout ~/DEV다. GENOS_DEV_ROOT가 있으면 그 명시 경로를 사용한다.
+독립 RUN.txt와 ZIP 안의 RUN.txt는 완전히 같은 실행 파일이다.
+
+python3 -m zipfile -e ./GENOS_DEPENDENCY_RECOVERY_20261014_R1.zip ./dependency-recovery-r1-package
+bash ./dependency-recovery-r1-package/GENOS_DEPENDENCY_RECOVERY_20261014_R1_RUN.txt check
+bash ./dependency-recovery-r1-package/GENOS_DEPENDENCY_RECOVERY_20261014_R1_RUN.txt apply
+bash ./dependency-recovery-r1-package/GENOS_DEPENDENCY_RECOVERY_20261014_R1_RUN.txt verify
+
+한 명령이 실패하면 다음 단계로 진행하지 않는다. check 실패 시 현재 코드/해시와 로그로 기준을 확인한다.
+이미 이전 스키마 R1이 적용됐으면 다시 설치할 필요가 없다. 알 수 없는 변경을 강제로 덮어쓰지 않는다.
+지원 대상은 이전 스키마 R1이 적용된 알려진 330개 코드 inventory다. 선행 패치들의 서로 다른
+서빙/TLS/표시/CM/숏컷/로그/예산 설정을 보존한다. 이번 패치에서 wiki-recall을 새로 켜지 않는다.
+수정 범위는 legal_agent의 investigation_scope.py, law_navigation.py, output_contract.py,
+case_repository.py, investigation_diagnostics.py와 이에 연결된 engine/PIPELINE/CODE_MANIFEST의 해시다.
+
+실행 시작부터 현재 TRANSFER/dependency-recovery-r1-logs에 지속 로그를 남긴다.
+실제 Python 실행 경로/버전, checkout 경로와 commit, generation 정보를 로그에 기록한다.
+apply가 출력한 BACKUP 절대경로를 저장한다. BACKUP은 설치 대상 DEV 아래의 전용 기록 폴더다.
+재실행 apply는 설치본을 검증하며 새 백업을 만들거나 예산/원장을 초기화하지 않는다.
+백업 receipt.json은 변경 파일과 전후 해시를, APPLIED_CODE.zip은 적용된 전체 코드 inventory를 담는다.
+
+commit·generation gate·push·리비전 배포
+1. 기존 DEV에서 git diff --check, git status --short와 변경 내용을 검토한다.
+   BACKUP/receipt.json의 files 범위만 stage/commit한다. 다른 작업 변경은 섞지 않는다.
+2. 검증한 commit의 DEV에서 사용할 generation의 절대경로를 확인한다. 임의 최신 폴더를 고르지 않는다.
+3. 다시 실제 TRANSFER에서 아래를 실행한다. 따옴표 안 두 값은 현장 실제 값으로 교체한다.
+
+bash ./dependency-recovery-r1-package/GENOS_DEPENDENCY_RECOVERY_20261014_R1_RUN.txt gate "apply가 출력한 실제 BACKUP 절대경로" --generation "현재 선택된 실제 generation 절대경로"
+
+gate는 DEV의 committed code, APPLIED_CODE.zip, generation manifest 및 자산을 검증한다.
+부분 패치 ZIP 자체를 전체 코드 ZIP이라고 넣지 않는다. RUN의 gate가 정확한 APPLIED_CODE.zip을 선택한다.
+코드나 pin을 다시 수정하면 새 commit으로 gate를 다시 실행한다.
+4. gate를 통과한 commit을 push하고 그 commit의 새 코드서빙 리비전을 배포한다.
+   별도로 실행 중인 SSE 프로세스도 같은 코드로 재시작한다.
+5. 실제 리비전이 같은 commit·generation 경로/manifest 해시를 선택하는지 기록한다.
+   코드 적용, commit, generation gate, push, 리비전 배포, 실제 요청 성공은 별도 상태다.
+
+현장 확인
+질의/warmup은 워크플로우 테스트 화면에서만 실행한다. 기존 공개 실패 안내 편집기 버전을 유지한다.
+이번 backend 패치 때문에 워크플로우 Python 편집기 내용을 추가 교체할 필요는 없다.
+기존 성공 질문, 사진의 실패 질문, 실패 요청 재개를 각각 확인하고 request ID를 남긴다.
+원문 없는 첫 탐색에서 불가능한 DEPENDENCY가 제시되지 않는지, 보정 요청의 구체 오류,
+최종 중단의 output_contract cause/category/repairable, 재개 시 추가 분류 호출 여부를 확인한다.
+재개 사용량/deadline과 이전 실패 이력, 부분 표시 실패 상태도 유지돼야 한다.
+code/profile/data/schema binding 및 실제 내부 모델 응답은 현장 로그로 확인한다.
+이 패키지는 데이터 generation 재구축이나 문서 구축 전용 코드 교체를 요구하지 않는다.
+
+원복
+bash ./dependency-recovery-r1-package/GENOS_DEPENDENCY_RECOVERY_20261014_R1_RUN.txt undo "apply가 출력한 실제 BACKUP 절대경로"
+
+현재 파일과 백업 해시가 맞을 때만 복원한다. 이후 변경이 있으면 보존한 채 거부한다.
+원복 후 이전 검증 commit·리비전과 generation을 다시 선택한다. 요청 원장·원문·실패 기록은 삭제하지 않는다.
+
+검증 결과와 남은 상태
+검증 수치는 VALIDATION_SUMMARY.txt 및 VALIDATION.json에 있다.
+로컬 합성 결과는 현장 내부 모델 오류 빈도나 판단 품질의 실측이 아니다.
+현장 checkout/commit, generation 절대경로/manifest SHA-256, 새 리비전과 요청 성공은 현장 receipt로 채운다.

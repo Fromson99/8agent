@@ -1,0 +1,38 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "--tb=short",
+    "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime",
+    "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_01.xml",
+    "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py"
+  ],
+  "returncode": 1,
+  "stop_reason": null,
+  "seconds": 10.010755536990473,
+  "peak_group_rss_bytes": 113631232,
+  "min_available_bytes": 13370605568,
+  "limits": {
+    "record": "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TEST_RESOURCES_01.json",
+    "rss_gib": 2.0,
+    "as_gib": 4.0,
+    "min_available_gib": 4.0,
+    "min_disk_gib": 10.0,
+    "command": [
+      "--",
+      ".venv/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "--basetemp=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test-runtime",
+      "--junitxml=08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/TESTS_01.xml",
+      "08_DEPLOYMENT/GENOS/handoffs/main95_ignore_repair_20261021_r1/test_patch.py"
+    ]
+  },
+  "samples_sha256": "b62961941b028cd0e476dc47c3731cde9ee3388d6c2919d9e42913f962d4a7fe"
+}

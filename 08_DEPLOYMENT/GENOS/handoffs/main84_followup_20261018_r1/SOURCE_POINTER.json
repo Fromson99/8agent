@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "bounded-followup-20261018-r1",
+  "generation": 84,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/bounded-followup-20261018-r1/release.json",
+  "release_manifest_sha256": "140fd94f23ead17d3ba9e9b5ff11bf927b4fec375f9eb498d7b6d503cabb6d09",
+  "activated_at": "2026-10-18T05:32:48.655966+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "c0931c6e6c39dcc41c8adae554cb47ad455a0b5e72913379a7e8c0399ed7a46f",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0874-bounded-followup-continuation/실험/manifest.json",
+      "sha256": "3ac3f04c9ff02f84456e158817acbb1254360334dd804488cd589a84caa9bcd5"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0874-bounded-followup-continuation/README.md",
+      "sha256": "e752abda4df6e876e310d6417f449c91a0314fbaa46493417ec3861657f93882"
+    },
+    "arm": "qualified",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0874-bounded-followup-continuation/artifacts/run-001/result.json",
+      "sha256": "cf42efd233e23539adcfb3702bfb1523a0b9c5e863d24867d3ca472086f483c8"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-0874-bounded-followup-continuation/artifacts/design/release-rebase.json",
+      "sha256": "b82907e63d1c4989ca181af82b57e2825b01a685be3ae41f63e6de77110b0e4e"
+    }
+  }
+}

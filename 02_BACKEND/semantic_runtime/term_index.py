@@ -40,7 +40,10 @@ def cached_serving_index(path, store, *, expected_manifest_sha256=None):
     source_binding = digest({k: v for k, v in store.manifest.items()
                              if k not in {'navigation', 'fulltext', 'fulltext_derivation'}})
     key = (str(path), signature(manifest), signature(sqlite),
-           store.manifest['store_sha256'], source_binding, expected_manifest_sha256)
+           store.manifest['store_sha256'], source_binding, expected_manifest_sha256,
+           getattr(getattr(store, 'selection', None), 'fingerprint', None),
+           getattr(getattr(store, 'selection', None), 'state', None))
+    if hasattr(store, 'check_unchanged'): store.check_unchanged()
     with _SERVING_CACHE_LOCK:
         cached = _SERVING_CACHE.get(key)
         if cached is None:
@@ -497,6 +500,7 @@ class IndexTools(TermTools):
 
 class TermIndex:
     def __init__(self,path,store):
+        self.selection = getattr(store, 'selection', None)
         path=Path(path);self.manifest=json.loads((path/'manifest.json').read_text())
         m=self.manifest
         if m.get('schema_version') not in {'term-navigation-index-v2','term-navigation-index-v3','term-navigation-index-v4','term-navigation-index-v5','term-navigation-index-v6','term-navigation-index-v7'}:raise ValueError('unsupported term index schema')
@@ -512,6 +516,11 @@ class TermIndex:
         self.cache_binding()
         db=POOL.connect(self.path/'navigation.sqlite', expected=self.manifest['index_sha256'])
         db.row_factory=sqlite3.Row
+        try:
+            if self.selection is not None: self.selection.bind(db, navigation=True)
+        except BaseException:
+            db.close()
+            raise
         return db
 
     def cache_signature(self):
@@ -522,12 +531,18 @@ class TermIndex:
                      for p in files)
 
     def cache_binding(self):
+        if self.selection is not None: self.selection.check_unchanged()
         if self.cache_signature()!=self._cache_signature:
             raise ValueError('navigation changed; reopen and verify')
         return (str(self.path.resolve()), self._cache_signature, self.manifest['generation_id'],
-                self.manifest['source_store_sha256'], self.manifest['index_sha256'])
+                self.manifest['source_store_sha256'], self.manifest['index_sha256'],
+                self.selection.fingerprint if self.selection is not None else None)
 
     def tools(self,scope):
+        if self.selection is not None:
+            self.selection.check_unchanged()
+            if set(scope) & self.selection.excluded:
+                raise ValueError('search scope contains excluded document versions')
         # This cache belongs to the verified TermIndex, so generation/file-state
         # invalidation of cached_serving_index also invalidates these data.
         with self._tools_lock:
