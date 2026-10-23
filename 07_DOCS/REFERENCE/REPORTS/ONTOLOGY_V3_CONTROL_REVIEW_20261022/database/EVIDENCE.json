@@ -1,0 +1,199 @@
+{
+  "schema_version": "legal-knowledge-db-design-evidence-v1",
+  "captured_at": "2026-10-22T04:14:36.169871+00:00",
+  "method": "static source and manifest inspection only; no database connection, source dataset load, model call or deployment",
+  "git_head": "fcd1dc02aafd878a5ce7dd9979084980635d3f80",
+  "active": {
+    "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "sha256": "c325794998c252dcfddf26cee1500ac8d71a5eca66aa8cfd017e7c6476b33fa4",
+    "release_id": "structured-selection-20261021-r1",
+    "generation": 99,
+    "quality_certified": false
+  },
+  "release": {
+    "manifest_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/release.json",
+    "manifest_sha256": "5ab6f3ff2461218a3b561a63a1ab4d299710c412d8cec038991bc6a16dba67c1",
+    "code_root": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code"
+  },
+  "files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "working_sha256": "cfa4ad2e838ae01da0000e48d7074ea6a62a83bc7fd2e7eb049a5581e5628782",
+      "selected_path": null
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "working_sha256": "691a3f674434ba60d842bbdf12f6678a7ad10669368590d13a83e352b7c3fae9",
+      "selected_path": null
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "666263ee1e746551601b3f6646514c8d832fd78551df3aae5bc155e2b9f94480",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/00_SYSTEM/PIPELINE.json",
+      "selected_sha256": "bcf3effd76803d3abd8bf4514524444388e4cc07634c1c7b4ff817964a9dfb2f",
+      "manifest_sha256": "bcf3effd76803d3abd8bf4514524444388e4cc07634c1c7b4ff817964a9dfb2f",
+      "selected_matches_manifest": true,
+      "working_matches_selected": false
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "working_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/00_SYSTEM/WORKSPACE.json",
+      "selected_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "manifest_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "GENOS.md",
+      "working_sha256": "2b2ab27ec10744f5c096c9790da2e8d5248ba3d6079c866cca41ed731a9f7b6b",
+      "selected_path": null
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "working_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "selected_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "manifest_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "working_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "selected_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "manifest_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "working_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "selected_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "manifest_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "working_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "selected_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "manifest_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "working_sha256": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "selected_sha256": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf",
+      "manifest_sha256": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp_assets.py",
+      "working_sha256": "0bcf4747da8ba613f08ae8d0c79b8a1450a292ef5210420180e211169eea0528",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/oracle_dp_assets.py",
+      "selected_sha256": "0bcf4747da8ba613f08ae8d0c79b8a1450a292ef5210420180e211169eea0528",
+      "manifest_sha256": "0bcf4747da8ba613f08ae8d0c79b8a1450a292ef5210420180e211169eea0528",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+      "working_sha256": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+      "selected_sha256": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5",
+      "manifest_sha256": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_db.py",
+      "working_sha256": "9769af6307ab43bc9605e51f3c3b32c968ce31234da891003550a32410b57f2c",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/oracle_query_db.py",
+      "selected_sha256": "9769af6307ab43bc9605e51f3c3b32c968ce31234da891003550a32410b57f2c",
+      "manifest_sha256": "9769af6307ab43bc9605e51f3c3b32c968ce31234da891003550a32410b57f2c",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_state.py",
+      "working_sha256": "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/oracle_query_state.py",
+      "selected_sha256": "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff",
+      "manifest_sha256": "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/repository.py",
+      "working_sha256": "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/basis_links/repository.py",
+      "selected_sha256": "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486",
+      "manifest_sha256": "85f3d543fc059e015ddccf87798760acce825002cbca921c9c6960cc65542486",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/oracle.py",
+      "working_sha256": "c6b906d04bf282122532439627982348abff90c0da121b72be939b6fa0d0d8b2",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/basis_links/oracle.py",
+      "selected_sha256": "c6b906d04bf282122532439627982348abff90c0da121b72be939b6fa0d0d8b2",
+      "manifest_sha256": "c6b906d04bf282122532439627982348abff90c0da121b72be939b6fa0d0d8b2",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "working_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "selected_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "manifest_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "working_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "selected_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "manifest_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "working_sha256": "68cfb36b8917bdf98d6130772833fdee76cc8f1cbc36ac0e1cb3abeb5e606a21",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "selected_sha256": "68cfb36b8917bdf98d6130772833fdee76cc8f1cbc36ac0e1cb3abeb5e606a21",
+      "manifest_sha256": "68cfb36b8917bdf98d6130772833fdee76cc8f1cbc36ac0e1cb3abeb5e606a21",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "working_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code/02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "selected_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "manifest_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "selected_matches_manifest": true,
+      "working_matches_selected": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "working_sha256": "f833552f7f373358b9e3c3346c6f24518c324f5ffd03cbc03397accf27940eed",
+      "selected_path": null
+    }
+  ],
+  "prior_review_evidence_sha256": "e63b1c74b42878dc1a9007aa6b1e4d84c18180d9b97637fde4d03b1429e431e0",
+  "official_references": [
+    "https://docs.oracle.com/en/database/oracle/oracle-database/19/adjsn/json-in-oracle-database.html",
+    "https://docs.oracle.com/en/database/oracle/oracle-database/19/cncpt/transactions.html",
+    "https://docs.oracle.com/en/database/oracle/oracle-database/19/cncpt/data-concurrency-and-consistency.html"
+  ]
+}

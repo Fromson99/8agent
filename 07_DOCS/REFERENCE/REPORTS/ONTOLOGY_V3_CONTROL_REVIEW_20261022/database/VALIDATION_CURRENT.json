@@ -1,0 +1,135 @@
+{
+  "schema_version": "legal-knowledge-db-design-validation-v1",
+  "checked_at": "2026-10-22T04:25:10.060322+00:00",
+  "status": "STATIC_DESIGN_CHECKS_PASSED",
+  "checks": {
+    "new_tables": 18,
+    "foreign_keys": 29,
+    "check_constraints": 41,
+    "proposed_indexes": 15,
+    "oracle_dialect_parsed_ddl_statements": 62,
+    "oracle_dialect_parsed_select_queries": 6,
+    "unsupported_parser_commands": 0,
+    "local_document_links": 200,
+    "v3_numbered_sections_mapped": 24,
+    "split_topic_documents": 17,
+    "evidence_source_files_unchanged": 21,
+    "active_pointer_unchanged": true,
+    "prior_review_evidence_unchanged": true,
+    "spec_ddl_column_key_constraint_consistency": true
+  },
+  "limits": [
+    "SQLGlot Oracle-dialect parsing is not Oracle server execution or certification.",
+    "No Oracle connection, DDL execution, query plan or performance measurement.",
+    "No source dataset load, model call, runtime implementation, MAIN promotion or GENOS deployment.",
+    "DDL checks do not enforce all cross-tenant, source, review-scope or payload invariants; services must implement them.",
+    "This is author self-check, not independent review or legal quality evaluation."
+  ],
+  "validation_repair": "Initial query-count check rejected SQLGlot's empty Semicolon node for the final trailing comment. The checker now excludes that non-executable node; SQL statements and safety assertions are unchanged.",
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sha256": "d41ed0a03b49dfb78a17a74252bcbd7abe9c6549c39517a289c70393f4e0c073"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sha256": "75fc42d2d5a80f84b50632af86615846a5124e7af41334745d42e0d763fc4cbd"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/REVIEW.md",
+      "sha256": "d92a9393470b784d8e710a511ead5c40e6569d25314943636714e5215574e34e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sha256": "864b4d88f3a1aadf53a971204adf576f5ca9ca22b6bcb079eff2ccb3dc101111"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "sha256": "0a2140fe7580a9bb99423775bb102d4691a3a3bcf1efed1b0bc2f478e1970ccd"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "sha256": "5d2b2c480bdfe4f1111fd2a3a0af2b73c3a4dd3d09564a8ce4374b2826470028"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "sha256": "d78d7befc97693a2af890c043854429ad53db8c93ea71e4c7117d2401c0599f7"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "sha256": "8db5378326872d764713b29d7a938153039d326693834ff47b69f39af70d1070"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "sha256": "5fc5b0f2b89ffef42c75480b937dba161243e1f6a7605e424eae73b8dd85244e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "sha256": "77e8afe633f19cb646a8ab649da8ee32b6eed4ce22deea257260eef1362eb172"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md",
+      "sha256": "34b28d975f271383ce0befc648232bbf86036c6c2ff7d2ffa9e87c7c39983a47"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCES.md",
+      "sha256": "843043cd221fa22ef3c0ae3072c0cbeb56c2dfac7aca67605989739373203445"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "sha256": "46b3b02923b3be5672206a4cce7547f0f4a9c1dcdc6c2ec8e18e6357b3c56d49"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/CONTRACTS.md",
+      "sha256": "1ce7da2a7b8ede26c264cbb1c681805069412fc04a796044cfeb876978462753"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/INTEGRATION.md",
+      "sha256": "8e68c0104ea2b1ae8b1c8ae529aa9781e6e598568d14b73610d117b09902105b"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MIGRATION.md",
+      "sha256": "5fc3a3b1d1fb92e3544893e35eb31b19baf311e0601d7525727a08857087f457"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/OVERVIEW.md",
+      "sha256": "31f5a68817dfa8315865a8b8df6d358f2dcf4184694d402e617525d84f898ae2"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "sha256": "92f8255ccf560b912c67d3df7f5b07cd9a853ce8fa4672ecb1e8465fd55f6462"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/QUERIES.md",
+      "sha256": "a2c260f83a0233f947e22eb977bf3200fb14ae07f5096703b3fe43a22831619c"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/TRANSACTIONS.md",
+      "sha256": "7585340c69ab7f361733b829be09602614677a25e45b7d68b47cc1f553fad30c"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "sha256": "34ae2a710caeccf17db6aba386465af70d1e6af6abb608194303ee52d7ba4a50"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/SCHEMA_DRAFT.json",
+      "sha256": "4dd4fbad14c710651859278c1a2d8c59e155612179b5a6558db3ede111abe3a1"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/ORACLE_DDL_DRAFT.sql",
+      "sha256": "3984cec533586cfe71456853b63e51cd1e176e888c06d82376ea7cfd0fd83996"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/READ_QUERIES.sql",
+      "sha256": "f7c537e89f1613f6d7632a9531824013f9bdcd1fee77b147d0921b8164787b2b"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/EVIDENCE.json",
+      "sha256": "11ea56e2054c65229e0801eb17afc18099d26e97be9a0541acad1ab29898be98"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/validate_design.py",
+      "sha256": "12f280c187a0396fc474f05edfdb2997f6ad31cfdb359035576bdb18f20a9b17"
+    }
+  ]
+}

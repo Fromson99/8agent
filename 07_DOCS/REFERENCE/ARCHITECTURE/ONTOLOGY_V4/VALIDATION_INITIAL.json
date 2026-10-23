@@ -1,0 +1,321 @@
+{
+  "document_validation_format": 1,
+  "checked_at": "2026-10-23T09:39:01.083765+00:00",
+  "status": "PASSED",
+  "scope": "Local documentation links/fences/placeholders/whitespace, selected evidence preservation, existing evaluator synthetic unit check. Not prototype runtime or legal quality certification.",
+  "markdown_documents": 9,
+  "local_link_occurrences": 95,
+  "local_link_errors": 0,
+  "preservation_checks": 57,
+  "preservation_passed": 57,
+  "existing_evaluator_cases_passed": 3,
+  "new_model_calls": 0,
+  "product_code_edits": false,
+  "active_pointer_changed": false,
+  "prototype_implemented": false,
+  "genos_accessed": false,
+  "review": "Author self-review; no independent review",
+  "document_sha256": {
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md": "d1fc38cb78c1b3a690edb72f12b83617735bce6d1a538cbb58199272ddc376a1",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/COMPILATION_AND_SCENARIOS.md": "0ed4f87e33de1b1e033023358416e618a9e586f8d99be89166a0ca6e7ef8d27c",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CONCEPT_AND_DECISIONS.md": "61c8d4640fecb3b8da502207d27b6b97f978cbe4ac7c56a72672ebd26d73da46",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CONTROLLED_KNOWLEDGE.md": "3dc9f1bb6958be7c29b1bab8cb14d5ce8f52beaaef4937ec0e994f37ce143f65",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CURRENT_STATE.md": "7d3b9dbaea74127763dd42dee4eca594608a8f438cae7b5dfe3f5863f9640369",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DISCUSSION_MAP.md": "ac2411b49bb0e928942df8adc28a68086f4fb9d4906a83e6a94560b32eb9c1a0",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/JUDGMENT_AND_CORRECTION.md": "b44077b17724bcbce45cecfe6866a4697548f268e056f1369a73953211bdb23a",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/PROTOTYPE_DESIGN.md": "688da713646d40eec3a88efea6c19e1a7479d4da43c380aa2a3cd7d49127cf04",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/VALIDATION_AND_ROLLOUT.md": "a26cf7b4beda7f1990e58a2995d143ed95b57994a0c5e4b8d456013bcb63d2fe"
+  },
+  "supporting_evidence_sha256": {
+    "EVIDENCE.json": "ecfa2d8c0164c6732b1587ee696deda78b6e547a6dd80eeffcb9590991e04a67",
+    "UNIT_CHECK.json": "d99aa45a71dbc1dbfd0486273c2af61ce872a8e6d18d5058843d51a15d667946"
+  },
+  "errors": [],
+  "preservation_details": [
+    {
+      "kind": "working",
+      "path": "service.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/service.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "00_SYSTEM/PIPELINE.json",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/00_SYSTEM/PIPELINE.json",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/read_judgment.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/legal_agent/read_judgment.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/basis_links/service.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/basis_links/service.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/semantic_runtime/basis_links/chat.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/semantic_runtime/basis_links/chat.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/api/routers/legal_knowledge.py",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/api/routers/legal_knowledge.py",
+      "unchanged": true
+    },
+    {
+      "kind": "working",
+      "path": "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js",
+      "unchanged": true
+    },
+    {
+      "kind": "selected",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js",
+      "unchanged": true
+    },
+    {
+      "kind": "source_files",
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "unchanged": true
+    },
+    {
+      "kind": "source_files",
+      "path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/release.json",
+      "unchanged": true
+    },
+    {
+      "kind": "source_files",
+      "path": "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question/RESULT.txt",
+      "unchanged": true
+    },
+    {
+      "kind": "source_files",
+      "path": "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question/artifacts/manual-review.json",
+      "unchanged": true
+    },
+    {
+      "kind": "source_files",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RETRIEVAL_IMPLEMENTATION_20261023/DESIGN.txt",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CLUSTERING_AND_CONSTRUCTION.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CM_E2E_RESULTS.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DOCUMENT_MAP.json",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/QUESTION_MATCHING.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/REORGANIZATION_VALIDATION.json",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCES.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCE_ANCHORED_STORAGE.md",
+      "unchanged": true
+    },
+    {
+      "kind": "preserved_v3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/validate_documents.py",
+      "unchanged": true
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "document_evidence_format": 1,
+  "captured_at": "2026-10-23T09:44:11.124504+00:00",
+  "purpose": "Source-entry composition design supplement; read-only code inspection, not runtime implementation",
+  "prior_validation_sha256": "f52af27f82b97a7c6e6cdab5b076aaa9b41f0147a37eb767cb9207d5f181fc0f",
+  "code_comparison": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working_sha256": "04ac9681e85c02d6a46dcad842e269f15fce4b636d55995f935af015422284e9",
+      "selected_sha256": "5cfeb14d62af7211a9348c4c9cd8e6bf42e8a8211ccab5b6fc974e49e0c9418c",
+      "same": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "working_sha256": "9d3e43e16c06c268beb27ef9eb440ab82948605c645a5e5347713674a525aa72",
+      "selected_sha256": "9d3e43e16c06c268beb27ef9eb440ab82948605c645a5e5347713674a525aa72",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "working_sha256": "d5f17b50c688b3dad0bee20d4ae51bc0f821a3a7ed368ecae6dbce03b3721f8a",
+      "selected_sha256": "b9038f6eb7009629cb0a5152472d6da942ab1a36a7b4e321a5e634cccbdbc14e",
+      "same": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "working_sha256": "c100d66cfa421c3b25a84ecb9f7b12204b5c2c87a8e53094ba9de5644bed9d5b",
+      "selected_sha256": "c100d66cfa421c3b25a84ecb9f7b12204b5c2c87a8e53094ba9de5644bed9d5b",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py",
+      "working_sha256": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "selected_sha256": "2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e",
+      "same": true
+    }
+  ]
+}

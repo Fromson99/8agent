@@ -1,0 +1,66 @@
+{
+  "schema_version": "legal-knowledge-db-design-validation-v1",
+  "checked_at": "2026-10-22T04:15:59.919815+00:00",
+  "status": "STATIC_DESIGN_CHECKS_PASSED",
+  "checks": {
+    "new_tables": 18,
+    "foreign_keys": 29,
+    "check_constraints": 41,
+    "proposed_indexes": 15,
+    "oracle_dialect_parsed_ddl_statements": 62,
+    "oracle_dialect_parsed_select_queries": 6,
+    "unsupported_parser_commands": 0,
+    "local_document_links": 58,
+    "v3_numbered_sections": 24,
+    "evidence_source_files_unchanged": 21,
+    "active_pointer_unchanged": true,
+    "prior_review_evidence_unchanged": true,
+    "spec_ddl_column_key_constraint_consistency": true
+  },
+  "limits": [
+    "SQLGlot Oracle-dialect parsing is not Oracle server execution or certification.",
+    "No Oracle connection, DDL execution, query plan or performance measurement.",
+    "No source dataset load, model call, runtime implementation, MAIN promotion or GENOS deployment.",
+    "DDL checks do not enforce all cross-tenant, source, review-scope or payload invariants; services must implement them.",
+    "This is author self-check, not independent review or legal quality evaluation."
+  ],
+  "validation_repair": "Initial query-count check rejected SQLGlot's empty Semicolon node for the final trailing comment. The checker now excludes that non-executable node; SQL statements and safety assertions are unchanged.",
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sha256": "1492a306729d59b2d301d917ed1bb33db5e06a37a6cd1325713b8adc0266cc97"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sha256": "260a9154a08dd0f5ee290d4e6b3fdde8cff87fb71b100892ab925cbe35ba2f66"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/REVIEW.md",
+      "sha256": "d92a9393470b784d8e710a511ead5c40e6569d25314943636714e5215574e34e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sha256": "889a79fd6abe9d4053fbe89247f1e969f3a907e4cbcec358d3edd131f850efe6"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/SCHEMA_DRAFT.json",
+      "sha256": "4dd4fbad14c710651859278c1a2d8c59e155612179b5a6558db3ede111abe3a1"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/ORACLE_DDL_DRAFT.sql",
+      "sha256": "3984cec533586cfe71456853b63e51cd1e176e888c06d82376ea7cfd0fd83996"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/READ_QUERIES.sql",
+      "sha256": "f7c537e89f1613f6d7632a9531824013f9bdcd1fee77b147d0921b8164787b2b"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/EVIDENCE.json",
+      "sha256": "11ea56e2054c65229e0801eb17afc18099d26e97be9a0541acad1ab29898be98"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/validate_design.py",
+      "sha256": "25650d04a7d23ea359e01b90a364af9efa76c4b1dd33825ecee6bf48f85e53db"
+    }
+  ]
+}

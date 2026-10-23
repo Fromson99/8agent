@@ -1,0 +1,739 @@
+{
+  "schema_version": "ontology-v3-document-layout-v1",
+  "reorganized_at": "2026-10-22T04:22:16.071730+00:00",
+  "entrypoints": [
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md"
+  ],
+  "parts": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "title": "방향과 기업 지식 통제",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        1,
+        2,
+        17,
+        18
+      ],
+      "lines": 113,
+      "sha256": "0a2140fe7580a9bb99423775bb102d4691a3a3bcf1efed1b0bc2f478e1970ccd"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "title": "현재 기반과 지식 모델 공리",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        3,
+        4,
+        5
+      ],
+      "lines": 149,
+      "sha256": "5d2b2c480bdfe4f1111fd2a3a0af2b73c3a4dd3d09564a8ce4374b2826470028"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "title": "근거 기억과 숏컷 최초 진입",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "lines": 196,
+      "sha256": "d78d7befc97693a2af890c043854429ad53db8c93ea71e4c7117d2401c0599f7"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "title": "새로운 관계 발견과 사례",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        10,
+        11,
+        12
+      ],
+      "lines": 157,
+      "sha256": "8db5378326872d764713b29d7a938153039d326693834ff47b69f39af70d1070"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "title": "전체 흐름과 구현 검증 과제",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "lines": 133,
+      "sha256": "5fc5b0f2b89ffef42c75480b937dba161243e1f6a7605e424eae73b8dd85244e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "title": "설명가능성과 근거 평가",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        19,
+        20,
+        21,
+        22
+      ],
+      "lines": 206,
+      "sha256": "77e8afe633f19cb646a8ab649da8ee32b6eed4ce22deea257260eef1362eb172"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md",
+      "title": "대화 쟁점별 찾아보기",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        "A"
+      ],
+      "lines": 46,
+      "sha256": "34b28d975f271383ce0befc648232bbf86036c6c2ff7d2ffa9e87c7c39983a47"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCES.md",
+      "title": "연구와 표준 출처",
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "sections": [
+        "B"
+      ],
+      "lines": 34,
+      "sha256": "843043cd221fa22ef3c0ae3072c0cbeb56c2dfac7aca67605989739373203445"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "title": "구현 단위 이름과 파일 구조",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sections": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "lines": 104,
+      "sha256": "46b3b02923b3be5672206a4cce7547f0f4a9c1dcdc6c2ec8e18e6357b3c56d49"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/CONTRACTS.md",
+      "title": "데이터 객체와 함수 계약",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sections": [
+        5,
+        6
+      ],
+      "lines": 128,
+      "sha256": "1ce7da2a7b8ede26c264cbb1c681805069412fc04a796044cfeb876978462753"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/INTEGRATION.md",
+      "title": "호출 연결과 저장 책임",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sections": [
+        7,
+        8,
+        9
+      ],
+      "lines": 83,
+      "sha256": "8e68c0104ea2b1ae8b1c8ae529aa9781e6e598568d14b73610d117b09902105b"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MIGRATION.md",
+      "title": "구현 이행과 실패 처리",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "sections": [
+        10,
+        11
+      ],
+      "lines": 46,
+      "sha256": "5fc3a3b1d1fb92e3544893e35eb31b19baf311e0601d7525727a08857087f457"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/OVERVIEW.md",
+      "title": "DB 전체 구조와 기존 저장소",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sections": [
+        1,
+        2,
+        3
+      ],
+      "lines": 81,
+      "sha256": "31f5a68817dfa8315865a8b8df6d358f2dcf4184694d402e617525d84f898ae2"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "title": "DB 식별 버전 테이블과 ERD",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sections": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "lines": 143,
+      "sha256": "92f8255ccf560b912c67d3df7f5b07cd9a853ce8fa4672ecb1e8465fd55f6462"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/QUERIES.md",
+      "title": "DB 조회 인덱스와 거래금액 사례",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sections": [
+        8,
+        9
+      ],
+      "lines": 46,
+      "sha256": "a2c260f83a0233f947e22eb977bf3200fb14ae07f5096703b3fe43a22831619c"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/TRANSACTIONS.md",
+      "title": "DB 트랜잭션 철회와 복구",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sections": [
+        10,
+        11
+      ],
+      "lines": 63,
+      "sha256": "7585340c69ab7f361733b829be09602614677a25e45b7d68b47cc1f553fad30c"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "title": "DB 코드 연결 이행과 검증",
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "sections": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "lines": 80,
+      "sha256": "34ae2a710caeccf17db6aba386465af70d1e6af6abb608194303ee52d7ba4a50"
+    }
+  ],
+  "sections": [
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "17",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-17"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "18",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-18"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "18.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-18-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "18.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-18-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "18.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "anchor": "v3-18-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "3.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-3-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "3.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-3-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "3.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-3-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "4",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "5",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-5"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "5.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-5-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "5.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-5-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "5.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-5-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "5.4",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "anchor": "v3-5-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "6",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-6"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7.4",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "7.5",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-7-5"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "8",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-8"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "9",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "anchor": "v3-9"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "10",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-10"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "10.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-10-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "10.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-10-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "10.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-10-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "10.4",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-10-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "11",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-11"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "12",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md",
+      "anchor": "v3-12"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "13",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-13"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "13.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-13-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "13.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-13-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "13.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-13-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "14",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-14"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "15",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-15"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "16",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "anchor": "v3-16"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "19",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-19"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "19.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-19-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "19.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-19-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "19.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-19-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "20",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-20"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "20.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-20-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "20.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-20-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "20.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-20-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "21",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-21"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "21.1",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-21-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "21.2",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-21-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "21.3",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-21-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "21.4",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-21-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "22",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md",
+      "anchor": "v3-22"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "A",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md",
+      "anchor": "v3-a"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "B",
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCES.md",
+      "anchor": "v3-b"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "1",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "anchor": "impl-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "2",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "anchor": "impl-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "3",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "anchor": "impl-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "4",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "anchor": "impl-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "5",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/CONTRACTS.md",
+      "anchor": "impl-5"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "6",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/CONTRACTS.md",
+      "anchor": "impl-6"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "7",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/INTEGRATION.md",
+      "anchor": "impl-7"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "8",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/INTEGRATION.md",
+      "anchor": "impl-8"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "9",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/INTEGRATION.md",
+      "anchor": "impl-9"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "10",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MIGRATION.md",
+      "anchor": "impl-10"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "section": "11",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MIGRATION.md",
+      "anchor": "impl-11"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "1",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/OVERVIEW.md",
+      "anchor": "db-1"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "2",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/OVERVIEW.md",
+      "anchor": "db-2"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "3",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/OVERVIEW.md",
+      "anchor": "db-3"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "4",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "anchor": "db-4"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "5",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "anchor": "db-5"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "6",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "anchor": "db-6"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "7",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MODEL.md",
+      "anchor": "db-7"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "8",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/QUERIES.md",
+      "anchor": "db-8"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "9",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/QUERIES.md",
+      "anchor": "db-9"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "10",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/TRANSACTIONS.md",
+      "anchor": "db-10"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "11",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/TRANSACTIONS.md",
+      "anchor": "db-11"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "12",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "anchor": "db-12"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "13",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "anchor": "db-13"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "14",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "anchor": "db-14"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "section": "15",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/MIGRATION.md",
+      "anchor": "db-15"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "23",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/IMPLEMENTATION_NAMES.md",
+      "anchor": "v3-23"
+    },
+    {
+      "source": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "section": "24",
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/DATABASE_ARCHITECTURE.md",
+      "anchor": "v3-24"
+    }
+  ],
+  "archive": {
+    "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/document_history/20261022_before_split.json.gz",
+    "sha256": "b452b63d429add1ed3712c3953eaeb48b09b9d7924c378bcc2ec4525633c1ce7"
+  },
+  "overview_sections_consolidated": {
+    "23": "Implementation entrypoint replaces duplicated overview; details in implementation/MODULES.md and remaining parts.",
+    "24": "DB entrypoint replaces duplicated overview; details in database/ and unchanged DDL/SQL. Original summaries remain in the archive."
+  },
+  "unchanged_artifacts": {
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/EVIDENCE.json": "e63b1c74b42878dc1a9007aa6b1e4d84c18180d9b97637fde4d03b1429e431e0",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/EVIDENCE.json": "11ea56e2054c65229e0801eb17afc18099d26e97be9a0541acad1ab29898be98",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/VALIDATION.json": "d349a964c539c0e6efcf6dcfd30e08202c74ca677aea72da046c3fa02bedba54",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/SCHEMA_DRAFT.json": "4dd4fbad14c710651859278c1a2d8c59e155612179b5a6558db3ede111abe3a1",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/ORACLE_DDL_DRAFT.sql": "3984cec533586cfe71456853b63e51cd1e176e888c06d82376ea7cfd0fd83996",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/READ_QUERIES.sql": "f7c537e89f1613f6d7632a9531824013f9bdcd1fee77b147d0921b8164787b2b",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/REVIEW.md": "d92a9393470b784d8e710a511ead5c40e6569d25314943636714e5215574e34e",
+    "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json": "c325794998c252dcfddf26cee1500ac8d71a5eca66aa8cfd017e7c6476b33fa4"
+  },
+  "validation_scope": "documentation organization only; existing code, data, SQL and completed evidence unchanged"
+}

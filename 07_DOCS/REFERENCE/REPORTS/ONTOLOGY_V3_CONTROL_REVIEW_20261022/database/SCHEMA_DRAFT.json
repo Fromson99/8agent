@@ -1,0 +1,1667 @@
+{
+  "schema_version": "legal-knowledge-db-design-v1",
+  "status": "DESIGN_DRAFT_NOT_DEPLOYED",
+  "target": "Oracle 19c-compatible relational + CLOB JSON; actual environment unverified",
+  "existing_tables": {
+    "LK_RECORD": {
+      "pk": [
+        "NAMESPACE",
+        "OBJECT_ID",
+        "REVISION"
+      ]
+    },
+    "LK_HEAD": {
+      "pk": [
+        "NAMESPACE",
+        "OBJECT_ID"
+      ]
+    },
+    "LK_LOOKUP": {
+      "pk": [
+        "RELEASE_ID",
+        "TERM",
+        "OBJECT_ID",
+        "REVISION"
+      ]
+    }
+  },
+  "tables": [
+    {
+      "name": "LK_OBJECT",
+      "purpose": "M04/M05 영구 지식 ID와 소유 범위; 변경 불가 식별 메타데이터",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TEAM_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OBJECT_KIND",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CREATED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "OBJECT_ID"
+      ],
+      "fks": [],
+      "checks": [
+        "OBJECT_KIND IN ('ASSERTION','RELATION','REQUIREMENT','CONDITION','EVIDENCE_ROUTE')"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_OBJECT_SCOPE_IX",
+          "columns": [
+            "TENANT_ID",
+            "SCOPE_ID",
+            "OBJECT_KIND",
+            "OBJECT_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_KREV",
+      "purpose": "M05 knowledge namespace의 검색 가능한 버전 투영; 본문은 LK_RECORD",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORD_NS",
+          "type": "VARCHAR2(32)",
+          "extra": "DEFAULT 'knowledge' NOT NULL"
+        },
+        {
+          "name": "PAYLOAD_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "VALIDITY_KIND",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATE",
+          "extra": ""
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATE",
+          "extra": ""
+        },
+        {
+          "name": "RECORDED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "OBJECT_ID",
+        "REVISION"
+      ],
+      "fks": [
+        {
+          "name": "LK_KREV_OBJ_FK",
+          "columns": [
+            "OBJECT_ID"
+          ],
+          "target": "LK_OBJECT",
+          "target_columns": [
+            "OBJECT_ID"
+          ]
+        },
+        {
+          "name": "LK_KREV_REC_FK",
+          "columns": [
+            "RECORD_NS",
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_RECORD",
+          "target_columns": [
+            "NAMESPACE",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "RECORD_NS = 'knowledge'",
+        "REVISION >= 1",
+        "VALIDITY_KIND IN ('KNOWN','UNKNOWN','NOT_APPLICABLE')",
+        "VALID_TO IS NULL OR VALID_FROM IS NULL OR VALID_TO > VALID_FROM"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_REF",
+      "purpose": "기존 원문·용어·basis·경험·사실 또는 지식·주장의 고정 버전 참조",
+      "columns": [
+        {
+          "name": "REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REF_KIND",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OWNER_PORT",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EXTERNAL_ID",
+          "type": "VARCHAR2(512 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EXTERNAL_REVISION",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CONTENT_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "FAMILY_KEY_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "LOCATOR_JSON",
+          "type": "CLOB",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "KNOWLEDGE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "KNOWLEDGE_REVISION",
+          "type": "NUMBER(19)",
+          "extra": ""
+        },
+        {
+          "name": "RUN_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "DECISION_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "CLAIM_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "VERIFIED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "REF_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_REF_KNOW_FK",
+          "columns": [
+            "KNOWLEDGE_ID",
+            "KNOWLEDGE_REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_REF_CLAIM_FK",
+          "columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ],
+          "target": "LK_CLAIM",
+          "target_columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "REF_KIND IN ('SOURCE_SPAN','TERM','BASIS_LINK','EXPERIENCE','FACT','KNOWLEDGE_REV','RUN_CLAIM')",
+        "LOCATOR_JSON IS JSON",
+        "(REF_KIND = 'KNOWLEDGE_REV' AND KNOWLEDGE_ID IS NOT NULL AND KNOWLEDGE_REVISION IS NOT NULL AND RUN_ID IS NULL AND DECISION_ID IS NULL AND CLAIM_ID IS NULL) OR (REF_KIND = 'RUN_CLAIM' AND KNOWLEDGE_ID IS NULL AND KNOWLEDGE_REVISION IS NULL AND RUN_ID IS NOT NULL AND DECISION_ID IS NOT NULL AND CLAIM_ID IS NOT NULL) OR (REF_KIND NOT IN ('KNOWLEDGE_REV','RUN_CLAIM') AND KNOWLEDGE_ID IS NULL AND KNOWLEDGE_REVISION IS NULL AND RUN_ID IS NULL AND DECISION_ID IS NULL AND CLAIM_ID IS NULL)"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_REF_FAMILY_IX",
+          "columns": [
+            "TENANT_ID",
+            "REF_KIND",
+            "FAMILY_KEY_HASH",
+            "REF_ID"
+          ]
+        },
+        {
+          "name": "LK_REF_KNOW_IX",
+          "columns": [
+            "KNOWLEDGE_ID",
+            "KNOWLEDGE_REVISION",
+            "REF_ID"
+          ]
+        },
+        {
+          "name": "LK_REF_CLAIM_IX",
+          "columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID",
+            "REF_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_EDGE",
+      "purpose": "M04 관계 자체가 검토 가능한 지식 버전; 의미 방향과 의존 방향을 구분",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SUBJECT_REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "PREDICATE",
+          "type": "VARCHAR2(48 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TARGET_REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RELATION_SCHEMA_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "OBJECT_ID",
+        "REVISION"
+      ],
+      "fks": [
+        {
+          "name": "LK_EDGE_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_EDGE_SUBJ_FK",
+          "columns": [
+            "SUBJECT_REF_ID"
+          ],
+          "target": "LK_REF",
+          "target_columns": [
+            "REF_ID"
+          ]
+        },
+        {
+          "name": "LK_EDGE_TARGET_FK",
+          "columns": [
+            "TARGET_REF_ID"
+          ],
+          "target": "LK_REF",
+          "target_columns": [
+            "REF_ID"
+          ]
+        }
+      ],
+      "checks": [],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_EDGE_FORWARD_IX",
+          "columns": [
+            "SUBJECT_REF_ID",
+            "PREDICATE",
+            "TARGET_REF_ID"
+          ]
+        },
+        {
+          "name": "LK_EDGE_REVERSE_IX",
+          "columns": [
+            "TARGET_REF_ID",
+            "PREDICATE",
+            "SUBJECT_REF_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_EVIDENCE",
+      "purpose": "M05 지식 버전과 기존 원문·경험·basis의 역할별 근거 연결",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EVIDENCE_ROLE",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "BINDING_STATUS",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CHECK_RECEIPT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        }
+      ],
+      "pk": [
+        "OBJECT_ID",
+        "REVISION",
+        "REF_ID",
+        "EVIDENCE_ROLE"
+      ],
+      "fks": [
+        {
+          "name": "LK_EVIDENCE_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_EVIDENCE_REF_FK",
+          "columns": [
+            "REF_ID"
+          ],
+          "target": "LK_REF",
+          "target_columns": [
+            "REF_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "BINDING_STATUS IN ('MATCHED','UNRESOLVED','CONFLICT')"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_EVIDENCE_REF_IX",
+          "columns": [
+            "REF_ID",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_REVIEW",
+      "purpose": "M06 고정 버전에 대한 검토 결정; 이유·범위·근거는 review 원장",
+      "columns": [
+        {
+          "name": "REVIEW_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORD_NS",
+          "type": "VARCHAR2(32)",
+          "extra": "DEFAULT 'review' NOT NULL"
+        },
+        {
+          "name": "RECORD_REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "VERDICT",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ACTOR_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "POLICY_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVIEW_SCOPE_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORDED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "REVIEW_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_REVIEW_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_REVIEW_REC_FK",
+          "columns": [
+            "RECORD_NS",
+            "REVIEW_ID",
+            "RECORD_REVISION"
+          ],
+          "target": "LK_RECORD",
+          "target_columns": [
+            "NAMESPACE",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "RECORD_NS = 'review'",
+        "RECORD_REVISION = 1",
+        "VERDICT IN ('ADOPT','REJECT','DISPUTE','WITHDRAW')"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_REVIEW_TARGET_IX",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION",
+            "RECORDED_AT"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_CONTROL",
+      "purpose": "M06 현재 사용 통제의 동기 투영; 변경 이력은 control 원장",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CONTROL_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORD_NS",
+          "type": "VARCHAR2(32)",
+          "extra": "DEFAULT 'control' NOT NULL"
+        },
+        {
+          "name": "CONTROL_REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "USE_STATE",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVIEW_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "CHANGED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "OBJECT_ID",
+        "REVISION"
+      ],
+      "fks": [
+        {
+          "name": "LK_CONTROL_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_CONTROL_REC_FK",
+          "columns": [
+            "RECORD_NS",
+            "CONTROL_ID",
+            "CONTROL_REVISION"
+          ],
+          "target": "LK_RECORD",
+          "target_columns": [
+            "NAMESPACE",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_CONTROL_REVIEW_FK",
+          "columns": [
+            "REVIEW_ID"
+          ],
+          "target": "LK_REVIEW",
+          "target_columns": [
+            "REVIEW_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "RECORD_NS = 'control'",
+        "CONTROL_REVISION >= 1",
+        "USE_STATE IN ('UNREVIEWED','ENABLED','HOLD','WITHDRAWN')",
+        "USE_STATE <> 'ENABLED' OR REVIEW_ID IS NOT NULL"
+      ],
+      "uniques": [
+        {
+          "name": "LK_CONTROL_ID_UQ",
+          "columns": [
+            "CONTROL_ID"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "LK_SCOPE_GATE",
+      "purpose": "M06/M08 같은 지식 범위의 철회와 사용 확정 순서를 정하는 잠금·epoch",
+      "columns": [
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CONTROL_EPOCH",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "TENANT_ID",
+        "SCOPE_ID"
+      ],
+      "fks": [],
+      "checks": [
+        "CONTROL_EPOCH >= 1"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_RELEASE",
+      "purpose": "M06 불변 지식 묶음의 관계형 투영; 활성 선택은 기존 channel 원장",
+      "columns": [
+        {
+          "name": "RELEASE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RELEASE_REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORD_NS",
+          "type": "VARCHAR2(32)",
+          "extra": "DEFAULT 'release' NOT NULL"
+        },
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SOURCE_QUERY_RELEASE",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SOURCE_BINDING_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "MANIFEST_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "MODEL_SCHEMA_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ITEM_COUNT",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "PREPARED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "RELEASE_ID",
+        "RELEASE_REVISION"
+      ],
+      "fks": [
+        {
+          "name": "LK_RELEASE_REC_FK",
+          "columns": [
+            "RECORD_NS",
+            "RELEASE_ID",
+            "RELEASE_REVISION"
+          ],
+          "target": "LK_RECORD",
+          "target_columns": [
+            "NAMESPACE",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "RECORD_NS = 'release'",
+        "RELEASE_REVISION >= 1",
+        "ITEM_COUNT >= 0"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_RELEASE_ITEM",
+      "purpose": "M06/M07 게시 묶음의 정확한 지식 버전 구성",
+      "columns": [
+        {
+          "name": "RELEASE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RELEASE_REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "RELEASE_ID",
+        "RELEASE_REVISION",
+        "OBJECT_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_RELITEM_REL_FK",
+          "columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION"
+          ],
+          "target": "LK_RELEASE",
+          "target_columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION"
+          ]
+        },
+        {
+          "name": "LK_RELITEM_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [],
+      "uniques": [
+        {
+          "name": "LK_RELITEM_VERSION_UQ",
+          "columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "LK_RELITEM_OBJECT_IX",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION",
+            "RELEASE_ID",
+            "RELEASE_REVISION"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_ENTRY",
+      "purpose": "M02/M07 원문 anchor·개념 ID·근거 역할·정규화 검색어로 좁히는 게시 색인",
+      "columns": [
+        {
+          "name": "RELEASE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RELEASE_REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "KEY_KIND",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "KEY_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "KEY_TEXT",
+          "type": "VARCHAR2(320 CHAR)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "RELEASE_ID",
+        "RELEASE_REVISION",
+        "KEY_KIND",
+        "KEY_HASH",
+        "OBJECT_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_ENTRY_ITEM_FK",
+          "columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION",
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_RELEASE_ITEM",
+          "target_columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION",
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "KEY_KIND IN ('TERM_ID','SOURCE_ANCHOR','NEED_ROLE','QUERY_TERM')"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_ROUTE_STEP",
+      "purpose": "M02 원문 근거 경로의 순서·역할; EVIDENCE_ROUTE 지식의 투영",
+      "columns": [
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "STEP_NO",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "NEED_ROLE",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ACTION_KIND",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "OBJECT_ID",
+        "REVISION",
+        "STEP_NO"
+      ],
+      "fks": [
+        {
+          "name": "LK_ROUTE_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_ROUTE_REF_FK",
+          "columns": [
+            "REF_ID"
+          ],
+          "target": "LK_REF",
+          "target_columns": [
+            "REF_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "STEP_NO >= 1",
+        "ACTION_KIND IN ('READ','FOLLOW_REFERENCE')"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_RUN",
+      "purpose": "M08 기존 실행 저널의 요청 시작 binding을 역조회하기 위한 투영",
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REQUEST_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "PRINCIPAL_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "PERMISSION_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SOURCE_QUERY_RELEASE",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SOURCE_BINDING_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "KNOWLEDGE_RELEASE",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "KNOWLEDGE_RELEASE_REV",
+          "type": "NUMBER(19)",
+          "extra": ""
+        },
+        {
+          "name": "JOURNAL_REF",
+          "type": "VARCHAR2(512 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "START_EVENT_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "STARTED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "RUN_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_RUN_RELEASE_FK",
+          "columns": [
+            "KNOWLEDGE_RELEASE",
+            "KNOWLEDGE_RELEASE_REV"
+          ],
+          "target": "LK_RELEASE",
+          "target_columns": [
+            "RELEASE_ID",
+            "RELEASE_REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "(KNOWLEDGE_RELEASE IS NULL AND KNOWLEDGE_RELEASE_REV IS NULL) OR (KNOWLEDGE_RELEASE IS NOT NULL AND KNOWLEDGE_RELEASE_REV IS NOT NULL)"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_RUN_SCOPE_IX",
+          "columns": [
+            "TENANT_ID",
+            "SCOPE_ID",
+            "STARTED_AT",
+            "RUN_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_CLAIM",
+      "purpose": "M08 판단 artifact별 주장 참조; 본문·완료 상태는 실행 저널 정본",
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DECISION_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CLAIM_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CLAIM_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DECISION_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CLAIM_KIND",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORDED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "RUN_ID",
+        "DECISION_ID",
+        "CLAIM_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_CLAIM_RUN_FK",
+          "columns": [
+            "RUN_ID"
+          ],
+          "target": "LK_RUN",
+          "target_columns": [
+            "RUN_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "CLAIM_KIND IN ('FACT','RULE','INTERPRETATION','CALCULATION','CONCLUSION')"
+      ],
+      "uniques": [],
+      "indexes": []
+    },
+    {
+      "name": "LK_USE",
+      "purpose": "M08 제시·선택·적용·사후검토 및 발행 검사의 실행 사건 투영",
+      "columns": [
+        {
+          "name": "USE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RUN_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DECISION_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "CLAIM_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": ""
+        },
+        {
+          "name": "EVENT_KIND",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ORIGIN_KIND",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SUPPORT_STATE",
+          "type": "VARCHAR2(24 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "JOURNAL_SEQ",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ITEM_NO",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EVENT_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "RECORDED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "USE_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_USE_RUN_FK",
+          "columns": [
+            "RUN_ID"
+          ],
+          "target": "LK_RUN",
+          "target_columns": [
+            "RUN_ID"
+          ]
+        },
+        {
+          "name": "LK_USE_CLAIM_FK",
+          "columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ],
+          "target": "LK_CLAIM",
+          "target_columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ]
+        },
+        {
+          "name": "LK_USE_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        }
+      ],
+      "checks": [
+        "(OBJECT_ID IS NULL AND REVISION IS NULL) OR (OBJECT_ID IS NOT NULL AND REVISION IS NOT NULL)",
+        "(DECISION_ID IS NULL AND CLAIM_ID IS NULL) OR (DECISION_ID IS NOT NULL AND CLAIM_ID IS NOT NULL)",
+        "EVENT_KIND IN ('OFFERED','SELECTED','APPLIED','CALCULATED','POSTHOC_REVIEW','PUBLICATION_CHECK','PUBLICATION_COMMITTED')",
+        "ORIGIN_KIND IN ('REUSED','NEW_COMBINATION','NEW_INTERPRETATION','UNASSESSED')",
+        "SUPPORT_STATE IN ('SUPPORTED','PARTIAL','UNRESOLVED','CONTRADICTED','UNASSESSED')",
+        "JOURNAL_SEQ >= 1",
+        "ITEM_NO >= 1"
+      ],
+      "uniques": [
+        {
+          "name": "LK_USE_EVENT_UQ",
+          "columns": [
+            "RUN_ID",
+            "JOURNAL_SEQ",
+            "ITEM_NO"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "LK_USE_OBJECT_IX",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION",
+            "EVENT_KIND",
+            "RUN_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_DEPENDENCY",
+      "purpose": "M09 consumer가 target 참조에 의존. 의미 관계의 방향과 별도",
+      "columns": [
+        {
+          "name": "DEPENDENCY_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DEPENDENT_KIND",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": ""
+        },
+        {
+          "name": "RUN_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "DECISION_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "CLAIM_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "TARGET_REF_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DEPENDENCY_ROLE",
+          "type": "VARCHAR2(32 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "USE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "PROOF_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "DEPENDENCY_ID"
+      ],
+      "fks": [
+        {
+          "name": "LK_DEP_KREV_FK",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ],
+          "target": "LK_KREV",
+          "target_columns": [
+            "OBJECT_ID",
+            "REVISION"
+          ]
+        },
+        {
+          "name": "LK_DEP_CLAIM_FK",
+          "columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ],
+          "target": "LK_CLAIM",
+          "target_columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID"
+          ]
+        },
+        {
+          "name": "LK_DEP_TARGET_FK",
+          "columns": [
+            "TARGET_REF_ID"
+          ],
+          "target": "LK_REF",
+          "target_columns": [
+            "REF_ID"
+          ]
+        },
+        {
+          "name": "LK_DEP_USE_FK",
+          "columns": [
+            "USE_ID"
+          ],
+          "target": "LK_USE",
+          "target_columns": [
+            "USE_ID"
+          ]
+        }
+      ],
+      "checks": [
+        "(DEPENDENT_KIND = 'KNOWLEDGE' AND OBJECT_ID IS NOT NULL AND REVISION IS NOT NULL AND RUN_ID IS NULL AND DECISION_ID IS NULL AND CLAIM_ID IS NULL AND USE_ID IS NULL) OR (DEPENDENT_KIND = 'CLAIM' AND OBJECT_ID IS NULL AND REVISION IS NULL AND RUN_ID IS NOT NULL AND DECISION_ID IS NOT NULL AND CLAIM_ID IS NOT NULL AND USE_ID IS NOT NULL)"
+      ],
+      "uniques": [],
+      "indexes": [
+        {
+          "name": "LK_DEP_REVERSE_IX",
+          "columns": [
+            "TARGET_REF_ID",
+            "DEPENDENCY_ID"
+          ]
+        },
+        {
+          "name": "LK_DEP_KNOW_IX",
+          "columns": [
+            "OBJECT_ID",
+            "REVISION",
+            "DEPENDENCY_ID"
+          ]
+        },
+        {
+          "name": "LK_DEP_CLAIM_IX",
+          "columns": [
+            "RUN_ID",
+            "DECISION_ID",
+            "CLAIM_ID",
+            "DEPENDENCY_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_OUTBOX",
+      "purpose": "M06/M09 현재 트랜잭션에서 확정한 변경의 후처리 전달; 실행 저널과 이중 commit 아님",
+      "columns": [
+        {
+          "name": "EVENT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "TENANT_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "SCOPE_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "CONSUMER_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "DEDUP_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EVENT_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "EVENT_JSON",
+          "type": "CLOB",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "STATUS",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "ATTEMPTS",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "LEASE_EPOCH",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "LEASE_OWNER",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "LEASE_UNTIL",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": ""
+        },
+        {
+          "name": "DEADLINE_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "NEXT_ATTEMPT_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": ""
+        },
+        {
+          "name": "ERROR_CODE",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": ""
+        },
+        {
+          "name": "CREATED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "EVENT_ID"
+      ],
+      "fks": [],
+      "checks": [
+        "EVENT_JSON IS JSON",
+        "STATUS IN ('PENDING','LEASED','DONE','FAILED')",
+        "ATTEMPTS >= 0",
+        "LEASE_EPOCH >= 0",
+        "STATUS <> 'LEASED' OR (LEASE_OWNER IS NOT NULL AND LEASE_UNTIL IS NOT NULL)"
+      ],
+      "uniques": [
+        {
+          "name": "LK_OUTBOX_DEDUP_UQ",
+          "columns": [
+            "CONSUMER_ID",
+            "DEDUP_HASH"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "name": "LK_OUTBOX_READY_IX",
+          "columns": [
+            "CONSUMER_ID",
+            "STATUS",
+            "NEXT_ATTEMPT_AT",
+            "EVENT_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LK_SYNC",
+      "purpose": "M09 투영별 조회 범위·미처리·누락 기록; 최대 sequence를 완전성으로 간주하지 않음",
+      "columns": [
+        {
+          "name": "CONSUMER_ID",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "PARTITION_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "REVISION",
+          "type": "NUMBER(19)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "COVERAGE_JSON",
+          "type": "CLOB",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "COVERAGE_HASH",
+          "type": "VARCHAR2(64 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "COVERAGE_STATE",
+          "type": "VARCHAR2(16 BYTE)",
+          "extra": "NOT NULL"
+        },
+        {
+          "name": "UPDATED_AT",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "extra": "NOT NULL"
+        }
+      ],
+      "pk": [
+        "CONSUMER_ID",
+        "PARTITION_ID"
+      ],
+      "fks": [],
+      "checks": [
+        "REVISION >= 1",
+        "COVERAGE_JSON IS JSON",
+        "COVERAGE_STATE IN ('COMPLETE','PARTIAL','UNKNOWN')"
+      ],
+      "uniques": [],
+      "indexes": []
+    }
+  ],
+  "notes": [
+    "New table names are logical names requiring an explicit table map; no physical SIDDA mapping is approved here.",
+    "LK_RECORD is the immutable canonical body; typed tables are synchronized projections except coordination metadata.",
+    "Cross-tenant authorization, FK-to-payload equality, object kinds, ACL and current revocation require service validation in addition to DDL.",
+    "No DDL is run by this design; existing tables must exist before these statements."
+  ]
+}

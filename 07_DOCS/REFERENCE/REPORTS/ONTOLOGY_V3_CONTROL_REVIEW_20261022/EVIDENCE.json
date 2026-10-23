@@ -1,0 +1,337 @@
+{
+  "schema_version": "ontology-v3-control-review-evidence-v1",
+  "captured_at": "2026-10-22T03:35:40.434890+00:00",
+  "review_type": "static_self_review_no_runtime_or_model_execution",
+  "git_head": "fcd1dc02aafd878a5ce7dd9979084980635d3f80",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "structured-selection-20261021-r1",
+    "generation": 99,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/release.json",
+    "release_manifest_sha256": "5ab6f3ff2461218a3b561a63a1ab4d299710c412d8cec038991bc6a16dba67c1",
+    "activated_at": "2026-10-21T14:28:31.885795+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "54fbba259ef7d5343a20cbcede6b1b4ac16e1dc41ef2b92c501f102c39b3371f",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0974-read-scope-fact-separation/실험/manifest.json",
+        "sha256": "77f08b7931fe5d7a1bcd3f82c0baca780966551585373959288417f2da4ab88f"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0974-read-scope-fact-separation/README.md",
+        "sha256": "206ace36efe8868381d1a1860321443d28b5b46ef0d39f466e16aa49b97c6f0d"
+      },
+      "arm": "candidate",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0974-read-scope-fact-separation/artifacts/result.json",
+        "sha256": "1ded9add9f01a394ee24be19062fec5451df73463fe1e53d22e680ebbdf7cb4f"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0974-read-scope-fact-separation/artifacts/release-rebase.json",
+        "sha256": "df8b1a725b490b0e119f79c81da22b75dfde824aad978c02daf5d2b74627d685"
+      }
+    }
+  },
+  "release": {
+    "code_root": "08_DEPLOYMENT/RELEASES/structured-selection-20261021-r1/code",
+    "data_path": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+    "data_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d"
+  },
+  "legal_knowledge": {
+    "schema_version": "legal-knowledge-v1",
+    "management_enabled": false,
+    "consumer_mode": "off",
+    "producer": "pipeline.py legal-knowledge command / /v1/legal-knowledge/commands",
+    "consumers": [
+      "semantic_runtime.legal_agent.knowledge_bridge",
+      "/legal-knowledge/"
+    ],
+    "storage": "injected-oracle-repository",
+    "status": "WORKING_CODE_OPT_IN; ORACLE_SITE_AND_MAIN_NOT_ACTIVATED"
+  },
+  "shortcut_features": {
+    "capture": true,
+    "compile": true,
+    "hint": true,
+    "procedure": true,
+    "judgment": true,
+    "core_evidence_route": true,
+    "bounded_recall": true
+  },
+  "files": [
+    {
+      "path": "service.py",
+      "working_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+      "selected_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "666263ee1e746551601b3f6646514c8d832fd78551df3aae5bc155e2b9f94480",
+      "selected_sha256": "bcf3effd76803d3abd8bf4514524444388e4cc07634c1c7b4ff817964a9dfb2f",
+      "same_bytes": false,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "working_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "selected_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "working_sha256": "ab026ec909f114e351b34e441c2d670c1877da194d1d6c7265fe5e49a0f29454",
+      "selected_sha256": "ab026ec909f114e351b34e441c2d670c1877da194d1d6c7265fe5e49a0f29454",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/research_state.py",
+      "working_sha256": "912c76a43a330965fccf2a032f0b581f6bdcd8776c95c41e1cf55c0fab7a9ec1",
+      "selected_sha256": "912c76a43a330965fccf2a032f0b581f6bdcd8776c95c41e1cf55c0fab7a9ec1",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "working_sha256": "1b616963d8c60bec800e022af0665fe02a6d98d7b720e24e7ee06dbe1705122c",
+      "selected_sha256": "1b616963d8c60bec800e022af0665fe02a6d98d7b720e24e7ee06dbe1705122c",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "working_sha256": "162389fd7f57293f4f4f90ac4df822059fad2d79350e3fcec8995d8005b54c27",
+      "selected_sha256": "162389fd7f57293f4f4f90ac4df822059fad2d79350e3fcec8995d8005b54c27",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "working_sha256": "68cfb36b8917bdf98d6130772833fdee76cc8f1cbc36ac0e1cb3abeb5e606a21",
+      "selected_sha256": "68cfb36b8917bdf98d6130772833fdee76cc8f1cbc36ac0e1cb3abeb5e606a21",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "2a874b099f0ba28623b247b2623838e9404ba2be073ec6ea9b602b204a2ca50a",
+      "selected_sha256": "2a874b099f0ba28623b247b2623838e9404ba2be073ec6ea9b602b204a2ca50a",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "working_sha256": "33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c",
+      "selected_sha256": "33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py",
+      "working_sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+      "selected_sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "working_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "selected_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py",
+      "working_sha256": "f50de2406cd9482ce05d61b1b9a699696510d19d4428e584b6a40d5c849583be",
+      "selected_sha256": "f50de2406cd9482ce05d61b1b9a699696510d19d4428e584b6a40d5c849583be",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "working_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "selected_sha256": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "working_sha256": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "selected_sha256": "babae3bb24a390bddd0244a0e361250a6eb502e9f711bfa1a05a6fb628534359",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py",
+      "working_sha256": "46a58b8c15d45f773f4d030fc610a6b3a8f7de9a9a9233366ddd8eed95b66350",
+      "selected_sha256": "46a58b8c15d45f773f4d030fc610a6b3a8f7de9a9a9233366ddd8eed95b66350",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/reuse_policy.py",
+      "working_sha256": "23d5a31d77820742204bf756f201186d42e6e49c5ac750cd29889dd440dee993",
+      "selected_sha256": "23d5a31d77820742204bf756f201186d42e6e49c5ac750cd29889dd440dee993",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/successful_answer.py",
+      "working_sha256": "39b72a83560f49817e59e59fe541aa25602a676fbba43d1d1c2f985512b820a6",
+      "selected_sha256": "39b72a83560f49817e59e59fe541aa25602a676fbba43d1d1c2f985512b820a6",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "working_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "selected_sha256": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/wiki_proposal.py",
+      "working_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "selected_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/action_memory.py",
+      "working_sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "selected_sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "working_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "selected_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "working_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "selected_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "working_sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "selected_sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "working_sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "selected_sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "working_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "selected_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/existing.py",
+      "working_sha256": "c96608755746bc6964dbc71084c56cc1616b1c116dfb66e55ebba8adb5ed7e04",
+      "selected_sha256": "c96608755746bc6964dbc71084c56cc1616b1c116dfb66e55ebba8adb5ed7e04",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "working_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "selected_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/api/routers/legal_knowledge.py",
+      "working_sha256": "2e169cb04a34aa05fe4c6f454c9deb23f872501f8c58236c780d92cedc96a3dd",
+      "selected_sha256": "2e169cb04a34aa05fe4c6f454c9deb23f872501f8c58236c780d92cedc96a3dd",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/service.py",
+      "working_sha256": "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc",
+      "selected_sha256": "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/native.py",
+      "working_sha256": "a86a53fd00b15ddbc2e77d5f9955219c20638973821c3897ad16b7db318abed7",
+      "selected_sha256": "a86a53fd00b15ddbc2e77d5f9955219c20638973821c3897ad16b7db318abed7",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/integration.py",
+      "working_sha256": "fa22f69a2a2617c9921589cd23c832cd1bda80c46b514097687acbf5144ac7b7",
+      "selected_sha256": "fa22f69a2a2617c9921589cd23c832cd1bda80c46b514097687acbf5144ac7b7",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/migration.py",
+      "working_sha256": "04684b16305292bfe7ad3bab4b11532627343fac070bb8cd75019fa9ce8efb33",
+      "selected_sha256": "04684b16305292bfe7ad3bab4b11532627343fac070bb8cd75019fa9ce8efb33",
+      "same_bytes": true,
+      "selected_manifest_pinned": true,
+      "selected_pin_matches": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "working_sha256": "792e49825718fc141cd31bb610d6e3c8a4d84d1da24e7a655a98d1315fe6a081",
+      "selected_sha256": null,
+      "same_bytes": null,
+      "selected_manifest_pinned": false,
+      "selected_pin_matches": null
+    }
+  ]
+}

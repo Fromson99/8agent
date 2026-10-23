@@ -1,0 +1,283 @@
+{
+  "checked_at": "2026-10-22T06:25:04.186628+00:00",
+  "mode": "read-only source/code/log review; no model calls, replay, regrade, runtime edits or deployment",
+  "reviewer": "Codex self-review; not independent expert review",
+  "files": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CLUSTERING_AND_CONSTRUCTION.md",
+      "sha256": "88589fd9b9d10e98a39777e714576dfd4b873cfb9d51e5e67341a2f2a218a1e5"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/QUESTION_MATCHING.md",
+      "sha256": "1f26ea5b6bf4c99f27bb987ee62f0944f11b2140f2f435f76a44f8e619e6b801"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/CONTRACTS.md",
+      "sha256": "1ce7da2a7b8ede26c264cbb1c681805069412fc04a796044cfeb876978462753"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/ORACLE_DDL_DRAFT.sql",
+      "sha256": "3984cec533586cfe71456853b63e51cd1e176e888c06d82376ea7cfd0fd83996"
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519"
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "sha256": "12a634b7992928d40996d470c324657795ea6bbfd5943440f9f195e6e60a2e9a"
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "2cd978bdf54d6bcdf21a29b651958d739b083982498781f756ed3cfd99457014"
+    },
+    {
+      "path": "service.py",
+      "sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391"
+    }
+  ],
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "unified-scope-semantics-20261022-r1",
+    "generation": 100,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/unified-scope-semantics-20261022-r1/release.json",
+    "release_manifest_sha256": "99d9fc47c356b7770af5a666b166088636df8ea9ddee3eec2c0b888492424890",
+    "activated_at": "2026-10-22T05:12:18.082335+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "c325794998c252dcfddf26cee1500ac8d71a5eca66aa8cfd017e7c6476b33fa4",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0985-model-resolved-scope-authority/실험/manifest.json",
+        "sha256": "d1fd437c1255de1545fac3e1b33f670ae78efe93acfc405f971472f8f9f2a7ea"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0985-model-resolved-scope-authority/README.md",
+        "sha256": "157b5858056812382cf978557074faa4afd3bb20df72be1f4230484b69594e4b"
+      },
+      "arm": "candidate",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0985-model-resolved-scope-authority/artifacts/result.json",
+        "sha256": "22e281488d29a77501529c4097998696ad61e5bd2161bd4e1884aec3ba287754"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0985-model-resolved-scope-authority/artifacts/release-rebase.json",
+        "sha256": "9ec82c37c1a0faf6df0ffa2d3a1e77038e9e1f0206340b5786ea7881adc7d9f1"
+      }
+    }
+  },
+  "selected_release_files_verified": 419,
+  "selected_release_all_hashes_match": true,
+  "selected_knowledge_config": {
+    "schema_version": "legal-knowledge-v1",
+    "management_enabled": false,
+    "consumer_mode": "off",
+    "producer": "pipeline.py legal-knowledge command / /v1/legal-knowledge/commands",
+    "consumers": [
+      "semantic_runtime.legal_agent.knowledge_bridge",
+      "/legal-knowledge/"
+    ],
+    "storage": "injected-oracle-repository",
+    "status": "WORKING_CODE_OPT_IN; ORACLE_SITE_AND_MAIN_NOT_ACTIVATED"
+  },
+  "cm008_wire": [
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/001.json.gz",
+      "sha256": "4dc4f7ec42e62653c4f7e69d6221629939abea59cfff6ac3c7300fd67f84264e",
+      "phase": "investigate",
+      "source_stage": "request-entry",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [],
+      "full_critical_block_present": false
+    },
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/002.json.gz",
+      "sha256": "63ccf896a9fec85a4c5eba36353045bda5622096ca6f7657f0f050d8a4cb5158",
+      "phase": "compose",
+      "source_stage": "memory-assess",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [
+        "external > financial_team > krx > 유가증권시장 상장규정 제2조 정의",
+        "external > financial_team > krx > 코스닥시장 상장규정 제2조 정의"
+      ],
+      "full_critical_block_present": false
+    },
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/003.json.gz",
+      "sha256": "5b789429905b89bb9811bca77eb506e18dc7e5d9b3ea831c31146c3c7ffd9a65",
+      "phase": "investigate",
+      "source_stage": "source-law-navigation-1-read-choice",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [
+        "external > financial_team > krx > 유가증권시장 상장규정 제2조 정의",
+        "external > financial_team > krx > 코스닥시장 상장규정 제2조 정의"
+      ],
+      "full_critical_block_present": false
+    },
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/004.json.gz",
+      "sha256": "fff514767df86f2edf2e867e9602495d3c0e2445d2f9d0378509b6a1c9130dc0",
+      "phase": "compose",
+      "source_stage": "memory-assess",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [
+        "external > financial_team > krx > 유가증권시장 상장규정 제2조 정의",
+        "external > financial_team > krx > 코스닥시장 상장규정 제13조 상장주선인의 의무",
+        "external > financial_team > krx > 코스닥시장 상장규정 제2조 정의"
+      ],
+      "full_critical_block_present": false
+    },
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/005.json.gz",
+      "sha256": "ba29de09174dae74296195ea3ed8ec7a0966ef826e26ad038e138058c18c7cd7",
+      "phase": "compose",
+      "source_stage": "memory-assess",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [
+        "external > financial_team > krx > 유가증권시장 상장규정 제2조 정의",
+        "external > financial_team > krx > 코스닥시장 상장규정 제13조 상장주선인의 의무",
+        "external > financial_team > krx > 코스닥시장 상장규정 제2조 정의"
+      ],
+      "full_critical_block_present": false
+    },
+    {
+      "wire_file": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/artifacts/run-001/agent_layer/knowledge/cm-008/wire/006.json.gz",
+      "sha256": "49296cc898661d86ae36bb2d3fe4ebf18f020baf807e78f05ce629467a86726d",
+      "phase": "compose",
+      "source_stage": "memory-compose",
+      "guidance_titles": [
+        "상장주선인의 취득수량·기간과 연장 조건",
+        "코스닥시장 상장규정 제13조 · 상장주선인 의무인수와 보유기간",
+        "코스닥시장 상장규정 시행세칙 제15조 · 취득방법 및 연장 사유 구체화"
+      ],
+      "past_event_guidance_present": true,
+      "source_headings": [
+        "external > financial_team > krx > 코스닥시장 상장규정 제13조 상장주선인의 의무"
+      ],
+      "full_critical_block_present": false
+    }
+  ],
+  "cm008_model_requested_gap": [
+    {
+      "kind": "MISSING_SOURCE",
+      "material": true,
+      "material_id": "Bf8823dc5da8fb29b6788ec8efb09",
+      "reason": "코스닥시장 상장규정 시행세칙 제15조제5항의 '세칙으로 정하는 사유' 구체적 내용이 제공되지 않아 6개월 연장의 구체 사유를 확인하지 못한다.",
+      "suggested_action": "READ_SCOPE",
+      "issue_id": "Q1"
+    }
+  ],
+  "cm008_native_events": [
+    {
+      "seq": 346,
+      "kind": "ACQUIRED_ORIGINALS_TO_ASSESS",
+      "payload": {
+        "automatic_adoption": false,
+        "evidence_sufficient": false,
+        "material_hash": "514d0768a35e20f1a819a1a2a1aacd8ff7214edeb2222266f324aa2936841fa2",
+        "navigation_delivery_claimed": false,
+        "omitted_evidence_ids": [],
+        "source_ids": [
+          "article:dd25e3358cf433fbe4494659",
+          "article:78a4e15c79fb558ba9752400"
+        ]
+      }
+    },
+    {
+      "seq": 353,
+      "kind": "ASSESSMENT_SOURCE_PROJECTION",
+      "payload": {
+        "contract": "investigation-completion-v8",
+        "evidence_hash": "14f828ad54e1e94c22c48b44219dc3b22046dfaefa4dc8ba822877f5caaad068",
+        "source_hash": "614cf0334c9004b6ac00e0ab24e7cd83ae4eb72da369224b08410cb0a3ddca75",
+        "sources": 2,
+        "spans": 22
+      }
+    },
+    {
+      "seq": 406,
+      "kind": "ACQUIRED_ORIGINALS_TO_ASSESS",
+      "payload": {
+        "automatic_adoption": false,
+        "evidence_sufficient": false,
+        "material_hash": "16e076ba79d80e76e12dc5e40cf76bf102e5c92610dfa04b928d45d191466597",
+        "navigation_delivery_claimed": false,
+        "omitted_evidence_ids": [],
+        "source_ids": [
+          "article:dd25e3358cf433fbe4494659",
+          "article:78a4e15c79fb558ba9752400",
+          "article:ece2450f99b261c5d36eb688"
+        ]
+      }
+    },
+    {
+      "seq": 413,
+      "kind": "ASSESSMENT_SOURCE_PROJECTION",
+      "payload": {
+        "contract": "investigation-completion-v8",
+        "evidence_hash": "9871950b3197032b574342fca99c62c0af7fe312f1e7022ed1be6ef57851fa71",
+        "source_hash": "3dff5c0bb34cfde3de58cb3a2cb4d7a297367c8786738d4976c45f93522ded3c",
+        "sources": 3,
+        "spans": 45
+      }
+    },
+    {
+      "seq": 435,
+      "kind": "ASSESSMENT_RESEARCH_DEFERRED_TO_USER",
+      "payload": {
+        "gaps": [
+          "Kf4535ecddd0ee3692c68"
+        ],
+        "reason": "publish supported current-question scope with unresolved limitations",
+        "supported_claim_ids": [
+          "C1"
+        ]
+      }
+    }
+  ],
+  "numeric_recalculation": {
+    "baseline_mean_seconds": 141.13283762500032,
+    "knowledge_mean_seconds": 70.49027812825034,
+    "baseline_calls": 27,
+    "knowledge_calls": 23,
+    "scope": "Recorded one-shot timings; incomplete answers and early termination prevent interpreting as faster correct answers."
+  }
+}

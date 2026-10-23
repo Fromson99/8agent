@@ -1,0 +1,155 @@
+{
+  "document_evidence_format": 1,
+  "captured_at": "2026-10-23T09:29:42.058211+00:00",
+  "purpose": "Documentation evidence; not a new runtime schema, experiment or deployment receipt",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "output-unlimited-20261023-r1",
+    "generation": 103,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/release.json",
+    "release_manifest_sha256": "b56f4e4fd942eb40fcf2aa9d6bedd37b83f9fb512d610323ad72d760b9df0e79",
+    "activated_at": "2026-10-23T07:36:34.786667+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "0b2bed9d27826cafde0c8ca6c3b751b80f2128539eb38ed06a4d41c5aa6c8fc8"
+  },
+  "release_manifest_verified": true,
+  "selected_code_root": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code",
+  "release_file_entries": 420,
+  "code_comparison": [
+    {
+      "path": "service.py",
+      "working_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+      "selected_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+      "same": true
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "d21f4077b39861ddcefb6fa207741d5509b27cc8f158aeb631613647a5bdb691",
+      "selected_sha256": "eb1b7c001e5a4b31701874a2bcb50142566a05134e9ffb623dbbb7f9de2c770e",
+      "same": false
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "working_sha256": "f521f51b6f1e7ed02d7dcb76a9de55ff3541d2f4df5bad093e8d6eeb22f0bc88",
+      "selected_sha256": "f521f51b6f1e7ed02d7dcb76a9de55ff3541d2f4df5bad093e8d6eeb22f0bc88",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "6ea545be2ff79f766016361a5dc7c98498a45efde19c73a5b88bdb01a68e3323",
+      "selected_sha256": "58e07bcf161ba4031468ce6ff2fa1ee975e614ee9d0e09afa4e8c8259f779708",
+      "same": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "working_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "selected_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "working_sha256": "ceb7553db04ba59a3dae8f8bdeee0d2b03594128e0839c7c67c87c8098192892",
+      "selected_sha256": "ceb7553db04ba59a3dae8f8bdeee0d2b03594128e0839c7c67c87c8098192892",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "working_sha256": "8cda54c154fe589c33c2fbb1dbe03e293c7f637f4369abb1438347f912bc279b",
+      "selected_sha256": "aa489c3765ff3e21024d10ad36eade530090cd39b55de5abd2875825176fe18b",
+      "same": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/read_judgment.py",
+      "working_sha256": "b4d39c63384f8757d261e98b8ba4dfc98e9f8499823120a43194e65299d432d1",
+      "selected_sha256": null,
+      "same": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/service.py",
+      "working_sha256": "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc",
+      "selected_sha256": "2cf768e059ab243fc935d269f18e2de47abd7b493cbbf185301d36247e22f9fc",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/basis_links/chat.py",
+      "working_sha256": "7723dd0c6f72c7e26945ca3751f686d54db88bfc7b65a7c65043243a59c695b0",
+      "selected_sha256": "7723dd0c6f72c7e26945ca3751f686d54db88bfc7b65a7c65043243a59c695b0",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/contracts.py",
+      "working_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "selected_sha256": "9815726a220a5aa0955c4877f4904a8a8934ff920c607c7496357572a82e7519",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "working_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "selected_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "working_sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "selected_sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "working_sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "selected_sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "working_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "selected_sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/oracle.py",
+      "working_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "selected_sha256": "1574516ec16b6c617d7255d7c923796c33ab37201144ea22880d4dfbef134f08",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/api/routers/legal_knowledge.py",
+      "working_sha256": "2e169cb04a34aa05fe4c6f454c9deb23f872501f8c58236c780d92cedc96a3dd",
+      "selected_sha256": "2e169cb04a34aa05fe4c6f454c9deb23f872501f8c58236c780d92cedc96a3dd",
+      "same": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js",
+      "working_sha256": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+      "selected_sha256": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+      "same": true
+    }
+  ],
+  "source_files": {
+    "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json": "3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4",
+    "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/release.json": "b56f4e4fd942eb40fcf2aa9d6bedd37b83f9fb512d610323ad72d760b9df0e79",
+    "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question/RESULT.txt": "6dae7a2f172d0ef2cca127343af695a4fdde98eeeef47dc49695b0c53fcf4c7a",
+    "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question/artifacts/manual-review.json": "12e3f79c5195225ea0a8a0a0d01d3437cdf613ad037e54a45c5ef8488b01dff6",
+    "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RETRIEVAL_IMPLEMENTATION_20261023/DESIGN.txt": "bcddc4b2358485160973a23aaface92aed3037b74eced14b858ec181daf949dd"
+  },
+  "preserved_v3": {
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md": "5ce1d0db3b46671d5783d46bd8c477ca1c1cbc445787c49cb25e2d175685aabb",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CLUSTERING_AND_CONSTRUCTION.md": "88589fd9b9d10e98a39777e714576dfd4b873cfb9d51e5e67341a2f2a218a1e5",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CM_E2E_RESULTS.md": "9407febeccfbc28234784478feceb768bdf14ca671e587fb0063442ad5f7c335",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md": "b6dc5fe3868efc5f18a234098a50577d67a2b450f1edd958029eed058cdcccc0",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DOCUMENT_MAP.json": "a6b495a2895adaf518460f06330661b8fc3961660ea1b8b18e774e53b56813a1",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md": "c1183bd32970550ad1584ab197909c33b8e8a26e5bfd5dc8705f0a9b740c46f0",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EXPLAINABILITY_AND_EVALUATION.md": "77e8afe633f19cb646a8ab649da8ee32b6eed4ce22deea257260eef1362eb172",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md": "dee4b3358e2ccc0aa605a24060af3d0646117ec98153bfeb3c7ad449f9299250",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md": "81765222c284da4cca7181ef99f2ef8d758db3f0a04e8370ae903f037e53d2b1",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md": "f93928bc2a5dcee7c3c36524d05a56313a5afb2b2908914cd3f44f3e4525fdac",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/QUESTION_MATCHING.md": "1f26ea5b6bf4c99f27bb987ee62f0944f11b2140f2f435f76a44f8e619e6b801",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/RELATION_DISCOVERY.md": "8db5378326872d764713b29d7a938153039d326693834ff47b69f39af70d1070",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/REORGANIZATION_VALIDATION.json": "f362c5d432a86a86825f3c2cd59edab59f0054122f7848ade4df4cb986dc0d11",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCES.md": "843043cd221fa22ef3c0ae3072c0cbeb56c2dfac7aca67605989739373203445",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCE_ANCHORED_STORAGE.md": "372643561ee2f54c6a472d8ddfa70213d75c75c175fe9aa8031a6ca0ca6ba5bd",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/validate_documents.py": "4fa8d824bf44803a25f490deb5fcbcfeea1517dc2dab05731ee80486ca0f56dc"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "kind": "existing_function_synthetic_unit_check",
+  "module": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/code/02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+  "model_calls": 0,
+  "results": [
+    {
+      "case": "base",
+      "expected": "FALSE",
+      "result": {
+        "status": "FALSE",
+        "value": {
+          "type": "boolean",
+          "value": false,
+          "unit": ""
+        },
+        "missing": [],
+        "conflicts": [],
+        "expression_hash": "6197361c97bf956244a8e19f6986e34b447640b105cbb4904113bc915f3e53a4",
+        "inputs_hash": "fe69967ce6f37c75d0d08bb22c1cedcf5c51bd0644b48cd7d650d0d472635e9d",
+        "binding": {
+          "scope": "isolated-synthetic-unit-check"
+        }
+      }
+    },
+    {
+      "case": "scenario",
+      "expected": "TRUE",
+      "result": {
+        "status": "TRUE",
+        "value": {
+          "type": "boolean",
+          "value": true,
+          "unit": ""
+        },
+        "missing": [],
+        "conflicts": [],
+        "expression_hash": "6197361c97bf956244a8e19f6986e34b447640b105cbb4904113bc915f3e53a4",
+        "inputs_hash": "fe450dd9ba68c99ee713f41b783982dbfe4ebd516dacc2886208216e46f59227",
+        "binding": {
+          "scope": "isolated-synthetic-unit-check"
+        }
+      }
+    },
+    {
+      "case": "missing",
+      "expected": "UNKNOWN",
+      "result": {
+        "status": "UNKNOWN",
+        "value": null,
+        "missing": [
+          "amount"
+        ],
+        "conflicts": [],
+        "expression_hash": "6197361c97bf956244a8e19f6986e34b447640b105cbb4904113bc915f3e53a4",
+        "inputs_hash": "2a03cf26516bad7c933b29e6ef6e9f349920340686b27b1525eaedb4a74e4006",
+        "binding": {
+          "scope": "isolated-synthetic-unit-check"
+        }
+      }
+    }
+  ]
+}

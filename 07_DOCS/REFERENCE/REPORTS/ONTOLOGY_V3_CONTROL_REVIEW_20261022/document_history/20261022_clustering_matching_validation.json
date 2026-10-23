@@ -1,0 +1,203 @@
+{
+  "schema_version": "ontology-v3-clustering-matching-document-validation-v1",
+  "checked_at": "2026-10-22T06:06:50.121921+00:00",
+  "status": "PASSED",
+  "scope": "Documentation update only. No model/evaluation/runtime/DB/deployment execution; active release not changed.",
+  "archive": {
+    "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/document_history/20261022_before_clustering_matching.json.gz",
+    "sha256": "f2e7139f43fca96db5559f5441efa4d2dc21a14924e226a0bd9369e42877a5e1",
+    "original_documents": 9,
+    "format": "gzip JSON; files[path].content is UTF-8 text, verify against files[path].sha256 before restoring to a separate location"
+  },
+  "changes": [
+    "Common clusters as user navigation and knowledge organization, not mandatory universal rules",
+    "Source-grounded concept/relation/condition construction and review",
+    "Question-based candidate search and source-anchor lookup with separate applicability judgment",
+    "Expected speed/quality mechanisms separated from recorded ADR0987 results",
+    "Existing topic integration, historical evidence and previous anchors preserved"
+  ],
+  "checks": {
+    "scanned_documents": 26,
+    "changed_existing_documents": 9,
+    "new_topic_documents": 2,
+    "local_links": 303,
+    "anchor_links": 89,
+    "preserved_explicit_anchors": 38,
+    "json_examples": 1,
+    "preimage_contents_verified": true,
+    "preserved_artifacts": 17,
+    "markdown_fences_and_whitespace": true
+  },
+  "documents": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md",
+      "change": "updated",
+      "sha256": "5ce1d0db3b46671d5783d46bd8c477ca1c1cbc445787c49cb25e2d175685aabb",
+      "lines": 47,
+      "previous_sha256": "9b2173f66f3c23885eac2ff25b822d433d1b6be9c62b9f475555e6684ad2591d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/PURPOSE.md",
+      "change": "updated",
+      "sha256": "f93928bc2a5dcee7c3c36524d05a56313a5afb2b2908914cd3f44f3e4525fdac",
+      "lines": 120,
+      "previous_sha256": "0a2140fe7580a9bb99423775bb102d4691a3a3bcf1efed1b0bc2f478e1970ccd"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/KNOWLEDGE_MODEL.md",
+      "change": "updated",
+      "sha256": "81765222c284da4cca7181ef99f2ef8d758db3f0a04e8370ae903f037e53d2b1",
+      "lines": 159,
+      "previous_sha256": "5d2b2c480bdfe4f1111fd2a3a0af2b73c3a4dd3d09564a8ce4374b2826470028"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/EVIDENCE_MEMORY.md",
+      "change": "updated",
+      "sha256": "c1183bd32970550ad1584ab197909c33b8e8a26e5bfd5dc8705f0a9b740c46f0",
+      "lines": 200,
+      "previous_sha256": "b2a9bb33697fce8954d1223b6faec838d42fd36101f8defc4ddee7668c27c351"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/INTEGRATION_AND_VALIDATION.md",
+      "change": "updated",
+      "sha256": "dee4b3358e2ccc0aa605a24060af3d0646117ec98153bfeb3c7ad449f9299250",
+      "lines": 139,
+      "previous_sha256": "5fc5b0f2b89ffef42c75480b937dba161243e1f6a7605e424eae73b8dd85244e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCE_ANCHORED_STORAGE.md",
+      "change": "updated",
+      "sha256": "372643561ee2f54c6a472d8ddfa70213d75c75c175fe9aa8031a6ca0ca6ba5bd",
+      "lines": 63,
+      "previous_sha256": "7b5582cdc863c2918001e5077bc69877065b1f05a5f8769601426faf4b33464a"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DISCUSSION_MAP.md",
+      "change": "updated",
+      "sha256": "b6dc5fe3868efc5f18a234098a50577d67a2b450f1edd958029eed058cdcccc0",
+      "lines": 54,
+      "previous_sha256": "34b28d975f271383ce0befc648232bbf86036c6c2ff7d2ffa9e87c7c39983a47"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/implementation/MODULES.md",
+      "change": "updated",
+      "sha256": "7496707f7b5d9f8c28d00468072f31b70997574cc147f2c0a5c8e3e7c411570a",
+      "lines": 108,
+      "previous_sha256": "24ecaf8308619caa9a5dec031ff11c91675d442bd4e95dc9fba0c43906bcc84b"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/document_history/README.md",
+      "change": "updated",
+      "sha256": "de895164cccf05678504fd0b300c2c8aa79e2460a1d92eceae34680690c2ad87",
+      "lines": 21,
+      "previous_sha256": "da19bf93397699d8fcf4f8ad51cbb5ae6a9bfb16ddc2c5c19b294b6a891a4f58"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CLUSTERING_AND_CONSTRUCTION.md",
+      "change": "added",
+      "sha256": "88589fd9b9d10e98a39777e714576dfd4b873cfb9d51e5e67341a2f2a218a1e5",
+      "lines": 139,
+      "previous_sha256": null
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/QUESTION_MATCHING.md",
+      "change": "added",
+      "sha256": "1f26ea5b6bf4c99f27bb987ee62f0944f11b2140f2f435f76a44f8e619e6b801",
+      "lines": 148,
+      "previous_sha256": null
+    }
+  ],
+  "preserved_artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/DOCUMENT_MAP.json",
+      "sha256": "a6b495a2895adaf518460f06330661b8fc3961660ea1b8b18e774e53b56813a1",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/REORGANIZATION_VALIDATION.json",
+      "sha256": "f362c5d432a86a86825f3c2cd59edab59f0054122f7848ade4df4cb986dc0d11",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/CM_E2E_RESULTS.md",
+      "sha256": "9407febeccfbc28234784478feceb768bdf14ca671e587fb0063442ad5f7c335",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/EVIDENCE.json",
+      "sha256": "e63b1c74b42878dc1a9007aa6b1e4d84c18180d9b97637fde4d03b1429e431e0",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/REVIEW.md",
+      "sha256": "d92a9393470b784d8e710a511ead5c40e6569d25314943636714e5215574e34e",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/VALIDATION.json",
+      "sha256": "d349a964c539c0e6efcf6dcfd30e08202c74ca677aea72da046c3fa02bedba54",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/ORACLE_DDL_DRAFT.sql",
+      "sha256": "3984cec533586cfe71456853b63e51cd1e176e888c06d82376ea7cfd0fd83996",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/database/READ_QUERIES.sql",
+      "sha256": "f7c537e89f1613f6d7632a9531824013f9bdcd1fee77b147d0921b8164787b2b",
+      "unchanged": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_V3_CONTROL_REVIEW_20261022/document_history/20261022_before_split.json.gz",
+      "sha256": "b452b63d429add1ed3712c3953eaeb48b09b9d7924c378bcc2ec4525633c1ce7",
+      "unchanged": true
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "2cd978bdf54d6bcdf21a29b651958d739b083982498781f756ed3cfd99457014",
+      "unchanged": true
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "2d6d502b2ffbf079fc0b84973a280af20d5787dde34c7a5ea9023884f440444d",
+      "unchanged": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/adapters/repository.py",
+      "sha256": "d3edeba94623533a2705370e774406aa99c6420c853738e3fbf95284459341d5",
+      "unchanged": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "unchanged": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "unchanged": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "unchanged": true
+    },
+    {
+      "path": "06_TOOLS/EXPERIMENTS/adr_0987/e2e.py",
+      "sha256": "0fec045eb33bf8fb3fb98272736aa4504808d551a0e0d557e0d8ba50fa90912e",
+      "unchanged": true
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0987-cm-source-ontology-native-e2e/README.md",
+      "sha256": "0905eb6be65f387e5ad786f732d0f8fd3856de53efe039a88b5fbae61a84be15",
+      "unchanged": true
+    }
+  ],
+  "errors": [],
+  "limits": [
+    "Local Markdown target/anchor, fenced JSON and file integrity checks only; Mermaid diagrams not browser-rendered",
+    "No quality experiment, new scoring, live Oracle/GENOS or service verification",
+    "DOCUMENT_MAP.json and REORGANIZATION_VALIDATION.json remain historical snapshots"
+  ]
+}
