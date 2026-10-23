@@ -1,0 +1,51 @@
+Dataiku 이전 STRUCTURE 실패 작업 해제 — 2026-10-23 R1
+
+사진에서 확인한 상태
+이전 run_20261023_01_20261023_01: FAILED / STRUCTURE
+현재 run_20261023_01_20261023_r2_01: STATUS 조회 JOB_LOST
+앞선 BUSY와 일치하지만, 코드는 새 작업의 저장 상태가 NEW이고 GENOS instance가
+바뀌지 않았는지 다시 검사합니다. 실제 처리 중 유실된 작업을 무조건 재접수하지 않습니다.
+
+실행 순서
+1. R2 실행기와 pipeline_jobs()를 실행한 같은 LEGAL_RAG Python 노트북을 사용하세요.
+   커널과 기존 폴더·작업 이름을 유지합니다.
+2. DATAIKU_PIPELINE_RELEASE_FAILED_20261023_R1.txt 전체를 새 셀에 붙여 실행하세요.
+   이 파일은 실제 해제 동작을 수행합니다. 사진의 이전 실패 작업 한 건만 대상으로 합니다.
+3. 입력·로그 보존과 해시 재조회가 끝난 뒤 RECOVERY_RELEASED가 나오는지 확인하세요.
+4. 새 셀에서 PIPELINE_RESULT = run(action="check")를 실행합니다.
+5. check가 READY이면 다음 셀에서 PIPELINE_RESULT = run(action="run")을 실행합니다.
+   기존 R2 실행기가 다음 오류의 상세 원인을 바로 출력합니다.
+
+해제 전에 자동 확인하는 내용
+- 최신 체크포인트의 해시, 프로젝트·관리 폴더·endpoint·코드·작업 ID와 인증 결속.
+- 이전 작업이 지금도 FAILED / STRUCTURE이고 결과물이 없는지 확인.
+- 새 작업은 저장 상태 NEW, 같은 instance, 기한 내, 서버에 아직 없는지 확인.
+- 당시 RAW_INPUT.zip을 관리 폴더의 기존 불변 blob에서 해시 검증.
+- 당시 PIPELINE_SUPPORT.zip을 해시 검증하고 불변 경로에 보존. 현재 업로드와 다르면
+  이전 작업에 기록된 로컬 support ZIP을 스트리밍 보존합니다. 큰 파일을 RAM에 모두 읽지 않습니다.
+- worker.log·structure.log와 생성된 나머지 공개 단계 로그를 다운로드·해시 검증·관리 폴더 보존.
+- 보존 영수증 기록 후 상태를 다시 확인하고 이전 작업에만 ACK를 한 번 요청.
+
+어떤 파일이 남고 정리되는가
+Dataiku 원문 업로드, 기존 체크포인트, RAW/SUPPORT 불변 보관본, 실패 로그를 남깁니다.
+검증 후 기존 GENOS ACK API가 해당 실패 작업의 생성용 임시 폴더 내용을 정리하며 state.json은 남깁니다.
+관리 폴더 _pipeline/recovery/작업ID/에 보존 목록·복구 예산·ACK 의도·결과를 기록합니다.
+전체 내부 scratch를 백업하는 기능은 아닙니다. 제공 API로 받는 단계 로그와 재현 입력을 보존합니다.
+Oracle 데이터·MAIN·코드서빙 배포·새 작업의 기한과 SQL 예산은 변경하지 않습니다.
+
+시간·재실행
+SUPPORT는 약 2.11GB이므로 해시 검사와 불변 보관에 시간이 걸릴 수 있습니다.
+이미 같은 해시로 보관된 파일은 공유합니다. 필요 시 관리 폴더에 SUPPORT 한 벌이 추가됩니다.
+복구 한도는 최초 30분/GENOS API 100회/로그 총64MiB이며 반복 실행해도 초기화하지 않습니다.
+다른 노트북에서 동시에 실행하지 마세요.
+ACK 응답이 끊겼으면 같은 셀을 다시 실행하여 STATUS로 RELEASED 여부를 확인할 수 있습니다.
+ACK 의도는 남았는데 서버 상태가 여전히 FAILED이면 자동으로 ACK를 반복하지 않고 상세 오류를 냅니다.
+중간 오류가 나면 원문·기존 실패 기록은 유지하며 RECOVERY_RELEASED를 출력하지 않습니다.
+RUNNING/COMPLETE/다른 단계/instance 변경/해시 불일치면 해제를 거절합니다.
+
+ZIP
+ZIP 내부 TXT와 별도 첨부 TXT는 동일합니다. 실제 업로드한 TRANSFER 폴더에서 풀 경우:
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_RELEASE_FAILED_20261023_R1.zip ./DATAIKU_PIPELINE_RELEASE_FAILED_20261023_R1
+추출된 TXT 전체를 Dataiku 노트북에 붙입니다. bash로 실행하지 않습니다.
+이 파일은 이전 R2 실행기를 교체하지 않고 함께 사용하는 일회 복구 단계입니다.
+현장 해제 완료·새 입력 구조화·Oracle 적재 성공은 실제 출력으로 확인해야 합니다.

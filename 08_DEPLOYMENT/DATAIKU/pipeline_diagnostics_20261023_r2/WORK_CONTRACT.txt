@@ -1,0 +1,34 @@
+2026-10-23 Dataiku notebook diagnostics R2
+
+Confirmed field evidence: GENOS_ERROR = BUSY in the user's notebook photo.
+The server refuses START while any previous job is not RELEASED. The photo does
+not establish which previous job is blocking, its current state, or that the new
+HWP inputs have completed structure processing.
+
+Change: extend the existing mapped R1 notebook runner. Preserve the sealed client
+ZIP/hash, Oracle mapping, service code pin, input binding, job identity, deadline,
+SQL budget and previous delivery artifacts. The R2 runner observes existing API
+calls and reports sanitized exception chains, operation, phase, job and next step.
+No additional retries, implicit run, cancellation, ACK or automatic job deletion.
+The existing runtime validators remain in force. This is an operator diagnostic
+change, not an experiment or MAIN promotion.
+
+Failure ownership: the existing client owns each HTTP attempt; the outer notebook
+runner owns final display and diagnostic persistence. Display failure cannot
+convert the original failure into success. Credentials are redacted before
+display/storage. Local diagnostic persistence is attempted first, then a bounded
+managed-folder upload/readback. Secondary persistence errors are reported by type.
+Exception inspection is limited to 12 links, each message to 16 KiB, and 12 stack
+frame locations per link. Truncation and unavailable state remain explicit.
+
+BUSY follow-up: enumerate verified managed checkpoints, query a bounded set of
+saved jobs with STATUS only, and show current state. The helper never calls ACK,
+CANCEL, START, UPLOAD or EXECUTE. Only a reviewed failed job may later be released
+after its logs and original inputs are preserved. Active or completed work is not
+discarded. No field access is available from this workspace.
+
+Validation: small synthetic fixtures sequentially, no real data/index/model load.
+Check normal prepare/resume, actual sealed Client.call -> runner -> display/log,
+BUSY/HTTP/transport/schema failures, redaction, repeated installation, error-log
+failure, hashes, input bindings, lock rejection and existing checkpoint budgets.
+Run at most one test process; keep fixture process under 384 MiB RSS where possible.

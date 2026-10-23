@@ -1,0 +1,201 @@
+{
+  "upstream_branch": "infocz/fde/seungho/integration",
+  "fetched_commit": "c507cd450d90671858603e97f8849c8df3a7bc8d",
+  "files": [
+    {
+      "path": "02-els-qa/dataiku/project_config/recipes/compute_ELS_QA_PREPROCESS.py",
+      "sha256": "47c24c8905fd3ce2b0cfb25d737e321ebfdbebacbdb3a71b0c9b88f42a10bea2",
+      "lines": 97,
+      "selected_lines": [
+        {
+          "line": 40,
+          "text": "source = dataiku.Folder(\"ElsQaSrc\")                 # 관리 폴더 ID (이름 ELS_QA_SOURCE)"
+        },
+        {
+          "line": 69,
+          "text": "            with source.get_download_stream(path) as stream:"
+        },
+        {
+          "line": 91,
+          "text": "bundles_ds.write_with_schema(pd.DataFrame(bundles, columns=[\"BUNDLE_ID\", \"BUNDLE_JSON\"]))"
+        },
+        {
+          "line": 92,
+          "text": "vdb_ds.write_with_schema(pd.DataFrame(vdb_rows, columns=[\"BUNDLE_ID\", \"DOCUMENT_ID\", \"VDB_JSON\"]))"
+        },
+        {
+          "line": 93,
+          "text": "log_ds.write_with_schema(pd.DataFrame(log, columns=preprocess.LOG_COLUMNS).astype(str))"
+        }
+      ]
+    },
+    {
+      "path": "02-els-qa/dataiku/build_project.py",
+      "sha256": "61a43d4490f28f23062ca30f1a99c9343af2110b04ed30cd9bd957730a42ba25",
+      "lines": 272,
+      "selected_lines": [
+        {
+          "line": 117,
+          "text": "            dataiku.Folder(\"ElsQaSrc\", project_key=TARGET_PROJECT_KEY).upload_data(\".keep\", b\"\")"
+        }
+      ]
+    },
+    {
+      "path": "02-els-qa/dataiku/dsskit.py",
+      "sha256": "5088c1862c8c41b33ae52e14a56fefcec238e845d1749af92a28b5b9edd9e1d1",
+      "lines": 810,
+      "selected_lines": [
+        {
+          "line": 44,
+          "text": "FS_CONNECTION = \"filesystem_managed\""
+        },
+        {
+          "line": 131,
+          "text": "def file_dataset(name, columns, description):"
+        },
+        {
+          "line": 144,
+          "text": "def managed_folder(name, description):"
+        },
+        {
+          "line": 594,
+          "text": "FS_CONNECTION = \"__FS__\"                     # 묶음 안 '__FS__' 를 이 커넥션으로"
+        },
+        {
+          "line": 662,
+          "text": "            if before in mapping:"
+        },
+        {
+          "line": 663,
+          "text": "                spec[\"params\"][\"connection\"] = mapping[before]"
+        }
+      ]
+    },
+    {
+      "path": "02-els-qa/dataiku/project_config/managed_folders/ElsQaSrc.json",
+      "sha256": "c03751a79a46f32a7c7a7ca7f70e99c2b9a6d9082d19ba8b865dbb9b3f8c237f",
+      "lines": 50,
+      "selected_lines": []
+    },
+    {
+      "path": "02-els-qa/dataiku/project_config/datasets/ELS_QA_LOAD_BUNDLE.json",
+      "sha256": "4c695be80dc56fad306ded551853f242ecb06bb558104ff4c715c3fdb074543c",
+      "lines": 84,
+      "selected_lines": []
+    }
+  ],
+  "our_files": [
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_recovery_20261023_r1/recovery.py",
+      "sha256": "1a56ea884baece6bc582d9e85e933a4f261b880422cc3d90601cd3b25e851152",
+      "selected_lines": [
+        {
+          "line": 93,
+          "text": "            self.save()"
+        },
+        {
+          "line": 99,
+          "text": "    def save(self):"
+        },
+        {
+          "line": 103,
+          "text": "        self.folder.upload_stream(name, io.BytesIO(raw))"
+        },
+        {
+          "line": 114,
+          "text": "        self.save()  # Reserve durably before the API call, including ACK."
+        },
+        {
+          "line": 134,
+          "text": "    def preserve_file(self, path, expected, label):"
+        },
+        {
+          "line": 143,
+          "text": "                self.folder.upload_stream(remote, stream)"
+        },
+        {
+          "line": 150,
+          "text": "        raw = checkpoint[\"raw_blob\"]"
+        },
+        {
+          "line": 162,
+          "text": "        elif 'PIPELINE_SUPPORT.zip.receipt.json' in paths:"
+        },
+        {
+          "line": 163,
+          "text": "            receipt = json.loads(_rc_bytes(self.folder,'PIPELINE_SUPPORT.zip.receipt.json'))"
+        },
+        {
+          "line": 167,
+          "text": "                source = {'path':'PIPELINE_SUPPORT.zip', **expected}"
+        },
+        {
+          "line": 168,
+          "text": "                self.verify_remote(source,'old PIPELINE_SUPPORT.zip upload')"
+        },
+        {
+          "line": 171,
+          "text": "                    self.folder.upload_stream(content_address,stream)"
+        },
+        {
+          "line": 174,
+          "text": "            self.verify_remote(support,'old PIPELINE_SUPPORT.zip')"
+        },
+        {
+          "line": 176,
+          "text": "            support = self.preserve_file(state['support_zip'], expected, 'old PIPELINE_SUPPORT.zip')"
+        },
+        {
+          "line": 209,
+          "text": "                logs[name]={'status':'PRESERVED', **self.preserve_file(target,{'sha256':h.hexdigest(),'bytes':offset},name)}"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_mapped_20261023_r1/src/managed_job.py",
+      "sha256": "10d3147a6b7b9deaa6ccc253cf0d4b52c5bb2bebbd219df2d45ce3c4817eef83",
+      "selected_lines": [
+        {
+          "line": 46,
+          "text": "            self.save()"
+        },
+        {
+          "line": 48,
+          "text": "    def save(self):"
+        },
+        {
+          "line": 53,
+          "text": "        self.folder.upload_stream(name,io.BytesIO(raw))"
+        },
+        {
+          "line": 63,
+          "text": "            with path.open('rb') as f:self.folder.upload_stream(remote,f)"
+        },
+        {
+          "line": 91,
+          "text": "        if 'raw_blob' not in self.value:"
+        },
+        {
+          "line": 92,
+          "text": "            self.value['raw_blob']=self.put_blob(job/'RAW_INPUT.zip')"
+        },
+        {
+          "line": 95,
+          "text": "        self.value['client']=state;self.value['phase']=state['status'];self.save()"
+        },
+        {
+          "line": 100,
+          "text": "        for key,name in [('raw_blob','RAW_INPUT.zip'),('result_blob','result.zip')]:"
+        }
+      ]
+    }
+  ],
+  "historical_dataiku_branch": {
+    "local_commit": "fa5328fc66ffd87fe2155639c0a2b7a3c0f8ec42",
+    "remote_fetch": "ref not found; latest integration fetched successfully"
+  },
+  "onsite_upstream_connection": "UNKNOWN: installer FS_CONNECTION can remap placeholder",
+  "onsite_pipeline_connection": "SFTP error observed; exact connection settings unavailable",
+  "external_calls": "Git fetch and official documentation reads only; no onsite calls, models, ACK or pipeline run",
+  "official_documentation": "https://developer.dataiku.com/latest/api-reference/python/managed-folders.html"
+}

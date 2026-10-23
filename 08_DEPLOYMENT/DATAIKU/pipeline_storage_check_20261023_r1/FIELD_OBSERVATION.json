@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-23",
+  "source": "user-provided screenshot, 47E770D4-4B07-419C-92F6-B67F24B78EDB/1-사진-1.jpg",
+  "previous_job": "run_20261023_01_20261023_01",
+  "current_job": "run_20261023_01_20261023_r2_01",
+  "observed": [
+    "RECOVERY_TARGET old job FAILED / STRUCTURE",
+    "RECOVERY_PRESERVE old PIPELINE_SUPPORT.zip 2267000459 bytes",
+    "Exception: None: b'4: Failure, caused by: SftpException: Failure'",
+    "DIAGNOSTIC_FILE local path printed",
+    "DIAGNOSTIC_MANAGED_SAVE_FAILED Exception"
+  ],
+  "code_trace_inference": "The shipped recovery prints RECOVERY_PRESERVE after local support hash verification and before managed upload_stream. This run stopped before log preservation and ACK.",
+  "unconfirmed": ["SFTP root cause", "remote quota/free space", "path permission or parent creation", "partial upload presence", "current recovery deadline", "onsite release", "new ingestion and Oracle completion"],
+  "change_scope": "Bounded storage diagnostic using four small new probe objects and local reports; no changes to shipped recovery/runner/client/service or MAIN."
+}

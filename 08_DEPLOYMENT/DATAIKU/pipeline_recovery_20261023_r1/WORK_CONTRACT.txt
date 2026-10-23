@@ -1,0 +1,33 @@
+Dataiku BUSY recovery — 2026-10-23 R1
+Field photo: previous job run_20261023_01_20261023_01 is FAILED / STRUCTURE;
+current new-input job run_20261023_01_20261023_r2_01 reports JOB_LOST via STATUS.
+The new job's saved NEW state and unchanged instance must be verified before
+classifying this as START rejected by BUSY rather than loss after accepted work.
+
+Scope: same Dataiku notebook, verified mapped R1 client, R2 diagnostic runner,
+same managed folder, same endpoint/code pin. No worker/RAG/MAIN/schema changes.
+Read the exact latest checkpoint for both jobs; no checkpoint/budget rewrite.
+Release only one job currently FAILED at STRUCTURE with no result. Original
+raw/support ZIPs and every exposed phase log must be preserved and re-read by
+hash in the restricted managed folder before ACK(discard_failed_attempt=True).
+Missing optional logs are recorded; worker.log and structure.log are mandatory.
+Old generated scratch is removed by the existing ACK API; source uploads,
+checkpoints, failure logs and original input archives remain in Dataiku.
+
+Bounds: 100 API calls, 30 minutes, 64 MiB total logs, 1 MiB chunks, 512 MiB local
+disk reserve. One process; no automatic retries, no cancellation, no result
+discard, no permission/hash/instance bypass. Stream original archives; share
+verified same-hash managed files. Do not create another local multi-GB copy.
+Persist recovery identity/deadline/API reservation before first GENOS call;
+repeated invocation uses the same budget. ACK intent is persisted before call.
+Uncertain ACK is resolved only by STATUS on next invocation, never blindly
+retried. Re-query FAILED and unchanged identity immediately before ACK.
+Do not automatically run the new ingestion. After RELEASED, show the same
+WORK_DIR/JOB_NAME and explicit check/run commands. Subsequent ingestion retains
+its original job id, deadline and SQL budget.
+
+Tests: synthetic originals/logs and sealed service.service/handle in-process;
+normal BUSY -> log/input preserve -> ACK -> same new START; failed preservation,
+tampered bytes, auth/instance mismatch, wrong/running/complete status, missing
+mandatory log, uncertain ACK, repeated recovery and budget exhaustion. No
+external model, field API, real corpus, Oracle writes or full index loads.

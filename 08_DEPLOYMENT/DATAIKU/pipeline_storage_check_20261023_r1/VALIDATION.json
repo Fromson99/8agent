@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "tests": 16,
+  "command": ".venv/bin/python 08_DEPLOYMENT/DATAIKU/pipeline_storage_check_20261023_r1/test_storage.py",
+  "suite": "Exact delivered notebook cell with sealed R1 client/R2 service fixture; storage errors injected",
+  "pipeline_api_calls_from_diagnostic": 0,
+  "max_probe_writes": 4,
+  "max_probe_bytes": 8192,
+  "cases": [
+    "Four small probes do not imply large-upload success",
+    "Nested-path SFTP Failure",
+    "All managed writes fail; local report persists",
+    "Readback permission denied",
+    "Truncated readback rejected",
+    "Repeated call reuses result",
+    "Upload response lost; no retry",
+    "Process interrupted; readback reconciliation",
+    "Old partial archive preserved without read",
+    "Original recovery expired and counter preserved",
+    "Diagnostic deadline preserved after interrupt",
+    "Local intent write failure prevents remote writes",
+    "Checkpoint hash rejection",
+    "Secrets absent from console/journal/report",
+    "Changed checkpoint rejects reuse",
+    "Full automatic cell with actual photo job names and inherited settings"
+  ],
+  "source_sha256": "008085620ff5b205ce51c3d2afa888ad0459eea8a9943c4dc1e63be49bac452f",
+  "unchanged_sealed_client_sha256": "9d553a32d460b6ddfe4b73a4186dea5501a0b878512ccd622fa7cbae631b9bb3",
+  "unchanged_recovery_R1_sha256": "1a56ea884baece6bc582d9e85e933a4f261b880422cc3d90601cd3b25e851152",
+  "field_validation": false,
+  "remote_SFTP_root_cause": "UNCONFIRMED",
+  "field_release": "UNCONFIRMED",
+  "limits": [
+    "Synthetic storage failures, not onsite Dataiku/SFTP",
+    "Small-probe success cannot certify 2.27GB upload capacity",
+    "SDK single-call timeouts remain environment-controlled",
+    "Not a storage repair or ACK replacement; recovery/ingestion remain pending"
+  ]
+}

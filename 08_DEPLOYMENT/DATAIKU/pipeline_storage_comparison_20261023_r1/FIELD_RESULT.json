@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-23",
+  "source": "four user screenshots BF454926-962A-4350-812F-6CF89BB56D2A, photos 1-4",
+  "observation_time_utc": "2026-10-23T06:55:42Z to 06:55:44Z",
+  "observation_time_kst": "2026-10-23 15:55:42 to 15:55:44",
+  "diagnosis": "STORAGE_WRITE_OR_READBACK_FAILED",
+  "specific_stage": "All four probes failed during UPLOAD, before readback",
+  "probe_bytes_each": 2048,
+  "probe_results": {
+    "root": "UPLOAD FAILED",
+    "recovery_parent": "UPLOAD FAILED",
+    "recovery_files": "UPLOAD FAILED",
+    "diagnostics_child": "UPLOAD FAILED"
+  },
+  "error": "None: b'SFTP error, caused by: SftpException: Failure'",
+  "old_local_support": {"exists": true, "bytes": 2267000459, "size_matches": true, "hash_checked_by_storage_probe": false},
+  "old_upload_listed": true,
+  "old_upload_completeness": "NOT_VERIFIED",
+  "recovery_record_at_capture": {"phase": "CREATED", "api_calls": 3, "ack_intent": false, "deadline_expired": false},
+  "current_job_at_capture": {"deadline_expired": false, "reserved_sql_calls": 64},
+  "diagnostic_actions": {"pipeline_api_calls": 0, "pipeline_released": false, "large_upload_attempts": 0},
+  "inference": "Prior recovery state saves used the same upload_stream path and were read back before each API call. Persistent API counter 3 therefore supports earlier successful writes. Whole-folder tiny writes subsequently fail; a size-only or new-subdirectory-only explanation is insufficient.",
+  "priority_hypothesis": "Remote capacity/quota exhaustion during the additional 2.267 GB backup; NOT established. Backend read-only state, permissions/policy changes, or SFTP failure remain possible.",
+  "missing_evidence": ["remote free space and user quota", "actual partial file size", "Dataiku connection settings and effective account", "SFTP backend logs at failure time", "whether earlier user success was UI upload or notebook write"]
+}

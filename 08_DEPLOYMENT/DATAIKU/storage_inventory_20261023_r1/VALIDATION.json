@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "checks": [
+    "SFTP metadata totals and recovery classification; free space unknown",
+    "Repeated read leaves result unchanged; no write APIs available",
+    "Unknown size remains partial, not zero or complete",
+    "Empty folder does not imply remote free capacity",
+    "Duplicate path rejects total",
+    "Wrong project blocked",
+    "Access failure remains failure",
+    "Invalid response row rejected"
+  ],
+  "count": 8,
+  "scope": "Exact delivered notebook TXT under synthetic Dataiku metadata API; no field connection",
+  "field_execution": "NOT_PERFORMED",
+  "remote_free_space": "NOT_AVAILABLE_VIA_USED_API",
+  "read_calls": "get_info and list_contents; default_project_key; no application retry",
+  "writes_deletes_downloads_sql_genos_calls": 0,
+  "sdk_limit": "list_contents returns one full metadata list; 50000 item processing cap; SDK transport timeout governs an in-flight request",
+  "failure": "original exception preserved; failed/partial results not reported as zero usage",
+  "runtime_changes": "none; existing runner, recovery deadline and MAIN unchanged"
+}

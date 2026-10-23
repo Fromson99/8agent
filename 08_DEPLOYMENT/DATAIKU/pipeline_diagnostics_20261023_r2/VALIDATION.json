@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "tests": 27,
+  "command": ".venv/bin/python 08_DEPLOYMENT/DATAIKU/pipeline_diagnostics_20261023_r2/test_notebook.py",
+  "runtime_seconds": 0.484,
+  "runner_sha256": "2fd064fe942723c7ea4e7b9676bbcbe221771bea5601360a3f4409fb111aad0c",
+  "sealed_client_sha256": "9d553a32d460b6ddfe4b73a4186dea5501a0b878512ccd622fa7cbae631b9bb3",
+  "sealed_service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "coverage": [
+    "Actual sealed Client.call -> process -> sealed service.service/handle -> complete R2 runner -> console/local/managed diagnostics",
+    "HTTP 403 and timeout inner cause",
+    "credentials and cookie redaction",
+    "repeat observer installs and exactly one physical API attempt",
+    "prepare/resume and retained input binding",
+    "client hash and local code tampering rejection",
+    "schema errors",
+    "interrupt and budget failure",
+    "local and managed diagnostic persistence failures",
+    "checkpoint hash/conflict/endpoint validation",
+    "STATUS-only inspection with no release",
+    "deadline/SQL budget preservation",
+    "same work duplicate lock",
+    "ZIP/TXT equality and JavaScript exclusion"
+  ],
+  "test_data": "Small synthetic fixtures; urllib HTTP boundary routed in-process. No real document or model loaded.",
+  "external_calls": 0,
+  "models_called": 0,
+  "field_applied": false,
+  "busy_released": false,
+  "main_changed": false,
+  "limitations": [
+    "Specific blocking job/current status awaits pipeline_jobs() output.",
+    "No automatic ACK/cancel/deletion. FAILED logs and input preservation must precede any later explicit release.",
+    "Older R1 cell rerun replaces the new run function. Keep/save the R2 entry cell for future sessions."
+  ],
+  "development_failure_preserved": [
+    {
+      "test": "test_managed_deadline_and_budget_survive_diagnostics",
+      "issue": "Fixture omitted normal 02_BACKEND import path before BudgetClient.request",
+      "resolution": "Fixture now matches run_dataiku import path; production budget code unchanged"
+    }
+  ]
+}

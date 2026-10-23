@@ -1,0 +1,85 @@
+# Dataiku LEGAL_RAG Python notebook: paste this entire file into a NEW cell.
+# Metadata reads only. No delete, upload, file download, SQL or GENOS calls.
+def _storage_inventory_20261023():
+    import dataiku
+    import os
+    import shutil
+    from collections import defaultdict
+    from datetime import datetime, timezone
+    from heapq import nlargest
+
+    project, folder_name = "LEGAL_RAG", "LEGAL_PIPELINE_WORKSPACE"
+    if dataiku.default_project_key() != project:
+        raise ValueError("LEGAL_RAG 프로젝트의 Python 노트북에서 실행하세요.")
+    print("STORAGE_INVENTORY_BEGIN", datetime.now(timezone.utc).isoformat(), flush=True)
+    folder = dataiku.Folder(folder_name, project_key=project)
+    info = folder.get_info(sensitive_info=False)
+    print("PROJECT", project, "FOLDER", folder_name,
+          "ID", info["id"], "TYPE", info.get("type", "UNKNOWN"), flush=True)
+    local = shutil.disk_usage(os.getcwd())
+    print("NOTEBOOK_LOCAL_FREE_GiB", round(local.free / 2**30, 3),
+          "← 노트북 로컬 디스크; SFTP 여유 공간이 아님", flush=True)
+    print("SFTP_REMOTE_FREE = UNKNOWN; 이 API는 원격 여유 공간/계정 쿼터를 제공하지 않습니다.")
+    print("사진의 5GB는 공유 영역일 수 있어 아래 합계를 빼서 잔여량으로 계산하지 않습니다.")
+    print("READING_FILE_METADATA...", flush=True)
+    api = dataiku.api_client().get_project(project).get_managed_folder(info["id"])
+    payload = api.list_contents()
+    if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
+        raise ValueError("INVALID_FILE_LIST_RESPONSE")
+    items = payload["items"]
+    if len(items) > 50000:
+        raise ValueError("METADATA_LIMIT: 50,000개 초과; 범위를 좁혀야 합니다.")
+    groups, known, unknown, seen = defaultdict(int), [], [], set()
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            raise ValueError("INVALID_FILE_METADATA")
+        path = item["path"].lstrip("/")
+        if item.get("isDirectory") is True or path.endswith("/"):
+            continue
+        if path in seen:
+            raise ValueError("DUPLICATE_FILE_PATH: 합계를 확정하지 않습니다.")
+        seen.add(path)
+        size = item.get("size")
+        if type(size) is not int or size < 0:
+            unknown.append(path)
+            continue
+        parts = path.split("/")
+        group = "/".join(parts[:2]) if path.startswith("_pipeline/") else "최상위/기타"
+        groups[group] += size
+        known.append((size, path))
+    total = sum(groups.values())
+    print("\nMANAGED_FOLDER_LISTED_BYTES", total,
+          "GiB", round(total / 2**30, 3), "FILES", len(known), "UNKNOWN_SIZE", len(unknown))
+    print("이 관리 폴더에서 조회된 파일 크기 합계입니다. 서버 전체 사용량이나 du 사용 블록량이 아닙니다.")
+    print("\n[구역별 파일 크기 합계 / GiB]")
+    for group, size in sorted(groups.items(), key=lambda x: -x[1]):
+        print(f"{size / 2**30:9.3f}  {group}")
+    print("\n[큰 파일 상위 30개 / GiB | 정확한 bytes | 경로]")
+    for size, path in nlargest(30, known):
+        print(f"{size / 2**30:9.3f} | {size:14d} | {path}")
+    print("\n[복구 보관 .bin 상위 10개: 정리 검토 대상이며 삭제 승인/불완전 판정이 아닙니다]")
+    candidates = nlargest(10, (r for r in known
+                              if r[1].startswith("_pipeline/recovery/")
+                              and "/files/" in r[1] and r[1].endswith(".bin")))
+    for size, path in candidates:
+        print(f"{size / 2**30:9.3f} GiB | {size:14d} bytes | {path}")
+    if not candidates:
+        print("조회 결과에서 해당 파일 없음")
+    if unknown:
+        print("UNKNOWN_SIZE_PATHS", unknown[:10], "← 합계에서 제외; 사용량 합계 불완전")
+    print("원래 ZIP·receipt·체크포인트·실패 로그는 유지하세요. 크기만으로 삭제를 결정하지 않습니다.")
+    status = "PARTIAL_UNKNOWN_SIZES" if unknown else "METADATA_LIST_READ"
+    print("STORAGE_INVENTORY_END", status, flush=True)
+    return {"status": status, "folder_id": info["id"], "listed_bytes": total,
+            "unknown_size_count": len(unknown), "remote_free_bytes": None,
+            "files": known, "recovery_candidates": candidates}
+
+DATAIKU_STORAGE_INVENTORY = None
+DATAIKU_STORAGE_INVENTORY_ERROR = None
+try:
+    DATAIKU_STORAGE_INVENTORY = _storage_inventory_20261023()
+except Exception as _storage_error:
+    DATAIKU_STORAGE_INVENTORY_ERROR = _storage_error
+    print("STORAGE_INVENTORY_FAILED", type(_storage_error).__name__, flush=True)
+    # Preserve the original exception and traceback; do not turn a failed read into zero usage.
+    raise

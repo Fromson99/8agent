@@ -1,0 +1,67 @@
+Dataiku 파이프라인 실행기 R2 — 상세 오류 즉시 표시
+
+현재 확인: 사진의 GENOS_ERROR = BUSY. 이전 작업이 RELEASED 상태가 아니어서
+새 작업의 START 접수가 거절됐습니다. 새 원문의 HWP 파싱 실패를 뜻하지 않습니다.
+어느 이전 작업이 막고 있는지와 그 작업의 현재 상태는 아직 확인되지 않았습니다.
+
+1. 지금 적용
+실패한 LEGAL_RAG Python 노트북의 커널을 유지합니다.
+DATAIKU_PIPELINE_RUN_20261023_R2.txt 전체를 새 셀에 붙여 한 번 실행합니다.
+기존 run 함수에서 실제 FOLDER_NAME / WORK_DIR / JOB_NAME을 이어받아 표시합니다.
+사진의 긴 JOB_NAME도 실제 기존 값을 유지하므로 임의로 짧게 고치지 않습니다.
+RUNNER_READY와 설정값을 확인하세요. 이 셀은 함수를 등록하며 배치를 시작하지 않습니다.
+기존 클라이언트 ZIP·RAW_INPUT.zip·PIPELINE_SUPPORT.zip·receipt는 그대로 사용합니다.
+새 클라이언트 업로드, GENOS 재배포, 테이블 생성은 필요하지 않습니다.
+
+2. 지금의 BUSY 작업 확인
+새 셀에서 아래 한 줄을 실행합니다.
+
+  PIPELINE_JOBS = pipeline_jobs()
+
+관리 폴더의 해시가 맞는 최신 체크포인트를 읽고 해당 작업에 STATUS만 요청합니다.
+출력의 job_name / status / phase / error를 보내주세요. 토큰은 출력하지 않습니다.
+자동 취소·해제·삭제·원문 전송은 없습니다. STATUS는 서버의 유실 프로세스를 INTERRUPTED로
+정리할 수 있으므로 서버 파일을 전혀 바꾸지 않는다고 보장하지는 않습니다.
+현재 커널에 클라이언트가 없다는 CLIENT_NOT_LOADED가 나오면 run(action="prepare")를 먼저
+실행한 뒤 pipeline_jobs()를 실행합니다. prepare는 GENOS 배치를 시작하지 않습니다.
+
+FAILED/CANCELLED/INTERRUPTED인 이전 작업: 원문·실패 로그 보존 확인 후 해당 작업만
+ACK(discard_failed_attempt=True)로 해제하는 후속 절차가 필요합니다. 이 실행기는 자동 해제하지 않습니다.
+RUNNING: 진행 중인 작업이므로 완료·중단 상태를 먼저 확인해야 합니다.
+COMPLETE: 반환 결과와 Oracle 적재·검증 여부를 확인하기 전 버리지 않습니다.
+RELEASED: 이미 해제된 작업입니다.
+STATUS_UNCONFIRMED / JOB_LOST / INSTANCE_CHANGED: 조회 실패를 작업 부재나 해제 성공으로 간주하지 않습니다.
+BUSY는 JOB_NAME을 바꾸거나 같은 run을 반복해도 해결되지 않습니다.
+
+3. 이후 실행
+BUSY 원인 작업을 처리한 뒤 기존 새 입력 작업을 그대로 이어갑니다.
+
+  PIPELINE_RESULT = run(action="check")
+  PIPELINE_RESULT = run(action="run")
+
+각 셀을 순서대로 실행합니다. check가 READY일 때만 run으로 진행합니다.
+실패하면 별도 진단 셀 없이 PIPELINE_ERROR / ACTION / CALL / PHASE /
+JOB_NAME / JOB_ID / SAVED_STATUS / 상세 예외 / NEXT_STEP을 즉시 표시합니다.
+HTTP 오류면 HTTP_STATUS와 하위 전송 원인도 표시합니다.
+현재 WORK_DIR/diagnostics/ 및 관리 폴더 _pipeline/diagnostics/JOB_NAME/에 진단 JSON을 보존합니다.
+진단 저장 실패는 별도로 표시하며 원래 작업을 성공으로 처리하지 않습니다.
+인증토큰·Cookie·비밀번호는 표시·저장 전에 제거합니다.
+최대 예외 연결 12단계, 예외별 메시지 16 KiB이며 제한 시 표시합니다.
+서버가 제공하지 않은 원인·로그는 만들어내지 않습니다.
+
+4. 다음 노트북 세션에도 적용
+기존 DATAIKU_PIPELINE_RUN_20261023_R1 셀 대신 이 R2 전체 코드를 저장해 사용하세요.
+다음에 커널을 재시작하면 코드 상단의 FOLDER_NAME / WORK_DIR / JOB_NAME을 이전 실행 출력의
+실제 값으로 맞춘 뒤 R2 셀을 실행합니다. R1 셀을 다시 실행하면 구 실행기로 돌아갑니다.
+이 변경은 오류 표시만 바꾸므로 같은 작업·입력·기한·예산을 유지합니다.
+오류 상세가 표시된 것은 BUSY 해제나 배치 성공을 뜻하지 않습니다.
+완료 기준은 COMPLETE + oracle_written=true입니다.
+
+5. ZIP
+ZIP 내부 TXT와 별도 첨부 TXT는 같습니다. 실제 업로드한 TRANSFER 폴더에서 풀 경우:
+
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_RUN_20261023_R2.zip ./DATAIKU_PIPELINE_RUN_20261023_R2
+
+추출된 TXT 전체를 Dataiku 노트북에 붙입니다. bash로 실행하지 않습니다.
+이 R2는 오류 코드만 출력하던 DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1의 후속 실행기입니다.
+기존 봉인된 클라이언트와 GENOS 서비스는 유지합니다. 현장 적용·BUSY 해제·전체 적재는 미확인입니다.

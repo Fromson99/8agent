@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "tests": 15,
+  "runtime_seconds": 0.493,
+  "command": ".venv/bin/python 08_DEPLOYMENT/DATAIKU/pipeline_recovery_20261023_r1/test_recovery.py",
+  "executable_sha256": "1a56ea884baece6bc582d9e85e933a4f261b880422cc3d90601cd3b25e851152",
+  "service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "scope": "Final full notebook TXT; existing R2 runner; sealed Client and service.service/handle in-process with synthetic files",
+  "coverage": [
+    "BUSY then archive inputs/logs and ACK then START same new job ID",
+    "checkpoint/deadline/SQL budget unchanged",
+    "RUNNING/COMPLETE/wrong phase block",
+    "RAW or log hash mismatch block",
+    "missing mandatory log block",
+    "managed backup failure block",
+    "instance mismatch block",
+    "new job with progress block",
+    "ACK response loss reconciliation without duplicate ACK",
+    "repeated recovery preserves budget/deadline",
+    "API budget exhaustion",
+    "stale checkpoint block",
+    "old support preserved after upload replacement"
+  ],
+  "network_boundary": "urllib routed in-process; no real field API",
+  "models_called": 0,
+  "oracle_writes": 0,
+  "main_changed": false,
+  "field_release_completed": false,
+  "new_ingestion_completed": false,
+  "limitations": [
+    "Does not archive all internal scratch; preserves exposed phase logs plus original reproducible inputs.",
+    "Same recovery may not run concurrently from different notebooks/hosts; managed folder has no CAS.",
+    "Actual field input bytes/logs have not been accessed here."
+  ]
+}
