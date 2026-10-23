@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import sqlite3
 import time
+from semantic_runtime.physical_mapping import names
 
 from semantic_runtime.oracle_dp_io import (
     SQL, OWNER, TABLES, COLUMNS, KEYS, DPError, BudgetPause, atomic_json, canonical,
@@ -147,7 +148,7 @@ def transfer(client, source=SOURCE, *, target_binding, directory, action='check'
                         if missing:
                             if action == 'verify': raise DPError('VERIFY_MISSING: target lacks source rows')
                             status('WRITE_STARTED', pending={'kind': kind, 'batch_sha256': digest(batch), 'rows': len(batch)})
-                            statement, binds = insert_statement(kind, batch)
+                            statement, binds = insert_statement(kind, batch, sql=sql)
                             sql.request(statement, binds, write=True)
                             compare_batch(kind, batch, read_batch(sql, kind, batch))
                         unchanged(binding)
@@ -159,7 +160,8 @@ def transfer(client, source=SOURCE, *, target_binding, directory, action='check'
                         sql.event('BATCH_VERIFIED', kind=kind, rows=progress['rows'], chain=progress['chain'], action=action)
                         if batches == 1 or batches % 20 == 0:
                             print(f'{kind}: {progress["rows"]}/{counts[kind]} verified; SQL calls={sql.calls}', flush=True)
-                    rows = sql.query(f'SELECT COUNT(*) AS N FROM {OWNER}.{TABLES[kind]} WHERE DATASET_VERSION=:v',
+                    physical=names(sql,kind,OWNER+'.'+TABLES[kind])
+                    rows = sql.query(f'SELECT COUNT(*) AS N FROM {physical.table} WHERE {physical.c("DATASET_VERSION") }=:v',
                                      [('v', binding['dataset_version'], 'VARCHAR2')], limit=1)
                     if len(rows) != 1 or int(rows[0]['N']) != counts[kind] or progress['rows'] != counts[kind]:
                         raise DPError('TARGET_COUNT: missing/extra rows for the selected version')

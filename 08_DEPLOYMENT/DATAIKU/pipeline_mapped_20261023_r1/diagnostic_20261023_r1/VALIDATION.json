@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "checks": [
+    "python_syntax",
+    "download_operation_only",
+    "paginated_log_read",
+    "credential_redaction",
+    "existing_state_unchanged",
+    "run_not_called",
+    "zip_integrity",
+    "zip_txt_identical",
+    "no_javascript"
+  ],
+  "field_execution": false,
+  "remote_access": false,
+  "files": {
+    "DATAIKU_PIPELINE_FAILURE_CHECK_20261023_R1.zip": {
+      "bytes": 3342,
+      "sha256": "7bcd7747a88de224a63888e9903be1d2a0784e9ebed3d30c8d361af737194f43"
+    },
+    "DATAIKU_PIPELINE_FAILURE_CHECK_20261023_R1.txt": {
+      "bytes": 3696,
+      "sha256": "3b6aa3dbb09a2604326b006c556ed63c77d78ce3c8c1249f54c27eb052118612"
+    },
+    "GUIDE.txt": {
+      "bytes": 2632,
+      "sha256": "30dabd7bc979c9494d6d33dc622dc6dd4a68cda809de9715c51a3ffb23b650c9"
+    }
+  }
+}

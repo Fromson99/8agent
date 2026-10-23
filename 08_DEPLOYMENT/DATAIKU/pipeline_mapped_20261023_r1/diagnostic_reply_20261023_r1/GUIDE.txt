@@ -1,0 +1,41 @@
+Dataiku PIPELINE_REPLY 상세 오류 코드 확인 — 2026-10-23 R1
+
+1. 실행 위치와 방법
+PIPELINE_REPLY가 발생한 LEGAL_RAG Python 노트북에서 실행합니다.
+커널을 재시작하지 마세요. 이전 run(action="run") 셀을 다시 실행하지 마세요.
+DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1.txt 전체를 새 셀에 붙여 넣고 실행합니다.
+이 TXT는 Python 노트북용입니다. bash로 실행하거나 새 Python 프로세스에서 실행하지 않습니다.
+새 프로세스에는 실패한 노트북의 예외가 남아 있지 않습니다.
+
+2. ZIP 사용
+ZIP 안에도 동일한 실행 TXT와 이 안내가 있습니다. 분리 첨부 TXT를 바로 사용해도 됩니다.
+ZIP을 실제 업로드한 TRANSFER 폴더에서 풀 경우 아래 명령을 사용합니다.
+TRANSFER의 절대 위치를 추정하거나 DEV로 이동할 필요는 없습니다.
+
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1.zip ./DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1
+
+추출된 ./DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1/DATAIKU_PIPELINE_REPLY_CHECK_20261023_R1.txt를 열어
+내용을 실패한 Dataiku 노트북의 새 셀에 붙여 넣습니다. GENOS 코드서빙에 설치하지 않습니다.
+
+3. 결과 해석
+GENOS_ERROR = BUSY
+  이전 작업이 해제되지 않아 새 작업 접수가 거절된 경우입니다.
+  이전 작업의 현재 상태와 실패 로그 보존을 확인한 뒤 해당 작업을 해제해야 합니다.
+  이 진단 코드는 작업 해제나 삭제를 하지 않습니다.
+
+INSTANCE_CHANGED / CODE_BINDING_CHANGED / JOB_LOST 등
+  표시된 한 줄을 전달하세요. 상태나 해시 검사를 우회하지 않습니다.
+
+원래 오류가 메모리에 남아 있지 않거나 표준 오류 코드를 추출하지 못했습니다
+  후속 오류나 커널 재시작으로 원래 예외가 없어졌을 수 있습니다.
+  비표준 메시지 또는 탐색 한도 12단계에 해당해도 같은 안내가 나옵니다.
+  원인을 확인하려고 배치를 재실행하지 말고 이 결과와 현재 노트북 출력을 전달하세요.
+
+4. 확인 범위
+사진에서는 클라이언트·RAW·SUPPORT ZIP의 VERIFIED와 이후 PIPELINE_REPLY를 확인했습니다.
+HWP 구조화 성공이나 Oracle 적재 완료를 확인한 것은 아닙니다.
+BUSY는 현재 가설이며 실제 오류 코드 확인 전 원인으로 확정하지 않습니다.
+이 코드는 메모리의 예외 연결만 최대 12단계 확인하여 표준 오류 코드만 표시합니다.
+API 요청·토큰 조회·파일 변경·Oracle 쓰기·배치 재실행·ACK·삭제를 하지 않습니다.
+기존 STRUCTURE 실패 로그 진단과 목적이 다르며 이번 PIPELINE_REPLY에는 이 파일을 먼저 사용합니다.
+현장 원인 해결·재실행 성공은 아직 확인되지 않았습니다.

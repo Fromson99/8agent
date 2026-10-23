@@ -1,0 +1,22 @@
+# Dataiku LEGAL_RAG Python notebook: paste this whole file into a NEW cell.
+# Keep the same kernel that showed PIPELINE_REPLY. Do not restart the kernel.
+# Reads the last exception in memory only. No network, file writes, or batch run.
+import sys
+import re
+
+err = getattr(sys, "last_value", None) or getattr(sys, "last_exc", None)
+error_code = None
+
+for _ in range(12):
+    if not isinstance(err, BaseException):
+        break
+    match = re.match(
+        r"PIPELINE_REPLY:\s*([A-Z][A-Z0-9_]{1,79})(?=[:\s]|$)",
+        str(err),
+    )
+    if match:
+        error_code = match.group(1)
+        break
+    err = err.__cause__ or err.__context__
+
+print("GENOS_ERROR =", error_code or "원래 오류가 메모리에 남아 있지 않거나 표준 오류 코드를 추출하지 못했습니다")

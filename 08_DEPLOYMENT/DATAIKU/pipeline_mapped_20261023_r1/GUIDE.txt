@@ -1,0 +1,114 @@
+Dataiku → GENOS 비동기 구조화·색인 → Oracle 신규 LGL 테이블 적재
+2026-10-23 R1 / 사용자 지정 기존 연결 AIDP, owner SIDDA 유지
+
+1. 무엇을 바꾸는가
+   이전 설계와 동일한 후보 테이블명·컬럼명으로 개발 실버에서 검증한다.
+   기존 LEGAL_* 테이블은 삭제·이름 변경·덮어쓰기하지 않는다.
+   physical_mapping.yaml 하나로 DDL과 읽기/쓰기 물리명을 연결한다.
+   JSON 내부 키, 원문 식별자, 판본과 내용 해시는 유지한다.
+   이름의 골드 표준 승인·운영 메타 등록·DBA 생성은 별도 절차다.
+   본 패키지는 적재 경로다. 기존 RAG 조회 서비스의 DB 설정/MAIN은 전환하지 않는다.
+
+2. 실행 순서
+   A. Dataiku LEGAL_RAG 프로젝트의 SQL 노트북, 연결 AIDP를 선택한다.
+      01_CREATE_TABLES.sql의 00 조회부터 확인한다.
+      없는 객체의 CREATE 문만 번호순으로 각각 별도 Query에서 실행한다.
+      존재하는 객체는 재생성하지 않는다. 구조가 다르면 check가 중단한다.
+      생성 권한이 없다면 이 SQL을 현재 DBA 담당자에게 전달한다.
+      02_COMMENTS.sql도 각 COMMENT 문을 별도 Query로 실행한다.
+      설명에는 한글명·업무 의미·허용값·생성 규칙·명칭 이유·타입 이유가 포함된다.
+      테이블에는 행 단위·출처·갱신 기준·레이어 선정 이유도 포함된다.
+      생성 도중 중단되면 00으로 돌아가 남은 객체만 생성한다. DDL은 자동 커밋이다.
+
+   B. 새 GENOS 파이프라인 전용 코드스페이스에 다음 두 파일을 업로드한다.
+      GENOS_PIPELINE_SERVICE_20261022_R2.zip
+      GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt
+      새 코드스페이스의 적용할 Git 루트(사용자가 선택한 DEV)에서 실행한다.
+        bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt check
+        bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt apply
+      현재 실행 위치에 생성한다. 별도 복사는 필요 없다.
+      기존 RAG DEV에는 적용하지 않는다. 이 전용 코드서빙의 service.py를 배포한다.
+      Git commit/push와 GENOS 리비전 배포는 현장 절차대로 별도 수행한다.
+      이미 R2가 배포되어 코드 해시가 같으면 재설치할 필요 없다.
+      GENOS 처리부는 기존 검증된 R2 바이트를 그대로 포함했다.
+      replica=1, 동시에 처리하는 작업=1. 재시작 시 임시 작업이 사라질 수 있다.
+      PIPELINE_SCRATCH는 코드서빙 임시 작업 경로다. NFS·영구 데이터 저장소가 아니다.
+      현장 워크플로우 테스트 화면으로 배포 확인한다. 직접 테스트 UI 실행을 요구하지 않는다.
+      이 패키지의 Dataiku 호출도 실제 배포 코드 해시를 확인한 뒤 원문을 보낸다.
+
+   C. Dataiku 관리 폴더 LEGAL_PIPELINE_WORKSPACE 최상위에 둔다.
+      DATAIKU_PIPELINE_CLIENT_20261023_R1.zip  ← 이번 새 파일
+      RAW_INPUT.zip
+      RAW_INPUT.zip.receipt.json
+      PIPELINE_SUPPORT.zip
+      PIPELINE_SUPPORT.zip.receipt.json
+      원문·용어집 ZIP과 receipt는 이전에 올린 파일 그대로 사용할 수 있다.
+      폴더는 기존 관리 폴더를 유지한다. S3/SFTP라도 스트림 API를 사용한다.
+      폴더의 _pipeline/에는 결과 ZIP, 작업 토큰, 체크포인트가 저장되므로 접근을 제한한다.
+
+   D. Dataiku Python 코드 환경: dataiku, pandas, PyYAML(6.x).
+      LEGAL_RAG Python 노트북에서 DATAIKU_PIPELINE_RUN_20261023_R1.txt 전체를 붙여 실행한다.
+      첫 실행 ACTION="prepare" → ZIP 검증·압축 해제만 한다.
+      다음 ACTION="check" → 실제 9테이블/46컬럼/PK/FK/CHECK/4인덱스를 검사한다.
+      READY 확인 후 프로젝트 변수 설정:
+        LEGAL_PIPELINE_URL   새 파이프라인 코드서빙 HTTPS 호출 주소
+        LEGAL_PIPELINE_TOKEN 현장 발급 인증 토큰(출력·메일·Git에 넣지 않는다)
+        LEGAL_ORACLE_CONNECTION AIDP (생략 시 AIDP)
+      ACTION="run"으로 실행한다. 폴더 이름·작업 이름은 맨 위에서 바꿀 수 있다.
+      WORK_DIR="./legal_pipeline_work"는 로컬 작업 공간이다.
+      JOB_NAME="run_20261023_01"은 재개 시 그대로 사용한다.
+      Dataiku가 POST로 접수/업로드/실행하고, POST STATUS로 진행 상태를 확인한다.
+      GENOS는 백그라운드에서 구조화·문서 용어 연결·색인·조회 행 생성을 수행한다.
+      완료 결과를 Dataiku가 내려받아 관리 폴더에 보존하고 Oracle에 적재한다.
+      Dataiku → GENOS 단방향 요청만 사용하며 GENOS의 Dataiku 콜백은 필요 없다.
+      노트북/레시피는 폴링 중 실행 상태를 유지한다. 웹훅이나 스케줄러는 별도 설치하지 않는다.
+
+3. 성공 판정과 테이블
+   LGL_DOC_VER: 문서 판본
+   LGL_DOC_UNIT: 구조 단위·부모 연결
+   LGL_DOC_BLK: 원문 본문
+   LGL_FILE_PART: 분할 자산 보관(이관·복구 자료)
+   LGL_SRC_PBLS: 원문 게시 명세
+   LGL_SRCH_ROW: 용어·관계·검색·문서 구조 조회 행
+   LGL_SRCH_PBLS: 검색 게시 명세
+   위 7개 테이블의 원문·자산·조회 행을 재조회하여 해시·내용·건수를 검증한다.
+   LGL_SRCH_CHNL과 LGL_EXEC_ST도 생성하지만 적재 작업이 자동으로 쓰지 않는다.
+   채널 활성화와 에이전트 실행 상태는 별도 소비자 책임이다.
+   COMPLETE + oracle_written=true가 최종 완료다.
+   GENOS COMPLETE나 파일 다운로드만으로 적재 완료라 하지 않는다.
+   LOAD_VERIFIED_ACK_PENDING은 DB 검증이 끝났지만 GENOS 임시 파일 정리 응답이 불확실한 상태다.
+   관리 폴더 체크포인트·결과·영수증 보존 후에만 GENOS ACK 정리를 요청한다.
+
+4. 재개와 실패
+   동일 코드·동일 업로드·동일 JOB_NAME으로 다시 실행한다. 자동 무한 재시도는 없다.
+   전송 불확실/적재 중단은 같은 작업의 해시와 기존 행을 대조한다. 중복으로 덮어쓰지 않는다.
+   DB 쓰기 후 응답 유실도 재조회로 확인한 뒤 이어간다.
+   노트북 로컬 폴더를 잃어도 관리 폴더 체크포인트와 반환 ZIP에서 재개한다.
+   재복원된 파일은 새 로컬 검증 시도로 대조하되 전체 7일 deadline과 SQL 호출 예산은 유지한다.
+   SQL 호출은 최대 1,000,000회, 64회 단위로 먼저 예약하여 장애로 남은 횟수도 되돌리지 않는다.
+   Oracle 한 번의 적재 실행 시간은 최대 6시간. 기한·예산 소진 시 자동 연장하지 않는다.
+   입력/DB/매핑/서빙 코드가 바뀌면 기존 JOB_NAME 재사용을 거절한다.
+   새 입력 처리는 새 JOB_NAME으로 시작하고 이전 실패 기록을 보존한다.
+   GENOS 임시 결과가 다운로드 전에 유실되면 자동으로 새 작업을 만들지 않는다.
+   인스턴스 변경/INTERRUPTED 사유를 확인한 뒤 새 JOB_NAME으로 명시적으로 시작한다.
+   동일 JOB_NAME을 여러 노트북·호스트에서 동시에 실행하지 않는다.
+   관리 폴더는 분산 잠금 기능이 없다. Dataiku Scenario 동시 실행 수를 1로 설정한다.
+   커널에 이전 클라이언트가 로드되어 있으면 커널 재시작 후 새 실행 TXT를 실행한다.
+   체크포인트·receipt·원문을 임의 삭제하거나 기존 테이블을 비우지 않는다.
+
+5. 범위와 운영 전환
+   구조화 엔진은 기존 native-no-models 모드다. 이번 변경은 DB 명명·비동기 적재 경로다.
+   XML 및 기존 네이티브 파서 입력을 처리한다. 스캔/VLM 구조화·새 LLM 추출은 추가하지 않았다.
+   원문이 있는 용어집을 입력하며 새 용어집 수집 작업을 자동 수행하지 않는다.
+   운영 전환은 승인 물리명·owner·role·길이 규약 확인 → YAML 새 revision →
+   SQL/코드 재생성·검증 → 새 JOB_NAME으로 적재 순서다. prod_gold는 비활성이다.
+   실행 YAML만 현장에서 고치면 파일 해시 검사로 중단한다. SQL과 클라이언트를 함께 재생성한다.
+   골드 지식/지원, 에이전트 상태, 보관 자산의 역할 구분을 YAML에 남겼다.
+   개발에서는 요청대로 모두 SIDDA를 사용한다. 운영에서 저장 역할별 owner를 확정한다.
+   기존 LEGAL_* RAG 경로와 테이블은 유지되므로 되돌릴 때 기존 서비스 리비전을 사용한다.
+   새 미활성 LGL 데이터는 남겨 원인 대조·재개에 사용한다.
+
+공식 SDK 참고:
+https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
+https://developer.dataiku.com/latest/concepts-and-examples/sql.html
+검증 결과는 별첨 VALIDATION.json을 참고한다. 현장 GENOS/Dataiku/ADB 배포 성공과 로컬 검증은 구분한다.

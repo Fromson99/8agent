@@ -11,6 +11,7 @@ import re
 
 from .oracle_dp_io import DPError, digest
 from .oracle_dp_assets import clob_text
+from .physical_mapping import names as physical_names
 
 SCHEMA = 'oracle-query-release-v1'
 RELEASE = 'SIDDA.LEGAL_RAG_QUERY_RELEASE_A'
@@ -73,8 +74,9 @@ def json_body(value):
 
 
 def read_release(sql, release_id):
+    p=physical_names(sql,'query_release',RELEASE)
     release_id = pin(release_id)
-    text = clob_text(sql, RELEASE, 'MANIFEST_JSON', 'RELEASE_ID=:release',
+    text = clob_text(sql, p.table, p.c('MANIFEST_JSON'), p.c('RELEASE_ID')+'=:release',
                      [('release', release_id, 'VARCHAR2')], max_chars=MAX_JSON_BYTES)
     if text is None:
         raise DPError('QUERY_RELEASE_MISSING: SQL-queryable publication is required')
@@ -88,7 +90,8 @@ def read_release(sql, release_id):
 
 
 def active(sql, channel):
-    rows = sql.query(f'SELECT RELEASE_ID,REVISION FROM {ACTIVE} WHERE CHANNEL=:channel',
+    p=physical_names(sql,'query_active',ACTIVE)
+    rows = sql.query(f'SELECT {p.select("RELEASE_ID","REVISION")} FROM {p.table} WHERE {p.c("CHANNEL") }=:channel',
                      [('channel', channel_name(channel), 'VARCHAR2')], limit=1)
     if not rows:
         return None
@@ -114,6 +117,7 @@ def activate(sql, channel, release_id, *, expected_revision, expected_release_id
     No retry/last-writer-wins update is performed. An uncertain write retains
     its target and expected revision so the same operation can be reconciled.
     """
+    p=physical_names(sql,'query_active',ACTIVE)
     channel, release_id = channel_name(channel), pin(release_id)
     if type(expected_revision) is not int or expected_revision < 0:
         raise DPError('QUERY_ACTIVE: invalid expected revision')
@@ -131,10 +135,10 @@ def activate(sql, channel, release_id, *, expected_revision, expected_release_id
         raise DPError('QUERY_ACTIVE_CONFLICT: pointer moved; retain existing active release')
     binds = [('channel', channel, 'VARCHAR2'), ('release', release_id, 'VARCHAR2')]
     if current is None:
-        operation = f'INSERT INTO {ACTIVE}(CHANNEL,RELEASE_ID,REVISION) VALUES(:channel,:release,1);'
+        operation = f'INSERT INTO {p.table}({p.c("CHANNEL")},{p.c("RELEASE_ID")},{p.c("REVISION")}) VALUES(:channel,:release,1);'
     else:
-        operation = (f'UPDATE {ACTIVE} SET RELEASE_ID=:release,REVISION=REVISION+1 '
-                     'WHERE CHANNEL=:channel AND REVISION=:revision AND RELEASE_ID=:previous; '
+        operation = (f'UPDATE {p.table} SET {p.c("RELEASE_ID") }=:release,{p.c("REVISION") }={p.c("REVISION")}+1 '
+                     f'WHERE {p.c("CHANNEL") }=:channel AND {p.c("REVISION") }=:revision AND {p.c("RELEASE_ID") }=:previous; '
                      "IF SQL%ROWCOUNT<>1 THEN RAISE_APPLICATION_ERROR(-20031,'QUERY_ACTIVE_CONFLICT'); END IF;")
         binds += [('revision', expected_revision, 'NUMBER'), ('previous', expected_release_id, 'VARCHAR2')]
     sql.request('BEGIN '+operation+' COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;', binds, write=True)
@@ -173,6 +177,7 @@ def record(kind, value, *, key, document_id=None, lookup_id=None, owner_id=None,
 
 def insert_records(sql, release_id, rows):
     """An immutable bounded batch. Existing unequal rows abort the transaction."""
+    p=physical_names(sql,'query_row',ROW)
     release_id = pin(release_id)
     if not 1 <= len(rows) <= 20:
         raise DPError('QUERY_BATCH: expected 1..20 rows')
@@ -188,14 +193,15 @@ def insert_records(sql, release_id, rows):
                  'hash': row['sha256'], 'body': json_body(row['value'])}
         for name, value in names.items():
             binds.append((name+suffix, value, 'CLOB' if name == 'body' else 'VARCHAR2'))
-        key = f'RELEASE_ID=:release AND KIND=:kind{suffix} AND ROW_ID=:id{suffix}'
-        statements += [f'SELECT COUNT(*) INTO n FROM {ROW} WHERE {key};',
-            f'IF n=0 THEN INSERT INTO {ROW} '
-            '(RELEASE_ID,KIND,ROW_ID,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,ROW_SHA256,VALUE_JSON) '
+        key = f'{p.c("RELEASE_ID") }=:release AND {p.c("KIND") }=:kind{suffix} AND {p.c("ROW_ID") }=:id{suffix}'
+        columns=','.join(p.c(c) for c in ('RELEASE_ID','KIND','ROW_ID','DOCUMENT_ID','LOOKUP_ID','OWNER_ID','TARGET_ID','ROW_SHA256','VALUE_JSON'))
+        statements += [f'SELECT COUNT(*) INTO n FROM {p.table} WHERE {key};',
+            f'IF n=0 THEN INSERT INTO {p.table} '
+            f'({columns}) '
             f'VALUES(:release,:kind{suffix},:id{suffix},:doc{suffix},:lookup{suffix},:owner{suffix},:target{suffix},:hash{suffix},:body{suffix}); END IF;',
-            f'SELECT COUNT(*) INTO n FROM {ROW} WHERE {key} AND ROW_SHA256=:hash{suffix} '
-            f'AND DBMS_LOB.COMPARE(VALUE_JSON,:body{suffix})=0 AND '
-            + ' AND '.join(f'({column}=:{name}{suffix} OR ({column} IS NULL AND :{name}{suffix} IS NULL))'
+            f'SELECT COUNT(*) INTO n FROM {p.table} WHERE {key} AND {p.c("ROW_SHA256") }=:hash{suffix} '
+            f'AND DBMS_LOB.COMPARE({p.c("VALUE_JSON")},:body{suffix})=0 AND '
+            + ' AND '.join(f'({p.c(column)}=:{name}{suffix} OR ({p.c(column)} IS NULL AND :{name}{suffix} IS NULL))'
                            for column,name in [('DOCUMENT_ID','doc'),('LOOKUP_ID','lookup'),('OWNER_ID','owner'),('TARGET_ID','target')]) + ';',
             "IF n<>1 THEN RAISE_APPLICATION_ERROR(-20032,'QUERY_ROW_CONFLICT'); END IF;"]
     statements += ['COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;']

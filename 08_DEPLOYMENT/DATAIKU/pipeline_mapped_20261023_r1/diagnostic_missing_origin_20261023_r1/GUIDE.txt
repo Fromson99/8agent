@@ -1,0 +1,28 @@
+Dataiku 누락 원본 목록 확인 — 2026-10-23 R1
+
+실행
+1. 실패했던 Dataiku LEGAL_RAG Python 노트북을 그대로 엽니다.
+2. 새 셀에 DATAIKU_MISSING_ORIGIN_CHECK_20261023_R1.txt 전체를 붙여 실행합니다.
+3. 현재 파일·누락 원본·기대 SHA256 및 마지막 MISSING_ORIGIN_REFERENCES 수를 보내주세요.
+   여러 파일이 나오면 전체 목록을 확인해야 합니다.
+   0이면 이 카탈로그 기준 누락 참조가 없는 것으로, 배치 성공을 뜻하지 않습니다.
+
+Python 노트북용 코드입니다. bash 실행 파일이 아닙니다.
+커널 재시작이나 기존 run(action="run") 재실행은 필요하지 않습니다.
+기존 WORK_DIR·JOB_NAME·파일·변환 이력·실패 작업 폴더는 그대로 유지합니다.
+코드는 복원된 inputs/01_DATA/CATALOG/RAW_DERIVATIVES.json과 파일 존재만 읽습니다.
+GENOS 요청·다운로드·파일 변경·DB 쓰기·인증키 조회/출력은 하지 않습니다.
+
+ZIP 사용
+별도 첨부 TXT를 직접 열거나 ZIP을 풀어 내부의 동일 TXT를 사용하세요.
+Linux에서는 ZIP이 있는 현재 폴더에서 다음 명령으로 풀 수 있습니다.
+  python3 -m zipfile -e ./DATAIKU_MISSING_ORIGIN_CHECK_20261023_R1.zip ./DATAIKU_MISSING_ORIGIN_CHECK_20261023_R1
+압축 안의 TXT는 Dataiku 노트북에 붙여 실행합니다. GENOS checkout에 적용하지 않습니다.
+
+확인된 사실과 남은 확인
+현장 사진에는 STRUCTURE 단계에서 이사회규정(170817).doc 파일을 찾지 못한 오류가 있습니다.
+기존 반출 도구가 선택 PDF를 포함하면서 카탈로그가 참조하는 원본 DOC를 제외할 수 있는
+결함을 봉인된 반출 코드와 GENOS R2 함수로 합성 재현했습니다.
+이번 진단은 현장 입력의 누락 목록·원본 기대 해시를 확인하기 위한 것입니다.
+원본 복원·입력 ZIP 수정·현장 배치 성공은 아직 수행하거나 확인하지 않았습니다.
+이 첨부는 기존 실패 로그 진단의 후속이며 기존 파이프라인 실행본을 교체하지 않습니다.

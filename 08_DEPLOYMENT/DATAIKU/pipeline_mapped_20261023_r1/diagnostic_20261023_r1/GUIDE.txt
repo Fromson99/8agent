@@ -1,0 +1,34 @@
+Dataiku 비동기 파이프라인 실패 로그 확인 — 2026-10-23 R1
+
+대상
+DATAIKU_PIPELINE_RUN_20261023_R1.txt / GENOS_PIPELINE_SERVICE_20261022_R2
+사용자 사진: run(action="run") → VERIFY_INPUTS → STRUCTURE → PIPELINE_FAILED.
+사진에서 실제 작업 시작과 상태 조회는 확인됐습니다. 구체 원인은 아직 확인되지 않았습니다.
+이 첨부는 진단용이며 기존 실행본·클라이언트·GENOS 서비스 ZIP을 교체하지 않습니다.
+
+실행 방법
+1. 실패한 배치를 실행했던 Dataiku LEGAL_RAG Python 노트북을 그대로 엽니다.
+   커널을 재시작하지 말고, 새 셀을 하나 추가합니다.
+2. DATAIKU_PIPELINE_FAILURE_CHECK_20261023_R1.txt 전체를 새 셀에 붙여넣고 실행합니다.
+   Python 코드입니다. bash로 실행하지 않습니다. 기존 run(action="run") 셀은 실행하지 않습니다.
+3. 출력된 상태·단계·오류 및 worker.log / structure.log 끝부분을 확인해 보내주세요.
+   코드는 기존 프로젝트 변수에서 URL/키를 읽으며, 인증키와 job_token은 출력에서 마스킹합니다.
+   로그에는 내부 파일명이나 본문 일부가 있을 수 있으므로 공유 전 내용을 확인하세요.
+
+ZIP 사용
+별도 첨부 TXT를 직접 열거나, ZIP을 풀어 내부의 같은 TXT를 사용하면 됩니다.
+Linux에서 풀려면 ZIP을 업로드한 현재 폴더에서 아래 명령을 실행합니다.
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_FAILURE_CHECK_20261023_R1.zip ./DATAIKU_PIPELINE_FAILURE_CHECK_20261023_R1
+그 안의 TXT는 Dataiku 노트북에 붙여 실행합니다. GENOS checkout에 적용하지 않습니다.
+
+동작 범위
+- 직전 run(action="run")의 기본 WORK_DIR/JOB_NAME에 있는 client.json을 읽습니다.
+- GENOS의 기존 DOWNLOAD 계약으로 실패 로그만 읽습니다.
+- 파일당 최대 8MiB/16회, 자동 재시도 없이 조회하고 최근 24KiB 중 마지막 80줄을 표시합니다.
+- 한도에 걸리면 LOG_PARTIAL을 표시합니다. 전체 로그 끝을 확인했다고 간주하지 않습니다.
+- 배치 실행·업로드·ACK·삭제·Oracle 쓰기·코드 변경은 하지 않습니다.
+- 원인 확인 전 기존 작업 폴더·JOB_NAME·서비스 리비전을 바꾸지 않습니다.
+- 기존 실패 작업은 자동 재실행되지 않습니다. 원인을 확인한 뒤 복구 방법을 정합니다.
+
+현장에 공급된 코드의 DOWNLOAD 계약과 대조하고 로컬 문법·패키지 검사를 수행했습니다.
+망분리 Dataiku/GENOS의 실제 실패 로그 및 원인 해결은 아직 확인하지 않았습니다.

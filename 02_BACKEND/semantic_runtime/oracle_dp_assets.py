@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import zlib
 
 from .oracle_dp_io import DPError, canonical, digest, file_sha, identifier
+from .physical_mapping import names
 
 PART_BYTES = 1024 * 1024
 PART_TABLE = 'SIDDA.LEGAL_RAG_ASSET_PART_A'
@@ -116,11 +117,12 @@ def clob_text(sql, table, column, where, binds, *, max_chars=16*1024*1024):
 
 
 def get_part(sql, asset, number):
+    p=names(sql,'asset_part',PART_TABLE)
     binds=[('a',asset,'VARCHAR2'),('p',number,'NUMBER')]
-    where='ASSET_SHA256=:a AND PART_NO=:p'
-    rows=sql.query(f'SELECT RAW_BYTES,PART_SHA256 FROM {PART_TABLE} WHERE {where}',binds,limit=1)
+    where=f'{p.c("ASSET_SHA256") }=:a AND {p.c("PART_NO") }=:p'
+    rows=sql.query(f'SELECT {p.select("RAW_BYTES","PART_SHA256")} FROM {p.table} WHERE {where}',binds,limit=1)
     if not rows:return None
-    text=clob_text(sql,PART_TABLE,'DATA_B64',where,binds,max_chars=2*PART_BYTES)
+    text=clob_text(sql,p.table,p.c('DATA_B64'),where,binds,max_chars=2*PART_BYTES)
     if text is None:raise DPError('ASSET_NULL: asset payload missing')
     try:
         compressed=base64.b64decode(text,validate=True)
@@ -135,6 +137,7 @@ def get_part(sql, asset, number):
 
 
 def put_part(sql, asset, number, raw):
+    p=names(sql,'asset_part',PART_TABLE)
     previous=get_part(sql,asset,number)
     if previous is not None:
         if previous!=raw:raise DPError('ASSET_CONFLICT: immutable part differs')
@@ -143,10 +146,11 @@ def put_part(sql, asset, number, raw):
     sha=hashlib.sha256(raw).hexdigest()
     binds=[('a',asset,'VARCHAR2'),('p',number,'NUMBER'),('n',len(raw),'NUMBER'),('s',sha,'VARCHAR2'),('body',encoded,'CLOB')]
     # Concurrent identical insertion may raise a PK error; explicit resume reads/verifies it.
-    statement=(f'DECLARE n NUMBER; BEGIN INSERT INTO {PART_TABLE} '
-        '(ASSET_SHA256,PART_NO,RAW_BYTES,PART_SHA256,DATA_B64) VALUES (:a,:p,:n,:s,:body); '
-        f'SELECT COUNT(*) INTO n FROM {PART_TABLE} WHERE ASSET_SHA256=:a AND PART_NO=:p '
-        'AND RAW_BYTES=:n AND PART_SHA256=:s AND DBMS_LOB.COMPARE(DATA_B64,:body)=0; '
+    columns=','.join(p.c(c) for c in ('ASSET_SHA256','PART_NO','RAW_BYTES','PART_SHA256','DATA_B64'))
+    statement=(f'DECLARE n NUMBER; BEGIN INSERT INTO {p.table} '
+        f'({columns}) VALUES (:a,:p,:n,:s,:body); '
+        f'SELECT COUNT(*) INTO n FROM {p.table} WHERE {p.c("ASSET_SHA256") }=:a AND {p.c("PART_NO") }=:p '
+        f'AND {p.c("RAW_BYTES") }=:n AND {p.c("PART_SHA256") }=:s AND DBMS_LOB.COMPARE({p.c("DATA_B64")},:body)=0; '
         "IF n<>1 THEN RAISE_APPLICATION_ERROR(-20002,'DP_ASSET_VERIFY'); END IF; "
         'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
     sql.request(statement,binds,write=True)
@@ -154,9 +158,10 @@ def put_part(sql, asset, number, raw):
 
 
 def get_release(sql, release_id):
+    p=names(sql,'source_release',RELEASE_TABLE)
     if not isinstance(release_id,str) or len(release_id)!=64 or any(c not in '0123456789abcdef' for c in release_id):
         raise DPError('RELEASE_ID: explicit SHA-256 release ID required')
-    text=clob_text(sql,RELEASE_TABLE,'RELEASE_JSON','RELEASE_ID=:r',[('r',release_id,'VARCHAR2')])
+    text=clob_text(sql,p.table,p.c('RELEASE_JSON'),p.c('RELEASE_ID')+'=:r',[('r',release_id,'VARCHAR2')])
     if text is None:raise DPError('RELEASE_MISSING: selected complete release is unavailable')
     value=json.loads(text)
     if digest(value)!=release_id or value.get('schema_version')!=SCHEMA or value.get('status')!='COMPLETE':
@@ -165,17 +170,19 @@ def get_release(sql, release_id):
 
 
 def put_release(sql, value):
+    p=names(sql,'source_release',RELEASE_TABLE)
     release_id=digest(value)
-    existing=sql.query(f'SELECT RELEASE_ID FROM {RELEASE_TABLE} WHERE RELEASE_ID=:r',[('r',release_id,'VARCHAR2')],limit=1)
+    existing=sql.query(f'SELECT {p.select("RELEASE_ID")} FROM {p.table} WHERE {p.c("RELEASE_ID") }=:r',[('r',release_id,'VARCHAR2')],limit=1)
     if existing:
         if get_release(sql,release_id)!=value:raise DPError('RELEASE_CONFLICT: immutable release differs')
         return release_id
     text=json.dumps(value,ensure_ascii=True,sort_keys=True,separators=(',',':'),allow_nan=False)
     binds=[('r',release_id,'VARCHAR2'),('v',value['dataset_version'],'VARCHAR2'),('body',text,'CLOB')]
-    statement=(f'DECLARE n NUMBER; BEGIN INSERT INTO {RELEASE_TABLE} '
-        '(RELEASE_ID,DATASET_VERSION,RELEASE_JSON) VALUES (:r,:v,:body); '
-        f'SELECT COUNT(*) INTO n FROM {RELEASE_TABLE} WHERE RELEASE_ID=:r AND DATASET_VERSION=:v '
-        'AND DBMS_LOB.COMPARE(RELEASE_JSON,:body)=0; '
+    columns=','.join(p.c(c) for c in ('RELEASE_ID','DATASET_VERSION','RELEASE_JSON'))
+    statement=(f'DECLARE n NUMBER; BEGIN INSERT INTO {p.table} '
+        f'({columns}) VALUES (:r,:v,:body); '
+        f'SELECT COUNT(*) INTO n FROM {p.table} WHERE {p.c("RELEASE_ID") }=:r AND {p.c("DATASET_VERSION") }=:v '
+        f'AND DBMS_LOB.COMPARE({p.c("RELEASE_JSON")},:body)=0; '
         "IF n<>1 THEN RAISE_APPLICATION_ERROR(-20003,'DP_RELEASE_VERIFY'); END IF; "
         'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
     sql.request(statement,binds,write=True)

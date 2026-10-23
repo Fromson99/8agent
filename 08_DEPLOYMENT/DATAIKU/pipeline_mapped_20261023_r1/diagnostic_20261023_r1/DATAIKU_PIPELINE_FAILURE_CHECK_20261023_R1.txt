@@ -1,0 +1,73 @@
+# Dataiku LEGAL_RAG: 실패한 배치를 실행했던 같은 노트북의 새 셀에 전체를 붙여 실행하세요.
+# Python 코드입니다. bash로 실행하지 않습니다. 기존 run()을 다시 호출하지 않습니다.
+def pipeline_failure_diagnostic():
+    import base64
+    import hashlib
+    import json
+    from pathlib import Path
+    import dataiku
+    from dataiku_run import Client
+
+    runner = globals().get("run")
+    defaults = getattr(runner, "__defaults__", None)
+    if not defaults or len(defaults) != 4:
+        raise RuntimeError("실패한 배치를 실행했던 같은 노트북·커널의 새 셀에서 실행하세요.")
+    # 직전 run(action="run")이 사용한 실제 기본 WORK_DIR/JOB_NAME을 따른다.
+    job_dir = Path(defaults[2]) / "jobs" / defaults[3]
+    state_path = job_dir / "client.json"
+    if not state_path.is_file():
+        raise RuntimeError("해당 작업의 client.json이 없습니다. 기존 작업 경로를 확인하세요.")
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    variables = dataiku.get_custom_variables()
+    secrets = [variables.get("LEGAL_PIPELINE_TOKEN"), state.get("job_token")]
+
+    def clean(value):
+        text = str(value)
+        for secret in secrets:
+            if isinstance(secret, str) and secret:
+                text = text.replace(secret, "[REDACTED]")
+        return text
+
+    remote = state.get("remote", {})
+    print("JOB_NAME:", defaults[3])
+    print("JOB_ID:", state.get("job_id"))
+    print("상태:", remote.get("status", state.get("status")))
+    print("단계:", remote.get("phase", state.get("phase")))
+    print("오류:", clean(remote.get("error", "저장된 상세 오류 없음")))
+    if state.get("status") not in {"FAILED", "CANCELLED", "INTERRUPTED"}:
+        print("LOG_SKIP: 실패 상태가 아닙니다. 기존 상태를 확인하세요.")
+        return
+
+    api = Client(variables["LEGAL_PIPELINE_URL"], variables["LEGAL_PIPELINE_TOKEN"])
+    auth = {k: state[k] for k in ("job_id", "job_token", "instance", "code_sha256")}
+    limit = 8 * 1024 * 1024
+    for name in ("worker.log", "structure.log"):
+        print("\n[" + name + "]")
+        offset, tail, complete = 0, b"", False
+        try:
+            # 실패 로그 DOWNLOAD만 사용. 자동 재시도·실행·ACK·삭제·Oracle 쓰기 없음.
+            for _ in range(16):
+                part = api.call("DOWNLOAD", **auth, file_name=name, offset=offset)
+                block = base64.b64decode(part["file_content_base64"], validate=True)
+                if (part["offset"] != offset or part["bytes"] != len(block)
+                        or hashlib.sha256(block).hexdigest() != part["sha256"]):
+                    raise ValueError("LOG_CHUNK_INTEGRITY_ERROR")
+                if not block:
+                    complete = True
+                    break
+                offset += len(block)
+                tail = (tail + block)[-24576:]
+                if offset >= limit:
+                    break
+            print(clean("\n".join(tail.decode("utf-8", errors="replace").splitlines()[-80:])))
+            print("LOG_BYTES_READ:", offset)
+            if not complete:
+                print("LOG_PARTIAL: 조회 한도에 도달했습니다. 위 내용은 전체 로그 끝부분이 아닐 수 있습니다.")
+        except Exception as exc:
+            if tail:
+                print(clean("\n".join(tail.decode("utf-8", errors="replace").splitlines()[-80:])))
+            print("LOG_READ_FAILED:", type(exc).__name__, clean(exc))
+    print("\nDIAGNOSTIC_FINISHED: 오류와 로그 끝부분을 확인하세요. 배치를 재실행하지 않았습니다.")
+
+
+pipeline_failure_diagnostic()

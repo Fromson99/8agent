@@ -50,8 +50,9 @@ def render(statement,binds,*,write=False):
 
 class DataikuClient:
     SQL_PATH='/dataiku-jdbc'
-    def __init__(self,executor,connection,project):
+    def __init__(self,executor,connection,project,*,schema_map=None):
         self.executor=executor;self.connection=connection;self.project=project
+        self.schema_map=schema_map
     def request(self,method,path,json):
         if (method,path)!=('POST',self.SQL_PATH):raise DPError('JDBC_METHOD: unsupported')
         text=json['statementText'];write=text.startswith(('BEGIN ','DECLARE '))
@@ -92,4 +93,5 @@ class DataikuClient:
         payload={'statementText':"SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS LOGIN_USER, SYS_CONTEXT('USERENV','DB_UNIQUE_NAME') AS DB_NAME, SYS_CONTEXT('USERENV','SERVICE_NAME') AS SERVICE_NAME FROM DUAL",'limit':1}
         rows=self.request('POST',self.SQL_PATH,payload)['items'][0]['resultSet']['items']
         if len(rows)!=1 or not all(rows[0].values()):raise DPError('JDBC_IDENTITY: missing target identity')
-        return digest({'connection':self.connection,'project':self.project,'database':rows[0]}),rows[0]
+        binding=digest({'connection':self.connection,'project':self.project,'database':rows[0]})
+        return (self.schema_map.binding(binding) if self.schema_map else binding),rows[0]

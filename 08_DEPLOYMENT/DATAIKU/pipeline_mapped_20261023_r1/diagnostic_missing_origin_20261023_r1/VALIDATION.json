@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "checks": [
+    "python_syntax",
+    "zip_integrity",
+    "zip_txt_identical",
+    "no_javascript"
+  ],
+  "field_execution": false,
+  "files": {
+    "DATAIKU_MISSING_ORIGIN_CHECK_20261023_R1.zip": {
+      "bytes": 2243,
+      "sha256": "752346905a38e364907f545ae920dab0b23638388c685f1d498fd3859458ac11"
+    },
+    "DATAIKU_MISSING_ORIGIN_CHECK_20261023_R1.txt": {
+      "bytes": 1400,
+      "sha256": "ba3be2af8479795049c731cbefc75e2c6b2758a1a4f3161295a83ac45f306794"
+    },
+    "GUIDE.txt": {
+      "bytes": 2101,
+      "sha256": "a553b71e57a73ec003152c0cc7a135c00cead2ac83306b0937f46263a0c59be0"
+    }
+  }
+}

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import time
+from .physical_mapping import names
 
 REVISION = 'oracle-dp-io-v1'
 OWNER = 'SIDDA'
@@ -182,31 +183,33 @@ def bind_row(kind, row, prefix):
     return expressions, binds
 
 
-def equality(columns, row, expressions):
+def equality(columns, row, expressions, column_name=lambda c:c):
     predicates = []
     for col in columns:
         value = row[col]
+        physical = column_name(col)
         if value is None:
-            predicates.append(f'{col} IS NULL')
+            predicates.append(f'{physical} IS NULL')
         elif col in CLOBS:
-            predicates.append(f'{col} IS NOT NULL AND ' +
-                (f'DBMS_LOB.GETLENGTH({col})=0' if value == '' else f'DBMS_LOB.COMPARE({col},{expressions[col]})=0'))
+            predicates.append(f'{physical} IS NOT NULL AND ' +
+                (f'DBMS_LOB.GETLENGTH({physical})=0' if value == '' else f'DBMS_LOB.COMPARE({physical},{expressions[col]})=0'))
         else:
-            predicates.append(f'{col}={expressions[col]}')
+            predicates.append(f'{physical}={expressions[col]}')
     return ' AND '.join(predicates)
 
 
-def insert_statement(kind, rows):
+def insert_statement(kind, rows, *, sql=None):
     """Insert absent rows; an existing differing row aborts the whole batch."""
-    table, statements, bindings = OWNER + '.' + TABLES[kind], ['DECLARE n NUMBER; BEGIN'], []
+    n=names(sql,kind,OWNER+'.'+TABLES[kind])
+    table, statements, bindings = n.table, ['DECLARE n NUMBER; BEGIN'], []
     for i, row in enumerate(rows):
         validate_row(kind, row)
         expressions, binds = bind_row(kind, row, 'r' + str(i))
         bindings.extend(binds)
-        keys = equality(KEYS[kind], row, expressions)
-        same = equality(COLUMNS[kind], row, expressions)
+        keys = equality(KEYS[kind], row, expressions,n.c)
+        same = equality(COLUMNS[kind], row, expressions,n.c)
         statements += [f'SELECT COUNT(*) INTO n FROM {table} WHERE {keys};',
-            f'IF n=0 THEN INSERT INTO {table} ({",".join(COLUMNS[kind])}) VALUES ({",".join(expressions[c] for c in COLUMNS[kind])}); END IF;',
+            f'IF n=0 THEN INSERT INTO {table} ({",".join(n.c(c) for c in COLUMNS[kind])}) VALUES ({",".join(expressions[c] for c in COLUMNS[kind])}); END IF;',
             f'SELECT COUNT(*) INTO n FROM {table} WHERE {same};',
             "IF n<>1 THEN RAISE_APPLICATION_ERROR(-20001,'DP_EXISTING_VALUE_CONFLICT'); END IF;"]
     statements += ['COMMIT;', 'EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;']
@@ -218,18 +221,18 @@ def insert_statement(kind, rows):
 
 def read_rows(sql, kind, where, binds=(), *, limit=100, order=''):
     """Read CLOB in bounded VARCHAR pieces; retain empty CLOB versus SQL NULL."""
-    table = OWNER + '.' + TABLES[kind]
+    n=names(sql,kind,OWNER+'.'+TABLES[kind]);table=n.table
     projection = []
     for col in COLUMNS[kind]:
         if col in CLOBS:
-            projection += [f'DBMS_LOB.SUBSTR({col},{LOB_UNITS},1) AS {col}',
-                           f'DBMS_LOB.GETLENGTH({col}) AS {col}__TOTAL']
+            projection += [f'DBMS_LOB.SUBSTR({n.c(col)},{LOB_UNITS},1) AS {col}',
+                           f'DBMS_LOB.GETLENGTH({n.c(col)}) AS {col}__TOTAL']
         else:
-            projection.append(col)
+            projection.append(n.select(col))
     rows = sql.query(f'SELECT {",".join(projection)} FROM {table} WHERE {where} {order}', binds, limit=limit)
     for row in rows:
         keybinds = [(f'k{i}', row[c], 'VARCHAR2') for i, c in enumerate(KEYS[kind])]
-        keywhere = ' AND '.join(f'{c}=:k{i}' for i, c in enumerate(KEYS[kind]))
+        keywhere = ' AND '.join(f'{n.c(c)}=:k{i}' for i, c in enumerate(KEYS[kind]))
         for col in CLOBS.intersection(COLUMNS[kind]):
             length = row.pop(col + '__TOTAL')
             if length is None:
@@ -239,8 +242,8 @@ def read_rows(sql, kind, where, binds=(), *, limit=100, order=''):
             value = row[col] or ''
             consumed = units(value)
             while consumed < length:
-                part = sql.query(f'SELECT DBMS_LOB.SUBSTR({col},{LOB_UNITS},:pos) AS PIECE, '
-                    f'DBMS_LOB.GETLENGTH({col}) AS TOTAL FROM {table} WHERE {keywhere}',
+                part = sql.query(f'SELECT DBMS_LOB.SUBSTR({n.c(col)},{LOB_UNITS},:pos) AS PIECE, '
+                    f'DBMS_LOB.GETLENGTH({n.c(col)}) AS TOTAL FROM {table} WHERE {keywhere}',
                     [*keybinds, ('pos', consumed + 1, 'NUMBER')], limit=1)
                 if len(part) != 1 or part[0]['TOTAL'] != length or not part[0]['PIECE']:
                     raise DPError('CLOB_INCOMPLETE: missing/changed chunk')
@@ -255,11 +258,12 @@ def read_rows(sql, kind, where, binds=(), *, limit=100, order=''):
 
 
 def read_batch(sql, kind, expected):
+    n=names(sql,kind,OWNER+'.'+TABLES[kind])
     predicates, binds = [], []
     for i, row in enumerate(expected):
         terms = []
         for j, col in enumerate(KEYS[kind]):
-            name = f'k{i}_{j}'; binds.append((name, row[col], 'VARCHAR2')); terms.append(f'{col}=:{name}')
+            name = f'k{i}_{j}'; binds.append((name, row[col], 'VARCHAR2')); terms.append(f'{n.c(col)}=:{name}')
         predicates.append('(' + ' AND '.join(terms) + ')')
     return read_rows(sql, kind, ' OR '.join(predicates), binds, limit=len(expected))
 
@@ -277,6 +281,8 @@ def compare_batch(kind, expected, observed, *, require_all=True):
 
 
 def check_source_tables(sql):
+    schema=getattr(sql.client,'schema_map',None)
+    if schema:return schema.preflight(sql,keys=list(TABLES))
     names = ','.join("'" + n + "'" for n in TABLES.values())
     rows = sql.query('SELECT TABLE_NAME,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,CHAR_USED,NULLABLE '
                      f"FROM ALL_TAB_COLUMNS WHERE OWNER='{OWNER}' AND TABLE_NAME IN ({names})", limit=30)

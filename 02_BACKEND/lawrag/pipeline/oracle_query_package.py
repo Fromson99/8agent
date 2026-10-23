@@ -17,6 +17,7 @@ import uuid
 import zipfile
 
 from semantic_runtime import oracle_dp_io as io, oracle_dp_assets as assets, oracle_query_catalog as q
+from semantic_runtime.physical_mapping import names
 from . import oracle_query_publish as pub, oracle_migration as migration
 from .oracle_transfer_progress import tracking, report, check, sqlite_work
 
@@ -463,6 +464,8 @@ def import_db(client,dbpath,*,target_binding,directory,action='check',seconds=36
         if state['identity']!=identity:raise io.DPError('IMPORT_BINDING: source, package or target changed; preserve the prior log')
         io.atomic_json(receipt,state)
         sql=io.SQL(client,journal=folder/'calls.jsonl',binding=io.digest(identity),seconds=max(0,min(seconds,state['deadline']-time.time())))
+        rows_map=names(sql,'query_row',q.ROW)
+        release_map=names(sql,'query_release',q.RELEASE)
         try:
             if assets.get_release(sql,value['source_release_id'])!=meta['source_release']:raise io.DPError('SOURCE_RELEASE: Oracle source is not this generation')
             checked=pub.schema(sql,create=False)
@@ -491,16 +494,16 @@ def import_db(client,dbpath,*,target_binding,directory,action='check',seconds=36
                 flush()
             finally:db.close()
             for kind,spec in value['tables'].items():
-                actual=sql.query(f'SELECT COUNT(*) AS N FROM {q.ROW} WHERE RELEASE_ID=:release AND KIND=:kind',
+                actual=sql.query(f'SELECT COUNT(*) AS N FROM {rows_map.table} WHERE {rows_map.c("RELEASE_ID") }=:release AND {rows_map.c("KIND") }=:kind',
                                  [('release',rid,'VARCHAR2'),('kind',kind,'VARCHAR2')],limit=1)
                 if actual!=[{'N':spec['rows']}]:raise io.DPError('QUERY_ROW_COUNT: '+kind)
             # Also reject undeclared kinds, not merely wrong counts within expected kinds.
-            count=sql.query(f'SELECT COUNT(*) AS N FROM {q.ROW} WHERE RELEASE_ID=:release',[('release',rid,'VARCHAR2')],limit=1)
+            count=sql.query(f'SELECT COUNT(*) AS N FROM {rows_map.table} WHERE {rows_map.c("RELEASE_ID") }=:release',[('release',rid,'VARCHAR2')],limit=1)
             if count!=[{'N':sum(x['rows'] for x in value['tables'].values())}]:raise io.DPError('QUERY_TOTAL_COUNT: unexpected rows')
             if io.file_sha(dbpath)!=sha:raise io.DPError('DB_CHANGED: transport DB changed during upload')
             if action=='publish':
-                stmt=(f'DECLARE n NUMBER; BEGIN SELECT COUNT(*) INTO n FROM {q.RELEASE} WHERE RELEASE_ID=:release; '
-                      f'IF n=0 THEN INSERT INTO {q.RELEASE}(RELEASE_ID,MANIFEST_JSON) VALUES(:release,:body); END IF; '
+                stmt=(f'DECLARE n NUMBER; BEGIN SELECT COUNT(*) INTO n FROM {release_map.table} WHERE {release_map.c("RELEASE_ID") }=:release; '
+                      f'IF n=0 THEN INSERT INTO {release_map.table}({release_map.c("RELEASE_ID")},{release_map.c("MANIFEST_JSON")}) VALUES(:release,:body); END IF; '
                       'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
                 sql.request(stmt,[('release',rid,'VARCHAR2'),('body',q.json_body(value),'CLOB')],write=True)
             if q.read_release(sql,rid)!=value:raise io.DPError('QUERY_RELEASE_READBACK: manifest differs')

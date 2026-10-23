@@ -1,0 +1,29 @@
+<html><body>
+<p>Dataiku → GENOS 비동기 구조화·색인 → Oracle 적재 패키지를 전달드립니다.</p>
+<p><strong>연결은 기존 AIDP, 스키마는 SIDDA 그대로입니다.</strong> 정리한 LGL 계열 9개 테이블·46개 컬럼을 YAML 매핑으로 연결했습니다. 개발 실버에서 검증하는 구성입니다.</p>
+<p><strong>이번에 사용할 파일</strong></p>
+<ul>
+<li>전체 묶음: <strong>LEGAL_PIPELINE_E2E_20261023_R1.zip</strong></li>
+<li>Dataiku 클라이언트: ZIP 안의 <strong>DATAIKU_PIPELINE_CLIENT_20261023_R1.zip</strong></li>
+<li>Dataiku 실행 셀: <strong>DATAIKU_PIPELINE_RUN_20261023_R1.txt</strong></li>
+<li>GENOS 서비스: ZIP 안의 <strong>GENOS_PIPELINE_SERVICE_20261022_R2.zip</strong>. 이전 R2와 바이트가 같으므로 동일 리비전이면 그대로 사용합니다.</li>
+</ul>
+<p>새 LGL 테이블 적재에는 이전 DATAIKU_PIPELINE_CLIENT_20261022_R1과 실행 R3 대신 이번 20261023 R1 클라이언트·실행 TXT를 함께 사용하세요. 기존 LEGAL_* 테이블과 RAG 선택 릴리스는 유지합니다.</p>
+<p><strong>실행 순서</strong></p>
+<ol>
+<li><strong>SQL 생성:</strong> LEGAL_RAG의 SQL 노트북에서 AIDP 연결을 선택합니다. 01_CREATE_TABLES.sql의 기존 객체 조회부터 확인하고, 없는 객체의 CREATE 문만 번호순으로 각각 별도 Query에서 실행합니다. 02_COMMENTS.sql도 각 COMMENT 문을 따로 실행합니다. 한글명·업무 의미·명칭/타입 선정 이유·출처·갱신 기준을 포함했습니다. 신규 객체 생성·적재 권한은 현장 계정으로 확인해야 합니다.</li>
+<li><strong>GENOS:</strong> 전체 ZIP을 PC에서 풀어 서비스 ZIP과 GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt 두 파일을 새 파이프라인 전용 코드스페이스의 적용할 Git 루트(DEV)에 올립니다. 그 위치에서 아래 명령을 실행합니다. 이미 동일 R2가 배포되어 있으면 재설치할 필요 없습니다.
+<pre>bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt check
+bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt apply</pre>
+현재 실행 위치에 코드가 생성됩니다. 이후 현장 Git push·코드서빙 리비전 배포는 별도 수행하며, 전용 service.py를 사용합니다. 동시 작업·replica는 1로 설정합니다.</li>
+<li><strong>Dataiku 관리 폴더:</strong> 기존 LEGAL_PIPELINE_WORKSPACE 최상위에 새 DATAIKU_PIPELINE_CLIENT_20261023_R1.zip을 넣습니다. 기존 RAW_INPUT.zip, PIPELINE_SUPPORT.zip 및 각각의 .receipt.json은 그대로 사용합니다.</li>
+<li><strong>Dataiku 실행:</strong> Python 노트북에서 DATAIKU_PIPELINE_RUN_20261023_R1.txt 전체를 붙여 실행합니다. ACTION을 <strong>prepare → check → run</strong> 순서로 바꿉니다. check의 READY를 확인한 뒤 run을 실행합니다. 코드 환경에는 dataiku, pandas, PyYAML 6.x가 필요합니다.</li>
+</ol>
+<p>프로젝트 변수는 LEGAL_PIPELINE_URL(새 파이프라인 코드서빙 HTTPS 호출 주소), LEGAL_PIPELINE_TOKEN(현장 인증 토큰), LEGAL_ORACLE_CONNECTION=AIDP입니다. 연결값은 생략해도 AIDP를 사용합니다. 토큰은 메일이나 코드에 적지 않습니다.</p>
+<p>GENOS에서 전체 ZIP을 풀어 내용을 확인할 경우, 실제 업로드한 TRANSFER 폴더를 현재 위치로 두고 아래 명령을 사용하세요. 압축 해제 위치와 실제 코드 적용 대상 DEV는 별개입니다. 설치 TXT는 서비스 ZIP과 함께 적용할 DEV 루트에서 위 check/apply로 실행합니다.</p>
+<pre>python3 -m zipfile -e ./LEGAL_PIPELINE_E2E_20261023_R1.zip ./LEGAL_PIPELINE_E2E_FILES_20261023_R1</pre>
+<p><strong>처리·재개:</strong> Dataiku가 POST로 작업을 접수하고 상태를 조회한 뒤 결과를 내려받습니다. 관리 폴더에 결과·체크포인트를 저장하고 Oracle의 원문/자산/조회행 7개 테이블을 적재·재조회하여 검증합니다. 그 뒤 GENOS 임시 결과를 정리합니다. 나머지 채널·실행 상태 테이블 2개는 생성만 하며 자동 활성화하지 않습니다. 중단 시 같은 JOB_NAME으로 재실행하고, 관리 폴더의 _pipeline 기록을 보존하세요. 동일 JOB_NAME의 동시 실행은 1개로 제한합니다.</p>
+<p><strong>검증:</strong> 로컬 계약·회귀 73건과 실제 로컬 Oracle E2E 1건 통과. 커밋 후 응답 유실, ACK 유실, 로컬 작업 폴더 유실, 중복 재실행을 확인했습니다. GENOS 처리부는 기존 native-no-models 구조화 방식을 유지합니다. 삼성 현장 Dataiku/ADB/GENOS 배포·권한 확인 및 운영 골드 표준 승인은 아직 별도입니다.</p>
+<p>전체 ZIP SHA-256:<br><code>417ec70423da911a2a73f194bba97425171fb395d82bd8d0cb5fb390be2d46f4</code></p>
+<p>자세한 실행·재개·검증·운영 전환 방법은 첨부 GUIDE.txt에 정리했습니다. 두 실행 TXT와 SQL은 ZIP 안에도 있고 별도로도 첨부했습니다.</p>
+</body></html>

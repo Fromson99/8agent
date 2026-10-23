@@ -310,13 +310,15 @@ def describe(generation, source_release):
 def _verify_batch(sql, release_id, batch):
     """Read back the full indexed envelope, not just an untrusted checksum."""
     from semantic_runtime.oracle_dp_assets import clob_text
+    from semantic_runtime.physical_mapping import names
+    p=names(sql,'query_row',ROW)
     binds = [('release', release_id, 'VARCHAR2')]
     predicates = []
     for i, row in enumerate(batch):
-        predicates.append(f'(KIND=:kind{i} AND ROW_ID=:id{i})')
+        predicates.append(f'({p.c("KIND") }=:kind{i} AND {p.c("ROW_ID") }=:id{i})')
         binds += [(f'kind{i}',row['kind'],'VARCHAR2'),(f'id{i}',row['row_id'],'VARCHAR2')]
-    result = sql.query(f'SELECT KIND,ROW_ID,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,ROW_SHA256,TO_CLOB(VALUE_JSON) AS VALUE,'
-                       f'DBMS_LOB.GETLENGTH(VALUE_JSON) AS N FROM {ROW} WHERE RELEASE_ID=:release AND ('+
+    result = sql.query(f'SELECT {p.select("KIND","ROW_ID","DOCUMENT_ID","LOOKUP_ID","OWNER_ID","TARGET_ID","ROW_SHA256")},TO_CLOB({p.c("VALUE_JSON")}) AS VALUE,'
+                       f'DBMS_LOB.GETLENGTH({p.c("VALUE_JSON")}) AS N FROM {p.table} WHERE {p.c("RELEASE_ID") }=:release AND ('+
                        ' OR '.join(predicates)+')', binds, limit=len(batch))
     actual = {(r['KIND'],r['ROW_ID']): r for r in result}
     if len(actual) != len(result) or set(actual) != {(r['kind'],r['row_id']) for r in batch}:
@@ -325,7 +327,7 @@ def _verify_batch(sql, release_id, batch):
         stored = actual[(row['kind'],row['row_id'])]
         body = stored['VALUE']
         if not isinstance(body,str) or len(body.encode('utf-16-le'))//2 != stored['N']:
-            body = clob_text(sql, ROW, 'VALUE_JSON', 'RELEASE_ID=:release AND KIND=:kind AND ROW_ID=:id',
+            body = clob_text(sql, p.table, p.c('VALUE_JSON'), f'{p.c("RELEASE_ID") }=:release AND {p.c("KIND") }=:kind AND {p.c("ROW_ID") }=:id',
                              [('release',release_id,'VARCHAR2'),('kind',row['kind'],'VARCHAR2'),('id',row['row_id'],'VARCHAR2')])
         expected = {column: row[key] for column,key in [('DOCUMENT_ID','document_id'),('LOOKUP_ID','lookup_id'),
                     ('OWNER_ID','owner_id'),('TARGET_ID','target_id'),('ROW_SHA256','sha256')]}
@@ -442,6 +444,10 @@ def schema(sql, *, create=False, allow_missing_lookup_indexes=False):
     Oracle DDL commits independently. An uncertain response remains a failure;
     the next explicit invocation inspects the dictionary before attempting DDL.
     """
+    physical=getattr(sql.client,'schema_map',None)
+    if physical:
+        if create:raise DPError('MAPPED_DDL_SEPARATE: execute generated creation SQL first')
+        return physical.preflight(sql,keys=['query_release','query_row','query_active','query_state'])
     if type(allow_missing_lookup_indexes) is not bool:
         raise DPError('QUERY_INDEX_POLICY: expected a boolean')
     expected = {}

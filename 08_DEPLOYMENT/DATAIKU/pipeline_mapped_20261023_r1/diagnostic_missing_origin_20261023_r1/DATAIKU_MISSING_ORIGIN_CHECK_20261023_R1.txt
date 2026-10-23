@@ -1,0 +1,27 @@
+# 실패한 Dataiku LEGAL_RAG 노트북의 새 셀에 전체를 붙여 실행하세요.
+# Python 코드입니다. 기존 파일 조회만 하며, run() 호출·다운로드·DB 쓰기는 하지 않습니다.
+def check_missing_pipeline_origins():
+    import json
+    from pathlib import Path
+
+    defaults = getattr(globals().get("run"), "__defaults__", None)
+    if not defaults or len(defaults) != 4:
+        raise RuntimeError("배치를 실행했던 같은 노트북·커널의 새 셀에서 실행하세요.")
+    data = Path(defaults[2]) / "inputs" / "01_DATA"
+    catalog_path = data / "CATALOG" / "RAW_DERIVATIVES.json"
+    if not catalog_path.is_file():
+        raise RuntimeError("현재 작업 경로에 RAW_DERIVATIVES.json이 없습니다. 기존 작업 경로를 확인하세요.")
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    count = 0
+    for name, item in catalog["files"].items():
+        if (data / name).is_file() and not (data / item["origin"]).is_file():
+            count += 1
+            print("현재 파일:", name)
+            print("누락 원본:", item["origin"])
+            print("원본 기대 SHA256:", item.get("origin_sha256", "기록 없음"))
+            print()
+    print("MISSING_ORIGIN_REFERENCES:", count)
+    print("진단 완료. 기존 파일과 작업 상태를 변경하지 않았습니다.")
+
+
+check_missing_pipeline_origins()
