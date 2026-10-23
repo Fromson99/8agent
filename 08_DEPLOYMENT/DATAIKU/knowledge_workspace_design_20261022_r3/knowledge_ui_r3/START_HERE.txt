@@ -1,0 +1,54 @@
+법률 지식 운영실 — Streamlit 디자인 R3 / 2026-10-22
+
+이번 첨부 R3를 사용하세요. 이전 R1/R2 화면 대신 최신 공개 사이트의 디자인을
+Streamlit Python 파일 하나에 담았습니다. 외부 UI 파일이나 CDN은 필요하지 않습니다.
+
+1. Dataiku Streamlit 웹앱에 올리기
+   - Streamlit 웹앱에 사용할 Python code environment에 streamlit==1.50.0을 준비합니다.
+   - 첨부 STREAMLIT_KNOWLEDGE_UI.txt를 UTF-8로 엽니다.
+   - 내용 전체를 Streamlit 웹앱의 Python 편집기에 붙여 넣고 저장·실행합니다.
+   - ZIP의 STREAMLIT_KNOWLEDGE_UI.py도 같은 내용입니다. Python 파일 업로드 방식이면
+     이 파일을 사용하면 됩니다. 기존 웹앱을 교체한다면 기존 코드를 먼저 보관하세요.
+   - TXT는 Python 소스이며 bash로 실행하는 파일이 아닙니다.
+   - Dataiku 현장 환경의 실행·권한·배포 설정은 이 세션에서 확인하지 않았습니다.
+
+2. 화면에 포함된 내용
+   - 배치 파이프라인: 중계서버 → Dataiku → 구조화 → 색인/적재 진행과 예시 상태
+   - 구조화 검토: 원문과 보완 제안, 검토 사유·원문 확인 후 승인/보류
+   - 숏컷: 적재 레코드 테이블, 검색·필터·정렬, 상세 검토, CSV 내보내기
+   - Legal Wiki: 문서 라이브러리, 본문·근거·문서 연결, 초안 등록·편집·미리보기
+   - 온톨로지: 유형별 트리, 관계 그래프, 2D/3D 보기, 노드 속성·조건 편집
+   - 시뮬레이션: 후보 버전과 예시 결과, 문제 조건으로 이동, 이전 버전 결과 표시
+
+3. 현재 범위
+   이 파일은 화면과 상호작용을 확인하는 디자인 시연본입니다.
+   모든 업무 레코드·원문·배치 수치·시뮬레이션 결과는 예시 데이터입니다.
+   실제 Oracle 저장, Dataiku 배치 조회, RAG/LLM 호출 및 인증 API는 연결하지 않았습니다.
+   승인·편집은 브라우저 탭의 sessionStorage에만 보관하며 공동 운영 데이터가 아닙니다.
+   브라우저 저장소 초기화/탭 종료로 사라질 수 있습니다. 운영 승인으로 사용하지 마세요.
+   실제 업무 데이터는 Oracle에 두고 이후 기존 API와 연결할 대상입니다.
+
+4. Linux에서 단독 미리보기 (Dataiku 편집기 사용 시 생략)
+   ZIP과 실행 TXT를 내려받은 폴더에서 다음 순서로 실행합니다.
+
+   python3 -m zipfile -e ./DATAIKU_KNOWLEDGE_UI_20261022_R3.zip .
+   python3 -m pip install -r ./knowledge_ui_r3/requirements.txt
+   bash ./RUN_KNOWLEDGE_UI_20261022_R3.txt check
+   bash ./RUN_KNOWLEDGE_UI_20261022_R3.txt run
+
+   실행 TXT를 별도로 받지 않았다면 ZIP 안의 동일한 파일로 실행할 수 있습니다.
+   bash ./knowledge_ui_r3/RUN_KNOWLEDGE_UI_20261022_R3.txt check
+   bash ./knowledge_ui_r3/RUN_KNOWLEDGE_UI_20261022_R3.txt run
+
+   기본 접속: http://127.0.0.1:8501 / 종료: Ctrl+C
+   선택 설정: KNOWLEDGE_UI_PYTHON(기본 python3), KNOWLEDGE_UI_PORT(기본 8501),
+   KNOWLEDGE_UI_ADDRESS(기본 127.0.0.1). 별도 Python 환경을 쓰면 그 실행 파일을 지정합니다.
+   검사·실행 로그는 knowledge_ui_r3/logs/에 남습니다. 재실행은 업무 데이터를 변경하지 않습니다.
+
+5. 검증 및 파일
+   로컬 WSL Streamlit 1.50.0 실제 서버에서 메뉴·승인·편집·그래프·모바일 화면을 확인했습니다.
+   현장 Dataiku 배포 성공이나 실제 법률 판단 품질을 검증한 것은 아닙니다.
+   SHA256SUMS.json: 패키지 파일 해시와 원본 디자인 자산의 해시
+   requirements.txt: 검증에 사용한 Streamlit 버전
+   .js/.jsx/.mjs/.cjs 확장자 파일은 첨부와 ZIP 구성에서 제외했습니다.
+   UI HTML/CSS/브라우저 동작은 self-contained Python 컴포넌트 안에 포함됩니다.

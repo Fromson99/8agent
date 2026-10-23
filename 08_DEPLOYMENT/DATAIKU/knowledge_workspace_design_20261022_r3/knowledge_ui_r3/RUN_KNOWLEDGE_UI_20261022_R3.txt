@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# R3: Streamlit UI syntax/dependency/hash check and optional standalone preview.
+set -Eeuo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$SCRIPT_DIR"
+if [[ ! -f "$APP_DIR/STREAMLIT_KNOWLEDGE_UI.py" && -f "$APP_DIR/knowledge_ui_r3/STREAMLIT_KNOWLEDGE_UI.py" ]]; then
+  APP_DIR="$APP_DIR/knowledge_ui_r3"
+fi
+UI_PYTHON="${KNOWLEDGE_UI_PYTHON:-python3}"
+UI_MODE="${1:-check}"
+if [[ "$UI_MODE" != check && "$UI_MODE" != run ]]; then
+  printf '%s\n' 'Usage: bash RUN_KNOWLEDGE_UI_20261022_R3.txt [check|run]' >&2
+  exit 2
+fi
+if [[ ! -f "$APP_DIR/STREAMLIT_KNOWLEDGE_UI.py" ]]; then
+  printf '%s\n' 'Extract DATAIKU_KNOWLEDGE_UI_20261022_R3.zip beside this TXT, then retry.' >&2
+  exit 2
+fi
+mkdir -p "$APP_DIR/logs"
+UI_LOG="$APP_DIR/logs/${UI_MODE}-$(date +%Y%m%d-%H%M%S)-$$.log"
+exec > >(tee -a "$UI_LOG") 2>&1
+trap 'status=$?; printf "FAILED status=%s line=%s log=%s\n" "$status" "$LINENO" "$UI_LOG"; exit "$status"' ERR
+printf 'R3 mode=%s log=%s\n' "$UI_MODE" "$UI_LOG"
+"$UI_PYTHON" - "$APP_DIR" <<'PY'
+import hashlib
+import inspect
+import json
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+manifest = json.loads((root / 'SHA256SUMS.json').read_text(encoding='utf-8'))
+for name, expected in manifest['files'].items():
+    actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
+    if actual != expected:
+        raise SystemExit('Hash mismatch: ' + name)
+app = root / 'STREAMLIT_KNOWLEDGE_UI.py'
+compile(app.read_text(encoding='utf-8'), str(app), 'exec')
+if app.read_bytes() != (root / 'STREAMLIT_KNOWLEDGE_UI.txt').read_bytes():
+    raise SystemExit('Python and paste TXT differ')
+try:
+    import streamlit
+    import streamlit.components.v1 as components
+except ImportError as exc:
+    raise SystemExit('Install requirements.txt into this Python/code environment. ' + str(exc))
+if 'tab_index' not in inspect.signature(components.html).parameters:
+    raise SystemExit('This Streamlit version lacks tab_index; use requirements.txt (1.50.0).')
+print('PASS: archive hashes, Python syntax, paste TXT, Streamlit component API')
+print('Python:', sys.executable, sys.version.split()[0])
+print('Streamlit:', streamlit.__version__)
+print('This package contains synthetic UI fixtures. Oracle/Dataiku/LLM APIs are not connected.')
+PY
+if [[ "$UI_MODE" == run ]]; then
+  UI_ADDRESS="${KNOWLEDGE_UI_ADDRESS:-127.0.0.1}"
+  UI_PORT="${KNOWLEDGE_UI_PORT:-8501}"
+  printf 'Preview: http://%s:%s (stop with Ctrl+C)\n' "$UI_ADDRESS" "$UI_PORT"
+  "$UI_PYTHON" -m streamlit run "$APP_DIR/STREAMLIT_KNOWLEDGE_UI.py" \
+    --server.address="$UI_ADDRESS" --server.port="$UI_PORT" \
+    --server.headless=true --server.fileWatcherType=none \
+    --browser.gatherUsageStats=false
+fi
+printf 'COMPLETE mode=%s log=%s\n' "$UI_MODE" "$UI_LOG"
