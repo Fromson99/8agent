@@ -1,0 +1,18 @@
+from common import *
+C=ROOT/read(ART/'stage.json')['roots']['candidate'];base=C/'02_BACKEND/semantic_runtime/legal_agent';tests=C/'05_TESTS/CONTRACTS'
+p=base/'connection_scope.py';t=p.read_text().replace("        if blocked and blocked['acquired_signature'] != acquired_signature(inv):blocked=None\n",'');p.write_text(t)
+p=tests/'test_retained_partial_connections.py';t=p.read_text()
+t=t.replace("    monkeypatch.setattr(cs,'preview',lambda *a:{'status':status,'connection_count':count,'groups':[{'connections':[{'id':str(i)} for i in range(count)]}],'limits':[],'absence_proven':False})", "    inv.read_records=lambda:{}\n    from semantic_runtime.legal_agent import unit_relations as rel\n    monkeypatch.setattr(rel,'acquired_blocks',lambda *a:({},{}))\n    monkeypatch.setattr(cs,'preview',lambda *a:{'status':status,'connection_count':count,'groups':([{'anchor':{'source_id':'s','document_id':'d'},'target':{'source_id':'s','document_id':'d'},'connections':[{'id':str(i),'endpoint_block_ids':['6'],'already_read':False} for i in range(count)]}] if count else []),'limits':[],'absence_proven':False})")
+t=t.replace("result.append({'read_action':key,'target'", "result.append({'already_read':False,'read_action':key,'target'")
+t=t.replace("        assert any(a['action']=='FOLLOW_CONNECTION' for a in actions.values())", "        assert not any(a['action']=='FOLLOW_CONNECTION' for a in actions.values())")
+t=t.replace('test_same_oversized_menu_is_not_reoffered_but_new_originals_can_reopen_it','test_same_oversized_menu_is_not_reoffered_after_unrelated_originals')
+t=t.replace("    assert ('follow' in actions) is changed", "    assert 'follow' not in actions").replace("    assert bool(data['connection_scope_choices'][0]['menu_unavailable']) is (not changed)", "    assert data['connection_scope_choices'][0]['menu_unavailable']")
+p.write_text(t)
+p=tests/'test_connection_card_provenance.py';t=p.read_text()
+t=t.replace("    return S(s=S(),question='기준은?',p={'issues':[{'id':'Q1'}]},read_records=lambda:{},", "    sources={k:{'document_id':k+'-doc'} for k in ('anchor','target','other')}\n    monkeypatch.setattr(rel,'acquired_blocks',lambda *a:({},{}))\n    return S(s=S(scope=['anchor-doc','target-doc','other-doc'],tools=S(sources=sources),repo=S(event=lambda *a:None)),\n        question='기준은?',p={'binding':{},'issues':[{'id':'Q1'}]},save=lambda:None,read_records=lambda:{},")
+t=t.replace("'structural_selection':{},'members':[{'source_id':'anchor'}]", "'structural_selection':{},'members':[{'source_id':'anchor','document_id':'anchor-doc'}]")
+t=t.replace("lambda i,**kw:{'scope':scope}","lambda i,**kw:{'scope':scope,'binding':digest(inv.p['binding'])}")
+t=t.replace("    g=group(*(str(n) for n in range(8)),read=True,definition=True)", "    monkeypatch.setattr(rel,'acquired_blocks',lambda *a:({'target':{'7','8'}},{}))\n    g=group(*(str(n) for n in range(8)),read=True,definition=True)")
+p.write_text(t)
+p=ART/'design-freeze.json';p.rename(ART/'design-freeze-r3-regression.json')
+save(ART/'regression-correction.json',{'live_calls':0,'contract_change':'PARTIAL/oversized unchanged directory has no forward cursor and is no longer selectable. Unrelated originals do not erase its block; only new anchor bytes yield a new key. Preserve unmet status.', 'fixture_update':'Presentation-only fixtures now provide normal binding, source registry and acquired-block dependencies for durable directory rendering. Separate API/cycle tests validate real receipts and target revalidation.'})
