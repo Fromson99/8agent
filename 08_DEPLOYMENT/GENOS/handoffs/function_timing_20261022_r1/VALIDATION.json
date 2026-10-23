@@ -1,0 +1,55 @@
+{
+  "prepared_at": "2026-10-22T18:49:31.744999+09:00",
+  "revision": "GENOS_FUNCTION_TIMING_20261022_R1",
+  "tests": {
+    "contract_tests": 21,
+    "result": "PASS",
+    "log_sha256": "e3198fc3754a590ef4f2d0e11912c172c59f6b5aebf39d9caa2890f3181e771a",
+    "final_installer_service_steps": 7,
+    "baseline": "preserved GENOS MAIN101 package, 416 code files",
+    "final_trace_sha256": "efaf89256cc46cf57f15e0c917f092b8cb5b14f8b231ebc7d9b5ed9ce821eb6f",
+    "connected_targets": 56,
+    "missing_targets_in_verified_baseline": 0,
+    "actual_service_entry": true,
+    "dispatch_fixture": "synthetic SQLite/query span, no model/backend network",
+    "actual_capture_report_writer_and_extractor": true,
+    "python": "3.14.4",
+    "python311_syntax": true
+  },
+  "code": {
+    "format": "8agent-code/1",
+    "files": [
+      {
+        "path": "service.py",
+        "sha256": "e8eaf26d1c0a3ddb27e40c735b90fb6a99a4015af946a9503ade3f0e91c7c9a8",
+        "bytes": 62624
+      },
+      {
+        "path": "genos_timing_probe.py",
+        "sha256": "8f1e200d3e63ea64febd45a8ba76129b5c8c98953e62671ecdd688b8793d8ae3",
+        "bytes": 14993
+      }
+    ]
+  },
+  "source_service_unchanged_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+  "active_release_pointer_unchanged_sha256": "293fde74fad7db6893c676a9e9b4b5ed5ac3d8b0d4c641ed2c0e090f51350671",
+  "scope": {
+    "production_working_service_changed": false,
+    "main_changed": false,
+    "data_changed": false,
+    "model_calls": 0,
+    "email_sent": false,
+    "genos_deployed": false
+  },
+  "unverified": [
+    "GENOS Python3.11 live runtime",
+    "onsite commit/push/revision/environment flag",
+    "real data generation E2E for this package",
+    "live latency/measurement overhead",
+    "internal model server queue/prefill/generation breakdown"
+  ],
+  "resolved_during_validation": [
+    "Use block-count names to survive existing secret-field filtering",
+    "Workflow file pins resolve under 02_BACKEND/workflow"
+  ]
+}

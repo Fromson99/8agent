@@ -1,0 +1,67 @@
+GENOS MAIN101 답변·프롬프트·근거 보존 통합 R1
+
+이번 적용에는 GENOS_MAIN101_ANSWER_20261022_R1을 사용한다. 앞선 MAIN99 패치를 포함하는 누적본이다.
+선택 로컬 MAIN101 / workflow1.20.8, 원본419파일 → GENOS 인계416파일.
+변경/추가 144파일, 기존 필수 272파일을 해시 검증한다.
+비활성 관리화면의 app.js/index.html/styles.css만 제외하고 엔진30개와 PIPELINE 의존 목록·해시를 파생했다.
+나머지 Python·스키마·모델 프로필·워크플로우는 선택 MAIN101과 동일하다. JavaScript 확장자는 중첩 ZIP에도 없다.
+
+변경 내용
+- 명시 상법 범위를 검색에 연결한 MAIN100 수정과 기존 구조화 범위·복수·제외 선택을 포함한다.
+- 초기 요청/탐색/판단/최종 작성 프롬프트의 중복 문장을 축소한다. 모델 호출 단계를 추가하지 않았다.
+- 조사 한도 종료 시 실제 확보·검증된 원문을 유지한다. 제외/보류·권한·원문 해시·상태 검사를 유지한다.
+- 추가 조사에 기존 근거와 그 근거에 연결된 판단을 전달한다. 이전 판단을 정답으로 자동 확정하지 않는다.
+- 답변 확인 범위에 미확인 사유를 구체적으로 표시하고 'AI 판단·검증 전'임을 명시한다.
+  이 표시는 최종 본문 조립이며 별도 모델 호출이 없다. 과거 저장 답변은 기존 표시로 검증한다.
+
+사용자가 수용한 미해결 사항 — 해결 완료나 법률 정확도 인증이 아님
+- 실제 추가 조사 답변의 한 문단에서 2/3을 3/2로 잘못 생성했다. 원문/구조화 근거의 수치는 보존됐지만 서술 오류를 잡지 못했다.
+- 정족수를 확보해도 모든 특별결의 사안을 찾으려 하며 유한회사까지 확장했다. 기존 조사 재진입 한도로 종료했다.
+- 다른 실행에서는 제434조를 못 찾고 제363/364조 원문만 반환했다. 합성 비교 사례에서는 이미 확보한 부분 결론을 누락했다.
+- 이번 반영은 위 모델 판단 한계를 인정한 사용자 지시(USER_DIRECTED_CUTOVER)다. 거절된 ADR 결과를 통과로 변경하지 않았다.
+- 이번 통합/포장에서는 실제 모델을 추가 호출하지 않았다. 외부 Qwen 기록은 GENOS 내부 모델 성능을 보장하지 않는다.
+
+기존 코드: MAIN99 패치/전체본 또는 확인된 R2+DEV_SEARCH_SELECTION 및 NATURAL_LANGUAGE_ROUTING R1.
+알 수 없는 사용자 변경은 check에서 거부하며 자동 덮어쓰지 않는다.
+.env·GENOS_SERVING_PATHS.json·검색 선택 JSON·원문·색인·기존 데이터 설정을 유지한다.
+Oracle 조회 전환/데이터 구축 패키지가 아니다. 현재 실제 데이터 조회 방식과 버전을 확인한다.
+
+실제 업로드한 TRANSFER 폴더를 현재 위치로 두고 실행한다. TRANSFER 절대경로를 추정하지 않는다.
+처음 압축 해제부터 로그와 종료코드를 남기는 블록:
+
+mkdir -p ./main101-answer-r1-logs
+python3 -m zipfile -e ./GENOS_MAIN101_ANSWER_20261022_R1.zip ./GENOS_MAIN101_ANSWER_20261022_R1 > ./main101-answer-r1-logs/extract.log 2>&1
+TASK_EXTRACT_RC=$?
+printf '%s\n' "$TASK_EXTRACT_RC" > ./main101-answer-r1-logs/extract.exit
+if [ "$TASK_EXTRACT_RC" -ne 0 ]; then cat ./main101-answer-r1-logs/extract.log; else
+  bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt check
+fi
+
+check 성공 후 같은 TRANSFER 위치에서:
+bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt apply
+bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt gate
+
+기본 적용 대상은 기존 ~/DEV Git checkout이다. 실제 경로를 ROOT_BINDING.json에 고정한다.
+다른 checkout은 --root /실제/DEV/경로를 명시한다. 패키지 내 backup과 INSTALL_STATE.json을 보존한다.
+중단 후 같은 apply를 다시 실행하면 이미 적용된 파일을 확인하고 남은 파일을 이어 적용한다.
+실행 TXT는 지속 로그와 .exit 종료코드를 남기며 Python 실행 파일·버전은 gate 출력으로 확인한다.
+
+워크플로우 Python 단계는 코드 ZIP과 별도다. 기존 편집기 내용을 백업하고 GENOS_WORKFLOW_PYTHON.txt를 반영한다.
+이미 workflow1.20.8의 동일 바이트가 반영됐다면 변경할 필요 없다. 편집기 반영 상태를 별도로 확인한다.
+~/DEV의 변경 및 COMMIT_PATHS.txt를 검토하고 git diff --check 후 해당 파일만 커밋한다. 다른 staged 작업을 섞지 않는다.
+그 다음 TRANSFER에서 실제 커밋된 checkout 검사:
+bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt gate-code
+통과한 커밋을 push하고 같은 커밋으로 코드서빙 리비전을 배포한다. 코드가 바뀌면 다시 커밋하고 검사한다.
+기존 SQLite generation 환경에서만 다음 데이터 검사를 별도로 수행한다:
+bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt gate-sqlite
+실제 generation 절대경로·manifest SHA를 남긴다. 데이터 생성/전체 다운로드/로컬 복원 명령이 아니다.
+Oracle 조회 환경은 실제 조회 API의 데이터 버전·권한·원문을 확인하며 SQLite 검사로 대체하지 않는다.
+
+최종 질의 확인은 워크플로우 테스트 화면에서만 한다. 코드서빙 직접 테스트 UI/API를 요구하지 않는다.
+상법 주주총회 특별결의 요건, 실제 존재하는 조항의 범위/복수/제외 요청을 확인한다.
+확보 원문·답변·구체 미확인 사유·실제 모델 ID·요청 ID·커밋·리비전·데이터 버전을 함께 남긴다.
+코드 적용/커밋/push/리비전/편집기/질의 성공은 각각 별도 상태다. 현장 단계는 아직 미확인이다.
+
+복원은 TRANSFER에서:
+bash ./GENOS_MAIN101_ANSWER_20261022_R1/GENOS_MAIN101_ANSWER_20261022_R1_RUN.txt rollback
+새 사용자 수정이 있으면 복원을 거부해 보존한다. 코드 복원 뒤 Git/이전 리비전 및 편집기 백업 복원은 별도로 수행한다.

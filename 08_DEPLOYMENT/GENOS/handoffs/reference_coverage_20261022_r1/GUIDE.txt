@@ -1,0 +1,71 @@
+GENOS MAIN102 연결 탐색·원문 전달·읽음 상태 통합 R1
+
+이번 적용에는 GENOS_MAIN102_LINKS_20261022_R1을 사용한다. 앞선 MAIN101 ANSWER 및 MAIN99 패치 기능을 포함한 누적본이다.
+선택 로컬 MAIN102 / workflow1.20.8. 원본420파일 → GENOS417파일.
+변경/추가 146파일, 기존 필수 271파일을 해시 검증한다.
+비활성 관리화면3자산(app.js/index.html/styles.css)을 제외하고 해당 엔진30개·PIPELINE 의존 해시를 파생했다.
+나머지 Python·스키마·프로필·워크플로우 바이트는 선택 MAIN102와 같다. 중첩ZIP에도 JavaScript 확장자가 없다.
+
+변경 내용
+- 읽고 선택한 장·조·절·항·호·목 등 실제 저장 구조 범위를 기준으로 연결을 제시한다.
+  미리 읽은 다른 조문 때문에 조 전체의 연결이 섞여 나오던 경로를 분리했다.
+- 해당 범위의 연결이5개 이하이면 별도 목록 선택 호출 없이 연결을 바로 보여준다.
+- 연결 선택/추가 탐색 판단에 사용자 질문과 실제 확보한 원문을 함께 전달한다.
+- 연결이 없거나 조회에 실패하면 알려진 문서·구조 좌표로 구조 검색할 수 있는 경로를 유지한다.
+- 조 전체 연결의 빈 block_ids 표현도 정규 대상 범위로 해석한다. 같은 범위로 읽음 상태·연결 카드·재읽기 메뉴를 판단한다.
+  일부만 읽은 경우에는 미확보 범위를 유지하며, 완전히 확보한 대상을 다시 READ 후보로 제시하지 않는다.
+- 특정 법령번호나 질문을 지정한 예외 분기는 추가하지 않았다. 관련성·충분성 판단은 LLM이 원문으로 수행한다.
+
+검증 및 한계
+- 동결 후보106계약 및 동일 작업 코드106계약 통과. 합성 API 연결 연속 탐색·실패 후 구조검색·원문 전달·중복 요청 포함.
+- 실제 로컬92조2항1호→97조 관계 데이터의22블록 확보 상태를 확인했다. 원문/관계 데이터는 변경하지 않았다.
+- 동일 질문 실제 재실행은 첫 요청에서 외부 Parasail429로 중단됐다.97→163 도달 및 최종 답변 성공은 미검증이다.
+- 이전 실험의 최종 판단 반복 출력/길이 한도, 불필요한 조사 확대, 수치 오류와 부분 결론 누락은 해결됐다고 보지 않는다.
+- 사용자 명시 지시에 따른 USER_DIRECTED_CUTOVER이며 quality_certified=false다. 실패한 실험을 성공으로 변경하지 않았다.
+- 이번 MAIN 전환·포장에서는 모델을 추가 호출하지 않았다. 최종 ZIP 설치 검사는 별도 봉인 기록에 있다.
+- GENOS 내부 모델·현장 배포·실제 데이터 결속·질의 성공은 아직 미확인이다.
+
+기존 코드: MAIN101 ANSWER, MAIN99 패치/전체본 또는 확인된 R2+DEV_SEARCH_SELECTION 및 NATURAL_LANGUAGE_ROUTING R1.
+알 수 없는 사용자 변경은 check에서 거부하며 자동 덮어쓰지 않는다.
+.env·GENOS_SERVING_PATHS.json·검색 선택JSON·원문·색인·기존 데이터 설정을 유지한다.
+Oracle 전환이나 데이터 생성/전체 다운로드/복원 패키지가 아니다.
+
+실제 업로드한 TRANSFER 폴더를 현재 위치로 두고 다음 블록을 실행한다. 절대경로를 추정하지 않는다.
+압축 해제부터 로그와 종료코드를 남긴다.
+
+mkdir -p ./main102-links-r1-logs
+python3 -m zipfile -e ./GENOS_MAIN102_LINKS_20261022_R1.zip ./GENOS_MAIN102_LINKS_20261022_R1 > ./main102-links-r1-logs/extract.log 2>&1
+TASK_EXTRACT_RC=$?
+printf '%s\n' "$TASK_EXTRACT_RC" > ./main102-links-r1-logs/extract.exit
+if [ "$TASK_EXTRACT_RC" -ne 0 ]; then cat ./main102-links-r1-logs/extract.log; else
+  bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt check
+fi
+
+check 성공 후 같은 TRANSFER 위치에서:
+bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt apply
+bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt gate
+
+기본 적용 대상은 기존 ~/DEV Git checkout이며 실제 경로를 ROOT_BINDING.json에 고정한다.
+다른 checkout은 --root /실제/DEV/경로를 명시한다. 백업과 INSTALL_STATE.json을 보존한다.
+같은 apply 재실행은 이미 적용된 파일을 확인하고 남은 작업을 이어간다. 실행TXT는 지속 로그와 종료코드를 남긴다.
+
+워크플로우 Python 단계는 별도로 백업 후 GENOS_WORKFLOW_PYTHON.txt를 반영한다.
+MAIN101과 동일한 workflow1.20.8 바이트다. 이미 동일하다면 바꿀 필요 없고 적용 상태만 확인한다.
+DEV의 COMMIT_PATHS.txt 대상 변경을 검토하고 git diff --check 후 해당 파일만 커밋한다. 다른 staged 작업을 섞지 않는다.
+그 다음 같은 TRANSFER 위치에서 커밋된 실제 checkout 검사:
+bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt gate-code
+통과한 커밋을 push하고 동일 커밋의 코드서빙 리비전을 배포한다. 코드가 바뀌면 다시 커밋하고 검사한다.
+기존 SQLite generation 환경에서만 별도 데이터 검사:
+bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt gate-sqlite
+실제 generation 절대경로·manifest SHA를 기록한다. 데이터 생성이나 전체 로컬 복원 명령이 아니다.
+Oracle 조회 환경에서는 실제 조회API의 데이터 버전·권한·원문을 확인한다.
+
+최종 확인은 워크플로우 테스트 화면에서 한다. 코드서빙 직접 테스트UI/API를 요구하지 않는다.
+질문: 양도차익을 산정할 때 양도가액에서 공제되는 경비는 무엇인가?
+확보한 원문·연결 선택·구조 검색 이력·이미 읽음 표시·최종 답변과 미확인을 확인한다.
+어느 조항을 읽었는지 및 다음 판단에 그 원문이 전달됐는지 요청 보고서로 확인한다.
+요청ID·모델ID·커밋·리비전·데이터 버전을 함께 기록한다. 적용/push/리비전/편집기/질의는 별도 상태다.
+
+복원은 TRANSFER에서:
+bash ./GENOS_MAIN102_LINKS_20261022_R1/GENOS_MAIN102_LINKS_20261022_R1_RUN.txt rollback
+새 사용자 수정이 있으면 복원을 거부해 보존한다. Git/이전 리비전/편집기 백업 복원은 별도로 수행한다.

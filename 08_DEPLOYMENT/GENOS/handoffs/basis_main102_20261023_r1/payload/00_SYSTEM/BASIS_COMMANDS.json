@@ -1,0 +1,20 @@
+{
+  "schema_version": "basis-commands-v1",
+  "entrypoint": "06_TOOLS/pipeline.py basis-work",
+  "transfer_contract": "basis-batch-transfer-v1",
+  "read_policy": "historical-plan-current-verified-consumer",
+  "resume_policy": "exact-original-code-model-data-budget",
+  "files": {
+    "06_TOOLS/COMMANDS/basis_work.py": "1255ba59070fe49561b0da23c09b3642c6bb40a3178ba782ae1b3f8bcd8dc998",
+    "06_TOOLS/COMMANDS/basis_quick.py": "5fd9746a1268422a24d362b9bddf7d1354b8f5b61a44e361572d28b5496a996b",
+    "06_TOOLS/COMMANDS/basis_preflight.py": "1f56b27238d3593a0f72128edc1e490136c9b00dc95094a3d769b6f5d0bbc8eb",
+    "02_BACKEND/lawrag/pipeline/basis_batch_artifacts.py": "790a72ae5185f43a9002c31f7d3df98f07f99e36047c61d89f75b4cf9f84bdf8",
+    "02_BACKEND/lawrag/pipeline/basis_batch_report.py": "be260f951c4792cff74539d42e9ccd67bb48f2e992636f6f3c3a8131aa8ef99c",
+    "02_BACKEND/lawrag/pipeline/basis_batch_candidates.py": "31f8eaa2c80578e813bb46054708c3832b9dce125522b98a58f67dff4a355553",
+    "02_BACKEND/lawrag/pipeline/risk_basis_staging.py": "874a32ece76c1e00962e6e83bbeda166fcb38d0bd0c0c72c2483658589ac42f6",
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed.py": "d87a344aa03a3bd92e6c00a879c4cdbb5eae78d3ca1cd8fb71e8bdc87efe86aa",
+    "02_BACKEND/lawrag/pipeline/risk_basis_seed_cli.py": "b4b57b246800d032fbeed971d5a9e4f3dc83c025291e4d6c4fe49b065d84ed51",
+    "06_TOOLS/COMMANDS/basis_source.py": "37215feaf162f8524c677b14b5946391b452edd69fa3a455046df2c3bf92a7e9",
+    "06_TOOLS/COMMANDS/basis_local.py": "bd8746f8ebc3dfcdcc02f11950c08286ab6b642e36abbdf484f07f9c1c28af19"
+  }
+}
