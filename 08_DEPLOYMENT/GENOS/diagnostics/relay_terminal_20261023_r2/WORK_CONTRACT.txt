@@ -1,0 +1,30 @@
+2026-10-23 R2: 사용자가 제공한 담당자 요청 예시 대조 및 터미널/파일 실시간 로그 보완.
+환경: 기존 RAG와 별개의 GENOS 구조화/수집용 코드서빙 작업 공간의 터미널. 이 세션에서 현장 연결 불가.
+R1 실제 사진: TCP_OK0.001초, 별도 HTTPS연결 TCP_TLS_CONNECT에서 TimeoutError8.008초.
+R1 HTTPS가 두 단계를 합친 탓에 실패 원인을 TLS로 확정할 수 없었다. HTTP/법제처 수신 성공은 미확인.
+사진3: /law/making GET, target_url=https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml,
+OC/lsClsCd=BA0103/closing=Y/asndOfiNm=금융위원회/admRulNm=지주를 GET 쿼리로 전송.
+사진 제목 '현행법령(시행일)'과 실제 행정예고 URL은 구분한다. 인증값은 사진에서 복제하지 않는다.
+사진2: www.lawmaking.go.kr과 법령/행정규칙 경로 목록. 사진3의 opinion 호스트를 샘플 기본값으로 선택.
+사진1: IP 또는 등록 hosts 도메인 사용 가능; 운영 IP 조회는 별도 POST /oap/common/query/ip.
+본 R2는 확인된 개발계 대상. 운영 IP 조회/운영 전환/hosts 변경을 자동 수행하지 않는다.
+입력/출력: --request notice(기본)/law/tls -> result.json, events.jsonl, terminal.log, response.body.gz.
+notice는 사진3의 의미상 같은 GET 쿼리/헤더 계약. 원래 curl --location과 달리 리다이렉트 미추적.
+curl 바이너리의 재현은 아니며 Python표준라이브러리 HTTP/1.1 요청. 헤더 순서/UA/Accept는 차이.
+네트워크는 직접 연결이며 환경 프록시를 자동 사용하지 않음. CA검증 사용, 첫 DNS주소 하나, 연결1회, GET최대1회.
+HEAD 사전검사 없음. 같은 소켓의 DNS/TCP/TLS/HTTP_SEND/HTTP_WAIT/HTTP_HEADERS/HTTP_BODY/XML_VALIDATE를 분리.
+state tcp_connected/tls_established/http_request_sent/http_response_received와 실패 phase를 남김.
+HTTP_SEND 진입 시 http_request_sent=null(전송완료불명), send완료 시 true, 미진입은 false로 구분.
+모든 event는 동기 flush/fsync 후 터미널에도 즉시 print(flush=True). 본문 preview는 자격값 제거 후 최대800자.
+재시도 담당 Run 한 곳. 동일 run-id는 실패/중단도 재사용; IN_FLIGHT는 미완료/불명, 자동 재요청 없음.
+입력직전 자격 검증, 호출전 상태/사용량/기한 보존. 최초15분, 통신총120초, TCP8/TLS15/HTTP읽기20초 기본.
+타임아웃별 최대120초 안에서 명시 변경 가능하며 binding에 결속. 총120초 제한은 항상 유지.
+최대12MiB+크기검사1바이트. 강제중단/SIGINT/동시파일잠금/코드·주소·CA·조회조건 binding 검사.
+기존 XML검증 함수5개 동일 재사용. 법령BODY_OK만 ID/명칭/조문 확인. 예고XML은 상세응답 명세 미제공.
+notice HTTP200+XML은 NOTICE_XML_REVIEW_REQUIRED, exit3. 전사 목록의 성공 응답/0건/권한오류 계약까지 확정하지 않는다.
+exit0: tls모드 TLS검증 또는 law모드 BODY_OK. HTTP401/403/429/redirect/HTML200/잘린응답/기타실패 exit2, 사용자중단130.
+HTTP상태/원인보존. partial body는 실패와 분리 보관. 저장실패를 성공으로 바꾸지 않음.
+R1/이전메일/사진의 기존실패는 보존한다. MAIN/DB/NFS/제품파이프라인·서빙리비전 변경 없음.
+검증: 최종TXT의 실제로컬TLS수신자에서 URL/헤더/쿼리/1회GET/무HEAD를 확인.
+무응답TCP서버로 TLS_TIMEOUT을, TLS수신서버 지연으로 HTTP_WAIT_TIMEOUT을 각각 재현.
+성공·실패·부분응답·중단·중복·기한·보안·로그파일과터미널 소비자 일치를 확인. 실모델/효과평가 아님.

@@ -1,0 +1,19 @@
+{
+  "parent_script": "08_DEPLOYMENT/GENOS/diagnostics/relay_terminal_20261023_r2/GENOS_RELAY_CHECK_20261023_R2.txt",
+  "parent_sha256": "3e5c0c69cf9f8c6d58017a8cb690ee597703439f707454d53d1f8e5456b43491",
+  "script": "GENOS_RELAY_CHECK_20261023_R3.txt",
+  "script_sha256": "a411565068462198dd01ba5e1f8f4610d7ea5a1c56d32c089efcaefd2f8aa80d",
+  "changes": [
+    "explicitly requested local credential defaults",
+    "R3 version and separate result directory"
+  ],
+  "credential_sources": {
+    "LAW_OC": ".env",
+    "MAKING_OC": "2026-10-15 stored photo sample",
+    "RELAY_COOKIE": "2026-10-15 stored photo sample"
+  },
+  "credential_validity_verified": false,
+  "genos_network_called": false,
+  "main_changed": false,
+  "failure_contract": "R2 phases/status/budget/no retries/redaction preserved; explicit env overrides defaults; existing run IDs do not resend."
+}

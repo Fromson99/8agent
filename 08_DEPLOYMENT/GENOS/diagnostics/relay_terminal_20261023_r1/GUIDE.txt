@@ -1,0 +1,61 @@
+GENOS 터미널 API 중계서버 확인 / 2026-10-23 R1
+
+필요한 파일은 GENOS_RELAY_CHECK_20261023_R1.txt 하나입니다.
+Python 코드입니다. bash로 실행하지 않습니다. 별도 패키지 설치는 필요 없습니다.
+GENOS의 Python 3.9 이상 Linux 터미널에서 사용합니다.
+
+1. 파일을 실제 TRANSFER에 업로드하고 그 폴더를 현재 작업 위치로 둡니다.
+   DEV로 이동하거나 제품 코드를 덮어쓸 필요 없습니다.
+   python3 ./GENOS_RELAY_CHECK_20261023_R1.txt
+
+   TCP와 HTTPS HEAD를 각각 한 번 확인합니다. 인증값/법제처 요청은 없습니다.
+   TCP_OK 다음 HTTP_RESPONSE_RECEIVED면 해당 터미널의 중계 HTTP 응답 수신 확인입니다.
+   HEAD의 401/403/404/405도 응답 수신이며, 법제처 인증/본문 성공은 아닙니다.
+
+2. 법령 XML 본문까지 확인하려면 같은 위치에서 실행합니다.
+   python3 ./GENOS_RELAY_CHECK_20261023_R1.txt --body
+
+   1번 성공 기록은 재사용하고 GET 1회만 추가합니다.
+   법제처 국가법령정보센터 등록 OC를 비표시 입력합니다.
+   중계 Cookie는 필요할 때만 현재 허가된 값을 입력하고, 필요 없으면 Enter를 누릅니다.
+   입법센터 OC를 국가법령정보센터 OC와 같은 인증값으로 가정하지 않습니다.
+   LAW_OC가 이미 환경변수에 있으면 비대화 실행하며 RELAY_COOKIE는 설정된 경우만 사용합니다.
+   인증값을 명령행 인자나 이 대화에 적지 않습니다.
+   BODY_OK가 나와야 요청 법령 ID·이름·조문을 포함한 XML 수신 성공입니다.
+   기본 대상: 자본시장과 금융투자업에 관한 법률, 법령ID010513, target=law.
+   시행일 기준 eflaw·행정규칙·별표·전체 수집 성공까지 의미하지 않습니다.
+
+3. 기록과 다시 확인
+   ./GENOS_RELAY_RESULTS/relay-check-01/result.json       단계 결과/실행환경/해시
+   ./GENOS_RELAY_RESULTS/relay-check-01/events.jsonl      지속 실행 로그
+   ./GENOS_RELAY_RESULTS/relay-check-01/law_response.xml.gz  본문 수신 시 자격값 제거 응답
+   같은 명령은 기존 성공·실패 결과를 보여주며 이미 시도한 단계는 재호출하지 않습니다.
+   의도적으로 새로 확인하거나 15분이 지났으면 이전 결과를 보존하고:
+   python3 ./GENOS_RELAY_CHECK_20261023_R1.txt --body --run-id relay-check-02
+   새로운 run-id는 TCP/HEAD/GET의 새 시도이며 자동 재시도는 아닙니다.
+   IN_FLIGHT/INTERRUPTED는 완료 불명/중단입니다. 성공으로 처리하지 않습니다.
+
+4. 주소/인증서
+   기본 중계는 사용자 사진의 개발계 https://45.101.64.86:8443 입니다.
+   담당자가 다른 주소를 지정했다면 --relay https://실제승인주소:포트 를 추가합니다.
+   사내 CA가 필요하면 --ca /실제/CA파일.pem 을 추가하고 새 --run-id를 사용합니다.
+   TLS_ERROR는 인증서/신뢰CA/이름/프로토콜 원인을 확인합니다. 검증을 끄지 않습니다.
+   등록 원본이 HTTPS라고 확인된 경우만 --law-origin https://www.law.go.kr 을 사용합니다.
+   이 스크립트는 목적지로 직접 연결합니다. HTTP_PROXY/HTTPS_PROXY는 자동 사용하지 않습니다.
+
+5. 판독
+   tcp TIMEOUT: 연결 시간초과. 방화벽/경로/리스너/반환경로 중 원인 확정은 아님.
+   https TLS_ERROR: TCP 이후 TLS 협상/인증서 실패.
+   https HTTP_RESPONSE_RECEIVED: 중계 또는 해당 통신 경로의 HTTP 응답 수신.
+   law HTTP_401/403: 응답 수신. 인증/접근정책/업스트림 원인은 담당 로그로 구분.
+   law HTTP_429: 호출 제한 응답. 자동 재시도 없음.
+   law HTTP_3xx: 리다이렉트 응답. 다음 주소로 자동 이동하지 않음.
+   law RESPONSE_REJECTED: HTML/오류 XML/잘린 XML/다른 법령/크기 초과 등. reason 확인.
+   law BODY_OK: 해당 법령의 XML 본문 ID/이름/조문 확인 성공.
+   LOCAL_OR_CONFIG_ERROR: 로컬 설정/파일/입력 문제. 종료2, 성공 아님.
+   종료0도 --body 없이 실행했다면 네트워크 확인 범위에 한정됩니다.
+
+GENOS 코드스페이스 터미널과 배포된 코드서빙 컨테이너는 네트워크 경로가 다를 수 있습니다.
+결과는 실행한 터미널의 hostname/Python과 함께 기록됩니다.
+최종 코드서빙 수집 연결 확인은 기능 통합 후 기존 워크플로우 테스트 경로로 별도 수행합니다.
+이번 스크립트는 코드 배포·Oracle 쓰기·MAIN/NFS 변경을 하지 않습니다.

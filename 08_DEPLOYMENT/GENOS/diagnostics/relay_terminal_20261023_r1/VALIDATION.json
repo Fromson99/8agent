@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "checks": 12,
+  "tested_entrypoint": "GENOS_RELAY_CHECK_20261023_R1.txt",
+  "test_transport": "actual localhost TLS server; production TXT subprocess",
+  "covered": [
+    "TCP refusal",
+    "HEAD then GET contract",
+    "law XML identity and content",
+    "401/403/429/redirect",
+    "HTML and truncated XML rejection",
+    "DTD/entity rejection",
+    "credential redaction",
+    "cached success and failure",
+    "code/config binding",
+    "budget expiration",
+    "IN_FLIGHT preservation",
+    "concurrency and SIGINT",
+    "TLS trust failure",
+    "hard deadline and response size"
+  ],
+  "field_genos_connection_performed": false,
+  "relay_firewall_status": "user reports opened; not independently verified",
+  "model_calls": 0,
+  "main_changed": false,
+  "serving_changed": false,
+  "artifacts": {
+    "GENOS_RELAY_CHECK_20261023_R1.txt": "cdb4aa3bd4e25204aca7feac3a79f46d070313d2fc6c500a2e144e9755220d44",
+    "GUIDE.txt": "84aa117e8f04efe91690670fcb110f3baf478cbb00df98c53f615fb23250a6cc",
+    "WORK_CONTRACT.txt": "6c0e693f06f726378d7cb659f02bc1e6b49932649a2c5ad82c90134cdb7155e8",
+    "SOURCE_BINDING.json": "a112235a6f928afe7cd4f4ed8ddc089c30c00755fa5ebb6e01b16609626d25bd",
+    "TEST_RESULTS.txt": "2c2231c962a934a7f2269461cf9424b0770ad100e20c7e5159d14dc1bb2de214"
+  }
+}

@@ -1,0 +1,85 @@
+GENOS 중계 요청 확인 R2 — 사진의 GET 요청 + 실시간 터미널/파일 로그
+
+기존 RAG와 별개인 구조화·수집용 코드서빙 작업 공간에서 실행하세요.
+TRANSFER라는 이름의 폴더가 꼭 있어야 하는 것은 아닙니다.
+첨부를 실제로 올린 폴더에서 실행하면 됩니다. service.py/DEV에 설치하거나 배포하는 파일이 아닙니다.
+R1과 기존 실패 결과는 그대로 두고 새 R2 파일을 사용합니다.
+
+ZIP을 받은 경우 실제 업로드한 폴더에서:
+   python3 -m zipfile -e ./GENOS_RELAY_CHECK_20261023_R2.zip ./GENOS_RELAY_CHECK_20261023_R2
+   python3 -u ./GENOS_RELAY_CHECK_20261023_R2/GENOS_RELAY_CHECK_20261023_R2.txt
+아래 실행 예시는 TXT를 현재 폴더에 별도로 올렸을 때의 명령입니다. 두 형식의 코드 바이트는 같습니다.
+
+1. 사진의 행정예고 요청 (기본)
+   python3 -u ./GENOS_RELAY_CHECK_20261023_R2.txt
+
+   국민참여입법센터에 현재 등록된 OC를 비표시 입력합니다.
+   중계 Cookie는 필요하면 현재 허가된 값을 입력하고, 필요 없으면 Enter입니다.
+   사진 속 다른 사람의 OC/세션값을 스크립트에 넣지 않았습니다.
+   MAKING_OC/RELAY_COOKIE가 기존 환경변수로 설정돼 있으면 그 값을 사용합니다.
+   LAW_OC를 입법센터 OC로 자동 재사용하지 않습니다.
+
+   목적지: https://45.101.64.86:8443/law/making
+   메서드: GET (JSON POST가 아님)
+   헤더: target_url: https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml
+   쿼리: OC + lsClsCd=BA0103 + closing=Y + asndOfiNm=금융위원회 + admRulNm=지주
+   사진 제목은 현행법령이지만 이 URL은 행정예고입니다.
+
+2. 자본시장법 XML 본문 확인 (별도 1요청)
+   python3 -u ./GENOS_RELAY_CHECK_20261023_R2.txt --request law
+   이 경우 국가법령정보센터에 등록한 OC를 입력합니다. LAW_OC 환경변수 사용 가능.
+   /law/DRF + target_url=http://www.law.go.kr/DRF/lawService.do?target=law
+   쿼리 OC/ID=010513/type=XML. BODY_OK는 ID·이름·조문 확인 완료입니다.
+
+3. 인증 입력 없이 TCP/TLS만 확인하고 싶을 때
+   python3 -u ./GENOS_RELAY_CHECK_20261023_R2.txt --request tls
+   이 모드는 HTTP를 보내지 않고 같은 연결의 TCP와 TLS를 확인합니다.
+
+4. 터미널에 즉시 나오는 단계
+   DNS_START → DNS_OK → TCP_START → TCP_OK → TLS_START → TLS_OK
+   → HTTP_SEND → HTTP_WAIT → HTTP_HEADERS → HTTP_BODY → XML_VALIDATE → RESULT
+   TCP_OK 뒤 TLS_START에서 TIMEOUT이면 같은 연결의 TLS 협상 대기 시간초과입니다.
+   TLS_OK 뒤 HTTP_WAIT에서 TIMEOUT이면 HTTP 요청 전송 후 응답 헤더 대기 시간초과입니다.
+   R1처럼 별도 TCP 검사 성공과 다음 HTTPS 연결의 실패를 혼동하지 않도록 나눴습니다.
+   http_request_sent가 null이면 전송 도중 중단되어 완료 여부가 불명인 상태입니다.
+   인증/HTTP가 실패하더라도 오류 종류·phase와 수신한 본문 앞부분을 표시합니다.
+   OC/Cookie 및 쿠키의 개별 값은 터미널·로그·저장응답에서 제거합니다.
+
+5. 결과 파일
+   기본 notice: ./GENOS_RELAY_RESULTS_R2/notice-01/
+   law: ./GENOS_RELAY_RESULTS_R2/law-01/
+   tls: ./GENOS_RELAY_RESULTS_R2/tls-01/
+   result.json: 실행환경·단계·시간·결과
+   terminal.log: 터미널에 표시한 이벤트의 텍스트 사본
+   events.jsonl: 같은 이벤트의 구조화 로그
+   response.body.gz: 실제 받은 본문에서 자격값을 제거한 압축 응답 (받았을 때만 생성)
+
+   같은 명령은 기존 결과를 보여주고 요청을 반복하지 않습니다.
+   새 시도가 필요하면 기록을 지우지 않고 --run-id notice-02 / law-02 등을 추가합니다.
+   최초15분 안에 시작, 통신전체120초, 기본TCP8초/TLS15초/HTTP읽기20초, 재시도0입니다.
+   중단/실패도 보존합니다. IN_FLIGHT는 강제종료 등으로 완료 여부가 불명인 상태입니다.
+
+6. 성공 범위
+   TCP_OK: 이 터미널에서 목적지 포트 연결.
+   TLS_OK: 같은 연결에서 TLS 협상과 인증서 검증 완료.
+   HTTP_HEADERS: 실제 GET에 대한 HTTP 응답 수신. 상태코드도 확인.
+   NOTICE_XML_REVIEW_REQUIRED (종료3): HTTP200/XML 수신; 예고 내용·0건·업무오류 여부는 응답과 담당명세 확인 필요.
+   BODY_OK (종료0): 요청한 법령의 XML ID·이름·조문 확인.
+   HTTP401/403/429/3xx/응답거부/시간초과 등은 종료2. 사용자중단은130.
+   R1 현장 사진에서는 TCP만 확인됐으며 TLS·HTTP·법제처 수신은 아직 미확인이었습니다.
+
+7. 사진과 차이/환경
+   HTTP 메서드·중계 경로·target_url·조회 조건은 사진 샘플을 따릅니다.
+   Python 표준 라이브러리 요청이며 curl 실행 자체를 재현한 것은 아닙니다.
+   사진 curl --location과 달리 리다이렉트를 따라가지 않고 최초3xx를 기록합니다.
+   직접 연결로 환경 HTTP 프록시를 자동 사용하지 않습니다. TLS검증은 끄지 않습니다.
+   사진2의 www.lawmaking.go.kr과 사진3의 opinion.lawmaking.go.kr은 다릅니다.
+   기본은 사진3을 따르며 담당자가 등록호스트를 달리 확인하면 --notice-origin으로 명시합니다.
+   담당자가 지정한 실제 중계주소/도메인은 --relay https://주소:포트 로 지정하세요.
+   IP 대신 승인된 hosts 도메인을 쓰는 경우 이름과 인증서/SNI가 바뀌며 새 run-id가 필요합니다.
+   임의 호스트명을 추정하거나 hosts파일/운영IP를 자동 변경하지 않습니다.
+   사내 CA가 필요하면 --ca /실제/CA.pem 을 추가합니다.
+   운영IP 조회 POST는 별도 명세이므로 이 진단에서 자동 호출하지 않습니다.
+
+이번 R2는 로컬 합성 통신 검증 결과와 GENOS 현장 실행을 구분합니다.
+실제 GENOS 코드서빙 수집통합/DB적재/배포 변경은 하지 않았습니다.

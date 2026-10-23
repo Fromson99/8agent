@@ -1,0 +1,19 @@
+{
+  "script": "GENOS_RELAY_CHECK_20261023_R2.txt",
+  "script_sha256": "3e5c0c69cf9f8c6d58017a8cb690ee597703439f707454d53d1f8e5456b43491",
+  "validation_source": "08_DEPLOYMENT/DATAIKU/law_api_20261015_r1/relay_check.py",
+  "validation_source_sha256": "b5f1718aa4d2a92e7525fd7809be3918990744109ebc392466c9598a59afd16e",
+  "reused_functions": [
+    "clean_xml",
+    "first",
+    "inspect_xml",
+    "masked",
+    "normalized"
+  ],
+  "helpers_sha256": "9b47eb7a9384ead27432eeb440d38ff0b3ad15b9e4bce09a1c32cb1dfb77043a",
+  "runtime_dependencies": "Python 3.9+ standard library; Linux; system CA or explicit PEM",
+  "field_connection": "not performed",
+  "model_calls": 0,
+  "main_changed": false,
+  "serving_changed": false
+}

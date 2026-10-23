@@ -1,0 +1,59 @@
+{
+  "source": "user-provided two field photographs; original result.json and onsite script hash not supplied",
+  "photos": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a166ec-4631-7142-a60d-bf4e18d5e1fb/F4C288B6-368E-4044-AEF9-5B1EB2CE501E/1-사진-1.jpg",
+      "sha256": "b91cb65ee908da7f9c087b43a463afd8b31ca169cfb6cb6da3c622750f8b8d49"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a166ec-4631-7142-a60d-bf4e18d5e1fb/F4C288B6-368E-4044-AEF9-5B1EB2CE501E/2-사진-2.jpg",
+      "sha256": "055cc9fe68fd914db34681e3a6a52fbf1adc67e4f686f1765a3ba31ef322cebb"
+    }
+  ],
+  "observed_entrypoint": "python3 -u ./GENOS_RELAY_CHECK_20261023_R3/GENOS_RELAY_CHECK_20261023_R3.txt",
+  "onsite_script_sha256_verified": false,
+  "r3_observation": {
+    "tcp_connected": true,
+    "tls_established": false,
+    "http_request_sent": false,
+    "http_response_received": false,
+    "physical_connections": 1,
+    "automatic_retries": 0,
+    "local": [
+      "10.244.51.236",
+      53406
+    ],
+    "peer": [
+      "45.101.64.86",
+      8443
+    ],
+    "failure_phase": "TLS_START",
+    "error_class": "ConnectionResetError",
+    "errno": 104,
+    "reason": "[Errno 104] Connection reset by peer",
+    "elapsed_seconds": 10.014,
+    "http_body_received_bytes": 0,
+    "sni_name": null,
+    "network_started_utc": "2026-10-23T04:56:21Z",
+    "network_started_kst": "2026-10-23T13:56:21+09:00"
+  },
+  "r2_observation": "Terminal photograph also shows TCP_OK then TLS_START ConnectionResetError after about 10 seconds.",
+  "log_consumer_observation": "Terminal displays phase and error events, output paths; photograph 1 displays saved result fields.",
+  "interpretation": "TCP connected; TLS handshake did not complete; HTTP GET and OC/Cookie were not transmitted. Reset origin cannot be located from client log alone.",
+  "http_body_note": "received_bytes counts HTTP response body, not network packets or TLS handshake bytes.",
+  "next_checks": [
+    "Relay/LB/network logs at 2026-10-23 13:56:21-13:56:31 KST; locate reset issuer.",
+    "Confirm approved relay TLS hostname/SNI requirement versus direct-IP sample.",
+    "Confirm source egress/NAT identity and required proxy path; local socket address is not proof of server-observed source."
+  ],
+  "not_performed": [
+    "GENOS access from local session",
+    "onsite retry",
+    "code change",
+    "new package",
+    "email send",
+    "serving deployment"
+  ],
+  "credential_validity": "not tested; failure preceded HTTP",
+  "serving_container_connectivity": "not verified; evidence concerns user terminal process"
+}

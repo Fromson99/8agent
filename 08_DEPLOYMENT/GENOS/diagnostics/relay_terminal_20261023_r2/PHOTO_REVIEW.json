@@ -1,0 +1,46 @@
+{
+  "evidence": "User-provided screenshots; transcription, not machine-readable API specification or raw field log",
+  "photos": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a166ec-4631-7142-a60d-bf4e18d5e1fb/4910FAC6-D416-4E5C-8A5D-2F2C0DB8447D/1-사진-1.jpg",
+      "sha256": "42d5bfda9309a71dc81fbee6ed5f9be75b1d42c827fc21990b40da2975ddbc35"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a166ec-4631-7142-a60d-bf4e18d5e1fb/4910FAC6-D416-4E5C-8A5D-2F2C0DB8447D/2-사진-2.jpg",
+      "sha256": "2b3c19d968691fb5dbb98be042b8881291927d2e97e21ed115bed4ccc8a22146"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a166ec-4631-7142-a60d-bf4e18d5e1fb/4910FAC6-D416-4E5C-8A5D-2F2C0DB8447D/3-사진-3.jpg",
+      "sha256": "2cece990efa6407935a829d169d0c9f24936bb4e19355bdda46ef1975ed53620"
+    }
+  ],
+  "prior_r1_field_observation": {
+    "tcp": "TCP_OK",
+    "tcp_seconds": 0.001,
+    "https": "TIMEOUT",
+    "phase": "TCP_TLS_CONNECT",
+    "error_class": "TimeoutError",
+    "seconds": 8.008,
+    "http_success_confirmed": false
+  },
+  "sample_request": {
+    "method": "GET",
+    "relay": "https://45.101.64.86:8443/law/making",
+    "target_url": "https://opinion.lawmaking.go.kr/rest/ptcpAdmPp.xml",
+    "params": {
+      "OC": "not transcribed; current authorized value required",
+      "lsClsCd": "BA0103",
+      "closing": "Y",
+      "asndOfiNm": "금융위원회",
+      "admRulNm": "지주"
+    },
+    "cookie": "present in screenshot; value not copied",
+    "response_body": "not provided"
+  },
+  "interpretation": [
+    "The example title says current-law list, but the URL is administrative notice.",
+    "The URL catalog uses www.lawmaking.go.kr while the concrete curl sample uses opinion.lawmaking.go.kr.",
+    "Development relay API described as GET with target_url header. Separate operating IP-discovery API uses JSON POST.",
+    "A developer saying the sample works is not a measured success in this GENOS terminal."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "checks": 14,
+  "entrypoint": "GENOS_RELAY_CHECK_20261023_R2.txt",
+  "script_sha256": "3e5c0c69cf9f8c6d58017a8cb690ee597703439f707454d53d1f8e5456b43491",
+  "actual_local_tls_transport": true,
+  "photo_request_contract": "single GET /law/making; exact public query and target_url; current input credentials",
+  "field_network_performed": false,
+  "live_terminal_and_file_before_completion": "PASS",
+  "tls_timeout_vs_http_wait_timeout": "PASS",
+  "uncertain_http_write_preserved": "PASS",
+  "credential_redaction": "PASS",
+  "retries": 0,
+  "model_calls": 0,
+  "main_changed": false,
+  "serving_changed": false,
+  "prior_test_runs": [
+    "TEST_RUN_1.txt",
+    "TEST_RUN_2.txt"
+  ],
+  "artifacts": {
+    "GENOS_RELAY_CHECK_20261023_R2.txt": "3e5c0c69cf9f8c6d58017a8cb690ee597703439f707454d53d1f8e5456b43491",
+    "GUIDE.txt": "efcd4cb580f1a3058afd2fcf83402e6325d1950ccf3aca6148e4a43454cb2d0c",
+    "WORK_CONTRACT.txt": "d65c4fa70cf9fdcc35e10876386219da0df0c53a769d79a86f1b66c1f678e8c7",
+    "SOURCE_BINDING.json": "cc7341d429cfe078627b401d86c190e7c24ea54d954ac3675afaae93fe124679",
+    "TEST_RESULTS.txt": "8b75d8db704f1e404513fce7ff4c9e645f1deb8d98b48269bfd7188280fcf8d0",
+    "PHOTO_REVIEW.json": "cf342dc11e583b7e8f379c43d369bc33f70b19cdf651b00dbc5136eead7cb08c"
+  }
+}
