@@ -1,0 +1,231 @@
+{
+  "api_flow": {
+    "width": 507,
+    "height": 516,
+    "node_height": 62,
+    "gap": 31,
+    "columns": [
+      {
+        "title": "법령 37종 · target=eflaw",
+        "nodes": [
+          [
+            "① 목록 API 요청",
+            "GET lawSearch.do",
+            "query=정식명 · nw=2,3",
+            "display=100 · page=1부터 끝까지"
+          ],
+          [
+            "② 응답에서 대상 판본 선택",
+            "법령일련번호 + 해당 시행일",
+            "문서명·법령ID 대조",
+            "현행 / 시행예정 구분"
+          ],
+          [
+            "③ 본문 API 요청",
+            "GET lawService.do",
+            "target=eflaw",
+            "MST + efYd로 판본 지정"
+          ],
+          [
+            "④ XML 본문과 첨부 링크 수신",
+            "조문·부칙·별표 정보 확인",
+            "별표·서식의 실제 파일 링크 추출"
+          ],
+          [
+            "⑤ 첨부 파일 개별 다운로드",
+            "응답 링크·파라미터 그대로 사용",
+            "XML 원본 + 파일 원본 보존"
+          ]
+        ],
+        "edges": [
+          "목록 XML 응답",
+          "MST ← 일련번호  /  efYd ← 시행일",
+          "본문 XML 응답",
+          "flSeq 등 ← 실제 링크값"
+        ]
+      },
+      {
+        "title": "행정규칙 12종 · target=admrul",
+        "nodes": [
+          [
+            "① 목록 API 요청",
+            "GET lawSearch.do",
+            "query=정식명 · nw=1",
+            "display=100 · page=1부터 끝까지"
+          ],
+          [
+            "② 응답에서 대상 판본 선택",
+            "행정규칙일련번호 확보",
+            "정식 규칙명·소관기관 대조",
+            "응답의 실제 판본 확인"
+          ],
+          [
+            "③ 본문 API 요청",
+            "GET lawService.do",
+            "target=admrul",
+            "ID에 행정규칙일련번호 지정"
+          ],
+          [
+            "④ XML 본문과 첨부 링크 수신",
+            "조문·부칙·별표 정보 확인",
+            "별표·첨부의 실제 파일 링크 추출"
+          ],
+          [
+            "⑤ 첨부 파일 개별 다운로드",
+            "응답 링크·파라미터 그대로 사용",
+            "XML 원본 + 파일 원본 보존"
+          ]
+        ],
+        "edges": [
+          "목록 XML 응답",
+          "ID ← 행정규칙일련번호",
+          "본문 XML 응답",
+          "첨부 URL·파일 식별자 ← 실제 링크"
+        ]
+      }
+    ],
+    "footer": [
+      "문서·판본 ID와 원본·첨부를 묶어 검증 → AIDP 원본 저장",
+      "필수 파일 저장·해시 검증 완료 후 구조화·Oracle 적재로 연결"
+    ]
+  },
+  "web_flow": {
+    "width": 507,
+    "height": 562,
+    "node_height": 56,
+    "gap": 28,
+    "columns": [
+      {
+        "title": "거래소 규정 9종",
+        "nodes": [
+          [
+            "① 화면·세션 준비",
+            "/out/index.do 진입",
+            "Cookie·CSRF 확보"
+          ],
+          [
+            "② 규정 트리 조회",
+            "getTreeNode.do",
+            "정식명으로 bookid 탐색"
+          ],
+          [
+            "③ 규정 상세 HTML",
+            "regulationView.do",
+            "STATEHISTORYID 확보"
+          ],
+          [
+            "④ 전문·첨부 파일 정보",
+            "전문: filecd=JUN",
+            "별표·서식 목록도 조회"
+          ],
+          [
+            "⑤ 다운로드 토큰 갱신",
+            "getData.do → 새 _csrf",
+            "실제 파일 정보와 결합"
+          ],
+          [
+            "⑥ 파일 다운로드",
+            "POST /Download.do",
+            "파일 정보 + 새 _csrf"
+          ]
+        ],
+        "edges": [
+          "Cookie·CSRF 유지",
+          "bookid 전달",
+          "bookid + statehistoryid",
+          "fileMap·첨부의 파일 정보",
+          "Serverfile·Pcfilename 등"
+        ]
+      },
+      {
+        "title": "금투협 5종",
+        "nodes": [
+          [
+            "① 규정 트리 조회",
+            "정식명과 seq 연결",
+            "seq = 규정ID"
+          ],
+          [
+            "② 현행 상세 조회",
+            "lawView.do",
+            "historySeq=0 · gubun=cur"
+          ],
+          [
+            "③ 판본 본문 HTML",
+            "lawFullScreenContent.do",
+            "실제 historySeq 사용"
+          ],
+          [
+            "④ 전문·첨부 요청 구분",
+            "전문: gubun=101",
+            "별표: gubun=102"
+          ],
+          [
+            "⑤ 다운로드 seq 선택",
+            "전문 ← historySeq",
+            "별표 ← 첨부ID"
+          ],
+          [
+            "⑥ 파일 다운로드",
+            "GET /download.do",
+            "gubun + 해당 seq"
+          ]
+        ],
+        "edges": [
+          "seq=규정ID 전달",
+          "응답의 실제 historySeq",
+          "본문·첨부 링크 확보",
+          "다운로드별 ID 구분",
+          "첨부마다 별도 요청"
+        ]
+      },
+      {
+        "title": "거래소 공개 별첨 5종",
+        "unconfirmed": true,
+        "nodes": [
+          [
+            "① 게시판 목록 확인",
+            "기업실사 게시물 탐색",
+            "현재 탐색 요청 확인 필요"
+          ],
+          [
+            "② 최신 게시물 선택",
+            "bbsId = 게시판ID",
+            "bbsSeq = 게시물ID"
+          ],
+          [
+            "③ 첨부 목록 확보",
+            "attachFileSeq 확인",
+            "파일명과 대상 5종 대조"
+          ],
+          [
+            "④ 다운로드 버튼 확인",
+            "GET/POST·필수값 확인",
+            "과거 번호 고정 금지"
+          ],
+          [
+            "⑤ 요청 파라미터 조립",
+            "게시판·게시물·첨부ID",
+            "filetype·url 등 실제 값"
+          ],
+          [
+            "⑥ 원본 파일 다운로드",
+            "file.krx.co.kr",
+            "/download.jspx"
+          ]
+        ],
+        "edges": [
+          "현재 게시물 정보",
+          "게시물의 첨부 연결",
+          "파일별 실제 버튼 요청",
+          "현행 요청 규약 사용",
+          "첨부마다 별도 요청"
+        ]
+      }
+    ],
+    "footer": [
+      "본문 HTML + 원본 파일 + 문서·판본·첨부 연결 정보를 함께 보존",
+      "ID·파일 미확보 시 미완료 표시 → 성공 파일은 유지하고 해당 단계부터 재개"
+    ]
+  }
+}

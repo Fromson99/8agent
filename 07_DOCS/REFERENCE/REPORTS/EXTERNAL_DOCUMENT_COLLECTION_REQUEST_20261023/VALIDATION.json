@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-23",
+  "review": "author self-review; no independent reviewer",
+  "counts": {
+    "law": 37,
+    "admrul": 12,
+    "krx_rules": 9,
+    "kofia": 5,
+    "krx_forms": 5,
+    "automatic": 68,
+    "manual": 10,
+    "excluded": 2,
+    "total": 80,
+    "request_profiles": 26
+  },
+  "docx": {
+    "text_units_checked": 865,
+    "tables": 25,
+    "hyperlink_instances": 11,
+    "external_link_targets": 10,
+    "zip_xml_text_links": "PASS",
+    "visual_render_checked": false,
+    "visual_note": "DOCX XML, full text, tables and links verified. No Word/LibreOffice renderer available; PDF was rendered separately from the same source."
+  },
+  "pdf": {
+    "pages": 20,
+    "text_units_checked": 844,
+    "missing_text": [],
+    "outside_page_bounds": [],
+    "rendered_from": "same Markdown source; not a DOCX print rendering",
+    "visual_review": "PASS: all 20 pages reviewed as contact sheet; cover and pages 3, 9, 11, 13, 20 inspected at readable scale; no clipping observed"
+  },
+  "xlsx": {
+    "sheets": [
+      "안내",
+      "전체목록80",
+      "요청주소26",
+      "API파라미터",
+      "배치제안",
+      "인계메타",
+      "확정항목"
+    ],
+    "inventory_rows": 80,
+    "endpoint_rows": 26,
+    "readback": "PASS"
+  },
+  "artifacts": {
+    "외규_API_크롤링_수집_구축요청서_20261023.md": {
+      "bytes": 51323,
+      "sha256": "09ba8476a4e68ee5c32765c15e270c4e436250baf7270b7c3eeb3f9b13428f5e"
+    },
+    "외규_API_크롤링_수집_구축요청서_20261023.docx": {
+      "bytes": 68755,
+      "sha256": "24e4ac58b943c07d6412b16cb4771e056a0d1e367921caf0f0b61f3ca64e0e3d"
+    },
+    "외규_API_크롤링_수집_구축요청서_20261023.pdf": {
+      "bytes": 246410,
+      "sha256": "b457472823fa3f5a986aca5e6c267aa39df7449f6e832378b3f7871a5f5fb278"
+    },
+    "외규_전체문서_API주소_파라미터_20261023.xlsx": {
+      "bytes": 26563,
+      "sha256": "12f8ac07b29618c9eaf553ad33082361a07a669e08df5b157857ddb8c6b5df6b"
+    }
+  },
+  "evidence_files": {
+    "01_DATA/CATALOG/SCOPES/photo-required-80-hwpx-20260917.json": "aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f",
+    "01_DATA/CATALOG/BUILD_EXCLUSIONS.json": "819439b4ab3fb022c454a7ae37ad4f911fd3b418f73976860fa36d2659dc664a",
+    "02_BACKEND/lawrag/sources/lawgo.py": "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d",
+    "02_BACKEND/lawrag/sources/krx.py": "2c7eaf42810d0790e4185408f6dc94d38470bca052264b48e73ff9044616e85c",
+    "02_BACKEND/lawrag/sources/kofia.py": "ed38eccd88b14e8e50c593d6c91578e7e19f13f06ba6b0a7162a09db69ce3e13",
+    "02_BACKEND/lawrag/sources/common.py": "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b",
+    "02_BACKEND/lawrag/pipeline/collect.py": "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c",
+    "02_BACKEND/lawrag/core/structure/rulehtml.py": "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70",
+    "00_SYSTEM/ARCHITECTURE.md": "91bd87528d015caa1d4b9f82df6dfb19d0d861a3bb607a758ded21b0879104e5",
+    "GENOS.md": "87cd6fd5b7ec4b0f0f59c2bcbfa3c9a1974e5c75d143151d1c0f8a71518c792f",
+    "01_DATA/PACKAGES/EXTERNAL/photo-required-public-supplement-f24dc8270c903716/gen-f24dc8270c90371698f32c83/ARTIFACTS/SOURCE_MANIFEST.json": "f24dc8270c90371698f32c835d16ea6d91202bf5f2e8fe2393b9cfa6b647346a"
+  },
+  "not_performed": [
+    "live collection with credentials",
+    "production deployment",
+    "scheduler registration",
+    "MAIN activation",
+    "vendor transmission"
+  ],
+  "checks": {
+    "80_document_ids_in_report": "PASS",
+    "no_real_OC_values_in_report": "PASS",
+    "source_reference_correction": "PASS"
+  }
+}
