@@ -1,0 +1,42 @@
+GENOS 파이프라인 새 DEV 전체 반입 묶음 — 2026-10-23 R1
+
+이번 메일의 GENOS_PIPELINE_DEV_ALL_20261023_R1.zip 하나를 새 파이프라인 코드스페이스의 DEV Git 루트에 올립니다.
+이전 메일의 코드 ZIP이나 설치 도구 ZIP을 따로 찾을 필요가 없습니다.
+설치 대상은 현재 DEV입니다. 터미널도 그 DEV에서 열고 아래 두 줄을 실행하세요.
+
+python3 -m zipfile -e ./GENOS_PIPELINE_DEV_ALL_20261023_R1.zip ./
+bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt
+
+바깥 ZIP이 코드 ZIP·설치기·가이드를 현재 폴더에 풀고, 설치기가 코드 ZIP의 바깥 폴더명을 제거해
+현재 DEV/service.py, DEV/worker.py, DEV/02_BACKEND 등을 만듭니다. 파일을 수동으로 복사할 필요가 없습니다.
+이전에 같은 이름으로 풀어 둔 인계용 파일을 편집했다면 먼저 따로 보관하세요.
+설치기가 실제 서비스 코드를 교체할 때는 아래의 백업·충돌 검사를 수행합니다.
+성공 출력은 INSTALLED 및 INSTALL_EXIT=0입니다.
+
+포함된 버전
+- GENOS 서비스: GENOS_PIPELINE_SERVICE_20261022_R2.zip (앞서 검증·발송한 코드와 동일)
+- 설치기: GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt (앞서 검증·발송한 실행기와 동일)
+- 자세한 설치·배포·재개·원복 안내: INSTALL_HERE_GUIDE.txt
+- 기존 공백 경고 대조: INSTALL_HERE_BASELINE_WHITESPACE.txt
+- 기존 설치기 검증: INSTALL_HERE_VALIDATION.json
+- 파일 해시·대상·현장 확인 상태: DEV_ALL_CODE_MANIFEST.json
+
+설치 이후에는 INSTALL_HERE_GUIDE.txt의 stage → 변경 검토 → commit → check → push 순서를 따르고,
+해당 커밋을 새 파이프라인 코드서빙 리비전으로 배포합니다. 설치 명령이 push나 배포까지 자동 수행하지 않습니다.
+원문과 용어집은 Dataiku가 요청으로 전송합니다. 이 반입 묶음에 원문·용어집·NFS 세대는 포함하지 않습니다.
+Python 의존성과 PDF/스캔 PDF의 오프라인 파서·OCR 모델은 배포 이미지에 준비해야 합니다.
+실제 현장 의존성·설치·Git 커밋·리비전·Oracle 적재는 이 메일 발송 시점에서 미확인입니다.
+
+Dataiku 쪽 연결
+이미 보낸 DATAIKU_PIPELINE_RUN_20261022_R3.txt를 Dataiku 노트북에서 계속 사용합니다.
+LEGAL_PIPELINE_URL: 새 파이프라인 코드서빙의 실제 HTTPS 호출 URL
+LEGAL_PIPELINE_TOKEN: 해당 서비스 호출 토큰 (Bearer 접두어 없이 값만)
+LEGAL_ORACLE_CONNECTION: 기존 AIDP
+준비 완료했던 WORK_DIR와 JOB_NAME을 유지하고 ACTION="run"으로 실행합니다.
+
+현재 동작과 남은 보강
+GENOS는 비동기로 구조화·색인하고, Dataiku가 POST로 상태를 조회하며 결과를 받아 Oracle 적재·검증까지 실행합니다.
+이번 묶음은 기존 R2 코드의 재포장이므로 자동 재개나 실버·골드 저장 보장 기능을 새로 추가한 버전은 아닙니다.
+현재 결과 다운로드 후 GENOS 임시 파일을 정리하며 그 뒤 Oracle 적재를 진행합니다.
+중단 후 같은 WORK_DIR를 통한 재개는 가능하지만 작업 폴더가 사라진 경우의 자동 복구는 보장하지 않습니다.
+SIDDA.LEGAL_* 대상 테이블의 실제 실버/골드 분류와 쓰기 권한·전체 스키마는 현장에서 확인해야 합니다.

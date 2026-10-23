@@ -1,0 +1,74 @@
+새 파이프라인 코드스페이스 DEV에 바로 설치 — R1
+
+사용자는 이번 파이프라인을 위해 새 코드스페이스를 만들었고 DEV에 ZIP을 올리기로 했습니다.
+아래 명령의 현재 폴더는 그 새 코드스페이스의 DEV Git 루트입니다.
+설치 대상은 현재 폴더입니다. 별도의 복사·이동이나 경로 입력이 필요 없습니다.
+
+DEV에 둘 파일 2개
+  GENOS_PIPELINE_SERVICE_20261022_R2.zip  (이번 전체 묶음 안에 포함)
+  GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt  (이번 설치 실행 TXT)
+
+실행
+  bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt
+
+설치기는 기존 R2 ZIP의 해시와 전체 코드 파일을 확인하고 ZIP 안의 바깥 폴더명만 제거합니다.
+성공하면 현재 DEV/service.py, DEV/worker.py, DEV/02_BACKEND 등이 바로 생기고 INSTALLED가 출력됩니다.
+기존에 수동으로 풀어 놓은 GENOS_PIPELINE_SERVICE_20261022_R2 폴더는 있어도 됩니다.
+원본 ZIP, 기존 사용자 파일, Git 설정은 보존합니다. 교체되는 기존 파일만 먼저 백업합니다.
+서비스 코드와 CODE_PINS는 이전 R2와 동일합니다. 기존 Dataiku 실행 R3를 계속 사용합니다.
+
+기록과 재개
+  .pipeline-install-r2/backup/       교체 전 파일
+  .pipeline-install-r2/plan.json     원본·설치 해시와 적용 대상
+  .pipeline-install-r2/status.json   완료·실패 상태
+  .pipeline-install-r2/log-*.txt     명령 시작부터 실행 로그
+실패하면 로그를 확인하고 같은 폴더에서 같은 명령으로 재개합니다.
+설치 중 사용자 편집이 발견되면 덮어쓰지 않고 USER_EDIT_CONFLICT로 중단합니다.
+INSTALL_ALREADY_RUNNING이면 같은 폴더에서 실행 중인 설치가 끝난 뒤 재실행합니다.
+RUN_AT_GIT_ROOT이면 현재 위치가 새 파이프라인 DEV의 Git 루트인지 확인합니다.
+설치 이후 코드서빙 배포 전에 검토/원복이 필요하면:
+  bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt rollback
+설치기가 생성한 파일과 백업된 파일만 원복하며, 이후 편집된 파일은 보존하고 중단합니다.
+Git index/commit/push/배포는 원복하지 않습니다. stage 이후 원복했다면 Git 변경도 별도로 검토합니다.
+
+설치 다음 단계
+  bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt stage
+이 명령은 검증된 서비스 코드 파일만 git add합니다. ZIP·설치기·백업·로그는 추가하지 않습니다.
+  git diff --cached --check
+  git diff --cached --stat
+R2 원본에는 기존 공백 경고 15건이 있습니다. 빈 저장소에 추가할 때 위 --check는 종료 2를 낼 수 있습니다.
+INSTALL_HERE_BASELINE_WHITESPACE.txt의 봉인 R2 기준 출력과 비교하세요. 기준과 같은 경고는 보존합니다.
+공백을 일괄 수정하면 Dataiku가 요구하는 서비스 코드 해시가 바뀝니다. 새로운 경고/다른 변경은 검토합니다.
+검토한 뒤:
+  git commit -m "Add dedicated document pipeline service R2"
+  bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt check
+CODE_VERIFIED와 종료 0을 확인한 뒤:
+  git push
+이후 그 커밋으로 파이프라인 전용 코드서빙을 배포합니다. INSTALL 성공은 배포 성공이 아닙니다.
+이미 같은 파일이 커밋돼 있다면 새 commit 대신 check로 검증할 수 있습니다.
+
+코드서빙 설정
+  진입점: service.py의 async service(config, data)
+  인스턴스: 1; 작업 중 scale-to-zero·리비전 교체를 하지 않도록 구성
+  PIPELINE_SCRATCH: 서빙 컨테이너에서 쓰기 가능한 임시 디스크 절대경로
+    예: /tmp/legal-pipeline (실제 권한·용량은 현장에서 확인)
+  PIPELINE_MAX_RSS_MB: 6144 기본값. 컨테이너 RAM은 이 작업 한도보다 여유 있게 배정.
+  임시 디스크: ZIP·압축 해제 자료·색인·반환물을 함께 보관할 수 있는 용량.
+배포 이미지에 requirements.txt 의존성을 준비합니다. PDF 처리 시 로컬 Docling 모델,
+스캔 PDF 처리 시 STRUCTURE_OCR_MODEL_DIR의 검증된 한국어 OCR 자산도 필요합니다.
+새 내부 모델 호출이나 외부 모델 자동 다운로드는 이번 파이프라인에서 하지 않습니다.
+원문·용어집은 Dataiku가 전송하므로 새 DEV로 수동 복사하지 않습니다.
+NFS 설정/마운트/영속 데이터 generation은 변경하지 않습니다.
+
+Dataiku
+실제 배포된 서비스의 HTTPS URL·호출 토큰을 LEGAL_PIPELINE_URL, LEGAL_PIPELINE_TOKEN에 설정합니다.
+LEGAL_ORACLE_CONNECTION은 기존 AIDP입니다. Dataiku R3의 ACTION="run"으로 실행합니다.
+prepare만 완료한 현재 작업의 WORK_DIR와 JOB_NAME은 그대로 유지합니다.
+Oracle 테이블 9개가 조회되는 사용자 사진은 확인됐으나 쓰기 권한·전체 스키마/적재 완료는 별도입니다.
+
+설치 도구 ZIP으로 받은 경우
+DEV에서 다음으로 설치 TXT만 풉니다. 코드 ZIP은 이번 전체 묶음에 포함된 R2를 사용합니다.
+  python3 -m zipfile -e ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.zip ./
+  bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt
+
+현장 실행 전의 로컬 검증본이며, 이 세션에서 GENOS에 접속하거나 배포하지 않았습니다.

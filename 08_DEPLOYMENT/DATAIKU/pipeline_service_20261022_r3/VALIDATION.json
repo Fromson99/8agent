@@ -1,0 +1,32 @@
+{
+  "checks": {
+    "tests": 23,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "python311_syntax": "PASS; runtime tests used local Python 3.14.4",
+  "service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "service_zip_sha256": "a1650207b077571446df2c2942403f4e9c0bfc5781d509db8658d66f2a81b926",
+  "runner_sha256": "a67c524e5c01ccba14defc7113cef86769e46d78b46c561d986b5600a50e795e",
+  "rawstore_sha256": "de858857c3813b0dbbc530c52692a842972775291b8f4f987cf7fa126459314e",
+  "tested": "Final notebook ZIP restore/resume; actual service worker structure/prepare/index/query export/return with a 244-byte original filename; synthetic glossary config; no external models or Oracle connection",
+  "source_names_tested_utf8_bytes": [
+    244,
+    255
+  ],
+  "first_failure": {
+    "tests_passed": 17,
+    "tests_failed": 1,
+    "cause": "rawstore.ensure SHA16 prefix produced oversized stored-copy filename after transport fix",
+    "evidence": "Observed tool output; original pytest temporary logs no longer available after pytest retention cleanup",
+    "followup_reproduction": "09_ARTIFACTS/AUDITS/20261022-dataiku-long-filename/BASELINE_RAWSTORE_REPRO.json"
+  },
+  "genos_deployed": false,
+  "field_dataiku_resume_verified": false,
+  "oracle_loaded": false,
+  "local_main_changed": false,
+  "nfs_changed": false
+}

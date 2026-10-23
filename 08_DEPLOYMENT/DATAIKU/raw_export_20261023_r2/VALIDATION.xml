@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="16" time="0.791" timestamp="2026-10-23T13:01:08.454374+09:00" hostname="hjson"><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_five_origins_exported_and_same_consumer_keeps_only_five_pdfs" time="0.520"><failure message="AssertionError: PDF_TOTAL targets=5 (one target per same-name PDF; shared copies excluded)&#10;  PDF [1/5] 완료 0/5 · 재사용 0 · 제외 0 · 실패 0 | 테스트규정0(20250101).doc | RUNNING | 0.0초&#10;  PDF [1/5] 완료 0/5 · 재사용 0 · 제외 0 · 실패 1 | 테스트규정0(20250101).doc | FAILED | 0.0초 | ImportError: PyMuPDF (fitz) is unavailable in the executing Python: ModuleNotFoundError: No module named 'fitz' &lt;- caused by: ModuleNotFoundError: No module named 'fitz'&#10;  중단: ImportError: PyMuPDF (fitz) is unavailable in the executing Python: ModuleNotFoundError: No module named 'fitz' &lt;- caused by: ModuleNotFoundError: No module named 'fitz'&#10;  상세: /tmp/pytest-of-jin/pytest-90/test_five_origins_exported_and0/service/GENOS_PIPELINE_SERVICE_20261022_R2/01_DATA/LOGS/origin-contract/detail.log&#10;  &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['/home/jin/8-AGENT/.venv/bin/python', '-B', '/tmp/pytest-of-jin/pytest-90/test_five_origins_exp...origins_exported_and0/service/GENOS_PIPELINE_SERVICE_20261022_R2/01_DATA/LOGS/origin-contract/detail.log\n&quot;, stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-jin/pytest-90/test_five_origins_exported_and0')
+exporter = &lt;module 'origin_exporter' from '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/raw_export_20261023_r2/export_inputs.py'&gt;
+
+    def test_five_origins_exported_and_same_consumer_keeps_only_five_pdfs(tmp_path, exporter):
+        dev,pairs,catalog=fixture(tmp_path,exporter,5)
+        before={p:exporter.t.sha(p) for p in exporter.t.files(dev)}
+        out=tmp_path/'out'; result=exporter.export(dev,out)
+        assert result['dependency_check']['filename_selection_unchanged']
+        assert len(result['mapping']['included_dependencies'])==5
+        raw=members(out/'RAW_INPUT.zip')
+        assert all(str(p.relative_to(dev)) in raw for pair in pairs for p in pair)
+        assert all(exporter.t.sha(p)==sha for p,sha in before.items())
+        workspace=tmp_path/'service'
+        with zipfile.ZipFile(SERVICE) as z:z.extractall(workspace)
+        workspace=workspace/'GENOS_PIPELINE_SERVICE_20261022_R2'
+        exporter.t.unpack(out/'RAW_INPUT.zip',workspace)
+        exporter.t.unpack(out/'PIPELINE_SUPPORT.zip',workspace)
+        layout=exporter.t.read(workspace/'00_SYSTEM/WORKSPACE.json')
+        for item in layout['roots']:(workspace/item['canonical_path']).mkdir(exist_ok=True)
+        env={**os.environ,'LAWRAG_WORKSPACE_ROOT':str(workspace),'LAWRAG_TOOL_WORKSPACE_ROOT':str(workspace),
+             'PYTHONPATH':str(workspace/'02_BACKEND'),'PYTHONDONTWRITEBYTECODE':'1','OMP_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1'}
+        command=[sys.executable,'-B',str(workspace/'06_TOOLS/pipeline.py'),'build-data-stages','--run-id','origin-contract',
+                 '--stage','raw','--execute','--latest-internal-versions','--filename-exceptions',str(workspace/'01_DATA/INPUT_MAPPING/filename-exceptions.json'),
+                 '--structure-vlm','off','--pdf-conversion','off','--pdf-parser','local']
+        check=subprocess.run(command,env=env,cwd=workspace,text=True,capture_output=True,timeout=60)
+&gt;       assert check.returncode==0,check.stdout[-6000:]+check.stderr[-3000:]
+E       AssertionError: PDF_TOTAL targets=5 (one target per same-name PDF; shared copies excluded)
+E         PDF [1/5] 완료 0/5 · 재사용 0 · 제외 0 · 실패 0 | 테스트규정0(20250101).doc | RUNNING | 0.0초
+E         PDF [1/5] 완료 0/5 · 재사용 0 · 제외 0 · 실패 1 | 테스트규정0(20250101).doc | FAILED | 0.0초 | ImportError: PyMuPDF (fitz) is unavailable in the executing Python: ModuleNotFoundError: No module named 'fitz' &lt;- caused by: ModuleNotFoundError: No module named 'fitz'
+E         중단: ImportError: PyMuPDF (fitz) is unavailable in the executing Python: ModuleNotFoundError: No module named 'fitz' &lt;- caused by: ModuleNotFoundError: No module named 'fitz'
+E         상세: /tmp/pytest-of-jin/pytest-90/test_five_origins_exported_and0/service/GENOS_PIPELINE_SERVICE_20261022_R2/01_DATA/LOGS/origin-contract/detail.log
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/jin/8-AGENT/.venv/bin/python', '-B', '/tmp/pytest-of-jin/pytest-90/test_five_origins_exp...origins_exported_and0/service/GENOS_PIPELINE_SERVICE_20261022_R2/01_DATA/LOGS/origin-contract/detail.log\n", stderr='').returncode
+
+05_TESTS/CONTRACTS/test_dataiku_raw_export_origins.py:94: AssertionError</failure></testcase><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[missing-DEPENDENCY_MISSING]" time="0.004" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[changed-DEPENDENCY_HASH_MISMATCH]" time="0.003" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[pdf_changed-DEPENDENCY_HASH_MISMATCH]" time="0.003" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[unsafe-UNSAFE_PATH]" time="0.004" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[scope-DEPENDENCY_SCOPE_REVIEW]" time="0.004" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[registered-DEPENDENCY_REGISTRATION_MISMATCH]" time="0.003" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_invalid_dependencies_fail_before_zip_and_preserve_sources[cycle-DEPENDENCY_CYCLE]" time="0.003" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_unrelated_old_and_unselected_files_remain_excluded" time="0.006" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_explicitly_excluded_origin_is_not_silently_reintroduced" time="0.003" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_output_cannot_overwrite_old_artifacts_or_failure_records" time="0.006" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_changed_dependency_between_preflight_and_pack_fails" time="0.005" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_changed_catalog_between_preflight_and_pack_fails" time="0.006" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_single_file_folder_policy_drift_is_rejected" time="0.006" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_archive_dependency_cannot_expand_raw_scope" time="0.004" /><testcase classname="05_TESTS.CONTRACTS.test_dataiku_raw_export_origins" name="test_final_zip_wrapper_and_long_names" time="0.156" /></testsuite></testsuites>

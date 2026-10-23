@@ -1,0 +1,11 @@
+현재 폴더 직접 설치 R1
+입력: 봉인 GENOS_PIPELINE_SERVICE_20261022_R2.zip. 실행 위치: 사용자가 새로 만든 파이프라인 전용 Git checkout 루트 DEV.
+출력: ZIP의 바깥 폴더명만 제외한 동일한 1139개 파일. CODE_PINS와 Dataiku R3의 서비스 해시는 유지.
+실패: ZIP/코드 해시, 경로·symlink, 기존 파일 충돌, 쓰기/용량, Git 루트 오류를 구분해 중단. 자동 재시도 없음.
+복구 담당: 설치기 한 곳. 모든 교체 대상의 원본 백업·계획을 먼저 보존한 뒤 파일별 원자 교체.
+재실행: 기존 값 또는 설치할 값과 같은 파일만 허용. 다른 편집이 있으면 보존하고 중단.
+원복: 계획에 기록된 파일만 복원. 설치기가 새로 만든 파일은 설치 해시가 유지될 때만 제거. 디렉터리·다른 사용자 파일·Git index/commit은 유지.
+최종 상태: INSTALLING/INSTALLED/FAILED/ROLLED_BACK. 코드 설치와 stage/commit/push/현장 배포는 별도.
+check: 원본 ZIP과 현재 파일을 대조한 뒤 기존 VERIFY_PIPELINE_RELEASE.py의 committed checkout 검증을 호출.
+검사: 실제 최종 Bash TXT 설치, 재실행, 기존 파일 백업/원복, 입력 변조, symlink, 동시 실행, 코드 편집 충돌, 쓰기 중단/재개, Git stage/commit/check 연결.
+자원: 모델·데이터 로딩 없음. ZIP 6MB와 코드만 순차 처리. 같은 원문·용어집·MAIN·NFS 변경 없음.

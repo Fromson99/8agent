@@ -1,0 +1,19 @@
+02_BACKEND/lawrag/core/rag/_boundary.py:54: new blank line at EOF.
+02_BACKEND/lawrag/core/rag/evidence/__init__.py:10: new blank line at EOF.
+02_BACKEND/lawrag/core/rag/knowledge/__init__.py:10: new blank line at EOF.
+02_BACKEND/lawrag/core/rag/reasoning/__init__.py:10: new blank line at EOF.
+02_BACKEND/lawrag/core/rag/retrieval/__init__.py:10: new blank line at EOF.
+02_BACKEND/lawrag/core/structure/recipe_patch.py:22: new blank line at EOF.
+02_BACKEND/lawrag/pipeline/glossary_v1.py:299: trailing whitespace.
++                                     (r['meaning_id'],))] if meaning else []), 'via':[]} 
+02_BACKEND/lawrag/pipeline/risk_basis_sql.py:340: new blank line at EOF.
+02_BACKEND/semantic_runtime/legal_agent/navigation_input.py:14: trailing whitespace.
++ '같은 선택·근거 ID는 목록에 한 번만 넣고, 제시된 서로 다른 ID 수를 넘지 않는다. ' 
+02_BACKEND/semantic_runtime/multi_entry_navigation.py:17: trailing whitespace.
++SYSTEM=legal.SYSTEM+'''\n현재는 복수 진입점 후보를 먼저 합치는 탐색이다. CANDIDATES의 모든 초기 후보 페이지를 먼저 확인한다. 각 후보의 문서명·조문 표제와 entry_ids를 보고 READ하거나, 적용 대상/자료 성격이 명백히 다른 후보만 DISMISS로 제외 이유를 남긴다. 내용 확인이 필요한 경우 메타데이터만 보고 제외하지 않는다. READ 후 JUDGE adopted/excluded를 해야 검토 완료다. 서로 다른 진입점의 근거를 함께 검토하고, 조건·예외·명시 참조의 결론을 각 claim에 빠짐없이 기록하라. 한 근거가 충분해 보여도 pending_candidates가 남으면 sufficient가 거절된다. 관계 경로는 의미상 동일성의 보증이 아니다.''' 
+02_BACKEND/semantic_runtime/typed_navigation.py:115: trailing whitespace.
++SYSTEM=previous.SYSTEM+'''\nkeyword_types는 질문에서 발견한 실제 저장 개체의 타입이다. folder는 원문 단어가 아니라 문서 묶음이다. 폴더 문서 목록 요청은 OPEN_FOLDER 또는 DOCUMENT_TITLES, 트리는 FOLDER_TREE를 사용한다. 제목 검색에는 DOCUMENT_TITLES만 사용하고 같은 이름을 본문 검색어로 자동 전환하지 않는다. document를 SELECT_DOCUMENT하면 이후 검색 범위가 그 문서로 좁혀진다. 구조/좌표/용어는 카드의 의미와 도구 안내를 따른다. 같은 표기가 여러 타입이면 모두 보고 사용자 요청 동작에 맞춰 선택한다.''' 
+06_TOOLS/COMMANDS/genos_apply_external_only.sh:146: new blank line at EOF.
+06_TOOLS/OFFLINE/genos_actual_error_patch.py:105: new blank line at EOF.
+06_TOOLS/OFFLINE/genos_pdf_wait_patch.py:111: new blank line at EOF.
+06_TOOLS/OFFLINE/package_genos_external_only.py:51: new blank line at EOF.

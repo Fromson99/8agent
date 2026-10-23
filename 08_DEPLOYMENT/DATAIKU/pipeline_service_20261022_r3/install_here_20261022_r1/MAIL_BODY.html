@@ -1,0 +1,17 @@
+<div style="font-family:Arial,sans-serif;line-height:1.65">
+<p><b>새로 만든 파이프라인 전용 코드스페이스의 DEV에 바로 설치하는 도구</b>입니다. 폴더 내용을 수동으로 복사할 필요 없습니다.</p>
+<p><b>이번 설치 도구가 앞선 수동 복사 단계를 대신합니다.</b> 서비스 코드는 기존 R2 그대로이고, Dataiku 실행 R3도 계속 사용합니다.</p>
+<p><b>새 코드스페이스의 DEV Git 루트</b>에 아래 두 ZIP을 둡니다.</p>
+<ul><li><b>GENOS_PIPELINE_SERVICE_20261022_R2.zip</b> — 앞서 받은 약 6MB 서비스 코드 ZIP 그대로</li><li><b>GENOS_PIPELINE_INSTALL_HERE_20261022_R1.zip</b> — 이번 메일에 첨부한 작은 설치 도구 ZIP</li></ul>
+<p>그 DEV 폴더에서 터미널을 열고 아래 두 줄을 실행하세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.zip ./
+bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt</pre>
+<p><b>DEV/service.py, DEV/worker.py, DEV/02_BACKEND 등이 바로 생성</b>됩니다. 설치기가 R2 ZIP의 바깥 폴더명만 제외하고 동일한 코드를 설치하며, 교체되는 기존 파일을 먼저 백업합니다.</p>
+<p>마지막에 <b>INSTALLED</b>와 <b>INSTALL_EXIT=0</b>을 확인하면 코드 설치 완료입니다. 원본 ZIP과 이미 풀어 놓은 폴더는 그대로 두어도 됩니다. 재실행할 때는 같은 DEV에서 같은 bash 명령을 사용하세요.</p>
+<p>백업·계획·실행 로그는 DEV의 <b>.pipeline-install-r2/</b>에 남습니다. 설치 후 편집된 파일이 있으면 덮어쓰지 않고 중단합니다.</p>
+<p><b>설치 이후:</b> INSTALL_HERE_GUIDE.txt의 stage → 변경 검토 → commit → check → push → 코드서빙 배포 순서를 따르세요. 코드서빙의 임시 디스크·메모리·의존성 설정과 Dataiku URL/토큰 연결도 가이드에 있습니다. 설치 완료와 실제 코드서빙 배포 완료는 별개입니다.</p>
+<p><b>첨부 3개</b></p>
+<ul><li>GENOS_PIPELINE_INSTALL_HERE_20261022_R1.zip — 실행 TXT·가이드·검증 기록 포함</li><li>GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt — 완전한 Bash 실행 파일</li><li>INSTALL_HERE_GUIDE.txt — 설치·재개·원복·배포 안내</li></ul>
+<p>기존 서비스 R2 ZIP은 앞선 메일 <b>「[Dataiku·GENOS] 파일명 길이 오류 수정 — Dataiku R3 / 파이프라인 서비스 R2」</b>에 첨부돼 있습니다. 이번 작은 설치 도구 ZIP에는 서비스 코드 전체가 중복 포함돼 있지 않습니다.</p>
+<p>로컬 설치·재실행·중단 후 재개·원복 등 <b>10개 검사 통과</b>, 최종 ZIP과 실행 TXT 해시 일치를 확인했습니다. 실제 GENOS 설치·commit/push·리비전 배포는 아직 확인하지 않았습니다. 원문·용어집은 Dataiku가 전송하며 NFS 변경은 없습니다.</p>
+</div>

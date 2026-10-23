@@ -148,6 +148,18 @@ def _safe_name(name: str) -> str:
     return _SAFE.sub("_", name).strip() or "file"
 
 
+def _storage_name(sha: str, filename: str) -> str:
+    """Keep ordinary paths; bound the copy's basename without losing its source name."""
+    name = _safe_name(Path(filename or "file").name)
+    candidate = f"{sha[:16]}__{name}"
+    if len(os.fsencode(candidate)) <= 255:
+        return candidate
+    # Source bytes and orig_filename remain unchanged in the manifest. A full
+    # content hash identifies the stored copy when the readable name is too long.
+    suffix = Path(name).suffix
+    return sha + (suffix if len(os.fsencode(suffix)) <= 16 else "")
+
+
 def ensure(raw: bytes, filename: str, *, source: str = UPLOADS, name: str = "",
            kind: str = "", folder: str = "", via: str = "upload",
            extra: Optional[dict] = None, corpus: Optional[Path] = None) -> dict:
@@ -164,7 +176,7 @@ def ensure(raw: bytes, filename: str, *, source: str = UPLOADS, name: str = "",
     sub = datetime.now().strftime("%Y-%m")
     rel_dir = corpus / source / sub if source == UPLOADS else corpus / source
     rel_dir.mkdir(parents=True, exist_ok=True)
-    dest = rel_dir / f"{sha[:16]}__{_safe_name(Path(filename or 'file').name)}"
+    dest = rel_dir / _storage_name(sha, filename)
     if not dest.exists():
         dest.write_bytes(raw)
     root = _repo_root_for(corpus)

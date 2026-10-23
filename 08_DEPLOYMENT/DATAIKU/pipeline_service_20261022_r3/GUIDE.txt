@@ -1,0 +1,83 @@
+긴 파일명 오류 수정 — Dataiku 실행 R3 / GENOS 파이프라인 서비스 R2
+
+확인한 현상
+현장 진단: 오류번호 36, File name too long, 남은 공간 약 722.53GB.
+기존 압축 해제 코드는 원문 파일명 뒤에 .partial-와 32자리 임시 식별자를 붙였습니다.
+244바이트 원문 이름이 285바이트 임시 이름이 되어 같은 오류가 나는 것을 재현했습니다.
+수정본은 같은 디렉터리에 짧은 임시 이름을 쓰고, 검증 후 원래 이름으로 이동합니다.
+전체 실행 검사에서 구조화 단계의 원문 보관 사본에도 해시 접두어가 붙어 길이 초과가 나는 것을 확인했습니다.
+이 사본은 길이를 넘을 때만 본문 전체 해시로 저장하고, orig_filename에 원래 이름을 그대로 보존합니다.
+원문 이름·내용·해시·최신판 매핑은 바꾸지 않습니다. NFS 설정/마운트도 변경하지 않습니다.
+현장 개별 실패 파일명은 아직 전달받지 않았습니다. 수정 후에도 오류가 나면 R3가 errno와 원인을 표시합니다.
+
+1. 지금 Dataiku에서 할 일
+기존 LEGAL_PIPELINE_WORKSPACE의 파일 5개를 그대로 둡니다. 다시 업로드하지 않습니다.
+  DATAIKU_PIPELINE_CLIENT_20261022_R1.zip
+  RAW_INPUT.zip
+  RAW_INPUT.zip.receipt.json
+  PIPELINE_SUPPORT.zip
+  PIPELINE_SUPPORT.zip.receipt.json
+
+진단 결과를 이미 확인했으므로, 이번에는 노트북 커널을 한 번 재시작합니다.
+기존 R2 실행 셀 대신 DATAIKU_PIPELINE_RUN_20261022_R3.txt 전체를 새 셀에 붙여넣습니다.
+  ACTION = "prepare"
+  FOLDER_NAME = "LEGAL_PIPELINE_WORKSPACE"
+  WORK_DIR = "./legal_pipeline_work"
+  JOB_NAME = "run_20261022_01"
+WORK_DIR는 이전과 같은 값으로 유지하세요. 첫 WORK_DIR 절대경로가 이전 로그와 같은지 확인합니다.
+다운로드된 원본 ZIP은 해시 확인 후 재사용하고, 이미 복원된 파일도 검증 후 건너뜁니다.
+마지막 READY를 확인하세요. 이 단계는 GENOS를 호출하지 않습니다.
+
+이번 TXT는 필요한 수정 코드를 포함합니다. R1 클라이언트 ZIP을 재포장/재업로드할 필요 없습니다.
+원본 R1 코드는 code/에 보존하고, 수정 실행 코드는 code-r3/에 별도로 만듭니다.
+재개 바인딩은 client-r3-binding.json에 남습니다. 데이터 input-binding.json은 유지합니다.
+기존 R2의 run을 다시 사용하지 마세요.
+
+2. GENOS 실행 전에 필요한 코드
+GENOS에서도 같은 압축 해제 모듈을 쓰므로 서비스 쪽도 고쳐야 합니다.
+새 파이프라인 전용 코드서빙은 GENOS_PIPELINE_SERVICE_20261022_R2.zip을 사용합니다.
+R3 실행본의 ACTION="run"은 이 서비스 R2의 코드 해시를 요구합니다.
+서비스가 구 R1이면 DEPLOYED_CODE_MISMATCH로 멈춥니다. 임의로 해시를 바꾸지 마세요.
+기존 RAG DEV/service.py에 덮어쓰거나 NFS generation을 바꾸는 작업이 아닙니다.
+
+GENOS 현장 반입
+실제 ZIP을 올린 TRANSFER를 현재 작업 폴더로 두고:
+  python3 -m zipfile -e ./GENOS_PIPELINE_SERVICE_20261022_R2.zip ./
+압축을 푼 위치와 실제 배포하는 파이프라인 전용 Git checkout은 구분합니다.
+새 전용 코드서빙을 아직 만들지 않았다면 R2의 전체 내용을 그 전용 저장소 코드로 사용합니다.
+R1 전용 checkout이 이미 있다면 기존 코드를 보존/백업한 뒤 다음 변경만 반영합니다.
+  교체: transport.py, 02_BACKEND/lawrag/core/rawstore.py, GUIDE.txt, CODE_PINS.json
+  추가: VERIFY_PIPELINE_RELEASE.py, GENOS_PIPELINE_CHECK.txt
+그 외 R1 파일은 동일합니다. 변경 파일과 git diff --check를 확인하고 전용 저장소에 commit합니다.
+아래 실제 경로는 파이프라인 전용 checkout 절대경로로 바꿉니다. 기존 RAG checkout을 넣지 마세요.
+  bash ./GENOS_PIPELINE_SERVICE_20261022_R2/GENOS_PIPELINE_CHECK.txt /실제/파이프라인전용/Git체크아웃
+체크 결과 CODE_VERIFIED와 commit을 확인한 뒤 해당 커밋을 push하고 새 코드서빙 리비전을 배포합니다.
+후보 폴더 검사만 통과한 것을 실제 배포 성공으로 취급하지 않습니다.
+체크 로그는 명령을 실행한 TRANSFER 아래 PIPELINE_RELEASE_CHECK_LOGS에 남습니다.
+이 서비스는 요청별 임시 입력을 처리하므로 고정 NFS generation/RAG 릴리스 게이트를 실행하지 않습니다.
+실제 서비스 요청은 Dataiku의 기존 파이프라인 호출 경로로 확인하며, 직접 테스트 UI를 요구하지 않습니다.
+기존 작업이 실행 중인 서비스의 리비전을 중간에 교체하지 마세요. 이번 사진의 실패는 GENOS 호출 전입니다.
+
+3. 구조화·색인·적재
+새 서비스 R2 배포 후 기존 프로젝트 변수 세 개를 확인합니다.
+  LEGAL_PIPELINE_URL: 파이프라인 전용 코드서빙 HTTPS JSON 호출 주소
+  LEGAL_PIPELINE_TOKEN: 해당 호출 토큰 (Bearer 제외)
+  LEGAL_ORACLE_CONNECTION: AIDP
+같은 Dataiku R3 셀에서 ACTION만 "run"으로 바꿉니다.
+기존 작업에 이미 client.json이 있다면 서비스 코드 바인딩을 바꾸지 않고 중단합니다.
+이전 작업 기록을 보존하고, 새 서비스 작업에는 새 JOB_NAME을 지정하세요.
+이번처럼 prepare에서만 실패했다면 JOB_NAME을 바꿀 필요 없습니다.
+GENOS 구조화·색인/결과 반환 → Dataiku 수신·검증 → 기존 Oracle 적재 순서입니다.
+현재 native-no-models 단계와 기존 7개 테이블 계약은 그대로입니다.
+
+4. 원복과 검증 범위
+이전 R1/R2 ZIP·코드·데이터는 보존했습니다. 이번 수정은 로컬 MAIN을 바꾸지 않습니다.
+원복은 이전 서비스 R1과 이전 Dataiku 실행 R2의 조합으로 합니다. 긴 파일명 결함은 다시 남습니다.
+이전 작업 디렉터리와 코드 해시를 다른 서비스 버전에 섞지 마세요.
+외부 로컬 합성 검증과 실제 현장 완료는 별개입니다. CODE_MANIFEST.json, VALIDATION.json을 참고하세요.
+
+Dataiku 실행 ZIP을 터미널에서 풀 때:
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_RUN_20261022_R3.zip ./
+TXT는 bash가 아니라 LEGAL_RAG 프로젝트의 Python 노트북에 전체를 붙여넣는 코드입니다.
+개발용 파일 보관은 기존 관리 폴더를 사용하며 운영 이관은 별도입니다.
+WORK_DIR에는 반환물/재개 상태도 저장되므로 작업 완료까지 같은 접근 가능한 경로를 유지하세요.

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PACKAGE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [ "$#" -ne 1 ]; then
+  echo '사용법: bash ./GENOS_PIPELINE_SERVICE_20261022_R2/GENOS_PIPELINE_CHECK.txt /실제/파이프라인전용/Git체크아웃'
+  exit 2
+fi
+LOG_DIR="./PIPELINE_RELEASE_CHECK_LOGS"
+mkdir -p -- "$LOG_DIR"
+LOG_FILE="$(mktemp "$LOG_DIR/check-XXXXXXXX.log")"
+exec > >(tee -a "$LOG_FILE") 2>&1
+trap 'result=$?; echo "CHECK_EXIT=$result"; exit "$result"' EXIT
+date -u
+python3 "$PACKAGE_DIR/VERIFY_PIPELINE_RELEASE.py" --code-root "$1" --require-committed

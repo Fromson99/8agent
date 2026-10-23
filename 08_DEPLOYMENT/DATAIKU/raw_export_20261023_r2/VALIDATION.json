@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "tests_passed": 16,
+  "model_calls": 0,
+  "field_execution": false,
+  "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_dataiku_raw_export_origins.py",
+  "checks": [
+    "catalog-bound DOC/HWP closure",
+    "selected PDF scope preserved",
+    "five restored originals through sealed R2 pipeline.py build-data-stages raw --execute",
+    "missing and mismatched originals rejected before ZIP",
+    "path traversal and cyclic provenance rejected",
+    "unrelated old inputs stay excluded",
+    "explicit exclusions and filename selection drift rejected",
+    "old output preservation",
+    "packed RAW/catalog changes rejected",
+    "no implicit ZIP dependency expansion",
+    "final ZIP wrapper exit status and pin check",
+    "long filenames",
+    "bash syntax",
+    "no JavaScript attachments"
+  ],
+  "limitations": [
+    "Actual field RAW and SUPPORT archives were not accessed",
+    "No model, full structure/index or Oracle load performed",
+    "New dependency shapes require review rather than a wider input scope"
+  ],
+  "prior_validation_failure": {
+    "file": "VALIDATION.xml",
+    "reason": "Synthetic CLI PATH selected system python3 without fitz; corrected test PATH to match sealed worker environment; product code unchanged for this test correction"
+  },
+  "source_binding": {
+    "base_export_zip_sha256": "13bd4f4a61b02d5fe775202427c8db8c16220410f4ea80c227cf5c140cd428ae",
+    "base_export_py_sha256": "2b6112fb3373b4b107ae4cea731bf2e0a128b333ec9f97e7aa2c2f90b0936f51",
+    "unchanged_service_zip_sha256": "a1650207b077571446df2c2942403f4e9c0bfc5781d509db8658d66f2a81b926"
+  },
+  "artifacts": {
+    "GENOS_RAW_EXPORT_20261023_R2.zip": {
+      "bytes": 18906,
+      "sha256": "5e12a1bca64d0e11684512bb297d3ea4751fed9b5a6cc7f62a59534f50f8877b"
+    },
+    "GENOS_RAW_EXPORT_RUN_20261023_R2.txt": {
+      "bytes": 970,
+      "sha256": "12ac58584e4fb7bbe9000ef80e7f455be362be98c7b262ab1eda4639615f8fc9"
+    },
+    "GUIDE.txt": {
+      "bytes": 5661,
+      "sha256": "76d670beab5dad92c1036a8fbb33b53df0c0b80d4308d91f7a4ed69a87dd1f52"
+    }
+  }
+}

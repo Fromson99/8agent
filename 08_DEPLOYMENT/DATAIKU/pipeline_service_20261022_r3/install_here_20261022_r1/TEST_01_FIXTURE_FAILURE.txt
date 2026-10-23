@@ -1,0 +1,164 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_______________ InstallHereTests.test_audit_symlink_is_rejected ________________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_audit_symlink_is_rejected>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-sq10q6uh/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_____________ InstallHereTests.test_backup_tamper_blocks_rollback ______________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_backup_tamper_blocks_rollback>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-j4l7fycf/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_ InstallHereTests.test_final_txt_install_resume_stage_committed_check_and_rollback _
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_final_txt_install_resume_stage_committed_check_and_rollback>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-8uxdiq3u/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+____ InstallHereTests.test_interrupted_write_preserves_original_and_resumes ____
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_interrupted_write_preserves_original_and_resumes>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-nr7uf19k/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+___________ InstallHereTests.test_lock_rejects_duplicate_invocation ____________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_lock_rejects_duplicate_invocation>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-0kspgyxm/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_____________ InstallHereTests.test_requires_actual_checkout_root ______________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_requires_actual_checkout_root>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-nyod0535/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_______ InstallHereTests.test_stage_rejects_unrelated_staged_user_files ________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_stage_rejects_unrelated_staged_user_files>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-lt3wf4l6/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_________ InstallHereTests.test_symlink_path_stops_before_code_changes _________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_symlink_path_stops_before_code_changes>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-4ml35x8k/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+_______ InstallHereTests.test_user_edit_preserved_on_resume_and_rollback _______
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_user_edit_preserved_on_resume_and_rollback>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-pu8suj01/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+__________ InstallHereTests.test_zip_tamper_stops_before_code_changes __________
+
+self = <test_dataiku_pipeline_install_here.InstallHereTests testMethod=test_zip_tamper_stops_before_code_changes>
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='pipeline-install-contract-')
+        self.root = Path(self.tmp.name) / 'DEV'
+        self.root.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        self.git('config', 'user.name', 'Local Contract')
+        self.git('config', 'user.email', 'local-contract@example.invalid')
+>       os.link(ARCHIVE, self.root / installer.ARCHIVE)
+E       OSError: [Errno 18] Invalid cross-device link: '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/GENOS_PIPELINE_SERVICE_20261022_R2.zip' -> '/tmp/pipeline-install-contract-2d4u4e6i/DEV/GENOS_PIPELINE_SERVICE_20261022_R2.zip'
+
+05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py:30: OSError
+=========================== short test summary info ============================
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_audit_symlink_is_rejected
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_backup_tamper_blocks_rollback
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_final_txt_install_resume_stage_committed_check_and_rollback
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_interrupted_write_preserves_original_and_resumes
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_lock_rejects_duplicate_invocation
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_requires_actual_checkout_root
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_stage_rejects_unrelated_staged_user_files
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_symlink_path_stops_before_code_changes
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_user_edit_preserved_on_resume_and_rollback
+FAILED 05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py::InstallHereTests::test_zip_tamper_stops_before_code_changes
+10 failed in 0.14s

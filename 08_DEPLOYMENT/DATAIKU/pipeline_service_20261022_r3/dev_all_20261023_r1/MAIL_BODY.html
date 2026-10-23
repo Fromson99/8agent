@@ -1,0 +1,15 @@
+<p>새 파이프라인 코드스페이스의 DEV에 한 번에 올릴 전체 묶음을 보냅니다.</p>
+<p><b>GENOS_PIPELINE_DEV_ALL_20261023_R1.zip 하나만 DEV에 업로드</b>하면 됩니다. 기존 서비스 R2 코드 ZIP, 현재 폴더 설치기, 설치·배포·재개·원복 가이드가 모두 들어 있습니다. 이전 메일에서 파일을 따로 모을 필요가 없습니다.</p>
+<p>터미널을 새 파이프라인 DEV의 Git 루트에서 열고 아래 두 줄을 실행하세요.</p>
+<pre>python3 -m zipfile -e ./GENOS_PIPELINE_DEV_ALL_20261023_R1.zip ./
+bash ./GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt</pre>
+<p>성공하면 현재 DEV 바로 아래에 service.py, worker.py, 02_BACKEND 등이 생성되고 INSTALLED와 INSTALL_EXIT=0이 출력됩니다. 수동 복사는 필요 없습니다. 설치기는 교체할 기존 파일을 백업하고, 재실행 중 사용자 편집을 발견하면 중단합니다.</p>
+<p>설치 후에는 ZIP 안 INSTALL_HERE_GUIDE.txt에 적힌 <b>stage → 변경 검토 → commit → check → push → 새 코드서빙 리비전 배포</b> 순서로 진행하세요. 설치기가 Git push와 배포를 자동 수행하지는 않습니다.</p>
+<p><b>첨부 3개</b></p><ul>
+<li>GENOS_PIPELINE_DEV_ALL_20261023_R1.zip — DEV 업로드용 전체 묶음</li>
+<li>GENOS_PIPELINE_INSTALL_HERE_20261022_R1.txt — ZIP 안에도 있는 완전 실행 스크립트</li>
+<li>GENOS_PIPELINE_DEV_ALL_GUIDE.txt — 두 줄 실행 방법, 배포 설정, Dataiku 연결, 현재 한계</li></ul>
+<p>이번 묶음은 기존 검증·발송한 서비스 R2와 설치기 R1을 그대로 묶었습니다. 현재 비동기 처리·폴링·Oracle 적재 기능은 유지하며, 앞서 설명한 실버/골드 지속 보관·자동 재개 보강은 아직 포함하지 않았습니다. Dataiku에서는 기존 DATAIKU_PIPELINE_RUN_20261022_R3.txt를 계속 사용하세요.</p>
+<p>원문·용어집은 Dataiku에서 전송하므로 DEV에 따로 복사하지 않습니다. NFS는 변경하지 않습니다. Python 의존성과 PDF 처리용 오프라인 파서/OCR 모델은 배포 이미지에 준비해야 합니다. 실제 GENOS 설치·배포·실버/골드 대상 분류 및 Oracle 적재 완료는 현장 확인이 필요합니다.</p>
+<p>최종 묶음에서 설치·재실행·실제 검증용 Git 체크아웃 확인과 1,139개 파일 해시 대조를 통과했습니다. 중첩 ZIP까지 JavaScript 확장자 파일이 없는지 확인했습니다.</p>
+<p>전체 ZIP SHA-256: <code>e47337de7b1c7418df57e723ddf5e1a6f6745f15ec4b3ebbe0279ac0fd0c266a</code></p>

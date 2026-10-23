@@ -1,0 +1,42 @@
+{
+  "tests": {
+    "passed": 10,
+    "failed": 0,
+    "seconds": 6.06
+  },
+  "test_source": "05_TESTS/CONTRACTS/test_dataiku_pipeline_install_here.py",
+  "entry_tested": "standalone Bash TXT with embedded Python",
+  "python311_syntax": "PASS",
+  "bash_syntax": "PASS",
+  "service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "source_service_zip_sha256": "a1650207b077571446df2c2942403f4e9c0bfc5781d509db8658d66f2a81b926",
+  "service_code_changed": false,
+  "source_zip_changed": false,
+  "verified": [
+    "install into actual Git root",
+    "full 1139-file pinned comparison",
+    "idempotent rerun",
+    "backup and rollback preserves starter mode and user files",
+    "disk-write interruption and resume",
+    "archive/backup tamper and symlink rejection",
+    "user edit conflict",
+    "duplicate lock rejection",
+    "stage only code and committed checkout verifier"
+  ],
+  "previous_attempts": [
+    {
+      "log": "TEST_01_FIXTURE_FAILURE.txt",
+      "reason": "Test fixture cross-device hardlink; fixed by copying only on EXDEV."
+    },
+    {
+      "log": "TEST_02_BASELINE_WHITESPACE.txt",
+      "reason": "Sealed R2 baseline has 15 existing whitespace warnings. Reproduced independently and exact compared; code unchanged."
+    }
+  ],
+  "new_codespace_DEV": "USER_REPORTED; actual absolute path not available",
+  "field_install_verified": false,
+  "field_git_commit": "NOT_VERIFIED",
+  "genos_revision": "NOT_VERIFIED",
+  "nfs_changed": false,
+  "dataiku_r3_changed": false
+}

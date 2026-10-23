@@ -1,0 +1,18 @@
+Scope: reproduce errno36 from original basename + 41-byte staging suffix; preserve source names.
+Fix: fixed-length sibling temporary names in shared transport.write and transport.unpack.
+End-to-end reproduction also exposed rawstore.ensure prefixing SHA16 to a valid long source name.
+Its stored copy now uses full content SHA plus bounded suffix only when the 255-byte name limit is exceeded.
+Original input path/name and manifest orig_filename/body_sha256 remain unchanged; ordinary paths are stable.
+Input/output/schema/hash checks remain unchanged. No new generation, MAIN, model, DDL or NFS changes.
+Consumers: Dataiku restore and returned-result extraction; GENOS worker input extraction and JSON state writes.
+R3 notebook reuses sealed R1 client ZIP and existing input-binding, derives code-r3 with exact patched
+transport bytes and expected service R2 hash, and records independent client-r3-binding.
+No change to archive metadata or RAW source names. Completed restored files are reverified and reused.
+Failure owner: existing transport for hash/scope/capacity, wrapper for staging, existing worker/client for jobs.
+No automatic retry or new job ID. Old service revision/hash cannot silently satisfy the new client.
+OS errors retain numeric errno, OS-provided reason and within-work path; log-write failure cannot mask them.
+Before R3 in the notebook, restart kernel once so the old imported transport cannot remain selected.
+Validation: 244/255-byte UTF-8 and ASCII names, old failure then resume, data/hash/scope/conflict checks,
+interrupted staging and cleanup, actual final ZIP notebook entry, expected service mismatch, committed
+checkout verifier, actual packaged GENOS supervised XML structure/index/export with a long source name.
+Actual GENOS commit/push/revision and Dataiku whole-corpus completion are unverified.

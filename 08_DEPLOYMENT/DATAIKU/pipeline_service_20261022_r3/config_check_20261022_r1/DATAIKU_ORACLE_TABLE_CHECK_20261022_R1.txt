@@ -1,0 +1,30 @@
+# LEGAL_RAG 프로젝트의 Python 노트북 새 셀에 전체를 붙여넣고 실행하세요.
+# 조회 전용입니다. 테이블 생성·삭제·적재 및 GENOS 호출을 하지 않습니다.
+from dataiku import SQLExecutor2
+from IPython.display import display
+
+ORACLE_CONNECTION = "AIDP"  # 기존 Oracle 연결 이름. 현장 이름이 다르면 이 값만 수정.
+
+sql = SQLExecutor2(connection=ORACLE_CONNECTION)
+tables = sql.query_to_df("""
+SELECT OWNER, TABLE_NAME
+FROM ALL_TABLES
+WHERE OWNER = 'SIDDA'
+  AND TABLE_NAME IN (
+    'LEGAL_SRC_DOCUMENT_A',
+    'LEGAL_SRC_SOURCE_UNIT_A',
+    'LEGAL_SRC_BLOCK_PAYLOAD_A',
+    'LEGAL_RAG_ASSET_PART_A',
+    'LEGAL_RAG_RELEASE_A',
+    'LEGAL_RAG_QUERY_ROW_A',
+    'LEGAL_RAG_QUERY_RELEASE_A',
+    'LEGAL_RAG_QUERY_ACTIVE_A',
+    'LEGAL_RAG_QUERY_STATE_A'
+  )
+ORDER BY TABLE_NAME
+""")
+
+display(tables)
+print("조회 가능한 테이블:", len(tables), "/ 9")
+print("9개가 보이면 목록 확인 완료입니다. 컬럼·인덱스·쓰기 권한 확인은 별도입니다.")
+print("빠진 항목은 미생성 또는 현재 연결의 접근 권한을 확인하세요.")

@@ -1,0 +1,73 @@
+GENOS 원문 ZIP 생성 도구 수정본 — GENOS_RAW_EXPORT_20261023_R2
+
+1. 어디서 실행하나요
+원래 RAW_INPUT.zip을 만들었던, 실제 원문이 있는 GENOS 코드스페이스에서 실행합니다.
+새 파이프라인 코드서빙 761의 코드 폴더가 아니라 원문/용어집/선택표를 보유한 기존 DEV입니다.
+--dev는 그 데이터가 있는 실제 checkout을 지정합니다. 기존 위치가 ~/DEV일 때 아래 명령을 사용합니다.
+이 도구는 DEV를 읽기만 하며 Git commit/push·코드서빙 재배포·Oracle 변경은 하지 않습니다.
+
+2. 실행 명령
+기존 GENOS_RAW_EXPORT_20261022_R1 대신 이번 R2를 사용하세요.
+첨부 ZIP을 실제 업로드한 TRANSFER 폴더를 현재 위치로 둡니다.
+TRANSFER의 절대 위치를 추정하거나 압축 해제를 위해 DEV로 이동하지 않습니다.
+
+  python3 -m zipfile -e ./GENOS_RAW_EXPORT_20261023_R2.zip ./
+  bash ./GENOS_RAW_EXPORT_20261023_R2/GENOS_RAW_EXPORT_RUN_20261023_R2.txt --dev "$HOME/DEV" --output ./RAW_EXPORT_20261023_R2
+
+분리 첨부한 실행 TXT와 ZIP 내부 TXT는 동일합니다. 위 명령은 ZIP 내부 TXT를 실행합니다.
+실행 로그는 도구 폴더의 logs/에 남습니다. 첫 로그부터 Python·디스크·RAM·종료 상태를 기록합니다.
+종료 후 EXPORTED와 RAW_EXPORT_EXIT=0을 확인하세요.
+기존 출력 폴더를 덮어쓰지 않습니다. 같은 이름의 폴더에 파일이 있다면 새 --output 이름을 사용합니다.
+오류/부분 ZIP/예전 ZIP을 삭제하지 말고 보존합니다. FAILED 상태의 ZIP은 사용하지 않습니다.
+
+3. 무엇이 바뀌었나요
+최신 선택표(is_latest=true)의 원문 해시 필터는 유지합니다.
+포함한 PDF의 RAW_DERIVATIVES.json 기록을 읽고 같은 폴더·같은 이름의 DOC/HWP 원본을 확인합니다.
+기록된 원본 SHA256이 맞는 경우 해당 원본을 함께 담습니다. 파일명 5개를 하드코딩하지 않습니다.
+원본이 없거나 해시가 다르면 ZIP을 쓰기 전에 중단하고 DEPENDENCY_CHECK.json에 원인을 남깁니다.
+추가 원본은 included_dependencies로 구분하며 기존 문서 선택표나 변환 기록을 수정하지 않습니다.
+서비스 R2와 같은 파일명 선택 코드를 사용해 기존 PDF 등의 선택 결과가 달라지지 않는지 검사합니다.
+압축된 실제 RAW/CATALOG의 해시도 검사해 사전 검사 후 파일 변경을 탐지합니다.
+원본 검사 해제·누락 기록 삭제·구판 전체 재포함을 하지 않습니다.
+
+DEPENDENCY_CHECK.json의 status=VERIFIED, filename_selection_unchanged=true와
+included_dependencies를 확인하세요. 이번 현장 사진에서는 누락 참조 5개를 확인했습니다.
+실제 생성 결과의 수와 경로는 현장 데이터에서 결정되며 5개라고 강제로 통과시키지 않습니다.
+
+자동 보완 범위는 현재 R2 서비스에서 PDF 대신 선택되지 않는 동일 이름의 DOC/HWP입니다.
+다른 경로·형식의 원본, 새 ZIP 원본 추가, 명시적으로 제외된 판본, 선택 범위 변경은
+DEPENDENCY_SCOPE_REVIEW / DEPENDENCY_SELECTION_CONFLICT / DEPENDENCY_SELECTION_DRIFT로 중단합니다.
+이때 검사나 카탈로그를 고쳐 통과시키지 말고 오류와 DEPENDENCY_CHECK.json을 확인합니다.
+
+4. Dataiku에 옮길 파일
+RAW_EXPORT_20261023_R2 안의 아래 4개를 함께 사용합니다.
+  RAW_INPUT.zip
+  RAW_INPUT.zip.receipt.json
+  PIPELINE_SUPPORT.zip
+  PIPELINE_SUPPORT.zip.receipt.json
+RAW만 새 파일로 바꾸고 예전 receipt를 섞지 않습니다.
+기존 Dataiku 클라이언트 DATAIKU_PIPELINE_CLIENT_20261023_R1.zip은 그대로 사용합니다.
+
+이전 관리 폴더·작업 기록을 보존하려면 새 관리 폴더 LEGAL_PIPELINE_WORKSPACE_R2를 만들고,
+그 폴더 최상위에 위 4개와 기존 클라이언트 ZIP을 넣습니다.
+기존 DATAIKU_PIPELINE_RUN_20261023_R1.txt 코드의 설정을 다음처럼 바꾸어 prepare로 실행합니다.
+  ACTION = "prepare"
+  FOLDER_NAME = "LEGAL_PIPELINE_WORKSPACE_R2"
+  WORK_DIR = "./legal_pipeline_work_20261023_r2"
+  JOB_NAME = "run_20261023_r2_01"
+이어 새 셀에서 PIPELINE_RESULT = run(action="check")로 테이블을 확인합니다.
+기존 LEGAL_PIPELINE_URL / LEGAL_PIPELINE_TOKEN / LEGAL_ORACLE_CONNECTION=AIDP는 유지합니다.
+
+입력이 달라졌으므로 실패했던 WORK_DIR/JOB_NAME으로 재개하지 않습니다.
+현재 GENOS의 이전 작업은 FAILED 상태로 남아 있습니다. 새 run 전에 이전 실패 로그를
+보존하고 해당 작업을 기존 ACK(discard_failed_attempt=True) 절차로 해제해야 합니다.
+해제하지 않으면 BUSY가 날 수 있습니다. 이 ZIP 생성 도구는 실패 작업을 자동 해제하거나 삭제하지 않습니다.
+먼저 이번 생성 결과와 새 prepare/check 결과를 확인하세요. 이 단계까지는 새 GENOS 작업을 시작하지 않습니다.
+
+5. 검증 범위
+작은 합성 파일로 DOC/HWP 원본 누락 재현과 수정, 해시 불일치/원본 부재/경로 이탈/순환 참조,
+기존 출력 보호, 압축 도중 원본·카탈로그 변경, 판본 선택 범위 변경을 검사합니다.
+봉인된 GENOS 서비스 R2의 실제 pipeline.py build-data-stages raw --execute 경로로
+보완한 원본 5개를 검증하고 PDF 5개가 그대로 선택되는지 확인합니다.
+현장 원문 바이트는 이 외부 작업 환경에서 읽지 않았습니다. 실제 ZIP 재생성·GENOS 전체 구조화/
+색인·Oracle 적재 성공은 현장 실행 결과로 확인해야 합니다. 이번 첨부에는 사용자 원문이 없습니다.
