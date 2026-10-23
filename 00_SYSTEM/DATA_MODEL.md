@@ -1,5 +1,11 @@
 # 현행 데이터 계약 — 원문과 용어
 
+**Dataiku 저장 레이어 기준(사용자 확인 2026-10-22):** LLM 질의·에이전트 판단·실행 로그는 에이전트 레이어, 구조화 데이터·온톨로지·LLM Wiki는 골드 레이어에 저장한다. 저장 책임과 실제 연동 상태는 [Dataiku 데이터 레이어](ARCHITECTURE.md#dataiku-data-layers)를 따른다.
+
+**골드 스키마 규약(사용자 제공 2026-10-22):** 골드 테이블·컬럼의 명명·타입·길이·메타 등록과 Description은 [골드 레이어 스키마·메타데이터 규약](ARCHITECTURE.md#dataiku-gold-schema-convention)을 따른다. 각 테이블의 행 단위·PK·원천·기간·갱신·산식·주의·오너·예시 질의와 컬럼의 논리명·업무 의미·허용값·산식을 작성한다. 기존 물리 스키마의 준수·이행 여부는 별도 확인 대상이다.
+
+표준단어·금칙어·한글 용어의 `수식어 + 도메인` 구성, 물리명·용어명 30바이트 규약, 유형별 용어·ID 예외·도메인 타입·코드값 표준화와 신청·승인 절차는 [메타마이너 가이드 정리 및 원본 사진](../07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/README.md)을 참조한다. 사진의 예시를 승인된 프로젝트 물리명·타입·코드값으로 간주하지 않는다.
+
 RAG HTTP 입력의 선택적 `team_id`는 저장된 팀 메타데이터로 문서 ID 범위를 고정한 뒤
 기존 `term-runtime-v1` Request의 `document_ids`로 변환한다. 내부 스키마·원문 저장 형식은
 유지하며 팀 미지정 자료는 명시 팀 선택에서 제외한다. [선택·이행 계약](../07_DOCS/REFERENCE/OPERATIONS/GENOS_LEGAL_AGENT_TEAMS.md).

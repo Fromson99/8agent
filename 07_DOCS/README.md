@@ -1,5 +1,11 @@
 # 07_DOCS
 
+- [골드 레이어·메타마이너 규약과 원본 사진](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/README.md) — 표준단어·논리명·물리명·유형별 용어, 도메인·코드값, 표준 신청·승인 절차와 골드 메타 작성 규약. [테이블 목록·Bizmeta·등록 대상·컬럼 정의 양식](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/TABLE_SCHEMA_WORKBOOK.md)과 추가 사진7장 포함. 사용자 제공 사진 총27장 원본·내용 대응·SHA-256 보존.
+
+- [온톨로지 v4: 조문 경로 조립·대화 축적·변경 영향](REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md) — 조문 도착 후 관계 컴파일·자동 설명·목적 원문 확보, 자유 대화의 제한된 지식 축적, 정정·조건 변경 비교와 프로토타입 구현 설계. 설계 저장이며 제품 구현·MAIN·GENOS 반영은 별도.
+
+- [온톨로지 v3 문서 안내](REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md) — 방향·지식 모델·근거 기억·새 연결·설명/평가·구현 단위·DB 설계를 주제별 문서로 연결하는 목차. 기존 코드 검토와 DDL·조회 SQL·이행/검증 문서 포함.
+
 - [2026년 10월 7일 누적 개발과 Git 푸시 상태](REFERENCE/OPERATIONS/GIT_WORK_STATUS_20261007.md) — 구현·선택된 로컬 MAIN·이후 작업본·실험 재현 소스·GENOS 현장 미확인 범위를 구분. 현재 작업본 계약 138개 통과/1개 실패와 채팅·NFS 관련 48개 통과를 기록.
 
 - [법령별 후보 탐색과 부모 범위 읽기 구현](REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/IMPLEMENTATION.md) — 새 소유 본문 색인에 법령·조별 페이지, 모델의 법령 선택 이유, 부모·형제 READ, 다른 법령/재검색·SQL 재개를 연결. 사용자 후속 지시에 따라 미해결 필수 연결도 완료 허용하며 상태·경고를 보존. 작업 코드 구현이며 MAIN/GENOS 전환은 별도. [초기 설계](REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/DESIGN.md)는 이전 완료 정책의 역사 자료.
