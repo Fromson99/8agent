@@ -230,7 +230,8 @@ class NativeExecution(CompletionExecution):
                 self.host.verify({'binding':read['binding'],'evidence':evidence})
                 self.s.work.record_observation({'tool':'selection_progress_restore','args':{'binding':digest(read['binding'])}},
                     {'status':'REUSED'},evidence,verify=self.s.sources.source.verify)
-            record={**read['record'],'query_plan':{k:parts['PLAN']['payload'][k] for k in ('law_names','queries')}}
+            record={**read['record'],'query_plan':{k:parts['PLAN']['payload'][k] for k in ('law_names','queries')},
+                    'current_request':utterance}
             if record.get('unit_read_contract')=='unit-read-v1':
                 from .unit_reading import read_state
                 read_state(self.s.sources,getattr(self,'selection_read_state',{}))

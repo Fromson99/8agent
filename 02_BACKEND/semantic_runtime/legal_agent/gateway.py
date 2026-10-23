@@ -447,6 +447,10 @@ class ModelGateway:
                     continue
                 raise
             except ProposalError as exc:
+                failed_response = getattr(exc, 'response', None)
+                failed_body = failed_response.get('body_json', failed_response) if isinstance(failed_response, dict) else {}
+                if _response_diagnostics(failed_body).get('finish_reason') == 'length':
+                    exc.generation_failure = 'OUTPUT_LENGTH_LIMIT'
                 self.repo.finish_attempt(ident, 'FAILED', getattr(exc, 'response', None),
                                          {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
@@ -522,6 +526,8 @@ class ModelGateway:
                 # A stale view is a runtime consistency failure, not bad JSON.
                 raise
             except (ProposalError, ValidationError) as exc:
+                if _response_diagnostics(body).get('finish_reason') == 'length':
+                    exc.generation_failure = 'OUTPUT_LENGTH_LIMIT'
                 repair_scheduled = (output.repairable(exc) and repairs < repair_limit
                                     and not (projection and projection.emitted))
                 if journal:journal.reject(repairs, exc, content,can_retry=repair_scheduled)
@@ -545,6 +551,8 @@ class ModelGateway:
                         raise
                     error = ProposalError('structured model output invalid after bounded repair: '+str(exc)[:3000])
                     error.format_error = True
+                    if hasattr(exc, 'generation_failure'):
+                        error.generation_failure = exc.generation_failure
                     raise error from exc
                 # Append-only chat cannot retract a draft. Repair still uses the
                 # bounded journal path; only the final canonical result is shown.

@@ -301,7 +301,7 @@ class DecisionJournal:
     def transaction(self):
         return self.repo.transaction() if hasattr(self.repo, 'transaction') else nullcontext()
 
-    def reserve(self, attempt, *, max_repairs=1):
+    def reserve(self, attempt, *, max_repairs=1, correction_budget=None):
         with self.transaction():
             prior = self.state()
             if prior and prior['status'] == 'ACCEPTED':
@@ -313,27 +313,69 @@ class DecisionJournal:
                     prior and (prior['status'] != 'REJECTED' or not prior.get('repairable'))):
                 raise OutputContractError('decision correction budget exhausted',
                     [issue('CORRECTION_BUDGET_EXHAUSTED', repairable=False)], repairable=False)
+            if correction_budget is not None:
+                correction_budget.reserve_in_transaction(self.key,attempt)
             self._put('RESERVED', attempt)
         return None
 
-    def reject(self, attempt, error, value=None, *, can_retry=None):
+    def reject(self, attempt, error, value=None, *, can_retry=None, correction_budget=None):
         with self.transaction():
+            if correction_budget is not None:
+                correction_budget.finish_in_transaction(self.key,attempt,error=error,value=value,can_retry=can_retry)
             self._put('REJECTED', attempt, repairable=repairable(error) and can_retry is not False,
                       failure=diagnostics(error), proposal=deepcopy(value),
                       proposal_hash=digest(value), error=str(error))
 
-    def accept(self, attempt, value):
+    def accept(self, attempt, value, *, correction_budget=None):
         with self.transaction():
+            if correction_budget is not None:
+                correction_budget.finish_in_transaction(self.key,attempt,value=value)
             return self._put('ACCEPTED', attempt, value=value, value_hash=digest(value))
 
 
-def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=None, can_repair=None):
+class CorrectionBudget(DecisionJournal):
+    """Shared correction ownership across changing presentations, not new retries.
+
+    The caller supplies canonical task/evidence/revision identity; dynamic menus
+    and schema aliases must not reset it. Each reservation/finish shares the
+    existing decision transaction. Unknown outcomes fail closed on restart.
+    """
+    EVENT = 'OUTPUT_CORRECTION_SCOPE'
+
+    def __init__(self,repo,owner,identity):
+        super().__init__(repo,owner+'-correction-scope',identity,{})
+
+    def reserve_in_transaction(self,decision_key,attempt):
+        prior=self.state() or {}
+        if prior.get('status')=='RESERVED':
+            raise ContractError('previous correction-scope outcome is unknown; no automatic replay')
+        failures=deepcopy(prior.get('failures',[]))
+        if len(failures)>=2 or failures and (not failures[-1]['failure']['repairable'] or failures[-1]['can_retry'] is False):
+            raise OutputContractError('same-evidence decision correction budget exhausted',
+                [issue('CORRECTION_SCOPE_EXHAUSTED',repairable=False)],repairable=False)
+        self._put('RESERVED',attempt,decision=decision_key,failures=failures)
+
+    def finish_in_transaction(self,decision_key,attempt,*,error=None,value=None,can_retry=None):
+        prior=self.state()
+        if not prior or prior['status']!='RESERVED' or prior['decision']!=decision_key or prior['attempt']!=attempt:
+            raise ContractError('correction-scope reservation changed before commit')
+        failures=deepcopy(prior['failures'])
+        if error is not None:
+            failures.append({'decision':decision_key,'attempt':attempt,
+                'failure':diagnostics(error),'error':str(error),'proposal_hash':digest(value),'can_retry':can_retry})
+        self._put('REJECTED' if error is not None else 'ACCEPTED',attempt,
+            decision=decision_key,failures=failures)
+
+
+def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=None, can_repair=None,
+                     correction_scope=None):
     """One full correction with the same data/schema and durable budget.
 
     invoke(payload, attempt) is the existing stage call; no alternate transport.
     validate must be read-only; tool execution remains after this function.
     """
     journal = DecisionJournal(repo, owner, identity or data, schema)
+    shared = CorrectionBudget(repo,owner,correction_scope) if correction_scope is not None else None
     prior = journal.state()
     if prior and prior['status'] == 'ACCEPTED':
         value = deepcopy(prior['value'])
@@ -344,7 +386,7 @@ def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=No
         raise OutputContractError('decision correction budget exhausted',
             [issue('CORRECTION_BUDGET_EXHAUSTED', repairable=False)], repairable=False)
     for attempt in range(start, 2):
-        cached = journal.reserve(attempt)
+        cached = journal.reserve(attempt,correction_budget=shared)
         if cached:
             value = deepcopy(cached['value']); validate(value); return value
         payload = deepcopy(data)
@@ -359,10 +401,10 @@ def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=No
             validate(value)
         except (ProposalError, ValidationError) as exc:
             retry=not attempt and repairable(exc) and (can_repair is None or can_repair())
-            journal.reject(attempt, exc, value,can_retry=retry)
+            journal.reject(attempt, exc, value,can_retry=retry,correction_budget=shared)
             if not retry:
                 raise
             prior = journal.state()
             continue
-        journal.accept(attempt, value)
+        journal.accept(attempt, value,correction_budget=shared)
         return value

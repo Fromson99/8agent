@@ -7,6 +7,7 @@ issue-grouped rendering and a conservative normalization instead of a failed
 request when the model twice keeps a coverage/materiality conflict.
 """
 from copy import deepcopy
+from html import escape
 import re
 import unicodedata
 from jsonschema import Draft202012Validator
@@ -22,6 +23,7 @@ V6 = 'investigation-completion-v6'
 V7 = 'investigation-completion-v7'
 V8 = 'investigation-completion-v8'
 KNOWN = (V1, V2, V3, CONTRACT, V5, V6, V7, V8)
+GAP_REASON_PRESENTATION = 'attributed-gap-reasons-v1'
 
 def version(profile):
     return profile.get('candidate_navigation', {}).get('completion_policy_version', CONTRACT)
@@ -140,7 +142,7 @@ def source_gap_actions(value):
     return value, changes
 
 
-def assessment_errors(value, schema, issues):
+def assessment_errors(value, schema, issues, *, model_materiality=False):
     value = with_targets(value)
     errors = [f'{"/".join(map(str, e.path))}: {e.message}'
               for e in Draft202012Validator(schema).iter_errors(value)]
@@ -161,7 +163,7 @@ def assessment_errors(value, schema, issues):
                 errors.append('MISSING_FACT cannot target a saved legal material. If a law/decree/list/scope is missing, select a source gap and source research action; only an unprovided fact needed for a requested case application is a user fact.')
         elif gap['suggested_action'] == 'REQUEST_FACT':
             errors.append('A legal source gap requires source research, not REQUEST_FACT.')
-        if gap['kind'] != 'UNRESOLVED_REFERENCE' and not gap['material']:
+        if not model_materiality and gap['kind'] != 'UNRESOLVED_REFERENCE' and not gap['material']:
             errors.append('A missing requested scope/source/subject/fact is a material gap.')
     blocked = {g['issue_id'] for g in value['gaps'] if g['material']}
     for row in rows:
@@ -336,7 +338,10 @@ def refresh_limitations(value, issues, stop_reason=None, *, closed=None, notes=(
     # Recovery/normalization are operational diagnostics, never user limitations.
     for note in ():
         items.append({'id': 'L-' + note.lower(), 'kind': note, 'issue_id': None, 'text': NOTE_WORDS[note]})
-    if stop_reason and not items:
+    if stop_reason == 'ASSESSMENT_OUTPUT_LIMIT':
+        items.append({'id':'L-review-incomplete', 'kind':'EXECUTION_LIMIT', 'issue_id':None,
+            'text':'원문은 확보했으나 답변 검토가 출력 한도에서 끝나 완료하지 못했습니다. 아래 원문은 확정된 법률 판단이 아닙니다.'})
+    elif stop_reason and not items:
         items.append({'id': 'L-stop', 'kind': 'EXECUTION_LIMIT', 'issue_id': None,
                       'text': '확인한 원문 범위에서 답변하며, 나머지 범위는 확인하지 못했습니다.'})
     value['limitation_items'] = list({r['id']: r for r in items}.values())
@@ -382,8 +387,9 @@ def render_source_excerpt_reply(assessment):
             or reply.get('legal_conclusion_confirmed') is not False
             or reply.get('absence_proven') is not False or not reply.get('sources')):
         raise ContractError('invalid source excerpt reply')
-    blocks = ['확보한 자료만으로 질문의 결론을 확정하기는 어렵습니다. '
-              '확인한 원문과 아직 확인하지 못한 범위를 정리합니다.']
+    blocks = (['원문은 확보했으나 답변 검토를 완료하지 못했습니다. 확인한 원문을 제공합니다.']
+              if assessment.get('stop_reason') == 'ASSESSMENT_OUTPUT_LIMIT' else
+              ['확보한 자료만으로 질문의 결론을 확정하기는 어렵습니다. 확인한 원문과 아직 확인하지 못한 범위를 정리합니다.'])
     for row in reply['sources']:
         title = ' · '.join(x for x in (row['document_name'], row['heading']) if x)
         quotes = '\n\n'.join('\n'.join('> ' + escape(line) for line in span['text'].split('\n'))
@@ -398,7 +404,8 @@ def internal_schema(base, stage):
              'limitation_items': {'type': 'array'}, 'stop_reason': {'type': ['string', 'null']}}
     if stage == 'COMPOSE':
         extra.update(composition_plan={'type': 'object'}, assessment_hash={'type': 'string'})
-    schema['properties'].update(assessment_basis={'type':'object'},model_proposal={'type':'object'})
+    schema['properties'].update(assessment_basis={'type':'object'},model_proposal={'type':'object'},
+                                read_judgment_review={'type':'object'})
     schema['properties']['source_excerpt_reply'] = obj({
         'schema_version': {'const': SOURCE_REPLY_CONTRACT},
         'sources': {'type': 'array', 'minItems': 1, 'items': obj({
@@ -443,6 +450,37 @@ def default_plan(assessment, requested_format=None, issues=None):
             'issue_sections': sections}
 
 
+def displayed_limitations(assessment, plan):
+    """Expose recorded reasons only in final presentation, never model input.
+
+    Old plans retain their exact rendering for saved-publication verification.
+    Reasons remain unverified model observations, separate from legal claims.
+    """
+    presentation = plan.get('gap_reason_presentation')
+    if presentation is None:
+        return assessment['limitations']
+    if presentation != GAP_REASON_PRESENTATION:
+        raise ContractError('unknown gap reason presentation')
+    by_id = {row['id']: row for row in assessment['limitation_items']}
+    replacements = {}
+    for gap in assessment.get('gaps', []):
+        if not gap.get('material', True) or not (gap.get('reason') or '').strip():
+            continue
+        target = (gap.get('missing_target') or '').strip()
+        ident = 'L' + digest([gap['issue_id'], gap['kind'], gap.get('material_id'), target])[:20]
+        item = by_id.get(ident)
+        if item is None:
+            continue
+        # Render as literal text; a diagnostic cannot create links or markup.
+        reason = escape(' '.join(gap['reason'].split()), quote=False)
+        reason = re.sub(r'([\\`*_\[\]()#!|~])', r'\\\1', reason)
+        label = ('당시 미확인 사유' if item.get('navigation_status') else '미확인 사유')
+        detail = item['text'] + ' ' + label + '(AI 판단·검증 전): ' + reason
+        replacements.setdefault(item['text'], []).append(detail)
+    return list(dict.fromkeys(detail for text in assessment['limitations']
+                              for detail in replacements.get(text, [text])))
+
+
 def render(assessment, plan):
     claims = {c['claim_id']: c for c in assessment['claims']}
     order = plan.get('claim_order', [])
@@ -468,7 +506,7 @@ def render(assessment, plan):
         text = _render_sections(claims, sections, plan['layout'])
     else:
         text = _render_flat([claims[i]['text'] for i in order], plan['layout'])
-    limits = assessment['limitations']
+    limits = displayed_limitations(assessment, plan)
     if limits:
         text += '\n\n확인 범위\n\n' + '\n'.join('- ' + s for s in limits)
     return text
@@ -514,8 +552,12 @@ def _render_sections(claims, sections, layout):
 
 
 def compose(assessment, plan):
+    plan = deepcopy(plan)
+    if assessment.get('completion_contract') == V8:
+        plan['gap_reason_presentation'] = GAP_REASON_PRESENTATION
     return {**({'assessment_basis': deepcopy(assessment['assessment_basis'])} if 'assessment_basis' in assessment else {}),
             **({'source_excerpt_reply': deepcopy(assessment['source_excerpt_reply'])} if 'source_excerpt_reply' in assessment else {}),
+            **({'read_judgment_review': deepcopy(assessment['read_judgment_review'])} if 'read_judgment_review' in assessment else {}),
             'text': render(assessment, plan), 'claims': deepcopy(assessment['claims']),
             'limitations': deepcopy(assessment['limitations']),
             'completion_contract': assessment.get('completion_contract', V1),
@@ -530,6 +572,7 @@ def verify_composition(assessment, answer):
             or answer.get('assessment_hash') != digest(assessment)
             or answer.get('claims') != assessment['claims']
             or answer.get('source_excerpt_reply') != assessment.get('source_excerpt_reply')
+            or answer.get('read_judgment_review') != assessment.get('read_judgment_review')
             or answer.get('limitations') != assessment['limitations']
             or answer.get('limitation_items') != assessment['limitation_items']
             or answer.get('stop_reason') != assessment.get('stop_reason')

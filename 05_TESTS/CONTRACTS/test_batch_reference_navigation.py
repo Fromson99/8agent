@@ -298,3 +298,61 @@ def test_bounded_path_adopts_new_reference_source_with_exact_evidence(connected,
             validate_current(session.work,{'assembly':{'term_agent':{'source_bundle':bundle}}},session.sources.store)
             assert {x['document_id'] for x in bundle['sources']}=={'d','detail'}
     finally:p.store.close()
+
+
+
+def test_sparse_directory_keeps_unselected_groups_and_resume_does_not_invent_skip(connected):
+    s,_=connected;record,sid=initial(s);selected={'U1':record['unit_reads'][0]}
+    # Use the parent source extent so the incoming paragraph endpoint is covered.
+    h=rel.hit_for(s,sid,'0');opts,_=ur.offer_plan(s,h);opt=next(o for o in opts if o['id']=='subtree:0')
+    selected['whole']=ur.read(s,h,opt,action_state={'count':0,'chars':0})
+    s.connection_scope_spans={sid:[p for r in selected.values() for e in r['evidence'] for p in e['spans']]}
+    state={};calls=[]
+    def invoke(system,data,schema,phase,timeout):
+        calls.append(data);assert data['connection_directory']['listed_groups']>=1
+        return {'decisions':[],'needs_more':False}
+    kw=dict(read_state={'count':0,'chars':0},seconds_left=lambda:120,max_context_chars=80000,state=state,initial_anchors=[sid])
+    first=rel.navigate('승인',s,selected,invoke,**kw)
+    assert first['pending'] and state['queue'] and not state['decisions'] and not state['accepted']
+    queued=[g['key'] for g in state['queue']]
+    second=rel.navigate('승인',s,selected,invoke,**kw)
+    assert len(calls)==2 and [g['key'] for g in state['queue']]==queued
+    assert not second['actions'] and not state['decisions']
+
+
+def test_sparse_directory_choices_remain_closed_and_cover_declared_extent(connected):
+    s,_=connected;record,sid=initial(s)
+    groups,*_=rel.catalog(s,[sid],{},set());offered={'late':groups[0]}
+    rel.validate({'decisions':[],'needs_more':False},offered,sparse=True)
+    good={'decisions':[{'id':'late','action':'FOLLOW','scopes':['subtree:1'],'reason':'필요한 원문',
+        'applicability':'UNDETERMINED','applicability_reason':'원문으로 확인'}],'needs_more':False}
+    rel.validate(good,offered,sparse=True)
+    from copy import deepcopy
+    for change in ('id','scopes','duplicate'):
+        bad=deepcopy(good)
+        if change=='duplicate':bad['decisions']*=2
+        else:bad['decisions'][0][change]='unoffered' if change=='id' else ['exact:2']
+        with pytest.raises((ContractError,ProposalError)):rel.validate(bad,offered,sparse=True)
+
+
+
+def test_selected_directory_batch_budget_is_checked_before_any_target_read(connected,monkeypatch):
+    from copy import deepcopy
+    from semantic_runtime.legal_agent import tool_availability as availability
+    s,_=connected;record,sid=initial(s);selected={'U1':record['unit_reads'][0]}
+    h=rel.hit_for(s,sid,'0');opts,_=ur.offer_plan(s,h)
+    selected['whole']=ur.read(s,h,next(o for o in opts if o['id']=='subtree:0'),action_state={'count':0,'chars':0})
+    s.connection_scope_spans={sid:[p for r in selected.values() for e in r['evidence'] for p in e['spans']]}
+    before=deepcopy(selected);state={};calls=[];original=availability.budget_reason
+    def budget(*a,**kw):
+        return 'READ_ACTION_LIMIT' if calls else original(*a,**kw)
+    monkeypatch.setattr(availability,'budget_reason',budget)
+    def invoke(system,data,schema,phase,timeout):
+        calls.append(phase);g=data['groups'][0]
+        return {'decisions':[{'id':g['id'],'action':'FOLLOW','scopes':['subtree:1'],'reason':'선택',
+            'applicability':'UNDETERMINED','applicability_reason':'원문 확인 필요'}],'needs_more':False}
+    with pytest.raises((ContractError,ProposalError)):
+        rel.navigate('승인',s,selected,invoke,read_state={'count':0,'chars':0},seconds_left=lambda:120,
+            max_context_chars=80000,state=state,initial_anchors=[sid])
+    assert 1<=len(calls)<=2 and selected==before
+    assert not state['accepted'] and not state['decisions'] and state['queue']

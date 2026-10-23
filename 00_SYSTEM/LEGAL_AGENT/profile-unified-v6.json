@@ -55,7 +55,10 @@
     "completion_policy_version": "investigation-completion-v8",
     "length_recovery_max_tokens": 12800,
     "definition_entry": true,
-    "answer_first": true
+    "answer_first": false,
+    "selected_connection_scope": true,
+    "small_connection_context": true,
+    "read_judgment": true
   },
   "request_entry_policy": "fused-title-v1",
   "answer_presentation": "grounded-narrative-v1"

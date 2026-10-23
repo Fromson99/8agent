@@ -24,7 +24,7 @@ def suffix(text):
 
 def subsequence(short, title):
     """A lexical possibility, not proof that the speaker meant this law."""
-    if len(short) < 4 or not title.startswith(short[0]) or not title.endswith('법'):
+    if len(short) < 3 or not title.endswith('법'):
         return None
     positions = []; offset = 0
     for char in short:
@@ -35,7 +35,7 @@ def subsequence(short, title):
     return positions if positions[-1] == len(title)-1 else None
 
 
-def hints(question, matcher, scope, *, limit=6):
+def hints(question, matcher, scope, *, limit=None):
     # Filter before matching and ranking; hidden names cannot shadow allowed names.
     allowed = sorted(set(scope) & set(matcher.documents))
     index = SurfaceIndex(); titles = {}; aliases = {}
@@ -63,7 +63,7 @@ def hints(question, matcher, scope, *, limit=6):
         if did not in rows or score > rows[did][0]:
             rows[did] = (score, row)
 
-    for hit in index.match(question):
+    for hit in index.match(question, include_nested=True):
         for did, kind, label in hit['values']:
             # A bare base law followed by 시행령 must not masquerade as an exact base-law request.
             tail = question[hit['end']:]
@@ -105,7 +105,7 @@ def hints(question, matcher, scope, *, limit=6):
                     break
         matched = sum(len(norm(t['text'])) for _, t in fragments)
         # Generic two-syllable overlap alone should not flood the front with irrelevant laws.
-        if fragments and matched >= 3:
+        if fragments:
             lo = min(q['start'] for q, _ in fragments); hi = max(q['end'] for q, _ in fragments)
             nearby = question[max(0, lo-1):min(len(question), hi+10)]
             req = re.search(r'시행규칙|시행령', nearby)
@@ -115,6 +115,6 @@ def hints(question, matcher, scope, *, limit=6):
                 (1, matched/max(1, len(base))), None)
     ranked = sorted(rows.values(), key=lambda pair: (tuple(-x for x in pair[0]), pair[1]['title'], pair[1]['document_id']))
     return {'contract': CONTRACT, 'candidates': [v for _, v in ranked[:limit]],
-            'total_candidates': len(ranked), 'omitted_candidates': max(0, len(ranked)-limit),
+            'total_candidates': len(ranked), 'omitted_candidates': max(0, len(ranked)-limit) if limit is not None else 0,
             'navigation_hint_only': True, 'citation_eligible': False,
             'no_match_means': 'No title-form match; does not mean no relevant law exists.'}

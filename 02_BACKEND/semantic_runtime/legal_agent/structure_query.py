@@ -51,7 +51,7 @@ def heading_route(question, matcher, scope, hits, result):
     did = next(iter(names))
     matches = defaultdict(set)
     for hit in matcher.structures.match(question):
-        if len(hit['key']) < 4 or any(h['start'] <= hit['start'] and hit['end'] <= h['end'] for h in hits):
+        if any(h['start'] <= hit['start'] and hit['end'] <= h['end'] for h in hits):
             continue
         for value in hit['values']:
             key = value['document_id'], value['unit_id']
@@ -61,7 +61,9 @@ def heading_route(question, matcher, scope, hits, result):
                     and not coordinate.chain and unit.get('coordinate_scope') == 'body'
                     and unit.get('coordinate_binding', {}).get('mode') != 'unresolved'):
                 matches[hit['key']].add(key)
-    if not matches or any(len(keys) != 1 for keys in matches.values()):
+    ambiguous = [label for label, keys in matches.items() if len(keys) != 1]
+    matches = {label: keys for label, keys in matches.items() if len(keys) == 1}
+    if not matches:
         return {**result, 'reason': 'MISSING_OR_AMBIGUOUS_HEADING'}
     pairs, sources = [], []
     for _, uid in sorted({key for keys in matches.values() for key in keys}):
@@ -75,7 +77,7 @@ def heading_route(question, matcher, scope, hits, result):
         pairs.append({'document_id': did, 'document_name': matcher.documents[did],
                       'unit_id': uid, 'coordinate': coordinate, 'heading': matcher.units[(did, uid)].get('title', '')})
     sources = list(dict.fromkeys(sources))
-    return {'status': 'MATCH', 'pairs': pairs, 'source_ids': sources, 'reason': 'EXACT_DOCUMENT_HEADING'}
+    return {'status': 'MATCH', 'pairs': pairs, 'source_ids': sources, 'reason': 'EXACT_DOCUMENT_HEADING', 'ambiguous_headings': ambiguous}
 
 
 def definition_route(question, matcher, scope, hits, result):
@@ -492,8 +494,7 @@ def heading_term_candidates(matcher, docs, query, term_cache):
             term_cache[key] = set(question_terms(unit.get('title', '')))
         title_terms = term_cache[key]
         matched = title_terms & query_terms
-        if len(matched) >= 2 and len(matched) * 3 >= len(title_terms) * 2:
-            found[key] = (len(matched), len(matched) / len(title_terms))
+        found[key] = (len(matched), len(matched) / max(1, len(title_terms)))
     return found
 
 
@@ -697,11 +698,16 @@ def tree_row(matcher, did, uid, tree):
     row['original_count'] = len(ids)
     row['source_binding_unique'] = len(ids) == 1 and matcher.sources.get(ids[0], {}).get('document_id') == did
     row['source_id'] = ids[0] if row['source_binding_unique'] else None
-    row['ambiguous'] = bool(row['coordinate'] and len(tree['coordinates'].get(
-        (row['coordinate_scope'], row['coordinate']), [])) != 1)
+    peers = tree['coordinates'].get((row['coordinate_scope'], row['coordinate']), [])
+    coordinate = matcher.stored_coordinates.get((did, uid))
+    if coordinate and coordinate.unit in ('편', '장', '절', '관'):
+        # A displayed division has its actual parent path. Equal numbers under
+        # another parent do not make this particular node ambiguous.
+        parent = matcher.units[(did, uid)].get('parent')
+        peers = [other for other in peers if matcher.units[(did, other)].get('parent') == parent]
+    row['ambiguous'] = bool(row['coordinate'] and len(peers) != 1)
     # Containers navigate to children. Article/provision originals keep the
     # existing exact scope and source checks; an outline is never evidence.
-    coordinate = matcher.stored_coordinates.get((did, uid))
     row['readable'] = bool(coordinate and coordinate.unit == '조'
         and coordinate_index(matcher).get((did, coordinate.canonical_surface())) == [uid]
         and row['source_binding_unique'] and not row['ambiguous'])

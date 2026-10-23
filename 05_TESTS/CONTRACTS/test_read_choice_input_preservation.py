@@ -1,4 +1,5 @@
 """Finite input-loss regressions at projection, wire and actual API boundaries."""
+from conftest import term_glossary
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace as S
@@ -11,7 +12,7 @@ from semantic_runtime.legal_agent.errors import ContractError
 from semantic_runtime.legal_agent.bounded_source_session import _Gateway, _Protocol
 from semantic_runtime.legal_agent.navigation_input import NavigationReferences
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(p for p in Path(__file__).resolve().parents if (p / '06_TOOLS/EXPERIMENTS/adr_0885/test_focus.py').is_file())
 
 
 def load(name, relative):
@@ -45,7 +46,8 @@ def wire(view):
     gateway.system = 'contract test'
     codec = NavigationReferences(data)
     request = gateway.request('investigate', data, 'schema', references=codec)
-    return codec.restore(json.loads(request['messages'][1]['content'])['view'])
+    from semantic_runtime.legal_agent.navigation_input import expand_cards
+    return expand_cards(codec.restore(json.loads(request['messages'][1]['content'])['view']))
 
 
 @pytest.mark.parametrize('title', ['변경 절차', '예외・特例 😀 e\u0301', ''])
@@ -77,7 +79,7 @@ def test_duplicate_order_never_discards_nonempty_hints(monkeypatch, reverse):
 
 def test_conflicting_hints_retained_once_without_semantic_arbitration(monkeypatch):
     def setup(data, actions):
-        data['laws'] = [{'id': 'L1', 'articles': [{'read_action': 'T1', 'preview': x} for x in ['① 승인한다.', '② 통지한다.', '② 통지한다.']]}]
+        data['laws'] = [{'id': 'L1', 'document_id': 'D1', 'name': '모의 규정', 'articles': [{'read_action': 'T1', 'preview': x} for x in ['① 승인한다.', '② 통지한다.', '② 통지한다.']]}]
     row = wire(capture(monkeypatch, setup))['read_candidates'][0]
     assert row['preview'] == '① 승인한다.'
     assert row['additional_hints'] == [{'field': 'preview', 'value': '② 통지한다.'}]
@@ -158,8 +160,8 @@ def test_one_selection_can_still_read_four_targets(monkeypatch):
 def test_actual_api_calls_same_projection_and_publishes_original(tmp_path, tree, monkeypatch):
     calls = []
     original = dp.read_candidate_rows
-    def observed(data, candidates):
-        rows = original(data, candidates)
+    def observed(data, candidates, matcher=None):
+        rows = original(data, candidates, matcher)
         calls.append({'rows': len(rows), 'offered': len(candidates)})
         return rows
     monkeypatch.setattr(dp, 'read_candidate_rows', observed)
@@ -170,5 +172,6 @@ def test_actual_api_calls_same_projection_and_publishes_original(tmp_path, tree,
         kwargs['legal_agent_transport'].direct_note = False
         return create(*args, **kwargs)
     monkeypatch.setattr(app_module, 'create_app', current_fixture)
-    api.test_current_compact_api_publishes_and_reuses_verified_original(tmp_path, tree, monkeypatch)
+    # Use the current SpanTransport fixture; ADR0892's historical wrapper removes required assessment reasons.
+    api.prior.test_compact_assessment_without_navigation_publishes_through_api(tmp_path, tree)
     assert calls and any(c['rows'] > 0 for c in calls)

@@ -205,7 +205,7 @@ def phrase_spans(text, prefixes, ends=None):
     return found
 
 
-def longest(text, has_key, key_of, short=None):
+def longest(text, has_key, key_of, short=None, *, include_nested=False):
     """Question side: left-to-right longest match inside noun runs, no overlap.
 
     The best analysis goes first; a near-best alternative only fills spans the best
@@ -224,6 +224,10 @@ def longest(text, has_key, key_of, short=None):
                     start, end = run[i][0], run[j][1]
                     key = key_of(text[start:end])
                     if (len(key.replace(' ', '')) >= 2 or (short is not None and short(key))) and has_key(key):
+                        if include_nested:
+                            row = (start, end, key)
+                            if row not in found: found.append(row)
+                            continue
                         hit = (j, start, end, key)
                         break
                 if hit is None:

@@ -93,8 +93,8 @@ class SurfaceIndex:
             return False
         return start == 0 or not WORD_CHAR.match(text[start-1])
 
-    def match(self, text):
-        """Longest match, left to right, no overlap, anchored at word starts."""
+    def match(self, text, *, include_nested=False):
+        """Word-boundary matches; optionally retain all nested lexical clues."""
         query, offsets = self.span(text)
         result, i = [], 0
         while i < len(query) - 1:
@@ -109,6 +109,11 @@ class SurfaceIndex:
                 # Latin abbreviations must not match inside a longer ASCII word.
                 if (key.isascii() and key.isalpha() and end < len(query)
                         and query[end].isascii() and query[end].isalpha()):
+                    continue
+                if include_nested:
+                    start_raw, end_raw = offsets[i], offsets[end-1]+1
+                    result.append({'key': key, 'start': start_raw, 'end': end_raw,
+                                   'text': text[start_raw:end_raw], 'values': self.values[key]})
                     continue
                 hit = (key, end)
                 break
@@ -150,7 +155,7 @@ class MorphIndex:
         values = self.surfaces.values
         return [{'key': key, 'start': start, 'end': end, 'text': text[start:end], 'values': values[key]}
                 for start, end, key in term_morph.longest(text, values.__contains__, spaced,
-                                                          getattr(self, 'short', set()).__contains__)]
+                                                          getattr(self, 'short', set()).__contains__, include_nested=True)]
 
 
 class ReverseMatcher:

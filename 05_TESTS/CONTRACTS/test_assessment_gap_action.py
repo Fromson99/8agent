@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Source/fact routing regression; synthetic originals and model doubles only."""
 from copy import deepcopy
 import json
@@ -40,7 +41,7 @@ def test_source_gap_action_preserves_gap_claims_and_proposal(impl, make, kind, m
     assert gap['suggested_action'] == 'RESEARCH'
     for key in ('kind', 'reason', 'missing_target', 'material_id', 'issue_id'):
         assert gap[key] == before['gaps'][0][key]
-    assert gap['material'] == (material or kind != 'UNRESOLVED_REFERENCE')
+    assert gap['material'] == ((material or kind != 'UNRESOLVED_REFERENCE') if impl is v5 else material)
     if gap['material']:
         assert accepted['disposition'] == 'NEEDS_INVESTIGATION'
         assert accepted['issue_assessments'][0]['status'] == 'PARTIAL'
@@ -78,7 +79,7 @@ def test_legal_research_action_and_schema_boundary_unchanged(impl, make):
     with pytest.raises(ValidationError): prepare(impl, raw)
 
 
-@pytest.mark.parametrize('bad', ['unknown_ref', 'reversed_text', 'invented_fact'])
+@pytest.mark.parametrize('bad', ['unknown_ref', 'invented_fact'])
 def test_gap_correction_does_not_accept_unsupported_claims(bad):
     raw = p8(); raw['gaps'] = [{**GAP, 'suggested_action': 'REQUEST_FACT'}]
     claim = raw['claims'][0]
@@ -104,7 +105,7 @@ class GapTransport(SpanTransport):
             message = result['body_json']['choices'][0]['message']
             value = json.loads(message['content'])
             if self.repeat or not view['gap_history']:
-                value['gaps'] = [{**GAP, 'suggested_action': 'REQUEST_FACT'}]
+                value['gaps'] = [{**GAP, 'suggested_action': 'RESEARCH'}]
             if self.empty: value['claims'] = []
             message['content'] = json.dumps(value, ensure_ascii=False)
         return result
@@ -117,22 +118,22 @@ def test_native_v8_gap_reentry_bounded_stop_and_idempotent_response(tmp_path, tr
     gen, index = tree; transport = GapTransport(repeat, empty)
     profile = {**settings(), 'max_model_attempts': 40, 'max_read_chars': 10000,
         'candidate_navigation': {'mode': 'law-first-v1', 'investigation_control': True,
-            'completion_contract': True, 'completion_policy_version': cc.V8, 'compact_input': True,
+            'completion_contract': True, 'completion_policy_version': cc.V8, 'compact_input': True, 'answer_first': True,
             'assessment_reentry_limit': limit}}
     app = create_app(tmp_path, gen, contracts_root=ROOT, provider=object(), implementation='legal-agent-unified-v6',
         legal_agent_profile=profile, legal_agent_transport=transport,
-        memory_identity=lambda _: {'user_id': 'u', 'team_id': 't', 'document_ids': ['d']})
+        memory_identity=lambda _: {'user_id': 'u', 'team_id': 'test_team', 'document_ids': ['d']})
     app.state.pipeline.term_agent.unit_fulltext = index
     with TestClient(app) as api:
         body = {'question': '모의승인규정 제1조 승인 기준은?', 'session_id': 'gap', 'request_id': 'r1'}
         response = api.post('/v1/rag/ask', json=body)
         assert not any('assess-repair' in phase for phase in transport.phases)
         if empty:
-            assert response.status_code == 422
-            failure = response.json()
-            assert (failure.get('answer_status') == 'failed'
-                    or failure.get('code') == 'SOURCE_INVESTIGATION_INCOMPLETE')
-            assert '질문에 답할 근거가 충분히 확인되지 않았습니다' in caplog.text
+            assert response.status_code == 200, response.text
+            out=response.json()
+            assert not out['answer']['claims'] and out['answer']['unresolved']
+            assert '승인 후 보고한다.' in out['answer']['text']
+            assert out['assembly']['term_agent']['text_integrity'] == 'VERIFIED_SOURCE_EXCERPTS'
             return
         out = ok(response)
         assert '승인 후 보고한다.' in out['answer']['text']

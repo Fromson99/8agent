@@ -594,6 +594,8 @@ class Memory:
                             from .request_repair import enabled, new_epoch
                             if enabled(execution.s.sources.profile):
                                 checkpoint=new_epoch(checkpoint,reason='ASSESS_GAP_REENTRY')
+                            from .request_repair import retain_assessment_review
+                            retain_assessment_review(checkpoint,recovery.payload['assessment'],body['question'])
                             checkpoint['assessment_gaps']=recovery.payload['gaps']
                             checkpoint['reentry_counters']=dict(execution.reentry_counters)
                             execution.assessment_gaps=recovery.payload['gaps']

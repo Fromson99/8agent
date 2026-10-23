@@ -86,7 +86,14 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
             row['actions']=list(dict.fromkeys(row['actions']))
         elif stage == 'SELECT':
             row['actions'] = ['읽은 원문에서 답변에 사용할 근거 선택']
-            row['data'] = [{**source, 'action': '답변 근거 채택' if sid in selected else '최종 근거에 미포함',
+            from .read_judgment import checked
+            ledgers = [checked(s) for s in (payload.get('investigation_state') or {}).get('read_judgments',{}).values()]
+            if ledgers:
+                row['read_judgments'] = [{k:s.get(k,{}) for k in ('request_key','heads','needs','conflicts','history','receipts','final_reviews')} for s in ledgers]
+                if any(h['document_id'] not in allowed for s in ledgers for h in s['heads'].values()):
+                    raise ContractError('judgment display escaped current authorization')
+                row['actions'] = ['원문별 잠정 판단·이유·미확인·다음 행동 기록']
+            row['data'] = [{**source, 'action': ('최종 검토에 전달' if ledgers else '답변 근거 채택') if sid in selected else '최종 근거에 미포함',
                             'reason': chosen_reasons.get(sid, '')} for sid, source in sources.items()]
             row['decisions'] = [str(issue) for d in payload.get('decisions', [])
                                 for issue in d.get('decision', {}).get('issues', [])]
@@ -107,6 +114,21 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                     # Rejected actions and recovery causes stay in the request journal.
                 row['actions'] += [str(d['decision']['next_action'])+' · '+str(d['decision']['reason'])
                                    for d in payload.get('decisions',[]) if 'next_action' in d.get('decision',{})]
+            for ledger in ledgers:
+                labels={'CORE':'직접 근거 후보','SUPPORT':'보조 근거 후보','CONDITIONAL':'조건부 사용 후보',
+                        'DEFER':'판단 보류','EXCLUDE':'사용 제외'}
+                for head in ledger['heads'].values():
+                    label=sources.get(head['source_id'],{'source_id':head['source_id'],
+                        'document_name':head.get('document_name') or head['document_id'],
+                        'coordinate':head.get('heading') or ''})
+                    row['data'].append({**label,'action':'잠정 판단 · '+labels[head['use']],
+                        'judgment':head['finding'],'reason':head['reason'],'judgment_id':head['id'],
+                        'judgment_version':head['version']})
+                    row['decisions'].append(labels[head['use']]+' · '+head['finding']+' · 이유: '+head['reason'])
+                row.setdefault('limitations',[]).extend('미확인: '+n['text']+' · '+n['reason']
+                    for n in ledger['needs'].values() if n['status']=='OPEN')
+                row['limitations'].extend('판단 충돌: '+c['reason']
+                    for c in ledger['conflicts'].values() if c['status']=='OPEN')
         elif stage in ('ASSESS', 'COMPOSE'):
             row['actions'] = ['선택한 원문을 현재 조건에 적용' if stage == 'ASSESS'
                               else '현재 판단과 출처를 유지해 최종 답변 작성']
@@ -117,6 +139,13 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                 row['data'].append({**sources[sid], 'action': '판단 근거 인용',
                                     'judgment': claim['text'], 'quote': claim['quote'],
                                     **({'claim_id':claim['claim_id'],'rule':claim.get('rule')} if 'claim_id' in claim else {})})
+            if payload.get('read_judgment_review'):
+                row['read_judgment_review'] = payload['read_judgment_review']
+                review=payload['read_judgment_review'].get('review') or {}
+                dispositions={'USE':'최종 사용','CONDITIONAL':'조건부 사용','UNRESOLVED':'미해결','NOT_USED':'최종 미사용',
+                              'OPEN':'미확인','RESOLVED':'해결 판단','NOT_NEEDED':'이번 답변에 불필요'}
+                row['decisions'].extend(dispositions[r.get('disposition',r.get('status'))]+' · '+r['reason']
+                    for field in ('judgments','needs','conflicts') for r in review.get(field,[]))
             row['limitations'] = payload.get('limitations', [])
             if payload.get('completion_contract'):
                 row['completion_contract']=payload['completion_contract']

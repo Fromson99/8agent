@@ -1,0 +1,87 @@
+{
+  "schema_version": "multiturn-scope-plan-source-binding-v1",
+  "recorded_at": "2026-10-22T08:24:45.483135+00:00",
+  "status": "PLAN_ONLY",
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "compact-answer-reasons-20261022-r1",
+    "generation": 101,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/compact-answer-reasons-20261022-r1/release.json",
+    "release_manifest_sha256": "5ec884c1a2e32a9a9441c9136f60aa55c6860c818c599130ba65622037f5246f",
+    "activated_at": "2026-10-22T07:38:56.986844+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "2cd978bdf54d6bcdf21a29b651958d739b083982498781f756ed3cfd99457014"
+  },
+  "active_pointer_sha256": "293fde74fad7db6893c676a9e9b4b5ed5ac3d8b0d4c641ed2c0e090f51350671",
+  "plan_sha256": "569d64b6360db6a232f9780e7b7d9d7668c6589928c353c7b14d4c50084ade2d",
+  "modules": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "58e07bcf161ba4031468ce6ff2fa1ee975e614ee9d0e09afa4e8c8259f779708",
+      "selected_sha256": "58e07bcf161ba4031468ce6ff2fa1ee975e614ee9d0e09afa4e8c8259f779708",
+      "manifest_sha256": "58e07bcf161ba4031468ce6ff2fa1ee975e614ee9d0e09afa4e8c8259f779708",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "working_sha256": "faaa6e4b9d370c7e25fb127bbcfea6a4591a656eb8fe348f25d618bad0cfcde1",
+      "selected_sha256": "faaa6e4b9d370c7e25fb127bbcfea6a4591a656eb8fe348f25d618bad0cfcde1",
+      "manifest_sha256": "faaa6e4b9d370c7e25fb127bbcfea6a4591a656eb8fe348f25d618bad0cfcde1",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "working_sha256": "ceb7553db04ba59a3dae8f8bdeee0d2b03594128e0839c7c67c87c8098192892",
+      "selected_sha256": "ceb7553db04ba59a3dae8f8bdeee0d2b03594128e0839c7c67c87c8098192892",
+      "manifest_sha256": "ceb7553db04ba59a3dae8f8bdeee0d2b03594128e0839c7c67c87c8098192892",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "working_sha256": "3770f84a0b9a782ae7eb6523b596c40ecf6dfc9495aefe1134d567549e8726d8",
+      "selected_sha256": "3770f84a0b9a782ae7eb6523b596c40ecf6dfc9495aefe1134d567549e8726d8",
+      "manifest_sha256": "3770f84a0b9a782ae7eb6523b596c40ecf6dfc9495aefe1134d567549e8726d8",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/query_scope.py",
+      "working_sha256": "2cd6cdb4bcf64b07d2cb1cdbe688e4d29dd697f2b39e61c5e568df1291dcd9b5",
+      "selected_sha256": "2cd6cdb4bcf64b07d2cb1cdbe688e4d29dd697f2b39e61c5e568df1291dcd9b5",
+      "manifest_sha256": "2cd6cdb4bcf64b07d2cb1cdbe688e4d29dd697f2b39e61c5e568df1291dcd9b5",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "working_sha256": "bb3d43f5ab48c2429625fb9cfee732509fc6268d958283b44718d64aca7bee30",
+      "selected_sha256": "bb3d43f5ab48c2429625fb9cfee732509fc6268d958283b44718d64aca7bee30",
+      "manifest_sha256": "bb3d43f5ab48c2429625fb9cfee732509fc6268d958283b44718d64aca7bee30",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "working_sha256": "162389fd7f57293f4f4f90ac4df822059fad2d79350e3fcec8995d8005b54c27",
+      "selected_sha256": "162389fd7f57293f4f4f90ac4df822059fad2d79350e3fcec8995d8005b54c27",
+      "manifest_sha256": "162389fd7f57293f4f4f90ac4df822059fad2d79350e3fcec8995d8005b54c27",
+      "all_equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "working_sha256": "1ac323b928c3feb52b8009efaf97f8ee6084692af48ce041408983dd34cf25ea",
+      "selected_sha256": "1ac323b928c3feb52b8009efaf97f8ee6084692af48ce041408983dd34cf25ea",
+      "manifest_sha256": "1ac323b928c3feb52b8009efaf97f8ee6084692af48ce041408983dd34cf25ea",
+      "all_equal": true
+    }
+  ],
+  "diagnosis": {
+    "source": "preceding read-only deterministic check in this conversation against the selected release",
+    "observation": "CASE_START plus empty REPLACE target passes normalize/admit, then query_scope.resolve raises the screenshot message; new-state KEEP resolves without a named scope",
+    "model_calls": 0,
+    "field_model_output_available": false
+  },
+  "implementation": "not_started",
+  "model_evaluation": "not_started",
+  "main_activation": "unchanged",
+  "genos_deployment": "not_performed"
+}

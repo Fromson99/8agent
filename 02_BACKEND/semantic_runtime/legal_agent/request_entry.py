@@ -12,24 +12,15 @@ from . import output_contract as output
 
 from .query_scope import PROMPT as SEARCH_SCOPE_PROMPT, CHANGE as SEARCH_SCOPE_CHANGE
 POLICY='fused-title-v1'
-SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'''
-이번 입력에는 현재 사건·기억이 없다. 분류와 새 질문의 수행 목적·조건·검색어·쟁점을 한 번에 작성한다.
-CASE의 새 질문은 command.method_id=CASE_START이고 intent를 작성한다. purpose는 조건을 뺀 수행 목적이며 원문 대상·범위를 보존한다.
-facts는 사용자가 실제로 준 사건 조건만 name/value로 추출하며 user_quote에 그 조건의 현재 발언 원문을 그대로 복사한다. 일반 법률 설명 질문에는 특정 사건 사실을 만들지 말고 facts=[]로 둔다.
-queries는 최대4개다. 첫 검색어는 업무 문맥을 포함한 주체·핵심 행위 중심으로 짧게 만든다. 기간·비율·연장 같은 일반 낱말만 따로 추가하면 다른 제도가 섞이므로 핵심 주체·행위를 유지한다. 모르는 법령 이름을 만들어 검색하지 않는다. 문서명·조문·법령 약칭 등 실제 단서를 보존한다. 문서 ID·실제 법률 결론을 추측하지 않는다.
-질문이 실제로 설명을 요구한 제목·행위를 먼저 찾는다. 사용자가 추가로 다루지 말라고 하거나 제외한 참조 조문번호는 초기 queries의 대상이 아니다. 제외한 조문이 유일한 번호여도 그 번호로 원하는 제목을 대체하지 않는다. 요청한 제목이나 핵심 문구와 문서명을 검색어로 쓰고, 처음부터 모든 역할·참조를 별개 주변 조문으로 분산하지 않는다. 필요한 직접 조문을 읽은 뒤 부족한 의존성만 추가 조사한다.
-source_category는 명시한 내규/외규일 때만 internal/external, 나머지는 ALL이다. 표 요청이 없으면 format=prose다.
-기록에 없는 이전 판단의 정정·복원·재사용만 요구하면 CASE/NEED_TARGET, intent=null로 두고 reason에 필요한 확인을 짧게 쓴다. 새 법률 질문의 자료·법령명이 미확인이어도 CASE_START로 조사한다.
-DIRECT/BROWSE는 command=null, intent=null이다. BROWSE의 실제 목록은 서버가 검증된 조회 결과로 조립한다. CASE의 answer는 빈 문자열이다. 중복 쟁점이나 질문에 없는 배경 쟁점을 추가하지 않는다. JSON만 출력한다.'''
+SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'\n현재 사건·기억 없는 최초 입력이다. 분류·목적·쟁점·사실·검색 계획을 한 번에 작성한다. 새 법률 질문과 문서/범위 지정은 CASE/CASE_START다. 목적·쟁점은 실제 요청을 보존하고 배경이나 모든 관련 사안을 추가하지 않는다. 구조 설명 요청에는 그 구조만 쟁점으로 둔다.\nfacts는 실제 사용자 사건 조건·가정만 name/value와 정확한 user_quote로 작성한다. 일반 설명은 facts=[]다. 명시 내규/외규면 source_category=internal/external, 그 외 ALL; 형식 요청이 없으면 prose다.\nFULLTEXT queries는 독립 쟁점별 구별력 있는 가장 짧은 핵심 표현1개, 최대4개다. 법령명·전체 질문·요건/기준/절차·넓은 유사어를 반복하지 않는다. 검색어는 OR 합산되므로 불필요한 일반어가 결과를 넓힌다. 주체·조건은 intent에 보존한다. 사용자나 실제 조회에 없는 조문번호·법령명·ID·법률 결론은 만들지 않는다. 제외된 참조 번호로 실제 요청 제목을 대체하지 않는다.\nsearch.scope_decision이 유일한 범위 판단이다. 실제 조사 대상으로 요청한 문서는 NAMED_SCOPE이며 hints에 없어도 그 이름을 보존한다. 문서 전체는 structure=null,selection=null; 실제 번호·목차·제목 위치를 요청하면 STRUCTURE, 문서만 알고 내용을 찾으면 FULLTEXT다. 두 검색 모두 지정 범위 안에서 실행한다. 명시한 대상이 없을 때만 AUTHORIZED_SCOPE,targets=[],user_quote=""다.\nlaw_title_hints는 위치 단서다. EXACT_TITLE/REGISTERED_ALIAS는 이름 일치, PARTIAL_TITLE/DERIVED_ABBREVIATION은 미확정 유사 후보다. question_span과 실제 title을 비교하되 후보 존재를 적용 근거로 삼지 않는다. title_hint_ids나 command.search_scope_change를 별도로 출력하지 않는다.\ncontext_quotes는 배경·업무 문맥의 연속 원문이다. 적용 가정과 원문 읽기 제외는 구분한다. 기존 판단의 정정·복원·재사용만 요구하고 대상이 없으면 CASE/NEED_TARGET,intent=null,search=null이며 필요한 대상을 reason에 쓴다. 새 법률 질문의 법령 미확인은 CASE_START로 조사한다.\nDIRECT/BROWSE는 command=null,intent=null,search=null,context_quotes=[]다. CASE answer는 빈 문자열이다. 실제 목록은 서버가 구성한다. CASE_START는 intent와 search를 작성한다. JSON만 출력한다.'
 
-SYSTEM += '''
-law_title_hints는 사용자 표현과 허용 문서 제목/약칭을 대조한 위치 단서이며 정답이나 적용 법령의 확정이 아니다.
-EXACT_TITLE/REGISTERED_ALIAS는 확인된 이름 일치다. PARTIAL_TITLE/DERIVED_ABBREVIATION은 유사 후보이며 등록된 약칭으로 단정하지 않는다.
-question_span, title_matches와 실제 title을 비교해 문맥에 맞는 후보만 search.title_hint_ids로 선택한다. 없거나 틀리면 빈 배열로 둔다.
-search.mode는 STRUCTURE(법령/목차/조문 부근의 단서로 위치 조회) 또는 FULLTEXT(세부 내용/문구로 본문 검색)다. FULLTEXT 전에 STRUCTURE를 반드시 거칠 필요가 없다.
-선택한 제목 후보를 queries에 쓸 때는 실제 title로 적고 실제 조사 대상으로 요청된 조문번호를 보존한다. 제외된 참조 조문번호는 넣지 않는다. 이 후보 외 문서도 조사할 수 있다.
-context_quotes는 배경/업무 문맥의 원문을 그대로 복사한 목록이다. 구조 설명만 요청했다면 해당 범위 전체의 구조 설명만 쟁점으로 두고, 업무 문맥에 대한 적용·평가·계산을 추가 과제로 만들지 않는다. 필요한 참조를 읽는 것은 가능하다.
-DIRECT/BROWSE 또는 NEED_TARGET이면 search=null, context_quotes=[]다. CASE_START이면 search를 작성한다.'''
+from .structure_selection import PROMPT as ENTRY_SELECTION_PROMPT
+ENTRY_SCOPE_PROMPT = ENTRY_SELECTION_PROMPT + """
+search.scope_decision은 이 최초 요청의 유일한 범위 판단이다. NAMED_SCOPE의 targets에는 실제 요청한 문서명과 구조만 넣고 user_quote는 현재 question의 연속 원문을 그대로 복사한다.
+생략·대명사·약칭이 가리키는 법령은 문맥을 보고 해석한 문서명으로 targets에 작성하고 reason에 해석 이유를 쓴다. user_quote에는 해석 전 현재 질문의 원문을 그대로 보존한다. 확인되지 않은 이름을 지어내지 않는다.
+문서 전체는 structure=null, selection=null이다. 번호의 복수·범위·제외는 selection으로 표현하고 structure=null이다. 번호 없는 목차 제목은 structure에 쓴다. 범위 없이 허용 자료에서 찾는 AUTHORIZED_SCOPE는 targets=[], user_quote=""다.
+법령을 검색 대상으로 준 질문은 NAMED_SCOPE다. 검색 대상의 명시 여부와 실제 문서의 검색 가능 여부는 별개다. 법령명이 law_title_hints에 없거나 저장소에 없을 것 같아도 사용자가 그 법령에 따른 설명을 요청하면 NAMED_SCOPE와 그 이름을 보존한다. 문서 해석·검증 실패는 시스템이 미확인으로 처리하므로 허용 전체 범위로 바꾸지 않는다. 조문 번호가 없어도 특정 법령 전체를 요청한 것이다. 단순 배경 언급, 적용 가정, 읽기 제외를 구분하며 reason에 요청에 근거한 결정을 짧게 설명한다. STRUCTURE/FULLTEXT 모두 이 범위를 쓴다.
+"""
 
 def schema(scoped=False, *, model=False):
     fact=object_schema({'name':{'type':'string','minLength':1},
@@ -53,13 +44,171 @@ def schema(scoped=False, *, model=False):
         del intent['properties']['background_quotes']
         intent['required'].remove('background_quotes')
     intent['properties']['purpose'].update(minLength=1)
-    return object_schema({'routing':case_routing_schema(),
+    result = object_schema({'routing':case_routing_schema(),
         'command':{'anyOf':[command,{'type':'null'}]},
         'intent':{'anyOf':[intent,{'type':'null'}]},
         'context_quotes':{'type':'array','items':{'type':'string','minLength':1},'maxItems':8},
         'search':{'anyOf':[object_schema({'mode':{'enum':['STRUCTURE','FULLTEXT']},
-            'title_hint_ids':{'type':'array','items':{'type':'string'},'maxItems':3},
+            'title_hint_ids':{'type':'array','items':{'type':'string'},'maxItems':4},
             'reason':{'type':'string','minLength':1}}),{'type':'null'}]}})
+    if model:
+        command['properties'].pop('search_scope_change')
+        command['required'].remove('search_scope_change')
+        search = result['properties']['search']['anyOf'][0]
+        search['properties'].pop('title_hint_ids')
+        search['required'].remove('title_hint_ids')
+        search['properties']['scope_decision'] = object_schema({
+            'mode': {'enum': ['NAMED_SCOPE', 'AUTHORIZED_SCOPE']},
+            'targets': deepcopy(command_scope_targets()),
+            'user_quote': {'type': 'string'},
+            'reason': {'type': 'string', 'minLength': 1}})
+        search['required'].append('scope_decision')
+    return constrain_schema(result) if model else result
+
+
+def constrain_schema(request_schema):
+    """Keep the public fields, but generate only complete entry alternatives.
+
+    Rebuild after quote/history augmentation so every alternative retains the
+    same request-local provenance and optional recall fields. Existing stored
+    canonical entries still use schema(model=False).
+    """
+    result = deepcopy(request_schema)
+    result.pop('anyOf', None)
+    branches = []
+    for mode, method in (('DIRECT', None), ('BROWSE', None),
+                         ('CASE', 'NEED_TARGET'), ('CASE', 'CASE_START')):
+        branch = deepcopy(result)
+        props = branch['properties']
+        route = props['routing']
+        route['properties']['mode'] = {'const': mode}
+        if mode == 'BROWSE':
+            route['required'].append('catalogue')
+            route['properties']['catalogue'] = route['properties']['catalogue']['anyOf'][0]
+        else:
+            route['properties']['catalogue'] = {'type': 'null'}
+        if mode != 'DIRECT':
+            route['properties']['answer'] = {'const': ''}
+        else:
+            route['properties']['answer']['minLength'] = 1
+        if method is None:
+            props['command'] = {'type': 'null'}
+        else:
+            command = deepcopy(props['command']['anyOf'][0])
+            command['properties']['method_id'] = {'const': method}
+            if method == 'NEED_TARGET':
+                for field in ('facts', 'queries'):
+                    command['properties'][field]['maxItems'] = 0
+            props['command'] = command
+        for field in ('intent', 'search'):
+            props[field] = (deepcopy(props[field]['anyOf'][0])
+                            if method == 'CASE_START' else {'type': 'null'})
+        if method != 'CASE_START':
+            props['context_quotes']['maxItems'] = 0
+        branches.append(branch)
+    result['anyOf'] = branches
+    return result
+
+
+class EntryConflict(output.OutputContractError, MemoryError):
+    """Preserve the old domain exception boundary and structured diagnostics."""
+    def __init__(self, message, issues):
+        super().__init__(message, issues, category='DECISION_CONFLICT')
+
+
+def decision_issues(value):
+    """Collect field conflicts on a shape-validated proposal without editing it."""
+    issues = []
+    command = value['command']
+    method = command['method_id'] if command is not None else None
+    mode = value['routing']['mode']
+    start = mode == 'CASE' and method == 'CASE_START'
+    def add(code, path, related, expected):
+        issues.append(output.issue(code, path, related=related, expected=expected))
+    if mode in ('DIRECT', 'BROWSE') and command is not None:
+        add('ENTRY_ROUTE_COMMAND_CONFLICT', '/command', ['/routing/mode'],
+            'DIRECT/BROWSE requires command=null; CASE requires its selected command.')
+    if mode == 'CASE' and command is None:
+        add('ENTRY_COMMAND_REQUIRED', '/command', ['/routing/mode'],
+            'CASE requires CASE_START or NEED_TARGET selected from the current request.')
+    for field in ('intent', 'search'):
+        if (value[field] is not None) != start:
+            add('ENTRY_'+field.upper()+'_CONFLICT', '/'+field,
+                ['/routing/mode', '/command/method_id'],
+                'CASE/CASE_START requires intent and search objects; '
+                'DIRECT/BROWSE/NEED_TARGET requires both null. Reconsider the whole decision from the same request.')
+    if not start and value['context_quotes']:
+        add('ENTRY_BACKGROUND_CONFLICT', '/context_quotes', ['/routing/mode', '/command/method_id'],
+            'Only CASE/CASE_START can carry context_quotes; other decisions require [].')
+    if method == 'NEED_TARGET':
+        for field in ('facts', 'queries'):
+            if command[field]:
+                add('ENTRY_CLARIFICATION_STATE_CONFLICT', '/command/'+field, ['/command/method_id'],
+                    'NEED_TARGET cannot edit case state: facts=[] and queries=[].')
+    return issues
+
+
+def validate_decision(value):
+    issues = decision_issues(value)
+    if issues:
+        raise EntryConflict('request entry decision fields conflict', issues)
+
+
+def rejected_branch(error, shape_schema):
+    """Recover only a root branch-validation proposal for the stage validator.
+
+    The native grammar validator rejects before invoke returns. Its chained
+    JSON Schema error retains the exact object, which the same stage must reject
+    with field paths and journal as the failed proposal. Never recover JSON,
+    transport, integrity, or other validation failures through this boundary.
+    """
+    seen = set()
+    cause = error.__cause__
+    while cause is not None and id(cause) not in seen:
+        seen.add(id(cause))
+        if (isinstance(cause, ValidationError) and cause.validator == 'anyOf'
+                and not cause.absolute_path and isinstance(cause.instance, dict)):
+            raw = cause.instance
+            try:
+                output.validate_shape(raw, shape_schema)
+            except output.OutputContractError:
+                return None
+            if decision_issues(raw):
+                return deepcopy(raw)
+            return None
+        cause = cause.__cause__
+    return None
+
+
+def command_scope_targets():
+    from .query_scope import model_change_schema
+    return model_change_schema()['properties']['targets']
+
+
+def decode_scope(value, hints):
+    """Mechanical projection of the sole model decision, never title inference."""
+    validate_decision(value)
+    out = deepcopy(value)
+    search = out.get('search')
+    if search is None:
+        return out
+    choice = search.pop('scope_decision')
+    named = choice['mode'] == 'NAMED_SCOPE'
+    if named != bool(choice['targets']):
+        raise MemoryError('NAMED_SCOPE requires targets; AUTHORIZED_SCOPE must have no targets')
+    if not named and choice['user_quote']:
+        raise MemoryError('AUTHORIZED_SCOPE must have an empty scope quote')
+    if not choice['reason'].strip():
+        raise MemoryError('scope decision requires its request-specific reason')
+    out['command']['search_scope_change'] = {
+        'operation': 'REPLACE' if named else 'KEEP',
+        'targets': deepcopy(choice['targets']), 'user_quote': choice['user_quote']}
+    from ..navigation_match import norm
+    names = {norm(t['document']) for t in choice['targets'] if t['document']}
+    search['title_hint_ids'] = [h['hint_id'] for h in hints['candidates']
+        if norm(h['title']) in names or norm(h.get('matched_label') or '') in names][:4]
+    return out
+
 
 def bind_task_quotes(request_schema, question):
     """Constrain host-task request quotes to exact, unedited user coordinates.
@@ -175,20 +324,35 @@ def run(repo,context):
     if scoped:
         request_schema,data['request_quote_options']=bind_task_quotes(request_schema,context['utterance'])
         task_prompt+=' 각 issue의 request_quote는 시스템이 질문 원문 전체로 고정한다. 목적과 쟁점은 요청 범위에서 별도로 판단한다.'
+    request_schema=constrain_schema(request_schema)
+    shape_schema={k:v for k,v in request_schema.items() if k!='anyOf'}
     prepared={}
     def propose(payload,attempt):
-        return repo.invoke(SYSTEM+SEARCH_SCOPE_PROMPT+('\n'+SCOPE_PROMPT+' 이번 통합 입력에서는 배경을 context_quotes에만 작성한다.' if scoped else '')+recall_prompt+task_prompt,
-            payload,request_schema,'request-entry' if not attempt else 'request-entry-repair')
+        try:
+            return repo.invoke(SYSTEM+ENTRY_SCOPE_PROMPT+('\n'+SCOPE_PROMPT+' 이번 통합 입력에서는 배경을 context_quotes에만 작성한다.' if scoped else '')+recall_prompt+task_prompt,
+                payload,request_schema,'request-entry' if not attempt else 'request-entry-repair')
+        except output.OutputContractError as exc:
+            raw=rejected_branch(exc,shape_schema)
+            if raw is None:raise
+            # check() immediately rejects this unchanged proposal before admission.
+            return raw
     def check(raw, *, from_host=False):
-        output.validate_shape(raw,schema(scoped) if from_host else request_schema)
+        output.validate_shape(raw,schema(scoped) if from_host else shape_schema)
+        validate_decision(raw)
+        if not from_host:output.validate_shape(raw,request_schema)
         value=deepcopy(raw);history_ids=value.pop('history_ids',[])
-        try:routing,command,intent=accept(repo,context,value,scoped=scoped,admit=False)
+        try:
+            if not from_host:value=decode_scope(value,repo._entry_title_hints)
+            routing,command,intent=accept(repo,context,value,scoped=scoped,admit=False)
+        except output.OutputContractError:
+            raise
         except MemoryError as exc:
             raise output.OutputContractError(str(exc),[output.issue('REQUEST_ENTRY_CONFLICT')],
                 category='DECISION_CONFLICT') from exc
         # Admission is outside the model-correction boundary for permission/state failures.
         if command is not None:repo.admit(command,context)
-        prepared.update(value=value,history_ids=history_ids,routing=routing,command=command,intent=intent)
+        prepared.update(value=value,history_ids=history_ids,routing=routing,command=command,intent=intent,
+            scope_decision=deepcopy((raw.get('search') or {}).get('scope_decision')))
     from .workflow_execution import entry_proposal
     host_entry=entry_proposal(task,context['utterance'],scoped)
     if host_entry is not None:
@@ -200,12 +364,19 @@ def run(repo,context):
     else:
         # Entry may fail before a goal exists. Keep its correction budget in
         # the durable case journal so a new physical run cannot reset it.
-        output.bounded_decision(repo,'request-entry',data,request_schema,propose,check,
-            identity={'request':repo._entry_body,'principal':repo._entry_principal,
-                'binding':repo.executor.binding,'view':data})
+        try:
+            output.bounded_decision(repo,'request-entry',data,request_schema,propose,check,
+                identity={'request':repo._entry_body,'principal':repo._entry_principal,
+                    'binding':repo.executor.binding,'view':data})
+        except output.OutputContractError as exc:
+            # The sole owner has already spent or denied its remaining repair.
+            # Keep the cause/field diagnostics, but do not advertise a new retry.
+            raise output.OutputContractError(str(exc),
+                [{**row,'repairable':False} for row in exc.issues],
+                category=exc.category,repairable=False) from exc
     value=prepared['value'];routing=prepared['routing'];command=prepared['command'];intent=prepared['intent']
     if memory:wiki_recall.choose(repo.executor,prepared['history_ids'] if intent is not None else [],work.event)
-    entry={'contract':POLICY,'request_hash':digest(repo._entry_body),
+    entry={'scope_decision':prepared.get('scope_decision'),'contract':POLICY,'request_hash':digest(repo._entry_body),
         'principal_hash':digest(repo._entry_principal),'binding_hash':digest(repo.executor.binding),
         'title_hints':deepcopy(repo._entry_title_hints),'search':deepcopy(value['search']),'context_quotes':value['context_quotes'],
         'utterance':context['utterance'],'routing':routing,'command':command,'intent':intent,

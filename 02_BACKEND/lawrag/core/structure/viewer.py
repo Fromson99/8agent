@@ -131,6 +131,7 @@ def annotate_coordinate_scopes(nodes: list[dict], document_kind: str = "") -> li
     """
     by_id = {n.get("id"): n for n in nodes}
     full_by_id: dict[object, LegalCoordinate] = {}
+    identity_by_id: dict[object, str] = {}
     coordinate_nodes: list[dict] = []
     article_nodes: list[dict] = []
     for node in nodes:
@@ -176,6 +177,15 @@ def annotate_coordinate_scopes(nodes: list[dict], document_kind: str = "") -> li
             scope = "body"
         node["coordinate_scope"] = scope
         node["coordinate_path"] = labels
+        # Division numbers restart under different parents. Unlike article
+        # numbers, 제1장 alone is not a document-wide coordinate identity.
+        identity = full.canonical_surface()
+        if component.unit in {"편", "장", "절", "관"}:
+            identity = " > ".join(
+                part.canonical_surface() for item in reversed(chain)
+                if (part := _coordinate_component(item)) is not None
+            )
+        identity_by_id[node.get("id")] = identity
         coordinate_nodes.append(node)
         if component.unit == "조":
             article_nodes.append(node)
@@ -214,7 +224,7 @@ def annotate_coordinate_scopes(nodes: list[dict], document_kind: str = "") -> li
         if node["coordinate_scope"] != "body":
             continue
         complete_groups.setdefault(
-            ("body", full_by_id[node.get("id")].canonical_surface()), []).append(node)
+            ("body", identity_by_id[node.get("id")]), []).append(node)
     for group in complete_groups.values():
         if len(group) < 2:
             continue
@@ -224,7 +234,7 @@ def annotate_coordinate_scopes(nodes: list[dict], document_kind: str = "") -> li
             node["coordinate_scope"] = "repeated"
 
     for node in coordinate_nodes:
-        surface = full_by_id[node.get("id")].canonical_surface()
+        surface = identity_by_id[node.get("id")]
         scope = node["coordinate_scope"]
         if scope == "body":
             key = f"body:{surface}"

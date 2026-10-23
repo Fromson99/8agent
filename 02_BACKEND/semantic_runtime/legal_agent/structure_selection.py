@@ -107,6 +107,7 @@ class Nodes:
         self.seen = {}
         self.gaps = []
         self.context_parent = None
+        self.child_cache = {}
 
     def node(self, uid):
         uid = str(uid)
@@ -118,6 +119,8 @@ class Nodes:
         return unit, coordinate
 
     def children(self, parent):
+        if parent in self.child_cache:
+            return self.child_cache[parent]
         values = self.m.units
         if hasattr(values, 'children_for'):
             rows = values.children_for(self.did, parent)
@@ -130,7 +133,22 @@ class Nodes:
             if (str(p) if p is not None else None) == parent:
                 self.node(uid)
                 out.append(str(uid))
-        return sorted(out, key=self.order)
+        self.child_cache[parent] = sorted(out, key=self.order)
+        return self.child_cache[parent]
+
+    def in_branch(self, uid, node, coordinate):
+        scope = node.get('coordinate_scope', 'body')
+        if scope == self.branch:
+            return True
+        # Published generations labelled later 제N장/절 as repeated even when
+        # they belonged to another parent. Use the stored parent relationship
+        # for this compatibility case; never reopen a repeated article or an
+        # annex. Even genuinely duplicate headings may contain unique articles:
+        # heading ambiguity is checked when selecting the heading itself.
+        if (self.branch != 'body' or scope != 'repeated' or coordinate is None
+                or coordinate.unit not in ('편', '장', '절', '관') or coordinate.chain):
+            return False
+        return True
 
     def order(self, uid):
         unit, _ = self.node(uid)
@@ -145,7 +163,7 @@ class Nodes:
                 raise ContractError('cyclic or duplicated selection structure')
             visited.add(uid)
             node, coordinate = self.node(uid)
-            if node.get('coordinate_scope', 'body') != self.branch:
+            if not self.in_branch(uid, node, coordinate):
                 continue
             part = local_part(coordinate)
             if part and part[0] == level:
@@ -259,7 +277,14 @@ def resolve(selection, matcher, did, authorized):
         raise SelectionError('EMPTY_SELECTION', '제외 조건을 적용한 뒤 선택된 항목이 없습니다.')
     from .structure_query import coordinate_index
     for uid in selected:
-        coordinate = nodes.node(uid)[1]
+        node, coordinate = nodes.node(uid)
+        if coordinate and coordinate.unit in ('편', '장', '절', '관'):
+            parent = str(node['parent']) if node.get('parent') is not None else None
+            peers = [other for other in nodes.children(parent)
+                     if local_part(nodes.node(other)[1]) == local_part(coordinate)
+                     and nodes.in_branch(other, *nodes.node(other))]
+            if peers != [uid]:
+                raise SelectionError('AMBIGUOUS_COORDINATE', '같은 상위 목차 아래에 중복된 목차 번호가 있습니다.')
         if coordinate and coordinate.unit == '조' and nodes.branch == 'body':
             if coordinate_index(matcher).get((did, coordinate.canonical_surface())) != [uid]:
                 raise SelectionError('AMBIGUOUS_COORDINATE', '선택 범위에 중복되거나 미해결인 좌표가 있습니다.')

@@ -27,6 +27,11 @@ from .. import query_latency as latency
 
 SYSTEM = '''너는 현재 법률 질문의 원문을 조사하는 legal_agent다. 법령별 검색 결과와 실제 적중 원문을
 함께 보고 조사할 법령과 다음 행동을 선택한다. 검색 점수나 적중 건수는 적용 근거가 아니다.
+탐색 순서: 현재 원문이 답에 필요한 기준·조건·예외를 다른 조항에 맡기면 먼저 references의 정방향/역방향 연결을 확인한다.
+필요한 대상의 read_action이 있으면 바로 읽는다. 연결 목록이 잘렸거나 상세 범위가 필요할 때 FOLLOW_CONNECTION을 연다.
+연결로 확보하지 못한 대상의 법령명·조문번호를 알면 SEARCH_STRUCTURE로 직접 조회하고 read_action으로 원문을 읽는다.
+문서만 알면 그 문서의 목차·조문 제목을 조회한다. 위치 단서가 없는 경우에 본문검색을 사용한다.
+알고 있는 대상의 연결·구조조회 대신 전체 본문검색이나 적중 페이지 순회를 반복하지 않는다. 사용하지 못한 경로와 이유는 실제 결과로 남긴다.
 law_decisions에 법령을 조사/보류하는 이유를 쟁점·제시 원문과 연결해 기록한다. 복수 법령을
 조사할 수 있다. 법령 제목만 보고 적용이나 부적합을 확정하지 않는다.
 investigation_chain.steps는 지금까지의 행동·선택·판단 기록이다. 이를 매번 읽고 기존 판단을 이어간다.
@@ -71,7 +76,7 @@ EXCLUDE와 같은 경로 READ를 동시에 요청하지 않는다. FINISH도 현
 branch_decisions의 EXCLUDE는 읽은 원문이 현재 질문과 맞지 않는 이유와 basis_refs를 요구한다.
 자료를 못 읽었거나 연결이 미해결인 것만으로 부적합이라고 판단하지 말고 DEFER한다.
 필수 연결이 미해결이어도 FINISH로 완료할 수 있다. 미해결 자료를 확보하거나 검토한 것으로
-표현하지 않는다. 필요한 연결은 FOLLOW_CONNECTION으로 확인할 수 있으나 완료의 필수 관문은 아니다.
+표현하지 않는다. 필요한 연결은 위 순서로 먼저 조사하되 모든 연결의 해소를 완료의 필수 관문으로 만들지는 않는다.
 FINISH는 조사 종료 제안이다. 충분성은 실제 확인 범위로 별도 표시하며 부분 근거로도 종료할 수 있다.
 질문의 요구 범위를 parent 한 단계와 혼동하지 않는다. 제시된 read_options의 전체 경로를 확인한다. 사용자가 특정 항·호로 한정하지 않은 규칙·요건 질문이면 다른 항의 추가 요건과 조건부 분기도 확인한다. 현재 받은 한 항의 내용만으로 전체 요구를 충족했다고 하지 않는다. 조건의 적용 사실을 모르면 규칙 자체를 조건부로 설명한다.
 VIEW_SAVED_SOURCE는 이미 확보한 저장 원문을 다시 전달하며 자동 채택하지 않는다. 재열람 중 DEFER를 유지할 수 있다. 이것은 새 범위를 확보하는 READ_PARENT/READ_SCOPE와 다르다. saved_inventory는 인용 근거가 아니다.
@@ -157,7 +162,8 @@ def decision_schema(view, actions, groups):
     branch_schema = {'type': 'array', 'items': {'anyOf': branch_items}} if branch_items else row('branch_id', set(), ['DEFER'])
     branch_schema['maxItems'] = len(permissions)
     originals = {b['id'] for b in view['basis'] if b.get('branch_id')}
-    terminal_actions = {'PENDING'} | ({'FINISH'} if originals else set())
+    review_required = view.get('connection_review', {}).get('required_before_finish', False)
+    terminal_actions = {'PENDING'} | ({'FINISH'} if originals and not review_required else set())
     if completion and view['branches']: terminal_actions.add('DECIDE')
     base = _object({'presentation_id': {'type': 'string', 'enum': [view['presentation_id']]},
         'law_decisions': row('law_id', laws, ['INVESTIGATE', 'DEFER']),
@@ -387,14 +393,24 @@ class Investigation:
             'index': self.idx.manifest['index_sha256'], 'policy': self.policy})
         self.p = deepcopy(checkpoint) if checkpoint else {}
         prior_route = getattr(session, 'investigation_prior_route', False)
-        if self.p and self.p.get('binding') != binding:
+        # The goal text can stay identical while a user changes only queries.
+        # Bind the entry PLAN, not the changing catalogue of an in-request
+        # RESEARCH action: the latter must retain its checkpoint and budgets.
+        entry_plan_hash = digest(record['query_plan']) if 'query_plan' in record else None
+        changed_plan = bool(self.p and entry_plan_hash is not None
+            and self.p.get('entry_plan_hash') != entry_plan_hash)
+        if changed_plan and not prior_route and self.p.get('entry_plan_hash') is not None:
+            raise ContractError('law investigation checkpoint entry plan changed')
+        if self.p and (self.p.get('binding') != binding or (prior_route and changed_plan)):
             if not prior_route:
                 raise ContractError('law investigation checkpoint binding changed')
             # A corrected question/scope starts a new investigation. The earlier
             # route remains a hint for what was read, never a resumable state.
             hint = prior_summary(self.p, session.scope)
-            self.s.repo.event('LAW_INVESTIGATION_PRIOR_ROUTE', {'mode': 'NEW_BINDING', 'summary': hint})
-            self.p = {'prior_investigation': hint}
+            mode = 'NEW_QUERY_PLAN' if changed_plan else 'NEW_BINDING'
+            self.s.repo.event('LAW_INVESTIGATION_PRIOR_ROUTE', {'mode': mode, 'summary': hint,
+                'previous_plan_hash': self.p.get('entry_plan_hash'), 'entry_plan_hash': entry_plan_hash})
+            self.p = {'prior_investigation': hint, 'prior_route_mode': mode}
         elif self.p and prior_route:
             # The same question explicitly re-entered by the user: continue the
             # durable chain, but never return the earlier FINISH without a new decision.
@@ -404,6 +420,8 @@ class Investigation:
                 self.p=rr.new_epoch(self.p,reason='USER_REENTRY')
                 if self.p.get('gap_rounds'):
                     self.p.setdefault('prior_request_gap_rounds',[]).extend(self.p.pop('gap_rounds'))
+                if self.p.get('assessment_reviews'):
+                    self.p.setdefault('prior_request_assessment_reviews',[]).extend(self.p.pop('assessment_reviews'))
                 from ..research_state import OriginalProgress
                 OriginalProgress(self.p).reset_for_new_request()
                 if self.p.get('tool_failures'):
@@ -422,6 +440,7 @@ class Investigation:
         from .tool_policy import bind_checkpoint
         bind_checkpoint(self.p,binding,legacy=bool(self.p.get('binding')))
         self.p.setdefault('binding', binding); self.p.setdefault('contract', lc.CONTRACT)
+        if entry_plan_hash is not None:self.p.setdefault('entry_plan_hash', entry_plan_hash)
         self.p.setdefault('catalogue', record['law_navigation'])
         for key, default in (('groups', {}), ('selected', {}), ('contexts', {}), ('laws', {}),
                              ('law_reasons', {}), ('decisions', []), ('rejected_decisions', []),
@@ -507,7 +526,13 @@ class Investigation:
         if not self.p.get('initialized'):
             self.add_laws(self.p['law_page']['items'])
             self.add_reads(record['unit_reads'])
-            for did in (self.p.get('prior_investigation') or {}).get('document_ids', []):
+            # A previous answer's law is context, not a fresh search hit or a
+            # user-selected direct target after an explicit replan.
+            prior_hint = self.p.get('prior_investigation') or {}
+            prior_docs = ([] if self.p.get('prior_route_mode') == 'NEW_QUERY_PLAN'
+                          or prior_hint.get('origin') == 'PREVIOUS_QUESTION_IN_SESSION'
+                          else prior_hint.get('document_ids', []))
+            for did in prior_docs:
                 if did in self.s.scope:
                     self.add_laws([{'document_id': did, 'article_count': None, 'unit_count': None}])
                     self.p['direct_laws'].append(lc.token(session, 'L', did))
@@ -744,6 +769,50 @@ class Investigation:
         records.update({key: r for key, r in self.p['contexts'].items() if r['source_id'] in sources})
         return records
 
+    def register_read(self, group, material, *, reason):
+        """Checkpoint a verified body before obtaining optional ancestor context.
+
+        A later context failure cannot erase the body's delivery plan. The
+        caller still owns failure classification and recovery; no exception is
+        converted into a completed read of the missing context here.
+        """
+        if not material['complete']:
+            raise ContractError('registered READ incomplete')
+        gid = group['id']
+        if self.control and gid in self.p['selected']:
+            previous = self.p['selected'][gid]
+            self.p['material_history'][digest([gid, previous['offer']])] = deepcopy(previous)
+        self.p['selected'][gid] = material
+        if self.completion:
+            group['delivery_requested'] = True
+        preserved = ('ACTIVE', 'DEFERRED', 'EXCLUDED') if self.completion else ('ACTIVE', 'DEFERRED')
+        if group['status'] not in preserved:
+            group['status'] = 'READ'
+        if not group['reason']:
+            group['reason'] = reason
+        records = self.read_records()
+
+        def prepare_delivery():
+            self.p['contexts'].update({key: value for key, value in records.items()
+                                       if key.startswith('CONTEXT:')})
+            group['page_plan'] = self.plan_pages(group, records)
+            group['delivery'] = 0
+            self.save()
+
+        prepare_delivery()
+        context_records = {gid: material}
+        try:
+            # Only this newly selected extent authorizes more context I/O.
+            # Historical material remains in delivery, not a fresh read plan.
+            ur.ensure_context(self.s, context_records, self.p['read_state'])
+        finally:
+            # ensure_context adds only completed, verified records. Preserve
+            # those preceding a failed ancestor without claiming that failure
+            # completed; the original exception continues to the caller.
+            records.update({key: value for key, value in context_records.items()
+                            if key.startswith('CONTEXT:')})
+            prepare_delivery()
+
     def reference_signature(self):
         state=self.p['reference_state']
         return digest({'scope':rel.scope_fingerprints(self.read_records()),
@@ -751,10 +820,9 @@ class Investigation:
 
     def read_records(self):
         """Acquired investigation material, independently of answer adoption."""
-        records = {key: r for key, r in self.p['selected'].items() if self.p['groups'][key]['status'] != 'EXCLUDED' or (self.completion and self.p['groups'][key].get('delivery_requested'))}
-        sources = {r['source_id'] for r in records.values()}
-        records.update({key: r for key, r in self.p['contexts'].items() if r['source_id'] in sources})
-        return records
+        eligible = [gid for gid in self.p['selected'] if self.p['groups'][gid]['status'] != 'EXCLUDED'
+                    or (self.completion and self.p['groups'][gid].get('delivery_requested'))]
+        return inventory.acquired_records(self.p, group_ids=eligible)
 
     def plan_pages(self, group, records):
         # Store only exact coordinates in the delivery plan, not another text copy.
@@ -791,15 +859,18 @@ class Investigation:
             raw = self.s.store.source(did, span['block_id'])
             spans.append({**span, 'text': raw['text'][span['start_cp']:span['end_cp']]})
         ident = lc.token(self.s, 'E', [group['id'], number, spans])
-        return {'id': ident, 'branch_id': group['id'], 'source_id': group['source_id'],
+        page = {'id': ident, 'branch_id': group['id'], 'source_id': group['source_id'],
             'document_id': did, 'document_name': self.p['laws'][group['law_id']]['name'],
             'heading': group['hit']['heading'], 'text': '\n'.join(s['text'] for s in spans),
             'spans': spans, 'page': number+1, 'total_pages': len(group['page_plan']),
             'group_complete': (number+1 == len(group['page_plan'])) if not self.control else None,
             'scope_id':digest(self.p['selected'][group['id']]['offer']),
-            'selected_scope_complete': (inventory.covers(
-                inventory.expected(self.s,did,self.p['selected'][group['id']]['offer']['block_ids']),
-                [p for b in self.p['basis_history'].values() if b.get('branch_id')==group['id'] and b.get('scope_id')==digest(self.p['selected'][group['id']]['offer']) for p in b.get('spans',[])]+spans) if self.control else None)}
+            'selected_scope_complete': None}
+        if self.control:
+            delivered = [*inventory.confirmed_pages(self.p).values(), page]
+            page['selected_scope_complete'] = inventory.presentation_receipt(self.s, group,
+                self.p['selected'][group['id']], delivered, state=self.p)['presented_complete']
+        return page
 
     @latency.timed('law.select.article_menu')
     def article_menu(self, law, offer):
@@ -854,6 +925,11 @@ class Investigation:
             self.question,g,current['decisions'],known.get(g['target']['source_id'],set()))) is not None}
 
     def reference_overview(self, current_pages=()):
+        from . import connection_scope as cs
+        if cs.enabled(self):
+            # The existing FOLLOW_CONNECTION menu is opened only after a model
+            # selects one exact scope. Do not precompute every acquired anchor.
+            return cs.overview(self)
         self.bind_reference_delivery(include_current=True,current_pages=current_pages)
         reads=self.read_records()
         from .connected_exploration import anchors
@@ -885,7 +961,8 @@ class Investigation:
                         lo=raw.find(c['witness'])
                         if lo<0 or not inventory.covers([{'block_id':c['witness_block_id'],'start_cp':lo,'end_cp':lo+len(c['witness'])}],delivered.get(g['anchor']['source_id'],[])):continue
                     decision=closed.get(g['key'])
-                    cards.append({'reference_id':c['reference_id'],'anchor':deepcopy(g['anchor']),'anchor_excerpt':c['witness'],
+                    from .connection_scope import witness_fields
+                    cards.append({'reference_id':c['reference_id'],'anchor':deepcopy(g['anchor']),**witness_fields(g,c),
                         'target':g['target'],'direction':g['direction'],'reading_policy':c['reading_policy'],
                         'resolution':c['resolution'],'already_read':c['already_read'],
                         'applicability':decision['applicability'] if decision else 'UNDETERMINED',
@@ -913,13 +990,23 @@ class Investigation:
         self.s.repo.event('INVESTIGATION_POINT_RETURNED',self.p['revisit'])
 
     def reference_menu(self, data, offered):
+        from . import connection_scope as cs
+        data={**data,'current_request':self.record.get('current_request',self.question),
+              'issues':deepcopy(self.p.get('issues',[]))}
+        selected=cs.current(self) if cs.enabled(self) else None
+        if selected:data={**data,'selected_connection_scope':deepcopy(selected['scope'])}
+        # Account for the request/scope wrapper before persisting the exact menu.
+        data, bounded = rel.fit_context(data,offered,max(1,self.s.profile['max_context_chars']-2000))
+        offered.clear();offered.update(bounded)
         f=trail.capture(self.p,'REFERENCE',data,offered=offered,location=self.location())
         data={**data,'chain_frame_id':f,'investigation_chain':trail.compact(trail.context(self.p),brief=self.policy['compact_input']),
               'return_context':deepcopy(self.p.get('revisit'))}
         self.save();return data
 
     def reference_decision(self, data, decision):
-        step=trail.begin(self.p,data,decision,kind='REFERENCE');step['status']='APPLIED'
+        # This hook precedes target reads. The parent FOLLOW_CONNECTION outcome
+        # and verified inventory, not acceptance of a choice, prove acquisition.
+        step=trail.begin(self.p,data,decision,kind='REFERENCE');step['status']='DECISION_ACCEPTED'
         self.s.repo.event('INVESTIGATION_CHAIN_STEP',step);self.save()
 
     @latency.timed('law.select.view', pressure=True)
@@ -952,6 +1039,9 @@ class Investigation:
             data['return_context']=deepcopy(restored);frame_id=archived['id']
         else:
             data=fresh;frame_id=trail.capture(self.p,'NAVIGATION',data,actions=actions,location=self.location())
+        # A historical menu can be revisited, but its old request must not
+        # replace the current user utterance presented to the source selector.
+        data['current_request'] = self.record.get('current_request', self.question)
         if restored and self.modern:
             # A historical display must not erase links discovered after it.
             for key in ('references','document_term_candidates'):
@@ -1005,7 +1095,9 @@ class Investigation:
                 row['view_action']=ident
             for card in data['articles']:
                 gid=card['id'];r=self.p['selected'].get(gid)
-                if r:card['read_receipt']=inventory.receipt(self.s,self.p['groups'][gid],r,list(self.p['basis_history'].values()))
+                if r:card['read_receipt']=inventory.receipt(self.s,self.p['groups'][gid],r,
+                    list(inventory.confirmed_pages(self.p).values()),
+                    records=inventory.acquired_records(self.p,group_ids=[gid]).values(),state=self.p)
         if self.completion:
             data['completion_contract']=cc.version(self.s.profile)
             data['search_expression_history']=deepcopy(self.p['query_history'])
@@ -1039,7 +1131,9 @@ class Investigation:
                 if not cc.decision_basis(data,branch,'ADOPT'):
                     branch['allowed_decisions']=[x for x in branch['allowed_decisions'] if x!='ADOPT']
             for row in data['saved_inventory']:
-                row['currently_presented']=any(p['branch_id']==row['material_id'] for p in data['sources'])
+                gid=row['material_id']
+                row.update(inventory.presentation_receipt(self.s,self.p['groups'][gid],
+                    self.p['selected'][gid],data['sources'],state=self.p))
             data['reading_rule']='READ retrieves and presents original text; it never adopts or cancels DEFER/EXCLUDE. After viewing, use DECIDE or FINISH to adopt. Read calls have empty law_decisions and branch_decisions; their reason records law investigation.'
             data['completion_rule'] = ('FINISH requires at least one original still ADOPT/KEEP after this decision and basis_refs from that original. '
                 'evidence_sufficient=false permits limited coverage, not zero adoption. All DEFER/EXCLUDE with no retained adoption cannot FINISH. '
@@ -1056,10 +1150,12 @@ class Investigation:
             self.batch_pages(data,actions)
         if self.modern:
             from .decision_projection import retain_requested
-            retain_requested(self,data)
+            retain_requested(self,data,actions)
             from .decision_projection import offer_partial_articles
             offer_partial_articles(self,data,actions)
             rr.annotate_reused_reads(self,data,actions)
+            from .connection_scope import offer_choices
+            offer_choices(self,data,actions)
             rr.recovery_menu(self,data,actions)
             data['actions']=[row for row in data['actions'] if row['id'] in actions]
         from . import investigation_scope
@@ -1103,7 +1199,7 @@ class Investigation:
                 open_round['action_receipts'].append(gap_action)
                 open_round['actions']+=1
         self.save()
-        try:self.execute_tool(decision,data,actions)
+        try:self.execute_tool(decision,data,actions,model_selected=True)
         except Exception as error:
             if self.modern and rr.record_tool_failure(self, decision, actions, step, error):
                 if gap_action is not None:gap_action.update(status='FAILED',outcome=deepcopy(step['outcome']))
@@ -1225,6 +1321,8 @@ class Investigation:
             law['open_action'] = offer('OPEN_LAW',location,law['name']+' 현재 구조 범위의 본문 검색 결과 보기')
             if self.policy['structure_first']:
                 law['body_search_action']=offer('SEARCH_BODY',location,law['name']+' 현재 구조 범위 안에서 본문 표현 검색')
+                law['document_body_search_action']=offer('SEARCH_BODY',{'document_id':did,'unit_id':None},
+                    law['name']+'의 사용자 지정 범위 전체에서 본문 표현 검색')
             if self.policy['compact_input'] and did not in detail_docs:
                 law['document_structure']={'deferred':True,'open_action':law['structure_open_action']}
                 continue
@@ -1320,16 +1418,24 @@ class Investigation:
         terms=term_menu(self,offer)
         if self.modern:offer_reference_reads(self,references,offer)
         reference_signature=self.reference_signature()
-        if (self.read_records() and reference_signature not in self.p.get('reference_attempts',[])
+        if (not self.policy.get('selected_connection_scope') and self.read_records() and reference_signature not in self.p.get('reference_attempts',[])
                 and not (references['closed_connection_groups'] and not references['pending'])):
             anchors='; '.join(a['document_name']+' '+a.get('heading','') for a in references['current_anchors'])
             offer('FOLLOW_CONNECTION', {'signature':reference_signature}, '명시 참조·정의 연결의 다음 메뉴 조사'+(' — 출발 조문: '+anchors if anchors else ''))
         offer('RESEARCH', {'scope': sorted(qs.documents(self.s))}, '법령명·조문 제목·번호로 구조 검색을 다시 시작' if self.policy['structure_first'] and not self.policy['selectable_search'] else '현재 지정한 범위 안에서 새 검색')
         offer('SEARCH_STRUCTURE', {'document_id': None}, '현재 지정한 범위에서 법령명·조문번호·제목 직접 조회')
-        name_recovery = deepcopy(structure_page.get('law_name_recovery'))
-        if name_recovery:
+        name_recoveries = deepcopy(structure_page.get('law_name_recoveries') or
+            ([structure_page['law_name_recovery']] if structure_page.get('law_name_recovery') else []))
+        for name_recovery in name_recoveries:
             from .law_name_recovery import retry_key
             for row in name_recovery['candidates']:
+                if name_recovery.get('requires_structure_decision'):
+                    row['retry_action'] = None
+                    row['structure_search_action'] = offer('SEARCH_STRUCTURE',
+                        {'document_id':row['document_id']},
+                        row['title']+'에서 미확인 요청의 범위·복수·제외를 구조화해 조회: '+
+                        ' / '.join(name_recovery['original_queries']))
+                    continue
                 tried = retry_key(name_recovery,row['document_id']) in self.p['law_name_retry_history']
                 row['already_tried'] = tried
                 row['retry_action'] = (offer('RETRY_LAW_STRUCTURE',
@@ -1345,7 +1451,8 @@ class Investigation:
             'sources': pages, 'basis': basis, 'notes': self.p['notes'], 'references': references,
             'structure_catalogue': structure_view,
             'selection_progress': ss.progress(self),
-            'law_name_recovery': name_recovery,
+            'law_name_recovery': name_recoveries[0] if name_recoveries else None,
+            'law_name_recoveries': name_recoveries,
             'structure_search_history': deepcopy(self.p['structure_search_history']),
             'completion_policy': 'ALLOW_UNRESOLVED_CONNECTIONS' if self.policy['allow_unresolved_completion'] else 'REQUIRE_CONNECTIONS',
             'branches': [{'id': g['id'], 'law_id': g['law_id'], 'status': g['status'], 'reason': g['reason'],
@@ -1506,6 +1613,10 @@ class Investigation:
         for row in value['branch_decisions']:
             if not self.completion and row['status'] in ('ADOPT', 'KEEP') and not investigating(self.p['groups'][row['branch_id']]['law_id']):
                 raise ProposalError('adoption cannot override a deferred law; INVESTIGATE first')
+        if targets and kind == 'FOLLOW_CONNECTION':
+            from . import connection_scope as cs
+            scope = actions[targets[0]]['identity'].get('connection_scope')
+            if cs.enabled(self) and scope:cs.reject_repeated_follow(self,scope)
         if targets and kind not in ('FOLLOW_CONNECTION', 'READ_PARENT', 'READ_SCOPE', 'RETURN_TO',
                                     'SEARCH_STRUCTURE', 'OPEN_STRUCTURE', 'BROWSE_STRUCTURE') and not data.get('return_context'):
             if digest({'action':actions[targets[0]],'query':self.p['catalogue']['query_fingerprint']}) in self.p['seen_actions']:
@@ -1611,7 +1722,7 @@ class Investigation:
         raise ProposalError('issues without an adopted original: ' + ', '.join(missing)
             + '. Read and adopt evidence for them, or resubmit the same FINISH to report them as not found')
 
-    def execute_tool(self, decision, data, actions):
+    def execute_tool(self, decision, data, actions, *, model_selected=False):
         from . import query_scope as qs
         for target in decision.get('targets',[]):
             action=actions.get(target)
@@ -1693,9 +1804,12 @@ class Investigation:
         if kind == 'VIEW_SAVED_SOURCE':
             gid=identity['branch_id'];group=self.p['groups'][gid]
             if group['hit']['document_id'] not in self.s.scope or gid not in self.p['selected']:raise ContractError('saved original inaccessible')
+            page=identity.get('page',0)
+            if type(page) is not int or not 0<=page<len(group['page_plan']):
+                raise ContractError('saved original page unavailable')
             if not self.completion and group['status'] in ('EXCLUDED','DEFERRED'):group['status']='READ'
             if self.completion:group['delivery_requested']=True
-            group['delivery']=0
+            group['delivery']=page
             self.p['window']='read';self.p['window_groups']=[gid];self.p['focus']=gid
             self.p['structure_location'] = {'document_id': group['hit']['document_id'],
                 'unit_id': self.p['selected'][gid]['offer']['unit_id'], 'offset': 0}
@@ -1713,6 +1827,8 @@ class Investigation:
                 plan['remaining_target']=target;self.save()
                 try:
                     ident=actions[target]['identity'];sid=ident['source_id']
+                    from .connection_scope import validate_inline_read
+                    validate_inline_read(self,ident,data,decision['reason'])
                     read_plan,unavailable=availability.article_plan(self.s,ident)
                     if unavailable:raise ContractError('selected article is no longer readable: '+unavailable)
                     root_hit,_=read_plan
@@ -1729,6 +1845,8 @@ class Investigation:
                 plan['completed'][target]=gid;plan['status']='STARTED';self.save()
                 ids.append(gid)
             plan['status']='ACQUIRED';plan.pop('remaining_target',None);self.save()
+            from .definition_context import acquire as acquire_definition_context
+            if model_selected:ids.extend(acquire_definition_context(self,list(ids)))
             self.p['window']='read';self.p['window_groups']=list(dict.fromkeys(ids))
         elif kind in ('READ_PARENT', 'READ_SCOPE'):
             group = self.p['groups'][identity['branch_id']]
@@ -1740,17 +1858,7 @@ class Investigation:
             else:
                 offer = group['offer'] if kind == 'READ_PARENT' else next(o for o in ur.offers(self.s, group['hit']) if o['id'] == identity['scope'])
                 r = ur.read(self.s, group['hit'], offer, action_state=self.p['read_state'])
-                if not r['complete']: raise ContractError('adopted READ incomplete')
-                if self.control and group['id'] in self.p['selected']:
-                    previous=self.p['selected'][group['id']]
-                    self.p['material_history'][digest([group['id'],previous['offer']])]=deepcopy(previous)
-                self.p['selected'][group['id']] = r
-                if self.completion:group['delivery_requested']=True
-                if group['status'] not in (('ACTIVE','DEFERRED','EXCLUDED') if self.completion else ('ACTIVE','DEFERRED')): group['status'] = 'READ'
-                if not group['reason']: group['reason'] = decision['reason']
-                records = self.read_records(); ur.ensure_context(self.s, records, self.p['read_state'])
-                self.p['contexts'].update({k: r for k, r in records.items() if k.startswith('CONTEXT:')})
-                group['page_plan'] = self.plan_pages(group, records); group['delivery'] = 0
+                self.register_read(group, r, reason=decision['reason'])
                 self.s.repo.event('UNIT_READ_CHOICE', {**ur.activity_context(self.s, group['hit'], offer),
                     'unit': group['id'], 'offer': offer, 'reason': decision['reason'],
                     'input_location': ur.unit_label(self.s, group['hit']), 'read_location': offer['label'],
@@ -1849,12 +1957,30 @@ class Investigation:
             self.bind_reference_delivery()
             replay=trail.frame(self.p,identity['replay_frame']) if identity.get('replay_frame') else None
             from .connected_exploration import anchors
+            from . import connection_scope as cs
+            scope_choice = None
+            if cs.enabled(self):
+                if replay:
+                    # Replay uses the immutable scope originally selected for
+                    # that reference frame, never the current cumulative reads.
+                    scope = replay['data'].get('selected_connection_scope')
+                    if not scope:raise ContractError('reference replay lacks selected structural scope')
+                    scope_choice = cs.accept(self,scope,data,decision['reason'],replay=True)
+                else:
+                    scope = identity.get('connection_scope',{})
+                    receipt = cs.directory_receipt(self,scope)
+                    operation = cs.directory_operation(self)
+                    if receipt is not None and (operation is None or receipt.get('operation') != operation):
+                        cs.reject_repeated_follow(self,scope)
+                    scope_choice = cs.accept(self,scope,data,decision['reason'])
             focused=set(anchors(self)) if self.modern else {g['source_id'] for gid,g in self.p['groups'].items() if gid in self.p.get('window_groups',[])}
-            if replay:focused={g['anchor']['source_id'] for g in replay['offered'].values()}
+            if replay and not scope_choice:focused={g['anchor']['source_id'] for g in replay['offered'].values()}
             all_reads=self.read_records()
             selected={k:r for k,r in all_reads.items() if r['source_id'] in focused}
-            if not selected:selected=self.active_records() or all_reads
-            reference_key=digest(sorted(focused))
+            if not selected:
+                if scope_choice:raise ContractError('selected connection scope has no acquired original')
+                selected=self.active_records() or all_reads
+            reference_key=digest(scope_choice['scope']) if scope_choice else digest(sorted(focused))
             self.p['reference_state']=self.p.setdefault('reference_states',{}).setdefault(reference_key,{})
             if self.modern:
                 from .decision_projection import shared_reference_decisions
@@ -1867,14 +1993,56 @@ class Investigation:
             def reference_checkpoint(state):
                 self.p['reference_reads']=deepcopy(selected)
                 self.save()
-            nav = rel.navigate(self.question, self.s, selected, self.invoke, read_state=self.p['read_state'],
-                seconds_left=self.left, max_context_chars=self.s.profile['max_context_chars'],
-                state=self.p['reference_state'], on_checkpoint=reference_checkpoint,
-                phase_prefix='source-reference-law-'+str(self.p['turn'])+'-', max_model_batches=1,
-                replay_menu={'data':replay['data'],'offered':replay['offered']} if replay else None)
+            from contextlib import nullcontext
+            with cs.bound(self.s,scope_choice['scope']) if scope_choice else nullcontext():
+                try:
+                    if scope_choice:
+                        directory = cs.inspect_directory(self, scope_choice['scope'])
+                        # A selected scope opens a directory, not a second model
+                        # decision. The next parent action chooses READ or FINISH.
+                        nav = {'contract':'batch-reference-navigation-v2',
+                            'reading_policy_revision':rel.REVISION,
+                            'batches':[{'data':{'groups':[{'id':g['key']} for g in directory['groups']]},
+                                        'decision':None, 'model_called':False}],
+                            'actions':[], 'seen_target_ids':[], 'limits':directory.get('limits',[]),
+                            'unresolved':directory.get('unresolved',[]),
+                            'pending':directory['status']!='COMPLETE',
+                            'scanned_anchors':[m['source_id'] for m in scope_choice['scope']['members']],
+                            'state':self.p['reference_state'], 'pending_group_keys':[],
+                            'diagnostics':{'directory_status':directory['status'], 'model_batches':0}}
+                        self.s.repo.event('REFERENCE_DIRECTORY_OPENED',{
+                            'scope_id':scope_choice['scope']['id'],'groups':len(directory['groups']),
+                            'status':directory['status'],'model_called':False,'absence_proven':False})
+                    else:
+                        nav = rel.navigate(self.question, self.s, selected, self.invoke, read_state=self.p['read_state'],
+                            seconds_left=self.left, max_context_chars=self.s.profile['max_context_chars'],
+                            state=self.p['reference_state'], on_checkpoint=reference_checkpoint,
+                            phase_prefix='source-reference-law-'+str(self.p['turn'])+'-', max_model_batches=1,
+                            context_reads=all_reads,
+                            replay_menu={'data':replay['data'],'offered':replay['offered']} if replay else None)
+                except Exception:
+                    if scope_choice:
+                        scope_choice['status']='INTERRUPTED';self.save()
+                    raise  # Existing request_repair alone classifies and recovers.
+            if scope_choice:
+                scope_choice['status']=('PARTIAL_CONNECTION_SCAN' if nav['pending'] else
+                    'COMPLETE' if any(b['data'].get('groups') for b in nav['batches']) else 'NO_VERIFIED_LINKS_IN_SELECTED_SCOPE_AND_INDEX')
+                scope_choice['result']={'pending':nav['pending'],'unresolved_count':len(nav['unresolved']),
+                    'limit_count':len(nav['limits']),'pending_group_count':len(nav['pending_group_keys'])}
+                context_limit = next((x for x in nav['limits'] if x['kind'] in
+                    ('reference_context_limit','reference_item_context_limit')),None)
+                if context_limit:
+                    self.p.setdefault('connection_context_blocks',{})[scope_choice['scope']['id']] = {
+                        'acquired_signature':cs.acquired_signature(self), 'reason':context_limit['kind'],
+                        'absence_proven':False, 'fallback':'SEARCH_STRUCTURE'}
+                self.s.repo.event('CONNECTION_SCOPE_RESULT',{'scope_id':scope_choice['scope']['id'],
+                    'status':scope_choice['status'],'absence_proven':False,'fallback':'SEARCH_STRUCTURE'})
+                self.save()
             self.p['reference_history'].append(nav)
             self.p.setdefault('reference_attempts',[]).append(identity.get('signature',digest(identity)))
             new_groups=[]
+            if scope_choice:
+                new_groups.extend(cs.acquire_small_directory(self, scope_choice['scope'], directory))
             for key, r in selected.items():
                 if key.startswith('CONTEXT:'):
                     self.p['contexts'][key] = r
@@ -1963,6 +2131,11 @@ class Investigation:
             delivered_refs,delivery_context=bounded_original_refs(self.p,mandatory,limit) if self.modern and sufficient else ([],None)
             current=inventory.originals_for(self.s,self.p,context_refs=list(dict.fromkeys(mandatory+delivered_refs))) if self.modern else inventory.originals_for(self.s,self.p,mandatory)
             if delivery_context is not None:result['original_delivery_context']={**delivery_context,'basis_refs':delivered_refs}
+            if self.modern and sufficient and self.p.get('delivery_handoff'):
+                current, delivery_merge = inventory.merge_delivered_originals(self.s,self.p,current,limit)
+                result['original_delivery_context'] = {**result.get('original_delivery_context',{}), **delivery_merge}
+                if self.p.get('adoption_fallback'):
+                    result['adoption_fallback'] = deepcopy(self.p['adoption_fallback'])
             if self.modern and current and sufficient:
                 selected_ids={ident for original in current for ident in original['evidence_ids']}
                 evidence=list({e['evidence_id']:e for record in self.read_records().values() for e in record['evidence'] if e['evidence_id'] in selected_ids}.values())
@@ -2082,7 +2255,7 @@ class Investigation:
         steps.append('candidate_titles_and_previews_clipped')
         if size(value) > limit and len(value.get('return_points', [])) > 8:
             value['return_points'] = value['return_points'][-8:]; steps.append('return_points_recent_8')
-        if size(value) > limit and isinstance(value.get('references'), dict) and 'dependency_cards' in value['references']:
+        if size(value) > limit and not self.policy.get('selected_connection_scope') and isinstance(value.get('references'), dict) and 'dependency_cards' in value['references']:
             value['references']['dependency_cards'] = [
                 {k:deepcopy(c[k]) for k in ('reference_id','anchor','target','direction','already_read','read_action') if k in c}
                 for c in value['references']['dependency_cards']]
@@ -2266,6 +2439,7 @@ class Investigation:
 
     def bounded_result(self, reason):
         self.p['stop_reason']=reason
+        if self.modern:self.p['delivery_handoff']=True
         current=inventory.originals_for(self.s,self.p)
         if self.modern and not current:
             from .decision_projection import bounded_original_refs
@@ -2277,20 +2451,29 @@ class Investigation:
                 # A rejected reply must not discard verified, already sent pages.
                 fallback=inventory.delivered_originals_for(self.s,self.p,limit=limit)
         else:fallback=[] if current or not self.control else inventory.delivered_originals_for(self.s,self.p)
+        acquired=[];acquired_evidence=[];omitted=[]
+        if self.modern and not current and not fallback and self.p.get('assessment_handoffs'):
+            acquired,acquired_evidence,omitted=inventory.acquired_originals_for(
+                self.s,self.p,limit,include_deferred=False)
+        if acquired:
+            self.p['acquired_fallback']={'reason':reason,'source_ids':[r['source_id'] for r in acquired],
+                'navigation_delivery_claimed':False,'automatic_adoption':False}
         if fallback:
             # No adoption was decided, but these pages were actually presented. The
             # assessment cites exact delivered spans and says so in its limitations.
             self.p['adoption_fallback']={'reason':reason,'source_ids':[r['source_id'] for r in fallback]}
         self.close_gap_round([], 'BOUNDED_STOP:'+reason)
-        decision={'next_action':'FINISH' if current or fallback else 'PENDING','queries':[],
+        decision={'next_action':'FINISH' if current or fallback or acquired else 'PENDING','queries':[],
             'reason':'조사 제어 한계: '+reason,'sufficiency_reason':'확인된 채택 근거만 별도 충분성 판단으로 전달'
                 if current else ('채택 결정 없이 실제 열람한 원문을 판단 단계에 전달'
-                    if fallback else '현재 전달 조건을 충족하는 검증 원문이 없어 판단 단계 전달을 보류'),
+                    if fallback else '확보한 원문을 채택·충분성 확정 없이 판단 단계에 전달' if acquired else '현재 전달 조건을 충족하는 검증 원문이 없어 판단 단계 전달을 보류'),
             'evidence_sufficient':False}
         self.s.repo.event('INVESTIGATION_BOUNDED_STOP',{'reason':reason,'adopted_sources':len(current),
-            'delivered_fallback_sources':len(fallback),
+            'delivered_fallback_sources':len(fallback),'acquired_fallback_sources':len(acquired),
             'no_progress':self.p.get('no_progress'),'budget':self.s.repo.budget()})
         self.save()
+        if acquired:
+            return self.acquired_handoff_result(decision,acquired,acquired_evidence,omitted,stop_reason=reason)
         return self.result(decision)
 
     def assessment_handoff(self):
@@ -2308,12 +2491,16 @@ class Investigation:
             'source_ids':[s['source_id'] for s in originals],'omitted_evidence_ids':omitted,
             'navigation_delivery_claimed':False,'automatic_adoption':False,'evidence_sufficient':False})
         self.save()
-        result=self.result({'next_action':'FINISH','queries':[],'reason':'확보 원문의 답변 가능 범위를 먼저 판단',
-            'sufficiency_reason':'충분성과 현재 질문에 대한 적용성은 ASSESS가 판단','evidence_sufficient':False})
+        return self.acquired_handoff_result({'next_action':'FINISH','queries':[],'reason':'확보 원문의 답변 가능 범위를 먼저 판단',
+            'sufficiency_reason':'충분성과 현재 질문에 대한 적용성은 ASSESS가 판단','evidence_sufficient':False},originals,evidence,omitted)
+
+    def acquired_handoff_result(self,decision,originals,evidence,omitted,*,stop_reason=None):
+        limit=max(self.s.profile['max_read_chars'],(self.s.profile.get('max_context_chars') or 100000)//2)
+        result=self.result(decision)
         result.update(selected_originals=originals,selected_evidence=evidence,
             final_ids=[s['source_id'] for s in originals],final_evidence_ids=[e['evidence_id'] for e in evidence],
             final_packets=[{'packet_id':'acquired-assessment','evidence':evidence}],
-            stop_reason=None,answer_coverage='UNASSESSED',recovered_ids=[s['source_id'] for s in originals],
+            stop_reason=stop_reason,answer_coverage='UNASSESSED',recovered_ids=[s['source_id'] for s in originals],
             original_delivery_context={'prepared_for':'ASSESS','navigation_delivery_claimed':False,
                 'automatic_adoption':False,'source_absence_proven':False,'character_limit':limit,
                 'omitted_evidence_ids':omitted})
@@ -2354,13 +2541,18 @@ class Investigation:
                 # Replay the accepted tool using its immutable presentation. Reads reuse
                 # the journal; reference navigation resumes its separately saved cursor.
                 progressed = {k: deepcopy(self.p[k]) for k in ('read_state', 'reference_state','reference_reads','reference_turn','action_chain','reference_states','reentry_counters','no_progress','stop_reason','progress_gap_signature','request_progress','original_progress','discovery_changed','investigation_epoch','decision_retry_history','no_progress_recovery') if k in self.p}
-                if self.modern and accepted['decision']['next_action']=='READ_ARTICLES':
+                if self.modern:
+                    for key in ('connection_directories','selected_connection_scope','connection_scope_history','read_judgments'):
+                        if key in self.p:progressed[key]=deepcopy(self.p[key])
+                if self.modern and (accepted['decision']['next_action']=='READ_ARTICLES' or
+                        (accepted['decision']['next_action']=='FOLLOW_CONNECTION' and self.policy.get('small_connection_context'))):
                     # This accepted action is read-only. Completed target receipts
                     # and their acquired originals survive a process interruption.
                     # Restoring only its pre-action state would reacquire them.
                     for key in ('read_plans','laws','groups','selected','contexts','law_reasons',
-                                'basis_history','material_history','window','window_groups','focus',
-                                'structure_location','gap_rounds','requested_originals'):
+                                'basis_history','delivery_history','answer_progress_reviews','material_history','window','window_groups','focus',
+                                'structure_location','gap_rounds','assessment_reviews','requested_originals','definition_context',
+                                'small_connection_directories','small_connection_attempts','tool_failures'):
                         if key in self.p:progressed[key]=deepcopy(self.p[key])
                 self.p = deepcopy(accepted['before']); self.p.update(progressed); self.p['accepted'] = accepted
                 if self.control:
@@ -2385,7 +2577,19 @@ class Investigation:
                     data, actions, phase = recovery
                 else:
                     data, actions = self.view(); phase = 'source-law-navigation-'+str(self.p['turn']+1)
+                from .answer_progress import ProgressHandoff
                 try:decision = self.request_decision(data, actions, phase)
+                except ProgressHandoff:
+                    # The accepted progress opinion stops the proposed tool, not
+                    # the delivery of the original pages it has just reviewed.
+                    # Validate the full batch before recording any receipt.
+                    for page in data['sources']:
+                        inventory.check_presented_page(self.s,self.p,page)
+                    for page in data['sources']:
+                        inventory.acknowledge(self.s,self.p,page,data.get('presentation_id'))
+                    self.p['completion_basis_refs']=[page['id'] for page in data['sources']]
+                    self.save()
+                    return self.bounded_result('NO_ANSWER_PROGRESS')
                 except (ProposalError,ValidationError,BudgetExhausted) as error:
                     if not self.completion:raise
                     if rr.is_unattempted_gap(error):

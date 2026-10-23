@@ -10,7 +10,7 @@ from . import query_scope as qs
 CONTRACT = 'law-candidate-navigation-v3'
 DEFAULT_POLICY = {'mode': 'legacy', 'law_page_size': 12, 'article_page_size': 4,
                   'hit_page_size': 8, 'search_rounds': 8, 'allow_unresolved_completion': True, 'investigation_control': False,
-                  'assessment_reentry_limit': 2, 'completion_contract': False, 'structure_first': False, 'batch_selected_pages': False, 'selectable_search': False, 'compact_input': False, 'completion_policy_version': 'investigation-completion-v4', 'length_recovery_max_tokens': 0, 'definition_entry': False, 'answer_first': False}
+                  'assessment_reentry_limit': 2, 'completion_contract': False, 'structure_first': False, 'batch_selected_pages': False, 'selectable_search': False, 'compact_input': False, 'completion_policy_version': 'investigation-completion-v4', 'length_recovery_max_tokens': 0, 'definition_entry': False, 'answer_first': False, 'selected_connection_scope': False, 'answer_progress_control': False, 'delegation_frontier': False, 'bounded_judgment_notes': False, 'definition_context': False, 'small_connection_context': False, 'read_judgment': False}
 
 
 def policy(session):
@@ -35,11 +35,20 @@ def validate_policy(value):
         raise ContractError('completion contract requires investigation control')
     if type(result['allow_unresolved_completion']) is not bool:
         raise ContractError('allow_unresolved_completion must be bool')
-    if any(type(result[k]) is not bool for k in ('structure_first','batch_selected_pages','selectable_search','compact_input','definition_entry','answer_first')):
+    if any(type(result[k]) is not bool for k in ('structure_first','batch_selected_pages','selectable_search','compact_input','definition_entry','answer_first','selected_connection_scope','answer_progress_control','delegation_frontier','bounded_judgment_notes','definition_context','small_connection_context','read_judgment')):
         raise ContractError('invalid structure/read policy')
+    if result['read_judgment'] and (not result['compact_input'] or not result['investigation_control']
+            or result['mode'] != 'law-first-v1' or result['answer_first'] or result['answer_progress_control']
+            or result['completion_policy_version'] == 'investigation-completion-v4'):
+        raise ContractError('read judgment requires modern compact navigation without automatic answer-progress handoff')
     if result['structure_first'] and result['mode'] != 'law-first-v1':
         raise ContractError('structure-first requires law navigation')
     if result['selectable_search'] and not result['structure_first']:raise ContractError('selectable search requires scoped navigation support')
+    if result['selected_connection_scope'] and (not result['compact_input'] or result['answer_first']):
+        raise ContractError('selected connection scope requires navigation judgment before assessment')
+    if result['small_connection_context'] and not result['selected_connection_scope']:raise ContractError('small connection context requires selected connection scope')
+    if result['answer_progress_control'] and (not result['compact_input'] or not result['investigation_control']):raise ContractError('answer progress requires compact investigation control')
+    if result['definition_context'] and (not result['investigation_control'] or not result['delegation_frontier']):raise ContractError('definition context requires controlled verified delegation frontier')
     if result['answer_first'] and not result['compact_input']:raise ContractError('answer-first requires compact completion input')
     if result['compact_input'] and not result['completion_contract']:raise ContractError('compact input requires completion contract')
     if result['completion_policy_version'] not in ('investigation-completion-v4','investigation-completion-v5','investigation-completion-v6','investigation-completion-v7','investigation-completion-v8'):

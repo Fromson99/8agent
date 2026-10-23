@@ -25,7 +25,7 @@ class UnifiedRag(NativeRag):
         change=command.get('search_scope_change')
         if change is None:return state
         scope=qs.resolve(change,state.get('search_scope'),self.model.ensure().sources.matcher,
-            state['document_ids'],utterance)
+            state['document_ids'],utterance,model_resolved=command.get('method_id')=='CASE_START')
         if scope is not None or 'search_scope' in state:state={**state,'search_scope':scope}
         return state
 

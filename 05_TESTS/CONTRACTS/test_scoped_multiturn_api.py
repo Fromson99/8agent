@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Independent actual API consumers of a frozen scope candidate."""
 from copy import deepcopy
 import json,sqlite3
@@ -41,10 +42,10 @@ def test_scope_survives_actual_ask_correction_and_duplicate(tmp_path,tree,fused,
                 self.phases.append(phase)
                 return wire({'routing':{'mode':'CASE','answer':'','reason':'지정 범위 조사'},
                     'command':{'method_id':'CASE_START','source_category':'ALL','facts':[],
-                        'queries':['승인 예외'],'format':'prose','reason':'조항 지정','search_scope_change':first},
+                        'queries':['승인 예외'],'format':'prose','reason':'조항 지정'},
                     'intent':{'purpose':'승인 예외 조사','concepts':['승인'],
                         'issues':[{'id':'Q1','question':'승인 예외는?','subject':'승인','kind':'OTHER','request_quote':question}]},
-                    'context_quotes':[],'search':{'mode':'FULLTEXT','title_hint_ids':[],'reason':'범위 안에서 승인 표현 검색'}})
+                    'context_quotes':[],'search':{'mode':'FULLTEXT','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in first['targets']],'user_quote':first['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 안에서 승인 표현 검색'}})
             return super().send_once(body=body,ticket=ticket)
     gen,idx=tree;transport=Transport('repaired')
     transport.command=command('CASE_START',document_scope_mode='AUTHORIZED',task=question,queries=['승인 예외'],facts=[],search_scope_change=first)

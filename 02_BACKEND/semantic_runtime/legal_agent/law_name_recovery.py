@@ -25,7 +25,7 @@ def metadata(matcher, did):
     return title, aliases, digest([did, title, aliases, context])
 
 
-def candidates(matcher, scope, name, limit=8):
+def candidates(matcher, scope, name, limit=None):
     """Match content morphemes only against permitted titles/registered aliases."""
     terms = set(question_terms(name)) - GENERIC
     query = norm(name)
@@ -62,13 +62,11 @@ def candidates(matcher, scope, name, limit=8):
     return [row for _, row in rows[:limit]], len(rows)
 
 
-def attach(page, matcher, scope):
+def _attach_one(page, matcher, scope):
     """A single body locator can be retried; ambiguous ranges stay unmodified."""
     if page.get('offset') or page.get('name_retry'):
         return page
     failed = [r for r in page.get('resolutions', []) if r.get('status') == 'MISS']
-    if any(r.get('status') == 'MATCH' for r in page.get('resolutions', [])):
-        return page
     codes = {r.get('failure', {}).get('code') for r in failed if r.get('failure')}
     if page.get('failure'):
         codes.add(page['failure']['code'])
@@ -116,8 +114,56 @@ def attach(page, matcher, scope):
     return {**page, 'law_name_recovery': value}
 
 
+def unresolved_name_clues(page, matcher, scope):
+    """Expose a failed query verbatim; the model must choose its structure."""
+    failed = [r for r in page.get('resolutions',[]) if r.get('status')=='MISS']
+    codes = {r.get('failure',{}).get('code') for r in failed}
+    if page.get('failure'): codes.add(page['failure']['code'])
+    if not codes or not codes <= RECOVERABLE | {'UNSUPPORTED_STRUCTURE_RANGE'}:
+        return None
+    queries = page.get('queries',[])
+    if len(queries)!=1 or matcher is None: return None
+    query = queries[0]; mentions = find_coordinates(query)
+    if not mentions: return None
+    name = query[:mentions[0].start].strip(' \t\n「」『』“”')
+    # A full failed phrase is a lexical search, never an invented exact name.
+    if not name: return None
+    items,total=candidates(matcher,scope,name)
+    value={'contract':CONTRACT,'name_query':name,'original_queries':queries,
+        'original_document_id':page.get('document_id'),
+        'original_failure':deepcopy(page.get('failure') or next((r.get('failure') for r in failed if r.get('failure')),None)),
+        'structure_filter':None,'requires_structure_decision':True,
+        'candidates':items,'total_candidates':total,'omitted_candidates':0,
+        'citation_eligible':False,'no_match_means':'이름 조회 미확인은 법령 부재의 증명이 아닙니다.'}
+    value['recovery_id']=digest(value)
+    return value
+
+
+def attach(page, matcher, scope):
+    """Keep a recovery for each failed request, alongside successful siblings."""
+    if page.get('offset') or page.get('name_retry'):
+        return page
+    recoveries = []
+    queries = list(page.get('queries') or [])
+    attempts = [page] if page.get('structure_filter') or len(queries)<=1 else [
+        {**page, 'queries':[q], 'failure':None,
+         'resolutions':[r for r in page.get('resolutions',[]) if r.get('query')==q]}
+        for q in queries]
+    for attempt in attempts:
+        result = _attach_one(attempt, matcher, scope).get('law_name_recovery')
+        if result is None:
+            result = unresolved_name_clues(attempt, matcher, scope)
+        if result and result['recovery_id'] not in {r['recovery_id'] for r in recoveries}:
+            recoveries.append(result)
+    if not recoveries:
+        return page
+    return {**page, 'law_name_recovery':recoveries[0], 'law_name_recoveries':recoveries}
+
+
 def retry_key(recovery, did):
     filters = recovery['structure_filter']
+    if filters is None:
+        raise ProposalError('unresolved raw scope requires a new structured selection')
     if 'selection' in filters:
         return digest([norm(recovery['name_query']), filters['selection'], did])
     coordinate = find_coordinates(filters['coordinate'])[0].coordinate.canonical_surface()
@@ -126,7 +172,9 @@ def retry_key(recovery, did):
 
 
 def validate_retry(inv, identity):
-    recovery = inv.p['structure_page'].get('law_name_recovery')
+    page = inv.p['structure_page']
+    records = page.get('law_name_recoveries') or [page.get('law_name_recovery')]
+    recovery = next((r for r in records if r and r['recovery_id']==identity['recovery_id']),None)
     if not recovery or recovery['recovery_id'] != identity['recovery_id']:
         raise ProposalError('stale law name recovery selection')
     if recovery['recovery_id'] != digest({k: v for k, v in recovery.items() if k != 'recovery_id'}):

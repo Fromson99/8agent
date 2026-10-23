@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """A valid unresolved judgment must not discard already verified originals."""
 from copy import deepcopy
 import json
@@ -25,7 +26,7 @@ class EmptyAssessment(StopTransport):
             if v['gap_history']:
                 gap['previous_gap_key'] = v['gap_history'][-1]['gaps'][0]['gap_key']
             return wire({'claims': [],
-                'issue_assessments': [{'issue_id': i['id'], 'status': 'INSUFFICIENT'}
+                'issue_assessments': [{'issue_id': i['id'], 'status': 'INSUFFICIENT', 'reason':'요청된 원문 부족을 보존한다.'}
                     for i in v['issues']], 'gaps': [gap]})
         return super().send_once(body=body, ticket=ticket)
 
@@ -62,6 +63,7 @@ def test_empty_accepted_assessment_publishes_sources_and_reuses_request(tmp_path
     assert '승인 후 보고한다.' in out['answer']['text']
     assert '모의승인규정' in out['answer']['text']
     assert '확정' in out['answer']['text'] and out['answer']['unresolved']
+    assert '미확인 사유(AI 판단·검증 전): ' + GAP['reason'] in out['answer']['text']
     meta = out['assembly']['term_agent']
     assert meta['answer_coverage'] == 'INSUFFICIENT'
     assert meta['accepted_outcome']['disposition'] == 'LIMITED_ANSWER'
@@ -72,6 +74,7 @@ def test_empty_accepted_assessment_publishes_sources_and_reuses_request(tmp_path
     assert workflow._completion_answer_status(out, True) == 'partial'
     displayed = workflow.render(out)
     assert '승인 후 보고한다.' in displayed and workflow.REVIEW_INCOMPLETE_MESSAGE not in displayed
+    assert GAP['reason'] in displayed and 'AI 판단·검증 전' in displayed
     assert transport.phases.count('memory-assess') == 1 + reentry_limit
     assert not any(p.startswith('memory-compose') for p in transport.phases)
     from semantic_runtime.legal_agent.unified_repository import UnifiedRepository

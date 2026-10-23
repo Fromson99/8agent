@@ -49,9 +49,15 @@ def capture(inv, data):
     for card in data.get('references',{}).get('dependency_cards',[]):
         if not card.get('read_action') and not card.get('already_read'):
             continue
-        add(card['target'], {'kind':card['direction']+'_REFERENCE',
-            'reference_id':card['reference_id'], 'anchor_ids':[card['anchor']['source_id']] if card.get('anchor') else sorted(data['references'].get('current_anchor_ids',[])),
-            'witness_hash':digest(card.get('anchor_excerpt',''))}, card.get('anchor_excerpt',''))
+        for witness in [card,*card.get('additional_reference_witnesses',[])]:
+            original=witness.get('reference_witness')
+            # Previously persisted cards use anchor_excerpt for either origin.
+            # Retain that text as history, without inventing its source metadata.
+            text=original['text'] if original else witness.get('anchor_excerpt','')
+            add(card['target'], {'kind':card['direction']+'_REFERENCE',
+                'reference_id':original['reference_id'] if original else witness['reference_id'],
+                'anchor_ids':[card['anchor']['source_id']] if card.get('anchor') else sorted(data['references'].get('current_anchor_ids',[])),
+                'witness_hash':digest(text)},text)
     terms = data.get('document_term_candidates') or {}
     for doc in terms.get('documents',[]):
         catalog = {'document_id':doc['document_id'], 'terms':doc['terms'],

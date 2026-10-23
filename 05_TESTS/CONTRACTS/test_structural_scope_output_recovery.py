@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Required scope omission uses the existing single durable repair owner."""
 from copy import deepcopy
 from types import SimpleNamespace as S
@@ -27,9 +28,13 @@ def test_omitted_scope_is_repaired_once_and_failure_budget_survives_restart(tmp_
         'intent':{'purpose':'모의승인규정 원문 확인','concepts':['승인'],
             'issues':[{'id':'Q1','question':'모의승인규정 원문 확인','subject':'승인','kind':'OTHER','request_quote':question}]},
         'context_quotes':[],'search':{'mode':'STRUCTURE','title_hint_ids':[],'reason':'문서 원문 조사'}}
+    scope=value['command'].pop('search_scope_change')
+    value['search'].pop('title_hint_ids')
+    value['search']['scope_decision']={'mode':'NAMED_SCOPE', 'targets':scope['targets'],
+        'user_quote':scope['user_quote'], 'reason':'요청에 명시된 문서 전체'}
     def invoke(system,data,schema,phase,*args):
         calls.append(phase);out=deepcopy(value)
-        if always_missing or len(calls)==1:out['command'].pop('search_scope_change')
+        if always_missing or len(calls)==1:out['search'].pop('scope_decision')
         return out
     request={'question':question,'document_ids':['d'],'use_llm':False}
     with p.term_agent.open_session(request,query=p.plan(question,['d']),runtime=tmp_path/'native') as native:
@@ -41,7 +46,9 @@ def test_omitted_scope_is_repaired_once_and_failure_budget_survives_restart(tmp_
             repo._entry_principal={'user_id':'u','team_id':'risk_team','document_ids':['d']}
             try:
                 if always_missing:
-                    with pytest.raises(OutputContractError):entry.run(repo,context)
+                    with pytest.raises(OutputContractError) as caught:entry.run(repo,context)
+                    assert caught.value.repairable is False
+                    assert all(row['repairable'] is False for row in caught.value.issues)
                 else:
                     entry.run(repo,context)
                     assert executor.request_entry['command']['search_scope_change']['operation']=='REPLACE'

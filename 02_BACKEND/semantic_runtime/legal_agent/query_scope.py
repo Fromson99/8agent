@@ -86,8 +86,12 @@ def target(matcher, did, uid):
             'metadata_hash': digest([metadata, node])}
 
 
-def resolve(change, previous, matcher, authorized, utterance):
-    """Resolve one explicit update against authorized metadata before committing."""
+def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=False):
+    """Resolve a quoted scope decision against unique authorized metadata.
+
+    Fresh fused entry may resolve ellipsis and aliases to canonical names.
+    Existing follow-up commands retain their current lexical contract.
+    """
     from jsonschema import validate
     validate(change, CHANGE)
     operation = change['operation']
@@ -122,7 +126,7 @@ def resolve(change, previous, matcher, authorized, utterance):
             raise UnresolvedScope('구조화 선택과 단일 목차 문자열을 함께 지정할 수 없습니다.')
         if not name and not structure and selection is None:
             raise UnresolvedScope('법령명 또는 목차 중 하나가 필요합니다.')
-        if any(value and norm(value) not in norm(quote) for value in (name, structure)):
+        if not model_resolved and any(value and norm(value) not in norm(quote) for value in (name, structure)):
             raise UnresolvedScope('검색 범위는 현재 발언에 있는 이름으로 지정해야 합니다.')
         if name:
             exact = []; partial = []

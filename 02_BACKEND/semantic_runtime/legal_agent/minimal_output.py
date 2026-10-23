@@ -164,7 +164,7 @@ def _intersection(left, right):
 
 
 class _Node:
-    def __init__(self, schema, *, keep=()):
+    def __init__(self, schema, *, keep=(), preserve_fields=(), preserve=False):
         self.schema = deepcopy(schema)
         self.wire = deepcopy(schema)
         self.children = {}
@@ -172,7 +172,7 @@ class _Node:
         self.item = None
         self.variants = []
         self.discriminator = None
-        if not isinstance(schema, dict):
+        if preserve or not isinstance(schema, dict):
             return
         # Scoped/conditional/pattern objects require a separate contract; leave
         # them intact rather than guessing their dependencies or reference scope.
@@ -200,7 +200,17 @@ class _Node:
                     values = [_fixed(s.get('properties', {}).get(name, {})) for s in siblings]
                     if all(v is not _MISSING for v in values) and len({_key(v) for v in values}) > 1:
                         keep.add(name)  # No single host value is implied by this action.
-                self.variants.append((label, _Node(merged, keep=keep)))
+                # A shared action may still have different nested judgments.
+                # Eliding their literals independently would turn one wire
+                # value into two canonical meanings. Keep those subtrees
+                # explicit; the host must never choose a legal opinion.
+                preserve_fields = set()
+                if len(siblings) > 1:
+                    for name, rule in b.get('properties', {}).items():
+                        if (isinstance(rule, dict) and rule.get('type') in ('object', 'array')
+                                and len({_key(s.get('properties', {}).get(name, {})) for s in siblings}) > 1):
+                            preserve_fields.add(name)
+                self.variants.append((label, _Node(merged, keep=keep, preserve_fields=preserve_fields)))
             # Do not union properties or intersect requirements across actions.
             # Such a menu accepts values that no selected action can reconstruct.
             # Full alternatives also preserve typed/untyped branches of one action.
@@ -214,7 +224,7 @@ class _Node:
                     self.fixed[name] = fixed
                     self.wire['properties'].pop(name)
                 else:
-                    child = self.children[name] = _Node(rule)
+                    child = self.children[name] = _Node(rule, preserve=name in preserve_fields)
                     self.wire['properties'][name] = child.wire
             self.wire['required'] = [k for k in required if k not in self.fixed]
             # Required literals count toward the canonical object size, but

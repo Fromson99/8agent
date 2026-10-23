@@ -146,7 +146,7 @@ def forms(tokens):
 def question_terms(text):
     """Distinct content morphemes of a question or model query, in order of appearance."""
     tokens = term_morph.tokenize(unicodedata.normalize('NFKC', text))
-    return list(dict.fromkeys(forms(tokens)))[:MAX_TERMS]
+    return list(dict.fromkeys(forms(tokens)))
 
 
 def _index_chunks(text):
@@ -204,7 +204,9 @@ def _search_forms(text):
 
 
 def expression(terms):
-    return ' OR '.join('"'+t.replace('"', '')+'"' for t in terms)
+    chunks = [' OR '.join('"'+t.replace('"', '')+'"' for t in terms[i:i+MAX_TERMS])
+              for i in range(0, len(terms), MAX_TERMS)]
+    return ' OR '.join('('+chunk+')' for chunk in chunks) if len(chunks)>1 else (chunks[0] if chunks else '')
 
 
 def automatic_workers(input_bytes):

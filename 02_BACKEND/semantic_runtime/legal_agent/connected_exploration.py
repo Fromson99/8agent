@@ -14,12 +14,35 @@ CONTEXT_CHARS = 10000
 
 
 def diverse_reference_cards(cards, limit=16):
+    """Bounded coverage across anchors/directions, not legal relevance ranking.
+
+    Reference IDs have no relevance order. A long incoming citation list must
+    not consume every slot before the current original's outgoing references.
+    Keep the existing unread/distinct-target preference and total card limit.
+    """
     first, rest, seen = [], [], set()
     for card in sorted(cards, key=lambda c: c['already_read']):
         key = (card['target']['source_id'], card['direction'])
         (rest if key in seen else first).append(card)
         seen.add(key)
-    return (first+rest)[:limit]
+    result = []
+    for already_read in (False, True):
+        buckets = {}
+        for card in first:
+            if bool(card['already_read']) != already_read:
+                continue
+            key = (card.get('anchor', {}).get('source_id'), card['direction'])
+            buckets.setdefault(key, []).append(card)
+        # Alternate directions within each anchor; retain source order inside
+        # each bucket. A second-level menu still exposes omitted connections.
+        anchors = list(dict.fromkeys(key[0] for key in buckets))
+        queues = [buckets[(anchor, direction)] for anchor in anchors
+                  for direction in ('OUTGOING', 'INCOMING') if (anchor, direction) in buckets]
+        while any(queues) and len(result) < limit:
+            for queue in queues:
+                if queue and len(result) < limit:
+                    result.append(queue.pop(0))
+    return (result + rest)[:limit]
 
 
 def offer_reference_reads(inv, references, offer):
@@ -40,6 +63,10 @@ def offer_reference_reads(inv, references, offer):
 
 def anchors(inv):
     """Focus is a display position; acquired, unexcluded originals remain roots."""
+    from . import connection_scope as cs
+    if cs.enabled(inv):
+        selected = cs.current(inv)
+        return [r['source_id'] for r in selected['scope']['members']] if selected else []
     records = inv.read_records()
     known = {r['source_id'] for r in records.values()}
     order = [inv.p['groups'][g]['source_id'] for g in inv.p.get('window_groups', []) if g in inv.p['groups']]
@@ -161,7 +188,11 @@ def menu(inv, offer):
         return None
     # A definition READ or an explicitly located/opened document establishes a
     # scope. The initial global law results alone do not trigger body expansion.
-    docs = [r['document_id'] for r in inv.read_records().values()]
+    from . import connection_scope as cs
+    focus = cs.current(inv) if cs.enabled(inv) else None
+    # A speculative definition read no longer starts document-body expansion.
+    docs = ([r['document_id'] for r in focus['scope']['members']] if focus else []
+            ) if cs.enabled(inv) else [r['document_id'] for r in inv.read_records().values()]
     location = inv.p.get('structure_location') or {}
     if location.get('document_id'):
         docs.insert(0, location['document_id'])

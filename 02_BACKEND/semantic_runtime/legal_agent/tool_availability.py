@@ -96,6 +96,7 @@ def budget_reason(s, added, calls, state):
 
 def context_plans(s,hit,offer):
     """Mirror mandatory ancestor introductions, within this canonical source."""
+    from . import query_scope as qs
     uid=offer['unit_id'];result=[];seen=set()
     if uid is None or str(uid)==str(hit['article_unit_id']):return result
     current=s.matcher.units[(hit['document_id'],str(uid))].get('parent')
@@ -103,6 +104,13 @@ def context_plans(s,hit,offer):
         if current in seen:raise ContractError('context parent cycle')
         seen.add(current);h=rel.hit_for(s,hit['source_id'],current)
         own=next((o for o in ur.offers(s,h) if o['extent']=='exact'),None)
+        if own is None and qs.active(s) and set(map(str,offer['block_ids'])) <= qs.permitted_blocks(s,hit['source_id']):
+            # ensure_context grants this exact ancestor only after the child
+            # read succeeds. Predict that cost without granting or reading it.
+            proposed=ur.exact_offer(s,h)
+            canonical={str(b['block_id']) for b in s.tools.sources[hit['source_id']]['blocks']}
+            if proposed['block_ids'] and set(map(str,proposed['block_ids'])) <= canonical:
+                own={**proposed,'unit_id':str(current),'id':'exact:'+str(current)}
         if own:result.append((h,own))
         if str(current)==str(hit['article_unit_id']):break
         current=s.matcher.units[(hit['document_id'],str(current))].get('parent')

@@ -120,3 +120,36 @@ def test_native_reference_grammar_is_bounded_after_factoring():
     duplicate=decision('global',['규정']);duplicate['issue_refs']=['Q1']*100
     assert not Draft202012Validator(wire).is_valid(duplicate)
     assert expand(wire)==schema
+
+
+@pytest.mark.parametrize('mixed', [False, True])
+def test_shared_navigation_metadata_roundtrip_keeps_originals_and_choices(mixed):
+    from semantic_runtime.legal_agent.navigation_input import compact_cards, expand_cards
+    location={'document_id':'d','unit_id':'12','path':'장/절/조/항의 정확한 위치 '*20}
+    sources=[{'id':'E1','text':'① 원문이다. ② 단서를 보존한다.','spans':[{'block_id':'1','text':'① 원문이다.'}]}]
+    rows=[{'id':'T'+str(i),'choice':'READ','location':deepcopy(location),'reason':'선택 가능'} for i in range(12)]
+    if mixed:rows += [{'id':'F'+str(i),'choice':'FOLLOW_CONNECTION','selected_scope':deepcopy(location)} for i in range(12)]
+    v={'tool_options':rows,'already_read':[deepcopy(location)]*5,'sources':sources,'exact_evidence':deepcopy(sources)}
+    before=deepcopy(v);wire=compact_cards(v)
+    assert v==before and expand_cards(wire)==before
+    assert compact_cards(json.loads(json.dumps(v,sort_keys=True)))==wire
+    assert wire['sources']==sources and wire['exact_evidence']==sources
+    assert len(json.dumps(wire))<len(json.dumps(v))*.6
+    assert 'shared_navigation_cards' in wire
+
+
+def test_segmented_tables_preserve_mixed_action_order_and_absent_fields():
+    from semantic_runtime.legal_agent.navigation_input import compact_cards, expand_cards
+    rows=[{'action':'READ','scope':'scope'+str(i),'long_unique_location_field':'node'+str(i)} for i in range(9)]
+    rows += [{'action':'RETURN','previous_frame_identifier':'frame'+str(i),'scope':None} for i in range(9)]
+    v={'tool_options':rows};wire=compact_cards(v)
+    assert 'navigation_segments' in wire['tool_options']
+    assert expand_cards(wire)==v
+    assert 'previous_frame_identifier' not in expand_cards(wire)['tool_options'][0]
+
+
+@pytest.mark.parametrize('pool', [{}, {'N1':{'navigation_card_ref':'N1'}}])
+def test_shared_navigation_card_rejects_missing_or_cyclic_reference(pool):
+    from semantic_runtime.legal_agent.navigation_input import expand_cards
+    with pytest.raises(ValueError,match='shared navigation card'):
+        expand_cards({'shared_navigation_cards':pool,'tool_options':{'navigation_card_ref':'N1'}})

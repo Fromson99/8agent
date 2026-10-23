@@ -161,7 +161,8 @@ def prepare(value, schema, issues, options, facts):
     validate(value,schema)
     verify_modalities(value,options)
     out, gap_actions = cc.source_gap_actions(value)
-    model={'disposition':value['disposition'],'issue_assessments':deepcopy(value['issue_assessments'])}
+    model={'disposition':value['disposition'],'issue_assessments':deepcopy(value['issue_assessments']),
+        'gaps':deepcopy(value['gaps'])}
     if gap_actions:model['gap_action_corrections'] = gap_actions
     out['claims']=[compile_claim(c) for c in value['claims']]
     allowed={o['id'] for o in options}
@@ -170,8 +171,7 @@ def prepare(value, schema, issues, options, facts):
         if c['rule'] is not None:
             errors=cc.rule_errors(c,facts)
             if errors:raise ProposalError('; '.join(errors))
-    for gap in out['gaps']:
-        if gap['kind']!='UNRESOLVED_REFERENCE':gap['material']=True
+    # Preserve submitted materiality; missing-source type is not importance.
     blocked={g['issue_id'] for g in out['gaps'] if g['material']}
     for row in out['issue_assessments']:
         supported=any(row['issue_id'] in c['issue_refs'] for c in out['claims'])
@@ -187,7 +187,7 @@ def prepare(value, schema, issues, options, facts):
     # The supplied wire schema already verified that pool; validate semantics with it retained.
     legacy_schema=cc.assessment_schema(issues,
         [g['material_id'] for g in legacy['gaps'] if g['material_id'] is not None],options,contract=cc.CONTRACT,facts=facts)
-    errors=cc.assessment_errors(legacy,legacy_schema,issues)
+    errors=cc.assessment_errors(legacy,legacy_schema,issues,model_materiality=True)
     if errors:raise ProposalError('; '.join(errors))
     return out, model
 

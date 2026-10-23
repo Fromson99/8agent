@@ -35,9 +35,112 @@ def new_epoch(state, *, reason):
     return state
 
 
+_REVIEW_SPAN_KEYS = ('source_id', 'document_id', 'block_id', 'start_cp', 'end_cp', 'text_hash')
+
+
+def _review_span(receipt):
+    if any(k not in receipt for k in (*_REVIEW_SPAN_KEYS, 'text')):
+        raise ContractError('assessment review lacks a verified source span')
+    if receipt['text_hash'] != digest(receipt['text']):
+        raise ContractError('assessment review source text hash mismatch')
+    return {k: receipt[k] for k in _REVIEW_SPAN_KEYS}
+
+
+def retain_assessment_review(state, assessment, request):
+    """Persist source-bound prior opinions, never a new accepted answer.
+
+    Called after native claim verification and before bounded SELECT reentry.
+    Original text stays in the source store/journal; only span identities are
+    duplicated. Empty later assessments cannot erase this earlier audit trail.
+    """
+    claims = []
+    for claim in assessment.get('claims', []):
+        receipts = claim.get('span_receipts')
+        if not receipts:
+            # Legacy non-span assessments have no safe projection contract.
+            continue
+        claims.append({'claim_id': claim['claim_id'], 'issue_refs': list(claim['issue_refs']),
+            'text': claim['text'], 'spans': [_review_span(r) for r in receipts]})
+    if not claims:
+        return
+    payload = {'request_hash': digest(request), 'claims': claims,
+        'issue_assessments': deepcopy(assessment.get('issue_assessments', []))}
+    row = {'payload': payload, 'sha256': digest(payload)}
+    reviews = state.setdefault('assessment_reviews', [])
+    if not any(r['sha256'] == row['sha256'] for r in reviews):
+        reviews.append(row)
+
+
+def assessment_review_context(state, request, options, issues):
+    """Expose opinions only when every cited span is present in this model input.
+
+    Rebinding depends on stable source/offset/text identity, not model IDs or
+    semantic similarity. An old opinion cannot supply a missing original.
+    """
+    reviews = state.get('assessment_reviews', [])
+    available = {digest(_review_span(o)): o['id'] for o in options} if reviews else {}
+    issue_ids = {i['id'] for i in issues}
+    rows = []; withheld = 0
+    for number, review in enumerate(reviews, 1):
+        payload = review['payload']
+        if digest(payload) != review['sha256']:
+            raise ContractError('assessment review state hash mismatch')
+        if payload['request_hash'] != digest(request):
+            continue
+        for claim in payload['claims']:
+            keys = [digest(s) for s in claim['spans']]
+            if (not set(claim['issue_refs']) <= issue_ids or not keys
+                    or any(k not in available for k in keys)):
+                withheld += 1
+                continue
+            rows.append({'prior_claim': f"{number}:{claim['claim_id']}",
+                'issue_refs': claim['issue_refs'], 'text': claim['text'],
+                'evidence_refs': list(dict.fromkeys(available[k] for k in keys))})
+    return {'status': 'PRIOR_MODEL_OPINIONS_FOR_REVIEW', 'claims': rows,
+        'unavailable_claims': withheld,
+        'meaning': '앞선 모델 의견이다. 현재 원문과 질문으로 유지·수정·제외를 다시 판단한다. 이전 의견 자체는 법률 근거나 정답이 아니다.'}
+
+
 def decision_identity(state, data, phase):
     return {'epoch': state.get('investigation_epoch', 0), 'phase': phase,
             'presentation_id': data['presentation_id'], 'input_hash': digest(data)}
+
+
+def navigation_assessment_context(state, request, pages, issues):
+    """Rebind prior opinions to exact spans in the current navigation pages.
+
+    A page can be larger than an assessment line. Coordinates and the hash of
+    that exact substring must agree; matching titles or text elsewhere cannot
+    authorize an opinion. No original text or new semantic decision is stored.
+    """
+    options = []
+    seen = set()
+    for review in state.get('assessment_reviews', []):
+        payload = review['payload']
+        if digest(payload) != review['sha256']:
+            raise ContractError('assessment review state hash mismatch')
+        if payload['request_hash'] != digest(request):
+            continue
+        for claim in payload['claims']:
+            for wanted in claim['spans']:
+                for page in pages:
+                    if any(page.get(k) != wanted[k] for k in ('source_id', 'document_id')):
+                        continue
+                    for span in page.get('spans', []):
+                        if str(span['block_id']) != str(wanted['block_id']):
+                            continue
+                        lo, hi = wanted['start_cp'], wanted['end_cp']
+                        if not span['start_cp'] <= lo < hi <= span['end_cp']:
+                            continue
+                        text = span['text'][lo-span['start_cp']:hi-span['start_cp']]
+                        if (len(text) != hi-lo or text not in page.get('text', '')
+                                or digest(text) != wanted['text_hash']):
+                            continue
+                        key = digest([wanted, page['id']])
+                        if key not in seen:
+                            seen.add(key)
+                            options.append({**wanted, 'id': page['id'], 'text': text})
+    return assessment_review_context(state, request, options, issues)
 
 
 def deduplicate_decision(value):
@@ -120,10 +223,54 @@ def bind_gap(gap, session):
             'target_binding_hash': digest(binding)}
 
 
-def bind_gaps(value, session, rounds):
+def assessment_locator_options(sources, navigation, *, selected_scope=None, binding=None, session=None):
+    """Location labels from verified delivered originals and stored links only.
+
+    Existence in the catalogue does not prove a model-supplied location. Unknown
+    locations remain an empty selector; the gap reason retains what is missing.
+    """
+    rows = {}; documents = set()
+    def add(source, origin):
+        name = source.get('document_name', '').strip()
+        heading = source.get('heading', '').strip()
+        if not name:
+            return
+        documents.add(name)
+        if heading:
+            label = name + ' ' + heading
+            rows.setdefault(label, {'target': label, 'origin': origin,
+                'source_id': source.get('source_id'), 'document_id': source.get('document_id')})
+    for source in sources:
+        add(source, 'DELIVERED_ORIGINAL')
+    for group in navigation.get('groups', []):
+        if group.get('connections'):
+            add(group.get('target') or {}, 'STORED_REFERENCE_TARGET')
+    if selected_scope and selected_scope.get('locator_receipt'):
+        scope = selected_scope['scope']; receipt = selected_scope['locator_receipt']
+        if (scope['id'] != digest({k:v for k,v in scope.items() if k != 'id'})
+                or receipt['sha256'] != digest({k:v for k,v in receipt.items() if k != 'sha256'})
+                or receipt['scope_id'] != scope['id']
+                or receipt['binding'] != digest(binding)
+                or selected_scope['binding'] != digest(binding)):
+            raise ContractError('assessment connection locator receipt changed')
+        for target in receipt['targets']:
+            if session is None or target['document_id'] not in session.scope:
+                raise ContractError('assessment connection locator outside request scope')
+            source = session.tools.sources.get(target['source_id'])
+            if not source or any(source.get(k) != target.get(k) for k in ('document_id','document_name','heading')):
+                raise ContractError('assessment connection locator source changed')
+            add(target, 'PRESENTED_STORED_REFERENCE_TARGET')
+    for name in documents:
+        rows.setdefault(name, {'target': name, 'origin': 'KNOWN_DOCUMENT'})
+    return [rows[k] for k in sorted(rows)]
+
+
+def bind_gaps(value, session, rounds, *, allowed_targets=None):
     out = deepcopy(value)
     known = {g['gap_key']: g for r in rounds for g in r['gaps']}
     for n, raw in enumerate(out['gaps']):
+        if allowed_targets is not None and raw.get('missing_target', '') not in allowed_targets:
+            raise ProposalError('missing_target must select a verified source/reference location; use empty string for unknown location and retain the missing content in reason')
         previous = raw.pop('previous_gap_key', None)
         gap = bind_gap(raw, session)
         if previous is not None:
@@ -133,7 +280,8 @@ def bind_gaps(value, session, rounds):
             old_target = prior.get('target_binding', {})
             if prior.get('target_binding_hash') != gap['target_binding_hash']:
                 raise ContractError('previous gap source authorization or generation changed')
-            if gap['target_binding']['status'] == 'UNLOCATED' and not raw.get('missing_target'):
+            if (gap['target_binding']['status'] == 'UNLOCATED' and not raw.get('missing_target')
+                    and (allowed_targets is None or prior.get('missing_target', '') in allowed_targets)):
                 gap.update(identity_key=previous, target_binding=deepcopy(old_target))
                 gap['missing_target'] = prior.get('missing_target', '')
             elif gap['identity_key'] != previous:
@@ -424,7 +572,7 @@ def add_target_actions(investigation, actions):
 
 def annotate_reused_reads(investigation, data, actions):
     """Do not hide cached bodies: only suppress an already-visible subset read."""
-    from . import evidence_inventory as inv, unit_reading as ur
+    from . import evidence_inventory as inv, unit_reading as ur, tool_availability as available
     current = {}
     for page in data.get('sources', []): current.setdefault(page['document_id'], []).extend(page['spans'])
     reused = []
@@ -432,7 +580,12 @@ def annotate_reused_reads(investigation, data, actions):
         if action['action'] not in ('READ_SCOPE', 'READ_PARENT', 'READ_ARTICLES', 'VIEW_SAVED_SOURCE'): continue
         identity = action['identity']; gid = identity.get('branch_id')
         if identity.get('continuation'): continue
-        if gid:
+        if action['action'] == 'READ_ARTICLES':
+            plan, unavailable = available.article_plan(investigation.s, identity)
+            if unavailable: continue
+            hit, offer = plan
+            did, block_ids = hit['document_id'], offer['block_ids']
+        elif gid:
             group = investigation.p['groups'][gid]; did = group['hit']['document_id']
             offer = group['offer'] if action['action'] in ('READ_PARENT', 'VIEW_SAVED_SOURCE') else next(
                 (o for o in ur.offers(investigation.s, group['hit']) if o['id'] == identity.get('scope')), None)
@@ -442,17 +595,18 @@ def annotate_reused_reads(investigation, data, actions):
                 if selected is None:continue
                 offer=selected['offer']
             block_ids = offer['block_ids']
-        else:
-            did = identity.get('document_id'); uid = identity.get('unit_id')
-            if not did or uid is None: continue
-            block_ids = ur.blocks(investigation.s, did, uid, 'subtree')
+        else: continue
         if not block_ids or did not in current: continue
         wanted = inv.expected(investigation.s, did, block_ids)
         if not inv.covers(wanted, current[did]): continue
         refs = [p['id'] for p in data['sources'] if p['document_id'] == did
                 and any(str(s['block_id']) == str(w['block_id']) and s['start_cp'] < w['end_cp'] and w['start_cp'] < s['end_cp']
                         for s in p['spans'] for w in wanted)]
-        reused.append({'action_id': ident, 'basis_refs': refs, 'reason': '현재 제시한 원문이 선택 범위를 이미 포함합니다',
+        source_id = (hit['source_id'] if action['action'] == 'READ_ARTICLES' else group['source_id'])
+        reused.append({'action_id': ident, 'action': action['action'], 'label': action['label'],
+                       'document_id': did, 'source_id': source_id, 'unit_id': offer.get('unit_id'),
+                       'covered_spans': [{k: p[k] for k in ('block_id','start_cp','end_cp')} for p in wanted],
+                       'basis_refs': refs, 'reason': '현재 제시한 원문이 선택 범위를 이미 포함합니다',
                        'new_evidence': False, 'next': 'DECIDE or FINISH using offered branch decisions'})
         # Preserve navigation facts but exclude the redundant read from the
         # executable menu, so selecting it cannot spend a model turn repeatedly.
@@ -522,6 +676,9 @@ def record_tool_failure(investigation, decision, actions, step, error):
            'recovery_policy':{'version':tp.VERSION,'action':choice.action,'owner':choice.owner},
            'tool_outcome':outcome.to_dict()}
     investigation.p.setdefault('tool_failures', []).append(row)
+    if kind=='FOLLOW_CONNECTION' and investigation.p.get('selected_connection_scope'):
+        investigation.p['selected_connection_scope']['status']='FAILED'
+        investigation.p['selected_connection_scope']['failure']={k:row[k] for k in ('code','status','absence_proven')}
     changed = record_progress(investigation.p)
     from ..research_state import OriginalProgress
     progress = OriginalProgress(investigation.p).advance(changed)
@@ -534,17 +691,33 @@ def record_tool_failure(investigation, decision, actions, step, error):
     return True
 
 
+def failed_definition_scope(investigation, failure, action):
+    """Match a confirmed failed scope, independent of an inline route's handles."""
+    if failure.get('origin') != 'DEFINITION_CONTEXT' or action['action'] != 'READ_ARTICLES':
+        return False
+    scope = failure.get('failed_scope')
+    if not scope or not scope.get('block_ids'): return False
+    from .tool_availability import article_plan
+    plan, unavailable = article_plan(investigation.s, action['identity'])
+    if unavailable: return False
+    hit, offer = plan
+    return (all(hit.get(key) == scope.get(key) for key in ('source_id', 'document_id'))
+            and set(map(str, offer['block_ids'])) == set(map(str, scope['block_ids'])))
+
+
 def recovery_menu(investigation, data, actions):
     failures = investigation.p.get('tool_failures', [])
     blocked = set()
     for ident, action in list(actions.items()):
         if action['action'] in ('SEARCH_BODY', 'SEARCH_STRUCTURE', 'RESEARCH'): continue
-        if any(f['action'] == action['action'] and f['targets'] == [action['identity']] for f in failures):
+        if any(failed_definition_scope(investigation, f, action) if f.get('origin') == 'DEFINITION_CONTEXT'
+               else f['action'] == action['action'] and f['targets'] == [action['identity']] for f in failures):
             blocked.add(ident); del actions[ident]
     # Search handles stay usable with a changed expression; validate the exact
     # operation separately. Read/cursor handles cannot immediately repeat a failure.
     if failures:
-        data['tool_recovery'] = [{k: f[k] for k in ('code', 'action', 'targets', 'queries', 'status', 'absence_proven')}
+        data['tool_recovery'] = [{k: f[k] for k in ('code', 'action', 'targets', 'queries', 'status', 'absence_proven',
+                                                  'origin', 'failure_stage', 'failed_scope') if k in f}
                                  for f in failures[-3:]]
         data['tool_recovery_rule'] = ('실패한 동일 요청은 반복하지 않는다. 허용된 다른 구조·범위 조회를 선택하거나 '
             '확인한 원문으로 판단하고 부족은 UNRESOLVED로 남긴다. 실패는 원문 부재 증명이 아니다.')
@@ -575,7 +748,9 @@ def recovery_menu(investigation, data, actions):
 def validate_failed_operation(investigation, decision, actions):
     if not decision.get('targets'): return
     key = operation_key(decision, actions)
-    if any(f['operation_key'] == key for f in investigation.p.get('tool_failures', [])):
+    if any((any(failed_definition_scope(investigation, f, actions[target]) for target in decision['targets'])
+            if f.get('origin') == 'DEFINITION_CONTEXT' else f['operation_key'] == key)
+           for f in investigation.p.get('tool_failures', [])):
         raise ProposalError('same failed operation in this request; select a different offered target/query or leave UNRESOLVED')
 
 

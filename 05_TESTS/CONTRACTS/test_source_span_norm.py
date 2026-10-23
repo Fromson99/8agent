@@ -1,3 +1,4 @@
+from conftest import term_glossary
 from copy import deepcopy
 import json
 import pytest
@@ -57,11 +58,10 @@ def test_bound_original_receipt_cannot_be_substituted():
     bad = deepcopy(out['claims'][0]); bad['span_receipts'][0]['text'] = '다른 원문'
     with pytest.raises(ContractError, match='receipt'): v5.verify_content(bad)
 
-def test_exact_duplicate_source_role_is_written_once():
+def test_shared_source_role_does_not_prove_semantic_duplication():
     p = proposal(kind='OBLIGATION'); second = deepcopy(p['claims'][0]); second['claim_id'] = 'C2'
     p['claims'].append(second)
-    with pytest.raises(ProposalError, match='Repeated source clause'):
-        accepted(p, [{'id': 'S1', 'source_id': 's', 'text': '신고할 수 있다.'}])
+    assert len(accepted(p, [{'id': 'S1', 'source_id': 's', 'text': '신고할 수 있다.'}])['claims']) == 2
 
 def test_different_effects_may_share_a_mixed_original_paragraph():
     quote = '허가를 받아야 한다. 다만 신고로 갈음할 수 있다.'
@@ -81,6 +81,17 @@ def test_authored_interpretation_and_original_remain_separate():
 class SpanTransport(SingleTransport):
     def send_once(self, *, body, ticket):
         view = json.loads(body['messages'][1]['content'])['view']; phase = view.get('source_stage', view['phase'])
+        if '-read-choice' in phase:
+            from semantic_runtime.legal_agent.navigation_input import expand_cards
+            view=expand_cards(view);self.phases.append(phase)
+            if self.reject_once:
+                self.reject_once=False
+                return wire({'unoffered':'T999999'})
+            if not view['sources']:
+                return wire({'choice':'READ','selections':[{'target':view['read_candidates'][0]['target'],
+                    'issue_id':view['issues'][0]['id'],'missing_need':'승인 규칙 원문 확인','relation':'DIRECT','source_ref':None}]})
+            return wire({'choice':'FINISH','basis_refs':[s['id'] for s in view['sources']],
+                'issue_refs':[i['id'] for i in view['issues']],'evidence_sufficient':False,'reason':'읽은 원문을 판단에 전달'})
         if phase.startswith('memory-assess'):
             self.phases.append(phase)
             options = view['evidence_options']; ref = next(o['id'] for o in options if '승인 후 보고한다.' in o['text'])
@@ -91,6 +102,7 @@ class SpanTransport(SingleTransport):
                     c=deepcopy(out['claims'][0]);c.update(claim_id='C2',rule=None,
                         explanation='요청한 원문을 추가로 확인해야 합니다.')
                     out['claims'].append(c)
+            out.pop('disposition')
             return wire(out)
         return super().send_once(body=body, ticket=ticket)
 
@@ -106,7 +118,7 @@ def test_native_v8_source_ids_publication_repair_reentry_reuse(tmp_path, tree, d
         'completion_contract': True, 'completion_policy_version': cc.V8, 'compact_input': True}}
     app = create_app(tmp_path, gen, contracts_root=ROOT, provider=object(), implementation='legal-agent-unified-v6',
         legal_agent_profile=profile, legal_agent_transport=transport,
-        memory_identity=lambda _: {'user_id': 'u', 'team_id': 't', 'document_ids': ['d']})
+        memory_identity=lambda _: {'user_id': 'u', 'team_id': 'test_team', 'document_ids': ['d']})
     app.state.pipeline.term_agent.unit_fulltext = idx
     with TestClient(app) as api:
         body = {'question': '모의승인규정 제1조 승인 기준은?', 'session_id': 'v8', 'request_id': 'r1'}

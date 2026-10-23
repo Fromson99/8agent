@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Fixed synthetic tool contracts, no model or retrieval-quality experiment."""
 import copy
 import json
@@ -94,7 +95,13 @@ def test_integrity_and_unsupported_failures_never_use_name_recovery(code):
     '모의승인규칙 제1조 제2조', '제99조'])
 def test_ambiguous_pairs_ranges_and_missing_names_do_not_invent_a_pair(session, query):
     native, _ = session; inv = investigation(native)
-    assert 'law_name_recovery' not in qs.catalogue(inv.s, queries=[query])
+    page=qs.catalogue(inv.s, queries=[query])
+    if query == '제99조':
+        assert 'law_name_recovery' not in page
+    else:
+        clue=page['law_name_recovery']
+        assert clue['structure_filter'] is None and clue['requires_structure_decision']
+        assert clue['original_queries'] == [query]
 
 
 def test_name_search_respects_user_direct_document_boundary(session):

@@ -3,6 +3,7 @@ from copy import deepcopy
 from types import SimpleNamespace as S
 import json
 import pytest
+from conftest import term_glossary
 from jsonschema import validate
 from semantic_runtime.legal_agent import request_repair as rr,completion_v5 as v5,completion_contracts as cc
 from semantic_runtime.legal_agent import law_navigation as ln,unit_reading as ur,evidence_inventory as inv
@@ -371,10 +372,10 @@ def test_current_saved_view_is_suppressed_but_missing_body_can_be_represented(se
 
 def test_native_transient_read_failure_offers_different_route_without_false_adoption(session):
     native,_=session;i=modern(native);original=i.execute_tool;calls=[];failed=[]
-    def execute(v,d,a):
+    def execute(v,d,a,*,model_selected=False):
         if v['next_action']=='READ_PARENT':
             failed.append(v['targets'][0]);raise TimeoutError('synthetic source read timeout')
-        return original(v,d,a)
+        return original(v,d,a,model_selected=model_selected)
     def invoke(system,d,schema,phase,timeout):
         calls.append(phase)
         if len(calls)==1:return decision(d,'READ_PARENT',next(a['id'] for a in d['actions'] if a['action']=='READ_PARENT'))
@@ -402,7 +403,7 @@ def test_exact_failed_search_is_blocked_but_new_expression_can_execute(session):
 @pytest.mark.parametrize('error',[ContractError('source hash'),PermissionError('ACL'),ValueError('unexpected bug')])
 def test_integrity_permission_and_unclassified_tool_errors_still_fail_closed(session,error):
     native,_=session;i=modern(native);d,a=i.view();v=decision(d,'READ_PARENT',d['articles'][0]['read_parent_action'])
-    def fail(*args):raise error
+    def fail(*args,**kwargs):raise error
     i.execute_tool=fail
     with pytest.raises(type(error)):i.execute(v,d,a)
     assert not i.p.get('tool_failures')
@@ -421,7 +422,7 @@ def test_failed_tool_receipt_never_satisfies_missing_target(session):
     native,_=session;i=modern(native);g=rr.bind_gap(GAP,i.s);g.update(gap_id=ln.gap_id(g),gap_key=cc.gap_key(g))
     i.p['assessment_gaps']=[g];i.open_gap_round();d,a=i.view();t=d['gap_targets'][0]['read_actions'][0]
     v=decision(d,'READ_ARTICLES',t)
-    def fail(*args):raise TimeoutError('source timeout')
+    def fail(*args,**kwargs):raise TimeoutError('source timeout')
     i.execute_tool=fail;assert i.execute(v,d,a) is False
     receipt=i.current_gap_round()['action_receipts'][-1];assert receipt['status']=='FAILED'
     row={'gap_id':g['gap_id'],'status':'NOT_AVAILABLE','reason':'failed source call','action_refs':[receipt['id']],'basis_refs':[]}
@@ -526,7 +527,7 @@ def test_recoverable_failure_invalidates_pre_failure_state_version(session):
     data, actions = investigation.view()
     value = decision(data, 'READ_PARENT', data['articles'][0]['read_parent_action'])
     version = investigation.p['state_version']
-    def fail(*args):
+    def fail(*args,**kwargs):
         raise TimeoutError('synthetic source timeout')
     investigation.execute_tool = fail
     assert investigation.execute(value, data, actions) is False

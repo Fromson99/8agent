@@ -307,8 +307,19 @@ def decision_rows(value, view):
     if isinstance(plan, dict):
         for demand in objects(plan.get('demands')):
             add('답변 요구 정리', demand.get('requirement'), demand.get('missing_fact') or plan.get('change_reason'))
-    if value.get('intent'):
-        add(DECISIONS.get(value['intent'], value['intent']), found([e.get('evidence') for e in objects(view.get('exact_evidence'))]), value.get('reason'))
+    intent = value.get('intent')
+    if isinstance(intent, str) and intent:
+        add(DECISIONS.get(intent, intent), found([e.get('evidence') for e in objects(view.get('exact_evidence'))]), value.get('reason'))
+    elif isinstance(intent, dict):
+        add('조사 목적', intent.get('purpose'), full=True)
+        for issue in objects(intent.get('issues')):
+            add('확인할 쟁점', issue.get('question'), issue.get('reason'), full=True)
+    routing = value.get('routing')
+    if isinstance(routing, dict):
+        add('요청 처리 경로', routing.get('mode'), routing.get('reason'), full=True)
+    search = value.get('search')
+    if isinstance(search, dict):
+        add('검색 방식', search.get('mode'), search.get('reason'), full=True)
     for action in objects(value.get('actions')):
         args = action.get('args') or {}
         if not isinstance(args, dict): args = {}

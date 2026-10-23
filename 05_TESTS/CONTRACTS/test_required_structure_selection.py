@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Model-output contract upgrade; legacy state remains loadable."""
 import copy
 import pytest
@@ -20,8 +21,10 @@ def test_current_entry_requires_scope_without_breaking_legacy_admission(scoped):
     old=entry.schema(scoped)['properties']['command']['anyOf'][0]
     new=entry.schema(scoped,model=True)['properties']['command']['anyOf'][0]
     assert 'search_scope_change' not in old['required']
-    assert 'search_scope_change' in new['required']
-    target=new['properties']['search_scope_change']['properties']['targets']['items']
+    assert 'search_scope_change' not in new['properties']
+    search=entry.schema(scoped,model=True)['properties']['search']['anyOf'][0]
+    assert 'scope_decision' in search['required']
+    target=search['properties']['scope_decision']['properties']['targets']['items']
     assert 'selection' in target['required']
     validate({'document':'규정','structure':None,'selection':choose()},target)
     validate({'document':'규정','structure':None,'selection':None},target)

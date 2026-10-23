@@ -1,3 +1,4 @@
+from conftest import term_glossary
 """Synthetic structured decisions and real source/API contracts; no live model."""
 from copy import deepcopy
 from types import SimpleNamespace as S
@@ -221,10 +222,10 @@ def test_modern_api_keeps_exclusion_through_read_reply_and_restart(tmp_path,scop
                 self.phases.append(phase)
                 return wire({'routing':{'mode':'CASE','answer':'','reason':'모의 구조 선택'},
                     'command':{'method_id':'CASE_START','source_category':'ALL','facts':[],
-                        'queries':['승인'],'format':'prose','reason':'범위 선택','search_scope_change':change},
+                        'queries':['승인'],'format':'prose','reason':'범위 선택'},
                     'intent':{'purpose':'승인 원문 설명','concepts':['승인'],'issues':[
                         {'id':'Q1','question':'승인 원문 설명','subject':'승인','kind':'OTHER','request_quote':question}]},
-                    'context_quotes':[],'search':{'mode':'STRUCTURE','title_hint_ids':[],'reason':'범위 지정'}})
+                    'context_quotes':[],'search':{'mode':'STRUCTURE','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in change['targets']],'user_quote':change['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 지정'}})
             if phase.startswith('memory-intent'):
                 self.phases.append(phase)
                 return wire({'purpose':'승인 원문 설명','concepts':['승인'],'background_quotes':[],

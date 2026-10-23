@@ -41,7 +41,7 @@ class StopTransport(SpanTransport):
             ref = next(o['id'] for o in options if '승인 후 보고한다.' in o['text'])
             value = proposal('승인 후 보고한다.', 'OBLIGATION', [ref], ref)
             value.pop('disposition')
-            for row in value['issue_assessments']: row.pop('reason')
+            # Current wire preserves issue-specific reasons.
             return wire(value)
         return super().send_once(body=body, ticket=ticket)
 
@@ -138,3 +138,63 @@ def test_current_api_publishes_verified_sources_and_duplicate_request_reuses_ans
         assert stops[-1]['adopted_sources'] == 0 and stops[-1]['delivered_fallback_sources'] > 0
         assert transport.assessments[0]['adoption_fallback'] is True
         assert result['assembly']['term_agent']['stop_reason'] == 'MODEL_DECISION_UNRESOLVED'
+
+
+@pytest.mark.parametrize('mutation', ['none','excluded','deferred','scope','hash','limit'])
+def test_acquired_assessment_original_survives_bounded_stop(session, mutation):
+    inv, data, _ = ready(session)
+    inv.modern = True
+    inv.completion = True
+    inv.s.profile['candidate_navigation']['answer_first'] = True
+    first = inv.assessment_handoff()
+    assert first and first['selected_originals'] and first['selected_evidence']
+    assert inv.p['assessment_handoffs'] and not inv.p['basis_history']
+    budget = dict(inv.s.repo.budget())
+    if mutation in ('excluded','deferred'):
+        for group in inv.p['groups'].values(): group['status'] = mutation.upper()
+    elif mutation == 'scope': inv.s.scope = []
+    elif mutation == 'hash': next(iter(inv.p['selected'].values()))['evidence'][0]['spans'][0]['text'] += '변조'
+    elif mutation == 'limit': inv.s.profile.update(max_read_chars=1,max_context_chars=2)
+    if mutation in ('scope','hash'):
+        with pytest.raises(ContractError): inv.bounded_result('INVESTIGATION_BUDGET')
+    else:
+        result = inv.bounded_result('INVESTIGATION_BUDGET')
+        if mutation == 'none':
+            assert result['selected_originals'] == first['selected_originals']
+            assert result['selected_evidence'] == first['selected_evidence']
+            assert result['stop_reason'] == 'INVESTIGATION_BUDGET'
+            assert not result['evidence_sufficient'] and result['answer_coverage'] == 'UNASSESSED'
+            assert result['original_delivery_context']['navigation_delivery_claimed'] is False
+            assert not inv.p['basis_history'] and not inv.p.get('delivery_history')
+            assert inv.bounded_result('INVESTIGATION_BUDGET')['selected_originals'] == result['selected_originals']
+        else: assert not result['selected_originals'] and result['status'] == 'pending'
+    assert dict(inv.s.repo.budget()) == budget
+
+
+@pytest.mark.parametrize('empty', [False, True])
+def test_budget_limited_answer_first_native_api_keeps_source_and_gaps(tmp_path, tree, empty):
+    from fastapi.testclient import TestClient
+    from semantic_runtime.app import create_app
+    from test_assessment_gap_action import GapTransport
+    gen, idx = tree; transport = GapTransport(repeat=True,empty=empty)
+    # Legacy-entry fixture: ten calls leave one investigation slot after its first ASSESS.
+    profile = {**settings(),'max_model_attempts':10,'max_read_chars':10000,
+        'candidate_navigation':{'mode':'law-first-v1','investigation_control':True,
+            'completion_contract':True,'completion_policy_version':cc.V8,'compact_input':True,
+            'answer_first':True,'assessment_reentry_limit':2}}
+    app = create_app(tmp_path,gen,contracts_root=ROOT,provider=object(),implementation='legal-agent-unified-v6',
+        legal_agent_profile=profile,legal_agent_transport=transport,runtime_root=tmp_path/'runtime',
+        memory_identity=lambda _:{'team_id':'test_team','document_ids':['d']})
+    app.state.pipeline.term_agent.unit_fulltext = idx
+    with TestClient(app) as api:
+        body = {'question':'모의승인규정 제1조 승인 기준은?','session_id':'bounded','request_id':'r1'}
+        response = api.post('/v1/rag/ask',json=body)
+        assert response.status_code == 200, (response.text,transport.phases)
+        result = response.json(); count = len(transport.phases)
+        assert '승인 후 보고한다.' in result['answer']['text'] and result['answer']['unresolved']
+        assert result['assembly']['term_agent']['accepted_outcome']['disposition'] == 'LIMITED_ANSWER'
+        assert count <= 10 and transport.phases.count('memory-assess') == 1, transport.phases
+        again = api.post('/v1/rag/ask',json=body)
+        assert again.json()['answer'] == result['answer'] and len(transport.phases) == count
+        if empty: assert not result['answer']['claims']
+        else: assert result['answer']['claims']
