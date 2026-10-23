@@ -49,6 +49,15 @@ def load_policy(root: Path) -> dict:
         raise ValueError('Invalid experiment model policy')
     return policy
 
+def _output_tokens(policy, requested):
+    """A provider-managed policy cannot be capped by an older experiment runner."""
+    return None if policy['max_output_tokens'] is None else requested or policy['max_output_tokens']
+
+def _apply_output_policy(payload, policy):
+    if policy['max_output_tokens'] is None:
+        for key in ('max_tokens', 'max_completion_tokens', 'max_output_tokens'):
+            payload.pop(key, None)
+
 def _schema_for_api(schema: dict) -> dict:
     # Keep full original schema for local validation, including uniqueness/length.
     unsupported = {'uniqueItems', 'minLength', 'maxLength', 'pattern', '$schema'}
@@ -76,7 +85,7 @@ class GeminiExperimentClient:
         self._key=next((os.environ.get(k) or env.get(k) for k in names if os.environ.get(k) or env.get(k)),None)
         if not self._key:raise ExperimentCallError('Missing GEMINI_API_KEY')
         self.max_calls=max_calls;self.calls=0;self.usage=[];self.transport=transport
-        self.max_output_tokens=max_output_tokens or self.policy['max_output_tokens']
+        self.max_output_tokens=_output_tokens(self.policy,max_output_tokens)
         self.output.mkdir(parents=True,exist_ok=True)
         self.policy_hash=hashlib.sha256((self.root/'00_SYSTEM/EXPERIMENT_MODEL_POLICY.json').read_bytes()).hexdigest()
 
@@ -100,7 +109,7 @@ class GeminiExperimentClient:
         payload={'systemInstruction':{'parts':[{'text':system}]},
                  'contents':[{'role':'user','parts':parts}],
                  'generationConfig':{'temperature':self.policy['temperature'],
-                    'maxOutputTokens':self.max_output_tokens,'thinkingConfig':{'thinkingLevel':self.policy['thinking_level']},
+                    **({'maxOutputTokens':self.max_output_tokens} if self.max_output_tokens is not None else {}),'thinkingConfig':{'thinkingLevel':self.policy['thinking_level']},
                     'responseMimeType':'application/json','responseJsonSchema':_schema_for_api(schema)}}
         self.calls+=1;out=self.output/f'call-{self.calls:03d}-{phase}';out.mkdir(exist_ok=False)
         self._write(out/'request.json',payload)
@@ -167,7 +176,7 @@ class OpenRouterProxyClient:
         self._key=os.environ.get(name) or env.get(name)
         if not self._key:raise ExperimentCallError('Missing '+name)
         self.max_calls=max_calls;self.calls=0;self.usage=[];self.transport=transport
-        self.max_output_tokens=max_output_tokens or self.proxy['max_output_tokens']
+        self.max_output_tokens=_output_tokens(self.proxy,max_output_tokens)
         self.output.mkdir(parents=True,exist_ok=True)
         self.policy_hash=hashlib.sha256((self.root/'00_SYSTEM/EXPERIMENT_MODEL_POLICY.json').read_bytes()).hexdigest()
 
@@ -198,8 +207,8 @@ class OpenRouterProxyClient:
     def chat_completions(self, body: dict, *, phase='generate', timeout_seconds=180):
         """Send one exact chat-completions request under the pinned proxy policy.
 
-        Caller-owned messages and generation settings are preserved. This path
-        never performs a hidden repair: one invocation is one physical request.
+        Caller-owned messages are preserved; the output-cap policy is applied
+        to a copy. No hidden repair: one invocation is one physical request.
         """
         if self.calls >= self.max_calls:raise ExperimentCallError('model_call_budget_exhausted')
         if not isinstance(body,dict):raise ValueError('chat completion body must be an object')
@@ -214,6 +223,7 @@ class OpenRouterProxyClient:
         if 'reasoning' in body and body['reasoning'] != self.proxy['reasoning']:
             raise ValueError('Request reasoning setting differs from pinned proxy policy')
         payload=copy.deepcopy(body)
+        _apply_output_policy(payload,self.proxy)
         payload['provider']=copy.deepcopy(self.proxy['provider_routing'])
         payload['reasoning']=dict(self.proxy['reasoning'])
         payload['usage']={'include':True}
@@ -265,7 +275,8 @@ class OpenRouterProxyClient:
         if self.calls >= self.max_calls:raise ExperimentCallError('model_call_budget_exhausted')
         payload={'model':self.model,
                  'messages':messages,
-                 'temperature':self.proxy['temperature'],'max_tokens':self.max_output_tokens,
+                 'temperature':self.proxy['temperature'],
+                 **({'max_tokens':self.max_output_tokens} if self.max_output_tokens is not None else {}),
                  'response_format':{'type':'json_schema','json_schema':{'name':'output','strict':True,'schema':_schema_for_api(schema)}},
                  'provider':copy.deepcopy(self.proxy['provider_routing']),'reasoning':dict(self.proxy['reasoning']),
                  'usage':{'include':True}}
@@ -348,7 +359,8 @@ class QwenExperimentClient(OpenRouterProxyClient):
             parts.append({'type': 'image_url', 'image_url': {'url': uri}})
         body = {'model': self.model, 'messages': [{'role': 'system', 'content': system},
                     {'role': 'user', 'content': parts}], 'temperature': self.proxy['temperature'],
-                'max_tokens': self.max_output_tokens, 'response_format': {'type': 'json_schema',
+                **({'max_tokens': self.max_output_tokens} if self.max_output_tokens is not None else {}),
+                'response_format': {'type': 'json_schema',
                     'json_schema': {'name': 'output', 'strict': True, 'schema': _schema_for_api(schema)}}}
         raw = self.chat_completions(body, phase=phase)
         try:
@@ -382,7 +394,7 @@ class GemmaExperimentClient(QwenExperimentClient):
         self._key=os.environ.get(name) or env.get(name)
         if not self._key:raise ExperimentCallError('Missing '+name)
         self.max_calls=max_calls;self.calls=0;self.usage=[];self.transport=transport
-        self.max_output_tokens=max_output_tokens or policy['max_output_tokens']
+        self.max_output_tokens=_output_tokens(policy,max_output_tokens)
         self.schema_in_prompt=bool(schema_in_prompt);self.max_repairs=int(max_repairs)
         if self.max_repairs not in (0,1):raise ValueError('max_repairs must be 0 or 1')
         self.output.mkdir(parents=True,exist_ok=True)
@@ -413,7 +425,7 @@ class Qwen38ExperimentClient(GemmaExperimentClient):
         self._key=os.environ.get(name) or env.get(name)
         if not self._key:raise ExperimentCallError('Missing '+name)
         self.max_calls=max_calls;self.calls=0;self.usage=[];self.transport=transport
-        self.max_output_tokens=max_output_tokens or policy['max_output_tokens']
+        self.max_output_tokens=_output_tokens(policy,max_output_tokens)
         self.schema_in_prompt=bool(schema_in_prompt);self.max_repairs=int(max_repairs)
         if self.max_repairs not in (0,1):raise ValueError('max_repairs must be 0 or 1')
         self.output.mkdir(parents=True,exist_ok=True)

@@ -151,6 +151,9 @@ class LocalGemmaTransport:
         if body.get('model') != self.binding['model'] or body.get('stream') is not False:
             raise ContractError('local Qwen3.8 request differs from pinned model')
         payload = provider_request(body)
+        if self.policy['max_output_tokens'] is None:
+            for key in ('max_tokens', 'max_completion_tokens', 'max_output_tokens'):
+                payload.pop(key, None)
         payload['provider'] = copy.deepcopy(self.policy['provider_routing'])
         payload['reasoning'] = copy.deepcopy(self.policy['reasoning'])
         payload['usage'] = {'include': True}
@@ -185,7 +188,7 @@ class LocalGemmaTransport:
             from .model_contract import structured_content
             from .output_contract import OutputContractError
             try:
-                structured_content(data)
+                structured_content(data, allow_length_repair='max_tokens' in payload)
             except OutputContractError as error:
                 # Let the existing decision owner see the same typed cause as
                 # GENOS. Preserve the complete provider envelope for the journal.

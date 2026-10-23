@@ -11,7 +11,7 @@
   "key_env": "OPEN_ROUTER",
   "key_env_aliases": [],
   "temperature": 0,
-  "max_output_tokens": 6400,
+  "max_output_tokens": null,
   "http_retries": 0,
   "fallback_allowed": false,
   "default_roles": [
@@ -65,7 +65,7 @@
       "enabled": false
     },
     "temperature": 0,
-    "max_output_tokens": 4096,
+    "max_output_tokens": null,
     "fallback_allowed": false,
     "data_scope": {
       "allowed": [
@@ -112,5 +112,12 @@
     "policy_version": "gemma-experiments-v1",
     "effective_from_adr": 538
   },
-  "external_model_boundary": "External Qwen3.8 experiments do not establish GENOS internal model performance. GENOS proxy and active MAIN release remain independently configured."
+  "external_model_boundary": "External Qwen3.8 experiments do not establish GENOS internal model performance. GENOS proxy and active MAIN release remain independently configured.",
+  "output_policy": {
+    "version": "provider-managed-output-20261023-v1",
+    "application_output_cap": false,
+    "authorization": "우리 메인에서도 뺴버려 실험에서도 빼주고",
+    "effective_from": "2026-10-23",
+    "scope": "Local MAIN and new external experiment requests; ignore runner output-cap overrides. Historical frozen artifacts unchanged."
+  }
 }

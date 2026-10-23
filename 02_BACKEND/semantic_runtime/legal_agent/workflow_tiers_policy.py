@@ -4,7 +4,7 @@ from .errors import ContractError
 IMPLEMENTATION = 'legal-agent-tools-v5'
 PROFILE_ID = 'legal-agent-rag-v5'
 DEFAULT_PROFILE = {**v3.DEFAULT_PROFILE, 'schema_version':'system-harness-profile-v5',
-    'profile_id':'hardened-obligations-v5', 'max_output_tokens':6400, 'question_obligations_enabled':True, 'numbered_references_enabled':True, 'max_core_sources':5, 'max_supplemental_sources':5,
+    'profile_id':'hardened-obligations-v5', 'max_output_tokens':None, 'question_obligations_enabled':True, 'numbered_references_enabled':True, 'max_core_sources':5, 'max_supplemental_sources':5,
     'max_source_excerpt_chars':1600, 'source_page_size':4, 'source_selection_attempts':2,
     'selection_time_reserve_seconds':30, 'max_auto_reference_reads_per_request':12,
     'bounded_source_selection_enabled':False, 'final_review_enabled':False,
