@@ -1,0 +1,45 @@
+Dataiku에서 파이프라인 호출 후 기존 Oracle 테이블 적재
+
+패키지 폴더를 Dataiku 실행 노드의 읽을 수 있는 파일시스템에 풉니다.
+DATAIKU_RECIPE.py의 PACKAGE_DIR, UPLOAD_FOLDER_ID, INPUT_DIR, JOB_DIR를 실제 값으로 설정합니다.
+UPLOAD_FOLDER_ID는 RAW_INPUT.zip과 PIPELINE_SUPPORT.zip 및 각 receipt.json을 올린
+파일시스템 기반 Managed Folder ID입니다. get_path()를 사용할 수 있어야 합니다.
+
+프로젝트 변수/관리되는 비밀 설정:
+LEGAL_PIPELINE_URL: 새 GENOS 파이프라인 코드서빙 JSON gateway의 정확한 HTTPS URL
+LEGAL_PIPELINE_TOKEN: 호출 토큰. 코드/로그/ZIP에 하드코딩하지 않습니다.
+LEGAL_ORACLE_CONNECTION: 기존 SIDDA 테이블에 연결된 Dataiku Oracle connection 이름
+프로젝트 변수의 비밀값 열람 권한은 Dataiku 운영 설정을 따릅니다.
+
+DATAIKU_RECIPE.py를 Python recipe/노트북에서 실행합니다.
+처음에는 원문을 복원합니다. 추가 내규는 INPUT_DIR/01_DATA/RAW/internal/<이름_team>/에 넣습니다.
+그 뒤 process 단계가 현재 파일들을 고정하고 GENOS에 보냅니다.
+같은 JOB_DIR 재실행은 최초 입력/작업을 재개합니다. 원문을 추가하면 새 JOB_DIR를 사용합니다.
+
+실행 결과
+GENOS 임시 결과를 ZIP으로 받아 해시 확인 -> Dataiku filesystem 반환자료 보존 -> Oracle 적재.
+구조화/색인/조회행 투영은 GENOS에서 수행합니다. Dataiku는 해시 검증·스트리밍 적재를 담당합니다.
+source 문서/단위/블록 3개 + asset part/release 2개 + query row/release 2개를 사용합니다.
+SIDDA.LEGAL_SRC_DOCUMENT_A
+SIDDA.LEGAL_SRC_SOURCE_UNIT_A
+SIDDA.LEGAL_SRC_BLOCK_PAYLOAD_A
+SIDDA.LEGAL_RAG_ASSET_PART_A
+SIDDA.LEGAL_RAG_RELEASE_A
+SIDDA.LEGAL_RAG_QUERY_ROW_A
+SIDDA.LEGAL_RAG_QUERY_RELEASE_A
+
+기존 유지보수 모듈의 행 비교/추가/검증을 사용합니다. 테이블 생성·삭제·전체 초기화는 없습니다.
+ACTIVE 전환·기존 질의 상태 이행·RAG 리비전 배포는 하지 않습니다.
+실행/전송/실패 감사 기록은 JOB_DIR에 남습니다. LLM 호출은 없고 감사자료를 골드 지식으로 넣지 않습니다.
+기존 7개 테이블은 이미 구성된 source/query/asset 계약입니다.
+별도의 새로운 ontology-v3 UI 테이블이나 llm_wiki 내용을 자동 생성한다고 보고하지 않습니다.
+
+실패하면 동일 JOB_DIR로 다시 실행합니다. 중복 데이터는 기존 저장값과 비교합니다.
+반환 ZIP/적재 로그를 수정하거나 삭제하지 않습니다. 입력/대상 연결/코드가 바뀌면 새 작업을 만듭니다.
+원격 FAILED/CANCELLED/INTERRUPTED는 보존하고 아래 방식으로 상태/로그를 조회할 수 있습니다.
+  state = transport.read(JOB_DIR / 'client.json')
+  auth = {k:state[k] for k in ('job_id','job_token','instance','code_sha256')}
+  client.call('STATUS', **auth)
+  client.call('DOWNLOAD', **auth, file_name='structure.log', offset=0)
+  client.call('ACK', **auth, discard_failed_attempt=True)
+실제 원문/지원자료 크기의 GENOS 처리시간과 Oracle 현장 적재는 현장 실행으로 확인해야 합니다.

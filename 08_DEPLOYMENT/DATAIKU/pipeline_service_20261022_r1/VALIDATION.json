@@ -1,0 +1,45 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "tests": 26,
+  "failures": 0,
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "packages": [
+    {
+      "bytes": 8323,
+      "files": 5,
+      "sha256": "13bd4f4a61b02d5fe775202427c8db8c16220410f4ea80c227cf5c140cd428ae",
+      "zip": "GENOS_RAW_EXPORT_20261022_R1.zip"
+    },
+    {
+      "bytes": 6017246,
+      "files": 1136,
+      "sha256": "9c0366d77d190b4ff3aba8ea3f7caf89085bdecf52432015c0173c934912a66b",
+      "zip": "GENOS_PIPELINE_SERVICE_20261022_R1.zip"
+    },
+    {
+      "bytes": 199775,
+      "files": 44,
+      "sha256": "f57ab052f15ea031487d7f61b2c9f780d15a9dda813fb6ac2d86945c43db4b0b",
+      "zip": "DATAIKU_PIPELINE_CLIENT_20261022_R1.zip"
+    }
+  ],
+  "packaged_source_bytes_match": true,
+  "isolated_dataiku_runtime_imports": "PASS",
+  "hierarchical_coordinate_fix_included": true,
+  "full_flow": "synthetic RAW XML -> delivered worker native structure/prepare/reindex -> query projection -> returned ZIP -> simulated Oracle seven tables/readback",
+  "fixture_config": "only GLOSSARY_PIPELINE.json knowledge manifest pinned to a small synthetic bundle; executable code unchanged",
+  "network_model_calls": 0,
+  "genos_deployed": false,
+  "dataiku_oracle_live_verified": false,
+  "raw_data_zip_created_on_genos": false,
+  "main_changed": false,
+  "retained_prior_failure": "90_RUNTIME/pipeline-delivery-smoke-r2: repeated query publisher issued idempotent writes; fixed to use existing completed query publication status/readback",
+  "unverified": [
+    "GENOS image dependencies and local PDF/OCR model assets",
+    "actual Dataiku HTTPS gateway envelope/credentials",
+    "actual Oracle connection/table permissions",
+    "full onsite corpus resources and processing time"
+  ],
+  "runtime_archive_receipt": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261022-dataiku-pipeline-delivery/RUNTIME_ARCHIVES.json",
+  "email_packaging_validation": "All previous pinned files unchanged; added identical Dataiku recipe TXT; archive member hashes, no-JS, bash/Python syntax verified"
+}

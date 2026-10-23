@@ -1,0 +1,36 @@
+대상: Dataiku 원문 파일시스템 -> 별도 GENOS 구조화/색인 코드서빙 -> Dataiku Oracle 골드 적재.
+미래 API 중계/신규 수집, 질문 답변 RAG, 기존 서비스 배포와 ACTIVE 변경은 이번 작업 범위 밖입니다.
+
+입력 선택
+GENOS DEV에 배포된 최신 내규 선택 JSON과 해시를 읽습니다.
+없으면 사용자 지정 GENOS_LATEST_SELECTION_DATA_20261021_R1.zip의 BUNDLE 해시를 검사합니다.
+RAG 최신 내규 선택과 RAW 실제 바이트를 대조하고 구판/미등록 내규는 제외 목록에 남깁니다.
+원문 최신 판본과 법률상 유효성은 구분합니다. 외규는 이 내규 선택표로 임의 제외하지 않습니다.
+Dataiku에 추가한 새 내규는 새 입력 스냅샷으로 묶고 현재 파일명/승인 예외 규칙을 적용합니다.
+
+파이프라인 계약
+stage_commands가 동일 작업의 실행 명세입니다.
+1. 기존 pipeline.py build-data-stages: RAW -> 구조/소스 저장소 및 선택 영수증.
+2. 기존 document-release prepare: 선택된 용어집과 전체 문서 정의/용어/명시참조의 연결 준비.
+3. 기존 document-release reindex: compact-v2/unit fulltext/factorized-v1. 단일 fulltext worker.
+4. 기존 oracle_query_package.export: Oracle 조회행을 GENOS에서 미리 투영.
+5. Dataiku에서 source transfer -> source verification -> asset publication/readback -> query import/readback.
+테이블/소비자: 유지보수 중인 Oracle source 3 + asset 2 + query 2, 서비스 query 계약을 그대로 사용합니다.
+반환 형식: legal-pipeline-files-v1 ZIP / SHA256 / generation files / query-data.db / audit records.
+
+실패 분류와 담당
+- 전송 불확실: Dataiku 단일 담당. 자동 무한 재시도 없음. 같은 job/offset/hash로 재실행.
+- 변경 코드/입력/선택표/출처/대상 DB: 무결성 오류. 의미 추정/모델 보정 없음. 기존 시도 보존.
+- 파싱/구조화/색인: 기존 단계 검사 실패로 FAILED. 자동 새 모델 호출/후보 실행 없음.
+- 실행 기한: 시작 시 7일 기한 고정. 재개로 초기화하지 않음. 각 Oracle invocation <=21600초.
+- 자원: 작업 하나/replica 하나. 1MiB binary chunks. RSS 기본6144MiB, 여유디스크512MiB 미만 중단.
+- 프로세스 손실: INTERRUPTED. 진행 중인 자식 그룹이 있으면 ACK 삭제 차단.
+- 중복 요청: 같은 START/UPLOAD/EXECUTE/ACK는 상태/해시 확인. 다른 입력은 충돌 오류.
+- 부분 DB 적재: 기존 append/compare/verify 영수증으로 재개. 전체 초기화/활성화 없음.
+- 최종상태: UPLOADING/RUNNING/COMPLETE/FAILED/CANCELLED/INTERRUPTED/RELEASED.
+- 성공 감사/로그와 골드 구조화 지식은 분리. LLM 질의/판단 없음. 미검토 의미를 정답으로 승격하지 않음.
+
+코드 선택
+기존 작업 변경은 그대로 두고 별도 배포 패키지에 필요한 공유 모듈을 복사합니다.
+CODE_PINS.json과 ZIP SHA로 정확한 바이트를 고정합니다. MAIN/선택 릴리스는 변경하지 않습니다.
+GENOS와 Oracle 현장 접근/배포는 이 세션에서 불가합니다. 로컬 합성/모의 검증과 구분합니다.

@@ -1,0 +1,26 @@
+전달물 세 개
+
+1) GENOS_RAW_EXPORT_20261022_R1.zip
+   GENOS DEV/01_DATA/RAW를 ZIP으로 내보내는 스크립트와 Dataiku 복원 스크립트.
+   DEV의 RAG 최신 판본 선택표로 구판 내규를 제외합니다.
+   적용된 선택 JSON을 우선하고, 없으면 GENOS_LATEST_SELECTION_DATA_20261021_R1.zip을 읽습니다.
+   생성된 RAW_INPUT.zip과 PIPELINE_SUPPORT.zip 및 각 receipt.json은 사용자가 직접 옮깁니다.
+
+2) GENOS_PIPELINE_SERVICE_20261022_R1.zip
+   새 코드서빙용 service.py와 현행 구조화/연결/색인 코드 및 공유 의존 모듈.
+   임시 작업 공간, 단일 replica, 이미지 의존성/Docling 로컬 모델을 설정합니다.
+   기존 RAG service.py에 덮어쓰지 않습니다. 상세 설정은 ZIP 안 GUIDE.txt에 있습니다.
+
+3) DATAIKU_PIPELINE_CLIENT_20261022_R1.zip
+   Dataiku에서 원문 복원 -> 추가 내규 입력 -> GENOS 호출 -> 결과 수신 -> 기존 Oracle 테이블 적재.
+   DATAIKU_RECIPE.py의 경로/Folder ID와 프로젝트 변수의 URL/토큰/Oracle 연결 이름을 설정합니다.
+   재실행은 같은 JOB_DIR, 새 원문은 새 JOB_DIR로 실행합니다.
+
+확인한 범위
+로컬 합성 XML을 실제 전달 worker 코드로 구조화/연결/색인하고 query-data.db까지 만들었습니다.
+실제 서비스 함수의 JSON 요청/응답과 모의 Oracle 7개 테이블 적재를 연결했습니다.
+손상 ZIP, 최신판 누락, 구판 제외, 중복 전송, 기한, 인스턴스 변경, 자식 프로세스 보호,
+부분 DB 적재 후 재개, 완료 작업 재검증, 계층 중복 회귀를 포함해 26개 검사가 통과했습니다.
+합성 검사는 작은 시험 용어집 설정을 사용했고 실행 코드는 전달 ZIP과 동일합니다.
+GENOS 현장 배포, 실제 Dataiku/Oracle 적재, 전체 실제 원문 처리시간과 PDF 모델 환경은 미검증입니다.
+Git commit/push, 기존 MAIN/ACTIVE 변경은 하지 않았습니다.

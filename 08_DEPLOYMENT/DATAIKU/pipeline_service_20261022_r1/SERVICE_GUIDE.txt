@@ -1,0 +1,41 @@
+별도 GENOS 파이프라인 코드서빙
+
+새 코드서빙 전용 코드 루트로 GENOS_PIPELINE_SERVICE_20261022_R1.zip 내용을 사용합니다.
+기존 RAG의 DEV/service.py에 덮어쓰지 않습니다. 새 서비스는 service.service(config, data)를 호출합니다.
+Dataiku는 새 코드서빙의 실제 JSON gateway URL을 사용합니다. URL/서비스 ID를 예시값으로 고정하지 않습니다.
+API_TYPE: HEALTH, START, UPLOAD, EXECUTE, STATUS, DOWNLOAD, CANCEL, ACK.
+인증된 JSON POST + file_content_base64 전송 방식은 승호님 integration의 preprocess 호출을 따릅니다.
+ELS 전용 파서/스키마/삭제 동작을 이관한 것은 아닙니다.
+
+배포 설정
+- replica=1. 실행 중 scale-to-zero/리비전 교체를 피합니다. 전체 코퍼스 작업은 하나씩 실행합니다.
+- PIPELINE_SCRATCH: 절대경로의 임시 디스크 폴더. 실행 중 원문/중간 산출물만 둡니다.
+  Dataiku 다운로드/해시 확인 ACK 후 지웁니다. RAG 영속 데이터/캐시로 사용하지 않습니다.
+- PIPELINE_MAX_RSS_MB: 기본 6144 MiB. 컨테이너는 이 값보다 충분한 RAM을 배정합니다.
+  기본 1 GiB 이미지로 전체 작업이 가능하다고 보장하지 않습니다.
+- 임시 디스크에는 전송 ZIP + 압축 해제된 지원자료 + 구조화/색인 + 반환 ZIP 공간이 필요합니다.
+  입력·중간산출물 규모에 따라 산정하고 다른 대형 프로세스와 병렬 실행하지 않습니다.
+- requirements.txt는 로컬 설치 버전입니다. 망분리 이미지에 사전 설치합니다.
+  PDF를 처리하려면 Docling 로컬 모델, 스캔 PDF는 STRUCTURE_OCR_MODEL_DIR의
+  검증된 한국어 OCR 자산도 필요합니다. 자동 외부 모델 다운로드는 OFF입니다.
+- GENOS 플랫폼 인증을 켜고 Dataiku의 서비스 계정만 호출하도록 설정합니다.
+
+실행 경로: 기존 pipeline.py build-data-stages structure -> document-release prepare -> reindex.
+현재 MAIN의 native-no-models 기본값, compact-v2, unit fulltext, factorized-v1을 사용합니다.
+현재 viewer.py의 상위 경로를 포함한 장/절 구분 수정이 포함됩니다.
+새 LLM 의미 검토와 VLM 호출은 하지 않습니다. 기존 용어집을 재사용하고 명시참조의 미확인을 보존합니다.
+전체 입력을 함께 재구축하여 문서 간 참조를 보존합니다. 구조화/색인/Oracle 조회행 투영은 GENOS에서 실행합니다.
+반환 ZIP은 generation, 미리 투영된 query-data.db, 감사자료입니다.
+DATAIKU는 이를 받은 뒤 기존 테이블에 적재합니다. GENOS가 DATAIKU 파일시스템에 접속하지 않습니다.
+
+실패/재개
+Dataiku는 같은 job-dir로 재실행합니다. 전송 중 끊기면 동일 작업/해시/오프셋을 대조합니다.
+작업이 실행 중이면 상태만 확인하고 중복 실행하지 않습니다. 기한은 처음 정한 7일을 유지합니다.
+서빙 프로세스/임시 볼륨이 사라지면 JOB_LOST/INSTANCE_CHANGED로 끝나며 자동 새 실행을 만들지 않습니다.
+Dataiku 원문과 실패 기록을 보존한 채 새 job-dir로 명시적으로 재시작합니다.
+FAILED 작업 로그를 DOWNLOAD로 확보한 다음 ACK(discard_failed_attempt=true)로 임시자료를 정리합니다.
+CANCEL은 작업의 취소 표식을 설정하고 실행 중인 자식 프로세스 그룹만 종료합니다.
+원복은 이전 코드서빙 리비전으로 전환합니다. 기존 RAG/Oracle ACTIVE 포인터는 바꾸지 않습니다.
+
+로컬 합성 계약 검사와 GENOS 현장 배포/내부 환경 실행은 별도입니다.
+현장 접근은 이 Codex 세션에서 불가능합니다. 현장 연결 확인은 Dataiku 실제 실행 기록으로 남깁니다.

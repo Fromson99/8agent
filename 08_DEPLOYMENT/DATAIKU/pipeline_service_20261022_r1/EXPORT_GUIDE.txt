@@ -1,0 +1,44 @@
+1. GENOS 원문 ZIP 생성
+
+첨부 GENOS_RAW_EXPORT_20261022_R1.zip을 실제 업로드한 TRANSFER 폴더에서 실행합니다.
+DEV는 읽기만 합니다. 원문 ZIP은 현장 01_DATA/RAW에서 생성합니다.
+
+python3 -m zipfile -e ./GENOS_RAW_EXPORT_20261022_R1.zip ./
+bash ./GENOS_RAW_EXPORT_20261022_R1/GENOS_RAW_EXPORT_RUN.txt --dev "$HOME/DEV" --output ./RAW_EXPORT_20261022
+
+기본 선택은 DEV/00_SYSTEM/GENOS_SERVING_PATHS.json에 해시로 고정된
+DEV/00_SYSTEM/SEARCH_SELECTION/generation.json입니다. 해당 바인딩이 없으면
+DEV/GENOS_LATEST_SELECTION_DATA_20261021_R1.zip을 읽습니다.
+다른 DEV 상대경로가 필요하면 --selection-file을 명시합니다.
+활성 선택 JSON이 있는데 옛 ZIP을 명시하면 두 내용이 같은지도 검사합니다.
+mtime/파일명 정렬로 최신 판본을 추정하지 않습니다.
+
+선택표의 is_latest=true인 내규 원문 해시만 ZIP에 넣습니다.
+구판과 선택표에 없는 내규는 RAW_SELECTION_REPORT.json에 제외 이유를 남깁니다.
+최신 내규의 원문이 RAW에서 하나라도 대응되지 않으면 완료 처리하지 않습니다.
+이 선택표는 내규 판본 선택표입니다. 외규 RAW는 보존합니다.
+파일명상 최신 판본을 법률상 시행일 검증 완료로 해석하지 않습니다.
+
+직접 Dataiku의 파일시스템 Managed Folder로 옮길 파일:
+RAW_INPUT.zip / RAW_INPUT.zip.receipt.json
+PIPELINE_SUPPORT.zip / PIPELINE_SUPPORT.zip.receipt.json
+
+PIPELINE_SUPPORT.zip에는 DEV의 현재 선택된 용어집, 지식 번들, CATALOG가 들어갑니다.
+원문 재구조화 뒤 용어/정의/명시참조 색인에 필요합니다.
+이미 만들어진 RAG 세대/색인을 RAW 대신 전송하지 않습니다.
+보조자료는 클 수 있으므로 DEV와 출력 위치의 여유 디스크를 먼저 확인하세요.
+실패/제외 목록은 같은 출력 폴더에 보존됩니다. 실패 후에는 새 출력 이름을 사용합니다.
+
+2. Dataiku 파일시스템 복원
+
+Dataiku 클라이언트 ZIP에도 restore_inputs.py가 있습니다.
+python3 ./DATAIKU_PIPELINE_CLIENT_20261022_R1/restore_inputs.py --upload /실제/업로드폴더 --destination /실제/복원폴더
+
+경로 이탈, 심볼릭 링크, ZIP 중복 엔트리, 해시 불일치, 기존 다른 파일 덮어쓰기를 거부합니다.
+같은 ZIP/같은 파일로 재실행하면 확인된 파일은 재사용합니다.
+내규 추가 위치: 복원폴더/01_DATA/RAW/internal/<영문이름_team>/...
+예: internal/risk_team/자금관리규정(20261022).docx
+기존 RAW를 수정하지 않고 새 판본 파일을 추가한 뒤 새 job-dir로 실행합니다.
+새 내규의 등록 메타데이터가 없으면 restricted로 처리하며 public으로 추정하지 않습니다.
+
+이 패키지는 현재 코드/원문을 현장에서 읽는 도구입니다. 로컬 원문을 동봉하지 않았습니다.

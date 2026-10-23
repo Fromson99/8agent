@@ -1,0 +1,31 @@
+# 오류가 난 같은 Dataiku 노트북의 새 셀에 전체를 붙여넣으세요.
+# 커널을 재시작하지 마세요. 다운로드·압축 해제·파일 변경 없이 확인합니다.
+import sys
+import shutil
+from pathlib import Path
+
+err = getattr(sys, "last_exc", None) or getattr(sys, "last_value", None)
+found_oserror = False
+
+for _ in range(10):
+    if err is None:
+        break
+    if isinstance(err, OSError):
+        found_oserror = True
+        print("오류번호:", err.errno)
+        print("상세원인:", err.strerror)
+    err = err.__cause__ or err.__context__
+
+if not found_oserror:
+    print("남아 있는 OSError 기록이 없습니다. 커널 재시작 또는 이후 오류 발생 여부를 알려주세요.")
+
+if "WORK_DIR" in globals():
+    work = Path(WORK_DIR).resolve()
+    print("작업경로:", work)
+    try:
+        print("남은공간(GB):", round(shutil.disk_usage(work).free / 1024**3, 2))
+    except OSError as disk_error:
+        print("공간조회 오류번호:", disk_error.errno)
+        print("공간조회 상세원인:", disk_error.strerror)
+else:
+    print("WORK_DIR 변수가 없습니다. 오류가 발생한 원래 노트북·커널에서 실행하세요.")

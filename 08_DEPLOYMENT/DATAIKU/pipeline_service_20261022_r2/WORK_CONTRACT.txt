@@ -1,0 +1,17 @@
+Change: only the Dataiku notebook entry wrapper; reuse the sealed R1 client and GENOS service.
+Input: LEGAL_RAG/LEGAL_PIPELINE_WORKSPACE, five exact named root files.
+Output consumer: existing restore_inputs.restore -> dataiku_run.run_dataiku.
+No get_path; name lookup and non-seekable download stream API.
+Failures: missing inputs, malformed receipts, SHA/size conflicts, capacity, concurrent work,
+changed source binding, stale notebook imports, transport interruption, downstream pipeline/load errors.
+Recovery owner: wrapper for preparation; existing R1 client/loader for remote jobs/Oracle.
+No automatic download retry. One bounded streamed read per file per invocation; user reruns explicitly.
+Partial download is reproducible scratch; record prior byte count/hash before restarting it.
+Completed source ZIPs, input binding, returned data and job states are preserved.
+No automatic changing of folder/job/data/service SHA to make errors pass.
+Statuses: READY for preparation only; downstream COMPLETE/PAUSED preserved; error raises and logs STOPPED.
+Secrets are not recorded; only error class and allowlisted uppercase error-code prefix are exposed.
+Tests: final standalone TXT and ZIP byte equality, actual R1 restore with tiny transport fixtures,
+stream-only SFTP/S3, bounded reads, missing/damaged/changed input, interrupted download and replay,
+capacity, local symlink/code tampering, concurrent lock, missing settings, packaged caller wiring.
+No model experiment, MAIN change, GENOS deployment, mail sending or live Oracle write.

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+export_script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+export_log_dir="$export_script_dir/logs"
+mkdir -p "$export_log_dir"
+export_log_file="$export_log_dir/export-$(date -u +%Y%m%dT%H%M%S)-$$.log"
+exec > >(tee -a "$export_log_file") 2>&1
+trap 'export_exit_code=$?; echo "RAW_EXPORT_EXIT=$export_exit_code"; exit "$export_exit_code"' EXIT
+date -u
+python3 -c 'import sys; print("PYTHON",sys.executable,sys.version)'
+df -h .
+free -m
+python3 "$export_script_dir/export_inputs.py" "$@"

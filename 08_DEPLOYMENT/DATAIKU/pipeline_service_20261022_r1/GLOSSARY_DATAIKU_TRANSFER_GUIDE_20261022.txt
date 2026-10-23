@@ -1,0 +1,223 @@
+용어집·원문을 GENOS에서 Dataiku로 옮기는 실행 안내
+작성: 2026-10-22 / 기존 20261022_R1 전달 코드 기준
+
+1. 사진에서 찾은 파일과 이번에 옮길 파일
+
+사진의 Jupyter 경로는 01_DATA/LEXICON입니다.
+glossary-v1, knowledge-bundles 폴더와 glossary-inputs.tar.xz.part... 조각이 보입니다.
+말씀하신 맨 아래 파일이 조각을 합친 glossary-inputs.tar.xz라면 용어집 전체 반입본입니다.
+사진만으로 그 완성 파일의 정확한 이름·크기·무결성까지 확인된 것은 아닙니다.
+
+9월 21일 전달 기록에 있는 완성본:
+  이름: glossary-inputs.tar.xz
+  크기: 1,391,622,956 bytes (약 1.392 GB)
+  SHA256: bbbf0aba62b4493b312b8c388d3e10a2c89517ba1b994cb88e7987fa54a92f82
+  원래 조각: part001~part074, 조각당 최대 19,000,000 bytes
+  복원 후: 약 15.45 GB, 기본 사전 + 관계·번역·ID 매핑·근거 자료
+
+이 완성본을 용어집 데이터 보관·이관용으로 Dataiku에 옮길 수 있습니다.
+완성본의 크기와 SHA256이 위 기록과 같으면 조각 74개를 다시 옮길 필요는 없습니다.
+단, 현재 Dataiku 클라이언트는 이 TAR/XZ를 직접 입력받지 않습니다.
+PIPELINE_SUPPORT.zip과 receipt를 요구하므로, 이번 파이프라인 실행에는 아래 3~6번을 사용합니다.
+파일 이름만 PIPELINE_SUPPORT.zip으로 바꾸면 안 됩니다. 내부 형식과 검증 정보가 다릅니다.
+
+사진의 복원된 폴더가 DEV의 현재 선택과 일치하면, 이번 exporter가 그 폴더를 읽어
+PIPELINE_SUPPORT.zip으로 묶습니다. 용어집을 새로 수집하거나 처음부터 생성하지 않습니다.
+원래 TAR/XZ에는 이번 지원 ZIP에 함께 들어가는 CATALOG가 없습니다.
+이번 실행용 네 파일을 옮겼다면, TAR/XZ는 중복해서 옮기지 않아도 됩니다.
+
+2. 이전 메일에서 안내한 업로드 위치
+
+9월 21일 용어집 조각 메일:
+  조각 74개, parts-manifest.json, restore_glossary.py, README.md를
+  모두 같은 업로드 폴더에 두도록 안내했습니다.
+  당시 /workspace는 --root에 넣는 코드 폴더의 예시였고, 업로드 위치를 고정한 값이 아닙니다.
+  사진에서는 그 자료들이 01_DATA/LEXICON 아래에 있는 것으로 보입니다.
+
+10월 22일 이번 Dataiku 파이프라인 메일:
+  GENOS_RAW_EXPORT_20261022_R1.zip은 실제 업로드한 TRANSFER 폴더에 두고
+  그 폴더에서 실행하도록 안내했습니다. TRANSFER의 절대 위치를 추정하지 않습니다.
+  명령의 --dev "$HOME/DEV"는 읽을 기존 데이터·설정 위치입니다.
+  실행 위치와 읽을 DEV 위치는 다릅니다.
+
+Dataiku 측:
+  생성한 데이터 ZIP 두 개와 receipt 두 개를 파일시스템 기반 Managed Folder 하나에 둡니다.
+  예시 ID LEGAL_DATA_ZIP_IMPORT는 실제 생성된 Folder ID로 바꿉니다.
+  Python 실행 환경에서 dataiku.Folder(ID).get_path()로 접근할 수 있어야 합니다.
+
+3. GENOS에서 원문과 용어집 지원 ZIP 생성
+
+준비할 메일 첨부:
+  GENOS_RAW_EXPORT_20261022_R1.zip
+
+GENOS 터미널에서 실제 업로드한 TRANSFER 폴더를 현재 위치로 연 다음 실행합니다.
+아래 명령은 기존 코드·데이터 루트가 $HOME/DEV인 경우입니다.
+실제 루트가 다르면 --dev 값만 그 루트로 바꿉니다.
+
+  pwd
+  ls -lh ./GENOS_RAW_EXPORT_20261022_R1.zip
+  df -h . "$HOME/DEV"
+  free -m
+  python3 -m zipfile -e ./GENOS_RAW_EXPORT_20261022_R1.zip ./
+  bash ./GENOS_RAW_EXPORT_20261022_R1/GENOS_RAW_EXPORT_RUN.txt --dev "$HOME/DEV" --output ./RAW_EXPORT_20261022
+
+전체 자료 압축은 한 번에 하나씩 실행합니다. 출력 위치에 ZIP을 쓸 공간이 필요합니다.
+용어 지원 자료만 압축 해제 후 약 15.45 GB이며, RAW·카탈로그와 후속 작업 공간은 별도입니다.
+
+성공하면 마지막 출력에 EXPORTED RAW_INPUT.zip PIPELINE_SUPPORT.zip이 나옵니다.
+상태는 ./RAW_EXPORT_20261022/export-status.json의 EXPORTED로 확인합니다.
+지속 실행 로그는 ./GENOS_RAW_EXPORT_20261022_R1/logs/에 남습니다.
+
+생성된 다음 네 파일을 Dataiku의 같은 Managed Folder로 직접 옮깁니다.
+  ./RAW_EXPORT_20261022/RAW_INPUT.zip
+  ./RAW_EXPORT_20261022/RAW_INPUT.zip.receipt.json
+  ./RAW_EXPORT_20261022/PIPELINE_SUPPORT.zip
+  ./RAW_EXPORT_20261022/PIPELINE_SUPPORT.zip.receipt.json
+
+RAW_INPUT.zip:
+  DEV에 적용된 RAG 최신 판본 선택표 기준 내규 원문, 외규 RAW, 적용한 선택 정보.
+PIPELINE_SUPPORT.zip:
+  DEV/00_SYSTEM/GLOSSARY_PIPELINE.json이 선택한 사전·지식 번들 및 CATALOG.
+
+기본 선택표는 DEV의 GENOS_SERVING_PATHS.json에 결속된
+00_SYSTEM/SEARCH_SELECTION/generation.json입니다.
+그 바인딩이 없을 때 GENOS_LATEST_SELECTION_DATA_20261021_R1.zip을 읽습니다.
+최신 내규 원문 누락이나 선택된 용어 폴더 누락은 실패로 남깁니다.
+실패하면 logs 및 RAW_SELECTION_REPORT.json을 확인합니다.
+기존 출력 파일을 지우지 말고 원인을 해결한 뒤 새 --output 이름으로 실행합니다.
+
+4. Dataiku에서 패키지 배치 및 원문·용어집 복원
+
+DATAIKU_PIPELINE_CLIENT_20261022_R1.zip을 Dataiku 실행 노드에서 읽을 수 있는
+파일시스템에 둡니다. 그 ZIP이 있는 폴더의 터미널에서 다음을 실행합니다.
+
+  python3 -m zipfile -e ./DATAIKU_PIPELINE_CLIENT_20261022_R1.zip ./
+
+생성된 DATAIKU_PIPELINE_CLIENT_20261022_R1 폴더의 실제 절대경로를 확인합니다.
+아래 코드는 Dataiku Python 노트북에서 실행합니다.
+PACKAGE_DIR / UPLOAD_FOLDER_ID / INPUT_DIR 세 값은 실제 값으로 바꿉니다.
+INPUT_DIR는 Dataiku 실행 계정이 읽고 쓸 수 있는 지속 파일시스템 경로입니다.
+
+----- Python: 복원 단계 -----
+from pathlib import Path
+import sys
+import dataiku
+
+PACKAGE_DIR = Path('/실제/경로/DATAIKU_PIPELINE_CLIENT_20261022_R1')
+UPLOAD_FOLDER_ID = '실제_MANAGED_FOLDER_ID'
+INPUT_DIR = Path('/실제/경로/legal_pipeline_inputs')
+
+sys.path.insert(0, str(PACKAGE_DIR))
+from restore_inputs import restore
+
+upload = Path(dataiku.Folder(UPLOAD_FOLDER_ID).get_path())
+print(restore(upload, INPUT_DIR))
+----- Python 끝 -----
+
+RESTORED가 나오면 INPUT_DIR 아래에 다음 경로가 복원됩니다.
+  01_DATA/RAW/
+  01_DATA/INPUT_MAPPING/
+  01_DATA/LEXICON/glossary-v1/...
+  01_DATA/LEXICON/knowledge-bundles/...
+  01_DATA/CATALOG/...
+
+복원은 해시를 검사하고 기존의 다른 파일을 덮어쓰지 않습니다.
+같은 자료 재실행은 이미 일치하는 파일을 재사용합니다.
+TAR/XZ만 업로드한 상태에서는 이 단계가 동작하지 않습니다. 위의 네 파일이 필요합니다.
+
+5. 추가 내규를 넣고 새 코드서빙 준비
+
+복원 후 추가 내규 파일을 아래 위치에 넣습니다.
+  INPUT_DIR/01_DATA/RAW/internal/<영문이름_team>/
+예: internal/risk_team/자금관리규정(20261022).docx
+추가 작업을 마친 다음 6번을 실행합니다.
+
+GENOS_PIPELINE_SERVICE_20261022_R1.zip의 내용을 새 파이프라인 코드서빙에 배포합니다.
+기존 채팅 RAG 서비스와는 별도 서비스이며 진입점은 service.service(config, data)입니다.
+전체 설정은 그 ZIP의 GUIDE.txt를 따릅니다.
+  replica=1, 요청 처리용 PIPELINE_SCRATCH, 충분한 RAM·임시 디스크
+  기본 PIPELINE_MAX_RSS_MB=6144 MiB; 컨테이너 RAM은 그보다 여유 있게 배정
+  requirements.txt의 의존성을 망분리 이미지에 설치
+  PDF 처리용 Docling 로컬 모델, 스캔 PDF용 한국어 OCR 자산
+  플랫폼 인증 및 Dataiku 서비스 계정의 호출 권한
+
+Dataiku 프로젝트 변수/관리되는 비밀 설정에 실제 값을 등록합니다.
+  LEGAL_PIPELINE_URL: 새 코드서빙의 정확한 HTTPS JSON gateway URL
+  LEGAL_PIPELINE_TOKEN: 호출 토큰
+  LEGAL_ORACLE_CONNECTION: 기존 테이블로 연결되는 Dataiku Oracle connection 이름
+토큰은 이 문서·코드·출력 로그에 쓰지 않습니다.
+
+6. Dataiku에서 구조화·색인 실행 후 기존 Oracle 테이블 적재
+
+4번과 같은 노트북에서 실행합니다. 다른 recipe라면 4번의 변수·import 정의를 함께 둡니다.
+JOB_DIR는 실행 기록과 반환 결과를 보존할 실제 지속 경로로 바꿉니다.
+
+----- Python: 처리 단계 -----
+from dataiku_run import run_dataiku
+
+JOB_DIR = Path('/실제/경로/legal_pipeline_jobs/run_20261022_01')
+result = run_dataiku(INPUT_DIR, upload / 'PIPELINE_SUPPORT.zip', JOB_DIR)
+print({key: value for key, value in result.items() if key != 'identity'})
+----- Python 끝 -----
+
+Dataiku가 원문·용어 지원 ZIP을 GENOS에 전송하고, GENOS가 구조화·문서/용어 연결·색인·
+조회행 투영을 수행합니다. Dataiku는 반환 ZIP의 해시를 확인하고 기존 Oracle 테이블에 적재합니다.
+현재 경로는 기존 용어집 재사용과 native-no-models 처리입니다. 새 LLM 의미 검토는 실행하지 않습니다.
+현재 대상은 source 3개, asset/release 2개, query/release 2개의 기존 테이블입니다.
+  SIDDA.LEGAL_SRC_DOCUMENT_A
+  SIDDA.LEGAL_SRC_SOURCE_UNIT_A
+  SIDDA.LEGAL_SRC_BLOCK_PAYLOAD_A
+  SIDDA.LEGAL_RAG_ASSET_PART_A
+  SIDDA.LEGAL_RAG_RELEASE_A
+  SIDDA.LEGAL_RAG_QUERY_ROW_A
+  SIDDA.LEGAL_RAG_QUERY_RELEASE_A
+
+일시적인 전송·적재 실패는 같은 JOB_DIR로 재실행합니다.
+입력 원문·용어 지원 ZIP·대상 연결·코드가 바뀌면 새 JOB_DIR를 사용합니다.
+원격 FAILED/CANCELLED/INTERRUPTED 또는 인스턴스 소실은 상태/로그를 확인한 뒤
+새 JOB_DIR로 재시작합니다. 이전 실패 기록과 반환 자료를 보존합니다.
+이 코드는 Oracle ACTIVE 전환이나 기존 RAG 리비전 변경을 하지 않습니다.
+
+7. 찾은 TAR/XZ 완성본을 확인하고 별도 보관할 경우
+
+GENOS 터미널에서 실제 glossary-inputs.tar.xz가 있는 폴더를 현재 위치로 연 뒤 실행합니다.
+이는 읽기 전용 크기·해시 확인입니다. .part 파일에 실행하지 않습니다.
+복사한 뒤 Dataiku의 파일 위치에서도 같은 명령으로 확인할 수 있습니다.
+
+  python3 - <<'PY'
+from pathlib import Path
+import hashlib
+p = Path('glossary-inputs.tar.xz')
+expected_size = 1391622956
+expected_sha = 'bbbf0aba62b4493b312b8c388d3e10a2c89517ba1b994cb88e7987fa54a92f82'
+h = hashlib.sha256()
+with p.open('rb') as f:
+    for block in iter(lambda: f.read(1024 * 1024), b''):
+        h.update(block)
+actual_size, actual_sha = p.stat().st_size, h.hexdigest()
+print('BYTES', actual_size)
+print('SHA256', actual_sha)
+if (actual_size, actual_sha) != (expected_size, expected_sha):
+    raise SystemExit('기록과 다른 파일입니다. 원본을 보존하고 확인하세요.')
+print('ARCHIVE_OK')
+PY
+
+ARCHIVE_OK이면 9월 21일 전달한 완성본과 바이트가 같습니다.
+이 확인은 현재 GENOS의 선택 설정이나 반입 이후 용어집 수정 여부까지 검증하지 않습니다.
+현재 선택 자료를 가져오는 이번 작업에는 3번 exporter 경로를 사용합니다.
+과거 restore_glossary.py는 조각 전체와 코드 루트의 설정을 요구하므로,
+완성 TAR/XZ 하나만 Dataiku에 올려 놓고 그 스크립트를 그대로 실행하는 방식은 안내하지 않습니다.
+
+8. 근거와 확인 범위
+
+9월 21일 원래 반입 안내·발송 검색 기록:
+  [GENOS 용어집 077/077] glossary-20260921-19mb | README.md
+  https://mail.google.com/mail/u/?authuser=fromson99%40gmail.com#all/1a0c28d4acfc0322
+10월 22일 이번 파이프라인 메일(발송함 본문 재확인):
+  [GENOS·Dataiku] 최신 RAW 이관 / 파이프라인 코드서빙 / Oracle 적재 — 20261022 R1
+  https://mail.google.com/mail/u/?authuser=fromson99%40gmail.com#all/1a162541d2dd3d9c
+
+이번 문서는 기존 전달 코드와 실행 옵션에 맞춘 추가 안내입니다.
+기존 메일의 ZIP·실행 코드 바이트는 바꾸지 않았습니다.
+로컬 합성 파이프라인·모의 Oracle 포함 26개 검사는 기존 검증 기록입니다.
+GENOS 현장 파일 무결성, 실제 배포, Dataiku/Oracle 실행은 현장 로그로 확인해야 합니다.
