@@ -1,0 +1,31 @@
+﻿대상,확인상태,목표저장책임,이번범위,주의
+lk_record,Oracle adapter 존재,혼재; namespace별 Gold/Agent 분리 설계,후속 계획; 1차 9테이블 개명에서 제외,현장 이름 미확정; 현재 9테이블 적재가 만들지 않음. operation/feedback을 지식과 일괄 배치하지 않음.
+lk_head,Oracle adapter 존재,혼재; namespace별 Gold/Agent 분리 설계,후속 계획; 1차 9테이블 개명에서 제외,현장 이름 미확정; 현재 9테이블 적재가 만들지 않음. operation/feedback을 지식과 일괄 배치하지 않음.
+lk_lookup,Oracle adapter 존재,혼재; namespace별 Gold/Agent 분리 설계,후속 계획; 1차 9테이블 개명에서 제외,현장 이름 미확정; 현재 9테이블 적재가 만들지 않음. operation/feedback을 지식과 일괄 배치하지 않음.
+basis_head,Oracle adapter 존재,Gold 후보,후속 계획; 1차 9테이블 개명에서 제외,관계 정본·판본 대응. table_map 주입; 현재 DEV 패키지 실행 경로와 구분.
+basis_revision,Oracle adapter 존재,Gold 후보,후속 계획; 1차 9테이블 개명에서 제외,관계 정본·판본 대응. table_map 주입; 현재 DEV 패키지 실행 경로와 구분.
+basis_binding,Oracle adapter 존재,Gold 후보,후속 계획; 1차 9테이블 개명에서 제외,관계 정본·판본 대응. table_map 주입; 현재 DEV 패키지 실행 경로와 구분.
+basis_lineage,Oracle adapter 존재,Gold 후보,후속 계획; 1차 9테이블 개명에서 제외,관계 정본·판본 대응. table_map 주입; 현재 DEV 패키지 실행 경로와 구분.
+basis_event,Oracle adapter 존재,Agent/처리·감사 역할 검토,후속 계획; 1차 9테이블 개명에서 제외,이벤트·receipt·세션 상태를 지식 테이블로 일괄 전환하지 않음.
+basis_receipt,Oracle adapter 존재,Agent/처리·감사 역할 검토,후속 계획; 1차 9테이블 개명에서 제외,이벤트·receipt·세션 상태를 지식 테이블로 일괄 전환하지 않음.
+basis_migration,Oracle adapter 존재,Agent/처리·감사 역할 검토,후속 계획; 1차 9테이블 개명에서 제외,이벤트·receipt·세션 상태를 지식 테이블로 일괄 전환하지 않음.
+basis_view_head,Oracle adapter 존재,Agent/처리·감사 역할 검토,후속 계획; 1차 9테이블 개명에서 제외,이벤트·receipt·세션 상태를 지식 테이블로 일괄 전환하지 않음.
+LK_OBJECT,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M04/M05 영구 지식 ID와 소유 범위; 변경 불가 식별 메타데이터
+LK_KREV,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M05 knowledge namespace의 검색 가능한 버전 투영; 본문은 LK_RECORD
+LK_REF,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,기존 원문·용어·basis·경험·사실 또는 지식·주장의 고정 버전 참조
+LK_EDGE,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M04 관계 자체가 검토 가능한 지식 버전; 의미 방향과 의존 방향을 구분
+LK_EVIDENCE,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M05 지식 버전과 기존 원문·경험·basis의 역할별 근거 연결
+LK_REVIEW,v3 설계 초안; 현장 생성 아님,Gold 지원 후보; 승인 검토,후속 계획; 현재 이름은 승인 물리명 아님,M06 고정 버전에 대한 검토 결정; 이유·범위·근거는 review 원장
+LK_CONTROL,v3 설계 초안; 현장 생성 아님,Gold 지원 후보; 승인 검토,후속 계획; 현재 이름은 승인 물리명 아님,M06 현재 사용 통제의 동기 투영; 변경 이력은 control 원장
+LK_SCOPE_GATE,v3 설계 초안; 현장 생성 아님,Gold 지원 후보; 승인 검토,후속 계획; 현재 이름은 승인 물리명 아님,M06/M08 같은 지식 범위의 철회와 사용 확정 순서를 정하는 잠금·epoch
+LK_RELEASE,v3 설계 초안; 현장 생성 아님,Gold 지원 후보; 승인 검토,후속 계획; 현재 이름은 승인 물리명 아님,M06 불변 지식 묶음의 관계형 투영; 활성 선택은 기존 channel 원장
+LK_RELEASE_ITEM,v3 설계 초안; 현장 생성 아님,Gold 지원 후보; 승인 검토,후속 계획; 현재 이름은 승인 물리명 아님,M06/M07 게시 묶음의 정확한 지식 버전 구성
+LK_ENTRY,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M02/M07 원문 anchor·개념 ID·근거 역할·정규화 검색어로 좁히는 게시 색인
+LK_ROUTE_STEP,v3 설계 초안; 현장 생성 아님,Gold 지식 후보,후속 계획; 현재 이름은 승인 물리명 아님,M02 원문 근거 경로의 순서·역할; EVIDENCE_ROUTE 지식의 투영
+LK_RUN,v3 설계 초안; 현장 생성 아님,Agent,후속 계획; 현재 이름은 승인 물리명 아님,M08 기존 실행 저널의 요청 시작 binding을 역조회하기 위한 투영
+LK_CLAIM,v3 설계 초안; 현장 생성 아님,Agent,후속 계획; 현재 이름은 승인 물리명 아님,M08 판단 artifact별 주장 참조; 본문·완료 상태는 실행 저널 정본
+LK_USE,v3 설계 초안; 현장 생성 아님,Agent,후속 계획; 현재 이름은 승인 물리명 아님,M08 제시·선택·적용·사후검토 및 발행 검사의 실행 사건 투영
+LK_DEPENDENCY,v3 설계 초안; 현장 생성 아님,지식/실행 의존 혼재; 분리 설계,후속 계획; 현재 이름은 승인 물리명 아님,M09 consumer가 target 참조에 의존. 의미 관계의 방향과 별도
+LK_OUTBOX,v3 설계 초안; 현장 생성 아님,처리·동기화 상태,후속 계획; 현재 이름은 승인 물리명 아님,M06/M09 현재 트랜잭션에서 확정한 변경의 후처리 전달; 실행 저널과 이중 commit 아님
+LK_SYNC,v3 설계 초안; 현장 생성 아님,처리·동기화 상태,후속 계획; 현재 이름은 승인 물리명 아님,M09 투영별 조회 범위·미처리·누락 기록; 최대 sequence를 완전성으로 간주하지 않음
+sw_* / llm_wiki,현행 SQLite/artifact 소비자,지식 본문·근거 Gold / 질문·실행 Agent,별도 저장 adapter와 원문 anchor 이행 설계,WIKI_LINK는 참조만 보관. YAML 개명만으로 Oracle 저장 또는 전체 MAIN 연결이 구현되지 않음.

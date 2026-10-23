@@ -1,0 +1,68 @@
+{
+  "state": "DESIGN_ONLY",
+  "current_ddl_tables": 9,
+  "current_ddl_columns": 46,
+  "gold_candidate_tables": 7,
+  "gold_candidate_columns": 36,
+  "runtime_sources_equal_sealed_r2": {
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": true,
+    "02_BACKEND/semantic_runtime/oracle_dp_assets.py": true,
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": true,
+    "02_BACKEND/semantic_runtime/oracle_query_store.py": true,
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py": true,
+    "02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py": true
+  },
+  "source_sha256": {
+    "08_DEPLOYMENT/DATAIKU/legal_oracle_all_tables_20261019_r1/LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.sql": "e6cc9b39149858ed3acad449224f84e59a15b13c9cdbb288dc80f2d183bc33fd",
+    "07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/ORACLE_GOLD_TABLES.csv": "f25914dcdfea6ecac76169fdbdbe6da0ecb485980d9b93eecc5e1ea2d356bacb",
+    "07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/ORACLE_GOLD_COLUMNS.csv": "43854dec8bbffbc233a80fd82b6c9379547f9e146b852aa2faaeb31ed14eaf88",
+    "00_SYSTEM/ARCHITECTURE.md": "a959c9b9335745ebd97f82881672cc48a0131dc006141a98643fd7c1384bbabf",
+    "07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/TABLE_SCHEMA_WORKBOOK.md": "fd89992bd64f096607f0b9a8951a98e1cc0d33a0d51670d9e9547dd196c704c2",
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py": "fbbbcc79f47ea1f8cb01a48c74e29568a4fc5bd30146803368760af6b03f7eaf",
+    "02_BACKEND/semantic_runtime/oracle_dp_assets.py": "0bcf4747da8ba613f08ae8d0c79b8a1450a292ef5210420180e211169eea0528",
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py": "59fdc9ee9d17f43afb3198fca86e1c10dc810e867b920c42dcfb025b6ce4b9e5",
+    "02_BACKEND/semantic_runtime/oracle_query_store.py": "d140ea9655ad28fe722af626bab11e3c7af07db867363403f8bda8d0e21c23ee",
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py": "f3b053bfb23034788a251a7e54c8c0c58674e38c6fe68d88a64f1700cd8f44ad",
+    "02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py": "165f7729702029dd6d3e838392be77e4dd74a0a0232bb8c22a4b1264ca2eb849",
+    "02_BACKEND/lawrag/pipeline/oracle_migration.py": "eb40d1cad19b7aefeca18b7bb36c7444a140f7beae239984215a2faed76476bd",
+    "02_BACKEND/lawrag/pipeline/oracle_query_package.py": "a0ca0fd3ea4f071679bdfa38f71847731c4f0fa8108710165b7ce23b353e673d",
+    "02_BACKEND/semantic_runtime/oracle_query_state.py": "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff",
+    "08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r1/src/dataiku_run.py": "df6af24a5ff51362e5a4891672bded4511b8f5aec25a5ec125f141c3c5f7d544"
+  },
+  "artifact_checks": [
+    "all 9/46 current entries covered once",
+    "YAML roundtrip",
+    "physical candidates <=30 ASCII bytes",
+    "logical column candidates <=30 UTF-8 bytes (approval encoding pending)",
+    "PK/FK/index references resolve",
+    "46 column XLSX reload",
+    "9 tables x 11 Description fields present",
+    "46 column meanings/allowed values/derivations/rationales present",
+    "YAML, CSV, XLSX and paste text registration descriptions agree",
+    "46 lineage entries; 9 table load/access/approval reviews; 9 relationships; 10 quality checks",
+    "6 operational sheets roundtrip; 7 regular load targets and 2 separate consumers distinguished"
+  ],
+  "metadata_table_count": 9,
+  "metadata_column_count": 46,
+  "operational_review_counts": {
+    "컬럼계보": 46,
+    "관계결합": 9,
+    "적재재처리": 9,
+    "품질완료기준": 10,
+    "권한보존": 9,
+    "승인진행": 9
+  },
+  "example_workbook": {
+    "name": "DATAIKU_GOLD_EXAMPLE_FORMAT.xlsx",
+    "tables": 9,
+    "columns": 46,
+    "scope": "Visible photo layout; not an original XLSX clone"
+  },
+  "metadata_open_items": 11,
+  "standard_approval": "PENDING",
+  "runtime_mapping_implemented": false,
+  "db_created": false,
+  "silver_integration_test": "NOT_RUN",
+  "main_changed": false,
+  "genos_deployed": false
+}
