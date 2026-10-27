@@ -148,6 +148,31 @@ def bounded_reference_completion(session):
     return bool(p.get('completion_contract') and p.get('completion_policy_version') in (cc.V5,cc.V6,cc.V7,cc.V8))
 
 
+def detached_annex_files(s):
+    """In-scope separately stored annex files, keyed by owning regulation path and label."""
+    from .. import annex_files
+    return annex_files.index((sid, src['document_id'], src['document_name'])
+                             for sid, src in s.tools.sources.items() if src['document_id'] in s.scope)
+
+
+def detached_annex(ref, origin, annex_index):
+    """Bind an unresolved 별표 citation to its separately stored file; several files stay unresolved."""
+    from .. import annex_files
+    owner = annex_files.owner_for(annex_index, origin['document_name'], ref.get('document_name_hint'))
+    cited = annex_files.cited_label(ref)
+    found = annex_files.resolve(annex_index, owner, cited, origin['document_id']) if owner and cited else None
+    if not found:
+        return None
+    if found[0] == 'AMBIGUOUS':
+        return {**ref, 'reason': 'DETACHED_ANNEX_AMBIGUOUS', 'detached_annex_candidates': found[1]}
+    did, sids = found
+    return {**ref, 'resolution': annex_files.RESOLUTION, 'reason': None,
+            'target_source_ids': sids,
+            'targets': [{'source_id': sid, 'unit_id': None, 'unit_path': [], 'block_ids': [],
+                         'target_level': 'source'} for sid in sids],
+            'detached_annex': {'document_id': did, 'label': cited, 'basis': annex_files.BASIS}}
+
+
 def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None, max_connections=None):
     """Validate both ends before exposing closed READ offers; read no target body."""
     groups = OrderedDict()
@@ -165,6 +190,7 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
         anchor_blocks = delivered_blocks(s,scoped)
         if set(anchors)-set(scoped):raise ContractError('reference anchor escaped selected structure scope')
     preview_count = 0
+    annex_index = None
     for anchor in anchors[:LIMITS['anchors_per_round']]:
         if anchor not in s.tools.sources or s.tools.sources[anchor]['document_id'] not in s.scope:
             raise ContractError('reference anchor outside request scope')
@@ -239,6 +265,10 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
             from .delegated_content import WORDING, definition_wording
             delegation_hint=bool(anchor_quote and WORDING.search(anchor_quote))
             policy = classify(ref, direction, {})
+            if outgoing and ref.get('reason') == 'ANNEX_BODY_NOT_IN_SELECTION':
+                if annex_index is None:
+                    annex_index = detached_annex_files(s)
+                ref = detached_annex(ref, origin, annex_index) or ref
             if not str(ref.get('resolution', '')).startswith('EXACT_'):
                 unresolved.append({'anchor': anchor, 'reference_id': ref['id'],
                                    'reason': ref.get('resolution'), 'locator': ref.get('locator'),

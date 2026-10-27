@@ -301,6 +301,8 @@ def compile_references(db, aliases=None, delegations=None):
         a = ANNEX_HEADING.match(s['heading'].strip())
         if a:
             annexes.setdefault((s['document_id'], annex_coordinate(a[1], a[2].replace('호',''))), []).append(s['id'])
+    from . import annex_files
+    detached = annex_files.index((s['id'], s['document_id'], s['document_name']) for s in sources.metadata())
     trees = unit_trees(db)
     roles_of = document_frames(db)
     compact = {}
@@ -781,10 +783,22 @@ def compile_references(db, aliases=None, delegations=None):
                 candidates=annexes.get((next(iter(ids)),loc),[]) if len(ids)==1 else []
                 resolved=candidates if len(candidates)==1 and candidates[0]!=s['id'] else []
                 reason=None if resolved else 'ANNEX_BODY_NOT_IN_SELECTION' if len(ids)==1 else 'DOCUMENT_VERSION_AMBIGUOUS' if ids else 'DOCUMENT_MISSING'
+                annex_exact='EXACT_SAME_DOCUMENT_ANNEX'
+                if reason=='ANNEX_BODY_NOT_IN_SELECTION':
+                    # A separately stored file under the owning regulation's annex folder.
+                    owner=annex_files.owner_for(detached,s['document_name'],docname)
+                    found=annex_files.resolve(detached,owner,annex_files.label(m[1],m[2]),s['document_id']) if owner else None
+                    if found and found[0]!='AMBIGUOUS':
+                        resolved,reason,annex_exact=found[1],None,annex_files.RESOLUTION
+                    elif found:
+                        reason='DETACHED_ANNEX_AMBIGUOUS'
                 exp=expression(text,m.end());end=exp['end'] if exp else m.end()
                 consumed[-1]=(m.start(),end)
                 details=[];missing=[]
-                if resolved:
+                if resolved and len(resolved)>1:
+                    # A detached file with several stored roots keeps every root.
+                    details=[target_record(sid) for sid in resolved]
+                elif resolved:
                     if exp:
                         for requested in exp['paths']:
                             detail=detailed(resolved[0],requested,exp['qualifiers'])
@@ -797,7 +811,7 @@ def compile_references(db, aliases=None, delegations=None):
                         if missing:reason='PROVISION_NOT_IN_STRUCTURE'
                     else:details=[target_record(resolved[0])]
                 record(s,b,text,m.start(),end,coordinate(text[m.start():end]) if exp else loc,
-                       docname,resolved,[],None if details else reason,'EXACT_SAME_DOCUMENT_ANNEX',
+                       docname,resolved,[],None if details else reason,annex_exact,
                        '별표·서식 단서','raw_explicit_annex_hint',via,target_records=details,missing_paths=missing)
                 if missing and details:
                     record(s,b,text,m.start(),end,coordinate(text[m.start():end]),docname,resolved,[],reason,
