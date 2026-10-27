@@ -1,0 +1,26 @@
+작업 계약 / 2026-10-27 사용자 개발계 레이어 정정
+
+범위: 기존 봉인된 Dataiku 원문 적재기의 매핑/SQL/클라이언트/노트북 전달본 갱신.
+신규 실험·모델 비교 아님. 외부 모델 호출 0, GENOS 현장 접근 0.
+소비자: run prepare → restore_inputs; check/run → run_dataiku → SchemaMap → DataikuClient → Oracle.
+서버: 기존 GENOS_PIPELINE_SERVICE_20261022_R2 동일 코드 해시 유지.
+
+대상: AIDP 연결, 8개 원문/검색/게시/복구 테이블 SIDDS.*_S,
+query_state만 SIDDA.LGL_EXEC_ST_A. 온톨로지·숏컷 적재기는 이번 9테이블에 없음.
+이전 _A/무접미사 테이블과 옛 전달본, SFTP 실패 기록은 보존한다.
+
+실패 처리
+- 잘못된 관리 폴더/누락 파일: prepare에서 중단, 원문 전송/DB 쓰기 0.
+- 변조 ZIP/receipt/코드/매핑: 해시 검사 실패, 다른 코드로 fallback 없음.
+- 잘못된 owner/접미사/컬럼/제약: preflight에서 중단, 원격 처리 시작 전 차단.
+- 실제 DB 쓰기 권한 부족/연결 중단: 기존 WRITE_UNCONFIRMED와 재조회 복구 계약 유지.
+- 이전 작업 BUSY: 상세 진단과 기존 작업 상태 확인; 자동 취소/새 ID 우회 없음.
+- S3 체크포인트 쓰기 실패: 원래 실패/로컬 로그 보존, 성공/ACK로 처리하지 않음.
+- 중복/프로세스 중단: 동일 입력·코드·대상 결속으로만 재개, 최초 기한/예산 유지.
+- 정상 완료: 해당 세대 7테이블 재조회·해시/행 확인, 보존 뒤 ACK, COMPLETE+oracle_written=true.
+
+검증: 실제 전달 ZIP 바이트와 핀 확인, 레이어/접미사/DDL/FK/출력 대상 검사,
+노트북 실제 prepare와 오류/중복 경로, 기존 전달본 회귀, 작은 원문 1건의
+로컬 Oracle 구조화→적재·재개 검사. 현장 연결/권한은 로컬 결과로 인증하지 않는다.
+자원: 무거운 DB/구조화 검사 하나씩, 기존 로컬 Oracle 컨테이너 2.5GB 제한 재사용,
+가용 RAM 3GB 미만 또는 swap 급증 시 신규 무거운 실행 보류.

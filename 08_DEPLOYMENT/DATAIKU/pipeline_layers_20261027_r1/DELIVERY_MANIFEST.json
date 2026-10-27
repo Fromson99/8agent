@@ -1,0 +1,37 @@
+{
+  "version": "pipeline-layers-20261027-r1",
+  "files": {
+    "DATAIKU_PIPELINE_CLIENT_20261027_R1.zip": "4f0f301f37208624fc51a5dde9bab84333eb2eeed1f5f7fd217d831e5c2bfef5",
+    "DATAIKU_PIPELINE_RUN_20261027_R1.txt": "b1c4e604f0c8378703489c81d10f5fc3140cec2a5716eab5903d90e66330f335",
+    "00_CHECK_TARGET.sql": "fbf9e750d7f73e6343a737e8c61c15d24dc5e0f2e4639bd55bf7225d32a244d1",
+    "01_CREATE_TABLES.sql": "7ddc819ecf32ed7f46fc86eb67de27236eb23609901126949013d0a38469d4c5",
+    "02_COMMENTS.sql": "8c6b01883fc697fea44602c7fc7bbb24995e74a48aa5fcbf305347ee3cdadbbf",
+    "03_CHECK_LOADED.sql": "fbfb8c4d710fbbc3bba6127f3c5303b72472eb04f88bf3c6deb64bd4c6a2794d",
+    "physical_mapping.yaml": "38383c091ebd9e6aa4c615f3d45aae4916f5b456065d6cc519536377afe34907",
+    "MAPPING_BINDING.json": "4d5f43a19db75283425ddcb7fb7fa991e2a9915655c0fdc58c5e23a55b459200",
+    "GUIDE.txt": "9af6b70423b1c398bcee051bfea58567e513e749eb8616fd1ab8f49e05e67c5c",
+    "WORK_CONTRACT.txt": "fed7d91a4b6da42ed9a7bdd1c0e413352a929499b2d074ae8740977b02f17ace",
+    "VALIDATION.json": "25e2cc77ad0090225f3115607e8e5fc7ed15cd759a395ca72c47d0434b13b2cc",
+    "LOCAL_ORACLE_E2E_RESULT.json": "9660c79aff6ce91a8a32bf478527e1a233b166e7679107c20edef4e17b241933"
+  },
+  "base_client_sha256": "9d553a32d460b6ddfe4b73a4186dea5501a0b878512ccd622fa7cbae631b9bb3",
+  "base_runner_sha256": "2fd064fe942723c7ea4e7b9676bbcbe221771bea5601360a3f4409fb111aad0c",
+  "service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "targets": {
+    "document": "SIDDS.LGL_DOC_VER_S",
+    "source_unit": "SIDDS.LGL_DOC_UNIT_S",
+    "block_payload": "SIDDS.LGL_DOC_BLK_S",
+    "query_row": "SIDDS.LGL_SRCH_ROW_S",
+    "source_release": "SIDDS.LGL_SRC_PBLS_S",
+    "query_release": "SIDDS.LGL_SRCH_PBLS_S",
+    "query_active": "SIDDS.LGL_SRCH_CHNL_S",
+    "query_state": "SIDDA.LGL_EXEC_ST_A",
+    "asset_part": "SIDDS.LGL_FILE_PART_S"
+  },
+  "dataiku_connection": "AIDP",
+  "genos_worker_changed": false,
+  "genos_rag_binding_changed": false,
+  "field_executed": false,
+  "main_changed": false,
+  "ontology_shortcut_oracle_load_implemented": false
+}

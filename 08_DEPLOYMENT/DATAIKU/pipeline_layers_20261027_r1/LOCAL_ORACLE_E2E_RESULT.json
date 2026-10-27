@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "old_sidda_counts_unchanged": {
+    "LGL_DOC_BLK": 4,
+    "LGL_DOC_UNIT": 4,
+    "LGL_DOC_VER": 2,
+    "LGL_EXEC_ST": 0,
+    "LGL_FILE_PART": 18,
+    "LGL_SRCH_CHNL": 0,
+    "LGL_SRCH_PBLS": 2,
+    "LGL_SRCH_ROW": 204,
+    "LGL_SRC_PBLS": 2
+  },
+  "target_tables": {
+    "document": "SIDDS.LGL_DOC_VER_S",
+    "source_unit": "SIDDS.LGL_DOC_UNIT_S",
+    "block_payload": "SIDDS.LGL_DOC_BLK_S",
+    "query_row": "SIDDS.LGL_SRCH_ROW_S",
+    "source_release": "SIDDS.LGL_SRC_PBLS_S",
+    "query_release": "SIDDS.LGL_SRCH_PBLS_S",
+    "query_active": "SIDDS.LGL_SRCH_CHNL_S",
+    "query_state": "SIDDA.LGL_EXEC_ST_A",
+    "asset_part": "SIDDS.LGL_FILE_PART_S"
+  },
+  "oracle": "local Oracle Free container",
+  "tables": 9,
+  "columns": 46,
+  "counts": {
+    "document": 1,
+    "source_unit": 2,
+    "block_payload": 2,
+    "query_row": 102,
+    "source_release": 1,
+    "query_release": 1,
+    "query_active": 0,
+    "query_state": 0,
+    "asset_part": 12
+  },
+  "query_rows": 102,
+  "sql_writes_executed": 37,
+  "missing_index_preflight_no_genos": true,
+  "committed_write_response_loss_recovered": true,
+  "ack_response_loss_recovered": true,
+  "local_workspace_loss_recovered": true,
+  "duplicates_add_no_rows": true,
+  "genos_execute_calls": 1,
+  "service_executable_modified": false,
+  "fixture_knowledge_configuration_rebound": true,
+  "dataiku_sdk_transport_simulated": true,
+  "field_dataiku_genos_adb_tested": false,
+  "model_calls": 0
+}
