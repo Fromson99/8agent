@@ -1,0 +1,84 @@
+# LEGAL_RAG의 Dataiku Python 노트북 새 셀에 전체를 붙여 실행합니다.
+# 원격 읽기 전용: 폴더 목록/파일 메타데이터/Oracle SELECT만 수행합니다.
+# 압축 해제, S3 쓰기, DDL/DML, GENOS 호출, 기존 run 함수 변경은 없습니다.
+# SQL_CONNECTION은 실제 Dataiku 연결 이름입니다. 스키마 이름을 넣지 않습니다.
+SQL_CONNECTION = "AIDP"
+# 처음에는 비워 두고 아래에 출력되는 관리 폴더 ID를 확인합니다.
+# 그다음 해당 ID를 넣어 이 셀을 다시 실행하면 폴더 최상위 파일을 확인합니다.
+FOLDER_ID = ""
+
+import json
+import dataiku
+from dataiku import SQLExecutor2
+
+LGL_INSPECTION_COMPLETE = False
+project_key = dataiku.default_project_key()
+if project_key != "LEGAL_RAG":
+    raise RuntimeError("LEGAL_RAG 프로젝트의 노트북에서 실행하세요.")
+
+print("READ_ONLY_INSPECTION", "project=", project_key, flush=True)
+print("PHASE MANAGED_FOLDERS", flush=True)
+project = dataiku.api_client().get_project(project_key)
+folders = project.list_managed_folders()
+for item in folders:
+    print(json.dumps({"id": item.get("id"), "name": item.get("name")}, ensure_ascii=False))
+
+if FOLDER_ID:
+    if FOLDER_ID not in {item.get("id") for item in folders}:
+        raise ValueError("FOLDER_ID는 위 목록의 정확한 ID로 지정하세요.")
+    folder = dataiku.Folder(FOLDER_ID, project_key=project_key)
+    print("PHASE SELECTED_FOLDER_ROOT", FOLDER_ID, flush=True)
+    details = folder.get_path_details("/")
+    children = details.get("children", [])
+    for item in children[:100]:
+        print(json.dumps({key: item.get(key) for key in
+                          ("fullPath", "name", "directory", "size")}, ensure_ascii=False))
+    if len(children) > 100:
+        print("DISPLAY_LIMIT", "전체", len(children), "개 중 100개 표시")
+    required = {
+        "DATAIKU_PIPELINE_CLIENT_20261023_R1.zip",
+        "RAW_INPUT.zip", "RAW_INPUT.zip.receipt.json",
+        "PIPELINE_SUPPORT.zip", "PIPELINE_SUPPORT.zip.receipt.json",
+    }
+    names = {str(item.get("fullPath") or item.get("name") or "").lstrip("/")
+             for item in children if not item.get("directory")}
+    print("REQUIRED_NAMES_NOT_LISTED", json.dumps(sorted(required - names)))
+    print("파일명 목록만 확인했습니다. 파일 바이트·해시·쓰기 권한은 미검증입니다.")
+else:
+    print("FOLDER_NOT_SELECTED: 위 목록에서 원문이 있는 관리 폴더 ID를 확인하세요.")
+
+defaults = getattr(globals().get("run"), "__defaults__", None)
+if isinstance(defaults, tuple) and len(defaults) == 4:
+    print("EXISTING_RUNNER_DEFAULTS", json.dumps(dict(zip(
+        ("action", "folder_name", "work_dir", "job_name"), defaults)), ensure_ascii=False))
+    print("기존 실행기는 호출하거나 설정을 변경하지 않았습니다.")
+
+print("PHASE ORACLE_SESSION", SQL_CONNECTION, flush=True)
+executor = SQLExecutor2(connection=SQL_CONNECTION)
+session = executor.query_to_df("""
+SELECT SYS_CONTEXT('USERENV','DB_NAME') AS DB_NAME,
+       SYS_CONTEXT('USERENV','SERVICE_NAME') AS SERVICE_NAME,
+       SYS_CONTEXT('USERENV','SESSION_USER') AS SESSION_USER_NAME,
+       SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS CURRENT_SCHEMA_NAME
+FROM DUAL
+""")
+print(session.to_string(index=False))
+
+print("PHASE VISIBLE_LGL_TABLES", flush=True)
+tables = executor.query_to_df("""
+SELECT OWNER, TABLE_NAME, TABLESPACE_NAME
+FROM ALL_TABLES
+WHERE TABLE_NAME IN (
+ 'LGL_DOC_VER','LGL_DOC_UNIT','LGL_DOC_BLK','LGL_FILE_PART','LGL_SRC_PBLS',
+ 'LGL_SRCH_PBLS','LGL_SRCH_ROW','LGL_SRCH_CHNL','LGL_EXEC_ST'
+)
+ORDER BY OWNER, TABLE_NAME
+""")
+print(tables.to_string(index=False))
+
+LGL_INSPECTION_COMPLETE = True
+print("INSPECTION_FINISHED", flush=True)
+print("표시된 OWNER가 실제 테이블 소유 스키마입니다. CURRENT_SCHEMA와 구분하세요.")
+print("조회에 안 보이는 테이블은 부재 또는 권한 부족일 수 있습니다.")
+print("TABLESPACE_NAME만으로 회사의 실버/골드 레이어 분류를 확정하지 않습니다.")
+print("적재 가능/전체 스키마 적합 판정이 아닙니다. 파이프라인 실행·DB 쓰기 0회입니다.")

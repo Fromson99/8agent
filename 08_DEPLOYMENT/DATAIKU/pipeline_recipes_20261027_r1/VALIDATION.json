@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "package_sha256": "23a316af80006c55565a223b5ff37ef08fa90ab39f215a9f5685df48bf4276c7",
+  "contract_tests": 19,
+  "public_sdk_adapter_tests": 2,
+  "local_oracle_integration_tests": 1,
+  "sdk_version": "15.2.0",
+  "raw_inputs": "synthetic XML, no production documents",
+  "remote_transport": "in-process unmodified GENOS R2 executable; fixture knowledge config/pins rebound",
+  "oracle": "actual local Oracle Free, loopback only, container stopped after checks",
+  "recoveries": [
+    "committed SQL response loss",
+    "ACK response loss",
+    "local scratch replacement",
+    "duplicate load without added rows"
+  ],
+  "stage_invariants": [
+    "unzip publishes original S3 bytes",
+    "structure has zero Oracle writes and zero ACK",
+    "load reads immutable structured result",
+    "original deadline and SQL budget retained"
+  ],
+  "models_called": 0,
+  "field_dataiku_genos_tested": false,
+  "field_installation_performed": false,
+  "main_changed": false,
+  "git_commit_push": false,
+  "new_email_sent": false,
+  "artifacts": {
+    "CONTRACT_TESTS.xml": "69ead66b5ff9fcf36112cc9117aee5f17f1fbcec91fd4e19c4e2244da4528360",
+    "SDK_TESTS.xml": "74aa9e4ff934020c9ea53d56aa45038677f5498b0fafc886432e05503182826e",
+    "ORACLE_E2E_TEST.xml": "866afee4ab26172e4865ec9b252bd75ea3b4c33551ea2e399b0bc9807ff60231",
+    "LOCAL_ORACLE_E2E_RESULT.json": "3c6fa155cbded7d94cf7da1e41cc254db53f9d5cc55e5c52e465366b3aff5b9b"
+  }
+}

@@ -1,0 +1,76 @@
+S3 원문 → 기존 구조화 파이프라인 → LGL 적재 전 대상 확인
+후속 사용자 확인: 실버=SIDDS.*_S, 에이전트=SIDDA.*_A. 아래는 정정 전 확인 기록이다.
+실행에는 ../pipeline_layers_20261027_r1/GUIDE.txt의 새 전달본을 사용한다.
+2026-10-27 / 현장 확인용 읽기 전용 셀
+
+확인한 기존 구현
+- 20261023 R1의 MAPPING_BINDING.json: connection=AIDP, owner=SIDDA,
+  profile=dev_silver, tables=9, columns=46, production_approved=false.
+- physical_mapping.yaml의 dev_silver는 모든 역할 owner를 SIDDA로 지정한다.
+- CREATE TABLE/읽기/쓰기 모두 SIDDA.LGL_*이다.
+- src/dataiku_run.py의 run_dataiku는 AIDP 이외 연결을 CONNECTION_CHANGED로 거절한다.
+  LEGAL_ORACLE_CONNECTION만 silver_layer로 바꾸는 방식은 현 실행기에 적용되지 않는다.
+- dev_silver라는 프로필 이름은 현장 실버 레이어 배치의 증거가 아니다.
+- silver_layer가 연결 이름, Oracle owner, Flow 영역, tablespace 중 무엇인지와
+  실제 운영 분류를 확인한 뒤 적재 대상을 확정한다.
+
+1. 현장 확인
+LEGAL_RAG의 Dataiku Python 노트북 새 셀에
+DATAIKU_S3_LGL_CHECK_20261027_R1.txt 전체를 붙여 실행한다.
+처음에는 SQL_CONNECTION="AIDP", FOLDER_ID=""로 실행한다.
+관리 폴더 목록과 실제 Oracle 접속 정보, 현재 계정에서 보이는 LGL 테이블 owner가 나온다.
+목록의 원문 폴더 ID를 FOLDER_ID에 넣고 재실행하면 최상위 파일 목록도 나온다.
+관리 폴더가 없고 S3 dataset만 있다면, 원문이 있는 같은 S3 경로에 Folder를 연결한다.
+새 폴더를 빈 다른 경로로 만들거나 데이터셋의 형식 설정으로 ZIP을 풀지 않는다.
+실제로 별도 DB 연결 silver_layer가 있는 경우에만 SQL_CONNECTION에 그 연결 이름을
+입력하여 동일한 읽기 전용 조회를 수행한다. 존재하지 않는 연결을 추정하지 않는다.
+이 셀은 원격 SELECT/메타데이터 조회만 수행한다. 예외 시 해당 셀은 실패하고
+자동 재시도/적재로 넘어가지 않는다. 노트북 출력과 원래 오류를 보존한다.
+조회 성공은 쓰기 권한, 전체 스키마, 저장 공간, ZIP 해시, 레이어 분류 검증이 아니다.
+
+2. 기존 AIDP/SIDDA가 의도한 개발 실버 대상임을 확인한 다음
+기존 DATAIKU_PIPELINE_RUN_20261023_R2.txt를 사용한다.
+위치: ../pipeline_diagnostics_20261023_r2/DATAIKU_PIPELINE_RUN_20261023_R2.txt
+이 파일 전체를 셀에 붙이면 함수를 등록하며 배치를 자동 시작하지 않는다.
+run(action="prepare", folder_name=실제관리폴더ID,
+    work_dir=확인한작업경로, job_name=확인한작업명)
+이 호출이 기존 해시 검증, 스트리밍 다운로드, ZIP 해제를 담당한다.
+S3 자체에서 ZIP을 직접 풀지는 않는다. 압축 해제는 Dataiku의 임시 작업 디스크에서
+수행하며 S3 원본은 보존한다. 원문/용어집 ZIP의 크기와 해제 공간이 필요하다.
+기존 커널의 run 기본 인자는 이전 폴더/작업 설정을 유지할 수 있으므로 실제 출력값을
+확인하고 위처럼 명시적으로 인자를 전달한다. 변수만 바꿔 기본 인자가 바뀌었다고 보지 않는다.
+
+필요한 최상위 파일 5개
+DATAIKU_PIPELINE_CLIENT_20261023_R1.zip
+RAW_INPUT.zip
+RAW_INPUT.zip.receipt.json
+PIPELINE_SUPPORT.zip
+PIPELINE_SUPPORT.zip.receipt.json
+
+3. 대상 확인 후 단계별 실행
+prepare가 READY → 동일한 folder_name/work_dir/job_name으로 run(action="check", ...).
+check가 실제 9테이블·46컬럼·제약·인덱스를 검사해 READY인 경우,
+기존 작업 상태와 LEGAL_PIPELINE_URL/TOKEN 설정을 확인한 뒤 run(action="run", ...).
+구조화는 현재 전달된 실행기에서 GENOS 파이프라인 처리부가 수행하고,
+Dataiku가 결과를 받아 Oracle에 적재·재조회 검증한다.
+법제처 신규 수집 호출은 Dataiku → 중계서버 → 법제처 계획이며 이 ZIP 처리와 별개다.
+최종 완료: COMPLETE + oracle_written=true.
+LGL_SRCH_CHNL/LGL_EXEC_ST는 검사 대상이지만 이 적재 작업이 자동 기록하지 않는다.
+
+4. 기존 SFTP 작업을 S3로 옮기는 경우
+기존 runner의 input-binding과 ManagedJob은 folder ID를 입력 정체성에 포함한다.
+따라서 _pipeline/ 복사와 FOLDER_NAME 변경만으로 기존 작업 재개가 보장되지 않는다.
+기존 원문/결과/체크포인트/실패 기록과 기한·사용 예산을 보존하고,
+현재 작업 상태 및 이관 방법을 확인해야 한다. 기존 hash를 고쳐 우회하지 않는다.
+기존 GENOS BUSY는 S3 전환이나 새 JOB_NAME으로 해제되지 않는다.
+이 읽기 전용 셀과 안내는 작업 이관/실패 해제/신규 시작을 자동 수행하지 않는다.
+
+5. silver_layer가 다른 실제 owner 또는 연결인 경우
+대상을 확인한 새 매핑/DDL/클라이언트 묶음을 만들어 동일 대상 검사 후 사용한다.
+현재 봉인 ZIP의 SIDDA 문자열이나 매핑 hash만 직접 바꾸지 않는다.
+이 확인 패키지는 기존 데이터·테이블·실행 코드·선택 MAIN을 변경하지 않았다.
+실제 현장 연결, ZIP 해제, 구조화, Oracle 적재는 아직 실행하지 않았다.
+
+공식 API 근거
+https://developer.dataiku.com/latest/concepts-and-examples/sql.html
+https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
