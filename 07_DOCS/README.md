@@ -1,8 +1,25 @@
 # 07_DOCS
 
+<!-- MAIN104_SQL_FOLLOWUP -->
+**2026-10-27 — MAIN105 반영·실제 서비스 확인 완료:** [전체 반영·실제 실행·온톨로지 후속](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 최초211초 원인의 MAIN104 SQL 수정에 반복 원문 확인 재사용과 네 연결 TEMP VIEW의 ID 점조회를 더했다. 보관응답1회 재생의 동일 계측35화면736.500→93.718초(87.275% 감소), 원문·행동·최종 답변 동일, 새 모델 호출0회다. 신규237조건·관측보조1,345조건을 구분한 ADR1081 검증 후 MAIN105 `navigation-validation-20261027-r1`을 선택했고 실제 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)이 통과했다. 작업 코드 통합에서 새4검사 통과, 기존7실패는 변경 전후 동일하다. 온톨로지는1074 부분실패→1077 상태 전환 수리→MAIN105 결합1079 실모델1셀/10호출을 완료했다. 두 원문의 판단 보존을 확인했지만 근거 연결 보완1회·제한 답변으로 품질 효과는 미인증이다. MAIN105 최종 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했다. 설치144명령·SQL18·상태13쌍을 통과했으며 MAIN104 첨부를 대체한다. P0~P4 전체 구현·전체 응답시간 개선·법률 품질·온톨로지 MAIN·GENOS 현장 배포 완료로 확대하지 않는다. 아래 이전 상태 기록과 구분한다.
+<!-- /MAIN104_SQL_FOLLOWUP -->
+
+**2026-10-27 — 211초 원인·최적화 확인:** [상세 측정과 결과](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/NAVIGATION_211S_ROOT_CAUSE_20261027.md). 정의 연결 조회의 전체 참조 VIEW 조립과 권한 ID 목록 반복이 원인이었다. 동일 계측의8개 대응 구간236.744→19.891초(91.598% 감소), 원래 화면·행동·전달 원문8/8 일치, 신규 모델 호출0회. 당시 SQL 두 수정은 작업 코드에 통합했고 선택 MAIN103·GENOS 배포는 유지했다. 이후 MAIN 반영 상태는 문서 상단 최신 기록을 따른다. 초기 준비·전체 응답시간·온톨로지 품질·GENOS 속도와 구분한다. 아래2026-10-26 상태는 선행 단계 기록이다.
+
+**2026-10-26 성능 구현·실험 상태:** [상세 결과](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/NON_MODEL_LATENCY_IMPLEMENTATION_RESULT_20261026.md) · [전체 계획](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/NON_MODEL_LATENCY_OPTIMIZATION_PLAN_20261026.md). 격리 후보에 P0 계측·P1 일부와 온톨로지 재표시 오류 수정을 구현했다. 반복 스키마 검사96.17% 감소는 국소 비교이며 전체 서비스 개선율이 아니다. 초기 준비17.605초의98.266%를 이름 있는 구간에 귀속했고 연결 매칭·구조 결속10.676초가 가장 컸다. 실모델1회는 불완전 출력/연속 공백으로 중단, 온톨로지 효과와 전체 최적화는 미확인이다. P2/P3/P4·기본 작업 코드 통합·MAIN103·GENOS 반영은 미완료다. 과거 실험과 실패는 보존한다.
+
+<!-- ADR1066_LIVE_STATUS -->
+**2026-10-26 실제 모델 관찰: 부분 중단.** 사전 동결한 3문항×3조건 중 첫 문항 A0/A1은 제한 답변, A2는 원문 재표시의 상태 결속 오류로 중단했다. 나머지6셀은 미실행이다. 제품27호출·관찰 비용$0.17853620·제품 실행 합계762.10초, 채점 모델0회다. 관찰한 행동 응답19회에서 이전 필수 항목 누락과 입력 문자 차단은 재현되지 않았고, A1/A2 승인 묶음 실제 전달도 확인했다. 전체 성공·법률 정답·온톨로지 개선 인증은 아니다.
+
+같은 원문 카드의 `presentation_id` 갱신이 전체 source hash를 바꿔 동일 온톨로지 페이지의 내용 변경으로 오인됐다. 별도로 조문 선택과 목적 불일치, 탐색 화면 구성 지연, 구형 gate의 evidence-ID 카드 감사 호환 문제가 남았다. 원문 검증을 끄지 않으며 결과 후 코드·점수를 수정하지 않았다. MAIN103·GENOS·운영 골드는 미변경이다. [결과·원인·원시 기록](../04_EXPERIMENTS/ADR/ADR-1066-ontology-input-unlimited/artifacts/POST_RUN_DIAGNOSIS.md). **아래 구현 당시의 “실모델0회·미실행” 표기는 과거 시점 기록이다. 현행 상태는 이 관찰을 따른다.**
+<!-- /ADR1066_LIVE_STATUS -->
+
+
+- [온톨로지 MVP 행동별 최소 응답 계약](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/ACTION_CHOICE_CONTRACT_20261026.md) — 모델의 행동·대상·필요한 판단과 서버의 고정값 조립을 분리하고 정상·전체 보완을 같은 양식으로 연결. 입력 문자 차단 해제와 실제 구현·검사는 [최신 상태](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MVP_EXECUTION_REPAIR_STATUS_20261026.md)에서 확인. 후보 구현과 MAIN103·GENOS 적용을 구분.
+
 - [골드 레이어·메타마이너 규약과 원본 사진](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/README.md) — 표준단어·논리명·물리명·유형별 용어, 도메인·코드값, 표준 신청·승인 절차와 골드 메타 작성 규약. [테이블 목록·Bizmeta·등록 대상·컬럼 정의 양식](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/TABLE_SCHEMA_WORKBOOK.md)과 추가 사진7장 포함. 사용자 제공 사진 총27장 원본·내용 대응·SHA-256 보존.
 
-- [온톨로지 v4: 조문 경로 조립·대화 축적·변경 영향](REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md) — 조문 도착 후 관계 컴파일·자동 설명·목적 원문 확보, 자유 대화의 제한된 지식 축적, 정정·조건 변경 비교와 프로토타입 구현 설계. 설계 저장이며 제품 구현·MAIN·GENOS 반영은 별도.
+- [온톨로지 v4: 조문 경로 조립·대화 축적·변경 영향](REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md) — 2026-10-24 사용 중 필요·선택·정정 관찰과 [멀티턴 Legal agent](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MULTITURN_LEGAL_AGENT.md) 설계 반영. 확인 답·미확인·경로 안내·행동 기록을 다음 턴에 연결하고 제어·저장·응답·화면·재개를 통합 교체. 기존 경로 컴파일·원문 확보·조건 변경 기능 유지. 설계 저장이며 제품 구현·MAIN·GENOS 반영은 별도.
 
 - [온톨로지 v3 문서 안내](REFERENCE/ARCHITECTURE/ONTOLOGY_V3.md) — 방향·지식 모델·근거 기억·새 연결·설명/평가·구현 단위·DB 설계를 주제별 문서로 연결하는 목차. 기존 코드 검토와 DDL·조회 SQL·이행/검증 문서 포함.
 

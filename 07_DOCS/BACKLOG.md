@@ -1,15 +1,16 @@
 # 백로그
 
+<!-- MAIN104_SQL_FOLLOWUP -->
+**2026-10-27 — MAIN105 반영·실제 서비스 확인 완료:** [전체 반영·실제 실행·온톨로지 후속](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 최초211초 원인의 MAIN104 SQL 수정에 반복 원문 확인 재사용과 네 연결 TEMP VIEW의 ID 점조회를 더했다. 보관응답1회 재생의 동일 계측35화면736.500→93.718초(87.275% 감소), 원문·행동·최종 답변 동일, 새 모델 호출0회다. 신규237조건·관측보조1,345조건을 구분한 ADR1081 검증 후 MAIN105 `navigation-validation-20261027-r1`을 선택했고 실제 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)이 통과했다. 작업 코드 통합에서 새4검사 통과, 기존7실패는 변경 전후 동일하다. 온톨로지는1074 부분실패→1077 상태 전환 수리→MAIN105 결합1079 실모델1셀/10호출을 완료했다. 두 원문의 판단 보존을 확인했지만 근거 연결 보완1회·제한 답변으로 품질 효과는 미인증이다. MAIN105 최종 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했다. 설치144명령·SQL18·상태13쌍을 통과했으며 MAIN104 첨부를 대체한다. P0~P4 전체 구현·전체 응답시간 개선·법률 품질·온톨로지 MAIN·GENOS 현장 배포 완료로 확대하지 않는다. 아래 이전 상태 기록과 구분한다.
+<!-- /MAIN104_SQL_FOLLOWUP -->
+
 ## 2026-10-21 · 구 용어집 스키마 길이 제한과 캐시 컴파일러 결속
 
 MAIN98 통합 중 `full_glossary.py`의 PLAN_SCHEMA·decision_schema 길이 제한 제거가 불변 캐시의 compiler_sha256을 바꿔 실제 데이터 세션을 차단했다. 해당2개 스키마 변경만 이전 컴파일러와 결속된 바이트로 유지하고 작업본을 [ADR0967 보존 기록](../04_EXPERIMENTS/ADR/ADR-0967-law-name-main-integration/artifacts/integration-delta.json)에 무손실 보존했다. 현재 RAG의 다른 글자 수 제한 제거는 유지한다. 구 스키마 완화는 캐시 생성 책임을 분리하거나 새 호환 세대를 작성·검증하는 후속 작업으로 남긴다. 해시 검사를 우회하거나 기존 세대 receipt를 덮어쓰지 않는다.
 
 
 <!-- CURRENT_LOCAL_RAG_RELEASE -->
-2026-10-20 사용자 지시에 따라 **로컬 RAG MAIN92 / workflow1.19.4**를 선택했다. 릴리스는 `genos-model-metadata-20261020-r1`이며 정본은 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`이다. MAIN91의 조사·상태 복구를 유지하고 승호님 코드와 같이 GENOS 응답의 모델명 차이·누락만으로 중단하지 않게 했다. 자동 모델 ID 조회는 유지하며 요청/응답 ID와 상태를 따로 기록한다. 일반 응답·스트리밍·대사 재개·AD에 적용하고 본문·권한·해시·예산 검사와 외부 모델 고정은 유지한다. 작업 코드·검증 후보·선택 릴리스389파일이 일치하며 204개 계약/API/화면 검사와 앱 주입 없는 실제 로컬 서비스의 선택·HEALTH·원문 읽기를 확인했다. 데이터·모델·검색 설정은 유지한다. `USER_DIRECTED_CUTOVER`, `quality_certified=false`이며 이전 ADR 판정과 기존 회귀 실패는 유지한다. 실제 내부 모델·최종 품질/비용 및 GENOS 현장 검증은 남아 있다. Git 병합·push와 GENOS 반입·배포는 수행하지 않았다.
-검증·서비스·복원 기록은 `09_ARTIFACTS/AUDITS/20261020-genos-model-metadata-main/RESULT.txt`다.
-
-남은 작업: 최종 버전의 근거 선택·적용 범위·비교 방향·전체 호출/토큰 비용, 기존8개 회귀 실패/9개 ADR 그래프 오류 정비, GENOS 현장 검증.
+2026-10-27 사용자 지시에 따라 **로컬 RAG MAIN105 / workflow1.20.8**을 선택했다. 릴리스 `navigation-validation-20261027-r1`, 정본 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`. MAIN104의420파일 중 반복 원문 검증 재사용·네 연결 권한 VIEW 점조회의 제품3파일과pin31파일만 변경하고 기존 정의 조회 수정을 유지했다. 신규237조건·관측보조1,345조건, 원래38응답/35화면/최종답변 동등성, 실제 선택 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)을 통과했다. 보관응답1회 재생의 동일35화면736.500→93.718초(87.275% 감소), 모델호출0이며 전체 서비스 개선율이 아니다. `VALIDATED_ADR_PROMOTION / quality_gate_override=false / quality_certified=false`. 데이터·검색·모델·출력상한 없음·40호출/1024도구/1800초 예산 동일. 작업 코드의 기존directory/별표 기능을 보존해3hunk 통합했고100검사통과·기존7실패 동일이다. 온톨로지 MVP는 별도1079 후보이며 MAIN 기능 전체에 포함하지 않았다. 반영 후1079 실모델1셀/10호출에서 상태 전환 수리는 확인했지만 제한 답변으로 품질 효과는 미인증이다. MAIN105 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했고 MAIN104 첨부를 대체한다. GENOS 현장 배포·Git commit/push 미수행. [승격·실행·인계·남은 상태](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 과거 실행·실패·MAIN103/104·인계본은 보존한다.
 <!-- /CURRENT_LOCAL_RAG_RELEASE -->
 
 아래는 이전 구현·검증 시점의 기록이다. 당시 MAIN 미반영 표시는 위 현재 선택 상태로 대체된다.

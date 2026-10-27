@@ -1,0 +1,76 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>DP 스키마와 연결 탐색</title><style>body{font-family:"Malgun Gothic",sans-serif;color:#17324d;line-height:1.65;max-width:960px;margin:36px auto;padding:0 24px}h1{font-size:26px}h2{font-size:18px;color:#245f9b}section{margin:36px 0 60px}table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0}td,th{border-bottom:1px solid #d7e2eb;text-align:left;padding:9px;vertical-align:top;overflow-wrap:anywhere}th{background:#17324d;color:white}tr:nth-child(even){background:#f0f5f9}.flow{white-space:pre-line;text-align:center;background:#eaf4f5;padding:18px}.note,.source{color:#536577;font-size:12px}.lead{font-size:16px}</style><body>
+<section><h1>DP 구조와 질문 처리 흐름</h1><p>3·5번 과제 공통 법규 RAG | 핵심 스키마·연결 탐색 설명서</p>
+<p class="lead">한 질문이 용어·정의에서 출발해 관련 조항을 찾고, 명시 참조 또는 검토 관계를 따라 실제 원문을 확보하는 구조를 설명합니다. 핵심 데이터는 4개 물리 테이블이며, 버전 선택·상태·보관을 포함한 개발 스키마는 9개입니다.</p>
+<h2>01  전체 흐름</h2>
+<p class="flow">질문 + 인증된 문서 접근권한<br>↓<br>검색 게시 버전·원문 데이터 세대 고정<br>↓<br>용어·정의·본문 검색 → 내규 원문 읽기<br>↓<br>명시 참조 / 검토 관계 → 연결 외규 원문 읽기<br>↓<br>추가 연결 확인 → 인용·해석·미확인 사항을 함께 응답</p>
+<h2>02  핵심 테이블의 역할</h2>
+<table><thead><tr><th>물리 테이블</th><th>저장 단위</th><th>질문 처리에서 하는 일</th></tr></thead><tbody><tr><td>LGL_DOC_VER</td><td>세대 내 문서 1건</td><td>문서명·문서 식별값·원본 해시 확인</td></tr><tr><td>LGL_DOC_UNIT</td><td>문서 구조 단위 1건</td><td>장·절·조·항·호·목과 상위 구조·본문 범위 확인</td></tr><tr><td>LGL_DOC_BLK</td><td>본문 블록 1건</td><td>답변 인용에 사용할 실제 원문 조회</td></tr><tr><td>LGL_SRCH_ROW</td><td>종류별 조회 행 1건</td><td>용어·정의·출현·참조·관계·전문검색 데이터 조회</td></tr></tbody></table>
+<h2>03  저장 책임과 현재 상태</h2>
+<table><thead><tr><th>영역</th><th>저장 내용·상태</th></tr></thead><tbody><tr><td>Gold 지식</td><td>구조화 원문·재사용 지식·온톨로지·LLM Wiki. 원문 판본·조항·span을 중심으로 관리합니다.</td></tr><tr><td>Agent / 작업 후보</td><td>질문·판단·실행 로그는 Agent. 온톨로지 작업 후보는 Dataiku S3 관리 폴더의 JSON이며, 승인·신청·SQL 적재 후 Gold에서 사용합니다.</td></tr><tr><td>이 문서의 범위</td><td>LGL_*는 AIDP/SIDDA 개발 실버 검증용 명명입니다. DDL·매핑·조회 코드를 대조한 설명이며 운영 Gold 승인·현장 적재·조회 전환 완료를 뜻하지 않습니다.</td></tr></tbody></table>
+<p class="note">원문 데이터는 Oracle/조회 API에서 필요한 범위만 읽습니다. GENOS 서빙에 전체 원문·색인을 내려받아 보관하는 구조로 설명하지 않습니다.</p>
+</section>
+<section><h1>핵심 물리 스키마</h1><p>기존 실행 YAML의 컬럼·타입·키를 발췌 | owner: SIDDA</p>
+<h2>LGL_DOC_VER</h2>
+<table><thead><tr><th>컬럼</th><th>타입</th><th>키/NULL</th><th>의미</th></tr></thead><tbody><tr><td>DATA_VER_ID</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>데이터 구축 세대 ID</td></tr><tr><td>DOC_ID</td><td>VARCHAR2(512 BYTE)</td><td>PK</td><td>문서 ID</td></tr><tr><td>DOC_NM</td><td>CLOB</td><td>선택</td><td>문서명</td></tr><tr><td>SRC_DATA_HASH_VAL</td><td>VARCHAR2(64 BYTE)</td><td>선택</td><td>원본자료 SHA-256</td></tr><tr><td>DOC_JSON_CN</td><td>CLOB</td><td>선택</td><td>문서 메타 JSON</td></tr></tbody></table>
+<h2>LGL_DOC_UNIT</h2>
+<table><thead><tr><th>컬럼</th><th>타입</th><th>키/NULL</th><th>의미</th></tr></thead><tbody><tr><td>DATA_VER_ID</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>데이터 구축 세대 ID</td></tr><tr><td>DOC_ID</td><td>VARCHAR2(512 BYTE)</td><td>PK</td><td>문서 ID</td></tr><tr><td>UNIT_ID</td><td>VARCHAR2(512 BYTE)</td><td>PK</td><td>구조 단위 ID</td></tr><tr><td>PRNT_UNIT_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>상위 구조 단위 ID</td></tr><tr><td>UNIT_JSON_CN</td><td>CLOB</td><td>선택</td><td>제목·구조·본문 span JSON</td></tr></tbody></table>
+<h2>LGL_DOC_BLK</h2>
+<table><thead><tr><th>컬럼</th><th>타입</th><th>키/NULL</th><th>의미</th></tr></thead><tbody><tr><td>DATA_VER_ID</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>데이터 구축 세대 ID</td></tr><tr><td>DOC_ID</td><td>VARCHAR2(512 BYTE)</td><td>PK</td><td>문서 ID</td></tr><tr><td>BLK_ID</td><td>VARCHAR2(512 BYTE)</td><td>PK</td><td>본문 블록 ID</td></tr><tr><td>UNIT_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>구조 단위 ID</td></tr><tr><td>BLK_TXT_CN</td><td>CLOB</td><td>선택</td><td>실제 원문</td></tr><tr><td>SRC_DATA_HASH_VAL</td><td>VARCHAR2(64 BYTE)</td><td>선택</td><td>원본자료 SHA-256</td></tr><tr><td>BLK_JSON_CN</td><td>CLOB</td><td>선택</td><td>본문 구조·메타 JSON</td></tr><tr><td>JSON_TXT_OMIT_YN</td><td>NUMBER(1)</td><td>선택</td><td>JSON 내 본문 생략 여부(0/1/NULL)</td></tr></tbody></table>
+<h2>LGL_SRCH_ROW</h2>
+<table><thead><tr><th>컬럼</th><th>타입</th><th>키/NULL</th><th>의미</th></tr></thead><tbody><tr><td>SRCH_PBLS_ID</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>검색 게시 ID</td></tr><tr><td>ROW_KIND_CD</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>논리 데이터 종류</td></tr><tr><td>ROW_ID</td><td>VARCHAR2(64 BYTE)</td><td>PK</td><td>조회 행 ID</td></tr><tr><td>DOC_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>문서 ID</td></tr><tr><td>SRCH_KEY_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>보조 조회 키</td></tr><tr><td>OWNR_REF_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>소속·출발 참조용 키</td></tr><tr><td>TGT_REF_ID</td><td>VARCHAR2(512 BYTE)</td><td>선택</td><td>대상 참조용 키</td></tr><tr><td>ROW_HASH_VAL</td><td>VARCHAR2(64 BYTE)</td><td>필수</td><td>조회 행 SHA-256</td></tr><tr><td>ROW_JSON_CN</td><td>CLOB</td><td>필수</td><td>종류별 상세 JSON</td></tr></tbody></table>
+<p class="note">복합 PK는 표의 PK 컬럼 전체 조합입니다. DATA_VER_ID는 데이터 세대 식별값이며 법령 시행일·개정번호와 다릅니다. 원문 3테이블의 문서·구조 연결은 논리 관계이며 모두 물리 FK로 선언된 것은 아닙니다.</p>
+</section>
+<section><h1>조회 행 내부의 연결 스키마</h1><p>LGL_SRCH_ROW가 여러 논리 테이블·뷰를 종류별로 담습니다</p>
+<p class="p">SRCH_PBLS_ID + ROW_KIND_CD로 조회 범위를 정하고, SRCH_KEY_ID·OWNR_REF_ID·TGT_REF_ID·DOC_ID로 후보를 좁힙니다. 실제 논리 필드와 연결 원문은 ROW_JSON_CN에 있습니다. 보조 키의 의미는 종류에 따라 달라지므로 모든 관계를 TGT_REF_ID 하나로 연결하지 않습니다.</p>
+<table><thead><tr><th>논리 테이블·뷰</th><th>핵심 필드</th><th>연결 역할</th></tr></thead><tbody><tr><td>term / term_surface</td><td>id, json / term_id, key, text</td><td>질문 표현 → 용어 ID</td></tr><tr><td>edge</td><td>id; json의 source, target, code</td><td>용어 → 관련 용어. 방향·종류 유지</td></tr><tr><td>occurrence</td><td>term_id, source_id</td><td>용어 → 해당 용어가 등장하는 원문</td></tr><tr><td>source</td><td>id, document_id, article, json</td><td>탐색용 원문 ID → 문서·구조·블록</td></tr><tr><td>definition</td><td>id, document_id, json</td><td>정의 ID → 정의의 원문 위치·범위</td></tr><tr><td>definition_reference</td><td>definition_id, reference_id</td><td>정의 → 정의 안의 명시 참조</td></tr><tr><td>reference</td><td>id, document_id, json</td><td>참조 출발 원문·인용 문구·해결 상태</td></tr><tr><td>reference_end</td><td>source_id, reference_id</td><td>출발·도착 양쪽에서 참조 ID 찾기</td></tr><tr><td>reference_target</td><td>reference_id, ordinal, source_id, unit_id, unit_path, block_ids, target_level</td><td>참조 → 대상 원문과 정확한 구조·블록 범위</td></tr><tr><td>전문검색·구조 투영</td><td>unit_fts_posting 등 / native.unit, native.source 등</td><td>본문 표현·구조 좌표로 원문 위치 찾기</td></tr></tbody></table>
+<h2>용어에서 원문으로 내려가는 연결</h2>
+<p class="flow">term_surface / term → term_id<br>↓<br>occurrence.term_id → source_id<br>↓<br>source.id → document_id + unit_id + 본문 블록<br>↓<br>LGL_DOC_VER → LGL_DOC_UNIT → LGL_DOC_BLK</p>
+<p class="note">source_id는 탐색용 원문 묶음 ID입니다. DOC_ID·UNIT_ID·BLK_ID와 같은 키가 아니므로 source를 통해 위치를 확인합니다. 상위 구조는 PRNT_UNIT_ID, 본문 범위는 UNIT_JSON_CN의 span 등 저장 계약으로 해석합니다.</p>
+<p class="note">게시 종류는 native.* 또는 asset_&lt;경로 해시 일부&gt;.&lt;논리 테이블명&gt; 형태입니다. 해당 게시 manifest가 포함 목록과 구조를 고정합니다. compact 저장의 occurrence/reference가 뷰인 경우에도 소비자는 같은 논리 계약을 사용합니다.</p>
+</section>
+<section><h1>명시 참조를 따라가는 과정</h1><p>정방향·역방향·정의 연결 | 문서명·조항·ID는 설명용 가상 예시</p>
+<p class="note">내규 I 제10조(S_I10)가 “외규 A 제20조”를 인용하고, 외규 A 제20조(S_A20)가 “외규 B 제5조”를 인용한다고 가정합니다. 실제 법률 내용이나 실측 실행 결과가 아닙니다.</p>
+<p class="flow">내규 I 제10조 · S_I10<br>↓<br>참조 R01 → 외규 A 제20조 · S_A20<br>↓<br>참조 R02 → 외규 B 제5조 · S_B05</p>
+<h2>정방향 OUTGOING: 현재 원문이 가리키는 대상</h2>
+<table><thead><tr><th>순서</th><th>조회·검사</th><th>다음에 얻는 값</th></tr></thead><tbody><tr><td>1</td><td>reference_end.source_id = S_I10</td><td>참조 ID R01</td></tr><tr><td>2</td><td>reference.id = R01</td><td>출발 source_id·원문 문구·위치·해시·해결 상태</td></tr><tr><td>3</td><td>reference의 출발 source_id == S_I10</td><td>현재 원문에서 나가는 정방향임을 확인</td></tr><tr><td>4</td><td>reference_target의 R01 또는 reference JSON의 targets</td><td>대상 S_A20·unit_id·block_ids</td></tr><tr><td>5</td><td>source.id = S_A20 → 원문 테이블</td><td>외규 A 제20조의 실제 원문</td></tr><tr><td>6</td><td>읽은 S_A20의 연결을 같은 방식으로 확인</td><td>필요하면 R02를 거쳐 외규 B 제5조 읽기</td></tr></tbody></table>
+<p class="note">현재 런타임은 reference JSON의 targets를 읽는 경로도 사용합니다. reference_target은 같은 대상의 논리 투영이며, 매번 이 테이블을 별도 SQL로 조회한다는 뜻은 아닙니다.</p>
+<h2>역방향 INCOMING: 현재 원문을 인용한 출발점</h2>
+<p class="p">reference_end에는 (S_I10, R01)과 (S_A20, R01)이 함께 등록됩니다. S_A20에서 R01을 찾았을 때 reference의 출발점은 S_I10이므로 역방향입니다. S_I10의 실제 인용 문구가 속한 구조·본문을 읽습니다. 탐색 방향이 바뀌어도 “I가 A를 인용한다”는 관계 의미는 유지됩니다.</p>
+<h2>정의 연결: 질문의 용어에서 참조 대상까지</h2>
+<p class="p">질문 표현 → definition(D01) → 정의 원문·용어 span 확인 → definition_reference(D01, R03) → reference(R03)의 원문 인용 확인 → 대상 위치 → 실제 원문 읽기. 같은 단어라도 문서·조항별 정의 범위를 합치지 않습니다.</p>
+<p class="note">연결 목록은 읽을 위치를 보여줍니다. 원문 열람과 답변 근거 채택은 별도 상태이며, 한 참조가 여러 조항을 가리키면 ordinal과 각 대상 범위를 보존합니다.</p>
+</section>
+<section><h1>검토한 내규–외규 관계 원장</h1><p>명시 참조와 별도로 관리하는 basis_* 논리 스키마</p>
+<p class="lead">내규에 외규 번호가 직접 적혀 있지 않아도, 실제 양쪽 원문을 검토해 근거 관계를 제안·승인할 수 있습니다. 이 원장은 앞의 LGL_* 9테이블에 포함되지 않으며, Oracle 어댑터의 현장 매핑·적재·소비자 연결은 별도입니다.</p>
+<table><thead><tr><th>논리 테이블</th><th>키·주요 컬럼</th><th>역할</th></tr></thead><tbody><tr><td>basis_head</td><td>PK link_id; team_id, revision</td><td>팀별 관계의 현재 revision</td></tr><tr><td>basis_revision</td><td>PK(link_id, revision); payload CLOB, hash</td><td>관계 종류·상태·이유와 내규/외규 끝점</td></tr><tr><td>basis_binding</td><td>PK binding_id; link_id, revision, generation, payload CLOB, hash</td><td>현재 데이터 세대의 실제 원문 위치 연결. (link_id, revision, generation) 유일</td></tr><tr><td>basis_lineage</td><td>PK version_id; family_id, payload CLOB, hash</td><td>문서 판본의 계보</td></tr></tbody></table>
+<h2>관계 payload의 핵심 항목</h2>
+<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>kind / status / reason</td><td>BASIS·IMPLEMENTS·RELATED / PROPOSED·APPROVED·REJECTED·REVOKED 등 / 검토 이유</td></tr><tr><td>internal[] / external[]</td><td>내규·외규 끝점 목록. document_id, document_version, generation_id, unit_id, side, source_artifact_hash</td></tr><tr><td>spans[] / endpoint_hash</td><td>block_id, start_cp, end_cp, text, block_hash, span_hash / 끝점 전체의 해시</td></tr></tbody></table>
+<h2>현재 읽은 내규에서 외규로 이동</h2>
+<p class="flow">읽은 내규의 document_id + 실제 span<br>↓<br>팀별 원장에서 같은 내규·겹치는 범위의 관계 찾기<br>↓<br>basis_head → basis_revision: 현재 revision·상태·이유<br>↓<br>basis_binding: 같은 revision + 현재 generation의 위치 확인<br>↓<br>external[]의 권한·원문·해시 확인 → 외규 실제 원문 읽기</p>
+<p class="note">APPROVED 상태의 현재 근거 관계와 미검토 후보를 구분합니다. 일부 배치 조사 후보는 UNREVIEWED_CANDIDATE로 탐색에 쓰는 경로가 있으나 승인 관계로 표시하지 않습니다. 관계 revision·승인·접근권한이 바뀌거나 현재 위치 결속이 유효하지 않으면 이전 경로를 그대로 사용하지 않습니다.</p>
+</section>
+<section><h1>질문 하나의 실행 시나리오</h1><p>검색 → 내규 원문 → 연결 외규 → 추가 참조 → 해석</p>
+<p class="lead">예시 질문: “우리 회사 레버리지비율 관리 기준과 관련 외규 근거를 알려줘.”</p>
+<table><thead><tr><th>단계</th><th>테이블·연결 경로</th><th>확인·전달하는 것</th></tr></thead><tbody><tr><td>1. 버전 고정</td><td>LGL_SRCH_CHNL → LGL_SRCH_PBLS → LGL_SRC_PBLS</td><td>검색 게시 ID, 원문 데이터 세대, 현재 문서 권한. 게시 ID 직접 지정 시 채널 조회 생략</td></tr><tr><td>2. 내규 후보</td><td>LGL_SRCH_ROW의 용어·정의·전문검색</td><td>문서·조항 후보. 이름·검색 점수는 적용 판단이 아님</td></tr><tr><td>3. 내규 읽기</td><td>LGL_DOC_VER → LGL_DOC_UNIT → LGL_DOC_BLK</td><td>문서명·조항·상위 문맥·선택 범위의 실제 원문</td></tr><tr><td>4. 연결 회수</td><td>reference_end → reference → targets / 별도 basis_*</td><td>명시 참조와 검토 관계를 구분하고 출발·도착·근거 확인</td></tr><tr><td>5. 외규 읽기</td><td>대상 source → DOC_VER / DOC_UNIT / DOC_BLK</td><td>선택한 외규 범위의 실제 원문·판본·인용 위치</td></tr><tr><td>6. 추가 연결</td><td>정방향·역방향·정의 연결을 필요한 범위에서 반복</td><td>다른 조항의 기준·예외·산정방법을 추가 확인</td></tr><tr><td>7. 응답</td><td>확보 원문 + 연결 경로 + LLM 판단</td><td>내규·외규 실제 원문, 해석과 미확인 사항을 같은 행에서 제시</td></tr></tbody></table>
+<h2>연결 탐색에서 지키는 경계</h2>
+<table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody><tr><td>참조 대상 위치가 미해결</td><td>찾은 것처럼 읽지 않습니다. 문서명·조문번호로 구조 조회하고 필요하면 추가 검색합니다.</td></tr><tr><td>조회된 연결이 없음</td><td>현재 범위·색인에서 미확보임을 기록합니다. 관련 외규가 존재하지 않는다고 단정하지 않습니다.</td></tr><tr><td>선택 범위·권한·해시 불일치</td><td>잘못된 연결 또는 원문을 전달하지 않고 오류·미완료 상태를 보존합니다.</td></tr><tr><td>이미 읽은 대상·남은 예산 제한</td><td>확보 범위를 확인해 반복을 줄이고, 남은 자료는 미확인으로 표시합니다.</td></tr><tr><td>적용성·충분성에 불확실성</td><td>읽은 원문은 전달하며 판단과 미확인을 함께 표시합니다. 불확실성만으로 확보 원문을 버리지 않습니다.</td></tr></tbody></table>
+<h2>최종 답변의 표시 형태</h2>
+<table><thead><tr><th>내규 출처·원문</th><th>연결 경로</th><th>외규 출처·원문</th><th>해석·미확인</th></tr></thead><tbody><tr><td>내규 I 제10조의 실제 확보 구간</td><td>R01 또는 검토 관계 link_id</td><td>외규 A 제20조의 실제 확보 구간</td><td>어떤 기준이 연결되는지, 적용 사실·범위</td></tr><tr><td>같은 내규 원문</td><td>R01 → R02</td><td>외규 B 제5조의 실제 확보 구간</td><td>추가 기준·예외 및 미확인 사항</td></tr></tbody></table>
+<p class="note">문서명·조항·관계 ID는 설명용 예시입니다. 실제 답변에는 실행에서 확보·확인한 값만 표시합니다.</p>
+</section>
+<section><h1>명칭 대응·지원 스키마·근거</h1><p>기존 LEGAL_* 계약과 개발 LGL_* 매핑을 함께 확인합니다</p>
+<table><thead><tr><th>기존 테이블명</th><th>개발용 대응명</th><th>책임</th></tr></thead><tbody><tr><td>LEGAL_SRC_DOCUMENT_A</td><td>LGL_DOC_VER</td><td>Gold 지식 후보</td></tr><tr><td>LEGAL_SRC_SOURCE_UNIT_A</td><td>LGL_DOC_UNIT</td><td>Gold 지식 후보</td></tr><tr><td>LEGAL_SRC_BLOCK_PAYLOAD_A</td><td>LGL_DOC_BLK</td><td>Gold 지식 후보</td></tr><tr><td>LEGAL_RAG_QUERY_ROW_A</td><td>LGL_SRCH_ROW</td><td>Gold 지식 후보</td></tr><tr><td>LEGAL_RAG_RELEASE_A</td><td>LGL_SRC_PBLS</td><td>게시 지원·배치 승인 검토</td></tr><tr><td>LEGAL_RAG_QUERY_RELEASE_A</td><td>LGL_SRCH_PBLS</td><td>게시 지원·배치 승인 검토</td></tr><tr><td>LEGAL_RAG_QUERY_ACTIVE_A</td><td>LGL_SRCH_CHNL</td><td>채널 선택·배치 승인 검토</td></tr><tr><td>LEGAL_RAG_QUERY_STATE_A</td><td>LGL_EXEC_ST</td><td>Agent 실행 상태 포트</td></tr><tr><td>LEGAL_RAG_ASSET_PART_A</td><td>LGL_FILE_PART</td><td>이관·복구용 파일 조각</td></tr></tbody></table>
+<h2>지원 테이블의 키와 주요 필드</h2>
+<table><thead><tr><th>테이블</th><th>키·주요 필드</th></tr></thead><tbody><tr><td>LGL_SRC_PBLS</td><td>PK SRC_PBLS_ID; DATA_VER_ID, PBLS_JSON_CN(CLOB), REG_DTM(TIMESTAMP WITH TIME ZONE)</td></tr><tr><td>LGL_SRCH_PBLS</td><td>PK SRCH_PBLS_ID; MNFST_JSON_CN(CLOB). JSON 내부 source_release_id로 원문 게시 연결</td></tr><tr><td>LGL_SRCH_CHNL</td><td>PK CHNL_NM; SRCH_PBLS_ID(FK), CHG_SEQ_NO(NUMBER(18))</td></tr><tr><td>LGL_EXEC_ST</td><td>PK(SCOPE_HASH_VAL, ST_KEY_ID); CHG_SEQ_NO, ST_HASH_VAL, ST_JSON_CN(CLOB)</td></tr><tr><td>LGL_FILE_PART</td><td>PK(FILE_HASH_VAL, PART_SEQ_NO); ORG_BYTE_CNT, PART_HASH_VAL, PART_B64_CN(CLOB)</td></tr></tbody></table>
+<p class="note">LGL_EXEC_ST 포트 제공과 실제 대화 이력의 Oracle 이전은 별도입니다. 현재 Oracle 서비스의 기존 이력은 외부 NFS/CIFS 바인딩을 사용합니다. LGL_FILE_PART는 직접 RAG 조회 대상이 아닙니다. 운영 Gold의 owner·명칭 승인·적재 및 기존 RAG의 LGL 조회 전환은 이 문서에서 완료로 확인하지 않았습니다.</p>
+<h2>확인 근거 — 저장소 상대 경로</h2>
+<p class="source">08_DEPLOYMENT/DATAIKU/pipeline_mapped_20261023_r1/01_CREATE_TABLES.sql · physical_mapping.yaml · GUIDE.txt</p>
+<p class="source">02_BACKEND/semantic_runtime/oracle_query_request.py · oracle_query.py · oracle_query_catalog.py</p>
+<p class="source">02_BACKEND/lawrag/pipeline/oracle_query_publish.py · oracle_query_navigation_publish.py</p>
+<p class="source">02_BACKEND/semantic_runtime/term_index.py · term_references.py · reference_build.py</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py · definition_entry.py · connection_scope.py</p>
+<p class="source">02_BACKEND/semantic_runtime/basis_links/oracle.py · repository.py · resolver.py · sources.py</p>
+<p class="source">00_SYSTEM/ARCHITECTURE.md · 07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/ORACLE_GOLD_SELECTION.md</p>
+<p class="note">검토 범위: 저장된 DDL·매핑·작업 코드의 정적 대조. DB 변경, 모델 호출, 현장 조회·배포·법률 품질 검증은 수행하지 않았습니다. 작성 기준: 2026-10-27.</p>
+</section>
+</body></html>

@@ -1,7 +1,18 @@
 # MAIN — 원문과 용어 기반 탐색
 
+<!-- MAIN104_SQL_FOLLOWUP -->
+**2026-10-27 — MAIN105 반영·실제 서비스 확인 완료:** [전체 반영·실제 실행·온톨로지 후속](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 최초211초 원인의 MAIN104 SQL 수정에 반복 원문 확인 재사용과 네 연결 TEMP VIEW의 ID 점조회를 더했다. 보관응답1회 재생의 동일 계측35화면736.500→93.718초(87.275% 감소), 원문·행동·최종 답변 동일, 새 모델 호출0회다. 신규237조건·관측보조1,345조건을 구분한 ADR1081 검증 후 MAIN105 `navigation-validation-20261027-r1`을 선택했고 실제 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)이 통과했다. 작업 코드 통합에서 새4검사 통과, 기존7실패는 변경 전후 동일하다. 온톨로지는1074 부분실패→1077 상태 전환 수리→MAIN105 결합1079 실모델1셀/10호출을 완료했다. 두 원문의 판단 보존을 확인했지만 근거 연결 보완1회·제한 답변으로 품질 효과는 미인증이다. MAIN105 최종 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했다. 설치144명령·SQL18·상태13쌍을 통과했으며 MAIN104 첨부를 대체한다. P0~P4 전체 구현·전체 응답시간 개선·법률 품질·온톨로지 MAIN·GENOS 현장 배포 완료로 확대하지 않는다. 아래 이전 상태 기록과 구분한다.
+<!-- /MAIN104_SQL_FOLLOWUP -->
+
+<!-- ADR1066_LIVE_STATUS -->
+**2026-10-26 실제 모델 관찰: 부분 중단.** 사전 동결한 3문항×3조건 중 첫 문항 A0/A1은 제한 답변, A2는 원문 재표시의 상태 결속 오류로 중단했다. 나머지6셀은 미실행이다. 제품27호출·관찰 비용$0.17853620·제품 실행 합계762.10초, 채점 모델0회다. 관찰한 행동 응답19회에서 이전 필수 항목 누락과 입력 문자 차단은 재현되지 않았고, A1/A2 승인 묶음 실제 전달도 확인했다. 전체 성공·법률 정답·온톨로지 개선 인증은 아니다.
+
+같은 원문 카드의 `presentation_id` 갱신이 전체 source hash를 바꿔 동일 온톨로지 페이지의 내용 변경으로 오인됐다. 별도로 조문 선택과 목적 불일치, 탐색 화면 구성 지연, 구형 gate의 evidence-ID 카드 감사 호환 문제가 남았다. 원문 검증을 끄지 않으며 결과 후 코드·점수를 수정하지 않았다. MAIN103·GENOS·운영 골드는 미변경이다. [결과·원인·원시 기록](../04_EXPERIMENTS/ADR/ADR-1066-ontology-input-unlimited/artifacts/POST_RUN_DIAGNOSIS.md). **아래 구현 당시의 “실모델0회·미실행” 표기는 과거 시점 기록이다. 이는2026-10-26의 관찰이며, 현행 상태는 [MAIN105 및 후속 실험 기록](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md)을 따른다.**
+<!-- /ADR1066_LIVE_STATUS -->
+
+
 <!-- CURRENT_LOCAL_RAG_RELEASE -->
-2026-10-23 사용자 “우리 메인에서도 뺴버려 실험에서도 빼주고” 지시에 따라 **로컬 RAG MAIN103 / workflow1.20.8**을 선택했다. 릴리스 `output-unlimited-20261023-r1`, 정본 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`. MAIN102에서 출력 토큰 상한만 제거했다. v5/v6 프로필·외부 모델 정책은 `max_output_tokens=null`이며 실제 전송에서 `max_tokens`·`max_completion_tokens`·`max_output_tokens`를 생략한다. 신규 외부 실험의 공통 호출도 과거 실행기가 지정한 출력 상한을 무시한다. 작업 코드58검사, MAIN용56검사 및 실제 로컬 서비스 선택·HEALTH·전송12확인 통과. 검증·선택420파일 결속, MAIN102 대비 제품/설정6파일과 pin25파일만 변경했다. 확대검사의 기존10실패는 수정 전 MAIN102에서도 동일하게 재현했고 별도 기록했다. 데이터·검색 정책·모델/제공자·총40호출·도구1024회·1800초 예산은 유지한다. **USER_DIRECTED_CUTOVER / quality_gate_override=true / quality_certified=false**이며 실모델 추가 호출0회다. 반복 출력·조기 종료·근거 선택·최종 답변 품질은 재검증하지 않았다. 이후 실험 후보의 읽기 판단 등 다른 기능은 이번 MAIN에 포함하지 않았고 작업 코드에는 보존한다. 과거 동결 실험·MAIN102·이전 인계 ZIP은 변경하지 않았다. GENOS 반입·배포·메일·Git commit/push 미수행. [변경·검증·복원](../09_ARTIFACTS/AUDITS/20261023-output-unlimited-main/RESULT.txt).
+2026-10-27 사용자 지시에 따라 **로컬 RAG MAIN105 / workflow1.20.8**을 선택했다. 릴리스 `navigation-validation-20261027-r1`, 정본 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`. MAIN104의420파일 중 반복 원문 검증 재사용·네 연결 권한 VIEW 점조회의 제품3파일과pin31파일만 변경하고 기존 정의 조회 수정을 유지했다. 신규237조건·관측보조1,345조건, 원래38응답/35화면/최종답변 동등성, 실제 선택 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)을 통과했다. 보관응답1회 재생의 동일35화면736.500→93.718초(87.275% 감소), 모델호출0이며 전체 서비스 개선율이 아니다. `VALIDATED_ADR_PROMOTION / quality_gate_override=false / quality_certified=false`. 데이터·검색·모델·출력상한 없음·40호출/1024도구/1800초 예산 동일. 작업 코드의 기존directory/별표 기능을 보존해3hunk 통합했고100검사통과·기존7실패 동일이다. 온톨로지 MVP는 별도1079 후보이며 MAIN 기능 전체에 포함하지 않았다. 반영 후1079 실모델1셀/10호출에서 상태 전환 수리는 확인했지만 제한 답변으로 품질 효과는 미인증이다. MAIN105 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했고 MAIN104 첨부를 대체한다. GENOS 현장 배포·Git commit/push 미수행. [승격·실행·인계·남은 상태](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 과거 실행·실패·MAIN103/104·인계본은 보존한다.
 <!-- /CURRENT_LOCAL_RAG_RELEASE -->
 
 2026-10-21 **작업 코드에 업무 검토 지식 관리·RAG 안내 연결을 추가했다.** `lawrag/legal_knowledge`와 같은 앱의 `/legal-knowledge/`, `/v1/legal-knowledge`가 공통 계약·Oracle 주입 포트를 사용한다. 관리 기본값 false, 소비 off이며 AD는 계속 비활성이다. 초안/게시/CAS/멱등 receipt와 기존 저널 참조를 연결했다. 실제 Oracle·GENOS 인증 주입, 실모델 효과·MAIN 승격은 미확인/미수행이다. 전체 설계 중 자동 생략·복합 계산·전역 영향·실행 역색인은 남았다. [구현 범위·연결·복구](../07_DOCS/REFERENCE/REPORTS/CM_KNOWLEDGE_SYSTEM_DESIGN_20261020/IMPLEMENTATION_20261021.md).
@@ -32,6 +43,8 @@ Oracle의 RDB 테이블에 그래프 형태로 표현되어 있으며, GENOS 에
 | 외규 갱신 | Dataiku의 매일 배치 → API 중계서버 → 법제처 API에 신규·갱신 데이터 확인 → 변경 자료 수집 → 구조적 파싱·VLM 파싱으로 구조 분해 → 색인 → Oracle 지식그래프 적재·갱신 |
 | 내규 반입 | 현업이 데이터 포탈에 내규 업로드 → Dataiku 연결·수집 → 구조적 파싱 → 색인·Oracle 지식그래프 적재 |
 
+**2026-10-27 사용자 재확인:** 법제처 API 수집은 **Dataiku 배치가 API 중계서버를 직접 호출**하는 계획이다. 수집 호출 흐름에 GENOS 코드서빙을 넣지 않는다. 10월23일 GENOS 수집 실행 계획은 과거 이력으로 보존하며, 이번 계획 확인만으로 Dataiku 배치 구현·등록·현장 실행이 완료된 것은 아니다.
+
 외규는 법제처 API의 변경 확인으로, 내규는 현업의 데이터 포탈 업로드로 유입된다.
 두 경로는 구조화·색인·지식그래프 적재 후 GENOS의 RAG 조회로 이어진다.
 이 인프라는 아래 MAIN의 입력·구조화·용어집/문서 연결·색인·RAG·피드백 단계가
@@ -47,6 +60,8 @@ Oracle의 RDB 테이블에 그래프 형태로 표현되어 있으며, GENOS 에
 
 ### Dataiku 데이터 레이어 — 사용자 확인 2026-10-22
 
+**개발계 물리 배치 정정 — 사용자 확인 2026-10-27:** 실버는 `SIDDS` 스키마·테이블 접미사 `_S`, 에이전트는 `SIDDA`·`_A`다. 개발계 GENOS가 Dataiku의 실버만 직접 조회할 수 있으므로 원문·구조화·검색·게시 데이터는 `SIDDS.*_S`에 두고, 온톨로지·숏컷·에이전트 기록은 `SIDDA.*_A`에 둔다. 아래 10월22일 골드 저장 책임은 운영 설계 이력이며 개발계 배치에는 이 정정이 우선한다. S3의 온톨로지 작업 JSON과 검토·승인·적재 절차는 유지한다. Dataiku 연결 `AIDP`와 Oracle owner는 다른 값이다. [개발계 LGL 적재 전달본](../08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/GUIDE.txt)은 원문 등 8테이블을 SIDDS에, 실행 상태 1테이블을 SIDDA에 매핑한다. 온톨로지·숏컷 자체의 Oracle 적재와 SIDDA 소비자 접근은 이 원문 적재기의 구현 범위가 아니며 GENOS 조회 전환도 별도다.
+
 사용자가 지정한 데이터 저장 책임은 다음과 같다. 향후 DB 설계·테이블 배치·적재 경로는 이 구분을 따른다.
 
 | Dataiku 레이어 | 저장 대상 |
@@ -59,6 +74,10 @@ GENOS의 에이전트 실행에서 생성한 질문·판단·로그는 에이전
 **일차 저장 단위는 원문이다(사용자 확인 2026-10-22).** 질문을 통해 발견한 정보는 문서 판본·조항·원문 범위에 개념·검토 사항·연결 근거로 붙인다. 질문 ID는 발견 경로와 실행 이력의 키이며 골드 지식의 중심 키가 아니다. 질문에서 개념을 찾거나 일반 검색으로 원문에 도달하면, 그 원문·개념에 연결된 검토 사항을 조회하고 현재 원문을 확인한다. 같은 원문을 여러 질문이 공유하며, 다른 질문의 사실·결론을 현재 사건으로 가져오지 않는다. [상세 저장 기준과 실행 경로](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCE_ANCHORED_STORAGE.md).
 
 후속 [온톨로지 v4 설계](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md)는 조문 도착 후 관계 회수·목적별 경로 컴파일·자동 설명·선택한 원문 묶음 확보, 대화 판단·정정의 제한된 지식 축적, 조건 변경의 영향 비교를 세 가지 필수 기능으로 정의한다. 조문 진입 기능은 이전 수정 이력이 없는 첫 조사에서도 작동해야 한다. 자유 대화와 운영 스키마 변경을 분리하며 Agent/Gold 저장 책임을 유지한다. 설계 문서의 v4이며 런타임 스키마 변경·구현·MAIN 또는 GENOS 적용 완료를 뜻하지 않는다.
+
+2026-10-24 사용자 설계 변경: [온톨로지 기반 멀티턴 Legal agent](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MULTITURN_LEGAL_AGENT.md)는 문서 전체의 의미를 사전에 완성하기보다 실제 질문에서 필요한 자료·선택·오류·사용자 정정을 관찰해 원문 지식을 보완한다. 매 턴 확인한 답·미확인·짧은 관계 안내·실제 행동/미실행 이유·다음 선택을 전달하고, 같은 사건의 다음 턴으로 이어간다. 조사 제어·원장·발행·화면·후속 재개·후보 생산은 통합 계약으로 함께 전환하는 목표다. 이번 변경은 설계 반영이며 현행 실행·저장 설정을 바꾸지 않는다.
+
+2026-10-26 후속 개발: [행동별 최소 응답 계약](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/ACTION_CHOICE_CONTRACT_20261026.md)은 모델의 행동·대상·새 조사 목적·원문 판단과 서버의 확정값 조립을 분리한다. 정상·preview·전체 보완이 같은 현재 메뉴와 행동별 완결된 객체 양식을 쓰며 미제출 원문 판단은 pending으로 유지한다. ADR1066 후보에서 입력 문자 hard-stop 해제를 유지하며 기존 unified-v6 → 조사 → 원문/온톨로지 확보 → ASSESS/COMPOSE 경로에 연결한다. [구현·검사 상태](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MVP_EXECUTION_REPAIR_STATUS_20261026.md)는 실모델 효과·선택 MAIN·GENOS와 구분하며 저장 레이어 책임을 바꾸지 않는다.
 
 이 기준은 데이터의 저장 책임을 정한 것이다. 에이전트 실행 위치는 기존 GENOS 기준을 따르며, 실제 Dataiku 데이터셋·Oracle 스키마/테이블 매핑과 저장 연동의 구현·현장 검증 여부는 별도로 확인한다.
 
