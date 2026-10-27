@@ -65,7 +65,7 @@ def test_scope_is_connected_and_requires_exact_need_for_every_target(session):
     bad=deepcopy(v);bad['exploration'][0]['request_quote']='별도 업무 조사'
     with pytest.raises(ProposalError,match='request quote'):i.validate(bad,d,a)
     bad=deepcopy(v);bad['exploration']*=2
-    with pytest.raises(ProposalError,match='every selected target'):i.validate(bad,d,a)
+    with pytest.raises(ProposalError,match='one row per target-issue pair'):i.validate(bad,d,a)
     bad=deepcopy(v);bad['exploration'][0]['missing_need']=' '
     with pytest.raises(ProposalError,match='unmet'):i.validate(bad,d,a)
     apply(i,v,d,a)
@@ -150,6 +150,23 @@ class FocusedTransport(ModernTransport):
             if self.reject_once:
                 self.reject_once=False
                 return wire({'unoffered':'T999999'})
+            if '-read-choice' in phase:
+                # The executable-choice projection intentionally omits the law
+                # directory. Return its current wire contract, using only the
+                # candidates and originals actually delivered by the runtime.
+                if not v['sources']:
+                    return wire({'choice':'READ','selections':[{
+                        'target':v['read_candidates'][0]['target'],
+                        'issue_id':v['issues'][0]['id'],'missing_need':'승인 규칙 원문 확인',
+                        'relation':'DIRECT','source_ref':None}]})
+                out={'choice':'FINISH','basis_refs':[s['id'] for s in v['sources']],
+                    'issue_refs':[i['id'] for i in v['issues']],
+                    'evidence_sufficient':False,'reason':'읽은 원문을 판단에 전달'}
+                if v.get('assessment_gaps'):
+                    out['gap_resolutions']=[{'gap_id':v['assessment_gaps'][0]['gap_id'],
+                        'status':'RESOLVED','reason':'이미 읽은 원문',
+                        'basis_refs':out['basis_refs'],'action_refs':[]}]
+                return wire(out)
             if v['sources'] or v.get('assessment_gaps'):
                 out=decision(v,'FINISH')
                 if v.get('assessment_gaps'):
@@ -180,7 +197,7 @@ def test_full_native_v6_publication_alias_repair_and_same_request_reuse(tmp_path
        'candidate_navigation':{'mode':'law-first-v1','investigation_control':True,'completion_contract':True,
           'completion_policy_version':cc.V6,'compact_input':True}}
     app=create_app(tmp_path,gen,contracts_root=ROOT,provider=object(),implementation='legal-agent-unified-v6',
-       legal_agent_profile=profile,legal_agent_transport=t,memory_identity=lambda _:{'user_id':'u','team_id':'t','document_ids':['d']})
+       legal_agent_profile=profile,legal_agent_transport=t,memory_identity=lambda _:{'user_id':'u','team_id':'risk_team','document_ids':['d']})
     app.state.pipeline.term_agent.unit_fulltext=idx
     with TestClient(app) as api:
         body={'question':'모의승인규정 제1조 승인 기준은?','session_id':'v6','request_id':'r1'}
@@ -193,6 +210,31 @@ def test_full_native_v6_publication_alias_repair_and_same_request_reuse(tmp_path
         assert again['answer']==result['answer'] and len(t.phases)==calls
         assert t.projected and not any('compose' in p for p in t.phases)
         if reentry:assert t.phases.count('memory-assess')==2
+
+
+def test_default_bound_v6_profile_source_only_api(tmp_path,tree):
+    """Boot the hash-bound working profile and exercise its real HTTP route."""
+    from fastapi.testclient import TestClient
+    from lawrag.pipeline.fulltext_stage import derive
+    from semantic_runtime.app import create_app
+    from semantic_runtime.unit_fulltext import UnitFulltextIndex
+    gen,_=tree;derived=tmp_path/'default-generation'
+    derive(gen,derived,workers=1)
+    # No injected profile, transport, or unit index. The default null model
+    # binding is intentionally checked through the supported source-only route.
+    app=create_app(tmp_path/'app',derived,contracts_root=ROOT,provider=object(),
+        implementation='legal-agent-unified-v6')
+    agent=app.state.pipeline.term_agent
+    assert isinstance(agent.unit_fulltext,UnitFulltextIndex)
+    assert agent.profile['candidate_navigation']['read_judgment'] is True
+    assert agent.profile['candidate_navigation']['small_connection_context'] is False
+    assert agent.profile['model_binding'] is None and agent.transport is None
+    with TestClient(app) as api:
+        result=ok(api.post('/v1/rag/ask',json={'question':'모의승인규정 제1조 승인 기준은?',
+            'document_ids':['d'],'use_llm':False}))
+        assert result['run_id'] and result['answer']['query_id']==result['query']['id']
+        assert result['query']['scope']['document_version_ids']==['d']
+        assert result['execution_stats']['llm_calls']==0
 
 
 def test_card_columns_match_canonical_persisted_json_order():

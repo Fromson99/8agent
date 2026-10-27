@@ -68,11 +68,13 @@ def test_independent_errors_are_collected_without_replacing_the_proposal():
     value = proposal(view, 'DEPENDENCY')
     row = value['exploration'][0]
     row.update(request_quote='다른 요구', missing_need=' ', source_quote='원문 요약')
+    value['targets'].append('T-uncovered')
+    value['exploration'].append(deepcopy(row))
     value['exploration'].append({**row, 'issue_id': 'Q-unknown'})
     before = deepcopy(value)
     with pytest.raises(oc.OutputContractError) as caught:scope.validate(value, view)
     codes = {r['code'] for r in caught.value.issues}
-    assert {'EXPLORATION_TARGET_COVERAGE','EXPLORATION_DUPLICATE_TARGET','EXPLORATION_UNKNOWN_ISSUE',
+    assert {'EXPLORATION_TARGET_COVERAGE','EXPLORATION_DUPLICATE_TARGET_ISSUE','EXPLORATION_UNKNOWN_ISSUE',
             'EXPLORATION_REQUEST_QUOTE_INVALID','EXPLORATION_MISSING_NEED','DEPENDENCY_SOURCE_QUOTE_INVALID'} <= codes
     assert value == before
     assert len(caught.value.issues) <= oc.MAX_ISSUES
@@ -92,6 +94,13 @@ def test_repair_scope_ids_roundtrip_without_touching_original_text():
 
 
 def bad_read(view):
+    if 'read_candidates' in view:
+        # The injected error is unchanged: a dependency is claimed before any
+        # original has been delivered. Use the current compact proposal shape.
+        return {'choice':'READ','selections':[{
+            'target':view['read_candidates'][0]['target'],
+            'issue_id':view['issues'][0]['id'],'missing_need':'승인 기준 원문 확보',
+            'relation':'DEPENDENCY','source_ref':None}]}
     target = next((a for a in view['actions'] if a['action'] == 'READ_ARTICLES'), None)
     if target is None:target = next(a for a in view['actions'] if a['action'] == 'READ_PARENT')
     value = decision(view, target['action'], target['id'])
@@ -107,13 +116,25 @@ def test_repeated_failure_and_resume_do_not_get_another_correction(session):
     def invoke(system, view, schema, phase, timeout):
         calls.append(phase)
         if phase.endswith('-repair'):
-            assert view['repair_contract']['scope_repair']['allowed_relations'] == ['DIRECT']
-            assert any(r['path'].startswith('/exploration/') for r in view['repair_contract']['validation']['issues'])
+            info=view['repair_contract']
+            if '-read-choice' in phase:
+                assert not view['sources'] and info['same_evidence_scope']
+                assert info['max_attempts']==1
+                assert view['rejected_decision']['selections'][0]['relation']=='DEPENDENCY'
+                assert info['validation']['category']=='OUTPUT_SHAPE_INVALID'
+            else:
+                assert info['scope_repair']['allowed_relations'] == ['DIRECT']
+                assert any(r['path'].startswith('/exploration/') for r in info['validation']['issues'])
         return bad_read(view)
     inv.invoke = invoke
-    first = inv.run(); before = deepcopy(inv.p['decision_retry'])
+    def journal():
+        return list(inv.s.repo.db.execute("SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE' AND json_extract(payload_json,'$.binding.owner')='read-choice' ORDER BY seq"))
+    first = inv.run(); before = journal()
+    rejections=[json.loads(row[0]) for row in before if json.loads(row[0])['status']=='REJECTED']
+    assert [r['attempt'] for r in rejections]==[0,1]
+    assert rejections[-1]['repairable'] is False
     again = inv.run()
-    assert len(calls) == 2 and before == inv.p['decision_retry']
+    assert len(calls) == 2 and before == journal()
     assert first['status'] == again['status'] == 'pending'
     assert first['stop_reason'] == again['stop_reason'] == 'MODEL_DECISION_UNRESOLVED'
     assert not first['final_ids'] and not inv.p.get('accepted')
@@ -130,11 +151,21 @@ class ScopeTransport(FocusedTransport):
             if not view['sources'] and (self.mode == 'repeat' or self.mode == 'repair' and len(self.navigation) == 1):
                 self.phases.append(phase)
                 return wire(bad_read(view))
-            if phase.endswith('-repair'):
+            if phase.endswith('-repair') and self.mode!='normal':
                 info = view['repair_contract']
-                assert info['scope_repair']['delivered_original_count'] == 0
-                assert info['scope_repair']['allowed_relations'] == ['DIRECT']
-                assert info['validation']['issues'][0]['path'] == '/exploration/0/relation'
+                if '-read-choice' in phase:
+                    assert not view['sources'] and info['same_evidence_scope']
+                    assert info['max_attempts'] == 1
+                    # Gateway schema rejection can precede the stage receiving
+                    # a parsed proposal; the raw reply remains in its journal.
+                    if view['rejected_decision'] is not None:
+                        assert view['rejected_decision']['selections'][0]['relation'] == 'DEPENDENCY'
+                    assert info['validation']['category'] == 'OUTPUT_SHAPE_INVALID'
+                    assert info['validation']['issues']
+                else:
+                    assert info['scope_repair']['delivered_original_count'] == 0
+                    assert info['scope_repair']['allowed_relations'] == ['DIRECT']
+                    assert info['validation']['issues'][0]['path'] == '/exploration/0/relation'
         if phase.startswith('memory-assess'):
             self.phases.append(phase)
             out = v6_proposal([o['id'] for o in view['evidence_options']], quote='승인 후 보고한다.', kind='UNSPECIFIED')
@@ -148,6 +179,7 @@ class ScopeTransport(FocusedTransport):
                         norm.pop('source_quote')
                         norm['source_ref'] = next(o['id'] for o in view['evidence_options']
                             if o['id'] in norm['evidence_refs'] and '승인 후 보고한다.' in o['text'])
+            if self.version == cc.V8:out.pop('disposition')
             return wire(out)
         return super().send_once(body=body, ticket=ticket)
 
@@ -164,7 +196,7 @@ def test_actual_api_normal_repair_and_failure(tmp_path, tree, monkeypatch, versi
     app = create_app(tmp_path, gen, contracts_root=ROOT, provider=object(), implementation='legal-agent-unified-v6',
         runtime_root=tmp_path/'runtime',
         legal_agent_profile=profile, legal_agent_transport=transport,
-        memory_identity=lambda _: {'user_id':'synthetic','team_id':'synthetic','document_ids':['d']})
+        memory_identity=lambda _: {'user_id':'synthetic','team_id':'risk_team','document_ids':['d']})
     app.state.pipeline.term_agent.unit_fulltext = idx
     observed = []; original = diagnostics.exception_diagnostics
     def observe(exc, **kwargs):
