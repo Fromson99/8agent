@@ -1,0 +1,88 @@
+{
+  "passed": true,
+  "archive_sha256": "b301128adb79a8b91e7cef7123935ff5f261839e052b1ee1540d02221e023ebd",
+  "commands": 144,
+  "cases": [
+    {
+      "baseline": "EMPTY_EXISTING_CHECKOUT",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "R2_DEV_BASE",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN99_FULL",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN101_ANSWER",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN102_LINKS",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN103_SELECTED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN104_PACKAGED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": true
+    }
+  ],
+  "preparation_binding_sha256": "24025f630f83a55a560c163b1fbbeb7d05c00b716efa0564bce39faa7a2c6406",
+  "expected_product_changes": [
+    "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+    "02_BACKEND/semantic_runtime/search_selection.py"
+  ],
+  "installed_contracts": 18,
+  "installed_sql_contracts": 18,
+  "installed_tiny_contracts": 13,
+  "installed_tiny_contracts_sha256": "cf9cbbf25f9f86bf0ae1e922e38a3cbe295536169271ffea2fcc514778365919",
+  "product_files": 417,
+  "auxiliary_files": 16,
+  "code_files": 433,
+  "no_javascript_extensions_recursive": true,
+  "GENOS_field_verified": false,
+  "model_calls": 0,
+  "real_corpus_loaded": false,
+  "selected_main_unchanged": true
+}

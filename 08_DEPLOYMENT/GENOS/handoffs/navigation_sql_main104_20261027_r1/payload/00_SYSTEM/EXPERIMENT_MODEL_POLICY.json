@@ -1,0 +1,123 @@
+{
+  "schema_version": "experiment-model-policy-v1",
+  "policy_version": "qwen38-experiments-v1",
+  "effective_from_adr": 583,
+  "provider": "openrouter",
+  "model": "qwen/qwen3.8-27b",
+  "allowed_models": [
+    "qwen/qwen3.8-27b"
+  ],
+  "endpoint": "https://openrouter.ai/api/v1",
+  "key_env": "OPEN_ROUTER",
+  "key_env_aliases": [],
+  "temperature": 0,
+  "max_output_tokens": null,
+  "http_retries": 0,
+  "fallback_allowed": false,
+  "default_roles": [
+    "product",
+    "offline_evaluator",
+    "offline_benchmark_candidate"
+  ],
+  "source_scope": [
+    "public",
+    "synthetic"
+  ],
+  "authorization": {
+    "adr": "ADR-0583",
+    "session_id": "01a0ecf8-3e9d-71a0-b743-b35ad26b1ed6",
+    "text": "Gemma말고 qwen 3.8설정해둔 모델을 기본으로 해 이제는"
+  },
+  "price_snapshot": null,
+  "price_verified_at": null,
+  "price_source": null,
+  "selection_evidence": "04_EXPERIMENTS/ADR/ADR-0556-pecab-qwen-authorized-routing/artifacts/scoped-model-policy.json",
+  "genos_proxy": {
+    "schema_version": "genos-proxy-model-v1",
+    "purpose": "GenOS 서빙 모델 Qwen3.5-122B-A10B-FP8의 외부 대리. 사용자가 승인한 ADR의 product 역할에만 쓴다. 채점·기본값·MAIN에는 쓰지 않는다.",
+    "genos_model": "Qwen3.5-122B-A10B-FP8",
+    "effective_from_adr": 463,
+    "provider": "openrouter",
+    "endpoint": "https://openrouter.ai/api/v1",
+    "key_env": "OPEN_ROUTER",
+    "models": [
+      "qwen/qwen3.5-122b-a10b"
+    ],
+    "allowed_classes": [
+      "product"
+    ],
+    "provider_routing": {
+      "quantizations": [
+        "fp8"
+      ],
+      "order": [
+        "AtlasCloud",
+        "SiliconFlow"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "allowed_upstream_providers": [
+      "AtlasCloud",
+      "SiliconFlow"
+    ],
+    "reasoning": {
+      "enabled": false
+    },
+    "temperature": 0,
+    "max_output_tokens": null,
+    "fallback_allowed": false,
+    "data_scope": {
+      "allowed": [
+        "CM 골든 질문",
+        "공개 법령·규정 원문",
+        "합성 질문"
+      ],
+      "forbidden": [
+        "기준답변",
+        "내부 문서·내규 원문",
+        "계약서·증거자료",
+        "인증키"
+      ]
+    },
+    "authorization": {
+      "adr": "ADR-0463",
+      "session_id": "1de301ec-e703-4473-8150-2a0f5d6fa85c",
+      "text": "Qwen3.5-122B-A10B-FP8 -> 이게 genos모델이야 이걸로 돌릴수 있을까? / 승인: FP8 고정 (추천)",
+      "decided_at": "2026-09-18"
+    },
+    "selection_evidence": "04_EXPERIMENTS/ADR/ADR-0463-genos-proxy-qwen-model-policy/artifacts/openrouter-endpoints.json"
+  },
+  "reasoning": {
+    "effort": "none"
+  },
+  "provider_routing": {
+    "only": [
+      "parasail/fp8"
+    ],
+    "order": [
+      "parasail/fp8"
+    ],
+    "quantizations": [
+      "fp8"
+    ],
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "allowed_upstream_providers": [
+    "Parasail"
+  ],
+  "previous_policy": {
+    "path": "04_EXPERIMENTS/ADR/ADR-0583-qwen38-default-experiment-policy/artifacts/previous-policy.json",
+    "policy_version": "gemma-experiments-v1",
+    "effective_from_adr": 538
+  },
+  "external_model_boundary": "External Qwen3.8 experiments do not establish GENOS internal model performance. GENOS proxy and active MAIN release remain independently configured.",
+  "output_policy": {
+    "version": "provider-managed-output-20261023-v1",
+    "application_output_cap": false,
+    "authorization": "우리 메인에서도 뺴버려 실험에서도 빼주고",
+    "effective_from": "2026-10-23",
+    "scope": "Local MAIN and new external experiment requests; ignore runner output-cap overrides. Historical frozen artifacts unchanged."
+  }
+}

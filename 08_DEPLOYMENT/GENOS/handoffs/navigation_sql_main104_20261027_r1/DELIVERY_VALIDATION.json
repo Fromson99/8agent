@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "archive_sha256": "6dc6aebd05a3b78a4162d87038660e3a1e3bfab9de4644d44485fa2f1a4c84cb",
+  "commands": 123,
+  "cases": [
+    {
+      "baseline": "EMPTY_EXISTING_CHECKOUT",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "R2_DEV_BASE",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN99_FULL",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN101_ANSWER",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN102_LINKS",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": true
+    },
+    {
+      "baseline": "MAIN103_SELECTED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    }
+  ],
+  "installed_sql_contracts": 11,
+  "product_files": 417,
+  "auxiliary_files": 16,
+  "code_files": 433,
+  "no_javascript_extensions_recursive": true,
+  "GENOS_field_verified": false,
+  "model_calls": 0,
+  "real_corpus_loaded": false,
+  "selected_main_unchanged": true
+}

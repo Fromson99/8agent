@@ -1,0 +1,149 @@
+{
+  "sealed_at": "2026-10-26T16:32:14.159387+00:00",
+  "archive": "GENOS_MAIN104_NAVIGATION_SQL_20261027_R1.zip",
+  "sha256": "6dc6aebd05a3b78a4162d87038660e3a1e3bfab9de4644d44485fa2f1a4c84cb",
+  "bytes": 4461787,
+  "source_local_MAIN": 104,
+  "source_files": 420,
+  "packaged_product_files": 417,
+  "auxiliary_files": 16,
+  "target_files": 433,
+  "patch_files": 433,
+  "required_unchanged_files": 0,
+  "full_payload": true,
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-sql-20261027-r1",
+    "generation": 104,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/release.json",
+    "release_manifest_sha256": "e7a8a4f1441f078ba5c3a3f18c8516da96401d26232a9368edf66d933d8ada1f",
+    "activated_at": "2026-10-26T16:28:31.398800+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/실험/manifest.json",
+        "sha256": "0e425c107b4726836ab9027e1496dc90eaa631ad0333498c0b88dbd77f11b8b4"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/README.md",
+        "sha256": "816cfd289c8146c0a24fc5096389f34d1f30735f993fd1e8a16ab4caa78b91ad"
+      },
+      "arm": "optimized",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/artifacts/run-003/result.json",
+        "sha256": "b56a16b84697f003a9b3e15a80b267f06ff2b27168dd7c69af7786b63068e063"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/artifacts/design-r3/release-rebase.json",
+        "sha256": "d57a054dcea6d60c5c4423dcb4981d67aa44d22a70210fc5c6e0886083287a8b"
+      }
+    }
+  },
+  "selected_python_schema_profiles_workflow_identical": true,
+  "excluded_static_ui": {
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/index.html": "3b28a8e424072266f53d6fdd73166fd9aad899dbccebf0018bb8e42fddd622b0",
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/styles.css": "53d06d1d4b8bd5290367c0239b9e91e151244507aa3bc06f2b58f7ff116aef2d"
+  },
+  "derived_manifest_files": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json"
+  ],
+  "installed_sql_contracts": 11,
+  "installer_commands": 123,
+  "upgrade_cases": [
+    {
+      "baseline": "EMPTY_EXISTING_CHECKOUT",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "R2_DEV_BASE",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN99_FULL",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN101_ANSWER",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN102_LINKS",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": true
+    },
+    {
+      "baseline": "MAIN103_SELECTED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    }
+  ],
+  "no_javascript_extensions_recursive": true,
+  "packaging_model_calls": 0,
+  "new_profiler_installed": false,
+  "ontology_mvp_promoted": false,
+  "GENOS_field_verified": false,
+  "GENOS_commit": null,
+  "GENOS_serving_revision": null
+}

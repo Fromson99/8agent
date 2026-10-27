@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "pipeline-engine-v1"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "AUDITOR",
+        "EXTRACTOR",
+        "COMPILER",
+        "INDEXER",
+        "QUERY_PLANNER",
+        "RETRIEVER",
+        "ASSEMBLER",
+        "ANSWERER",
+        "FEEDBACK",
+        "MIGRATOR"
+      ]
+    },
+    "maturity": {
+      "enum": [
+        "TOOL",
+        "RESEARCH",
+        "RELEASED"
+      ]
+    },
+    "inputs": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "entrypoint": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "function": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "path",
+        "function"
+      ],
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "parameters_schema": {
+      "type": "object"
+    },
+    "migration": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "from_contract": {
+              "type": "string",
+              "minLength": 1
+            },
+            "to_contract": {
+              "type": "string",
+              "minLength": 1
+            },
+            "loss_policy": {
+              "enum": [
+                "LOSSLESS",
+                "CANDIDATE_WITH_UNRESOLVED",
+                "REJECT_LOSS"
+              ]
+            }
+          },
+          "required": [
+            "from_contract",
+            "to_contract",
+            "loss_policy"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "experiment_binding": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "candidate": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "revision": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "experiment": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "arm_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "candidate",
+            "revision",
+            "experiment",
+            "arm_id",
+            "run_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "version",
+    "kind",
+    "maturity",
+    "inputs",
+    "outputs",
+    "entrypoint",
+    "files",
+    "parameters_schema",
+    "migration",
+    "experiment_binding"
+  ],
+  "additionalProperties": false
+}

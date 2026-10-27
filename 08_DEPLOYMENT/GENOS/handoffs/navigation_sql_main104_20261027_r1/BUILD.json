@@ -1,0 +1,52 @@
+{
+  "archive": "GENOS_MAIN104_NAVIGATION_SQL_20261027_R1.zip",
+  "sha256": "6dc6aebd05a3b78a4162d87038660e3a1e3bfab9de4644d44485fa2f1a4c84cb",
+  "bytes": 4461787,
+  "source_files": 420,
+  "product_files": 417,
+  "auxiliary_files": 16,
+  "code_files": 433,
+  "patch_files": 433,
+  "full_payload": true,
+  "changed_from_known_baseline_count": 168,
+  "unchanged_required_files": 0,
+  "local_active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-sql-20261027-r1",
+    "generation": 104,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/release.json",
+    "release_manifest_sha256": "e7a8a4f1441f078ba5c3a3f18c8516da96401d26232a9368edf66d933d8ada1f",
+    "activated_at": "2026-10-26T16:28:31.398800+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/실험/manifest.json",
+        "sha256": "0e425c107b4726836ab9027e1496dc90eaa631ad0333498c0b88dbd77f11b8b4"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/README.md",
+        "sha256": "816cfd289c8146c0a24fc5096389f34d1f30735f993fd1e8a16ab4caa78b91ad"
+      },
+      "arm": "optimized",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/artifacts/run-003/result.json",
+        "sha256": "b56a16b84697f003a9b3e15a80b267f06ff2b27168dd7c69af7786b63068e063"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1073-navigation-sql-main-qualification/artifacts/design-r3/release-rebase.json",
+        "sha256": "d57a054dcea6d60c5c4423dcb4981d67aa44d22a70210fc5c6e0886083287a8b"
+      }
+    }
+  },
+  "GENOS_checkout": "~/DEV, resolved on site",
+  "GENOS_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_serving_revision": null,
+  "GENOS_revision_generation_setting": null,
+  "GENOS_field_verified": false,
+  "binding_sha256": "a2d43a733bb412a88de03e5c96bdc4664eadde6d34c72959709bf905551d103a"
+}

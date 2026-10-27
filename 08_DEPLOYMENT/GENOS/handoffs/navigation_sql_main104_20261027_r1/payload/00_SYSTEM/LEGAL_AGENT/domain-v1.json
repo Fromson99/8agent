@@ -1,0 +1,25 @@
+{
+  "schema_version": "legal-domain-v1",
+  "domain_id": "source-first-revisable-issues",
+  "question_coverage": "original_question_and_answer_direct_review",
+  "evidence_policy": {
+    "require_exact_spans": true,
+    "require_presented_before_adoption": true,
+    "scope_expansion": "forbidden",
+    "unknown_effective_date": "no_current_applicability_assertion"
+  },
+  "issue_policy": {
+    "initial_issues_optional": true,
+    "hypotheses_may_restrict_source_access": false,
+    "changes_invalidate_dependents": true
+  },
+  "checks": [
+    "CITATION_MEMBERSHIP",
+    "CURRENT_DEPENDENCIES",
+    "QUALIFIER_PRESERVATION",
+    "REFERENCE_COMPLETION",
+    "CONFLICT_RESOLUTION",
+    "FACT_DEPENDENCY",
+    "DIRECT_QUESTION_COVERAGE"
+  ]
+}

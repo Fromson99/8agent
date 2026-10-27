@@ -1,0 +1,58 @@
+{
+  "archive": "GENOS_MAIN105_NAVIGATION_VALIDATION_20261027_R1.zip",
+  "sha256": "b301128adb79a8b91e7cef7123935ff5f261839e052b1ee1540d02221e023ebd",
+  "preparation_binding_sha256": "24025f630f83a55a560c163b1fbbeb7d05c00b716efa0564bce39faa7a2c6406",
+  "bytes": 4447373,
+  "source_files": 420,
+  "product_files": 417,
+  "expected_product_changes": [
+    "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+    "02_BACKEND/semantic_runtime/search_selection.py"
+  ],
+  "auxiliary_files": 16,
+  "code_files": 433,
+  "patch_files": 433,
+  "full_payload": true,
+  "changed_from_known_baseline_count": 168,
+  "unchanged_required_files": 0,
+  "local_active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-validation-20261027-r1",
+    "generation": 105,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-validation-20261027-r1/release.json",
+    "release_manifest_sha256": "1811115cba4c0c0b6fb67de6624b3d49020be3cc7aa38f3960efdd1e1c09e269",
+    "activated_at": "2026-10-27T00:57:33.492855+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "6f7b4f4e1f0733eed842d37878a043a984f49022d136194326d6d30dead7244e",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/실험/manifest.json",
+        "sha256": "a6925285d39e8818a12270321fd6198acb0e3345f106dd6fd78860cc07856510"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/README.md",
+        "sha256": "548f274bef3f332ddeae4339b25ff90b2f3f5f1b4f3d432e594953782a6f2bc5"
+      },
+      "arm": "optimized",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/artifacts/run-001/result.json",
+        "sha256": "3c3cfb75da7b6acdd2c8e9d1ce278ffd882f920b81a3a806ce44b937767cad00"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/artifacts/design/release-rebase.json",
+        "sha256": "d058bda4aa48780d00afa75b081ecfb03011830f65c04b8e3d4b8c95d36ff386"
+      }
+    }
+  },
+  "GENOS_checkout": "~/DEV, resolved on site",
+  "GENOS_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_serving_revision": null,
+  "GENOS_revision_generation_setting": null,
+  "GENOS_field_verified": false,
+  "binding_sha256": "79188b99b52ae8b38b46bc22e8912b05135916d6afbd190c055be41a1c56c6e6"
+}

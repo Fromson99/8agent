@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:unified-case-memory-v1",
+  "type": "object",
+  "$defs": {
+    "JudgmentRef": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "kind": {
+          "const": "case_stage"
+        },
+        "entity_id": {
+          "enum": [
+            "case:INTENT",
+            "case:PLAN",
+            "case:RECALL",
+            "case:READ",
+            "case:SELECT",
+            "case:ASSESS",
+            "case:COMPOSE"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "choice_id": {
+          "type": "string",
+          "pattern": "^D[a-f0-9]{28}$"
+        }
+      },
+      "required": [
+        "run_id",
+        "kind",
+        "entity_id",
+        "version",
+        "payload_hash",
+        "choice_id"
+      ],
+      "additionalProperties": false
+    },
+    "CaseBinding": {
+      "type": "object",
+      "properties": {
+        "question_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "route_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "judgment_refs": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "INTENT",
+              "PLAN",
+              "RECALL",
+              "READ",
+              "SELECT",
+              "ASSESS",
+              "COMPOSE"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/JudgmentRef"
+          }
+        },
+        "experience_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "REUSED",
+            "STORED",
+            "CLARIFY"
+          ]
+        }
+      },
+      "required": [
+        "question_id",
+        "revision",
+        "route_id",
+        "judgment_refs"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "sealed_at": "2026-10-27T01:02:20.858858+00:00",
+  "archive": "GENOS_MAIN105_NAVIGATION_VALIDATION_20261027_R1.zip",
+  "sha256": "b301128adb79a8b91e7cef7123935ff5f261839e052b1ee1540d02221e023ebd",
+  "bytes": 4447373,
+  "preparation_binding_sha256": "24025f630f83a55a560c163b1fbbeb7d05c00b716efa0564bce39faa7a2c6406",
+  "expected_product_changes": [
+    "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+    "02_BACKEND/semantic_runtime/search_selection.py"
+  ],
+  "source_local_MAIN": 105,
+  "source_files": 420,
+  "packaged_product_files": 417,
+  "auxiliary_files": 16,
+  "target_files": 433,
+  "patch_files": 433,
+  "required_unchanged_files": 0,
+  "full_payload": true,
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-validation-20261027-r1",
+    "generation": 105,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-validation-20261027-r1/release.json",
+    "release_manifest_sha256": "1811115cba4c0c0b6fb67de6624b3d49020be3cc7aa38f3960efdd1e1c09e269",
+    "activated_at": "2026-10-27T00:57:33.492855+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "6f7b4f4e1f0733eed842d37878a043a984f49022d136194326d6d30dead7244e",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/실험/manifest.json",
+        "sha256": "a6925285d39e8818a12270321fd6198acb0e3345f106dd6fd78860cc07856510"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/README.md",
+        "sha256": "548f274bef3f332ddeae4339b25ff90b2f3f5f1b4f3d432e594953782a6f2bc5"
+      },
+      "arm": "optimized",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/artifacts/run-001/result.json",
+        "sha256": "3c3cfb75da7b6acdd2c8e9d1ce278ffd882f920b81a3a806ce44b937767cad00"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1081-reference-visibility-valid-fixtures/artifacts/design/release-rebase.json",
+        "sha256": "d058bda4aa48780d00afa75b081ecfb03011830f65c04b8e3d4b8c95d36ff386"
+      }
+    }
+  },
+  "active_pointer_sha256": "6648b7af0e1e7ebf8d402c08431341db921784e29684207714b6ababead80e44",
+  "selected_python_schema_profiles_workflow_identical": true,
+  "excluded_static_ui": {
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/index.html": "3b28a8e424072266f53d6fdd73166fd9aad899dbccebf0018bb8e42fddd622b0",
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/styles.css": "53d06d1d4b8bd5290367c0239b9e91e151244507aa3bc06f2b58f7ff116aef2d"
+  },
+  "derived_manifest_files": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json"
+  ],
+  "consumer_receipt": {
+    "path": "09_ARTIFACTS/AUDITS/20261027-navigation-validation-main/consumer-active.json",
+    "sha256": "6bb2cb0458f6afccdf06c480138035d42fc586e46b8ec43df5a316b9c06dc5dd"
+  },
+  "contract_tests": [
+    {
+      "path": "05_TESTS/CONTRACTS/test_definition_reference_lookup_adr1071.py",
+      "sha256": "d15c5d721a245cdda211e40a6515d07bae1e1eabfbe99479982693325b009cab"
+    },
+    {
+      "path": "05_TESTS/CONTRACTS/test_definition_selection_exists_adr1072.py",
+      "sha256": "b7db48a46bcff9b8bba967217c4881f2b382b1be201249d69177f656354c18c1"
+    },
+    {
+      "path": "05_TESTS/CONTRACTS/test_reference_selection_exists_main105.py",
+      "sha256": "bf299e5605ec89ee7ff79191048a379cadc60263fbbfa6325ffe894f51efb3e3"
+    }
+  ],
+  "local_analysis_sha256": "548f274bef3f332ddeae4339b25ff90b2f3f5f1b4f3d432e594953782a6f2bc5",
+  "installed_contracts": 18,
+  "installer_commands": 144,
+  "installed_tiny_contracts": 13,
+  "installed_tiny_contracts_sha256": "cf9cbbf25f9f86bf0ae1e922e38a3cbe295536169271ffea2fcc514778365919",
+  "upgrade_cases": [
+    {
+      "baseline": "EMPTY_EXISTING_CHECKOUT",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "R2_DEV_BASE",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN99_FULL",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN101_ANSWER",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN102_LINKS",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN103_SELECTED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": false
+    },
+    {
+      "baseline": "MAIN104_PACKAGED",
+      "passed": true,
+      "installed_files": 433,
+      "rollback_exact": true,
+      "non_target_files_preserved": true,
+      "unknown_bytes_rejected": true,
+      "restart_after_partial_apply": true
+    }
+  ],
+  "no_javascript_extensions_recursive": true,
+  "packaging_model_calls": 0,
+  "new_profiler_installed": false,
+  "ontology_mvp_promoted": false,
+  "GENOS_field_verified": false,
+  "GENOS_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_serving_revision": null,
+  "GENOS_revision_generation_setting": null
+}

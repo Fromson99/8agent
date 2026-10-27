@@ -1,0 +1,80 @@
+GENOS MAIN104 — 정의 연결 조회 지연 수정 통합본
+
+이번 적용에는 GENOS_MAIN104_NAVIGATION_SQL_20261027_R1을 사용합니다. 이전 MAIN102 LINKS 인계의 기능과 MAIN103 출력상한 제거를 포함한 누적본입니다.
+선택 로컬 MAIN104: navigation-sql-20261027-r1. 워크플로우는 기존1.20.8입니다.
+
+수정 내용
+1. 정의에 연결된 참조의 ID를 먼저 조회하고, 필요한 참조만 ID로 읽습니다. 전체 참조 VIEW를 먼저 조립하던 작업을 제거했습니다.
+2. 권한·판본 필터의 정의–참조 연결 검사는 같은 허용 VIEW에서 해당 ID의 존재를 확인합니다. 전체 허용 ID 목록을 매번 만들지 않습니다.
+원문·위치·범위·권한·해시·누락 참조 검사는 유지합니다. 데이터·색인 재구축은 필요하지 않습니다.
+
+원래211초 분석의 의미
+원래 저장 응답11개와 같은8개 화면을 재현한 로컬 WSL/SQLite 동일계측 비교:
+236.744초 → 19.891초,91.598% 감소. 원문·행동·화면8/8 동일, 새 외부 모델호출0회.
+이 수치는 전체 응답시간이나 새 질문의 모델 판단·온톨로지 품질·GENOS 현장 속도 인증이 아닙니다.
+LOCAL_211S_ANALYSIS.txt는 당시 분석 기록이며 당시 MAIN103 미반영 상태는 역사 기록입니다.
+이번 패키지는 그 SQL2수정만 MAIN104에 반영한 제품입니다. 실험용 상세 프로파일러·온톨로지 MVP는 추가하지 않습니다.
+
+Oracle 경로
+공통 정의 조회의 ID 단건 SELECT는 Oracle 변환기가 지원합니다. TEMP VIEW 변경은 SQLite 경로입니다.
+Oracle에서는 연결 건수만큼 원격 조회가 발생할 수 있어91.598% 개선을 보장하지 않습니다.
+Oracle 전환·전체 데이터 내려받기·로컬 복원은 이 패키지에 포함하지 않습니다.
+
+코드 구성
+선택 MAIN 제품420파일 중 비활성 관리화면3자산을 제외한417파일입니다.
+엔진30개와 PIPELINE의 해당 의존 목록·해시31개만 파생하며 Python·스키마·프로필·워크플로우는 선택 MAIN과 같은 바이트입니다.
+기존 세대 검사 명령의 의존성과 serving requirements 등 운영 보조16파일을 별도 AUXILIARY_MANIFEST에 기록합니다.
+전체검사433파일, 전달·적용대상433파일을 모두 ZIP에 넣었습니다. 이전 코드 ZIP 없이 누락파일 복원이 가능하며 기존 동일파일은 건너뜁니다.
+별도로 요구하는 미첨부 코드파일은0개입니다. 기존파일의 알 수 없는 변경은 자동 덮어쓰지 않습니다.
+SOURCE_BINDING.json은 선택 MAIN과 제품·운영 보조를 구분합니다. 코드 ZIP과 중첩 ZIP에 .js/.jsx/.mjs/.cjs는 없습니다.
+운영 보조의 기존파일이 알려진 바이트와 다르면 자동 덮어쓰지 않고 check에서 중단합니다.
+
+적용 방법
+첨부를 실제 업로드한 TRANSFER 폴더를 현재 작업 위치로 두고 실행합니다. TRANSFER 절대 위치를 추정하지 않습니다.
+압축해제부터 로그와 종료코드를 보존합니다.
+
+mkdir -p ./main104-navigation-sql-r1-logs
+python3 -m zipfile -e ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1.zip ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1 > ./main104-navigation-sql-r1-logs/extract.log 2>&1
+TASK_EXTRACT_RC=$?
+printf '%s\n' "$TASK_EXTRACT_RC" > ./main104-navigation-sql-r1-logs/extract.exit
+if [ "$TASK_EXTRACT_RC" -ne 0 ]; then cat ./main104-navigation-sql-r1-logs/extract.log; else
+  bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt check
+fi
+
+check 성공 후 같은 TRANSFER 위치에서:
+bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt apply
+bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt gate
+
+기본 대상은 기존 ~/DEV Git checkout입니다. 다른 checkout이면 --root /실제/DEV/경로를 명시합니다.
+실제 경로를 ROOT_BINDING.json에 고정하고 backup/과 INSTALL_STATE.json을 보존합니다.
+동일 apply 재실행은 적용된 바이트를 확인하고 남은 작업을 이어갑니다. 파일이 달라졌으면 중단합니다.
+.env·기존GENOS_SERVING_PATHS.json·검색 선택JSON·원문·색인·Git 이력은 유지합니다.
+
+워크플로우와 배포
+GENOS_WORKFLOW_PYTHON.txt는 별도 워크플로우 Python 편집기에 적용하는 파일입니다.
+SHA256: 91dd6a113cdb573e70feff5a9cc7ec1e1d9bd27609b419a14893c9ad1b39c995
+MAIN102와 같은 workflow1.20.8이면 재교체할 필요가 없습니다. 실제 편집기 반영 상태는 별도로 확인합니다.
+DEV의 COMMIT_PATHS.txt 목록에 해당하는 변경을 검토하고 git diff --check 후 해당 파일만 커밋합니다.
+다른 staged 작업을 함께 커밋하지 않습니다. 같은 TRANSFER 위치에서:
+bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt gate-code
+통과한 커밋을 push하고 같은 커밋의 코드서빙 리비전을 배포합니다. 코드가 바뀌면 다시 커밋하고 검사합니다.
+
+기존 SQLite generation 환경에서만 별도 읽기전용 데이터 검사:
+bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt gate-sqlite
+이 명령은 실제 선택 generation을 검증하며 데이터를 만들거나 복원하지 않습니다. 큰 파일 해시에 시간이 걸릴 수 있습니다.
+실제 generation 절대경로와 manifest SHA256을 기록합니다. Oracle 조회 환경에서는 이 SQLite 검사를 실행하지 않습니다.
+Oracle의 선택 데이터 버전·권한·조회 원문은 현장 워크플로우 결과로 확인합니다.
+
+현장 최종 확인은 워크플로우 테스트 화면에서만 합니다. 코드서빙 직접 테스트 UI/API를 요구하지 않습니다.
+질문: 양도차익을 산정할 때 양도가액에서 공제되는 경비는 무엇인가?
+같은 자료·설정에서 요청ID·모델ID·커밋·서빙 리비전·데이터 버전과 보고서의 모델시간/모델밖시간을 구분해 기록합니다.
+원문·연결 선택·다음 화면·읽음 상태·최종 답변·미확인 사항을 함께 확인합니다.
+새 리비전의 실제 질의 결과 전에는 GENOS 개선·배포 성공으로 표시하지 않습니다.
+
+복원
+bash ./GENOS_MAIN104_NAVIGATION_SQL_20261027_R1/GENOS_MAIN104_NAVIGATION_SQL_20261027_R1_RUN.txt rollback
+이후 사용자 수정이 있으면 복원을 거부해 보존합니다. 백업이나 설치 상태를 지우고 재시도하지 않습니다.
+코드 원복과 Git/이전서빙리비전/워크플로우편집기 복원은 별도입니다. 이전 코드와 데이터 버전을 함께 보존합니다.
+
+로컬 MAIN 선택·검증, 메일 전달, GENOS 반입·commit/push·리비전·편집기·내부모델 질의는 각각 다른 상태입니다.
+최종 첨부 봉인·검증 수는 SEALED.json과 DELIVERY_VALIDATION.json에 있습니다. 현장실행은 미확인입니다.

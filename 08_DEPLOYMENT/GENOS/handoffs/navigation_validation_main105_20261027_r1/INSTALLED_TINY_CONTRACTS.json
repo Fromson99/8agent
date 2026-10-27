@@ -1,0 +1,685 @@
+{
+  "passed": true,
+  "paired_cases": 13,
+  "cases": [
+    {
+      "group": "static",
+      "case": {
+        "pattern": "full",
+        "fault": "none",
+        "control": true,
+        "checker": true,
+        "repeats": 3
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "1b546e70684af7ec40b5a946fddfad7ad500debbef9bedb5a2f7e6a04f173e05",
+        "counts": {
+          "reads": 6,
+          "checks": 6
+        }
+      },
+      "installed": {
+        "sha256": "1b546e70684af7ec40b5a946fddfad7ad500debbef9bedb5a2f7e6a04f173e05",
+        "counts": {
+          "reads": 2,
+          "checks": 4
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "unchanged",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "d7e2d74e8bf1a50c8253e9ddb1e2e44ec92dccbc5eaf865e5a6dc28692ca32d3",
+        "counts": {
+          "reads": 8,
+          "checks": 8
+        }
+      },
+      "installed": {
+        "sha256": "d7e2d74e8bf1a50c8253e9ddb1e2e44ec92dccbc5eaf865e5a6dc28692ca32d3",
+        "counts": {
+          "reads": 4,
+          "checks": 5
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "acl_remove",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "c64773a7141645150135d338add28fd2d7cc1a71a0aaaee8dec2e1485c337c78",
+        "counts": {
+          "reads": 4,
+          "checks": 4
+        }
+      },
+      "installed": {
+        "sha256": "c64773a7141645150135d338add28fd2d7cc1a71a0aaaee8dec2e1485c337c78",
+        "counts": {
+          "reads": 4,
+          "checks": 4
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "span_text",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "aa13dc0013a2052d265487987a3eb8409c9db837d430621c683bc38169fead39",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      },
+      "installed": {
+        "sha256": "aa13dc0013a2052d265487987a3eb8409c9db837d430621c683bc38169fead39",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "store_changed",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "9e43f9d8a1ff0a5f2d57e89eb749e6c370276692abc69225a5eceeae806abd41",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      },
+      "installed": {
+        "sha256": "9e43f9d8a1ff0a5f2d57e89eb749e6c370276692abc69225a5eceeae806abd41",
+        "counts": {
+          "reads": 4,
+          "checks": 5
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "new_view",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "d7e2d74e8bf1a50c8253e9ddb1e2e44ec92dccbc5eaf865e5a6dc28692ca32d3",
+        "counts": {
+          "reads": 8,
+          "checks": 8
+        }
+      },
+      "installed": {
+        "sha256": "d7e2d74e8bf1a50c8253e9ddb1e2e44ec92dccbc5eaf865e5a6dc28692ca32d3",
+        "counts": {
+          "reads": 8,
+          "checks": 8
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "failure_then_recovery",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "4ea86ba11a2d5653571fce4137683d53456b8743513d44bddf9b906f29478a3f",
+        "counts": {
+          "reads": 9,
+          "checks": 9
+        }
+      },
+      "installed": {
+        "sha256": "4ea86ba11a2d5653571fce4137683d53456b8743513d44bddf9b906f29478a3f",
+        "counts": {
+          "reads": 9,
+          "checks": 9
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "checker_exception",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "8bdb8a66b5016324335a6f70f89eaa18a018d2d5a916ede28f57b252a70ded27",
+        "counts": {
+          "reads": 9,
+          "checks": 9
+        }
+      },
+      "installed": {
+        "sha256": "8bdb8a66b5016324335a6f70f89eaa18a018d2d5a916ede28f57b252a70ded27",
+        "counts": {
+          "reads": 8,
+          "checks": 9
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "cross_session",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "aa13dc0013a2052d265487987a3eb8409c9db837d430621c683bc38169fead39",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      },
+      "installed": {
+        "sha256": "aa13dc0013a2052d265487987a3eb8409c9db837d430621c683bc38169fead39",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      }
+    },
+    {
+      "group": "transitions",
+      "case": {
+        "transition": "returned_spans",
+        "control": true,
+        "checker": true
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "b4f185f808c4f9d64fbe9626cb4dc40203b0df6baebb6443983bbc93b5b1d4f8",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      },
+      "installed": {
+        "sha256": "b4f185f808c4f9d64fbe9626cb4dc40203b0df6baebb6443983bbc93b5b1d4f8",
+        "counts": {
+          "reads": 5,
+          "checks": 5
+        }
+      }
+    },
+    {
+      "group": "integration",
+      "case": {
+        "scopes": 4,
+        "links": 0,
+        "fault": "none"
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "84dcb24bf27737d27bc464f5c166a27a8b44ce660687342392038ab2ca0087d4",
+        "counts": {
+          "reads": 88,
+          "checks": 88,
+          "views": [
+            {
+              "reads": 44,
+              "checks": 44
+            },
+            {
+              "reads": 44,
+              "checks": 44
+            }
+          ]
+        }
+      },
+      "installed": {
+        "sha256": "84dcb24bf27737d27bc464f5c166a27a8b44ce660687342392038ab2ca0087d4",
+        "counts": {
+          "reads": 40,
+          "checks": 46,
+          "views": [
+            {
+              "reads": 20,
+              "checks": 23
+            },
+            {
+              "reads": 20,
+              "checks": 23
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "integration",
+      "case": {
+        "scopes": 4,
+        "links": 1,
+        "fault": "none"
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "ea0f9cc93235546ef140c61f31f6b7cf187716123734e2bd326c93c708fb2a72",
+        "counts": {
+          "reads": 96,
+          "checks": 96,
+          "views": [
+            {
+              "reads": 48,
+              "checks": 48
+            },
+            {
+              "reads": 48,
+              "checks": 48
+            }
+          ]
+        }
+      },
+      "installed": {
+        "sha256": "ea0f9cc93235546ef140c61f31f6b7cf187716123734e2bd326c93c708fb2a72",
+        "counts": {
+          "reads": 48,
+          "checks": 54,
+          "views": [
+            {
+              "reads": 24,
+              "checks": 27
+            },
+            {
+              "reads": 24,
+              "checks": 27
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "integration",
+      "case": {
+        "scopes": 2,
+        "links": 1,
+        "fault": "timeout"
+      },
+      "equal": true,
+      "baseline": {
+        "sha256": "e932df375f5b259ab7a64e5d8ac7c05addeb86ef728933b4856363b5474722a4",
+        "counts": {
+          "reads": 16,
+          "checks": 16,
+          "views": [
+            {
+              "reads": 14,
+              "checks": 14
+            },
+            {
+              "reads": 2,
+              "checks": 2
+            }
+          ]
+        }
+      },
+      "installed": {
+        "sha256": "e932df375f5b259ab7a64e5d8ac7c05addeb86ef728933b4856363b5474722a4",
+        "counts": {
+          "reads": 12,
+          "checks": 13,
+          "views": [
+            {
+              "reads": 10,
+              "checks": 11
+            },
+            {
+              "reads": 2,
+              "checks": 2
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "baseline_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code",
+  "installed_root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV",
+  "helper": {
+    "path": "/home/jin/8-AGENT/06_TOOLS/EXPERIMENTS/adr_1076/finite_contract.py",
+    "sha256": "d3aabe83e5c7714e2e6d2405d68fe49e32203227f592b524b7b90dba41dad6ef"
+  },
+  "probe_sha256": "147d64d6d0c13e1ad63c65ba4f3c41a3f3d641de36b6b784723fade0648aa5ad",
+  "memory_limit_bytes": 1073741824,
+  "network_blocked": true,
+  "external_model_calls": 0,
+  "real_corpus_loads": 0,
+  "legal_quality_certified": false,
+  "scope": "13 paired tiny in-memory fixture contracts; no serving or field performance claim",
+  "counts": {
+    "static": 1,
+    "transitions": 9,
+    "integration": 3
+  },
+  "module_bindings": {
+    "installed_handoff_baseline_runtime.legal_agent": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/__init__.py",
+      "sha256": "3734e294abd5abedc0e47c42a7106448076c0c7f6af2f108a1cf5aeddba022a7",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.contracts": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/contracts.py",
+      "sha256": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.errors": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "sha256": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.output_contract": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "1ac323b928c3feb52b8009efaf97f8ee6084692af48ce041408983dd34cf25ea",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.observability": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/observability.py",
+      "sha256": "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.context": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/context.py",
+      "sha256": "c24e1a3e34f052d91c31f71f6537e2c48e271cbbc888cda85037d038dad34375",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.protocol": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/protocol.py",
+      "sha256": "28f9e2d9d5c1406b6732a9ebf5557f4114c2fdd6aa87be61e92a2bc465862e3e",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.repository": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "35a19d1ba7daadd955c853679ca8c554096decb34a6247aaef67f238e39becaf",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "lawrag": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/lawrag/__init__.py",
+      "sha256": "64539a741ad6212d064674c8e0c862bc22985325457666523cf91421893e741a",
+      "role": "identical_shared",
+      "relative_path": "02_BACKEND/lawrag/__init__.py"
+    },
+    "lawrag.core": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/lawrag/core/__init__.py",
+      "sha256": "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2",
+      "role": "identical_shared",
+      "relative_path": "02_BACKEND/lawrag/core/__init__.py"
+    },
+    "lawrag.core.legal_coordinate": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/lawrag/core/legal_coordinate.py",
+      "sha256": "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822",
+      "role": "identical_shared",
+      "relative_path": "02_BACKEND/lawrag/core/legal_coordinate.py"
+    },
+    "installed_handoff_baseline_runtime.term_references": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/term_references.py",
+      "sha256": "d50631f1fa2f98c4df5e30d2b852543059f0e825306b56da24cda39addb59db0",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.term_morph": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/term_morph.py",
+      "sha256": "64ad48b6f856820eb753e44c42425aaa389bbf44a2fd5e97fc4864f7e543b78f",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.fulltext": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "c556271e6552c3b11934fe3d757e5368d1be13922533662dfd2dd0664a6dda72",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.query_latency": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/query_latency.py",
+      "sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.runtime_cache": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/runtime_cache.py",
+      "sha256": "55e88a56994c7f8e6a4ec2b7d83d44c1f5cda93ac3d7d51526d93f50d962acd3",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.unit_fulltext": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "sha256": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.unit_reading": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "9d3e43e16c06c268beb27ef9eb440ab82948605c645a5e5347713674a525aa72",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.relation_read_policy": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "sha256": "c100d66cfa421c3b25a84ecb9f7b12204b5c2c87a8e53094ba9de5644bed9d5b",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.unit_relations": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "b9038f6eb7009629cb0a5152472d6da942ab1a36a7b4e321a5e634cccbdbc14e",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.evidence_inventory": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py",
+      "sha256": "41993363aab6bc73cd8f41af5f59e523401f084469d0e4738ce14f0b2dbbf8c4",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.connection_scope": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/connection_scope.py",
+      "sha256": "49a595b1d3bf20085fd00b1d53badd643fee05a197250e0565d6a9c5a50a9479",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/__init__.py",
+      "sha256": "3734e294abd5abedc0e47c42a7106448076c0c7f6af2f108a1cf5aeddba022a7",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.contracts": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/contracts.py",
+      "sha256": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.errors": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "sha256": "751109d00ecff6547d6fc36761b3c58199e054052b02c68cf1d8c78019cf0d83",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.output_contract": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "1ac323b928c3feb52b8009efaf97f8ee6084692af48ce041408983dd34cf25ea",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.observability": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/observability.py",
+      "sha256": "fe5f8a3a725c81089ecb4900785d63f5dcd53b4aa42a12a9488f874df82ef87e",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.context": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/context.py",
+      "sha256": "c24e1a3e34f052d91c31f71f6537e2c48e271cbbc888cda85037d038dad34375",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.protocol": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/protocol.py",
+      "sha256": "28f9e2d9d5c1406b6732a9ebf5557f4114c2fdd6aa87be61e92a2bc465862e3e",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.repository": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "35a19d1ba7daadd955c853679ca8c554096decb34a6247aaef67f238e39becaf",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.term_references": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/term_references.py",
+      "sha256": "d50631f1fa2f98c4df5e30d2b852543059f0e825306b56da24cda39addb59db0",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.term_morph": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/term_morph.py",
+      "sha256": "64ad48b6f856820eb753e44c42425aaa389bbf44a2fd5e97fc4864f7e543b78f",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.fulltext": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "c556271e6552c3b11934fe3d757e5368d1be13922533662dfd2dd0664a6dda72",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.query_latency": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/query_latency.py",
+      "sha256": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.runtime_cache": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/runtime_cache.py",
+      "sha256": "55e88a56994c7f8e6a4ec2b7d83d44c1f5cda93ac3d7d51526d93f50d962acd3",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.unit_fulltext": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "sha256": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.unit_reading": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "9d3e43e16c06c268beb27ef9eb440ab82948605c645a5e5347713674a525aa72",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.relation_read_policy": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "sha256": "c100d66cfa421c3b25a84ecb9f7b12204b5c2c87a8e53094ba9de5644bed9d5b",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.unit_relations": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "c00cd222cb2500f59247f392161e2cc6a2ea020959c4ab0bfc898b48f5bfb947",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.evidence_inventory": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py",
+      "sha256": "41993363aab6bc73cd8f41af5f59e523401f084469d0e4738ce14f0b2dbbf8c4",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.connection_scope": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/connection_scope.py",
+      "sha256": "e9cd7a23f49d7dee82711dfed81b49d9ce8262b621ccd028c44690883cca9a51",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_baseline_runtime.navigation_match": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/navigation_match.py",
+      "sha256": "f318d57b6a5d369292070f533c40be66adaa87fdeb7342fb2fd0e48e51a72157",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.structure_selection": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/structure_selection.py",
+      "sha256": "0ab87d07c3b4cb2b88d92004d6956735d6aa86c4ae160a5c623c1eae384c76e8",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.query_scope": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/query_scope.py",
+      "sha256": "2cd6cdb4bcf64b07d2cb1cdbe688e4d29dd697f2b39e61c5e568df1291dcd9b5",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.law_candidates": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "sha256": "56c906373b9d3671eb14a678c503ce185903369bd806f780c2755ee1ea6844b3",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.document_aliases": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/document_aliases.py",
+      "sha256": "d4700f94b19b6d143e395cfc3d526f5e6cf4129b060bc1c485231534ad5ae804",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.document_roles": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/document_roles.py",
+      "sha256": "239ed2b7913d2696604fc501e9a58c3753f29a3deade8cdb3d12a39b986a8f4a",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.structure_query": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/structure_query.py",
+      "sha256": "5cdd4c3f68c6af886947c80f16132f15d9f04d3168241b4ade6ad5a90fc0ac92",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.request_repair": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "sha256": "0c0a45734471d923a4ad017cec629cfbc36c1b945618872af74408a422c8c6e5",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_candidate_runtime.navigation_match": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/navigation_match.py",
+      "sha256": "f318d57b6a5d369292070f533c40be66adaa87fdeb7342fb2fd0e48e51a72157",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.structure_selection": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/structure_selection.py",
+      "sha256": "0ab87d07c3b4cb2b88d92004d6956735d6aa86c4ae160a5c623c1eae384c76e8",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.query_scope": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/query_scope.py",
+      "sha256": "2cd6cdb4bcf64b07d2cb1cdbe688e4d29dd697f2b39e61c5e568df1291dcd9b5",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.law_candidates": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "sha256": "56c906373b9d3671eb14a678c503ce185903369bd806f780c2755ee1ea6844b3",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.document_aliases": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/document_aliases.py",
+      "sha256": "d4700f94b19b6d143e395cfc3d526f5e6cf4129b060bc1c485231534ad5ae804",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.document_roles": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/document_roles.py",
+      "sha256": "239ed2b7913d2696604fc501e9a58c3753f29a3deade8cdb3d12a39b986a8f4a",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.structure_query": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/structure_query.py",
+      "sha256": "5cdd4c3f68c6af886947c80f16132f15d9f04d3168241b4ade6ad5a90fc0ac92",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.request_repair": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "sha256": "0c0a45734471d923a4ad017cec629cfbc36c1b945618872af74408a422c8c6e5",
+      "role": "installed_handoff_candidate_runtime"
+    },
+    "installed_handoff_baseline_runtime.legal_agent.tool_outcome": {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/navigation-sql-20261027-r1/code/02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py",
+      "sha256": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "role": "installed_handoff_baseline_runtime"
+    },
+    "installed_handoff_candidate_runtime.legal_agent.tool_outcome": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261027-navigation-validation-main105-handoff/installed-z_t2a3ji/DEV/02_BACKEND/semantic_runtime/legal_agent/tool_outcome.py",
+      "sha256": "e0c69df46f9f9e901f8daa61dd6dd58f517600c9a61f9232191017cfc7048ce6",
+      "role": "installed_handoff_candidate_runtime"
+    }
+  }
+}
