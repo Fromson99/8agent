@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-27",
+  "scope": "Document and request consistency only; no model experiment or network API run",
+  "counts": {
+    "laws": 37,
+    "administrative_rules": 12,
+    "initial_requests": 4
+  },
+  "checks": [
+    "Inventory 49 unique entries matches A/B source",
+    "Origin and relay parameter maps equal without duplicate target",
+    "Four request examples present in text",
+    "UTF-8 documents and Excel-compatible CSV readable",
+    "ZIP extracted bytes equal source files",
+    "OC fields contain placeholders only; no credential source read"
+  ],
+  "inputs": {
+    "inventory": {
+      "path": "07_DOCS/REFERENCE/REPORTS/EXTERNAL_DOCUMENT_COLLECTION_REQUEST_20261023/DOCUMENT_INVENTORY.json",
+      "sha256": "51f2df8344cc57f7d99a6b8309f6b1caabada206391eef0153c317701f4f925b"
+    },
+    "user_photo": {
+      "path": "/tmp/codex-remote-attachments/01a17a7d-c4dd-7960-baad-751d584b445f/91D77C28-FE4F-4BFE-AF53-DF2E244EBE46/1-사진-1.jpg",
+      "sha256": "851c5c8c742930789912f59bdf420e45a1a012f745960e82c8b6b1d8d8d3586c"
+    },
+    "relay_guide": "08_DEPLOYMENT/GENOS/diagnostics/relay_terminal_20261023_r3/GUIDE.txt",
+    "field_observation": "08_DEPLOYMENT/GENOS/diagnostics/relay_terminal_20261023_r3/FIELD_OBSERVATION_20261023.json"
+  },
+  "official_reference_note": "eflaw list/body and admrul body opened; admrul list confirmed from official-domain search result after page fetch timeouts",
+  "files": {
+    "01_담당자_전달문.txt": {
+      "bytes": 2923,
+      "sha256": "25e83b28c8e458f082b2e4d87b99e5ac53b60fbecc03bf656a8d56e0982a56b0"
+    },
+    "02_API_요청명세.txt": {
+      "bytes": 8931,
+      "sha256": "96ac78cdd4cd44121caabe7230b38a579e28cb560c3702aca9177c405486f0b1"
+    },
+    "03_법령_행정규칙_49종.csv": {
+      "bytes": 8912,
+      "sha256": "1435df684a8e1bded9d6bbf355629599c3f90ef32c2c6355992e14289468a0b4"
+    },
+    "04_요청파라미터.json": {
+      "bytes": 4575,
+      "sha256": "6e6513fc0d365f605851753855fd359a52a93f97411187a4acf4e4c3c38ed440"
+    },
+    "법제처_API_수신요청자료_20261027.zip": {
+      "bytes": 7611,
+      "sha256": "a3a3351f78bf7a08693dcf3193c377d040547ddafc10cde446a179f4d8916c91"
+    }
+  },
+  "not_performed": [
+    "GENOS access",
+    "law API query",
+    "email send",
+    "runtime or MAIN change",
+    "Dataiku write",
+    "Oracle load"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "status": "READY_TO_SEND",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 원천 접속정보 및 전체 호출 URL",
+  "attachments": [
+    {
+      "filename": "법제처_중계등록_전체URL포함.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 13322,
+      "sha256": "4322e01b2fc3bca67e37bdf36d4613693a3e65dc59818d3d959045f4735887c4"
+    },
+    {
+      "filename": "법제처_API_시험예시.txt",
+      "mime_type": "text/plain",
+      "bytes": 9590,
+      "sha256": "c581601855dbbac86dc21aeaa25dc9d3380644d6ae4a0eef000193063c027968"
+    },
+    {
+      "filename": "법제처_중계등록_요청문.txt",
+      "mime_type": "text/plain",
+      "bytes": 8192,
+      "sha256": "9a0d275156f7f09e0f4483cd1512907098b2f2369c4549a47ea59bb75b25be70"
+    },
+    {
+      "filename": "법제처_목록본문파일_실제응답.zip",
+      "mime_type": "application/zip",
+      "bytes": 1092696,
+      "sha256": "d2795be3784e56acf97b7e92f15e743ed1740a7a2ad8e853118b63a4bb056432"
+    }
+  ],
+  "grouped_urls": [
+    [
+      "① 행정규칙 목록 — 금융투자업규정 검색",
+      "http://www.law.go.kr/DRF/lawSearch.do?OC={기관_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EA%B7%9C%EC%A0%95&nw=1&display=10&page=1"
+    ],
+    [
+      "② 법령 목록 — 자본시장법 검색",
+      "http://www.law.go.kr/DRF/lawSearch.do?OC={기관_OC}&target=eflaw&type=XML&search=1&query=%EC%9E%90%EB%B3%B8%EC%8B%9C%EC%9E%A5%EA%B3%BC+%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EC%97%90+%EA%B4%80%ED%95%9C+%EB%B2%95%EB%A5%A0&nw=3&display=10&page=1"
+    ],
+    [
+      "③ 행정규칙 본문 — 행정규칙일련번호를 ID에 입력",
+      "http://www.law.go.kr/DRF/lawService.do?OC={기관_OC}&target=admrul&type=XML&ID=2100000285020"
+    ],
+    [
+      "④ 법령 본문 — 법령일련번호·시행일자를 MST·efYd에 입력",
+      "http://www.law.go.kr/DRF/lawService.do?OC={기관_OC}&target=eflaw&type=XML&MST=288615&efYd=20261002"
+    ],
+    [
+      "⑤ 별표 HWP — 본문 XML에서 받은 파일 링크",
+      "https://www.law.go.kr/LSW/flDownload.do?flSeq=169196331"
+    ],
+    [
+      "⑥ 개정전문 HWP — 본문 XML에서 받은 파일 링크",
+      "http://law.go.kr/flDownload.do?flSeq=169196311"
+    ],
+    [
+      "⑦ 개정전문 HWP 최종 주소 — ⑥의 301 이동 목적지",
+      "https://law.go.kr/LSW/flDownload.do?flSeq=169196311"
+    ]
+  ],
+  "private_credential_scan": "PASS including recursive XLSX/ZIP contents",
+  "javascript_scan": "PASS",
+  "scanned_entries": 31,
+  "preserved_evidence": [
+    {
+      "file": "01_행정규칙_목록.xml",
+      "sha256": "61be317a34a80368222e615abaf3708fa614ac5f8c3da216d8ce58546e82f440"
+    },
+    {
+      "file": "02_금융투자업규정_본문.xml",
+      "sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982"
+    },
+    {
+      "file": "03_별표1_인가절차흐름도.hwp",
+      "sha256": "bda9b3e8f9ee581514483547b748fa9983a3fb08d6591e4968f19d9993ec4d9d"
+    },
+    {
+      "file": "04_금융투자업규정_개정전문.hwp",
+      "sha256": "bd189f0c9f131dacb3420cc1c965a2e66c31e0f22b0af83996ef212adda11f52"
+    },
+    {
+      "file": "05_법령_목록.xml",
+      "sha256": "b47fb645eedf651a4a32ac388c5cd9c4761306028c48091c7d622cc15859f7d2"
+    },
+    {
+      "file": "06_자본시장법_본문.xml",
+      "sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460"
+    },
+    {
+      "file": "호출응답기록.json",
+      "sha256": "1a4f10e4c16462ff94d0533e2ee9a05bcf8e5b0830cfd1112ffd5055ab6e80d2"
+    },
+    {
+      "file": "파일검증.json",
+      "sha256": "6c84a414c3fc35cdbfa1b62d377e131b8156b0c19e15a27ad20b2450c5184d43"
+    }
+  ],
+  "new_origin_requests": 0,
+  "internal_relay_or_dataiku_execution": false
+}

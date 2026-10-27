@@ -1,0 +1,30 @@
+{
+  "status": "PREPARED_NOT_SENT",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 중계 등록 접속정보",
+  "attachments": [
+    {
+      "name": "법제처_중계등록_접속명세.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 7494,
+      "sha256": "dc3673d3e284ecec0f362fa3cffbe6567e1a28b66c261b2423a178008403b444"
+    },
+    {
+      "name": "법제처_중계등록_요청문.txt",
+      "mime_type": "text/plain",
+      "bytes": 2814,
+      "sha256": "d619f0dcc9de497213d36d2d8bfb7aac2811aa0b67b8233cdce4d24df26a69fb"
+    }
+  ],
+  "scope": "relay endpoint registration and pass-through requirements only; recipient does not execute collection",
+  "checks": [
+    "four source endpoint rows",
+    "no target document inventory or full asset URLs",
+    "no personal OC in mail or workbook XML",
+    "Dataiku caller named; collector work assigned to caller",
+    "each attachment explained"
+  ],
+  "personal_credentials_included": false,
+  "network_calls": 0,
+  "runtime_changes": 0
+}

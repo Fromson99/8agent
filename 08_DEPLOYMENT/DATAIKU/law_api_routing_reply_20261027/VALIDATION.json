@@ -1,0 +1,30 @@
+{
+  "status": "PREPARED_NOT_SENT",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — Dataiku 수집 요청값 및 다운로드 경로 구분",
+  "attachments": [
+    {
+      "name": "법제처_API_요청값_접속정보.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 19943,
+      "sha256": "c8d2ebfa0e6b9e63776aae4a20ad4dd4e8edd5b89c530d5887a8e40118b7dc6f"
+    },
+    {
+      "name": "법제처_API_회신본문.txt",
+      "mime_type": "text/plain",
+      "bytes": 4399,
+      "sha256": "0292eee3fda493677fe00af90dfcc8a5f50e7eb01b322d66ad901c75d3ec99ed"
+    }
+  ],
+  "checks": [
+    "same-document A/B URL examples verified after XML whitespace normalization",
+    "route selection by actual URL, not document type",
+    "49 list and body rows unchanged",
+    "personal OC absent from outgoing text and workbook XML",
+    "no full URL inventory or historical version references",
+    "Dataiku caller preserved"
+  ],
+  "personal_credentials_included": false,
+  "network_calls": 0,
+  "runtime_changes": 0
+}

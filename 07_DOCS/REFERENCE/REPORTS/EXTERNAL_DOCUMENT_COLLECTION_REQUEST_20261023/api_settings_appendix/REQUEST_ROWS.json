@@ -1,0 +1,32 @@
+[
+  [
+    "법령 목록",
+    "https://www.law.go.kr/DRF/lawSearch.do",
+    "OC={LAW_OC}&target=eflaw&type=XML&search=1&query={표의 법령명}&nw=2,3&display=100&page={PAGE}",
+    "각 대상마다 page=1부터 totalCnt까지. 오늘 날짜 필터 없음."
+  ],
+  [
+    "행정규칙 목록",
+    "https://www.law.go.kr/DRF/lawSearch.do",
+    "OC={LAW_OC}&target=admrul&type=XML&search=1&query={표의 행정규칙명}&nw=1&display=100&page={PAGE}",
+    "법령의 nw 값을 복사하지 않음."
+  ],
+  [
+    "법령 본문",
+    "https://www.law.go.kr/DRF/lawService.do",
+    "OC={LAW_OC}&target=eflaw&type=XML&MST={목록의 법령일련번호}&efYd={그 판본 시행일 YYYYMMDD}",
+    "고정 숫자 없이 목록 응답에서 매핑. JO 생략으로 전체 조문 수집."
+  ],
+  [
+    "행정규칙 본문",
+    "https://www.law.go.kr/DRF/lawService.do",
+    "OC={LAW_OC}&target=admrul&type=XML&ID={목록의 행정규칙일련번호}",
+    "행정규칙 본문의 ID는 판본 일련번호. 법령의 문서ID와 의미가 다름."
+  ],
+  [
+    "별표·서식·첨부",
+    "본문 XML이 반환한 실제 파일 URL",
+    "응답 링크의 파일 파라미터 그대로 사용",
+    "대표: https://www.law.go.kr/LSW/flDownload.do?flSeq={응답값}; 다른 링크도 확인."
+  ]
+]

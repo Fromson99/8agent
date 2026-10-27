@@ -1,0 +1,346 @@
+{
+  "status": "READY",
+  "scope": "49 full request specifications and LSW registration; no runtime changes",
+  "counts": {
+    "laws": 37,
+    "administrative_rules": 12,
+    "concrete_request_pairs": 49,
+    "asset_rows": 5126,
+    "unique_asset_urls": 5126,
+    "origin_file_routes": 2
+  },
+  "credentials_in_private_delivery": true,
+  "credential_source": ".env LAW_OC; value not logged",
+  "checks": [
+    "49 source XML names match requested scope",
+    "all 98 origin/relay query mappings equal",
+    "OC prefilled in JSON and XLSX",
+    "49 list and 49 body rows in workbook",
+    "all asset URLs traced to XML and have numeric flSeq",
+    "ZIP membership and bytes match; no JS files"
+  ],
+  "attachments": [
+    {
+      "name": "법제처_전체49종_실제값_LSW추가등록_20261027_R2.zip",
+      "bytes": 84170,
+      "sha256": "6978daea3507b8ce0b561f03992e81c7dfce1a80558d10cec86ee9b87f42beb1",
+      "mime_type": "application/zip"
+    },
+    {
+      "name": "05_전체49종_실제요청값_LSW등록_R2.xlsx",
+      "bytes": 18150,
+      "sha256": "f230988f9c89fdcc080817b9600b012ae12c2fc757727b0f8ad01128a9fcfd7f",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "name": "03_LSW_추가등록_요청서_R2.txt",
+      "bytes": 4509,
+      "sha256": "a308d1972fd12cf98c525cd4aa0e8d807f8893969c97921beb57beff9832ff75",
+      "mime_type": "text/plain"
+    }
+  ],
+  "source_inventory_sha256": "51f2df8344cc57f7d99a6b8309f6b1caabada206391eef0153c317701f4f925b",
+  "source_xml_bindings": [
+    {
+      "management_id": "A01",
+      "xml": "01_DATA/RAW/external/financial_team/law/상법/상법 본문.xml",
+      "sha256": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+      "effective_date": "20260723"
+    },
+    {
+      "management_id": "A02",
+      "xml": "01_DATA/RAW/external/financial_team/law/상법 시행령/상법 시행령 본문.xml",
+      "sha256": "92aac373f5bd944b5663f11e2ae8a86cf829efb73e96416738ed23add0754690",
+      "effective_date": "20260723"
+    },
+    {
+      "management_id": "A03",
+      "xml": "01_DATA/RAW/external/financial_team/law/자본시장과 금융투자업에 관한 법률/자본시장과 금융투자업에 관한 법률 본문.xml",
+      "sha256": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+      "effective_date": "20260804"
+    },
+    {
+      "management_id": "A04",
+      "xml": "01_DATA/RAW/external/financial_team/law/자본시장과 금융투자업에 관한 법률 시행령/자본시장과 금융투자업에 관한 법률 시행령 본문.xml",
+      "sha256": "2a410c9dfc65dac130d8192eb3c3b788998b9d5acef16494ebcde858f974bd07",
+      "effective_date": "20260804"
+    },
+    {
+      "management_id": "A05",
+      "xml": "01_DATA/RAW/external/financial_team/law/자본시장과 금융투자업에 관한 법률 시행규칙/자본시장과 금융투자업에 관한 법률 시행규칙 본문.xml",
+      "sha256": "e20b06b32087ace0f6f62281acc4b36238b35b7d009e16a0ea7a82ec6872d3d5",
+      "effective_date": "20250602"
+    },
+    {
+      "management_id": "A06",
+      "xml": "01_DATA/RAW/external/financial_team/law/금융회사의 지배구조에 관한 법률/금융회사의 지배구조에 관한 법률 본문.xml",
+      "sha256": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+      "effective_date": "20260102"
+    },
+    {
+      "management_id": "A07",
+      "xml": "01_DATA/RAW/external/financial_team/law/금융회사의 지배구조에 관한 법률 시행령/금융회사의 지배구조에 관한 법률 시행령 본문.xml",
+      "sha256": "cd9ba5440538778a3b988e94caf3501529eaa4bbde9e4dcc3900c1424e20f61e",
+      "effective_date": "20260324"
+    },
+    {
+      "management_id": "A08",
+      "xml": "01_DATA/RAW/external/financial_team/law/금융지주회사법/금융지주회사법 본문.xml",
+      "sha256": "10ea3459804e700e94e1479cdcbcb7a6662ce6f31298b30f422c23b9c14d4063",
+      "effective_date": "20230914"
+    },
+    {
+      "management_id": "A09",
+      "xml": "01_DATA/RAW/external/financial_team/law/독점규제 및 공정거래에 관한 법률/독점규제 및 공정거래에 관한 법률 본문.xml",
+      "sha256": "7e22804a9e127366482cf9691827d42c5b7119b8bdb526d6babdc69a0bea8623",
+      "effective_date": "20260512"
+    },
+    {
+      "management_id": "A10",
+      "xml": "01_DATA/RAW/external/financial_team/law/법인세법/법인세법 본문.xml",
+      "sha256": "fdadca1eadda1af82d25aa3ccc3268edbad272daafc1331bfcfbd7942fa55990",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A11",
+      "xml": "01_DATA/RAW/external/financial_team/law/법인세법 시행령/법인세법 시행령 본문.xml",
+      "sha256": "bf160bdb06cd73279b3fd9b95c6ae0ecebc505f17e4579d295bbb50b79856d70",
+      "effective_date": "20260227"
+    },
+    {
+      "management_id": "A12",
+      "xml": "01_DATA/RAW/external/financial_team/law/법인세법 시행규칙/법인세법 시행규칙 본문.xml",
+      "sha256": "4e90552eef495259d2e603b416b603de47dc59a619ce2dc008d020ee391292ee",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A13",
+      "xml": "01_DATA/RAW/external/financial_team/law/소득세법/소득세법 본문.xml",
+      "sha256": "61789e1949a9e2cd4ad521bc64cfeb9cdadf46f139c036d395e7d45c08bb523e",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A14",
+      "xml": "01_DATA/RAW/external/financial_team/law/소득세법 시행령/소득세법 시행령 본문.xml",
+      "sha256": "4fd64428c4c434b18d3fac12d227bcb252f66e7a4bee2d469386a2acf44f15a2",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A15",
+      "xml": "01_DATA/RAW/external/financial_team/law/소득세법 시행규칙/소득세법 시행규칙 본문.xml",
+      "sha256": "ac519ba63efb0d7db23d415932526cee23149bb5d1aed076a5fcf71a661d1704",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A16",
+      "xml": "01_DATA/RAW/external/financial_team/law/조세특례제한법/조세특례제한법 본문.xml",
+      "sha256": "b13caba2437b563e5ce8c9eeb0c8b33d33e6424d0cbd073037cad55032951fb8",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A17",
+      "xml": "01_DATA/RAW/external/financial_team/law/조세특례제한법 시행령/조세특례제한법 시행령 본문.xml",
+      "sha256": "1181d85bd5cb206b2f608d48578e51133d3812f6976fcd2ba1be01daecd2f692",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A18",
+      "xml": "01_DATA/RAW/external/financial_team/law/조세특례제한법 시행규칙/조세특례제한법 시행규칙 본문.xml",
+      "sha256": "51b4c50081ea6bb3fbd8904d094c2fde7d28319ae9e782e9189707570a7f8cca",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A19",
+      "xml": "01_DATA/RAW/external/financial_team/law/상속세 및 증여세법/상속세 및 증여세법 본문.xml",
+      "sha256": "27c02e2a7e1c59cb1f4a4b86db50857d7e6f2d7b61d27624dd752f5091daede0",
+      "effective_date": "20260102"
+    },
+    {
+      "management_id": "A20",
+      "xml": "01_DATA/RAW/external/financial_team/law/상속세 및 증여세법 시행령/상속세 및 증여세법 시행령 본문.xml",
+      "sha256": "0798989e52ca0254094e2d7904785c1d9bb2dc421addadf9c0d2ca21adc8964a",
+      "effective_date": "20260227"
+    },
+    {
+      "management_id": "A21",
+      "xml": "01_DATA/RAW/external/financial_team/law/상속세 및 증여세법 시행규칙/상속세 및 증여세법 시행규칙 본문.xml",
+      "sha256": "90ca53838b85eea0f4d5a990843d656244f9c03ed01d25cadae656d7748d9921",
+      "effective_date": "20260320"
+    },
+    {
+      "management_id": "A22",
+      "xml": "01_DATA/RAW/external/financial_team/law/주식회사 등의 외부감사에 관한 법률/주식회사 등의 외부감사에 관한 법률 본문.xml",
+      "sha256": "92089b5873b2ccc0ea853f261416df0443f86d9986953367e952db11e951c73a",
+      "effective_date": "20250401"
+    },
+    {
+      "management_id": "A23",
+      "xml": "01_DATA/RAW/external/financial_team/law/주식회사 등의 외부감사에 관한 법률 시행령/주식회사 등의 외부감사에 관한 법률 시행령 본문.xml",
+      "sha256": "e23caead133b028cffacf668ab0fee0993629161702257a65fdf35bebe815a1d",
+      "effective_date": "20260526"
+    },
+    {
+      "management_id": "A24",
+      "xml": "01_DATA/RAW/external/financial_team/law/주식회사 등의 외부감사에 관한 법률 시행규칙/주식회사 등의 외부감사에 관한 법률 시행규칙 본문.xml",
+      "sha256": "2272b8c7fb9c49bb8c5889e86bebd55541dc658df53d9035a68ab67ed93a5b10",
+      "effective_date": "20191217"
+    },
+    {
+      "management_id": "A25",
+      "xml": "01_DATA/RAW/external/financial_team/law/주식·사채 등의 전자등록에 관한 법률/주식ㆍ사채 등의 전자등록에 관한 법률 본문.xml",
+      "sha256": "590e7165a098da5f23e49d08917e75998f0bdbe9a4477ef5a9ab0c199c77acd3",
+      "effective_date": "20241231"
+    },
+    {
+      "management_id": "A26",
+      "xml": "01_DATA/RAW/external/financial_team/law/주식·사채 등의 전자등록에 관한 법률 시행령/주식ㆍ사채 등의 전자등록에 관한 법률 시행령 본문.xml",
+      "sha256": "62fadebbaa08931675cbba48244e45c8149818b2369a2da1701f4149c7f47ff5",
+      "effective_date": "20230701"
+    },
+    {
+      "management_id": "A27",
+      "xml": "01_DATA/RAW/external/financial_team/law/벤처기업육성에 관한 특별법/벤처기업육성에 관한 특별법 본문.xml",
+      "sha256": "963c5eda366b86c9a4d62c5f43f5411b02d947b2de17baa6de6e0b718d379194",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A28",
+      "xml": "01_DATA/RAW/external/financial_team/law/벤처기업육성에 관한 특별법 시행령/벤처기업육성에 관한 특별법 시행령 본문.xml",
+      "sha256": "205b2c839757a0f0dc29540d44418909feee39bdc0a371f87b20670836f9d6c7",
+      "effective_date": "20260701"
+    },
+    {
+      "management_id": "A29",
+      "xml": "01_DATA/RAW/external/financial_team/law/벤처기업육성에 관한 특별법 시행규칙/벤처기업육성에 관한 특별법 시행규칙 본문.xml",
+      "sha256": "576068c943da6b3c2abb615cafbd0e7c5829df938436eecaafaa50280968074a",
+      "effective_date": "20240710"
+    },
+    {
+      "management_id": "A30",
+      "xml": "01_DATA/RAW/external/risk_team/law/외국환거래법/외국환거래법 본문.xml",
+      "sha256": "05e52ad19d396823dcaa4ab1444c86c3774f98cd17cde72598e1d8d052ca017a",
+      "effective_date": "20260102"
+    },
+    {
+      "management_id": "A31",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융복합기업집단의 감독에 관한 법률/금융복합기업집단의 감독에 관한 법률 본문.xml",
+      "sha256": "39063945b3496156008307db83bb3d9fe075c1253bf1aa6fab7f4f5645f2e3ef",
+      "effective_date": "20210630"
+    },
+    {
+      "management_id": "A32",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융복합기업집단의 감독에 관한 법률 시행령/금융복합기업집단의 감독에 관한 법률 시행령 본문.xml",
+      "sha256": "9ececbd93cb135c2c043c7c977b76c77ac721a6590e697d6b1e539153705c904",
+      "effective_date": "20251001"
+    },
+    {
+      "management_id": "A33",
+      "xml": "01_DATA/RAW/external/risk_team/law/신용정보의 이용 및 보호에 관한 법률/신용정보의 이용 및 보호에 관한 법률 본문.xml",
+      "sha256": "6600250b13b874dbce23a67ff335ba19c961ddeb715b629b2448251e68a1719d",
+      "effective_date": "20260813"
+    },
+    {
+      "management_id": "A34",
+      "xml": "01_DATA/RAW/external/risk_team/law/개인정보 보호법/개인정보 보호법 본문.xml",
+      "sha256": "ab58f0d6419c68681ed4cfb7eba82058840de9933f774797277c0b690e939a7d",
+      "effective_date": "20251002"
+    },
+    {
+      "management_id": "A35",
+      "xml": "01_DATA/RAW/external/risk_team/law/개인정보 보호법 시행령/개인정보 보호법 시행령 본문.xml",
+      "sha256": "491860cf4b5ef92d6e9c4d1ada964718fd58b46cb758e0c8703ce2e6f093e0d4",
+      "effective_date": "20260820"
+    },
+    {
+      "management_id": "A36",
+      "xml": "01_DATA/RAW/external/risk_team/law/공공기관의 운영에 관한 법률/공공기관의 운영에 관한 법률 본문.xml",
+      "sha256": "c7f964eb82ebcface2b109d254cb8ff66e42372e114822e5639f7d3979fc10c1",
+      "effective_date": "20260102"
+    },
+    {
+      "management_id": "A37",
+      "xml": "01_DATA/RAW/external/risk_team/law/독점규제 및 공정거래에 관한 법률 시행령/독점규제 및 공정거래에 관한 법률 시행령 본문.xml",
+      "sha256": "a91e0464b4e75a8a293e5abcd2f6c2a89236e6f2df21231b56339e4562f5e0fc",
+      "effective_date": "20260324"
+    },
+    {
+      "management_id": "B01",
+      "xml": "01_DATA/RAW/external/financial_team/law/금융회사 지배구조 감독규정 시행세칙/금융회사 지배구조 감독규정 시행세칙 본문.xml",
+      "sha256": "4e56ec1d2a0144bbb5375192d8abb51a14b088f5fb00dab05bd082d98cfdf627",
+      "effective_date": "20240703"
+    },
+    {
+      "management_id": "B02",
+      "xml": "01_DATA/RAW/external/financial_team/law/증권의 발행 및 공시 등에 관한 규정/증권의 발행 및 공시 등에 관한 규정 본문.xml",
+      "sha256": "00f033fddcef6be268b5c3b85e8812950c686e2335c2ad89efe3ae7a636604e2",
+      "effective_date": "20260728"
+    },
+    {
+      "management_id": "B03",
+      "xml": "01_DATA/RAW/external/financial_team/law/증권의 발행 및 공시 등에 관한 규정 시행세칙/증권의 발행 및 공시 등에 관한 규정 시행세칙 본문.xml",
+      "sha256": "bda6629c14183265b72001c7e3a15c2b00301ff6b3ceb3d83637787cbc155b09",
+      "effective_date": "20250602"
+    },
+    {
+      "management_id": "B04",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융투자업규정/금융투자업규정 본문.xml",
+      "sha256": "c9b5b426277106375d1eb11328a08820784b080f10b89192df306a5b8486c1e8",
+      "effective_date": "20260708"
+    },
+    {
+      "management_id": "B05",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융투자업규정시행세칙/금융투자업규정시행세칙 본문.xml",
+      "sha256": "c6d784d914932b53c36ccd7af6995e908b2c290ccd663049f1286a8fdab2cdff",
+      "effective_date": "20260708"
+    },
+    {
+      "management_id": "B06",
+      "xml": "01_DATA/RAW/external/risk_team/law/외국환거래규정/외국환거래규정 본문.xml",
+      "sha256": "8e7cba2a7f896e2bf8ff393541989c92837bb63e497f552fa8eea25f811fae11",
+      "effective_date": "20260706"
+    },
+    {
+      "management_id": "B07",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융복합기업집단 감독규정/금융복합기업집단 감독규정 본문.xml",
+      "sha256": "7d04435127dcdc9d06938d3111b547a835b6f3b40347f1c975b2a641eb3819dd",
+      "effective_date": "20260809"
+    },
+    {
+      "management_id": "B08",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융회사 지배구조 감독규정/금융회사 지배구조 감독규정 본문.xml",
+      "sha256": "51a1477afdec9faa4288be8cd4b396dc3b975da8f244909187a25a9c9556b843",
+      "effective_date": "20240703"
+    },
+    {
+      "management_id": "B09",
+      "xml": "01_DATA/RAW/external/risk_team/law/전자금융감독규정/전자금융감독규정 본문.xml",
+      "sha256": "342cfff1766f3631cbc43a4bfe977ab5be116983b91b25a8d07b4fdd1f653e18",
+      "effective_date": "20260715"
+    },
+    {
+      "management_id": "B10",
+      "xml": "01_DATA/RAW/external/risk_team/law/전자금융감독규정시행세칙/전자금융감독규정시행세칙 본문.xml",
+      "sha256": "ff22367818c300e46ff28651e5705af5811b4c3be1cc9623f378f876d30f753a",
+      "effective_date": "20260420"
+    },
+    {
+      "management_id": "B11",
+      "xml": "01_DATA/RAW/external/risk_team/law/금융기관의 업무위탁 등에 관한 규정/금융기관의 업무위탁 등에 관한 규정 본문.xml",
+      "sha256": "37b8384a2ae71e30bd6f090fe70de64eee3ad8e01fa601f27d9b100089558ea7",
+      "effective_date": "20190401"
+    },
+    {
+      "management_id": "B12",
+      "xml": "01_DATA/RAW/external/risk_team/law/은행업감독업무시행세칙/은행업감독업무시행세칙 본문.xml",
+      "sha256": "6704e2a37623533d60ec3c6caeb2aad82c7bac24aace20dd02b65679712f2de1",
+      "effective_date": "20260630"
+    }
+  ],
+  "not_performed": [
+    "connection tests",
+    "law API calls",
+    "GENOS access",
+    "runtime deployment",
+    "actual full collection"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "status": "READY_TO_SEND",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 목록·본문·파일 조회 접속정보 및 시험 예시",
+  "attachments": [
+    {
+      "filename": "법제처_중계등록_목록포함.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 11603,
+      "sha256": "d31eed4eb25678bb390c46e60f3277cadf2d08e5c91a2738ac00c3f0caeec142"
+    },
+    {
+      "filename": "법제처_API_시험예시.txt",
+      "mime_type": "text/plain",
+      "bytes": 7757,
+      "sha256": "87173ab6b1f416ed5c4180c64c05c9bf75fb27038bcd58d1e696df22da66aa3a"
+    },
+    {
+      "filename": "법제처_중계등록_요청문.txt",
+      "mime_type": "text/plain",
+      "bytes": 6276,
+      "sha256": "fb4a17af44d0567e74445251503bee6430b547579cc21d02c96a295541a3421d"
+    },
+    {
+      "filename": "법제처_목록본문파일_실제응답.zip",
+      "mime_type": "application/zip",
+      "bytes": 1090914,
+      "sha256": "641f3ce3bd1cb42cd2ca8c748065c9e643206e7c815b56933c4bede52e3c6a12"
+    }
+  ],
+  "zip_members": [
+    "법제처_API_시험예시.txt",
+    "법제처_중계등록_요청문.txt",
+    "01_행정규칙_목록.xml",
+    "02_금융투자업규정_본문.xml",
+    "03_별표1_인가절차흐름도.hwp",
+    "04_금융투자업규정_개정전문.hwp",
+    "05_법령_목록.xml",
+    "06_자본시장법_본문.xml",
+    "호출응답기록.json",
+    "파일검증.json",
+    "README.txt"
+  ],
+  "credential_scan": "PASS including nested XLSX/ZIP content",
+  "javascript_exclusion": "PASS",
+  "scanned_entries": 28,
+  "chain_checks": {
+    "admin_list_serial_matches_body_ID": true,
+    "law_list_serial_matches_body_MST": true,
+    "law_list_effective_date_matches_body_efYd": true,
+    "admin_body_link_matches_annex_download": true,
+    "admin_body_link_matches_attachment_download": true,
+    "attachment_redirect_location_matches_final_url": true
+  },
+  "file_checks": [
+    {
+      "file": "01_행정규칙_목록.xml",
+      "capture": "05_list_admrul",
+      "bytes_received": 1784,
+      "bytes_delivered": 1784,
+      "original_sha256": "5c1a467b69990dd0077897a7ef65b1c3cc1103e2c83ec671ce2380a14504a166",
+      "delivery_sha256": "61be317a34a80368222e615abaf3708fa614ac5f8c3da216d8ce58546e82f440",
+      "credential_redaction_changed_bytes": true
+    },
+    {
+      "file": "02_금융투자업규정_본문.xml",
+      "capture": "06_body_admrul_id",
+      "bytes_received": 1758451,
+      "bytes_delivered": 1758451,
+      "original_sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982",
+      "delivery_sha256": "90dea2a5a1f92c61434850e34e2393099970323f9e7692047071d1bef2d83982",
+      "credential_redaction_changed_bytes": false
+    },
+    {
+      "file": "03_별표1_인가절차흐름도.hwp",
+      "capture": "02_annex",
+      "bytes_received": 33792,
+      "bytes_delivered": 33792,
+      "original_sha256": "bda9b3e8f9ee581514483547b748fa9983a3fb08d6591e4968f19d9993ec4d9d",
+      "delivery_sha256": "bda9b3e8f9ee581514483547b748fa9983a3fb08d6591e4968f19d9993ec4d9d",
+      "credential_redaction_changed_bytes": false
+    },
+    {
+      "file": "04_금융투자업규정_개정전문.hwp",
+      "capture": "03_attachment",
+      "bytes_received": 526848,
+      "bytes_delivered": 526848,
+      "original_sha256": "bd189f0c9f131dacb3420cc1c965a2e66c31e0f22b0af83996ef212adda11f52",
+      "delivery_sha256": "bd189f0c9f131dacb3420cc1c965a2e66c31e0f22b0af83996ef212adda11f52",
+      "credential_redaction_changed_bytes": false
+    },
+    {
+      "file": "05_법령_목록.xml",
+      "capture": "04_list_eflaw",
+      "bytes_received": 2843,
+      "bytes_delivered": 2843,
+      "original_sha256": "4ac4b6110ea5b2836d09d59fc0d519c8e7e29b36f68abaecba5b5f671d7c2fc4",
+      "delivery_sha256": "b47fb645eedf651a4a32ac388c5cd9c4761306028c48091c7d622cc15859f7d2",
+      "credential_redaction_changed_bytes": true
+    },
+    {
+      "file": "06_자본시장법_본문.xml",
+      "capture": "07_body_eflaw_date",
+      "bytes_received": 2185564,
+      "bytes_delivered": 2185564,
+      "original_sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460",
+      "delivery_sha256": "bfc90b070e0b0da9b7b93590a8c9ee90d7609696ea7d94cff0ac7080da8f5460",
+      "credential_redaction_changed_bytes": false
+    }
+  ],
+  "internal_relay_or_dataiku_execution": false
+}

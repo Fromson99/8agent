@@ -1,0 +1,35 @@
+{
+  "status": "READY",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 조회 파라미터 및 LSW 추가 등록",
+  "attachments": [
+    {
+      "name": "법제처_API49종_요청값_LSW접속정보_R3.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 22330,
+      "sha256": "6b3e11ef3979ee465f842c06b92b4701b6b9b37b42b73c6efad8ff4e1b00afa9"
+    },
+    {
+      "name": "법제처_API_LSW_회신자료_20261027_R3.zip",
+      "mime_type": "application/zip",
+      "bytes": 86021,
+      "sha256": "11aa19a8c4f996c3ee113b342b32476421de714567165b2ccc7e630aaca1255e"
+    },
+    {
+      "name": "법제처_API_LSW_회신본문_R3.txt",
+      "mime_type": "text/plain",
+      "bytes": 3417,
+      "sha256": "de68aedee24a7ad6372b615309a24770c2ec85aee568a45b117131a1b026c341"
+    }
+  ],
+  "checks": [
+    "49 list and 49 body rows exactly match sent R2 values",
+    "actual OC preserved in spreadsheet",
+    "reply text and email use identical words",
+    "archive member bytes verified; no JavaScript"
+  ],
+  "scope": "Direct reply wording for DRF and LSW; 49 target values unchanged; fixed destination IP explicitly not supplied",
+  "network_calls": 0,
+  "runtime_changes": 0,
+  "source_email": "1a17a8f1e1893626"
+}

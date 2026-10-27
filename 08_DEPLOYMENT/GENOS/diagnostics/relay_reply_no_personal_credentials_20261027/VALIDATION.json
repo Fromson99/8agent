@@ -1,0 +1,37 @@
+{
+  "status": "READY",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 조회 조건 및 파일 다운로드 등록 요청",
+  "attachments": [
+    {
+      "name": "법제처_API_요청값_접속정보.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 17672,
+      "sha256": "0c2446c1c173bc9078c66608673611806ae9766932a7d00266a57b869712e445"
+    },
+    {
+      "name": "법제처_API_상세자료.zip",
+      "mime_type": "application/zip",
+      "bytes": 74465,
+      "sha256": "c3e672143c5b8fbaf1df54476837eaf8576456bf3d882edda4567addae03ecb7"
+    },
+    {
+      "name": "법제처_API_회신본문.txt",
+      "mime_type": "text/plain",
+      "bytes": 4036,
+      "sha256": "bbf7ae194924edabe251a66a335b16082309afa2a204ac71af5150af353520bc"
+    }
+  ],
+  "checks": [
+    "49 list and 49 body request rows",
+    "OC placeholders throughout JSON and URLs and workbook",
+    "known personal OC absent in raw and URL-encoded form",
+    "all ZIP members and nested XLSX XML inspected",
+    "no historical version references in visible content or filenames",
+    "each attachment explained by filename in email",
+    "ZIP byte equality and no JavaScript"
+  ],
+  "personal_credentials_included": false,
+  "source_credential_printed": false,
+  "scope": "standalone reply with institution OC placeholder; historical emails left unchanged"
+}

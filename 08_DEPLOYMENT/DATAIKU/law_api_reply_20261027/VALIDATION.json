@@ -1,0 +1,32 @@
+{
+  "status": "READY",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — Dataiku 배치 수집 조회 조건 및 파일 다운로드 등록 요청",
+  "attachments": [
+    {
+      "name": "법제처_API_요청값_접속정보.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 17844,
+      "sha256": "7fff68d89d5356edcfc43b2fb9c8c4abde39682fb0b2de19373be2de75649a87"
+    },
+    {
+      "name": "법제처_API_회신본문.txt",
+      "mime_type": "text/plain",
+      "bytes": 3087,
+      "sha256": "1e138f6baecc1ed121f3612636e044cd76c7485bd71926a2e164548ffe108b43"
+    }
+  ],
+  "flow": "Dataiku batch -> API relay -> law.go.kr",
+  "personal_credentials_included": false,
+  "checks": [
+    "49 document list and body request rows preserved",
+    "Dataiku is the stated caller in email and workbook",
+    "no full file URL list or count in sent material",
+    "only two representative download links",
+    "no GENOS or historical version references in visible content",
+    "personal OC absent in workbook XML and mail",
+    "each of two attachments described in mail"
+  ],
+  "network_api_calls": 0,
+  "runtime_changes": 0
+}

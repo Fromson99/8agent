@@ -1,0 +1,995 @@
+{
+  "schema": "external-api-refresh-request-v1",
+  "state": "specification_only_not_deployed",
+  "scope_count": 49,
+  "timezone": "Asia/Seoul",
+  "daily_start": "06:00",
+  "daily_status": "08:30",
+  "weekly_reconcile": "Sunday 18:00",
+  "history_backfill": false,
+  "daily_body_and_attachment_change_check": true,
+  "date_filters_default": null,
+  "credential_reference": "LAW_OC",
+  "targets": [
+    {
+      "management_id": "A01",
+      "query": "상법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "상법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=상법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%83%81%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A02",
+      "query": "상법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "상법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=상법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%83%81%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A03",
+      "query": "자본시장과 금융투자업에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "자본시장과 금융투자업에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=자본시장과 금융투자업에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%9E%90%EB%B3%B8%EC%8B%9C%EC%9E%A5%EA%B3%BC%20%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A04",
+      "query": "자본시장과 금융투자업에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "자본시장과 금융투자업에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=자본시장과 금융투자업에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%9E%90%EB%B3%B8%EC%8B%9C%EC%9E%A5%EA%B3%BC%20%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A05",
+      "query": "자본시장과 금융투자업에 관한 법률 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "자본시장과 금융투자업에 관한 법률 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=자본시장과 금융투자업에 관한 법률 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%9E%90%EB%B3%B8%EC%8B%9C%EC%9E%A5%EA%B3%BC%20%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A06",
+      "query": "금융회사의 지배구조에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "금융회사의 지배구조에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=금융회사의 지배구조에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%9A%8C%EC%82%AC%EC%9D%98%20%EC%A7%80%EB%B0%B0%EA%B5%AC%EC%A1%B0%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A07",
+      "query": "금융회사의 지배구조에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "금융회사의 지배구조에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=금융회사의 지배구조에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%9A%8C%EC%82%AC%EC%9D%98%20%EC%A7%80%EB%B0%B0%EA%B5%AC%EC%A1%B0%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A08",
+      "query": "금융지주회사법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "금융지주회사법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=금융지주회사법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%EC%A7%80%EC%A3%BC%ED%9A%8C%EC%82%AC%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A09",
+      "query": "독점규제 및 공정거래에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "독점규제 및 공정거래에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=독점규제 및 공정거래에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%8F%85%EC%A0%90%EA%B7%9C%EC%A0%9C%20%EB%B0%8F%20%EA%B3%B5%EC%A0%95%EA%B1%B0%EB%9E%98%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A10",
+      "query": "법인세법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "법인세법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=법인세법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%95%EC%9D%B8%EC%84%B8%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A11",
+      "query": "법인세법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "법인세법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=법인세법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%95%EC%9D%B8%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A12",
+      "query": "법인세법 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "법인세법 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=법인세법 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%95%EC%9D%B8%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A13",
+      "query": "소득세법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "소득세법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=소득세법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A14",
+      "query": "소득세법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "소득세법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=소득세법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A15",
+      "query": "소득세법 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "소득세법 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=소득세법 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A16",
+      "query": "조세특례제한법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "조세특례제한법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=조세특례제한법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A1%B0%EC%84%B8%ED%8A%B9%EB%A1%80%EC%A0%9C%ED%95%9C%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A17",
+      "query": "조세특례제한법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "조세특례제한법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=조세특례제한법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A1%B0%EC%84%B8%ED%8A%B9%EB%A1%80%EC%A0%9C%ED%95%9C%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A18",
+      "query": "조세특례제한법 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "조세특례제한법 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=조세특례제한법 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A1%B0%EC%84%B8%ED%8A%B9%EB%A1%80%EC%A0%9C%ED%95%9C%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A19",
+      "query": "상속세 및 증여세법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "상속세 및 증여세법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=상속세 및 증여세법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%83%81%EC%86%8D%EC%84%B8%20%EB%B0%8F%20%EC%A6%9D%EC%97%AC%EC%84%B8%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A20",
+      "query": "상속세 및 증여세법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "상속세 및 증여세법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=상속세 및 증여세법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%83%81%EC%86%8D%EC%84%B8%20%EB%B0%8F%20%EC%A6%9D%EC%97%AC%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A21",
+      "query": "상속세 및 증여세법 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "상속세 및 증여세법 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=상속세 및 증여세법 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%83%81%EC%86%8D%EC%84%B8%20%EB%B0%8F%20%EC%A6%9D%EC%97%AC%EC%84%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A22",
+      "query": "주식회사 등의 외부감사에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "주식회사 등의 외부감사에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=주식회사 등의 외부감사에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A3%BC%EC%8B%9D%ED%9A%8C%EC%82%AC%20%EB%93%B1%EC%9D%98%20%EC%99%B8%EB%B6%80%EA%B0%90%EC%82%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A23",
+      "query": "주식회사 등의 외부감사에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "주식회사 등의 외부감사에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=주식회사 등의 외부감사에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A3%BC%EC%8B%9D%ED%9A%8C%EC%82%AC%20%EB%93%B1%EC%9D%98%20%EC%99%B8%EB%B6%80%EA%B0%90%EC%82%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A24",
+      "query": "주식회사 등의 외부감사에 관한 법률 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "주식회사 등의 외부감사에 관한 법률 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=주식회사 등의 외부감사에 관한 법률 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A3%BC%EC%8B%9D%ED%9A%8C%EC%82%AC%20%EB%93%B1%EC%9D%98%20%EC%99%B8%EB%B6%80%EA%B0%90%EC%82%AC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A25",
+      "query": "주식·사채 등의 전자등록에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "주식·사채 등의 전자등록에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=주식·사채 등의 전자등록에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A3%BC%EC%8B%9D%C2%B7%EC%82%AC%EC%B1%84%20%EB%93%B1%EC%9D%98%20%EC%A0%84%EC%9E%90%EB%93%B1%EB%A1%9D%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A26",
+      "query": "주식·사채 등의 전자등록에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "주식·사채 등의 전자등록에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=주식·사채 등의 전자등록에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%A3%BC%EC%8B%9D%C2%B7%EC%82%AC%EC%B1%84%20%EB%93%B1%EC%9D%98%20%EC%A0%84%EC%9E%90%EB%93%B1%EB%A1%9D%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A27",
+      "query": "벤처기업육성에 관한 특별법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "벤처기업육성에 관한 특별법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=벤처기업육성에 관한 특별법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%A4%EC%B2%98%EA%B8%B0%EC%97%85%EC%9C%A1%EC%84%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A28",
+      "query": "벤처기업육성에 관한 특별법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "벤처기업육성에 관한 특별법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=벤처기업육성에 관한 특별법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%A4%EC%B2%98%EA%B8%B0%EC%97%85%EC%9C%A1%EC%84%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A29",
+      "query": "벤처기업육성에 관한 특별법 시행규칙",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "벤처기업육성에 관한 특별법 시행규칙",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=벤처기업육성에 관한 특별법 시행규칙&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%B2%A4%EC%B2%98%EA%B8%B0%EC%97%85%EC%9C%A1%EC%84%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%ED%8A%B9%EB%B3%84%EB%B2%95%20%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A30",
+      "query": "외국환거래법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "외국환거래법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=외국환거래법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%99%B8%EA%B5%AD%ED%99%98%EA%B1%B0%EB%9E%98%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A31",
+      "query": "금융복합기업집단의 감독에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "금융복합기업집단의 감독에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=금융복합기업집단의 감독에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%EB%B3%B5%ED%95%A9%EA%B8%B0%EC%97%85%EC%A7%91%EB%8B%A8%EC%9D%98%20%EA%B0%90%EB%8F%85%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A32",
+      "query": "금융복합기업집단의 감독에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "금융복합기업집단의 감독에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=금융복합기업집단의 감독에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%EB%B3%B5%ED%95%A9%EA%B8%B0%EC%97%85%EC%A7%91%EB%8B%A8%EC%9D%98%20%EA%B0%90%EB%8F%85%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A33",
+      "query": "신용정보의 이용 및 보호에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "신용정보의 이용 및 보호에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=신용정보의 이용 및 보호에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EC%8B%A0%EC%9A%A9%EC%A0%95%EB%B3%B4%EC%9D%98%20%EC%9D%B4%EC%9A%A9%20%EB%B0%8F%20%EB%B3%B4%ED%98%B8%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A34",
+      "query": "개인정보 보호법",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "개인정보 보호법",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=개인정보 보호법&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EB%B3%B4%ED%98%B8%EB%B2%95&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A35",
+      "query": "개인정보 보호법 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "개인정보 보호법 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=개인정보 보호법 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EB%B3%B4%ED%98%B8%EB%B2%95%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A36",
+      "query": "공공기관의 운영에 관한 법률",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "공공기관의 운영에 관한 법률",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=공공기관의 운영에 관한 법률&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EA%B3%B5%EA%B3%B5%EA%B8%B0%EA%B4%80%EC%9D%98%20%EC%9A%B4%EC%98%81%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "A37",
+      "query": "독점규제 및 공정거래에 관한 법률 시행령",
+      "group": "A",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "eflaw",
+        "type": "XML",
+        "search": "1",
+        "query": "독점규제 및 공정거래에 관한 법률 시행령",
+        "nw": "2,3",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=eflaw&type=XML&search=1&query=독점규제 및 공정거래에 관한 법률 시행령&nw=2,3&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=eflaw&type=XML&search=1&query=%EB%8F%85%EC%A0%90%EA%B7%9C%EC%A0%9C%20%EB%B0%8F%20%EA%B3%B5%EC%A0%95%EA%B1%B0%EB%9E%98%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0%20%EC%8B%9C%ED%96%89%EB%A0%B9&nw=2,3&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "MST←법령일련번호; efYd←해당 판본 시행일"
+    },
+    {
+      "management_id": "B01",
+      "query": "금융회사 지배구조 감독규정 시행세칙",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융회사 지배구조 감독규정 시행세칙",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융회사 지배구조 감독규정 시행세칙&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%9A%8C%EC%82%AC%20%EC%A7%80%EB%B0%B0%EA%B5%AC%EC%A1%B0%20%EA%B0%90%EB%8F%85%EA%B7%9C%EC%A0%95%20%EC%8B%9C%ED%96%89%EC%84%B8%EC%B9%99&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B02",
+      "query": "증권의 발행 및 공시 등에 관한 규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "증권의 발행 및 공시 등에 관한 규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=증권의 발행 및 공시 등에 관한 규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%A6%9D%EA%B6%8C%EC%9D%98%20%EB%B0%9C%ED%96%89%20%EB%B0%8F%20%EA%B3%B5%EC%8B%9C%20%EB%93%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B03",
+      "query": "증권의 발행 및 공시 등에 관한 규정 시행세칙",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "증권의 발행 및 공시 등에 관한 규정 시행세칙",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=증권의 발행 및 공시 등에 관한 규정 시행세칙&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%A6%9D%EA%B6%8C%EC%9D%98%20%EB%B0%9C%ED%96%89%20%EB%B0%8F%20%EA%B3%B5%EC%8B%9C%20%EB%93%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B7%9C%EC%A0%95%20%EC%8B%9C%ED%96%89%EC%84%B8%EC%B9%99&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B04",
+      "query": "금융투자업규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융투자업규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융투자업규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B05",
+      "query": "금융투자업규정시행세칙",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융투자업규정시행세칙",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융투자업규정시행세칙&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%88%AC%EC%9E%90%EC%97%85%EA%B7%9C%EC%A0%95%EC%8B%9C%ED%96%89%EC%84%B8%EC%B9%99&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B06",
+      "query": "외국환거래규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "외국환거래규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=외국환거래규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%99%B8%EA%B5%AD%ED%99%98%EA%B1%B0%EB%9E%98%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B07",
+      "query": "금융복합기업집단 감독규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융복합기업집단 감독규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융복합기업집단 감독규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%EB%B3%B5%ED%95%A9%EA%B8%B0%EC%97%85%EC%A7%91%EB%8B%A8%20%EA%B0%90%EB%8F%85%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B08",
+      "query": "금융회사 지배구조 감독규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융회사 지배구조 감독규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융회사 지배구조 감독규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%ED%9A%8C%EC%82%AC%20%EC%A7%80%EB%B0%B0%EA%B5%AC%EC%A1%B0%20%EA%B0%90%EB%8F%85%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B09",
+      "query": "전자금융감독규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "전자금융감독규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=전자금융감독규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%A0%84%EC%9E%90%EA%B8%88%EC%9C%B5%EA%B0%90%EB%8F%85%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B10",
+      "query": "전자금융감독규정시행세칙",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "전자금융감독규정시행세칙",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=전자금융감독규정시행세칙&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%A0%84%EC%9E%90%EA%B8%88%EC%9C%B5%EA%B0%90%EB%8F%85%EA%B7%9C%EC%A0%95%EC%8B%9C%ED%96%89%EC%84%B8%EC%B9%99&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B11",
+      "query": "금융기관의 업무위탁 등에 관한 규정",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "금융기관의 업무위탁 등에 관한 규정",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=금융기관의 업무위탁 등에 관한 규정&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EA%B8%88%EC%9C%B5%EA%B8%B0%EA%B4%80%EC%9D%98%20%EC%97%85%EB%AC%B4%EC%9C%84%ED%83%81%20%EB%93%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B7%9C%EC%A0%95&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    },
+    {
+      "management_id": "B12",
+      "query": "은행업감독업무시행세칙",
+      "group": "B",
+      "list_url": "https://www.law.go.kr/DRF/lawSearch.do",
+      "list_params": {
+        "OC": "{LAW_OC}",
+        "target": "admrul",
+        "type": "XML",
+        "search": "1",
+        "query": "은행업감독업무시행세칙",
+        "nw": "1",
+        "display": "100",
+        "page": "{PAGE}"
+      },
+      "readable_query": "OC={LAW_OC}&target=admrul&type=XML&search=1&query=은행업감독업무시행세칙&nw=1&display=100&page={PAGE}",
+      "encoded_url_template": "https://www.law.go.kr/DRF/lawSearch.do?OC={LAW_OC}&target=admrul&type=XML&search=1&query=%EC%9D%80%ED%96%89%EC%97%85%EA%B0%90%EB%8F%85%EC%97%85%EB%AC%B4%EC%8B%9C%ED%96%89%EC%84%B8%EC%B9%99&nw=1&display=100&page={PAGE}",
+      "body_url": "https://www.law.go.kr/DRF/lawService.do",
+      "version_binding": "ID←행정규칙일련번호"
+    }
+  ]
+}

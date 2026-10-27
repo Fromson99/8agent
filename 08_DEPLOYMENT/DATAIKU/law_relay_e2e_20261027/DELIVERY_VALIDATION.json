@@ -1,0 +1,39 @@
+{
+  "status": "READY_TO_SEND",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "RE: API중계서버 URL추가 문의 — 법제처 중계 등록 및 실제 호출 예시",
+  "attachments": [
+    {
+      "filename": "법제처_중계등록_실제호출예시.xlsx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 10267,
+      "sha256": "c9c3639b041f8fc421c5b86410050ed9bebbfcd96637713b951f931053d410ab"
+    },
+    {
+      "filename": "법제처_중계등록_요청문.txt",
+      "mime_type": "text/plain",
+      "bytes": 5301,
+      "sha256": "8193ee83cbd28d61e8651d14ab8f0c53dd18dc0922392f5b14883dde1e3a55b0"
+    },
+    {
+      "filename": "법제처_실제응답_예시.zip",
+      "mime_type": "application/zip",
+      "bytes": 823953,
+      "sha256": "2dda2d878fd91ddb1e754d29da1b5698036177649395b6a81d0342ec6530e8c0"
+    }
+  ],
+  "private_credential_scan": "PASS; real OC and encoded variants excluded, including nested XLSX/ZIP members",
+  "forbidden_javascript_scan": "PASS",
+  "scanned_entries": 22,
+  "zip_members": [
+    "README.txt",
+    "실제호출설명.txt",
+    "금융투자업규정_본문응답.xml",
+    "별표1_인가절차흐름도.hwp",
+    "금융투자업규정_개정전문.hwp",
+    "호출응답기록.json",
+    "파일검증.json"
+  ],
+  "origin_evidence": "Actual public-origin XML and two HWP files; captured bytes preserved.",
+  "internal_relay_or_dataiku_execution": false
+}

@@ -1,0 +1,174 @@
+{
+  "schema": "law-relay-request-proposal-v1",
+  "date": "2026-10-27",
+  "status": "PROPOSED_FOR_OPERATOR_CONFIRMATION",
+  "purpose": "Initial four sample XML requests; not an executable configuration",
+  "credentials": {
+    "LAW_OC": "Approved OC supplied separately; literal placeholder only"
+  },
+  "relay_contract": "Existing R3 sample GET /law/DRF plus target_url header; GENOS connection and query merging require operator confirmation",
+  "requests": [
+    {
+      "id": "L1",
+      "purpose": "자본시장법 현행 목록",
+      "method": "GET",
+      "origin": {
+        "url": "http://www.law.go.kr/DRF/lawSearch.do",
+        "query": {
+          "target": "eflaw",
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "search": "1",
+          "query": "자본시장과 금융투자업에 관한 법률",
+          "nw": "3",
+          "display": "100",
+          "page": "1"
+        }
+      },
+      "relay": {
+        "base": "{CONFIRMED_RELAY_BASE}",
+        "path": "/law/DRF",
+        "headers": {
+          "target_url": "http://www.law.go.kr/DRF/lawSearch.do?target=eflaw",
+          "Accept": "application/xml"
+        },
+        "query": {
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "search": "1",
+          "query": "자본시장과 금융투자업에 관한 법률",
+          "nw": "3",
+          "display": "100",
+          "page": "1"
+        }
+      },
+      "execution_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "L2",
+      "purpose": "자본시장법 현행 본문",
+      "method": "GET",
+      "origin": {
+        "url": "http://www.law.go.kr/DRF/lawService.do",
+        "query": {
+          "target": "eflaw",
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "ID": "010513"
+        }
+      },
+      "relay": {
+        "base": "{CONFIRMED_RELAY_BASE}",
+        "path": "/law/DRF",
+        "headers": {
+          "target_url": "http://www.law.go.kr/DRF/lawService.do?target=eflaw",
+          "Accept": "application/xml"
+        },
+        "query": {
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "ID": "010513"
+        }
+      },
+      "execution_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "R1",
+      "purpose": "금융투자업규정 현행 목록",
+      "method": "GET",
+      "origin": {
+        "url": "http://www.law.go.kr/DRF/lawSearch.do",
+        "query": {
+          "target": "admrul",
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "search": "1",
+          "query": "금융투자업규정",
+          "nw": "1",
+          "display": "100",
+          "page": "1"
+        }
+      },
+      "relay": {
+        "base": "{CONFIRMED_RELAY_BASE}",
+        "path": "/law/DRF",
+        "headers": {
+          "target_url": "http://www.law.go.kr/DRF/lawSearch.do?target=admrul",
+          "Accept": "application/xml"
+        },
+        "query": {
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "search": "1",
+          "query": "금융투자업규정",
+          "nw": "1",
+          "display": "100",
+          "page": "1"
+        }
+      },
+      "execution_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "R2",
+      "purpose": "금융투자업규정 명칭 지정 본문",
+      "method": "GET",
+      "origin": {
+        "url": "http://www.law.go.kr/DRF/lawService.do",
+        "query": {
+          "target": "admrul",
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "LM": "금융투자업규정"
+        }
+      },
+      "relay": {
+        "base": "{CONFIRMED_RELAY_BASE}",
+        "path": "/law/DRF",
+        "headers": {
+          "target_url": "http://www.law.go.kr/DRF/lawService.do?target=admrul",
+          "Accept": "application/xml"
+        },
+        "query": {
+          "OC": "{LAW_OC}",
+          "type": "XML",
+          "LM": "금융투자업규정"
+        }
+      },
+      "execution_status": "NOT_EXECUTED"
+    }
+  ],
+  "production_followup": {
+    "eflaw": {
+      "list_nw": "2,3",
+      "body_keys": [
+        "OC",
+        "target=eflaw",
+        "type=XML",
+        "MST=<list master>",
+        "efYd=<list effective date>"
+      ],
+      "omit": [
+        "ID",
+        "JO"
+      ]
+    },
+    "admrul": {
+      "list_nw": "1",
+      "body_keys": [
+        "OC",
+        "target=admrul",
+        "type=XML",
+        "ID=<list serial>"
+      ],
+      "omit": [
+        "LM"
+      ]
+    }
+  },
+  "attachments": {
+    "source": "Actual links from returned XML",
+    "example_origin_path": "/LSW/flDownload.do",
+    "relay_path": null,
+    "status": "Firewall and relay support requested"
+  }
+}
