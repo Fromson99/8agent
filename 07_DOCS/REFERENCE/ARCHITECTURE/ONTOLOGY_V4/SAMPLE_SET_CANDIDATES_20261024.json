@@ -1,0 +1,226 @@
+{
+  "schema_version": "ontology-v4-sample-candidates-v0",
+  "status": "CANDIDATE_USER_CONFIRMATION_PENDING",
+  "created_on": "2026-10-24",
+  "sources": {
+    "cm": "01_DATA/review/cm_core_e2e_v3.json",
+    "risk_cm": "01_DATA/GOLDEN/risk_cm/v1/questions.json",
+    "adr": "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question/artifacts/known-request.json",
+    "index": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/navigation/navigation.sqlite"
+  },
+  "candidates": [
+    {
+      "no": 1,
+      "case_id": "cm-001",
+      "collection": "cm",
+      "question": "벤처금융 및 전문투자자의 100분의 10 한도는 합산 기준인가?",
+      "context": "업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "evidence": [
+        "코스닥시장 상장규정 제26조(MAIN)"
+      ],
+      "relation_types": "수치 한도",
+      "index_status": null,
+      "reason": "단일 조문. \"각각 100분의 10\"의 \"각각\"이 답을 가름. 스키마 v0 값(qualifier) 검증용",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 2,
+      "case_id": "cm-050",
+      "collection": "cm",
+      "question": "100분의 10이 적용되는 경우는?",
+      "context": "업무 문맥: 공동주관회사 선임의무",
+      "evidence": [
+        "증권 인수업무 등에 관한 규정 제15조(MAIN)",
+        "중소기업기본법 제2조(DEFINITION)",
+        "중소기업창업 지원법 시행령 제4조(CONDITION_EXCEPTION)"
+      ],
+      "relation_types": "수치 한도 + 정의 + 예외",
+      "index_status": "중소기업기본법 제2조: 정방향 인용 있음 / 중소기업창업 지원법 시행령 제4조: 색인 없음",
+      "reason": "같은 \"100분의 10\"이 어느 경우에 적용되는지. 문서 간 정의·예외",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 3,
+      "case_id": "cm-004",
+      "collection": "cm",
+      "question": "제5호의 괴리율은 어떻게 산정하는가?",
+      "context": "업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "evidence": [
+        "코스닥시장 상장규정 시행세칙 제23조(MAIN)",
+        "증권 인수업무 등에 관한 규정 제5조(DEFINITION)"
+      ],
+      "relation_types": "정의 사용",
+      "index_status": "인수규정 제5조: 정방향 인용 있음",
+      "reason": "시행세칙 조문의 용어를 다른 규정의 정의로 풀어야 함",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 4,
+      "case_id": "cm-049",
+      "collection": "cm",
+      "question": "주관회사 또는 그 계열회사가 발행회사 지분을 보유하면 공동주관 의무가 발생하는가?",
+      "context": "업무 문맥: 공동주관회사 선임의무",
+      "evidence": [
+        "증권 인수업무 등에 관한 규정 제6조(MAIN)",
+        "증권 인수업무 등에 관한 규정 제2조(DEFINITION)",
+        "증권 인수업무 등에 관한 규정 제15조(CONDITION_EXCEPTION)"
+      ],
+      "relation_types": "정의 + 예외",
+      "index_status": "제2조(정의): 색인 없음 / 제15조: 역방향 준용 있음",
+      "reason": "같은 규정 안의 정의·예외. 정의 연결이 색인에 없음 → \"그 연결 가\" 테스트",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 5,
+      "case_id": "cm-009",
+      "collection": "cm",
+      "question": "의무인수가 면제되는 경우는?",
+      "context": "업무 문맥: 상장주선인의 의무인수 및 보유",
+      "evidence": [
+        "코스닥시장 상장규정 제13조(MAIN)",
+        "코스닥시장 상장규정 제31조(CONDITION_EXCEPTION)"
+      ],
+      "relation_types": "예외·면제",
+      "index_status": "제31조: 정방향 인용 있음",
+      "reason": "본문 의무와 다른 조의 면제 사유",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 6,
+      "case_id": "cm-035",
+      "collection": "cm",
+      "question": "내부회계관리제도 구축의무와 그 면제 기준은?",
+      "context": "업무 문맥: 내부회계관리제도",
+      "evidence": [
+        "주식회사 등의 외부감사에 관한 법률 제8조(MAIN)",
+        "주식회사 등의 외부감사에 관한 법률 시행령 제9조(CONDITION_EXCEPTION)"
+      ],
+      "relation_types": "예외·위임",
+      "index_status": "시행령 제9조: 양방향 인용 있음",
+      "reason": "법률 의무 + 시행령의 면제 기준",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 7,
+      "case_id": "cm-043",
+      "collection": "cm",
+      "question": "감사 보수의 결정을 이사회에 위임할 수 있는가?",
+      "context": "업무 문맥: 감사의 보수와 감사위원회 구성",
+      "evidence": [
+        "상법 제388조(INCORPORATED_RULE)",
+        "상법 제415조(INCORPORATION_BRIDGE)",
+        "상법 제542조의12(CONDITION_EXCEPTION)"
+      ],
+      "relation_types": "준용 + 예외",
+      "index_status": "제388조: 정방향 준용 있음 / 제542조의12: 색인 없음",
+      "reason": "감사에 이사 보수 규정 준용. 상장회사 특례는 색인 없음",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 8,
+      "case_id": "cm-017",
+      "collection": "cm",
+      "question": "행사가격 설정에 필요한 부여일 기준 시가는 어떻게 평가하는가?",
+      "context": "업무 문맥: 주식매수선택권 부여시가의 평가",
+      "evidence": [
+        "벤처기업육성에 관한 특별법 시행령 제11조의3(MAIN)",
+        "상속세 및 증여세법 제60조(INCORPORATED_RULE)",
+        "상속세 및 증여세법 시행령 제49조(INCORPORATED_RULE)"
+      ],
+      "relation_types": "준용·편입",
+      "index_status": "상증법 제60조·시행령 제49조: 정방향 준용 있음",
+      "reason": "다른 법률의 평가 방법을 끌어다 씀(문서 간 준용)",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 9,
+      "case_id": "cm-023",
+      "collection": "cm",
+      "question": "상장차익 증여의제는 어떤 요건에서 성립하는가?",
+      "context": "업무 문맥: 주식등의 상장 등에 따른 이익의 증여",
+      "evidence": [
+        "상속세 및 증여세법 제41조의3(MAIN)",
+        "상속세 및 증여세법 시행령 제31조의3(DELEGATED_DETAIL)"
+      ],
+      "relation_types": "위임",
+      "index_status": "시행령 제31조의3: 정방향 없음, 역방향 인용만",
+      "reason": "\"대통령령으로 정하는\" 위임. ADR-1037과 같은 유형 → \"그거 읽어\" 테스트",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    },
+    {
+      "no": 10,
+      "case_id": "RISK-CM-029",
+      "collection": "risk_cm",
+      "question": "PF사업성평가 등급이 하락한 사업장은 충당금 적립 대상인가?",
+      "context": "투자관리팀 · 외규만 가능",
+      "evidence": [
+        "금융투자회사의 리스크관리 모범규준 제6-15조",
+        "금융투자업규정 제3-7조",
+        "금융투자업규정 제3-8조"
+      ],
+      "relation_types": "별표 + 문서 간 연결",
+      "index_status": "제3-7조→별표 7: 본문 문서 안 별표로 원래 연결됨 / 제6-15조→별표 17-1: 2026-10-24 별표 수정으로 연결 / 제3-8조↔제3-7조 인용 있음",
+      "reason": "외규만 가능. 모범규준→금융투자업규정→별표로 이어짐"
+    },
+    {
+      "no": 11,
+      "case_id": "RISK-CM-030",
+      "collection": "risk_cm",
+      "question": "공매 대상 사업장 기준은?",
+      "context": "투자관리팀 · 외규로 일부 가능",
+      "evidence": [
+        "금융투자회사의 리스크관리 모범규준 제6-15조"
+      ],
+      "relation_types": "별표",
+      "index_status": "제6-15조 ③→별표 17-2: 2026-10-24 별표 수정으로 연결",
+      "reason": "외규로 일부 가능. 별표 대상이 색인에 없어 구조 조회 필요, 회사 추가 기준은 미확인으로 남아야 함"
+    },
+    {
+      "no": 12,
+      "case_id": "ADR-1037",
+      "collection": "adr",
+      "question": "양도차익을 산정할 때 양도가액에서 공제되는 경비는 무엇인가?",
+      "context": "ADR-1037 공개 질문",
+      "evidence": [
+        "소득세법 제97조",
+        "소득세법 시행령 제163조"
+      ],
+      "relation_types": "위임",
+      "index_status": "소득세법 제97조→시행령 제163조: 정방향 없음, 역방향 인용만",
+      "reason": "논의의 기준 사례. \"시행령 163조 읽어\" 재지시 완료 조건"
+    },
+    {
+      "no": 13,
+      "case_id": "cm-040",
+      "collection": "cm",
+      "question": "정관 변경의 결의요건은?",
+      "context": "업무 문맥: 주주총회와 이사회의 권한 배분",
+      "evidence": [
+        "상법 제434조(MAIN)"
+      ],
+      "relation_types": "단순(연결 불필요)",
+      "index_status": "—",
+      "reason": "연결 없이 한 조문으로 답함. 쓸데없는 탐색 확대 여부 확인",
+      "evidence_binding": "09_ARTIFACTS/AUDITS/20261024-cm-rebind/CM51_SOURCE_PACKAGE_SELECTION_20261015.json"
+    }
+  ],
+  "reserve": [
+    {
+      "case_id": "cm-020",
+      "relation_types": "위임 다리",
+      "index_status": "상증법 제63조→시행령 제57조: 정방향 없음"
+    },
+    {
+      "case_id": "RISK-CM-078",
+      "relation_types": "고시 위임(역방향)",
+      "index_status": "금융투자업규정 제5-18조→시행령 제181조: 정방향 인용 있음"
+    }
+  ],
+  "findings": {
+    "cm_evidence_stale_doc_ids": "해결(2026-10-24): 원본 v3의 문서 ID는 출처 기록이며, 현재 선택 세대로 다시 결속한 패키지를 만들었다. 98개 근거 중 96개는 문서 ID만 바뀌고 2개는 그대로, 조문 본문 변경 0건. 09_ARTIFACTS/AUDITS/20261024-cm-rebind/REBIND_REPORT.json",
+    "index_roles": "CM 근거 조문 기준 색인 연결 종류는 CITES·APPLIES_MUTATIS_MUTANDIS·SPECIFIES_DELEGATED_CASES_OF뿐, DELEGATES_TO 0건",
+    "delegation_and_annex_links": "위임: 정방향 없음, 역방향 인용만. 별표: 별도 파일 별표는 2026-10-24 수정으로 연결(09_ARTIFACTS/AUDITS/20261024-annex-binding)",
+    "reverse_links": "위임: 법→시행령 정방향은 없고 시행령→법 역방향 인용(CITES)은 있다(예: 시행령 제163조 각 항 → 법 제97조 각 호 9건). 별표: 조문→별표, 별표→조문 모두 색인 연결 없음. ADR-1037에서는 제97조 기준 연결 목록이 만들어지지 않아 역방향 후보가 모델에 보이지 않았다."
+  },
+  "model_calls": 0
+}

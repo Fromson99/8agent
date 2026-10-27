@@ -1,0 +1,658 @@
+{
+  "schema_version": "ontology-v4-seed-articles-v0",
+  "status": "CANDIDATE_USER_CONFIRMATION_PENDING",
+  "created_on": "2026-10-24",
+  "selection_rule": "근거에 주 조문 외 연결 조문(위임·준용·조건·예외·정의)이 있어 연결을 따라가야 답할 수 있는 문항의 출발 조문",
+  "sources": {
+    "cm": "01_DATA/review/cm_core_e2e_v3.json (evidence_role_v3)",
+    "fsc": "01_DATA/review/fsc_hard_retrieval_v3.json (current_evidence_articles)",
+    "risk_cm": "01_DATA/GOLDEN/risk_cm/v1/evidence-index.json",
+    "adr": "04_EXPERIMENTS/ADR/ADR-1037-uncapped-judgment-live-question"
+  },
+  "counts": {
+    "seed_bundles": 31,
+    "distinct_articles": 70,
+    "questions": 37,
+    "questions_with_reference_answer": 34
+  },
+  "power": {
+    "unit": "question (paired across arms)",
+    "test": "McNemar, two-sided alpha 0.05, power 0.80, assumed reverse discordance 5%",
+    "required_questions_by_effect": {
+      "15%p": 85,
+      "20%p": 57,
+      "25%p": 42,
+      "30%p": 33
+    },
+    "available_questions_with_reference_answer": 34,
+    "available_including_evidence_only": 37
+  },
+  "seeds": [
+    {
+      "anchor": "금융회사의 지배구조에 관한 법률 제10조",
+      "connections": [
+        {
+          "article": "금융회사의 지배구조에 관한 법률 제11조",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "금융회사의 지배구조에 관한 법률 시행령 제11조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-002",
+          "collection": "fsc",
+          "question": "금융회사의 상근임원이 자사 운용펀드가 투자하지 않은 SPAC의 비상근임원을 겸직하는 것이 「금융회사의 지배구조에 관한 법률」(이하 “지배구조법”)」에 따른 겸직제한에 위반되지 않는지?"
+        }
+      ]
+    },
+    {
+      "anchor": "금융회사의 지배구조에 관한 법률 제29조",
+      "connections": [
+        {
+          "article": "금융회사의 지배구조에 관한 법률 시행령 제24조",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-003",
+          "collection": "fsc",
+          "question": "상호저축은행의 준법감시인이 「개인금융채권의관리 및 개인금융채무자의 보호에 관한 법률」(이하 “개인채무자보호법”)상 채무조정 전담인력으로서의 업무를 수행할 수 있는지"
+        },
+        {
+          "case_id": "fsc-hard-005",
+          "collection": "fsc",
+          "question": "외국금융회사 국내지점의 총자산이 사업연도 말 이전 6개월 중 7천억원을 초과한 사실이 있으나, 이후 총 자산이 7천억원 미만으로 유지되는 경우 준법감시인이 위험관리책임자를 겸직할 수 있는지"
+        }
+      ]
+    },
+    {
+      "anchor": "금융회사의 지배구조에 관한 법률 제2조",
+      "connections": [
+        {
+          "article": "금융회사의 지배구조에 관한 법률 시행령 제4조",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-006",
+          "collection": "fsc",
+          "question": "금융회사와 투자자간에 '투자금 용도 변경 및 신주발행 등을 위해 동의가 필요'하다는 내용 등의 투자계약을 체결한 경우, 해당 투자자가 「금융회사의 지배구조에 관한 법률」(이하 ‘지배구조법’)상 대주주(주요주주)에 해당하는지"
+        }
+      ]
+    },
+    {
+      "anchor": "벤처기업육성에 관한 특별법 시행령 제11조의3",
+      "connections": [
+        {
+          "article": "상속세 및 증여세법 제60조",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "상속세 및 증여세법 시행령 제49조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-017",
+          "collection": "cm",
+          "question": "행사가격 설정에 필요한 부여일 기준 시가는 어떻게 평가하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "벤처기업육성에 관한 특별법 제16조의3",
+      "connections": [
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의6",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "상법 제340조의2",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "상법 제340조의5",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "상법 제434조",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "벤처기업육성에 관한 특별법 시행령 제11조의3",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-013",
+          "collection": "cm",
+          "question": "벤처기업이 주식매수선택권을 부여할 때의 요건은?"
+        },
+        {
+          "case_id": "cm-014",
+          "collection": "cm",
+          "question": "부여 기준시가 관련 규정은?"
+        }
+      ]
+    },
+    {
+      "anchor": "벤처기업육성에 관한 특별법 제16조의5",
+      "connections": [
+        {
+          "article": "벤처기업육성에 관한 특별법 시행령 제11조의4",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의3",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의4",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-016",
+          "collection": "cm",
+          "question": "벤처기업 주식매수선택권은 언제부터 행사할 수 있는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "벤처기업육성에 관한 특별법 제16조의6",
+      "connections": [
+        {
+          "article": "벤처기업육성에 관한 특별법 시행령 제11조의5",
+          "relation": "위임받은 세부"
+        },
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의4",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-015",
+          "collection": "cm",
+          "question": "부여 후 신고의무는 어디에 이행하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "상법 제341조의4",
+      "connections": [
+        {
+          "article": "상법 제434조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-045",
+          "collection": "cm",
+          "question": "자기주식 소각의무에 관한 신설 규정의 내용은?"
+        }
+      ]
+    },
+    {
+      "anchor": "상법 제342조",
+      "connections": [
+        {
+          "article": "상법 제341조의4",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-046",
+          "collection": "cm",
+          "question": "자기주식을 주주 외의 자에게 처분할 수 있는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "상법 제415조",
+      "connections": [
+        {
+          "article": "상법 제388조",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "상법 제542조의12",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-043",
+          "collection": "cm",
+          "question": "감사 보수의 결정을 이사회에 위임할 수 있는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "상법 제542조의8",
+      "connections": [
+        {
+          "article": "상법 제382조",
+          "relation": "정의"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-042",
+          "collection": "cm",
+          "question": "사외이사 관련 개정 내용은?"
+        }
+      ]
+    },
+    {
+      "anchor": "상속세 및 증여세법 시행령 제31조의3",
+      "connections": [
+        {
+          "article": "상속세 및 증여세법 제35조",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "상속세 및 증여세법 제39조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-025",
+          "collection": "cm",
+          "question": "이익 계산 시 이미 과세된 저가분이 조정되는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "상속세 및 증여세법 시행령 제49조",
+      "connections": [
+        {
+          "article": "상속세 및 증여세법 시행령 제49조의2",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "상속세 및 증여세법 시행령 제78조",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-018",
+          "collection": "cm",
+          "question": "상증세법 시행령 제49조 제1항의 구조는?"
+        }
+      ]
+    },
+    {
+      "anchor": "상속세 및 증여세법 시행령 제57조",
+      "connections": [
+        {
+          "article": "상속세 및 증여세법 제63조",
+          "relation": "위임 연결"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-020",
+          "collection": "cm",
+          "question": "공모가격이 평가액에 반영되는 기간과 방법은?"
+        }
+      ]
+    },
+    {
+      "anchor": "상속세 및 증여세법 제41조의3",
+      "connections": [
+        {
+          "article": "상속세 및 증여세법 시행령 제31조의3",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-023",
+          "collection": "cm",
+          "question": "상장차익 증여의제는 어떤 요건에서 성립하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "소득세법 시행령 제163조",
+      "connections": [
+        {
+          "article": "소득세법 제97조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-029",
+          "collection": "cm",
+          "question": "주식매수선택권을 행사하여 취득한 주식을 양도할 때 취득가액은?"
+        }
+      ]
+    },
+    {
+      "anchor": "신용정보의 이용 및 보호에 관한 법률 제17조",
+      "connections": [
+        {
+          "article": "신용정보의 이용 및 보호에 관한 법률 제2조",
+          "relation": "정의"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-010",
+          "collection": "fsc",
+          "question": "투자일임·자문업자가 신용정보(소득, 재산규모 등)에서 고객의 이름과 계좌번호를 제거하고 서버매칭하는 방식으로 업무수탁자에게 제공하는 경우 신용정보의 제공에 해당하는지 여부"
+        }
+      ]
+    },
+    {
+      "anchor": "자본시장과 금융투자업에 관한 법률 제159조",
+      "connections": [
+        {
+          "article": "자본시장과 금융투자업에 관한 법률 시행령 제167조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-008",
+          "collection": "fsc",
+          "question": "모집 또는 매출 실적이 있는 법인의 경우 각각의 증권마다 소유자 수가 모두 25인 미만인 경우로서 금융위원회가 인정한 경우 사업보고서 제출이 면제되는데, 해당 증권의 총 소유자 수가 아니라 해당 모집 또는 매출을 통하여 증권을 취득한 소유자 수가 25인 미만인 경우에도 제출이 면제되는지 여부"
+        }
+      ]
+    },
+    {
+      "anchor": "자본시장과 금융투자업에 관한 법률 제165조의7",
+      "connections": [
+        {
+          "article": "상법 제418조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-047",
+          "collection": "cm",
+          "question": "공모 시 우리사주조합원 배정은 어떤 근거로 이루어지는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "자본시장과 금융투자업에 관한 법률 제42조",
+      "connections": [
+        {
+          "article": "자본시장과 금융투자업에 관한 법률 시행령 제46조",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "fsc-hard-009",
+          "collection": "fsc",
+          "question": "<제목> 새로운 형태의 투자자문계약 가능 여부"
+        }
+      ]
+    },
+    {
+      "anchor": "조세특례제한법 제16조의2",
+      "connections": [
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의3",
+          "relation": "정의"
+        },
+        {
+          "article": "상법 제340조의2",
+          "relation": "정의"
+        },
+        {
+          "article": "상법 제542조의3",
+          "relation": "정의"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-027",
+          "collection": "cm",
+          "question": "벤처기업 주식매수선택권 행사이익에 대한 세제 혜택은?"
+        }
+      ]
+    },
+    {
+      "anchor": "조세특례제한법 제16조의4",
+      "connections": [
+        {
+          "article": "벤처기업육성에 관한 특별법 제16조의3",
+          "relation": "정의"
+        },
+        {
+          "article": "소득세법 제94조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-028",
+          "collection": "cm",
+          "question": "적격주식매수선택권의 요건과 효과는?"
+        }
+      ]
+    },
+    {
+      "anchor": "주식회사 등의 외부감사에 관한 법률 제8조",
+      "connections": [
+        {
+          "article": "주식회사 등의 외부감사에 관한 법률 시행령 제9조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-035",
+          "collection": "cm",
+          "question": "내부회계관리제도 구축의무와 그 면제 기준은?"
+        }
+      ]
+    },
+    {
+      "anchor": "증권 인수업무 등에 관한 규정 제15조",
+      "connections": [
+        {
+          "article": "중소기업기본법 제2조",
+          "relation": "정의"
+        },
+        {
+          "article": "중소기업창업 지원법 시행령 제4조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-050",
+          "collection": "cm",
+          "question": "100분의 10이 적용되는 경우는?"
+        }
+      ]
+    },
+    {
+      "anchor": "증권 인수업무 등에 관한 규정 제6조",
+      "connections": [
+        {
+          "article": "코스닥시장 상장규정 제13조",
+          "relation": "준용·편입"
+        },
+        {
+          "article": "증권 인수업무 등에 관한 규정 제2조",
+          "relation": "정의"
+        },
+        {
+          "article": "증권 인수업무 등에 관한 규정 제15조",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "자본시장과 금융투자업에 관한 법률 시행규칙 제14조",
+          "relation": "준용·편입"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-010",
+          "collection": "cm",
+          "question": "의무인수분이 공동주관회사 판단의 보유비율에 산입되는가?"
+        },
+        {
+          "case_id": "cm-049",
+          "collection": "cm",
+          "question": "주관회사 또는 그 계열회사가 발행회사 지분을 보유하면 공동주관 의무가 발생하는가?"
+        },
+        {
+          "case_id": "cm-051",
+          "collection": "cm",
+          "question": "보유비율은 어떻게 산정하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "증권의 발행 및 공시 등에 관한 규정 제2-6조",
+      "connections": [
+        {
+          "article": "증권의 발행 및 공시 등에 관한 규정 제2-4조",
+          "relation": "정의"
+        },
+        {
+          "article": "자본시장과 금융투자업에 관한 법률 시행령 제170조",
+          "relation": "정의"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-030",
+          "collection": "cm",
+          "question": "증권신고서 제출 시 1분기 검토보고서를 첨부하여야 하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "코스닥시장 상장규정 시행세칙 제23조",
+      "connections": [
+        {
+          "article": "증권 인수업무 등에 관한 규정 제5조",
+          "relation": "정의"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-004",
+          "collection": "cm",
+          "question": "제5호의 괴리율은 어떻게 산정하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "코스닥시장 상장규정 제13조",
+      "connections": [
+        {
+          "article": "코스닥시장 상장규정 시행세칙 제15조",
+          "relation": "조건·예외"
+        },
+        {
+          "article": "코스닥시장 상장규정 제31조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-008",
+          "collection": "cm",
+          "question": "국내 일반기업의 3개월 보유기간이 6개월로 연장되는 경우는?"
+        },
+        {
+          "case_id": "cm-009",
+          "collection": "cm",
+          "question": "의무인수가 면제되는 경우는?"
+        }
+      ]
+    },
+    {
+      "anchor": "코스닥시장 상장규정 제26조",
+      "connections": [
+        {
+          "article": "코스닥시장 상장규정 시행세칙 제23조",
+          "relation": "조건·예외"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "cm-003",
+          "collection": "cm",
+          "question": "재무적투자자가 제3자배정으로 취득한 주식은 제3호와 제4호 중 어디에 해당하는가?"
+        }
+      ]
+    },
+    {
+      "anchor": "금융투자회사의 리스크관리 모범규준 제6-15조",
+      "connections": [
+        {
+          "article": "금융투자회사의 리스크관리 모범규준 별표 17-1",
+          "relation": "별표 기준"
+        },
+        {
+          "article": "금융투자회사의 리스크관리 모범규준 별표 17-2",
+          "relation": "별표 기준"
+        },
+        {
+          "article": "금융투자업규정 제3-7조",
+          "relation": "조건(건전성 분류)"
+        },
+        {
+          "article": "금융투자업규정 제3-8조",
+          "relation": "조건(충당금 적립)"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "RISK-CM-029",
+          "collection": "risk_cm",
+          "question": "PF사업성평가 등급이 하락한 사업장은 충당금 적립 대상인가?"
+        },
+        {
+          "case_id": "RISK-CM-030",
+          "collection": "risk_cm",
+          "question": "공매 대상 사업장 기준은?"
+        }
+      ],
+      "note": "기준답변 없음(question_only). 근거 확보 지표만"
+    },
+    {
+      "anchor": "소득세법 제97조",
+      "connections": [
+        {
+          "article": "소득세법 시행령 제163조",
+          "relation": "위임받은 세부"
+        }
+      ],
+      "questions": [
+        {
+          "case_id": "ADR-1037",
+          "collection": "adr",
+          "question": "양도차익을 산정할 때 양도가액에서 공제되는 경비는 무엇인가?"
+        }
+      ],
+      "note": "기준답변 없음. 근거 확보 지표만"
+    }
+  ],
+  "model_calls": 0,
+  "note": "온톨로지(묶음)는 아직 만들지 않았다. 조문 선정만 한 것이다. 연결은 기준 근거의 역할 표시에서 왔으므로 이 묶음으로 얻는 효과는 이상적 온톨로지의 상한이다."
+}

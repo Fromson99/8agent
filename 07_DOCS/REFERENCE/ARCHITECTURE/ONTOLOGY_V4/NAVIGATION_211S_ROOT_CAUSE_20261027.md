@@ -1,0 +1,80 @@
+# 탐색 지연 211초 — 원인 확인과 SQL 최적화 결과
+
+<!-- MAIN104_SQL_FOLLOWUP -->
+**2026-10-27 — MAIN105 반영·실제 서비스 확인 완료:** [전체 반영·실제 실행·온톨로지 후속](MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 최초211초 원인의 MAIN104 SQL 수정에 반복 원문 확인 재사용과 네 연결 TEMP VIEW의 ID 점조회를 더했다. 보관응답1회 재생의 동일 계측35화면736.500→93.718초(87.275% 감소), 원문·행동·최종 답변 동일, 새 모델 호출0회다. 신규237조건·관측보조1,345조건을 구분한 ADR1081 검증 후 MAIN105 `navigation-validation-20261027-r1`을 선택했고 실제 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)이 통과했다. 작업 코드 통합에서 새4검사 통과, 기존7실패는 변경 전후 동일하다. 온톨로지는1074 부분실패→1077 상태 전환 수리→MAIN105 결합1079 실모델1셀/10호출을 완료했다. 두 원문의 판단 보존을 확인했지만 근거 연결 보완1회·제한 답변으로 품질 효과는 미인증이다. MAIN105 최종 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했다. 설치144명령·SQL18·상태13쌍을 통과했으며 MAIN104 첨부를 대체한다. P0~P4 전체 구현·전체 응답시간 개선·법률 품질·온톨로지 MAIN·GENOS 현장 배포 완료로 확대하지 않는다. 아래 이전 상태 기록과 구분한다.
+<!-- /MAIN104_SQL_FOLLOWUP -->
+
+2026-10-27. **주범은 정의에 연결된 참조를 확인하는 SQLite 조회였다.** 연결된 몇 건을 찾기 전에 전체 참조 VIEW를 구성하고, 권한 범위의 전체 참조 ID 목록까지 반복 생성했다. 필요한 ID로 먼저 좁히도록 두 곳을 바꿨다. 원문·권한·해시 검증은 유지했다.
+
+같은 정밀 계측기로 같은 8개 화면을 재현한 결과, 원래211초에 대응하는 구간은 **236.744초 → 19.891초, 91.598% 감소**했다. 외부 모델 호출은0회이며, 저장된11개 응답을 수정 없이 소비했다. 8개 화면의 data/actions/location 및 전달 원문·행동은 모두 원래 실행과 정확히 같았다. 작업 코드에 SQL 두 수정과 관련 pin을 통합했으며 **선택 MAIN103과 GENOS 배포는 변경하지 않았다.**
+
+## 1. 211초의 정확한 의미
+
+ADR1066 A0 `fsc-hard-005`의8개 이벤트 사이 간격 합은 **211.331831초**다. 한 모델 호출 시간이나 전체 서비스 시간이 아니다. 직전 행동의 상태 저장부터 다음 메뉴 투영 직전까지이며, `build_view()`만의 직접 타이머도 아니었다. 원래 이벤트는49→50,86→87,166→167,207→208,248→249,289→290,331→332,373→374다.
+
+원래 full state의 시점별 사본은 남아 있지 않았다. 최종 state를 과거 상태로 가장하지 않고, 같은 원문 세대와 최초 요청에서 실제 서비스·Investigation 흐름을 실행해 저장된 선택을 순서대로 공급했다. 일반 조사뿐 아니라 뒤쪽의 복구 조사 루프와 최종 발행도 통과했다. 모델의 새 판단 품질을 검증한 실험은 아니다.
+
+원래211.332초에는 이번 정밀 profiler가 없었다. 아래 전후 비교는 동일 profiler를 적용한 ADR1070/1071/1072 사이의 값이다. **211.332→19.891을 동일 계측 비교로 표기하지 않는다.**
+
+## 2. 직접 확인한 원인
+
+### 전체 참조 VIEW를 먼저 구성한 JOIN
+
+`legal_agent/definition_entry.py::verified()`의 이전 조회는 `definition_reference LEFT JOIN reference` 후 `definition_id`로 좁혔다. 이 세대의 `reference`는 실제 테이블이 아니라 `reference_payload`와 `reference_body`를 결합하고 `json_set`으로 원문을 복원하는 VIEW다.
+
+실제 선택 DB의 조회 계획은 `MATERIALIZE reference → SCAN reference_payload → reference_body 검색 → definition_id 검색`이었다. 정의5개를 표시할 때마다 이 작업을5번, 8개 화면에서40번 수행했다. 프로파일로 확인한 이 함수 누적시간은213.468초였다. 메모리 정리(GC)는8개 화면 합계0.030ms로 이 실행의 원인이 아니었다.
+
+첫 수정은 정렬된 연결 ID를 먼저 읽고 `reference WHERE id=?`로 필요한 참조만 조회한다. 누락·NULL 참조의 기존 오류와 이후 원문·문서·span·해시·권한 확인을 유지한다. legacy table과 compact VIEW를 모두 지원한다.
+
+### 권한 임시 VIEW의 전체 ID 목록 반복
+
+첫 수정 후에도 해당 함수가22.863초를 사용했다. 실제 실행 연결에는 `Selection.bind()`가 만든 권한·판본 필터용 TEMP VIEW가 추가된다. `definition_reference`의 `id IN (SELECT id FROM temp.reference)` 조건이 매번 전체 허용 ID 목록을 구성했다.
+
+두 번째 수정은 **같은 TEMP definition/reference VIEW**에 대해 해당 연결 ID의 존재를 상관 `EXISTS`로 확인한다. main 테이블로 우회하거나 제외 문서를 다시 허용하지 않는다. 실제 Selection.bind를 사용하는 작은 DB에서 숨겨진 문서·연결 대상, NULL, orphan, 중복, 정렬, query_only와 authorizer 보존을 검사했다. 조회 계획에서 연결·정의·참조의 키 검색을 확인했다.
+
+## 3. 동일 조건 측정
+
+| 범위 | 수정 전1070 B0 | 1차1071 B1 | 최종1072 B2 |
+|---|---:|---:|---:|
+| 원래211초에 대응하는8개 event gap 합 | 236.743932초 | 43.083567초 | **19.891310초** |
+| 전체 Investigation.view8회 | 237.923549초 | 44.218149초 | **21.082203초** |
+| definition_entry.verified40회 누적 | 213.467758초 | 22.863222초 | **0.030511초** |
+| 원래8개 frame·행동·전달 원문 일치 | 8/8 | 8/8 | 8/8 |
+| 저장 응답 소비 / 신규 외부 호출 | 11 / 0 | 11 / 0 | 11 / 0 |
+
+같은 probe SHA256은 `b2f5bc35b4ab6d7d22d9c1cc8a1c309486c2cc67a9acad2c309b7b05022c0ba6`다. 최종 전체 view 감소율91.139%, 1차 대비52.322%로 ADR1072 사전 기준90%/30%를 충족했다. event gap 감소율은91.598%다. 세 결과는 모두 HTTP200, native COMPLETED/PUBLISHED로 정상 종료했다.
+
+계측 자체의 비용은 미보정이다. ADR1069의 cProfile 자료에는 별도 스레드가 섞여 함수별 귀속을 폐기했고, 정상 화면 재구성·단계 타이머만 보존했다. ADR1070부터 표준 profile.Profile의 스레드별 수집과 실제 RSS 관찰 스레드 혼입0 검사를 사용한다. 정밀 함수 시간과 wall의 잔여를 모두 제품 비용이라고 간주하지 않는다. ADR1070의95% 귀속 목표와 ADR1071의90% 성능 목표·95% 귀속 목표 미달 기록은 그대로 보존한다. ADR1072는 동등성과 사전 성능 목표로 판정하며 이전 기준을 소급 변경하지 않는다.
+
+이 실험은 한 저장 질문의 한 순차 실행이다. 반복 분포·새 질문·새 모델 판단·법률 정답·일반적인 p95를 인증하지 않는다. 초기 자원 로딩, 나머지 메뉴 계산, 서비스 밖 프로세스 시작·정리는 이19.891초 밖의 비용이므로 전체 응답이19.891초라고 설명하지 않는다.
+
+## 4. 검증과 작업 코드 통합
+
+- 마지막 동결 후보의 두 변경 관련 검사11개 통과: 참조 조회8개, 실제 Selection.bind 권한/조회 계획3개.
+- 실제 서비스 진입점은 동결한 `service.service → POST /v1/rag/ask`다. 코드·데이터·정책·원래 응답을 해시로 결속하고 네트워크를 차단했다. 각 무거운 실행은 순차 한 개로만 수행했고 RSS4GiB/가용RAM3GiB/swap증가512MiB 기준을 유지했다.
+- 작업 코드에는 SQL 두 부분만 이식했다. 후보 전용 `acquire_initial.execution_review` 분기12줄은 덮어쓰지 않았다. Engine manifest30개의 두 제품 hash 및 PIPELINE의 대응30개 manifest hash만 바꾸고 기존 수정 내용을 보존했다. 동일 테스트2개를 추가했다.
+- 작업 코드 확대 검사49개 통과, 기존 계약과 맞지 않는 검사4개 실패를 숨기지 않고 보존했다. 두 건은 변경하지 않은 registry/wire-schema 기대값이고, API 두 건은 구형 fixture의 latest 선택 누락으로 새 SQL 진입 전에 실패했다. 현행 latest 선택 계약으로 fixture를 생성한 별도 실제 API 검사는 **2개 통과**했다(legacy/compact-v2 각각의 v5/v6 앱, 외부 모델0). require_latest나 검증 guard를 바꾸지 않고 검색·구판본 차단·신판본 읽기·범위·health·원파일 보존·rollback을 확인했다. 원래4개 실패를 이2개 성공으로 덮어쓰지 않는다.
+- 첫 작업 검사 실행은 테스트 도우미 경로가 빠져 수집 단계에서 실패했다. 경로를 명시한 후 위 결과를 얻었고 두 로그를 모두 보존했다.
+
+[통합 감사](../../../../09_ARTIFACTS/AUDITS/20261027-navigation-211s/integration-audit.json) · [정확한 변경분](../../../../09_ARTIFACTS/AUDITS/20261027-navigation-211s/integration-changes.patch) · [작업 검사](../../../../09_ARTIFACTS/AUDITS/20261027-navigation-211s/working-tests-r2.log) · [현행 API 확인](../../../../09_ARTIFACTS/AUDITS/20261027-navigation-211s/api-latest-analysis-r1.json).
+
+MAIN 선택 포인터 SHA256은 전후 `3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4`로 동일하다. 전체 후보 기능을 작업 코드·선택 MAIN 기능으로 설명하지 않는다. Git commit/push, MAIN 승격, GENOS ZIP·배포는 하지 않았다.
+
+## 5. 온톨로지와 GENOS 비교
+
+원래211초는 승인 온톨로지 묶음을 사용하지 않는 **A0**에서 발생했다. 이 결과는 온톨로지 판단 실패의 증거가 아니라 정의·명시 참조 조회 경로의 성능 결함이다. A1/A2의 효과와 별도 재표시 오류 해결을 이번 SQL 실험으로 인증하지 않는다.
+
+Oracle도 공통 정의 검증 코드와 필요한 ID 조회를 사용할 수 있다. 현행 SQL 변환기는 두 SELECT, parameter, equality, ORDER BY를 지원하며 `reference WHERE id=?`는 LOOKUP_ID 조건으로 내려간다. 그러나 두 번째 TEMP VIEW 변경은 로컬 SQLite 경로의 최적화다. Oracle의 definition_reference 물리 OWNER_ID는 reference_id를 우선 사용하고, 연결N개에 대한 단건 조회는 원격 왕복N회를 일으킬 수 있다. 현장 최적화에는 묶음 조회·실제 실행 계획 및 워크플로우 측정이 별도로 필요하다.
+
+현재 세션에서 GENOS 현장에 접근하지 않았다. 같은 코드 계열이라는 점과 같은 성능이라는 주장을 구분한다. 이번91.6%는 로컬 WSL/SQLite의 동일 계측 비교이며 GENOS 개선율이 아니다.
+
+## 6. 정본과 재현
+
+- [숫자·해시 비교 정본](../../../../09_ARTIFACTS/AUDITS/20261027-navigation-211s/COMPARISON.json)
+- [ADR1069 재구성·계측 실패 보존](../../../../04_EXPERIMENTS/ADR/ADR-1069-navigation-view-211s-profile/README.md)
+- [ADR1070 스레드별 계측·원인](../../../../04_EXPERIMENTS/ADR/ADR-1070-navigation-owner-thread-profile/README.md)
+- [실제 SQLite 조회 계획](../../../../04_EXPERIMENTS/ADR/ADR-1070-navigation-owner-thread-profile/artifacts/definition-reference-query-plan.json)
+- [ADR1071 참조 ID 조회](../../../../04_EXPERIMENTS/ADR/ADR-1071-definition-reference-point-lookup/README.md)
+- [ADR1072 권한 범위 단건 확인·최종 결과](../../../../04_EXPERIMENTS/ADR/ADR-1072-definition-link-visibility-point-check/README.md)
+
+각 ADR의 design-freeze, candidate revision, replay cell에 실제 요청·응답·journal·frame 대조·원시 profile·자원 기록이 있다. 완료 cell은 재실행하거나 덮어쓰지 않는다. 추가 성능 실행은 새 ADR로 선점·동결한다. 상세 측정 도구는 `06_TOOLS/EXPERIMENTS/adr_1070` 이후 실행기와 각 후보의 `genos_timing_probe.py`에 있으며, 프로브 전체를 MAIN/GENOS에 설치한 상태는 아니다.

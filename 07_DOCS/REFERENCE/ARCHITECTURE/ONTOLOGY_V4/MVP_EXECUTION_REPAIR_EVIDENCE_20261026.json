@@ -1,0 +1,470 @@
+{
+  "schema_version": "mvp-execution-repair-plan-evidence-v1",
+  "recorded_at": "2026-10-26T01:12:54.791927+00:00",
+  "kind": "READ_ONLY_DIAGNOSIS_FOR_DESIGN",
+  "new_model_calls": 0,
+  "runtime_changes": false,
+  "freeze_path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/design-freeze.json",
+  "freeze_sha256": "0499d196286a9afb15aee00ccb38c3946014913f5bd9c112ae7ec32b8cdb5a41",
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "output-unlimited-20261023-r1",
+    "generation": 103,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/output-unlimited-20261023-r1/release.json",
+    "release_manifest_sha256": "b56f4e4fd942eb40fcf2aa9d6bedd37b83f9fb512d610323ad72d760b9df0e79",
+    "activated_at": "2026-10-23T07:36:34.786667+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "0b2bed9d27826cafde0c8ca6c3b751b80f2128539eb38ed06a4d41c5aa6c8fc8"
+  },
+  "active_release_sha256": "3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4",
+  "cases": [
+    {
+      "case_id": "fsc-hard-005",
+      "arm": "A0",
+      "metrics_path": "04_EXPERIMENTS/ADR/ADR-1060-exact-wire-reference-audit/artifacts/matrix/001-fsc-hard-005-A0/metrics.json",
+      "metrics_sha256": "953a192b8e83bf8930795818a5ce02022694178d4d98a93fb86abb139d832596",
+      "journal_path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/001-fsc-hard-005-A0/runtime/legal-agent/runs/20261025/25265ea98180465c8eb22a0ec1d134d8/journal.sqlite",
+      "journal_sha256": "a31855b5d54297ffdd99c55a986eab3f3167e29073efa2853ebdfa26078bfd8d",
+      "largest_request": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/001-fsc-hard-005-A0/model/call-003-service/request.json",
+        "sha256": "9007a0f376bf1c6ea91599a8187c03816374db1b69047341de1b7f6375917ef1",
+        "canonical_chars": 55053,
+        "system_chars": 8033,
+        "user_chars": 31560,
+        "response_format_chars": 10204,
+        "serialization_and_other_fields_chars": 5256
+      },
+      "physical_calls": 6,
+      "outcome": {
+        "answer_coverage": "PARTIAL",
+        "assessment_hash": "5d74be9f29b7b4d2420759026923c1b42bbc0b0c7797718d6b5c13170ca7f7d4",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "MODEL_DECISION_UNRESOLVED"
+      },
+      "required_targets": [
+        {
+          "document_name": "external > financial_team > law > 금융회사의 지배구조에 관한 법률",
+          "coordinate": "body:제29조",
+          "acquired": "NONE",
+          "delivered": "NONE"
+        },
+        {
+          "document_name": "external > financial_team > law > 금융회사의 지배구조에 관한 법률 시행령",
+          "coordinate": "body:제24조",
+          "acquired": "NONE",
+          "delivered": "NONE"
+        }
+      ],
+      "ontology_view_observations": 0,
+      "accepted_read_choices": 0,
+      "rejected_read_choices": [
+        {
+          "seq": 233,
+          "attempt": 0,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 257,
+          "attempt": 1,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        }
+      ],
+      "repair_requirements": [
+        {
+          "seq": 238,
+          "required_count": 6,
+          "returned_count": 1,
+          "repair_response_mode": "FULL_DECISION"
+        }
+      ],
+      "automatic_definitions": [
+        {
+          "completed_targets": 7,
+          "pending": 0
+        }
+      ]
+    },
+    {
+      "case_id": "cm-023",
+      "arm": "A0",
+      "metrics_path": "04_EXPERIMENTS/ADR/ADR-1060-exact-wire-reference-audit/artifacts/matrix/002-cm-023-A0/metrics.json",
+      "metrics_sha256": "29917707fa73c43a4bb2cd556c4e653512c3b9d7595f4328f1bebaeec560df13",
+      "journal_path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/002-cm-023-A0/runtime/legal-agent/runs/20261025/1935757cdb304e7d908c64d4a6ba47b4/journal.sqlite",
+      "journal_sha256": "69a8593885e0ec58de4ba53ac4cf15dddf9d9c209110e36424ecc16a4ab7dd6b",
+      "largest_request": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/002-cm-023-A0/model/call-006-service/request.json",
+        "sha256": "0275dff4a20c0aec7ee44c397e1bc092231d62adc55b2f471def23b396c27bff",
+        "canonical_chars": 88877,
+        "system_chars": 8513,
+        "user_chars": 58233,
+        "response_format_chars": 11856,
+        "serialization_and_other_fields_chars": 10275
+      },
+      "physical_calls": 7,
+      "outcome": {
+        "answer_coverage": "INSUFFICIENT",
+        "assessment_hash": "81c2d7de09fa6b9a34ad0afa6c1fec946cd05f55b592c9c903dde3a4a691762a",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "MODEL_DECISION_UNRESOLVED"
+      },
+      "required_targets": [
+        {
+          "document_name": "external > financial_team > law > 상속세 및 증여세법",
+          "coordinate": "body:제41조의3",
+          "acquired": "TITLE_ONLY",
+          "delivered": "NONE"
+        },
+        {
+          "document_name": "external > financial_team > law > 상속세 및 증여세법 시행령",
+          "coordinate": "body:제31조의3",
+          "acquired": "NONE",
+          "delivered": "NONE"
+        }
+      ],
+      "ontology_view_observations": 0,
+      "accepted_read_choices": 0,
+      "rejected_read_choices": [
+        {
+          "seq": 330,
+          "attempt": 0,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 354,
+          "attempt": 1,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 415,
+          "attempt": 0,
+          "choice": "READ_SCOPE",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review; review must cite its currently delivered original bundle"
+        },
+        {
+          "seq": 439,
+          "attempt": 1,
+          "choice": "READ_SCOPE",
+          "judgment_count": 8,
+          "error": "one judgment update per original bundle; newly delivered originals omitted from read review; review must cite its currently delivered original bundle"
+        }
+      ],
+      "repair_requirements": [
+        {
+          "seq": 335,
+          "required_count": 7,
+          "returned_count": 1,
+          "repair_response_mode": "FULL_DECISION"
+        },
+        {
+          "seq": 420,
+          "required_count": 8,
+          "returned_count": 1,
+          "repair_response_mode": "FULL_DECISION"
+        }
+      ],
+      "automatic_definitions": [
+        {
+          "completed_targets": 10,
+          "pending": 0
+        }
+      ]
+    },
+    {
+      "case_id": "fsc-hard-008",
+      "arm": "A0",
+      "metrics_path": "04_EXPERIMENTS/ADR/ADR-1060-exact-wire-reference-audit/artifacts/matrix/003-fsc-hard-008-A0/metrics.json",
+      "metrics_sha256": "2df86b77d500c0180130ed2f2a088d7684f2bb41b61c2efae6752d1310ca2926",
+      "journal_path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/003-fsc-hard-008-A0/runtime/legal-agent/runs/20261025/286005c84adc4963a43506988d0cb6f4/journal.sqlite",
+      "journal_sha256": "9cdbd7a77ed315139d4e41db31aab3a90faf26f864d04eb0050db127da466c0e",
+      "largest_request": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1059-compact-input-guidance-binding/artifacts/matrix/003-fsc-hard-008-A0/model/call-006-service/request.json",
+        "sha256": "d66b5871e41c82fbfbd3c5270cefa6c05b407f8bbd95bcd9cdc3f383a1c51fad",
+        "canonical_chars": 82292,
+        "system_chars": 8189,
+        "user_chars": 54202,
+        "response_format_chars": 11560,
+        "serialization_and_other_fields_chars": 8341
+      },
+      "physical_calls": 8,
+      "outcome": {
+        "answer_coverage": "INSUFFICIENT",
+        "assessment_hash": "b338058eb57197299b9f7f7fee93d29091366bdf2e72d83801f7a295d583700d",
+        "basis": "committed-ASSESS-and-verified-COMPOSE",
+        "disposition": "LIMITED_ANSWER",
+        "schema_version": "accepted-outcome-v1",
+        "semantic_quality_certified": false,
+        "stop_reason": "MODEL_DECISION_UNRESOLVED"
+      },
+      "required_targets": [
+        {
+          "document_name": "external > financial_team > law > 자본시장과 금융투자업에 관한 법률",
+          "coordinate": "body:제159조",
+          "acquired": "NONE",
+          "delivered": "NONE"
+        },
+        {
+          "document_name": "external > financial_team > law > 자본시장과 금융투자업에 관한 법률 시행령",
+          "coordinate": "body:제167조",
+          "acquired": "PARTIAL",
+          "delivered": "NONE"
+        }
+      ],
+      "ontology_view_observations": 0,
+      "accepted_read_choices": 0,
+      "rejected_read_choices": [
+        {
+          "seq": 432,
+          "attempt": 0,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 456,
+          "attempt": 1,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 517,
+          "attempt": 0,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        },
+        {
+          "seq": 541,
+          "attempt": 1,
+          "choice": "FOLLOW_CONNECTION",
+          "judgment_count": 1,
+          "error": "newly delivered originals omitted from read review"
+        }
+      ],
+      "repair_requirements": [
+        {
+          "seq": 437,
+          "required_count": 3,
+          "returned_count": 1,
+          "repair_response_mode": "FULL_DECISION"
+        },
+        {
+          "seq": 522,
+          "required_count": 5,
+          "returned_count": 1,
+          "repair_response_mode": "FULL_DECISION"
+        }
+      ],
+      "automatic_definitions": [
+        {
+          "completed_targets": 16,
+          "pending": 0
+        }
+      ]
+    }
+  ],
+  "approved_snapshot": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1041-ontology-mvp-37-compiler/artifacts/approved-bundles-20261024-r1.json",
+    "file_sha256": "2d24241a12f41c557ab8fc64836f357b22a57cf3d8f515424adf15dfb0f6285f",
+    "bundle_count": 31,
+    "examples": [
+      {
+        "bundle_id": "cb-1a8f9c604513",
+        "concept": "준법감시인·위험관리책임자의 겸직 금지와 예외",
+        "provision_count": 11,
+        "relation_count": 2,
+        "provision_labels": [
+          "금융회사의 지배구조에 관한 법률 제29조",
+          "금융회사의 지배구조에 관한 법률 제29조제1호",
+          "금융회사의 지배구조에 관한 법률 제29조제2호",
+          "금융회사의 지배구조에 관한 법률 제29조제3호",
+          "금융회사의 지배구조에 관한 법률 제29조제4호",
+          "금융회사의 지배구조에 관한 법률 제29조제5호",
+          "금융회사의 지배구조에 관한 법률 시행령 제24조제1항",
+          "금융회사의 지배구조에 관한 법률 시행령 제24조제1항제4호",
+          "금융회사의 지배구조에 관한 법률 시행령 제24조제2항",
+          "금융회사의 지배구조에 관한 법률 시행령 제24조제2항제1호",
+          "금융회사의 지배구조에 관한 법률 시행령 제24조제2항제2호"
+        ],
+        "retained_review_notes": [
+          "사용자 미승인 초안. CONFIRMED는 연결 끝점의 원문 위치 확인을 뜻하며 법률 의미·적용성 승인을 뜻하지 않는다.",
+          "원문 판본은 현재 선택 세대의 source_artifact_sha256이다. 법령 시행일을 대신하는 날짜 표기가 아니다.",
+          "기존 조사 범위 안에서만 읽고 범위 밖 조항은 미확보로 표시한다. 승인으로 조사 범위가 넓어지지 않는다.",
+          "시행령 제20조제2항과 자산총액 판단시점의 외부 근거는 이 묶음에서 확보하지 않았다."
+        ]
+      },
+      {
+        "bundle_id": "cb-764ad7c91f3f",
+        "concept": "주식 상장에 따른 이익 증여의 성립과 계산",
+        "provision_count": 28,
+        "relation_count": 4,
+        "provision_labels": [
+          "상속세 및 증여세법 제41조의3제1항",
+          "상속세 및 증여세법 제41조의3제1항제1호",
+          "상속세 및 증여세법 제41조의3제1항제2호",
+          "상속세 및 증여세법 제41조의3제2항",
+          "상속세 및 증여세법 제41조의3제2항제1호",
+          "상속세 및 증여세법 제41조의3제2항제2호",
+          "상속세 및 증여세법 제41조의3제3항",
+          "상속세 및 증여세법 제41조의3제4항",
+          "상속세 및 증여세법 제41조의3제5항",
+          "상속세 및 증여세법 제41조의3제6항",
+          "상속세 및 증여세법 제41조의3제7항",
+          "상속세 및 증여세법 제41조의3제8항",
+          "상속세 및 증여세법 제41조의3제9항",
+          "상속세 및 증여세법 제41조의3제10항",
+          "상속세 및 증여세법 시행령 제31조의3제1항",
+          "상속세 및 증여세법 시행령 제31조의3제1항제1호",
+          "상속세 및 증여세법 시행령 제31조의3제1항제2호",
+          "상속세 및 증여세법 시행령 제31조의3제1항제3호",
+          "상속세 및 증여세법 시행령 제31조의3제2항",
+          "상속세 및 증여세법 시행령 제31조의3제3항",
+          "상속세 및 증여세법 시행령 제31조의3제3항제1호",
+          "상속세 및 증여세법 시행령 제31조의3제3항제2호",
+          "상속세 및 증여세법 시행령 제31조의3제4항",
+          "상속세 및 증여세법 시행령 제31조의3제5항",
+          "상속세 및 증여세법 시행령 제31조의3제5항제1호",
+          "상속세 및 증여세법 시행령 제31조의3제5항제2호",
+          "상속세 및 증여세법 시행령 제31조의3제6항",
+          "상속세 및 증여세법 시행령 제31조의3제7항"
+        ],
+        "retained_review_notes": [
+          "사용자 미승인 초안. CONFIRMED는 연결 끝점의 원문 위치 확인을 뜻하며 법률 의미·적용성 승인을 뜻하지 않는다.",
+          "원문 판본은 현재 선택 세대의 source_artifact_sha256이다. 법령 시행일을 대신하는 날짜 표기가 아니다.",
+          "기존 조사 범위 안에서만 읽고 범위 밖 조항은 미확보로 표시한다. 승인으로 조사 범위가 넓어지지 않는다."
+        ]
+      },
+      {
+        "bundle_id": "cb-d10a24aab57f",
+        "concept": "사업보고서 제출의무와 증권별 소유자 수 예외",
+        "provision_count": 7,
+        "relation_count": 2,
+        "provision_labels": [
+          "자본시장과 금융투자업에 관한 법률 제159조제1항",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제1항",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제1항제2호",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제1항제2호가목",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제1항제2호나목",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제2항",
+          "자본시장과 금융투자업에 관한 법률 시행령 제167조제2항제4호"
+        ],
+        "retained_review_notes": [
+          "사용자 미승인 초안. CONFIRMED는 연결 끝점의 원문 위치 확인을 뜻하며 법률 의미·적용성 승인을 뜻하지 않는다.",
+          "원문 판본은 현재 선택 세대의 source_artifact_sha256이다. 법령 시행일을 대신하는 날짜 표기가 아니다.",
+          "기존 조사 범위 안에서만 읽고 범위 밖 조항은 미확보로 표시한다. 승인으로 조사 범위가 넓어지지 않는다.",
+          "제167조제1항제1호 각 목의 증권 전체 목록은 남은 연결이다. 소유자 수 계산방법의 고시는 이 묶음에 포함하지 않았다."
+        ]
+      }
+    ]
+  },
+  "code_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/definition_entry.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/definition_entry.py",
+      "frozen_sha256": "96ddb411c54ccbc273633e3285d82da40b6fdc4b6db0964caa69c31118e20698",
+      "working_exists": true,
+      "working_sha256": "96ddb411c54ccbc273633e3285d82da40b6fdc4b6db0964caa69c31118e20698",
+      "working_matches": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/definition_context.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/definition_context.py",
+      "frozen_sha256": "f0117e9a4eccf257d217ed70866c661cfdf402d47407dc2890996d6377c255f8",
+      "working_exists": true,
+      "working_sha256": "f0117e9a4eccf257d217ed70866c661cfdf402d47407dc2890996d6377c255f8",
+      "working_matches": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/decision_projection.py",
+      "frozen_sha256": "5f233e82ac6be7fe74904e65caf13581db56d5e1c0228d953969e178a28cac84",
+      "working_exists": true,
+      "working_sha256": "4977ce221052b27fdc5565ede0c14511f75cf676704a204ebdd4215a79d8edcc",
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/read_judgment.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/read_judgment.py",
+      "frozen_sha256": "b4d39c63384f8757d261e98b8ba4dfc98e9f8499823120a43194e65299d432d1",
+      "working_exists": true,
+      "working_sha256": "b4d39c63384f8757d261e98b8ba4dfc98e9f8499823120a43194e65299d432d1",
+      "working_matches": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/read_judgment_repair.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/read_judgment_repair.py",
+      "frozen_sha256": "4bbff8bcb6b8468faff50eb1fcb18ed2b36f3ce9ba9ce43bfbd72b78e3480d25",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/ontology_compiler.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/ontology_compiler.py",
+      "frozen_sha256": "8809e19500e658791c36e39bdcc67728c09bd6a425a58a4ffe65b24d8bdc9274",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/ontology_context.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/ontology_context.py",
+      "frozen_sha256": "ef695102bfa717522b8ab5eaac212041f7d80a7ea3464f1be323c69f83d3e2ae",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "frozen_sha256": "763e3a63e1abfe71f17a789354b287a631b151cb22c83761a4ecb349d9695170",
+      "working_exists": true,
+      "working_sha256": "04ac9681e85c02d6a46dcad842e269f15fce4b636d55995f935af015422284e9",
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "frozen_sha256": "e3efe1794d83c87e145674d1e98feb66cb511cd06ae6139d953eb99452896ef2",
+      "working_exists": true,
+      "working_sha256": "c790a107a2fd9d7f7b77a986b37633b656cf66e312e40c1427dd79fa77e733ce",
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/model_input_projection.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/model_input_projection.py",
+      "frozen_sha256": "d26edfca4e08e185958322285a68ab7a3953a32c395e8cdacbd118bc216db9fa",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/navigation_values.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/navigation_values.py",
+      "frozen_sha256": "6243b1a74c8bf7cddb88556a780019a48ded4cfe2e6b95b1a9d678bcf43ef002",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/input_guidance.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/input_guidance.py",
+      "frozen_sha256": "91fcfce8821c2ae03e3e9cafe58fc95a745b87ed48de9098f6e8d4af74ab8702",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/step_state.py": {
+      "frozen_path": "02_BACKEND/lawrag/research/candidates/adr_1059/dense-input-r1/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/step_state.py",
+      "frozen_sha256": "21c30ad9a738a0de4049ab289a716376ed2c5d3cc9eb14c88cf0a4c04ca61b2d",
+      "working_exists": false,
+      "working_sha256": null,
+      "working_matches": false
+    }
+  }
+}

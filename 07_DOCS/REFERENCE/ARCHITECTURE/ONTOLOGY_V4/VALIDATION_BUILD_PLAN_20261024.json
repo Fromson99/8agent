@@ -1,0 +1,87 @@
+{
+  "document_validation_format": "ontology-v4-doc-check-v1",
+  "checked_on": "2026-10-24",
+  "timezone": "Asia/Seoul",
+  "status": "PASSED",
+  "local_link_occurrences": 265,
+  "errors": [],
+  "checked_files_sha256": {
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md": "fde6f9641fb49fc878017b8914b07a9336b1563b85f361fcd8f06f17548ed601",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/BUILD_PLAN.md": "13dacade62ed32f13e7c73ad751990d1a7f0acd08b488b1afb14a01f3124e38b",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/COMPILATION_AND_SCENARIOS.md": "7dcc5d2024482fa4236030f97edc5168ef6a422e82a420e74852fc3dca1dcd4c",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CONCEPT_AND_DECISIONS.md": "93d0b782ee7daa2942f44c6906caf82296b8e5b8c494ccb1bcbdc49cf187ad08",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CONTROLLED_KNOWLEDGE.md": "4315e9c8b3cc93353319483bc05772e53d6c04e780ed56df1213d83579605ed1",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CURRENT_STATE.md": "76f110fde03ed05bf6dd7eaecd7516101b2c0e2eec44ee575cb37b15ca2a33f0",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DISCUSSION_MAP.md": "e2dd4244c5bf351f333ef9f38476b8313c9e77ef753ab11e6c6db8e52e8f9a0f",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/JUDGMENT_AND_CORRECTION.md": "763a29da3a0d424c13b892515c6725dfac01954c58ca7deb1151f47bc3abf95f",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MULTITURN_LEGAL_AGENT.md": "a2370040ee555335ad3339b42e29236cc9bf7bd5d2b9b7b98ca16d4401bdc525",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/PERFORMANCE_EVIDENCE_PLAN.md": "5e9efc310e4a0f48485779bdf4a1d5739fbc7103280fad3e6772656e8206d480",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/PROTOTYPE_DESIGN.md": "ec78fef37dd5fb0404d49474483e2860df68f2edcd55fa6bec29a115ad18370b",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/SOURCE_ENTRY_COMPOSITION.md": "a14077e4afce04527993c8e654e633cebb61a75bc603d420e6fb36094f51c2c6",
+    "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/VALIDATION_AND_ROLLOUT.md": "8efd41b8858e4f872cc866e3fcfd2cbb6af89c05c94fa9fe7d156e6caac82c23",
+    "AGENTS.md": "6ce1c5f00ed0ceaec5f0f5272456144e970d527ae676487179d036b99b339576",
+    "01_DATA/GOLDEN/risk_cm/README.md": "f7d307bc8d2e682bb864b20bd6be9aea7e1b39f94b16811a8b3eb2eb1f66f03e",
+    "01_DATA/GOLDEN/risk_cm/EXPORT_AUTHORIZATION_20261024.json": "6ae4cefbae5b1a67737cf96f2494a07f4de0c8269e9089ed89dcc7aaef9243ae",
+    "01_DATA/GOLDEN/CM_EXPORT_AUTHORIZATION_20261024.json": "207b0216add97b49dfa79b2513b5572ea766cf82884939959cc6512e28352d58"
+  },
+  "preserved_before_rewrite": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/HISTORY/20261024_before_build_plan/SHA256SUMS.txt (4 files, verified)",
+  "prior_records_unchanged": [
+    "EVIDENCE.json",
+    "VALIDATION.json",
+    "VALIDATION_INITIAL.json",
+    "VALIDATION_MULTITURN_20261024.json",
+    "VALIDATION_EVIDENCE_PLAN_20261024.json",
+    "MULTITURN_EVIDENCE_20261024.json",
+    "EVALUATION_DESIGN_EVIDENCE_20261024.json",
+    "SOURCE_ENTRY_EVIDENCE.json",
+    "UNIT_CHECK.json"
+  ],
+  "code_facts_checked": [
+    "memory_methods.METHODS 12종 (작업=MAIN103)",
+    "corrected_memory.investigation_hints 이전 질문 LIMIT 1·이력 6개 (작업=MAIN103)",
+    "case_repository 세션 소유자 검사 (작업=MAIN103)",
+    "relation_read_policy RULES 14종 (작업=MAIN103)",
+    "read_judgment.py MAIN103 릴리스에 없음",
+    "judgment_view.py 작업≠MAIN103",
+    "lk_record.payload JSON 저장, oracle.validate_tables 테이블 단위 매핑",
+    "ontology.evaluate OPS에 min 없음"
+  ],
+  "active_pointer": {
+    "release_id": "output-unlimited-20261023-r1",
+    "generation": 103,
+    "changed": false
+  },
+  "product_code_changed": false,
+  "new_model_calls": 0,
+  "runtime_tests_run": false,
+  "experiment_reserved": false,
+  "git_commit": false,
+  "passes": [
+    {
+      "pass": 1,
+      "scope": "구축 결정 1차 반영: BUILD_PLAN 신설, 3개 문서 재작성, CM·risk_cm 반출 승인 기록"
+    },
+    {
+      "pass": 2,
+      "scope": "저장 구조(에이전트 레이어/S3 JSON/골드 SQL 적재)·재지시 3개 한도·세션 ID 반영, PROTOTYPE_DESIGN 재작성, 전체 문서 재검토",
+      "issues_fixed": [
+        "서빙이 S3를 읽지 않는데 골드 조회에 S3 매핑이 필요하던 모순 → 확정 매핑을 00_SYSTEM/ONTOLOGY_GOLD_MAPPING.json으로 코드 릴리스에 고정",
+        "기존 legal_knowledge 초안·게시·Service.plan 경로를 v4 지식 경로로 쓰던 서술 → v4는 S3 JSON→골드 적재, 기존 저장소는 미사용으로 정리",
+        "재지시 예시가 화면 번호를 judgment_id로 쓰던 문제 → LLM은 label(J번호)만 고르고 서버가 judgment_id·view_hash 결속",
+        "MAIN 반영 후 ADR 순서 → ADR 후 MAIN 반영, in-sample이라 사용자 지시 전환",
+        "단계 5 완료 조건이 단계 6 기능을 요구 → 골드 조회 포트 단위 확인으로",
+        "시뮬레이션 재생 검사가 단계 6 조립기에 의존 → 단계 6 전에는 미실행 표시",
+        "질문/턴 용어 혼용 → goal(질문)·턴(발화) 구분, 최근 10개는 goal 단위",
+        "재지시 읽기 범위·USE 의미·예산·분류 정정 방식·단계 8 전 조건 변경 발화 처리 미정 → 명시",
+        "개념 묶음 작업의 실행 주체·입력·LLM 검사·재시도·ID·재실행 규칙 미정 → 명시",
+        "역할·비교 값의 코드 식별자 부재 → DEFINITION…EFFECT, LT…EQ"
+      ],
+      "open_decisions": "5건 모두 3차에서 확정"
+    },
+    {
+      "pass": 3,
+      "scope": "남은 결정 5건을 사용자 지시대로 확정: 제안 표 정의로 로컬 진행, S3 폴더 LEGAL_RAG/LEGAL_ONTOLOGY_WORK, 재지시 EXCLUDE 추가(4종), GENOS 내부 LLM 호출 가능, 단계 1·2 사용자 지시 전환",
+      "open_decisions": "없음"
+    }
+  ]
+}
