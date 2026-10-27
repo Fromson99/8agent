@@ -1,0 +1,105 @@
+GENOS 함수·구간 시간 진단 R2 — 모델 밖 지연을 구간·코드 줄 단위로 분해
+
+목적
+10월22일 현장 요청은 232.3초 중 모델 호출 6회가 131.8초, 모델 밖이 100.4초였습니다.
+가장 긴 공백은 호출2→3 사이 63.5초였지만, 이벤트 사이 간격만 있어 원인을 특정하지 못했습니다.
+R2는 다음 질의 1건에서 모델 호출 사이 구간(G)마다 아래를 기록합니다.
+ 1) 실행 스레드 CPU / CPU 대기(run queue) / 그 외 대기 추정(I/O·잠금·sleep·네트워크)
+ 2) GC 시간·횟수, 읽기 시스템콜·읽은 바이트, 자발적/비자발적 문맥 전환, cgroup CPU 제한
+ 3) 원문 조회(Store.source)·데이터 변경 검사(check_unchanged) 횟수
+ 4) 10ms마다 읽은 실행 스레드의 호출 스택: 시간을 쓴 우리 코드 줄·함수·호출 경로
+함수 목록에 없는 곳(JSON·해시·파일 상태 조회·로그 등)에서 쓴 시간도 샘플에 잡힙니다.
+10월22일 준비했던 R1(미발송)을 대체합니다. R1은 지정한 함수만 감싸 목록 밖 시간을 볼 수 없었습니다.
+
+적용 범위
+- 대상: 기존 ~/DEV Git checkout. service.py가 MAIN99/MAIN101/MAIN102 인계본과 같은 바이트
+  (sha256 cbc158b5f01a3635…)일 때만 적용합니다. 다르면 check가 실제 해시를 보여주고 중단합니다.
+  파일을 임의로 덮어쓰거나 rehash하지 않습니다.
+- 바뀌는 파일: service.py(기존 요청 dispatch에 진단 연결 4줄), genos_timing_probe.py(신규) 2개.
+- 원문·색인·모델·프롬프트·질문·읽기 예산·MAIN 포인터·워크플로우 편집기는 바꾸지 않습니다.
+- 진단은 코드서빙 환경변수 GENOS_FUNCTION_TIMING=1일 때만 동작합니다. 없거나 0이면 기존과 같습니다.
+- 모델을 추가로 호출하지 않습니다.
+
+A. 압축 해제 — 실제 파일을 올린 TRANSFER 폴더에서
+mkdir -p ./function-timing-r2-logs
+python3 -m zipfile -e ./GENOS_FUNCTION_TIMING_20261024_R2.zip ./GENOS_FUNCTION_TIMING_20261024_R2 > ./function-timing-r2-logs/unzip.log 2>&1
+echo $? > ./function-timing-r2-logs/unzip.exit
+cat ./function-timing-r2-logs/unzip.log ./function-timing-r2-logs/unzip.exit
+마지막 숫자가 0일 때 계속합니다.
+별도 첨부한 GENOS_FUNCTION_TIMING_20261024_R2.txt 한 파일에도 전체 코드가 들어 있어 단독 실행할 수 있습니다.
+
+B. 코드 적용 — 계속 TRANSFER에서 실행 (적용 대상은 ~/DEV)
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt check
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt apply
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt gate
+기본 대상이 ~/DEV가 아니면 세 명령 모두에 --root /실제/DEV경로 를 똑같이 붙입니다.
+각각 CHECK_COMPLETE / APPLY_COMPLETE / GATE_COMPLETE와 "종료=0"이 나와야 성공입니다.
+check/apply/gate는 현재 엔진·워크플로우 코드 해시도 확인합니다(전체 rehash 없음).
+결과·로그: ./GENOS_TIMING_RESULTS/DETAIL-R2-…/  백업·재실행 상태: ./GENOS_FUNCTION_TIMING_STATE_R2/
+apply가 중간에 끊기면 같은 TRANSFER 위치에서 apply를 다시 실행합니다(같은 원본·대상 해시만 이어서 적용).
+
+C. 커밋·push·리비전·환경변수 — 이 도구가 대신하지 않습니다
+~/DEV에서 git diff로 service.py, genos_timing_probe.py 두 파일만 바뀐 것을 확인하고 기존 방식으로 커밋합니다.
+다른 진행 중 변경이나 staged 파일을 섞지 않습니다. 커밋 뒤 TRANSFER에서:
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt gate --committed
+SQLite/NFS 세대를 쓰는 현장은 선택적으로 --generation "/실제/선택된/generation"을 더해 기존 릴리스 게이트를 돌릴 수 있습니다.
+원문 전체 해시를 확인하므로 무거운 다른 작업과 동시에 실행하지 않습니다. Oracle 조회 환경은 생략합니다.
+같은 커밋을 push하고 코드서빙 리비전을 갱신합니다.
+코드서빙 환경변수에 GENOS_FUNCTION_TIMING=1 을 추가하고 반영/재시작합니다.
+TRANSFER 터미널에서 export해도 이미 떠 있는 코드서빙에는 반영되지 않습니다.
+선택 변수: GENOS_FUNCTION_TIMING_SAMPLE_MS=10 (기본, 2~200 허용)
+          GENOS_FUNCTION_TIMING_MODE=full (기본: 샘플링+함수 계측) 또는 sample (샘플링만)
+잘못된 값은 기본값으로 동작하고 결과에 경고로 표시합니다.
+
+D. 측정 질의 — 워크플로우 테스트 화면에서만
+10월22일과 같은 질문을 한 번 실행합니다. 코드서빙 직접 테스트 UI/API는 사용하지 않습니다.
+가능하면 다른 질의가 없는 시간에 1건씩 실행합니다. 동시 요청이 있었으면 결과에 경고가 표시됩니다.
+질문한 시각과 화면의 처리 시간을 메모합니다.
+
+E. 보고서 찾기와 분석 — TRANSFER에서
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt find "/실제/GENOS_SHARED_LOG_DIR/날짜폴더"
+  예: 10월21일 기록의 위치는 /nfs-root/diamo/8-agent/rag-request-reports/2026-10-21 였습니다. 현장 설정으로 확인합니다.
+최근 요청 10건의 시각·서버 처리 시간·계측 기록 여부와 바로 쓸 extract 명령이 나옵니다.
+자동으로 고르지 않습니다. 질문 시각·처리 시간과 대조해 같은 요청을 고릅니다.
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt extract "/정확한/요청보고서.json" --code-root ~/DEV
+.json.gz도 지원합니다. "EXTRACTION_COMPLETE"와 "종료=0"이 나와야 완료입니다.
+결과 폴더 GENOS_TIMING_RESULTS/DETAIL-R2-…/ 에 SUMMARY.txt / TIMELINE.txt / DIAGNOSTICS.json / EXECUTION.log / EXIT_CODE.txt가 남습니다.
+--code-root는 해당 파일 해시가 서빙 코드와 같을 때만 코드 줄 내용을 함께 보여줍니다.
+질문·원문·답변·SQL·바인드·문서/블록 ID는 출력하지 않습니다.
+과거 요청 보고서에는 "함수·구간 계측 미기록"이 나오는 것이 정상입니다.
+
+F. 결과 읽는 순서 — SUMMARY.txt 아래쪽 "함수·구간 시간 진단 R2"
+1. [구간 개요]: PRE, G0, M1, G1, M2 … POST 순서. M은 모델 호출, G는 모델 호출 사이(모델 밖)입니다.
+   각 줄: 경과 | 스레드CPU | CPU대기 | 그 외 대기 추정 | GC | 원문조회 횟수 | 변경검사 횟수
+2. [모델 밖 구간 상세]: 긴 G 구간부터
+   - 스레드 CPU가 대부분 → 파이썬 계산 비용. "맨 안쪽 우리 코드 줄"이 시간을 쓴 위치입니다.
+   - 그 외 대기가 큼 → I/O·잠금·네트워크. 읽기 시스템콜·자발적 전환 수, 맨 안쪽 프레임(pathlib·threading 등)을 봅니다.
+   - CPU 대기·cgroup 제한이 큼 → 컨테이너 CPU 부족·경합입니다.
+   - GC가 큼 → 객체 생성량 문제입니다.
+   - 원문 조회·변경 검사가 수만 회 → 후보 읽기량 계산 반복을 뒷받침하는 수치입니다.
+   - "호출 경로"는 바깥→안쪽 함수 순서입니다.
+3. [모델 구간 확인]: 모델 호출 중 실행 스레드가 응답 대기(socket/ssl/threading)였는지 확인합니다.
+4. 전달: SUMMARY.txt 파일 전체가 가장 정확합니다. 사진이면 [구간 개요]와 가장 긴 G 구간 상세 1~2개를 찍어 주세요.
+
+G. 부하와 한계
+- 샘플러는 10ms마다 실행 스레드의 스택 위치만 읽습니다(인자·변수 값은 읽지 않음). 샘플러 CPU 시간이 결과에 표시됩니다.
+- 함수 계측(원문 조회 등 56곳)은 호출마다 약 4마이크로초를 더합니다(로컬 측정). 예: 원문 조회 15만 회면 약 0.6초.
+- 로컬 실제 RAG 경로 측정에서 요청 처리 시간이 sample 모드 약 3~5%, full 모드 약 7~9% 늘었습니다.
+  깊은 재귀 스택(스키마 검증 등)일수록 샘플러 부하가 커집니다. 현장 수치에는 이 부하가 포함됩니다.
+  부하가 의심되면 MODE=sample 또는 SAMPLE_MS=20으로 한 번 더 측정해 비교합니다.
+- 샘플은 추정치입니다. 짧은 구간·짧은 함수는 오차가 큽니다. 포함 시간끼리는 더하지 않습니다.
+- 그 외 대기에는 디스크/NFS·잠금·sleep·네트워크·자식 스레드 대기가 섞여 있습니다. 특정 저장소 시간으로 단정하지 않습니다.
+- 요청 컨텍스트가 전달되지 않은 별도 스레드는 샘플되지 않습니다. 실행 스레드가 그 스레드를 기다리면 기다린 줄로 잡힙니다.
+- GC·프로세스 I/O·cgroup 값은 프로세스 단위입니다. 동시 요청 경고가 있으면 다른 요청과 섞였을 수 있습니다.
+- 수집 한도: 요청당 함수 진입 200만, 1900초, 샘플 표 종류별 2만 행, 구간 200개. 초과하면 경고만 남기고 원래 요청은 계속됩니다.
+- 진단 실패는 원래 요청의 결과·오류를 바꾸지 않습니다. 강제 종료 등으로 summary가 없으면 계측 완료로 보지 않습니다.
+- 모델 서버의 큐/입력 처리/생성 분리는 모델 서버 쪽 계측이 필요합니다.
+
+H. 끄기·원복
+측정을 마치면 코드서빙 환경변수 GENOS_FUNCTION_TIMING=0(또는 삭제)으로 반영합니다.
+코드까지 되돌리려면 같은 TRANSFER에서:
+bash ./GENOS_FUNCTION_TIMING_20261024_R2/GENOS_FUNCTION_TIMING_20261024_R2.txt rollback
+이전 커밋으로의 코드서빙 리비전 복귀는 별도입니다. 적용 뒤 사용자가 고친 내용이 있으면 보존하고 중단합니다.
+
+현장 상태: 이 패키지의 반입·commit/push·리비전·환경변수·측정 질의는 아직 수행되지 않았습니다.
+로컬 검사 결과는 VALIDATION.json에 있으며 현장 성공을 대신하지 않습니다.

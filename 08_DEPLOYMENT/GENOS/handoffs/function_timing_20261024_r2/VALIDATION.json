@@ -1,0 +1,186 @@
+{
+  "prepared_at": "2026-10-24T13:21:53.338055+09:00",
+  "revision": "GENOS_FUNCTION_TIMING_20261024_R2",
+  "supersedes": "GENOS_FUNCTION_TIMING_20261022_R1 (prepared, never sent)",
+  "tests": {
+    "unit_delivery_py314": "38 passed, 1 warning in 5.76s",
+    "unit_delivery_py311_15": "38 passed, 1 warning in 5.77s",
+    "real_rag_path_full_mode": "6 passed, 2 warnings in 16.39s",
+    "real_rag_path_sample_mode": "6 passed, 2 warnings in 15.42s",
+    "real_rag_path_without_probe": "6 passed, 2 warnings in 14.78s",
+    "log_sha256": {
+      "TEST_RESULTS_PY314.log": "634b19de267f1801929d2593ab41cdb4a54f5a1f248c1b844739f869f9368fa9",
+      "TEST_RESULTS_PY311.log": "598bf13f4e284e47d3b8db11fb1057600fd060d04b9931ff3caa9deca957b001",
+      "TEST_RESULTS_INTEGRATION.log": "b5a93134c6f91c5a57c9d4aa131653d1797595523423c0974f7181e80f9894a3",
+      "TEST_RESULTS_INTEGRATION_SAMPLE_MODE.log": "c1e0d68651cbc98f34e65e9f96ef9c496c0b89a345878f4da6eb4e6ede607d13",
+      "TEST_RESULTS_BASELINE_NO_PROBE.log": "bd34d0dba1e3b09888a7d778f41dd073195776e7f530dd19a791fab41f5ab2c5"
+    },
+    "real_rag_path": "05_TESTS/CONTRACTS/test_small_connection_context_api.py 6 routes via FastAPI TestClient /v1/rag/ask, real legal-agent/store/transport_attempt, synthetic generation and fixture transport; original assertions (answer text, request reuse) unchanged",
+    "release_code_hook_import": {
+      "unified-scope-semantics-20261022-r1": "56 hooks + 2 boundaries, missing 0",
+      "compact-answer-reasons-20261022-r1": "56 hooks + 2 boundaries, missing 0",
+      "selected-connection-coverage-20261022-r1 (MAIN102)": "56 hooks + 2 boundaries, missing 0"
+    },
+    "routes": [
+      {
+        "route": "batch",
+        "segments": 13,
+        "model_calls": 5,
+        "nonmodel_wall_ms": 2063.405,
+        "sampled_ms": 2059.493,
+        "sampler_cpu_ms": 100.463,
+        "no_own_frame_ms": 0,
+        "summary_ms": 5.016,
+        "profile_bytes": 143620,
+        "warnings": [],
+        "source_calls": 257,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 989.695,
+          "samples": 133
+        }
+      },
+      {
+        "route": "connection",
+        "segments": 13,
+        "model_calls": 5,
+        "nonmodel_wall_ms": 1891.417,
+        "sampled_ms": 1884.851,
+        "sampler_cpu_ms": 85.678,
+        "no_own_frame_ms": 0,
+        "summary_ms": 2.746,
+        "profile_bytes": 144777,
+        "warnings": [],
+        "source_calls": 189,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 932.951,
+          "samples": 121
+        }
+      },
+      {
+        "route": "chain",
+        "segments": 15,
+        "model_calls": 6,
+        "nonmodel_wall_ms": 2639.94,
+        "sampled_ms": 2635.425,
+        "sampler_cpu_ms": 109.605,
+        "no_own_frame_ms": 0,
+        "summary_ms": 2.799,
+        "profile_bytes": 159701,
+        "warnings": [],
+        "source_calls": 341,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 1362.966,
+          "samples": 179
+        }
+      },
+      {
+        "route": "context",
+        "segments": 15,
+        "model_calls": 6,
+        "nonmodel_wall_ms": 2537.848,
+        "sampled_ms": 2531.119,
+        "sampler_cpu_ms": 117.706,
+        "no_own_frame_ms": 0,
+        "summary_ms": 2.802,
+        "profile_bytes": 158804,
+        "warnings": [],
+        "source_calls": 394,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 1256.243,
+          "samples": 165
+        }
+      },
+      {
+        "route": "narrow",
+        "segments": 13,
+        "model_calls": 5,
+        "nonmodel_wall_ms": 2040.945,
+        "sampled_ms": 2038.543,
+        "sampler_cpu_ms": 100.229,
+        "no_own_frame_ms": 0,
+        "summary_ms": 3.482,
+        "profile_bytes": 144448,
+        "warnings": [],
+        "source_calls": 462,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 965.443,
+          "samples": 128
+        }
+      },
+      {
+        "route": "whole",
+        "segments": 13,
+        "model_calls": 5,
+        "nonmodel_wall_ms": 2148.641,
+        "sampled_ms": 2142.189,
+        "sampler_cpu_ms": 98.421,
+        "no_own_frame_ms": 0,
+        "summary_ms": 2.743,
+        "profile_bytes": 143776,
+        "warnings": [],
+        "source_calls": 539,
+        "top_nonmodel_line": {
+          "frame": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:Investigation.validate:1547",
+          "ms": 1021.591,
+          "samples": 137
+        }
+      }
+    ]
+  },
+  "overhead_local": {
+    "per_hook_call_us": 3.76,
+    "pytest_wall_6_routes_s": {
+      "without_probe": [
+        14.78,
+        14.83,
+        14.89,
+        14.93
+      ],
+      "sample_mode_10ms": [
+        15.42,
+        15.58,
+        15.54,
+        15.66
+      ],
+      "full_mode_10ms": [
+        15.82,
+        16.09,
+        16.03,
+        15.95
+      ]
+    },
+    "note": "pytest wall includes unprobed fixture builds; probed ask time is roughly 13s of it. Synthetic stack-depth bench: depth 10 +0.4%, depth 300 +4.4% at 10ms."
+  },
+  "defect_found_and_fixed": "GC callback acquired collector/_ACTIVE locks; a GC during a locked section on the same thread deadlocked (reproduced once in repeated real-path runs). Callback is now lock-free; regression test with gc threshold 1 passes.",
+  "code": {
+    "service.py": "e8eaf26d1c0a3ddb27e40c735b90fb6a99a4015af946a9503ade3f0e91c7c9a8",
+    "genos_timing_probe.py": "f9945873bf24e4956ad4dfa6477f6654dfbad63ffe222d43ad338d5ddaa967b9",
+    "extract.py": "e911b12cab9f0b557aa87bf5ff48fe3d63b3a4d733bf91ded836083a57e0e395",
+    "find_reports.py": "ce332ca5c99901f84452943aa73e9c48f425473cca2ef4f89503a04673b1d4c4",
+    "installer.py": "7f79e22f38919c00d7c591a49c7ea6b40804d50339fa8ed896a426c8649a8a00"
+  },
+  "baseline_service_sha256": "cbc158b5f01a36351931459e7a7bc667c353ffc46b08fe5fca89fcd2ebe8c391",
+  "active_release_pointer_sha256_unchanged": "3484769d8e2a0c2f66fa0a76595d6df7f3ffd57365c09a2fc9d15bcdc973eef4",
+  "scope": {
+    "working_service_changed": false,
+    "main_changed": false,
+    "data_changed": false,
+    "model_calls": 0,
+    "email_sent": false,
+    "genos_deployed": false,
+    "git_commit": false
+  },
+  "unverified": [
+    "GENOS code-serving runtime (Python 3.11 container) with this patch",
+    "onsite commit/push/revision/environment flag",
+    "real GENOS data, internal model and workflow test screen request",
+    "real-path integration under Python 3.11 locally: uv cpython 3.11.15 fails the base fixture without the probe (sqlite URI open), so only unit/service-entry/release-import tests ran on 3.11",
+    "field overhead of sampling on GENOS hardware",
+    "model server queue/prefill/generation breakdown"
+  ]
+}
