@@ -36,7 +36,9 @@ def build(root, generation, output, package_id, *, common=False, target_selected
         for case in data['cases']:
             entries = []
             for a in case['evidence_articles']:
-                docs = list(store.db.execute('SELECT * FROM document WHERE name=?', (a['law'],)))
+                # Newer generations name documents by catalog path ("external > ... > 법령명").
+                docs = [d for d in store.db.execute('SELECT * FROM document')
+                        if d['name'] == a['law'] or d['name'].split(' > ')[-1] == a['law']]
                 units = [(d,u) for d in docs for u in store.db.execute('SELECT * FROM source_unit WHERE document_id=?', (d['document_id'],))
                          if json.loads(u['json']).get('coordinate_key') == a['coordinate_key']]
                 if len(units) != 1:raise ValueError('ambiguous/missing article '+case['id']+' '+a['law']+' '+a['article'])
@@ -58,7 +60,9 @@ def build(root, generation, output, package_id, *, common=False, target_selected
         package = {'schema_version': SCHEMA, 'package_id': package_id,
             'registration_authority': 'USER_REQUEST_2026-10-07',
             'visibility':'COMMON_CATALOG' if common else 'PRIVATE_OWNER_TEAM',
-            'question_export': 'NOT_AUTHORIZED_FOR_EXTERNAL_MODEL', 'legal_claim_reuse':False,
+            'question_export': 'AUTHORIZED_FOR_EXTERNAL_EXPERIMENT_MODEL',
+            'question_export_authorization': '01_DATA/GOLDEN/CM_EXPORT_AUTHORIZATION_20261024.json',
+            'legal_claim_reuse':False,
             'training_cases':True,'benchmark_warning':'Known CM seeds after registration are in-sample; do not count as unseen success.',
             'source':{'path':str(corpus.relative_to(root)),'sha256':sha(corpus),'schema':data['schema_version']},
             'built_against':{'generation':store.manifest['generation_id'],'store_sha256':store.manifest['store_sha256']},
