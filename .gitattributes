@@ -24,3 +24,6 @@ tmp/pdfs/legal-rag-review/** -text -eol
 *.zip binary
 
 01_DATA/domain_graph/candidates.json filter=lfs diff=lfs merge=lfs -text -eol
+
+# This validated handoff CSV is hashed and intentionally uses Excel CRLF.
+08_DEPLOYMENT/GENOS/diagnostics/relay_request_20261027_r1/*.csv -text -eol
