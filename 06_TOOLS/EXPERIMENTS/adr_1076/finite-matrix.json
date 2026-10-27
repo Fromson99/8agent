@@ -1,0 +1,28 @@
+{
+  "schema_version": "adr1076-prospective-finite-matrix-v1",
+  "purpose": "Mechanical acquired-read preparation equivalence; no legal quality, corpus holdout or performance certification",
+  "static": {
+    "pattern": ["full", "partition", "overlap", "duplicate", "multi_source", "empty"],
+    "fault": ["none", "source_missing", "source_denied", "source_document", "source_blocks_missing", "block_outside", "original_missing", "text_mismatch", "block_hash", "span_hash", "start_bool", "start_float", "start_string", "start_negative", "end_bool", "end_float", "end_string", "end_negative", "end_before_start", "end_past_text", "start_missing", "end_missing", "text_missing", "block_missing"],
+    "control": [true, false],
+    "checker": [true, false],
+    "repeats": [1, 3]
+  },
+  "transitions": {
+    "transition": ["unchanged", "deep_copy", "order_reverse", "valid_extra_span", "valid_extra_source", "delivered_append", "delivered_remove", "acl_remove", "source_meta_document", "source_meta_blocks", "source_meta_order", "span_start_bool", "span_start_float", "span_end_bool", "span_text", "span_hash", "store_changed", "store_replaced", "control_toggle", "returned_blocks", "returned_spans", "failure_then_recovery", "new_view", "cross_session", "checker_exception", "source_after_first_read_failure", "unsupported_source_metadata", "cyclic_source_metadata"],
+    "control": [true, false],
+    "checker": [true, false]
+  },
+  "integration": {
+    "scopes": [1, 2, 4],
+    "links": [0, 1, 7],
+    "fault": ["none", "acl", "text", "generation", "operational", "timeout"],
+    "view_invocations": 2
+  },
+  "counts": {"static": 1152, "transitions": 112, "integration": 54, "total_pairs": 1318},
+  "static_empty_rule": "Empty selected source remains present with no spans. Span-only faults are explicitly inactive for empty; source metadata/ACL faults still apply. Such duplicate states remain visible in the census.",
+  "comparison": ["Exact success values including span and mapping order", "Exact exception type/message", "Input state unchanged by acquired_blocks except explicit fixture transitions", "Exact offer_choices menus/actions/events/state and restored connection_scope_spans", "No model or network", "Successful repeated control/checker fixture reduces original-read calls", "Control-disabled, empty and checker-absent states do not introduce store checks", "Failed results never become successful cached results", "Return-value mutation, new preparation and other session cannot inherit stale coverage"],
+  "resources": {"max_address_space_bytes": 1073741824, "real_data_loads": 0, "external_model_calls": 0, "network": false},
+  "failure_policy": "Preserve the first complete mismatch and partial census. Do not modify candidate, matrix or existing output after observing execution results; report blocking failure to owner.",
+  "scope_limits": ["Finite synthetic states only, not all Python objects or concurrent mutable-store behavior", "Native immutable-store check_unchanged contract is required for cache hits", "No selected-only/lazy preview policy change", "No product answer, prompt, dataset, model, budget or MAIN pointer mutation"]
+}

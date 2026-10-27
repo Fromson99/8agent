@@ -1,0 +1,76 @@
+{
+  "schema_version": "adr1078-prospective-state-sequences-v1",
+  "hypothesis": "The exact ADR1076 preparation implementation preserves acquired coverage, error precedence and input state over previously unexecuted multi-step session/store, layered-fault and adjacent-view sequences; a successful cached value never crosses an identity or invalidation boundary.",
+  "comparison_scope": "MAIN104 versus byte-identical ADR1076 candidate; mechanical finite synthetic contract only. This is not a legal-quality holdout and does not replace the separately declared native replay.",
+  "novelty_against_1076": "ADR1076 used static states and isolated named transitions. These new cases enumerate five-position session/store braids, persistent failure and repair cycles, all application/restoration orders of three simultaneous faults, and bypass-return-adjacent-view cycles. No old case IDs or cases are relabeled. No ADR1076 fixture or runner is imported.",
+  "categories": {
+    "identity_braid": {
+      "topology": ["two_sessions_shared_store", "two_sessions_equal_stores", "one_session_alternating_store"],
+      "route": ["ABABA", "AABBA", "ABBAB", "ABAAB"],
+      "boundary": ["one_view", "new_view_on_return", "new_view_on_switch"],
+      "sequence": "At each of five route positions, select the declared session/store identity, optionally start a new view, then call twice with equal input values. Revalidation is required on any identity change or new view; the immediate repeat is eligible for reuse.",
+      "paired_cases": 36,
+      "calls_per_arm_per_case": 10
+    },
+    "failure_cycles": {
+      "fault": ["span_text", "span_bound_bool", "source_missing", "source_timeout"],
+      "placement": ["all_selected", "last_delivered"],
+      "position": ["first_source", "last_source"],
+      "sequence": ["fault_first_attempt", "fault_identical_retry", "repair_success", "repeat_success", "second_span_hash_fault", "second_identical_retry", "repair_success", "repeat_success", "new_view_success", "repeat_success"],
+      "paired_cases": 16,
+      "calls_per_arm_per_case": 10
+    },
+    "layered_fault_orders": {
+      "components": ["acl", "source_blocks", "span"],
+      "application_orders": "all 6 permutations",
+      "restoration_orders": "all 6 permutations independently of application order",
+      "span_fault": ["start_bool", "start_float", "span_hash"],
+      "placement": ["all_selected", "last_delivered"],
+      "sequence": "Success twice; apply each of the three faults in order and call after each; repeat the fully faulted state; restore each component in order and call after each; repeat fully restored state; new-view success twice. Active ACL error takes precedence over source-block error, then span error, irrespective of mutation order.",
+      "paired_cases": 216,
+      "calls_per_arm_per_case": 12
+    },
+    "bypass_view_cycles": {
+      "bypass": ["control_disabled", "checker_absent", "empty_spans"],
+      "pattern": ["partition", "duplicate"],
+      "boundary": ["same_view_through_bypass", "new_view_each_phase"],
+      "sequence": ["valid", "valid_repeat", "bypass", "bypass_repeat", "restore", "restore_repeat", "adjacent_view", "adjacent_view_repeat"],
+      "paired_cases": 12,
+      "calls_per_arm_per_case": 8
+    }
+  },
+  "counts": {
+    "identity_braid": 36,
+    "failure_cycles": 16,
+    "layered_fault_orders": 216,
+    "bypass_view_cycles": 12,
+    "total_pairs": 280,
+    "calls_per_arm": 3208,
+    "total_observed_product_calls": 6416
+  },
+  "comparison": [
+    "Exact typed values and ordered gathered spans at every call, or exact exception class name and message",
+    "Predeclared semantic coverage/error oracle for both arms, including concurrent-fault precedence",
+    "All session/store input state unchanged by every product call; explicit fixture transitions remain visible",
+    "Fresh fixture per arm; no shared runtime module or mutable object across arms",
+    "Any session/store identity change or new view performs the baseline number of source reads",
+    "Failed validation attempts and bypass states perform the baseline number of source reads",
+    "A first call after bypass restoration performs the baseline number of source reads",
+    "Eligible immediate successful repeats avoid source reads while performing exactly one immutable-store check",
+    "At least one successful reuse witness and a fresh-boundary witness in each category"
+  ],
+  "error_oracle": {
+    "acl_or_missing_source": ["ContractError", "delivered reference source outside current scope"],
+    "source_blocks": ["ContractError", "delivered reference block outside source"],
+    "span": ["ContractError", "delivered reference original span changed"],
+    "source_timeout": ["TimeoutError", "synthetic state-sequence source timeout"]
+  },
+  "resources": {"network": false, "external_model_calls": 0, "real_data_loads": 0, "max_address_space_bytes": 1073741824, "parallel_heavy_processes": 0},
+  "failure_policy": "Write each complete paired trace and flush lossless compressed raw data. Preserve the first failure with the paired trace and partial census; do not overwrite any existing raw or failure output. Do not revise expected outputs or candidate after observing results; a changed hypothesis requires a follow-up ADR.",
+  "limits": [
+    "Finite sequential synthetic source contracts only; no concurrent source mutation or arbitrary adapter behavior",
+    "Stores expose an immutable check_unchanged capability; injected source timeout begins before a first validation and is not introduced invisibly beneath an already successful cached result",
+    "No menu, prompt, database query policy, model, dataset, MAIN pointer or native transcript changes",
+    "Observed read-count reuse is a mechanical witness, not an end-to-end speed estimate"
+  ]
+}

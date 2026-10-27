@@ -1,0 +1,105 @@
+{
+  "schema_version": "adr1080-prospective-reference-visibility-v1",
+  "hypothesis": "Replacing the common four TEMP relation-view membership predicate by a correlated reference-ID EXISTS preserves finite declared SQLite rows, types, multiplicity, consumer ordering/pagination, and requested errors, while eliminating the membership subquery's global reference scan in the declared point-query plans.",
+  "target": {
+    "path": "02_BACKEND/semantic_runtime/search_selection.py",
+    "views": ["reference_end", "reference_target", "reference_candidate", "reference_candidate_end"],
+    "baseline_predicate": "original.reference_id IN (SELECT id FROM temp.reference)",
+    "optimized_predicate": "EXISTS (SELECT 1 FROM temp.reference r WHERE r.id=original.reference_id)",
+    "unchanged": "The reference visibility VIEW, hidden-endpoint NOT IN predicates, catalog JSON DISTINCT, ORDER BY, cursor, LIMIT, and downstream authorization/witness checks are not modified."
+  },
+  "novelty": "ADR1073's 628 cases concerned definition-reference visibility and definition-entry lookup; ADR1078's 280 sequences concerned acquired-read preparation. These newly declared cases instead observe four outer reference relation VIEWs and their existing consumers. Prior results and fixtures are not relabeled or imported.",
+  "schema_boundary": "Published SQLite TEXT-affinity IDs and default BINARY collation, including SQLite-permitted NULL/orphan values and nullable composite-key duplicates. Custom collations, changed affinities and arbitrary schema substitution are outside this equivalence claim. Legacy reference table and production compact payload/body VIEW are both included.",
+  "bind_modes": {
+    "excluded": {"excluded": ["hidden"], "latest": []},
+    "latest_only": {"excluded": [], "latest": ["visible"]},
+    "early_return": {"excluded": [], "latest": []}
+  },
+  "categories": {
+    "visibility": {
+      "layout": ["legacy", "compact"],
+      "reference_state": ["visible", "hidden_owner", "null_document", "null_id", "orphan", "empty_id", "empty_reference_set"],
+      "hidden_mask": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "bind_mode": ["excluded", "latest_only", "early_return"],
+      "multiplicity": [1, 3],
+      "paired_cases": 1344
+    },
+    "source_boundary": {
+      "layout": ["legacy", "compact"],
+      "source_state": ["missing", "null_id", "null_document", "empty_id"],
+      "role": ["reference_end", "reference_target", "reference_candidate", "reference_candidate_end"],
+      "bind_mode": ["excluded", "latest_only", "early_return"],
+      "multiplicity": [1, 3],
+      "paired_cases": 192
+    },
+    "insertion_order": {
+      "layout": ["legacy", "compact"],
+      "bind_mode": ["excluded", "latest_only", "early_return"],
+      "order": ["forward", "reverse"],
+      "paired_cases": 12
+    },
+    "requested_failures": {
+      "layout": ["legacy", "compact"],
+      "fault": ["requested_malformed_json", "missing_reference_relation", "missing_source_relation"],
+      "bind_mode": ["excluded", "latest_only", "early_return"],
+      "paired_cases": 18
+    },
+    "point_plans": {
+      "layout": ["legacy", "compact"],
+      "bind_mode": ["excluded", "latest_only"],
+      "view": ["reference_end", "reference_target", "reference_candidate", "reference_candidate_end"],
+      "paired_cases": 16
+    }
+  },
+  "fixture_rules": [
+    "Every nonempty fixture has visible R00 and hidden-owner R20 controls plus the subject state; empty_reference_set removes all reference rows but retains orphan relation rows.",
+    "Mask bits 0..3 assign hidden source endpoints independently to end/target/candidate/candidate_end. Only the first three participate in the existing reference visibility exclusion policy.",
+    "The existing NOT IN NULL three-valued behavior is preserved: a NULL reference ID attached to a hidden endpoint may suppress unrelated references. The candidate must not repair that behavior within this change.",
+    "Multiplicity uses legal distinct source/ordinal/candidate keys for repeated reference associations; NULL source IDs additionally permit identical reference_end rows under SQLite's nullable composite primary key.",
+    "Missing/NULL source links remain governed by existing reference visibility, not newly granted source-reading authority. The separate source projection is checked too.",
+    "Navigation latest-only selection activates TEMP views even with no excluded document. The early-return control starts with the normal caller's read-only guard and must install no TEMP relation views.",
+    "All normal payload JSON is valid; compact reference schema comes from the frozen arm's unchanged production shared_reference_schema. All original database bytes are immutable after fixture construction."
+  ],
+  "consumer_queries": {
+    "full_projection_count": 6,
+    "full_projection": "Full typed projections of source, reference and all four relation views, ordered by every projected column.",
+    "source_labels": ["focus", "hidden", "null", "absent"],
+    "cursor": ["", "R10", null],
+    "limit": [0, 1, 3],
+    "relation_page_count": 144,
+    "relation_page": "All 4 views x 4 source filters x 3 cursors x 3 limits, preserving reference_id and remaining-column ordering.",
+    "only_references": ["unrestricted", "empty", "subject"],
+    "catalog_count": 108,
+    "catalog": "Existing SELECT DISTINCT r.json JOIN reference_end source/cursor/order/limit form, with the optional json_each only_references restriction; all 4 x 3 x 3 x 3 combinations.",
+    "candidate_reference_labels": ["subject", "orphan", "null"],
+    "candidate_count": 3,
+    "candidate": "Existing reference_candidate reference-ID consumer ordered by ordinal,candidate_id.",
+    "queries_per_regular_fixture_per_arm": 261
+  },
+  "counts": {
+    "visibility": 1344,
+    "source_boundary": 192,
+    "insertion_order": 12,
+    "requested_failures": 18,
+    "point_plans": 16,
+    "total_pairs": 1582,
+    "regular_fixture_pairs": 1548,
+    "consumer_queries_per_arm": 404028,
+    "requested_failure_queries_per_arm": 18,
+    "sql_result_queries_per_arm": 404046,
+    "explain_queries_per_arm": 16,
+    "total_query_observations_per_arm": 404062
+  },
+  "oracle": "Normal projections and consumers use an independent fixture-row oracle with SQL NULL/IN/NOT IN/BINARY ordering semantics. Both arms must match the oracle and each other exactly, including duplicate rows, tuple value types, column metadata and failures. Missing-relation/requested-malformed errors use exact exception type/message equivalence; each deliberately requested error must actually occur.",
+  "plan_gate": "For each active-mode/view/layout point query, record full EXPLAIN QUERY PLAN. Baseline must exhibit a reference membership LIST SUBQUERY with a reference-table/payload full scan; optimized must use a CORRELATED subquery and the existing reference-ID index point lookup, with no full reference-table/payload scan for that membership. Hidden endpoint scans remain allowed and separately named. No opcode-count or end-to-end latency claim is made.",
+  "immutability": "Compare serialized main database SHA256 before/after binding, observations and denied writes. Both arms must preserve PRAGMA query_only=1 and the authorizer's rejection of main DELETE and query_only=OFF; no existing artifact is overwritten.",
+  "failure_policy": "Stream and flush every paired fixture with raw typed observations to sql-pairs.jsonl.gz. Preserve the first failure in sql-first-failure.json and retain partial census. Stop without changing candidate, expected outputs or completed records.",
+  "resources": {"max_address_space_bytes": 1073741824, "network": false, "real_data_loads": 0, "external_model_calls": 0, "parallel_heavy_processes": 0},
+  "limits": [
+    "This finite SQL census does not certify legal meaning or every downstream witness/authorization error. Unchanged downstream code binding and native original-frame checks supply separate evidence.",
+    "A malformed JSON payload outside the requested rows may be encountered only by the old global scan. Such global unrequested-corruption exception timing is explicitly outside equivalence; ingestion and generation validation retain that responsibility.",
+    "Requested malformed JSON is tested at the selected reference itself. NULL/orphan behavior is preserved rather than silently normalized.",
+    "SQLite query-plan categories are mechanism evidence, not measured service acceleration or GENOS Oracle behavior.",
+    "No product source, source corpus, model, active MAIN pointer or real-data database is changed by this runner."
+  ]
+}
