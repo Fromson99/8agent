@@ -138,7 +138,7 @@ def test_inline_limit_counts_endpoints_and_links_existing_target_originals(inv,m
     inv.bind_reference_delivery=lambda **kwargs:None
     monkeypatch.setattr(cs,'current',lambda i,**kw:{'scope':scope})
     monkeypatch.setattr(cs,'candidates',lambda *a:[(scope,['E1'])])
-    monkeypatch.setattr(cs,'preview',lambda *a:{'status':'COMPLETE','groups':[g],'connection_count':8})
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:{'status':'COMPLETE','groups':[g],'connection_count':8})
     data={'sources':[{'id':'E2','source_id':'target','spans':[{'block_id':'7'}]},
         {'id':'E3','source_id':'target','spans':[{'block_id':'9'}]}],'references':{}};actions={}
     cs.offer_choices(inv,data,actions)
@@ -160,7 +160,7 @@ def test_many_witnesses_use_existing_menu_without_losing_catalog_or_adding_reads
         inv.p['connection_context_blocks']={'scope':{'acquired_signature':'same','reason':'CONTEXT_LIMIT'}}
         monkeypatch.setattr(cs,'acquired_signature',lambda i:'same')
     monkeypatch.setattr(cs,'candidates',lambda *a:[(scope,['E1'])])
-    monkeypatch.setattr(cs,'preview',lambda *a:{'status':'COMPLETE','groups':[g],'connection_count':count})
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:{'status':'COMPLETE','groups':[g],'connection_count':count})
     data={'sources':[],'references':{}};actions={}
     cs.offer_choices(inv,data,actions)
     card=data['references']['dependency_cards'][0]

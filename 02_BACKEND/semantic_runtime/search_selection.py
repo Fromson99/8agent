@@ -197,9 +197,9 @@ class Selection:
                                       'WHERE s.document_id IN (SELECT document_id FROM temp.search_excluded)))')
                 view('reference', visible + (' AND ' + ' AND '.join(hidden) if hidden else ''))
                 for name in ('reference_end', 'reference_target', 'reference_candidate', 'reference_candidate_end'):
-                    view(name, 'original.reference_id IN (SELECT id FROM temp.reference)')
+                    view(name, 'EXISTS (SELECT 1 FROM temp.reference r WHERE r.id=original.reference_id)')
                 if 'definition_reference' in objects:
-                    view('definition_reference', 'original.definition_id IN (SELECT id FROM temp.definition) AND original.reference_id IN (SELECT id FROM temp.reference)')
+                    view('definition_reference', 'EXISTS (SELECT 1 FROM temp.definition d WHERE d.id=original.definition_id) AND EXISTS (SELECT 1 FROM temp.reference r WHERE r.id=original.reference_id)')
             db.commit()  # TEMP only; main is a read-only URI / immutable resident copy.
         finally:
             db.execute('PRAGMA query_only=ON')

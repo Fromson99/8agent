@@ -284,7 +284,7 @@ def directory_operation(inv):
     return digest([accepted['input_hash'], accepted['decision']]) if accepted else None
 
 
-def inspect_directory(inv, scope):
+def inspect_directory(inv, scope, *, preparation=None):
     """Durable request-local catalog; rendering never repeats its lookup.
 
     PARTIAL/FAILED are attempts, never evidence of absence. This directory path
@@ -293,7 +293,7 @@ def inspect_directory(inv, scope):
     """
     receipt = directory_receipt(inv, scope)
     if receipt is None:
-        result = preview(inv, scope)
+        result = preview(inv, scope, preparation=preparation)
         receipt = {'scope_id':scope['id'], 'label':scope['label'],
             'members_hash':directory_key(scope), 'binding':digest(inv.p['binding']),
             'authorized_scope':sorted(inv.s.scope), 'operation':directory_operation(inv),
@@ -309,7 +309,7 @@ def inspect_directory(inv, scope):
     result = deepcopy(receipt['result'])
     if result['groups']:
         from . import unit_relations as rel
-        acquired, _ = rel.acquired_blocks(inv.s, inv.read_records())
+        acquired, _ = rel.acquired_blocks(inv.s, inv.read_records(), preparation=preparation)
         for group in result['groups']:
             for endpoint in ('anchor','target'):
                 row=group[endpoint]; source=inv.s.tools.sources.get(row['source_id'])
@@ -326,6 +326,8 @@ def offer_choices(inv, data, actions):
     if not enabled(inv):
         return
     from .law_candidates import token
+    from .unit_relations import CatalogReadPreparation
+    preparation = CatalogReadPreparation()
     # Rebuilding a restored view must not retain a read from another scope.
     for key, action in list(actions.items()):
         identity = action.get('identity', {})
@@ -355,7 +357,7 @@ def offer_choices(inv, data, actions):
                   'absence_proven': False}
         reviewed = directory_receipt(inv, scope)
         if scope['id'] == selected_id or reviewed is not None:
-            result = previews[scope['id']] = inspect_directory(inv, scope)
+            result = previews[scope['id']] = inspect_directory(inv, scope, preparation=preparation)
             reviewed = directory_receipt(inv, scope)
         endpoint_count=len({endpoint_key(g,c) for g in result['groups'] for c in g['connections']})
         inline = result['status'] == 'COMPLETE'
@@ -512,7 +514,7 @@ def witness_fields(group, connection):
         'direction':group['direction']}}
 
 
-def preview(inv, scope):
+def preview(inv, scope, *, preparation=None):
     """Read-only bounded catalog; no model call, adoption or target READ."""
     from . import unit_relations as rel, request_repair as rr
     key = digest([inv.p['binding'], sorted(inv.s.scope), scope['members']])
@@ -523,7 +525,7 @@ def preview(inv, scope):
         with bound(inv.s, scope):
             groups, statuses, limits, unresolved = rel.catalog(inv.s,
                 [m['source_id'] for m in scope['members']], inv.read_records(), set(),
-                max_connections=None)
+                max_connections=None, preparation=preparation)
     except (TimeoutError, ToolExecutionError, sqlite3.OperationalError) as error:
         code = rr.recoverable_tool_failure(error)
         if code is None:

@@ -14,7 +14,7 @@ def scopes(inv,data):
 @pytest.mark.parametrize('status',['COMPLETE','PARTIAL','FAILED'])
 def test_a_b_a_b_and_resume_never_reopen_same_directory(monkeypatch,status):
     inv,data=setup(monkeypatch);a,b=scopes(inv,data);calls=[]
-    def lookup(i,s):
+    def lookup(i,s,*,preparation=None):
         calls.append(s['id'])
         return dict(status=status,groups=[],connection_count=0,absence_proven=False)
     monkeypatch.setattr(cs,'preview',lookup)
@@ -36,7 +36,7 @@ def test_a_b_a_b_and_resume_never_reopen_same_directory(monkeypatch,status):
 
 def test_new_scope_bytes_allow_lookup_but_equivalent_ui_scope_does_not(monkeypatch):
     inv,data=setup(monkeypatch);a,b=scopes(inv,data)
-    monkeypatch.setattr(cs,'preview',lambda *a:dict(status='COMPLETE',groups=[],connection_count=0))
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:dict(status='COMPLETE',groups=[],connection_count=0))
     cs.accept(inv,a,data,'읽음');cs.inspect_directory(inv,a)
     alias=deepcopy(a);alias['label']='다른 화면의 동일 원문';alias['id']=digest({k:v for k,v in alias.items() if k!='id'})
     with pytest.raises(ProposalError):cs.reject_repeated_follow(inv,alias)
@@ -48,7 +48,7 @@ def test_new_scope_bytes_allow_lookup_but_equivalent_ui_scope_does_not(monkeypat
 @pytest.mark.parametrize('change',['hash','binding','acl','source'])
 def test_receipt_mutation_never_authorizes_cached_directory(monkeypatch,change):
     inv,data=setup(monkeypatch);a,_=scopes(inv,data)
-    monkeypatch.setattr(cs,'preview',lambda *a:dict(status='COMPLETE',groups=[],connection_count=0))
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:dict(status='COMPLETE',groups=[],connection_count=0))
     cs.accept(inv,a,data,'확인');cs.inspect_directory(inv,a)
     if change=='hash':inv.p['connection_directories'][cs.directory_key(a)]['result']['connection_count']=99
     if change=='binding':inv.p['binding']['generation']='other'
@@ -62,8 +62,8 @@ def test_cached_directory_updates_acquisition_without_another_query(monkeypatch)
     group={'anchor':{'source_id':'article92','document_id':'d'},'target':{'source_id':'article97','document_id':'d'},
         'connections':[{'endpoint_block_ids':['10'],'already_read':False}]}
     calls=[]
-    monkeypatch.setattr(cs,'preview',lambda *args:(calls.append(1) or dict(status='COMPLETE',groups=[group],connection_count=1)))
-    known={};monkeypatch.setattr(rel,'acquired_blocks',lambda *a:(known,{}))
+    monkeypatch.setattr(cs,'preview',lambda *args,**kw:(calls.append(1) or dict(status='COMPLETE',groups=[group],connection_count=1)))
+    known={};monkeypatch.setattr(rel,'acquired_blocks',lambda *a,**kw:(known,{}))
     cs.accept(inv,a,data,'선택');assert not cs.inspect_directory(inv,a)['groups'][0]['connections'][0]['already_read']
     before=deepcopy(inv.p['connection_directories']);known['article97']={'10'}
     assert cs.inspect_directory(inv,a)['groups'][0]['connections'][0]['already_read']
@@ -73,7 +73,7 @@ def test_cached_directory_updates_acquisition_without_another_query(monkeypatch)
 def test_execution_boundary_rejects_repeated_scope_even_with_injected_menu(monkeypatch):
     from semantic_runtime.legal_agent import law_navigation as nav, tool_availability as availability
     inv,data=setup(monkeypatch);a,_=scopes(inv,data)
-    monkeypatch.setattr(cs,'preview',lambda *a:dict(status='COMPLETE',groups=[],connection_count=0))
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:dict(status='COMPLETE',groups=[],connection_count=0))
     cs.accept(inv,a,data,'최초 조회');cs.inspect_directory(inv,a)
     inv.completion=False;inv.control=False;inv.policy['structure_first']=False
     inv.p['catalogue']={'query_fingerprint':'q'}
@@ -91,7 +91,7 @@ def test_accepted_action_restore_preserves_completed_directory_and_counters(monk
     from semantic_runtime.legal_agent import law_navigation as nav, comparison_research, source_investigation, definition_entry
     from semantic_runtime.basis_links import resolver
     inv,data=setup(monkeypatch);a,_=scopes(inv,data);calls=[]
-    monkeypatch.setattr(cs,'preview',lambda *a:(calls.append(1) or dict(status='COMPLETE',groups=[],connection_count=0)))
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:(calls.append(1) or dict(status='COMPLETE',groups=[],connection_count=0)))
     cs.accept(inv,a,data,'최초 확인');cs.inspect_directory(inv,a)
     saved=deepcopy(inv.p['connection_directories'])
     inv.p.update(decisions=[],turn=0,no_progress=2)

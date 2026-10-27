@@ -68,10 +68,14 @@ def verified(session, match):
     # IndexTools.references is a request-local cache populated only after READ.
     # Initial entry must use the immutable index, without fabricating a seen source.
     db=session.tools.db
-    linked=(db.execute('SELECT l.reference_id,r.json FROM definition_reference l LEFT JOIN reference r ON r.id=l.reference_id WHERE l.definition_id=? ORDER BY l.reference_id',(d['id'],))
+    # First restrict link IDs. LEFT JOIN against the shared reference VIEW can
+    # materialize every reconstructed reference body before this ID filter.
+    linked=(db.execute('SELECT reference_id FROM definition_reference WHERE definition_id=? ORDER BY reference_id',(d['id'],))
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='definition_reference' AND type='table'").fetchone() else ())
-    for row in linked:
-        if row[1] is None:raise ContractError('definition entry linked reference missing')
+    for link in linked:
+        found=db.execute('SELECT json FROM reference WHERE id=?',(link[0],)).fetchone()
+        if found is None or found[0] is None:raise ContractError('definition entry linked reference missing')
+        row=(link[0],found[0])
         ref=json.loads(row[1])
         if ref.get('id')!=row[0]:raise ContractError('definition entry reference identity mismatch')
         if (ref['source_id'] != d['source_id'] or ref['document_id'] != d['document_id']

@@ -129,7 +129,89 @@ def blocks_covered(required, acquired):
     return bool(wanted) and wanted <= set(map(str, acquired))
 
 
-def acquired_blocks(session, selected):
+class _UncacheablePreparation(Exception):
+    pass
+
+
+def _preparation_key(value, active=None):
+    """Typed ordered structure without serializing or copying original text.
+
+    Python equality alone aliases 1, True and 1.0, although span validation
+    intentionally distinguishes them. Unsupported/cyclic metadata must retain
+    the original read path, not introduce a new validation requirement.
+    """
+    kind = type(value)
+    if kind in (str, int, bool, type(None)):
+        return kind, value
+    if kind is float:
+        from math import isfinite
+        if isfinite(value):
+            return kind, value
+        raise _UncacheablePreparation()
+    if kind not in (dict, list, tuple, set, frozenset):
+        raise _UncacheablePreparation()
+    active = set() if active is None else active
+    ident = id(value)
+    if ident in active:
+        raise _UncacheablePreparation()
+    active.add(ident)
+    try:
+        if kind is dict:
+            items = tuple((_preparation_key(k, active), _preparation_key(v, active))
+                          for k, v in value.items())
+        elif kind in (set, frozenset):
+            items = frozenset(_preparation_key(v, active) for v in value)
+        else:
+            items = tuple(_preparation_key(v, active) for v in value)
+        return kind, items
+    finally:
+        active.remove(ident)
+
+
+class CatalogReadPreparation:
+    """Successful acquired coverage owned by one synchronous menu construction.
+
+    No request/global cache, persisted receipt or authorization is created.
+    Callers create a fresh instance for each offer_choices invocation. Only
+    immutable-store adapters with check_unchanged can avoid redundant reads.
+    Exact selected-scope, witness, endpoint and execution checks still run.
+    """
+
+    def __init__(self):
+        self.clear()
+
+    def clear(self):
+        self._session = self._store = self._key = self._blocks = None
+
+    def acquired(self, session, spans):
+        check = getattr(session.store, 'check_unchanged', None)
+        if not callable(check) or not any(spans.values()):
+            self.clear()
+            return delivered_blocks(session, spans)
+        try:
+            key = _preparation_key((session.scope,
+                {sid: session.tools.sources.get(sid) for sid in spans}, spans))
+        except (_UncacheablePreparation, RecursionError):
+            self.clear()
+            return delivered_blocks(session, spans)
+        if (self._session is session and self._store is session.store
+                and self._key == key):
+            try:
+                check()
+            except BaseException:
+                self.clear()
+                raise
+            return {sid: set(blocks) for sid, blocks in self._blocks.items()}
+        self.clear()
+        # Preserve the original first-read/error order. Failed validation never
+        # installs a key; returned mutable sets cannot modify cached coverage.
+        blocks = delivered_blocks(session, spans)
+        self._session, self._store, self._key = session, session.store, key
+        self._blocks = {sid: set(ids) for sid, ids in blocks.items()}
+        return blocks
+
+
+def acquired_blocks(session, selected, *, preparation=None):
     """The same exact acquired/delivered spans feed every reference consumer."""
     spans = {}
     for record in selected.values():
@@ -138,7 +220,10 @@ def acquired_blocks(session, selected):
     if session.profile.get('candidate_navigation', {}).get('investigation_control', False):
         for sid, delivered in getattr(session, 'investigation_delivered_spans', {}).items():
             spans.setdefault(sid, []).extend(delivered)
-        return delivered_blocks(session, spans), spans
+        return (preparation.acquired(session, spans) if preparation is not None
+                else delivered_blocks(session, spans)), spans
+    if preparation is not None:
+        preparation.clear()
     return {sid: {str(p['block_id']) for p in rows} for sid, rows in spans.items()}, spans
 
 
@@ -173,11 +258,11 @@ def detached_annex(ref, origin, annex_index):
             'detached_annex': {'document_id': did, 'label': cited, 'basis': annex_files.BASIS}}
 
 
-def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None, max_connections=None):
+def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None, max_connections=None, preparation=None):
     """Validate both ends before exposing closed READ offers; read no target body."""
     groups = OrderedDict()
     statuses, limits, unresolved = [], [], []
-    evidence_blocks, evidence_spans = acquired_blocks(s, selected)
+    evidence_blocks, evidence_spans = acquired_blocks(s, selected, preparation=preparation)
     control = s.profile.get('candidate_navigation',{}).get('investigation_control',False)
     if control:
         from .evidence_inventory import covers

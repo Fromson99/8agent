@@ -251,7 +251,7 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
         monkeypatch.setattr(unit_relations,'catalog',fail)
     transport = Transport()
     profile = json.loads((root / '00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json').read_text())
-    assert profile['candidate_navigation']['small_connection_context'] is True
+    assert profile['candidate_navigation']['small_connection_context'] is False
     profile['candidate_navigation'].update(selected_connection_scope=True,small_connection_context=True,answer_first=False,answer_progress_control=False,read_judgment=True)
     profile.update(model_binding=transport.binding, answer_presentation='structured')
     app = create_app(tmp_path, generation, contracts_root=root, provider=object(),

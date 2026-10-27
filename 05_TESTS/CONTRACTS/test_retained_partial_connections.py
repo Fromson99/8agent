@@ -45,7 +45,7 @@ def test_verified_partial_connections_remain_directly_selectable(monkeypatch,sta
     monkeypatch.setattr(law_candidates,'token',lambda *args:'follow')
     scope=cs.candidates(inv,{'sources':[page]})[0][0]
     cs.accept(inv,scope,{'sources':[page]},'선택한 범위의 연결 확인')
-    monkeypatch.setattr(cs,'preview',lambda *a:{'status':status,'connection_count':count,'groups':[{'connections':[{'id':str(i)} for i in range(count)]}],'limits':[],'absence_proven':False})
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:{'status':status,'connection_count':count,'groups':[{'connections':[{'id':str(i)} for i in range(count)]}],'limits':[],'absence_proven':False})
     def cards(inv,scope,refs,groups,actions):
         result=[]
         for g in groups:
@@ -109,7 +109,7 @@ def test_same_oversized_menu_is_not_reoffered_but_new_originals_can_reopen_it(mo
     inv.p['connection_context_blocks']={scope['id']:{'acquired_signature':cs.acquired_signature(inv),
         'reason':'reference_context_limit','absence_proven':False,'fallback':'SEARCH_STRUCTURE'}}
     if changed:add('b','other',10,[10])
-    monkeypatch.setattr(cs,'preview',lambda *a:{'status':'PARTIAL','connection_count':6,
+    monkeypatch.setattr(cs,'preview',lambda *a,**kw:{'status':'PARTIAL','connection_count':6,
         'groups':[],'limits':[],'absence_proven':False})
     data={'sources':[page],'references':{}};actions={}
     cs.offer_choices(inv,data,actions)

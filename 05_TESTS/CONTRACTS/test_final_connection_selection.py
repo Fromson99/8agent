@@ -41,7 +41,7 @@ def test_whole_paragraph_item_and_subitem_can_be_chosen_without_rereading(monkey
     original = deepcopy(inv.p['selected'])
     cs.accept(inv, chosen, data, '이 범위의 연결 필요')
     seen = []
-    def preview(i, s):
+    def preview(i, s, *, preparation=None):
         seen.append(s['id'])
         return {'status':'COMPLETE','groups':[], 'connection_count':0, 'absence_proven':False}
     monkeypatch.setattr(cs, 'preview', preview)
@@ -61,7 +61,7 @@ def test_narrow_selection_replaces_whole_article_and_removes_stale_read_handles(
     with pytest.raises(ContractError, match='final selected scope'):
         cs.validate_inline_read(inv, {'connection':{'scope_id':wide['id']}}, data, '이전 전체 범위의 읽기')
     seen=[]
-    monkeypatch.setattr(cs, 'preview', lambda i,s: (seen.append(s['id']) or
+    monkeypatch.setattr(cs, 'preview', lambda i,s,**kw: (seen.append(s['id']) or
         {'status':'COMPLETE','groups':[], 'connection_count':0, 'absence_proven':False}))
     actions = {'stale':{'id':'stale','action':'READ_ARTICLES','label':'old',
         'identity':{'connection':{'scope_id':wide['id']}}}}

@@ -80,7 +80,7 @@ def test_native_v7_publication_reentry_repair_and_reuse(tmp_path,tree,reentry,re
       'candidate_navigation':{'mode':'law-first-v1','investigation_control':True,'completion_contract':True,
         'completion_policy_version':cc.V7,'compact_input':True}}
     app=create_app(tmp_path,gen,contracts_root=ROOT,provider=object(),implementation='legal-agent-unified-v6',
-      legal_agent_profile=profile,legal_agent_transport=t,memory_identity=lambda _:{'user_id':'u','team_id':'t','document_ids':['d']})
+      legal_agent_profile=profile,legal_agent_transport=t,memory_identity=lambda _:{'user_id':'u','team_id':'risk_team','document_ids':['d']})
     app.state.pipeline.term_agent.unit_fulltext=idx
     with TestClient(app) as api:
         body={'question':'모의승인규정 제1조 승인 기준은?','session_id':'v7','request_id':'r1'}
