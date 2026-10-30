@@ -27,3 +27,12 @@ tmp/pdfs/legal-rag-review/** -text -eol
 
 # This validated handoff CSV is hashed and intentionally uses Excel CRLF.
 08_DEPLOYMENT/GENOS/diagnostics/relay_request_20261027_r1/*.csv -text -eol
+
+# Reviewed schema CSVs retain their original Excel line endings and hashes.
+07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_COMPACT_20261029_R12/*.csv -text -eol
+07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_DOMAIN_CORRECTION_20261029_R14/*.csv -text -eol
+07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_REDESIGN_20261029_R11/*.csv -text -eol
+08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/*.csv -text -eol
+08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r1/*.csv -text -eol
+08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r2/*.csv -text -eol
+08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r3/*.csv -text -eol
