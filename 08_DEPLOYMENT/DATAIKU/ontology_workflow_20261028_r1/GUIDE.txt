@@ -1,0 +1,111 @@
+온톨로지 생성 → 기존 화면 승인 → DB 게시 → RAG 사용
+2026-10-28 / 로컬 MAIN111 / ontology-workflow-20261028-r1
+
+이 전달본은 코드와 스키마다. 운영 원문·온톨로지 데이터·접속 토큰은 없다.
+기본 OFF이며 기존 MAIN110의 SQL·최소 입력·복수 선택·독립 원문 조사 복구를 유지한다.
+기술 검증과 실제 Dataiku/GENOS 설치를 구분한다.
+
+1. 설치 파일과 배치
+- backend: 02_BACKEND/semantic_runtime와 필요한 공통 패키지를 같은 코드 버전으로 사용한다.
+- 00_SYSTEM/SCHEMAS/ontology-bundle-v0.schema.json을 반드시 포함한다.
+  scenario-proposal/mapping 계약도 같이 둔다. 코드와 스키마를 따로 교체하지 않는다.
+- 화면: 기존 legal-knowledge-streamlit의 site_design_app.py와 app.py를 같은 폴더에 둔다.
+  연결 모드는 예전 R3 단일 파일만 업로드해서는 동작하지 않는다.
+- Dataiku Python 레시피: ingest_agent_events.py. 별도의 새 웹앱을 만들 필요가 없다.
+- 선택적인 Oracle 연결 의존성은 requirements-ontology.txt를 참조한다.
+  Dataiku의 dataiku SDK는 현장 코드 환경 제공본을 사용한다.
+
+2. 테이블
+01_CREATE_TABLES.sql은 개발계 SIDDA의 5개 테이블과 원문 좌표 색인이다.
+기존 테이블을 삭제하거나 이동하지 않는다. 새 테이블 생성은 대상 owner 권한으로 수행한다.
+LGL_ONT_WORK_A : 생성 입력/초안/승인/반려와 S3 객체 해시
+LGL_ONT_EVT_A  : 검토·게시·중지·롤백 감사 이력
+LGL_ONT_PUB_A  : 승인된 사전 조립 게시본
+LGL_ONT_HEAD_A : 현재 게시 ID와 변경 순번
+LGL_ONT_ANC_A  : 문서/판본/조항 → 게시본 조회
+TABLE_COLUMNS.csv에는 컬럼 정의와 메타 신청 상태를 기록했다.
+TABLE_BIZMETA.csv는 테이블 목록·출처·유형·가공 과정·등록 대상을 기록한다.
+02_COMMENTS.sql은 테이블 생성 후 적용할 테이블/컬럼 Description이다.
+이름·타입은 명명 후보다. 메타마이너 표준 대조·DBA 생성 승인이 완료된 것은 아니다.
+
+3. 연결 설정
+connection.example.json을 배포자 소유의 설정 파일로 복사한다.
+- database.owner: 개발계 SIDDA
+- source.owner: 개발계 SIDDS
+- source.dataset_version: 실제 게시된 원문 DATA_VER_ID (사진/관리 URL에서 추정하지 않는다)
+- work_store.folder_id: 온톨로지 작업용 Dataiku S3 관리 폴더 ID
+  원문 업로드 폴더 ehA8dpVm을 온톨로지 작업 폴더로 임의 재사용하지 않는다.
+- operators: 실제 검토자/레시피 실행자 로그인별 document_ids 허용 목록
+  예: "reviewer.login": {"document_ids": ["실제 문서ID"]}
+  기본 빈 목록은 모든 검토/게시를 거절한다. 브라우저에 입력받는 사용자명으로 대체하지 않는다.
+- 비밀값은 ONTOLOGY_ORACLE_DSN / ONTOLOGY_ORACLE_USER / ONTOLOGY_ORACLE_PASSWORD 환경 변수.
+- GENOS 생성 모델은 기존 GENOS_LLM_* 연결 설정을 사용한다. 예전 수집용 관리 URL을 사용하지 않는다.
+- 실제 JSON 파일 경로를 GENOS_RAG_ONTOLOGY_CONFIG에 지정한다.
+- Python import 경로에 전달본의 02_BACKEND를 추가한다.
+  화면의 GENOS_ONTOLOGY_CODE_ROOT는 이 코드의 최상위 폴더다.
+
+Dataiku 계정: 원문 검증용 SIDDS SELECT, WORK/EVT/PUB/HEAD/ANC에 필요한 INSERT/SELECT,
+WORK/HEAD 상태·포인터 UPDATE. GENOS RAG 계정: PUB/HEAD/ANC SELECT만 부여한다.
+Dataiku와 GENOS는 각자 자신의 연결 설정 파일과 최소 권한 계정을 사용한다.
+GENOS의 현재 개발계 지식 조회가 실버만 허용되는 상태에서는 SIDDA 조회 권한/연결을
+실제 확인해야 한다. 테이블 생성만으로 RAG 소비자가 연결됐다고 처리하지 않는다.
+GENOS가 S3에 직접 접근하거나 전체 DB를 내려받는 설정은 없다.
+
+4. 입력 수집과 Dataiku Flow
+- 원문 읽기 판단 기록을 만들 때 GENOS_ONTOLOGY_CAPTURE_ENABLED=on이면
+  이미 검증된 원문과 유효한 판단만 기존 요청 저널의 ONTOLOGY_WORK_INPUT에 남긴다.
+- 이 이벤트는 기존 에이전트 로그의 승인된 수집/반환 경로로 Dataiku에 전달한다.
+  레시피 입력 dataset에는 kind와 payload_json(또는 payload) 열이 필요하다.
+  실제 현장의 로그 반환 경로와 이 dataset 배선은 현장 설치 때 확인한다.
+- 프로젝트 변수 ontology_agent_event_dataset에 그 dataset 이름,
+  ontology_connection_config_path에 배포 설정 파일 경로를 지정한다.
+- ingest_agent_events.py를 Python 레시피로 실행한다. 생성 대기 입력만 저장하며
+  자동으로 모델을 부르거나 승인하거나 게시하지 않는다. S3 객체와 SQL 상태가 결속된다.
+- 중복 실행은 같은 입력 해시로 생성 대기를 재사용한다. 원문이 달라졌으면 적재를 거절한다.
+- 로컬에서는 pipeline.py ontology-work enqueue --input <작업JSON>으로 같은 진입점을 쓴다.
+
+5. 기존 화면에서 처리
+- 연결 설정이 있으면 온톨로지 관리·시뮬레이션에 실제 기능이 표시된다.
+  다른 네 메뉴는 기존 시안이며 화면에도 구분해 표시한다.
+- 생성 대기 묶음 선택 → '저장된 판단으로 시나리오 생성'.
+- 조립된 각 경로와 원문을 검토한다. 필요한 경우 레시피를 수정해 새 판본으로 저장한다.
+- 검토 의견과 확인 체크 → 승인 또는 반려.
+- 승인 뒤 '승인 판본을 DB에 게시'. 게시 성공과 현재 게시 ID를 확인한다.
+- 시뮬레이션에서 여러 경로를 함께 선택하여 조립 내용을 확인할 수 있다.
+  이것은 수동 검토이며 LLM 선택 정확도 점수가 아니다.
+- 게시 중지는 새 요청부터 적용된다. 과거 게시본은 삭제하지 않는다.
+
+6. RAG 사용 스위치
+GENOS_RAG_ONTOLOGY_ENABLED=off : 기존 RAG. 기본값.
+GENOS_RAG_ONTOLOGY_ENABLED=on  : 설정된 게시 DB를 원문 도착 시 조회.
+설정 변경 후 프로세스를 재시작한다.
+ON + 설정 없음 / 빈 DB / 해당 원문 게시 없음은 기존 탐색으로 이어진다.
+원문 판본·해시·권한이 맞지 않는 경로는 사용하지 않는다.
+RAG 요청에서는 레시피 컴파일이나 신규 법률 문장 생성을 하지 않는다.
+현재 의미의 일반·예외 복수선택 지침은 365자로 유지하며 서버가 2개 선택을 강제하지 않는다.
+
+7. 명시적 관리자 CLI (서비스 요청에 붙이지 않음)
+python 06_TOOLS/pipeline.py ontology-work status
+python 06_TOOLS/pipeline.py ontology-work generate --input <작업JSON>
+python 06_TOOLS/pipeline.py ontology-work preview --bundle <묶음ID>
+python 06_TOOLS/pipeline.py ontology-work approve --bundle <ID> --revision <화면판본> --work-hash <화면해시> --reason <검토의견>
+python 06_TOOLS/pipeline.py ontology-work publish --bundle <ID> --revision <승인판본> --work-hash <해시> --expected-sequence <현재순번>
+CLI의 GENOS_ONTOLOGY_OPERATOR는 배포자가 관리하는 실제 작업자 식별이어야 한다.
+Dataiku 화면은 브라우저 인증을 사용하며 CLI 환경 변수로 화면의 승인자를 바꾸지 않는다.
+
+8. 실패/재개
+- 오래된 화면의 판본/해시/순번은 거절한다. 현재 상태를 다시 조회한다.
+- 새 판본은 이전 승인을 상속하지 않는다. 기존 게시본은 새 게시 성공 전까지 유지한다.
+- 형식 보완 최대1회, 전송 시도당1회. 전송 결과 불명/저장 실패는 자동 재생성하지 않는다.
+- 게시 응답 유실은 status/같은 영수증으로 확인한다. 재조회로 확인된 기존 게시본을
+  새 게시처럼 덮어쓰거나 중지된 HEAD를 되살리지 않는다.
+- DB 조회 실패는 UNAVAILABLE 이벤트를 남기고 기존 RAG로 이어진다.
+- SQL/S3 작업 결과와 승인 상태는 개별 기록으로 보존한다.
+
+9. 확인 범위
+새 제품 모델 호출0. 합성 원문으로 244테스트 + 실제 로컬 Oracle10조건 통과.
+최종 서빙453파일만 사용한 데이터 있음·복수 선택·OFF·ON빈DB HTTP4모드 통과.
+실제 화면 버튼 검증과 실제 읽기 판단 수집 통과. 현장 S3/Flow 설치·GENOS 생성 모델·
+SIDDA 권한·GENOS 리비전 배포는 미수행이다. 법률 품질·전체 속도 개선은 미인증이다.
+선택 MAIN111 서비스 OFF/ON미설정/ON빈DB 각42·총126확인도 통과했다(모의HTTP3·새모델0).
+운영 원문/온톨로지 데이터는 이번 코드 반영에 포함하지 않았고 자동 승인하지 않는다.

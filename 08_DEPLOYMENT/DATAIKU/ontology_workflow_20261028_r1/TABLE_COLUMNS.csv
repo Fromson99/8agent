@@ -1,0 +1,24 @@
+﻿에이전트번호,개발스키마,테이블명,컬럼순번,물리명,논리명,Oracle타입,NULL,PK,표준용어·도메인·인포타입,메타신청,DBA생성,운영골드후보
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,1,BNDL_ID,묶음 ID,VARCHAR2(84 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,2,REV_NO,작업 판본,NUMBER(18),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,3,WORK_HASH_VAL,S3 작업 JSON 해시,VARCHAR2(64 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,4,ST_CD,검토 상태,VARCHAR2(32 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,5,RVWR_ID,승인자,VARCHAR2(512 BYTE),Y,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_WORK_A,6,APRV_HASH_VAL,승인 영수증 해시,VARCHAR2(64 BYTE),Y,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_EVT_A,1,EVT_ID,이벤트 영수증 ID,VARCHAR2(64 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_EVT_A,2,BNDL_ID,묶음 ID,VARCHAR2(84 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_EVT_A,3,REV_NO,작업 판본,NUMBER(18),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_EVT_A,4,EVT_JSON_CN,행위자·시간·상태 JSON,CLOB,N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,에이전트 운영기록
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_PUB_A,1,PUB_ID,게시 ID,VARCHAR2(64 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_PUB_A,2,BNDL_ID,묶음 ID,VARCHAR2(84 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_PUB_A,3,REV_NO,승인 작업 판본,NUMBER(18),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_PUB_A,4,PKG_HASH_VAL,게시 JSON 해시,VARCHAR2(64 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_PUB_A,5,PKG_JSON_CN,사전 조립 게시 JSON,CLOB,N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_HEAD_A,1,BNDL_ID,묶음 ID,VARCHAR2(84 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_HEAD_A,2,PUB_ID,활성 게시 ID,VARCHAR2(64 BYTE),Y,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_HEAD_A,3,CHG_SEQ_NO,활성 포인터 변경 순번,NUMBER(18),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_ANC_A,1,PUB_ID,게시 ID,VARCHAR2(64 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_ANC_A,2,ANC_HASH_VAL,원문 좌표 해시,VARCHAR2(64 BYTE),N,Y,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_ANC_A,3,DOC_ID,문서 ID,VARCHAR2(512 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_ANC_A,4,SRC_VER_ID,문서 판본,VARCHAR2(512 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상
+A1(프로젝트 식별자;메타 과제번호 별도),SIDDA,LGL_ONT_ANC_A,5,UNIT_ID,조항 ID,VARCHAR2(512 BYTE),N,N,명명 후보·표준사전 대조/신청 필요,미신청,미신청,검토 대상

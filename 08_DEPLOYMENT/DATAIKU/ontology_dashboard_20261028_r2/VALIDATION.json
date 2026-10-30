@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-28T20:18:18.998559+09:00",
+  "scope": "Simplified single approval inbox; source and revision guards retained",
+  "tests": {
+    "name": "pytest tests"
+  },
+  "passed": 19,
+  "browser": {
+    "at": "2026-10-28T11:15:51.069Z",
+    "url": "https://maximize-stanley-paperback-enhanced.trycloudflare.com",
+    "scope": "Simplified approval inbox; external HTTPS and Streamlit WebSocket",
+    "desktop": {
+      "width": 1280,
+      "scroll": 1280,
+      "errors": 0
+    },
+    "mobile": {
+      "width": 390,
+      "scroll": 390,
+      "errors": 0
+    },
+    "removed_ui_absent": true,
+    "unconfirmed_approval_blocked": true,
+    "confirmed_approval_saved": true,
+    "gold_not_claimed_complete": true,
+    "exceptions": [],
+    "real_model_calls": 0,
+    "production_db_writes": 0
+  },
+  "removed_ui": [
+    "six-page navigation",
+    "graph",
+    "investigation followup",
+    "what-if",
+    "JSON editing",
+    "generation and upload",
+    "transfer request form",
+    "history page"
+  ],
+  "approval": "source acknowledgement required; optional comment; default acknowledgement recorded when empty",
+  "rejection": "reason required",
+  "gold_writes": 0,
+  "real_model_calls": 0,
+  "main_pointer_sha256": "e44a1e05479f2dff2501a6d380d028937a4b1cb8fe6dd5bd7f098b604d729311",
+  "files": [
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/GUIDE.txt",
+      "sha256": "670f5d56424b397b8227cde2c698f49d6b769f7bb7516ac4595518e02c0cca71"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/ontology_app.py",
+      "sha256": "7f347a012f227191560648c226f4e2996066eb8f71ca8263e6f595eaf136ae3f"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/ontology_dashboard.py",
+      "sha256": "62b4544e6f224655c880cd6f924abd9a67c9f2efc169c238ae6ff75b329772c4"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/ontology_dashboard_demo.py",
+      "sha256": "dc422843e07104db2f6edd64ca00ef69b66860e4af82d36892ec6d0d92c7dd0a"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/ontology_dashboard_model.py",
+      "sha256": "3c380bc3dee8ba6ad46de4ac5c776c8c6fbd970038c06a09fc0d89378e154e94"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r2/requirements-dashboard.txt",
+      "sha256": "e4649506f0a02abe4ae669019f650b80a29023ac22a4432bbaf9dd974fff25e0"
+    }
+  ]
+}

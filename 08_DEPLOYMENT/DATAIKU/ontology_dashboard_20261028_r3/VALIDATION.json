@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-28T20:40:24.566577+09:00",
+  "scope": "Collected input → explicit generation → human review; frontend only",
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "23",
+    "time": "1.948",
+    "timestamp": "2026-10-28T20:35:26.401666+09:00",
+    "hostname": "hjson"
+  },
+  "browser": {
+    "at": "2026-10-28T11:37:13.409Z",
+    "url": "https://maximize-stanley-paperback-enhanced.trycloudflare.com",
+    "scope": "Collected record → explicit example generation → human approval over external HTTPS",
+    "collected": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "generation": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "review": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "shortcut_ingress_limit_visible": true,
+    "demo_generation_label_visible": true,
+    "unconfirmed_approval_blocked": true,
+    "confirmed_approval_saved": true,
+    "gold_not_claimed_complete": true,
+    "exceptions": [],
+    "real_model_calls": 0,
+    "production_db_writes": 0
+  },
+  "generation_backend": "Existing Workflow.propose; configured GENOS callback only after explicit click",
+  "demo_generation": "Prepared synthetic proposal through explicit demo adapter; no actual LLM",
+  "collection_scope": "Existing source-bound ontology work queue, not full shortcut-store import or concept merging",
+  "generation_safety_scope": "Checks current INPUT revision; session-level repeat block. Cross-session reservation and long-running Dataiku job control remain pending.",
+  "human_approval_required": true,
+  "gold_writes": 0,
+  "real_model_calls": 0,
+  "main_pointer_sha256": "e44a1e05479f2dff2501a6d380d028937a4b1cb8fe6dd5bd7f098b604d729311",
+  "files": [
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/GUIDE.txt",
+      "sha256": "bb1b412dee24fb2ccd7c3d093ae2a920727892346876bba5396b9452b8a33088"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/ontology_app.py",
+      "sha256": "7f347a012f227191560648c226f4e2996066eb8f71ca8263e6f595eaf136ae3f"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/ontology_dashboard.py",
+      "sha256": "4de68b1d82eba8ab5bc4aca7d7dddcc9caba260a24d9ab466aa01728ebdca754"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/ontology_dashboard_demo.py",
+      "sha256": "e2c16ed678b2bea31ff8133e6be83cf985c023393cc53fc96310cd75d0a83502"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/ontology_dashboard_model.py",
+      "sha256": "f24290287d364b664717dfd783a5d2ca78f767a5dc813d43142aae7685b1cc5d"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r3/requirements-dashboard.txt",
+      "sha256": "e4649506f0a02abe4ae669019f650b80a29023ac22a4432bbaf9dd974fff25e0"
+    }
+  ]
+}

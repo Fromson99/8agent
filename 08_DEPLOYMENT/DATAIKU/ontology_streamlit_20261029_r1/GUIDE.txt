@@ -1,0 +1,36 @@
+온톨로지 Streamlit 화면 전달본 · 2026-10-29 r1
+
+구성
+- 모인 기록: 항목명·상태·기록 수·근거 원문 표, 행 선택 후 상세.
+- 초안 만들기: 사람의 버튼 클릭 후 연결된 모델이 초안 작성.
+- 검토·승인: 원문 확인 체크 후 승인 또는 사유를 적어 반려.
+- 실제 숏컷에서 등록한 입력은 질문·원문 묶음과 기존 참고 판단을 표시.
+- 승인 이후 Gold 적재·검증·서비스 사용 전환은 별도입니다.
+
+반입
+1. ZIP을 대상 Linux 작업 폴더에 압축 해제합니다. 이전 r4 UI 대신 이 폴더의 Python 파일을 사용합니다.
+2. 기존 semantic_runtime/ontology_work 백엔드와 스키마가 설치된 8-AGENT 코드가 필요합니다.
+   이 파일은 화면 교체본이며 전체 RAG 백엔드·숏컷 반입기·실제 데이터 패키지가 아닙니다.
+3. 승인된 Python 환경에 requirements-dashboard.txt 의존성을 준비합니다.
+   pip 사용 가능한 환경의 예: python3 -m pip install -r requirements-dashboard.txt
+4. 로컬 예시 실행: bash RUN_STREAMLIT.txt /기존/8-AGENT/경로 demo
+5. 실제 연결 실행 전 담당자가 GENOS_RAG_ONTOLOGY_CONFIG를 연결 JSON 경로로 지정합니다.
+   로컬은 GENOS_ONTOLOGY_OPERATOR도 지정합니다. 실행: bash RUN_STREAMLIT.txt /기존/8-AGENT/경로 configured
+   ONTOLOGY_PYTHON으로 사용할 Python 경로, ONTOLOGY_PORT로 로컬 포트를 지정할 수 있습니다.
+6. Dataiku Streamlit 환경에서는 Python 파일들을 같은 라이브러리 폴더에 두고
+   진입 코드로 아래 두 줄을 사용합니다. 실제 Dataiku 설치는 아직 확인 전입니다.
+   from ontology_dashboard import main
+   main()
+   인증은 기존 Dataiku 브라우저 사용자 인증과 연결 설정의 operators 범위를 사용합니다.
+
+선택 파일
+ontology_private_app.py는 임시 외부 미리보기용 비밀번호 입구입니다.
+Dataiku 기본 진입 파일은 ontology_app.py입니다. 비밀번호·설정·외부 터널은 첨부하지 않았습니다.
+
+현재 상태
+로컬에서 실제 숏컷 50개를 44개 원문 묶음으로 등록하고 표 표시를 확인했습니다.
+실제 LLM 초안 생성·사람 승인·운영 Gold 반영은 아직 하지 않았습니다.
+전체 숏컷 자동 수집, Dataiku 현장 연결, 장기 작업·다중 세션 중복 방지는 후속입니다.
+생성 모델 미설정 상태에서는 생성 버튼이 비활성화됩니다.
+UI 회귀 23검사 및 선택 비밀번호 입구 4검사를 통과했습니다.
+실제 데이터·원문·키·비밀번호·연결 설정·JavaScript는 이 전달본에서 제외했습니다.

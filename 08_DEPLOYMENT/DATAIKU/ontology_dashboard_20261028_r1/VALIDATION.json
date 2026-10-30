@@ -1,0 +1,108 @@
+{
+  "created_at": "2026-10-28T08:59:42.667655+00:00",
+  "scope": "Native Streamlit dashboard, configured local workflow and explicit synthetic demo; existing frontend integration",
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "41",
+    "time": "1.101",
+    "timestamp": "2026-10-28T17:58:31.410914+09:00",
+    "hostname": "hjson"
+  },
+  "browser": {
+    "at": "2026-10-28T08:57:56.511Z",
+    "url": "http://127.0.0.1:8517",
+    "scope": "Native Streamlit with synthetic session-owned SQLite workflow",
+    "dashboard": {
+      "width": 1280,
+      "scroll": 1280,
+      "errors": 0
+    },
+    "review": {
+      "width": 1280,
+      "scroll": 1280,
+      "errors": 0
+    },
+    "plotly_click_updates_python_detail": true,
+    "responsive_widths": [
+      1024,
+      390
+    ],
+    "exceptions": [],
+    "real_model_calls": 0,
+    "production_db_writes": 0
+  },
+  "runtime": {
+    "python": "repository .venv/bin/python",
+    "ui_dependencies": "/home/jin/.cache/ontology-dashboard-python",
+    "streamlit": "1.50.0",
+    "plotly": "6.3.1",
+    "core_environment_restored": true,
+    "core_pip_check": "No broken requirements found."
+  },
+  "main_pointer_sha256": "e44a1e05479f2dff2501a6d380d028937a4b1cb8fe6dd5bd7f098b604d729311",
+  "main_changed": false,
+  "real_model_calls": 0,
+  "production_db_writes": 0,
+  "dataiku_field_execution": false,
+  "gold_loading": false,
+  "implemented": [
+    "authorized work list/search",
+    "explicit-edge graph and selection",
+    "source and previous-revision comparison",
+    "recipe save",
+    "content approval/rejection",
+    "immutable gold-transfer-request preparation",
+    "bounded followup drafts",
+    "existing publication history",
+    "synthetic arithmetic"
+  ],
+  "remaining": [
+    "production Gold mapping/loading/verification/activation adapter",
+    "Dataiku S3/Oracle/browser authentication field verification",
+    "targeted investigation execution",
+    "numeric legal scenario engine",
+    "RAG usage event connection"
+  ],
+  "intermediate_failures": [
+    "AppTest developmentMode set_option rejected; removed test-only call",
+    "approval label changed picker identity; stable label and widget keys fixed",
+    "legacy regression required QUALIFICATION_CODE_ROOT; rerun supplied exact working root",
+    "first screenshot navigation preceded document.body; readiness corrected",
+    "Plotly browser click needed mouseMoved before press; real callback then verified",
+    "initial shared dependency install had Pillow conflict; restored original packages and isolated dashboard dependencies"
+  ],
+  "files": [
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/GUIDE.txt",
+      "sha256": "bf84c1435c36806f62fd4dde7f5428ad070ebb2d1e2dbe4a751756646109a543"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/ontology_app.py",
+      "sha256": "7f347a012f227191560648c226f4e2996066eb8f71ca8263e6f595eaf136ae3f"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/ontology_dashboard.py",
+      "sha256": "8288cf8eba51ede98d6f94c70dd352a19c5b0267c59ef5edcc08ef2fa2b22d0b"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/ontology_dashboard_demo.py",
+      "sha256": "dc422843e07104db2f6edd64ca00ef69b66860e4af82d36892ec6d0d92c7dd0a"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/ontology_dashboard_model.py",
+      "sha256": "3c380bc3dee8ba6ad46de4ac5c776c8c6fbd970038c06a09fc0d89378e154e94"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r1/requirements-dashboard.txt",
+      "sha256": "b2e40c42b678220b22d0113c50efe06d5ed33d9de21135e320fa3e431dfd9d98"
+    }
+  ],
+  "modified_existing_frontend": {
+    "path": "03_FRONTEND/APPS/legal-knowledge-streamlit/app.py",
+    "sha256": "a42a38d8ae854a4ffa112ade69dd9d0ac4063da4f17b64cb291d33284f88dc8b",
+    "before": "09_ARTIFACTS/AUDITS/20261028-ontology-dashboard/app.before.py"
+  }
+}

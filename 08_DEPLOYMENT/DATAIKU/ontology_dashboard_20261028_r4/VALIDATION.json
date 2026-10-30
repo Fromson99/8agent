@@ -1,0 +1,124 @@
+{
+  "at": "2026-10-28T20:54:35.417279+09:00",
+  "scope": "Frontend tables for collected records, judgments and review queue; existing three-step workflow unchanged",
+  "changed_product_files": [
+    "03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_dashboard.py"
+  ],
+  "initial_test_result": {
+    "passed": 17,
+    "failed": 6,
+    "cause": "Unsupported dataframe args keyword; replaced with a bound callback",
+    "preserved_log": "tests-initial.log"
+  },
+  "final_tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "23",
+    "time": "1.156",
+    "timestamp": "2026-10-28T20:50:26.949800+09:00",
+    "hostname": "hjson"
+  },
+  "browser": {
+    "at": "2026-10-28T11:53:03.615Z",
+    "url": "https://maximize-stanley-paperback-enhanced.trycloudflare.com",
+    "scope": "Native record tables, row selection after sorting and filtering, explicit generation and human approval over external HTTPS",
+    "collected": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "generation": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "review": {
+      "desktop": {
+        "width": 1280,
+        "scroll": 1280,
+        "errors": 0
+      },
+      "mobile": {
+        "width": 390,
+        "scroll": 390,
+        "errors": 0
+      }
+    },
+    "table_columns_checked": true,
+    "judgment_rows_checked": 2,
+    "sorted_row_selection_checked": true,
+    "review_selection_and_filter_checked": true,
+    "beforeOrder": [
+      "제외 대상 · 생성 대기",
+      "기준일 확인 · 골드 이관 대기",
+      "적용 범위 · 보완 요청",
+      "업무 검토 · 범위와 산정 기준"
+    ],
+    "sortedOrder": [
+      "기준일 확인 · 골드 이관 대기",
+      "업무 검토 · 범위와 산정 기준",
+      "적용 범위 · 보완 요청",
+      "제외 대상 · 생성 대기"
+    ],
+    "shortcut_ingress_limit_visible": true,
+    "demo_generation_label_visible": true,
+    "unconfirmed_approval_blocked": true,
+    "confirmed_approval_saved": true,
+    "gold_not_claimed_complete": true,
+    "exceptions": [],
+    "real_model_calls": 0,
+    "production_db_writes": 0
+  },
+  "limits": [
+    "Existing prepared work queue only; full shortcut import and concept merging remain unconnected",
+    "Existing list limit and full document loading unchanged",
+    "Cross-session generation reservation and Dataiku job control remain pending",
+    "Gold transfer and on-site Dataiku/GENOS integration remain pending"
+  ],
+  "human_approval_required": true,
+  "gold_writes": 0,
+  "real_model_calls": 0,
+  "main_pointer_sha256": "e44a1e05479f2dff2501a6d380d028937a4b1cb8fe6dd5bd7f098b604d729311",
+  "files": [
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/GUIDE.txt",
+      "sha256": "fdbe4adc02f0e1b9e4e1f032bd8be3f32e46da81b4c654a52f64cde83f6dc09f"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/ontology_app.py",
+      "sha256": "7f347a012f227191560648c226f4e2996066eb8f71ca8263e6f595eaf136ae3f"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/ontology_dashboard.py",
+      "sha256": "b02d7de6701ecfbd1bc54ae880e8361ac2349454c0c3dbe787155664d4c0ae59"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/ontology_dashboard_demo.py",
+      "sha256": "e2c16ed678b2bea31ff8133e6be83cf985c023393cc53fc96310cd75d0a83502"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/ontology_dashboard_model.py",
+      "sha256": "f24290287d364b664717dfd783a5d2ca78f767a5dc813d43142aae7685b1cc5d"
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/requirements-dashboard.txt",
+      "sha256": "e4649506f0a02abe4ae669019f650b80a29023ac22a4432bbaf9dd974fff25e0"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "version": "ontology-connection-v1",
+  "environment": "dataiku",
+  "database": {
+    "kind": "oracle",
+    "owner": "SIDDA",
+    "dsn_env": "ONTOLOGY_ORACLE_DSN",
+    "user_env": "ONTOLOGY_ORACLE_USER",
+    "password_env": "ONTOLOGY_ORACLE_PASSWORD"
+  },
+  "source": {
+    "kind": "oracle-silver",
+    "owner": "SIDDS",
+    "dataset_version": "REPLACE_WITH_PUBLISHED_DATASET_VERSION"
+  },
+  "work_store": {
+    "kind": "dataiku",
+    "folder_id": "REPLACE_WITH_ONTOLOGY_WORK_FOLDER"
+  },
+  "operators": {},
+  "model": {
+    "kind": "genos"
+  }
+}

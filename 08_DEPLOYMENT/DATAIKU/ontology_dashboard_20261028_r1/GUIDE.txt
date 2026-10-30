@@ -1,0 +1,107 @@
+온톨로지 검토 대시보드 · Streamlit / Dataiku
+2026-10-28
+
+이 패키지는 기존 온톨로지 작업 워크플로를 사용하는 새 화면입니다.
+MAIN112 서빙 선택, 실제 Dataiku 설치, 운영 골드 적재는 별도입니다.
+예시 화면과 운영 연결 모드는 자동으로 섞이지 않습니다.
+
+1. 포함 화면
+- 검토 대시보드: 권한과 원문 검사를 통과한 작업만 집계·검색·상태 필터.
+- 개념 검토: 원문/요소/경로 관계도 선택, 상세와 항목표, 이전 작업 판본 비교,
+  복수 경로 조립, 원문·발견 판단, JSON 수정, 내용 승인·반려.
+- 조사·재지시: 원래 판단과 최대 3개 후속 요청 초안 다운로드. 실행은 미연결.
+- 골드 이관: 정확히 승인된 작업의 이관 요청을 기존 작업 저장소에 저장·다운로드.
+  신청/승인 참조는 담당자가 입력한 정보이며 승인 검증 완료로 간주하지 않습니다.
+- 게시 이력: 실제 기존 게시 포인터와 접근 가능한 판본의 검토 사건.
+  질문별 사용량은 미연결이므로 숫자를 만들지 않습니다.
+- 가정 비교: 100/200/150의 합성 산술 예시. 실제 법률 계산 엔진은 아닙니다.
+
+2. Dataiku 배치
+기존 코드 배치의 02_BACKEND/semantic_runtime 및 의존 모듈과
+00_SYSTEM/SCHEMAS를 같은 코드 루트에 유지합니다. 이 ZIP은 백엔드 교체본이 아닙니다.
+
+다음 네 Python 파일을 Dataiku 프로젝트 Python 라이브러리의 같은 폴더에 둡니다.
+  ontology_dashboard.py
+  ontology_dashboard_model.py
+  ontology_dashboard_demo.py
+  ontology_app.py
+
+Streamlit 웹앱 Python 진입 코드는 아래 두 줄입니다.
+  from ontology_dashboard import main
+  main()
+
+requirements-dashboard.txt의 Streamlit·Plotly·jsonschema를 해당 웹앱 코드 환경에
+설치합니다. Oracle 연결은 기존 requirements-ontology.txt의 검증 의존성을 유지합니다.
+Dataiku SDK는 현장 제공본을 사용합니다. 이 작업에서 외부 CDN은 필요하지 않습니다.
+망분리 환경에서는 해당 Python/OS와 맞는 wheel을 반입합니다.
+
+운영자 설정:
+  GENOS_ONTOLOGY_CODE_ROOT = 현장에 배치한 코드 루트의 절대경로
+  GENOS_RAG_ONTOLOGY_CONFIG = ontology-connection-v1 설정 JSON 절대경로
+  ONTOLOGY_DASHBOARD_DEMO = 미설정
+
+기존 ontology_workflow_20261028_r1/connection.example.json의 계약을 사용합니다.
+database: Oracle 연결과 실제 owner
+source: oracle-silver, SIDDS, 실제 게시된 dataset_version
+work_store: dataiku, 온톨로지 작업 JSON용 관리 폴더 ID
+operators: 인증된 Dataiku 사용자별 허용 document_ids
+접속 비밀은 기존 코드 환경/서버 환경변수로 주입하며 UI나 ZIP에 넣지 않습니다.
+현재 개발계 온톨로지 저장소 SIDDA와 운영 골드의 모델/컬럼 매핑을 혼동하지 않습니다.
+
+로그인 사용자는 Dataiku 브라우저 인증 헤더로 확인합니다.
+API 서비스 계정을 사용자로 대체하거나 사용자 이름 입력칸을 제공하지 않습니다.
+설정/인증 실패는 오류로 표시하고 예시 모드로 자동 전환하지 않습니다.
+
+3. 기존 관리 앱 안에서 사용
+저장소 03_FRONTEND/APPS/legal-knowledge-streamlit/app.py의 온톨로지 메뉴가
+GENOS_RAG_ONTOLOGY_CONFIG 설정 시 이 대시보드를 호출하도록 연결했습니다.
+기존 앱을 사용하는 경우 새 네 파일과 requirements를 같은 폴더에 함께 배치합니다.
+기존 site_design_app.py의 연결 모드는 app.py로 위임하므로 같은 경로를 사용합니다.
+과거 R3 단일 파일만 업로드한 웹앱에는 추가 파일 배치가 필요합니다.
+
+4. 로컬 예시
+저장소 루트에서, 대시보드 의존성이 준비된 Python 환경으로 실행:
+  ONTOLOGY_DASHBOARD_DEMO=1 python3 -m streamlit run 03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_app.py
+
+이 작업 환경의 재현 명령(WSL):
+  PYTHONPATH=/home/jin/.cache/ontology-dashboard-python ONTOLOGY_DASHBOARD_DEMO=1 .venv/bin/python -m streamlit run 03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_app.py --global.developmentMode false --server.address 127.0.0.1 --server.port 8517 --browser.gatherUsageStats false --theme.base light
+
+캐시 경로는 이번 로컬 검증 의존성 경로이며 Dataiku 경로가 아닙니다.
+예시는 브라우저 세션마다 작은 임시 SQLite/작업 폴더를 만들고 실제 Workflow를
+사용합니다. 실제 법령 데이터·운영 DB·LLM은 사용하지 않습니다. 세션 종료 후
+수명 정리되는 TemporaryDirectory이며 운영 저장 구조로 안내하지 않습니다.
+DEMO=1과 운영 설정을 동시에 켜면 시작을 차단합니다.
+
+5. 골드 절차의 경계
+내용 승인 → 모델·메타 승인 확인 → 매핑 → Dataiku SQL 적재 → 검증 → 사용 전환.
+이 화면의 '이관 요청 자료 저장'은 PREPARED_NOT_APPLIED JSON을 작업 저장소에
+보관합니다. 승인 참조·작업 hash/revision·사전 조립본·현재 게시 포인터를 포함합니다.
+골드 DDL·SQL을 임의 생성하거나 repository.publish/activate를 호출하지 않습니다.
+운영 골드 전송/검증/활성화 어댑터가 구현·확인되기 전까지 완료 버튼을 제공하지 않습니다.
+승인 용어·별칭도 같은 절차를 거칩니다.
+
+6. 실패·재개
+- 원문·권한·hash 실패: 해당 자료 표시/변경 차단. 운영 로그로 원인 확인.
+- 오래된 작업 판본: revision+work_hash+status 재확인 후 거절. 새로 읽고 검토.
+- 생성 실패: 기존 Workflow의 호출/형식 보완 한도를 유지. 화면 자동 재시도 없음.
+- 저장 결과 불명: 성공 표시 없음. 오류 확인 번호와 서버 로그로 확인 후 재개.
+- 접속 오류: 빈 대시보드로 성공 처리하거나 예시 데이터를 대신 보여주지 않음.
+- 과거 이력: 해당 판본 원문 권한도 다시 확인. 판본 결속이 없는 rev0 사건은
+  상세 목록에서 생략하고 현재 게시 포인터를 별도로 표시.
+
+7. 확인과 롤백
+로컬 native Streamlit AppTest, 작은 실제 SQLite Workflow, Chromium 상호작용으로
+검사했습니다. 상세 검사 결과와 파일 hash는 같은 패키지의 VALIDATION.json 참조.
+Dataiku S3·Oracle·인증 프록시·GENOS 현장 실행은 이 작업에서 확인하지 않았습니다.
+
+현장 확인: 사용자별 목록 범위 → 원문 상세 → 새 판본 저장 → 승인 → 이관 요청 저장.
+이때 승인/요청 준비로 기존 게시 포인터가 바뀌지 않는지 확인합니다.
+실제 골드 적재·사용 전환은 승인된 별도 Dataiku 절차로 수행합니다.
+
+화면 롤백은 변경 전 app.py와 requirements를 복원하고 웹앱을 재시작합니다.
+대시보드가 남긴 작업·승인·이관 요청 JSON은 삭제하지 않습니다.
+서빙 MAIN 선택이나 데이터 세대 롤백과 혼동하지 않습니다.
+
+API 근거:
+https://docs.streamlit.io/1.50.0/develop/api-reference/charts/st.plotly_chart
+https://docs.streamlit.io/1.50.0/develop/api-reference/data/st.dataframe

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# 사용: bash RUN_STREAMLIT.txt /기존/8-AGENT/경로 demo
+# 실제 연결: bash RUN_STREAMLIT.txt /기존/8-AGENT/경로 configured
+# configured 실행 전 GENOS_RAG_ONTOLOGY_CONFIG, 로컬이면 GENOS_ONTOLOGY_OPERATOR를 설정합니다.
+ui_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+code_root="${1:?기존 8-AGENT 코드 경로를 첫 인수로 입력하세요}"
+mode="${2:-configured}"
+python_bin="${ONTOLOGY_PYTHON:-python3}"
+if [[ ! -d "$code_root/02_BACKEND/semantic_runtime/ontology_work" ]]; then
+  echo '기존 ontology_work 백엔드가 필요합니다. UI ZIP만으로 백엔드를 설치하지 않습니다.' >&2
+  exit 2
+fi
+export GENOS_ONTOLOGY_CODE_ROOT="$code_root"
+export PYTHONPATH="$code_root/02_BACKEND:$ui_dir${PYTHONPATH:+:$PYTHONPATH}"
+if [[ "$mode" == demo ]]; then
+  if [[ -n "${GENOS_RAG_ONTOLOGY_CONFIG:-}" ]]; then
+    echo '데모 실행 전에 운영 연결 설정을 해제하세요.' >&2; exit 2
+  fi
+  export ONTOLOGY_DASHBOARD_DEMO=1
+elif [[ "$mode" == configured ]]; then
+  : "${GENOS_RAG_ONTOLOGY_CONFIG:?연결 설정 JSON 경로가 필요합니다}"
+  [[ -f "$GENOS_RAG_ONTOLOGY_CONFIG" ]] || { echo '연결 설정 파일을 찾을 수 없습니다.' >&2; exit 2; }
+  unset ONTOLOGY_DASHBOARD_DEMO
+else
+  echo '두 번째 인수는 demo 또는 configured입니다.' >&2; exit 2
+fi
+"$python_bin" -c 'import streamlit,jsonschema,semantic_runtime.ontology_work'
+exec "$python_bin" -m streamlit run "$ui_dir/ontology_app.py" --server.address 127.0.0.1 --server.port "${ONTOLOGY_PORT:-8501}" --server.headless true --browser.gatherUsageStats false --server.enableStaticServing false
