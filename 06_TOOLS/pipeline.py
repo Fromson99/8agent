@@ -6,6 +6,10 @@ from pathlib import Path
 import sys
 
 root = Path(__file__).resolve().parents[1]
+if __name__ == '__main__' and sys.argv[1:2] == ['ontology-work']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from semantic_runtime.ontology_work.cli import main
+    raise SystemExit(main(sys.argv[2:]))
 if __name__ == '__main__' and sys.argv[1:2] == ['legal-knowledge']:
     sys.path.insert(0, str(root / '02_BACKEND'))
     from lawrag.pipeline.legal_knowledge import main

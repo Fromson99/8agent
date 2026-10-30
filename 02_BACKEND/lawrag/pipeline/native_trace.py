@@ -5,6 +5,7 @@ and neither attests to legal correctness. All reads use one SQLite snapshot.
 """
 from __future__ import annotations
 
+from semantic_runtime.legal_agent import journal_storage
 from contextlib import closing
 import hashlib
 import json
@@ -45,8 +46,8 @@ def read_trace(path, *, expected_run=None, expected_binding=None, max_rows=20000
     snapshot_sha256 covers logical rows, including WAL-visible committed rows.
     """
     path = Path(path).resolve(strict=True)
-    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=.2)) as db:
-        db.row_factory = sqlite3.Row
+    with closing(journal_storage.connect(path.as_uri() + '?mode=ro', uri=True, timeout=.2)) as db:
+        db.row_factory = journal_storage.row
         db.execute('PRAGMA query_only=ON')
         db.execute('PRAGMA busy_timeout=200')
         db.execute('BEGIN')

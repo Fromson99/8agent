@@ -48,6 +48,12 @@ class Settings:
 
     @classmethod
     def from_env(cls):
+        transport = os.environ.get('GENOS_PREPROCESSOR_TRANSPORT', 'http').strip()
+        if transport == 'pod':
+            from .genos_pod import Settings as PodSettings
+            return PodSettings.from_env()
+        if transport != 'http':
+            raise ValueError('GENOS_PREPROCESSOR_TRANSPORT must be http or pod')
         url = os.environ.get('GENOS_PREPROCESSOR_URL', '').strip()
         if not url:
             ident = os.environ.get('GENOS_PREPROCESSOR_ID', '').strip()
@@ -129,8 +135,12 @@ def parse(path, settings):
     A timeout may leave a server request running. Keep the unique request directory
     and evidence; never automatically retry or remove an in-flight source file.
     """
+    if os.environ.get('GENOS_PREPROCESSOR_TRANSPORT', 'http') == 'pod':
+        from . import genos_pod
+        if not isinstance(settings, genos_pod.Settings):
+            raise ValueError('POD_SETTINGS_REQUIRED')
+        return genos_pod.parse(path,settings)
     import httpx
-    from docling_core.types.doc import DoclingDocument
 
     source = Path(path)
     fingerprint = _sha(source)
@@ -181,44 +191,7 @@ def parse(path, settings):
         receipt['response_sha256'] = hashlib.sha256(raw).hexdigest()
         if _sha(staged) != fingerprint or _sha(source) != fingerprint:
             raise ValueError('GENOS preprocessor source changed during request')
-        try:
-            envelope = json.loads(raw)
-        except (ValueError, UnicodeError):
-            raise ValueError('GENOS preprocessor returned invalid JSON') from None
-        if not isinstance(envelope, dict) or envelope.get('code') not in (0, '0') or isinstance(envelope.get('code'), bool):
-            raise ValueError('GENOS preprocessor reported failure; see private response.json and server logs')
-        data = envelope.get('data')
-        if isinstance(data, list) and settings.response_mode != 'docling':
-            from .genos_chunks import assemble
-            doc = assemble(data, source)
-            _save(evidence / 'assembled-input.json', doc.dump())
-            receipt.update(status='COMPLETED', response_format='chunks',
-                           assembled_sha256=_sha(evidence / 'assembled-input.json'))
-            return doc, {'request_id': request_id, 'response_sha256': receipt['response_sha256'],
-                         'parser': settings.identity(), 'response_format': 'chunks',
-                         'assembled_sha256': receipt['assembled_sha256']}
-        if (settings.response_mode == 'chunks' or not isinstance(data, dict)
-                or not isinstance(data.get('document'), dict)):
-            raise ValueError('GENOS preprocessor requires data.document or a complete indexed chunk array')
-        if data.get('schema_version') == '8agent-structured-pdf-v1':
-            if (data.get('provenance') or {}).get('source_sha256') != fingerprint:
-                raise ValueError('GENOS structured response source hash mismatch')
-            receipt['server_provenance'] = data['provenance']
-        try:
-            doc = DoclingDocument.model_validate(data['document'])
-        except Exception:
-            raise ValueError('GENOS Docling JSON schema mismatch; check server/client docling-core versions') from None
-        if not doc.pages or not (doc.texts or doc.tables):
-            raise ValueError('GENOS preprocessor returned an empty PDF document')
-        # Keep server-only media references as evidence, never fetch them from the
-        # code-space. Rasterize the source locally when a picture is needed.
-        for picture in doc.pictures:
-            if picture.image and not str(picture.image.uri).startswith('data:image/'):
-                picture.image = None
-        receipt.update(status='COMPLETED', response_format='docling')
-        return doc, {'request_id': request_id, 'response_sha256': receipt['response_sha256'],
-                     'parser': settings.identity(), 'response_format': 'docling',
-                     'server_provenance': receipt.get('server_provenance')}
+        return decode_response(raw,source,settings,evidence,receipt,fingerprint)
     except httpx.RequestError:
         receipt['status'] = 'PENDING_OR_FAILED'
         raise ValueError('GENOS preprocessor connection/timeout failure; source retained, inspect server before retrying') from None
@@ -228,3 +201,47 @@ def parse(path, settings):
     finally:
         receipt['elapsed_seconds'] = round(time.monotonic() - started, 3)
         _save(evidence / 'receipt.json', receipt)
+
+
+def decode_response(raw, source, settings, evidence, receipt, fingerprint):
+    """One validation contract for HTTP and same-Pod responses."""
+    request_id = receipt["request_id"]
+    from docling_core.types.doc import DoclingDocument
+    try:
+        envelope = json.loads(raw)
+    except (ValueError, UnicodeError):
+        raise ValueError('GENOS preprocessor returned invalid JSON') from None
+    if not isinstance(envelope, dict) or envelope.get('code') not in (0, '0') or isinstance(envelope.get('code'), bool):
+        raise ValueError('GENOS preprocessor reported failure; see private response.json and server logs')
+    data = envelope.get('data')
+    if isinstance(data, list) and settings.response_mode != 'docling':
+        from .genos_chunks import assemble
+        doc = assemble(data, source)
+        _save(evidence / 'assembled-input.json', doc.dump())
+        receipt.update(status='COMPLETED', response_format='chunks',
+                       assembled_sha256=_sha(evidence / 'assembled-input.json'))
+        return doc, {'request_id': request_id, 'response_sha256': receipt['response_sha256'],
+                     'parser': settings.identity(), 'response_format': 'chunks',
+                     'assembled_sha256': receipt['assembled_sha256']}
+    if (settings.response_mode == 'chunks' or not isinstance(data, dict)
+            or not isinstance(data.get('document'), dict)):
+        raise ValueError('GENOS preprocessor requires data.document or a complete indexed chunk array')
+    if data.get('schema_version') == '8agent-structured-pdf-v1':
+        if (data.get('provenance') or {}).get('source_sha256') != fingerprint:
+            raise ValueError('GENOS structured response source hash mismatch')
+        receipt['server_provenance'] = data['provenance']
+    try:
+        doc = DoclingDocument.model_validate(data['document'])
+    except Exception:
+        raise ValueError('GENOS Docling JSON schema mismatch; check server/client docling-core versions') from None
+    if not doc.pages or not (doc.texts or doc.tables):
+        raise ValueError('GENOS preprocessor returned an empty PDF document')
+    # Keep server-only media references as evidence, never fetch them from the
+    # code-space. Rasterize the source locally when a picture is needed.
+    for picture in doc.pictures:
+        if picture.image and not str(picture.image.uri).startswith('data:image/'):
+            picture.image = None
+    receipt.update(status='COMPLETED', response_format='docling')
+    return doc, {'request_id': request_id, 'response_sha256': receipt['response_sha256'],
+                 'parser': settings.identity(), 'response_format': 'docling',
+                 'server_provenance': receipt.get('server_provenance')}

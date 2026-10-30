@@ -23,7 +23,10 @@ def render(statement,binds,*,write=False):
     for i,(name,value,kind) in enumerate(binds):
         if not re.fullmatch('[A-Za-z][A-Za-z0-9_]*',name) or name in values:raise DPError('JDBC_BIND: duplicate/invalid name')
         if kind=='CLOB' and value is not None:
-            if not write or not isinstance(value,str):raise DPError('JDBC_CLOB: CLOB only in write blocks')
+            if not isinstance(value,str):raise DPError('JDBC_CLOB: expected string')
+            if not write:
+                values[name]=' || '.join('TO_CLOB('+literal(value[j:j+900])+')' for j in range(0,len(value),900)) if value else "TO_CLOB('')"
+                continue
             var=f'qp_lob_{i}';declarations.append(var+' CLOB;');values[name]=var
             initializers.append(f'DBMS_LOB.CREATETEMPORARY({var},TRUE);')
             for start in range(0,len(value),900):

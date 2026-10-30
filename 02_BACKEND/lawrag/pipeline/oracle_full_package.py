@@ -11,6 +11,7 @@ import uuid
 import zipfile
 
 from semantic_runtime import oracle_dp_io as io, oracle_dp_assets as assets, oracle_query_catalog as q
+from semantic_runtime.physical_mapping import names
 from . import oracle_query_package as transport, oracle_migration as migration
 from . import oracle_publish as source_publish, oracle_query_publish as query_publish
 from .oracle_transfer_progress import report, check
@@ -139,7 +140,15 @@ def validate_files(files):
 
 def verify_restored(folder):
     folder = Path(folder).resolve(); info = bounded_json(folder / 'full-manifest.json')
-    if info.get('format') == RESTORED_FORMAT:
+    if info.get('format') == 'oracle-existing-nfs-generation-v1':
+        from .oracle_existing_nfs import validate_info
+        snapshot = info['nfs_snapshot']
+        validate_info(snapshot, code_sha256=snapshot['code_sha256'], generation=snapshot['generation'])
+        if (info['snapshot_sha256'] != snapshot['snapshot_sha256']
+                or info['files'] != snapshot['files'] or info['dataset_version'] != snapshot['dataset_version']):
+            raise io.DPError('NFS_RESTORE_BINDING')
+        validate_files(info['files'])
+    elif info.get('format') == RESTORED_FORMAT:
         validate_files(info['files']); q.pin(info['archive_sha256']); q.pin(info['data_manifest_sha256'])
         q.pin(info['dataset_version'])
     else:
@@ -201,19 +210,29 @@ def restore(parts, output):
 
 
 def _prior_schema_failure(directory, identity):
-    """Carry the sealed R2 read-only failure budget forward; never reuse write stages."""
+    """Carry a pinned pre-write schema failure forward; never reuse write stages."""
     with transport.job(directory) as logs:
         path = logs/'full-state.json'
         previous = bounded_json(path)
         old_identity = previous.get('identity', {})
         pinned_r2 = '641c45540ffb8d3e086bd8060e9cb556e3ae5ccf705d287fe4b5a5528c94c7e2'
-        if (old_identity.get('code') != pinned_r2 or
+        pinned_nfs_r1 = '935f47a47ade390103312f3b21cd2156e10571cf955ec351199dda16c761115d'
+        schema = previous.get('schema_check', {})
+        known_failure = (
+            old_identity.get('code') == pinned_r2 and
+            previous.get('error', '').startswith('QUERY_SCHEMA: ')
+        ) or (
+            old_identity.get('code') == pinned_nfs_r1 and previous.get('error') == 'KeyError' and
+            schema.get('status') == 'READY' and schema.get('tables') == 4 and
+            isinstance(schema.get('target_map_sha256'), str) and
+            len(schema['target_map_sha256']) == 64 and 'deferred_indexes' not in schema
+        )
+        if (not known_failure or
                 {k:v for k,v in old_identity.items() if k != 'code'} !=
                 {k:v for k,v in identity.items() if k != 'code'} or
                 previous.get('status') != 'FAILED' or previous.get('stages') != {} or
-                previous.get('stage') is not None or
-                not previous.get('error', '').startswith('QUERY_SCHEMA: ')):
-            raise io.DPError('IMPORT_UPGRADE: only the pinned R2 pre-write schema failure is eligible')
+                previous.get('stage') is not None):
+            raise io.DPError('IMPORT_UPGRADE: only a pinned pre-write schema failure is eligible')
         calls = 0
         with (logs/'schema.jsonl').open() as records:
             for line in records:
@@ -266,9 +285,13 @@ def import_generation(client, folder, *, target_binding, directory, action='chec
                           max_calls=1000000-prior_calls, seconds=remaining())
         try:
             checked = sql('schema'); io.check_source_tables(checked)
-            for table, columns in [(assets.PART_TABLE, 'ASSET_SHA256,PART_NO,RAW_BYTES,PART_SHA256,DATA_B64'),
-                                   (assets.RELEASE_TABLE, 'RELEASE_ID,DATASET_VERSION,RELEASE_JSON')]:
-                checked.query(f'SELECT {columns} FROM {table} WHERE 1=0')
+            physical = getattr(client, 'schema_map', None)
+            if physical:
+                physical.preflight(checked, keys=['asset_part', 'source_release'])
+            else:
+                for table, columns in [(assets.PART_TABLE, 'ASSET_SHA256,PART_NO,RAW_BYTES,PART_SHA256,DATA_B64'),
+                                       (assets.RELEASE_TABLE, 'RELEASE_ID,DATASET_VERSION,RELEASE_JSON')]:
+                    checked.query(f'SELECT {columns} FROM {table} WHERE 1=0')
             schema = query_publish.schema(checked, create=False,
                                           allow_missing_lookup_indexes=allow_missing_lookup_indexes)
             if schema['status'] != 'READY': raise io.DPError('QUERY_SCHEMA: '+str(schema.get('missing')))
@@ -319,7 +342,8 @@ def import_generation(client, folder, *, target_binding, directory, action='chec
                         query_publish._verify_batch(read, rid, batch); batch = []; size = 0
                     batch.append(row); size += n; total += 1
                 query_publish._verify_batch(read, rid, batch) if batch else None
-            count = read.query(f'SELECT COUNT(*) AS N FROM {q.ROW} WHERE RELEASE_ID=:release', [('release', rid, 'VARCHAR2')], limit=1)
+            row_names = names(read, 'query_row', q.ROW)
+            count = read.query(f'SELECT COUNT(*) AS N FROM {row_names.table} WHERE {row_names.c("RELEASE_ID")}=:release', [('release', rid, 'VARCHAR2')], limit=1)
             if count != [{'N': total}]: raise io.DPError('QUERY_TOTAL_COUNT')
             verify_restored(folder)
             result = {'status': 'FULL_DATA_VERIFIED', 'source_release_id': sid, 'query_release_id': rid,

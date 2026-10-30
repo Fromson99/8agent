@@ -36,6 +36,10 @@ SPREADSHEET_SUFFIXES = {'.xls', '.xlsx'}
 SPREADSHEET_EXCLUSION = 'spreadsheet_form_excluded_by_user'
 PDF_SOURCES = {'.doc', '.hwp', '.pptx', '.ppt'}
 
+def pdf_sources():
+    # Keep native structure readers; produce viewer PDFs within the Pod as well.
+    return PDF_SOURCES | ({'.docx', '.hwpx'} if os.environ.get('GENOS_PREPROCESSOR_TRANSPORT') == 'pod' else set())
+
 
 def pdf_check(path):
     try:
@@ -147,6 +151,9 @@ def _wait_for_pdf(pdf, work, evidence, emit=None):
 
 def convert(source, work):
     """Documented /run shared-file contract; return actual sidecar, never API text."""
+    if os.environ.get('GENOS_PREPROCESSOR_TRANSPORT', 'http') == 'pod':
+        from lawrag.core.genos_pod import convert as pod_convert
+        return pod_convert(source, work)
     import httpx
     url = os.environ.get('GENOS_PDF_CONVERTER_URL', '').strip()
     if not url:
@@ -429,7 +436,7 @@ def run(root, data, logs, *, execute, unzip=True, xml_md=True, pdf=True,
     targets = {}
     from .document_representations import PRIORITY
     for source, _, _ in originals:
-        if source.suffix.lower() not in PDF_SOURCES:
+        if source.suffix.lower() not in pdf_sources():
             continue
         target = source.with_suffix('.pdf')
         previous = targets.get(target)
@@ -495,7 +502,7 @@ def run(root, data, logs, *, execute, unzip=True, xml_md=True, pdf=True,
                 source_sidecar = canonical.with_name(canonical.name + '.md')
                 target_sidecar = financial.with_name(financial.name + '.md')
             else:
-                if canonical.suffix.lower() not in PDF_SOURCES or not pdf:
+                if canonical.suffix.lower() not in pdf_sources() or not pdf:
                     continue
                 source_sidecar = canonical.with_suffix('.pdf')
                 target_sidecar = financial.with_suffix('.pdf')

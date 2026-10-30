@@ -117,16 +117,18 @@ def query_manifest(root,source,paths,tables,items):
                                    (oracle_query_navigation_publish,navigation_match,structure_navigation,inherited_navigation)}}
 
 
-def export(generation,output,*,seconds=21600,chunk_bytes=CHUNK_BYTES,resume_r1=False,direct_parts=False):
+def export(generation,output,*,seconds=21600,chunk_bytes=CHUNK_BYTES,resume_r1=False,direct_parts=False,database_only=False):
     # The former timer-only heartbeat is replaced with named phase/real work telemetry.
+    if type(database_only) is not bool or (database_only and direct_parts):
+        raise io.DPError('EXPORT_PACKAGING: choose database_only or direct_parts')
     Path(output).mkdir(parents=True,exist_ok=True)
     with tracking(output,lambda status,**fields:event(output,status,**fields)) as progress:
         progress.deadline=time.time()+seconds
         return _export(generation,output,seconds=seconds,chunk_bytes=chunk_bytes,
-                       resume_r1=resume_r1,direct_parts=direct_parts,progress=progress)
+                       resume_r1=resume_r1,direct_parts=direct_parts,database_only=database_only,progress=progress)
 
 
-def _export(generation,output,*,seconds,chunk_bytes,resume_r1,direct_parts,progress):
+def _export(generation,output,*,seconds,chunk_bytes,resume_r1,direct_parts,database_only,progress):
     """Resume by reconciling deterministic row sequence; no input file is modified."""
     if not 1<=seconds<=21600:raise io.DPError('BUDGET: seconds must be 1..21600')
     with job(output) as folder:
@@ -167,6 +169,15 @@ def _export(generation,output,*,seconds,chunk_bytes,resume_r1,direct_parts,progr
                 tables={};sequence=0;added=0
                 retained=db.execute('SELECT COUNT(*),COALESCE(MAX(seq),0) FROM query_row').fetchone()
                 if retained[0]!=retained[1]:raise io.DPError('EXPORT_RESUME_GAP: retained rows are not a prefix')
+                # Recheck the complete retained prefix with one ordered cursor.
+                # New sequence numbers cannot exist beyond the verified maximum.
+                prefix=db.execute('SELECT seq,kind,row_id,body FROM query_row WHERE seq<=? ORDER BY seq',(retained[1],))
+                pending=[];pending_bytes=0
+                def flush():
+                    nonlocal pending_bytes
+                    if pending:
+                        db.executemany('INSERT INTO query_row VALUES(?,?,?,?)',pending)
+                        pending.clear();pending_bytes=0
                 event(folder,'RESUME_PREFIX',retained_rows=retained[0],mode='revalidate-every-row-no-reinsert')
                 for relative,sha in paths.items():
                     tick();event(folder,'PROJECTING',asset=relative)
@@ -174,17 +185,20 @@ def _export(generation,output,*,seconds,chunk_bytes,resume_r1,direct_parts,progr
                     if relative!='store.sqlite':tables.update(pub.asset_schema(path,relative))
                     for row in pub.projected_rows(path,relative,source):
                         tick();sequence+=1;body=q.json_body(row)
-                        old=db.execute('SELECT kind,row_id,body FROM query_row WHERE seq=?',(sequence,)).fetchone()
-                        if old is not None:
-                            if old!=(row['kind'],row['row_id'],body):raise io.DPError('EXPORT_RESUME_CONFLICT: stored row differs')
+                        if sequence<=retained[1]:
+                            old=prefix.fetchone()
+                            if old!=(sequence,row['kind'],row['row_id'],body):raise io.DPError('EXPORT_RESUME_CONFLICT: stored row differs')
                         else:
-                            db.execute('INSERT INTO query_row VALUES(?,?,?,?)',(sequence,row['kind'],row['row_id'],body));added+=1
+                            pending.append((sequence,row['kind'],row['row_id'],body));added+=1
+                            pending_bytes+=len(body.encode('utf-8'))
+                            if len(pending)>=1000 or pending_bytes>=4*1024**2:flush()
                         s=tables.setdefault(row['kind'],{'asset':relative,'rows':0,'chain':'0'*64})
                         s['rows']+=1;s['chain']=io.digest([s['chain'],row['row_id'],row['sha256']]);pub._column_shapes(s,row['value'])
                         if sequence%1000==0 or sequence==retained[0]:
+                            flush()
                             db.commit();report(rows_checked=sequence,rows_added=added)
                             event(folder,'ROWS_CHECKED' if sequence<=retained[0] else 'ROWS_SAVED',rows=sequence,added=added)
-                    db.commit()
+                    flush();db.commit()
                     report(rows_checked=sequence,rows_added=added)
                     report('ASSET_HASH_CHECK',asset=relative)
                     if io.file_sha(path)!=sha:raise io.DPError('SOURCE_CHANGED: '+relative)
@@ -199,7 +213,13 @@ def _export(generation,output,*,seconds,chunk_bytes,resume_r1,direct_parts,progr
             finally:db.close()
             report('VERIFY_DB');verify_db(partial)
             os.rename(partial,dbpath)
-        result=(split_db_direct if direct_parts else split_db)(dbpath,folder,chunk_bytes=chunk_bytes)
+        if database_only:
+            # The compute worker includes this verified DB in result.zip itself.
+            # Do not also compress it into unused download parts first.
+            report('DATABASE_READY',file=str(dbpath))
+            result={'packaging':'database-only-v1','db_sha256':io.file_sha(dbpath),'db_bytes':dbpath.stat().st_size}
+        else:
+            result=(split_db_direct if direct_parts else split_db)(dbpath,folder,chunk_bytes=chunk_bytes)
         state.update(status='COMPLETE',source_release_id=source_id,**result);io.atomic_json(state_path,state)
         event(folder,'EXPORT_COMPLETE',**result)
         return result
