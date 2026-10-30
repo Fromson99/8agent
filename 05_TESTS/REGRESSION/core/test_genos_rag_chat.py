@@ -2,6 +2,7 @@ import asyncio
 import importlib.util
 import json
 import io
+from html import unescape
 import urllib.error
 import pytest
 from pathlib import Path
@@ -153,7 +154,7 @@ def test_render_keeps_answer_and_only_used_sources():
     workflow = _load()
     rendered = workflow.render(_rag_body())
     assert rendered.startswith("검증된 답변입니다.")
-    assert "내부규정 A · 제1장 > 제2조" in rendered
+    assert "내부규정 A · 제1장 > 제2조" in unescape(rendered)
     assert "미사용 문서" not in rendered
 
 
@@ -170,7 +171,10 @@ def test_render_v5_chat_has_short_answer_and_sources_last():
         }},
     }
     rendered = workflow.render(body)
-    assert rendered == "영업일은 영업하는 날입니다.\n\n**출처**\n- 핵심 · 모의내규 · 제1조"
+    assert rendered.startswith("영업일은 영업하는 날입니다.\n\n<!-- GENOS_SOURCES_START -->")
+    assert rendered.count('data-genos-source="true"') == 1
+    assert '핵심 · 모의내규 · 제1조' in rendered
+    assert '원문 내용이 저장되지 않았습니다.' in rendered
 
 
 def test_found_but_unreviewed_source_is_not_reported_as_not_found(monkeypatch):
@@ -184,7 +188,7 @@ def test_found_but_unreviewed_source_is_not_reported_as_not_found(monkeypatch):
     assert result["answer_status"] == "incomplete"
 
 
-def test_render_v5_names_core_and_supplemental_documents_without_original(monkeypatch):
+def test_render_v5_folds_core_and_supplemental_originals_without_api_links(monkeypatch):
     workflow = _load()
     monkeypatch.setenv("GENOS_RAG_SOURCE_BASE_URL", "https://sources.example")
     body = {"answer": {"text": "최종 답변.\n\n확인 한계: 내부 진단"},
@@ -192,18 +196,19 @@ def test_render_v5_names_core_and_supplemental_documents_without_original(monkey
                 "schema_version": "source-tiers-v4", "sources": [{
                     "tier": "CORE", "document_name": "내규", "coordinate_label": "제1조",
                     "open_url": "/v1/rag/source?run_id=r1&selection_id=SSabc",
-                    "excerpt": "채팅에 넣으면 안 되는 원문",
+                    "excerpt": "채택된 핵심 원문",
                 }, {
                     "tier": "SUPPLEMENTAL", "document_name": "가상법령", "coordinate_label": "제2조",
                     "open_url": "/v1/rag/source?run_id=r1&selection_id=SSdef",
                     "excerpt": "보완 원문",
                 }]}}}}
     rendered = workflow.render(body)
-    assert rendered == ("최종 답변.\n\n**출처**\n"
-                        "- 핵심 · 내규 · 제1조\n"
-                        "- 보완 · 가상법령 · 제2조")
+    assert rendered.startswith('최종 답변.\n\n<!-- GENOS_SOURCES_START -->')
+    assert rendered.count('data-genos-source="true"') == 2
+    for value in ('핵심 · 내규 · 제1조', '보완 · 가상법령 · 제2조', '채택된 핵심 원문', '보완 원문'):
+        assert value in rendered
     assert "/v1/rag/source" not in rendered
-    assert "원문" not in rendered and "확인 한계" not in rendered
+    assert "확인 한계" not in rendered
     monkeypatch.delenv("GENOS_RAG_SOURCE_BASE_URL")
     assert workflow.render(body) == rendered
 
@@ -218,7 +223,9 @@ def test_render_v3_claim_source_ids_selects_document():
             {"id": "source:unused", "document_name": "다른 문서"},
         ]},
     }
-    assert workflow.render(body).endswith("**출처**\n- 모의내규")
+    shown = workflow.render(body)
+    assert '모의내규' in shown and '다른 문서' not in shown
+    assert shown.count('data-genos-source="true"') == 1
 
 
 def test_run_returns_genos_text_contract(monkeypatch):

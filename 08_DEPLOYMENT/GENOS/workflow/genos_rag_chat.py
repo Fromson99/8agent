@@ -30,10 +30,10 @@ else:
     _SYSTEM_LOGS = _install_system_logging("workflow-python")
 
 
-WORKFLOW_REVISION = "rag-team-session-20261019-r1"
+WORKFLOW_REVISION = "rag-applied-mode-20261027-r1"
 LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
 PROGRESS_DISPLAY_REVISION = "rag-source-provider-20261013-r2"
-ANSWER_DISPLAY_REVISION = "workflow-unlimited-text-20261021-r1"
+ANSWER_DISPLAY_REVISION = "workflow-source-accordion-20261029-r1"
 JUDGMENT_DISPLAY_REVISION = "judgment-evidence-svg-20261008-r10"
 HTTP_ERROR_DIAGNOSTICS_REVISION = "http-error-origin-20260928-r1"
 QUESTION_KEYS = ("question", "query", "chatInput", "input", "message", "prompt", "text")
@@ -63,7 +63,7 @@ META_KEYS = frozenset(
         "Authorization",
         "history",
         "chatHistory",
-        "overrideConfig",
+        "overrideConfig", "applied_fields",
     }
 )
 _UNSAFE_ID = re.compile(r"[^A-Za-z0-9_.:-]")
@@ -327,7 +327,53 @@ def unwrap(payload):
     return result
 
 
+class QueryModeError(ValueError):
+    """A visible form error; the caller can correct it without a model retry."""
+
+
+_MODE_LABELS = {
+    "전체 법령": "전체 법령", "전체": "전체 법령", "all": "전체 법령",
+    "내규": "내규", "internal": "내규",
+    "외규": "외규", "external": "외규",
+    "대사": "대사", "compare": "대사",
+}
+_MODE_PREFIX = re.compile(r"^\s*(전체 법령|전체|내규|외규|대사)\s*[:,：，]\s*")
+
+
+def _selected_question(question, data):
+    """Translate a form choice to the existing explicit source/workflow contract.
+
+    No legal interpretation or new scope grant: team and document authorization
+    remain with the RAG/workflow consumer. The caller's payload is never edited.
+    """
+    fields = data.get("applied_fields")
+    if fields is None:
+        return question
+    if not isinstance(fields, dict):
+        raise QueryModeError("조회 방식 입력 형식이 잘못되었습니다. 선택 항목을 다시 확인해 주세요.")
+    value = fields.get("mode")
+    if value is None or isinstance(value, str) and not value.strip():
+        return question
+    if not isinstance(value, str) or value.strip() not in _MODE_LABELS:
+        raise QueryModeError("조회 방식은 전체 법령, 내규, 외규, 대사 중에서 선택해 주세요.")
+    label = _MODE_LABELS[value.strip()]
+    match = _MODE_PREFIX.match(question)
+    if match:
+        if _MODE_LABELS[match.group(1)] != label:
+            raise QueryModeError("선택한 조회 방식과 질문 앞의 조회 구분이 다릅니다. 둘을 맞춰 주세요.")
+        question = question[match.end():].strip()
+    if not question.strip():
+        raise QueryModeError("조회 방식과 함께 질문을 입력해 주세요.")
+    if label == "대사":
+        if _session_id(data) == "sess-anonymous":
+            raise QueryModeError("대사는 대화창에서 질문과 함께 실행해 주세요. 대화 식별자가 필요합니다.")
+        if not (os.environ.get("TEAM_ID") or data.get("team_id")):
+            raise QueryModeError("대사에 사용할 팀이 연결되지 않았습니다. 앱의 팀 설정을 확인해 주세요.")
+    return label + ": " + question
+
+
 def _request_body(question, data):
+    question = _selected_question(question, data)
     request_id = str(data.get("request_id") or uuid.uuid4().hex)
     request_body = {
         "API_TYPE": "LEGAL_AGENT",
@@ -1113,8 +1159,9 @@ def _used_source_ids(body):
     return used
 
 
-def _source_label(item):
-    name = item.get("document_name") or item.get("document_id") or "문서"
+def _source_location(item):
+    if item.get('coordinate_label'):
+        return str(item['coordinate_label'])
     ancestors = item.get("ancestors") or []
     titles = []
     for ancestor in ancestors:
@@ -1127,30 +1174,76 @@ def _source_label(item):
     location = " > ".join(titles[-2:])
     if not location and item.get("block_id"):
         location = str(item["block_id"])
-    return f"- {name}" + (f" · {location}" if location else "")
+    return location
+
+
+def _source_cards(records):
+    """Fold already authorized response originals; never fetch or infer content."""
+    from html import escape
+    def e(value):
+        # Entities also keep source Markdown literal in mixed Markdown/HTML chat.
+        return (escape(str(value), quote=True).replace('[', '&#91;').replace(']', '&#93;')
+                .replace('`', '&#96;').replace('\r', '&#13;').replace('\n', '&#10;'))
+
+    cards = []; seen = set()
+    for source, label, note in records:
+        if source.get('content_read') is False:
+            continue
+        # A title/coordinate alone cannot identify a version or a read range.
+        key = json.dumps({k:v for k,v in source.items()
+                          if k not in {'tier', 'relevance_reason', 'interpretation_status'}},
+                         sort_keys=True, ensure_ascii=False)
+        if key in seen:
+            continue
+        seen.add(key)
+        name = _report_document_name(source.get('document_name') or '문서명 미확인')
+        location = _source_location(source)
+        title = (label + ' · ' if label else '') + name + (' · ' + location if location else '')
+        if 'spans' in source:
+            texts = [span['text'] for span in (source.get('spans') or [])
+                     if isinstance(span, dict) and isinstance(span.get('text'), str) and span['text'].strip()]
+        else:
+            original = source.get('text') or source.get('excerpt')
+            texts = [original] if isinstance(original, str) and original.strip() else []
+        rows = [
+            '<details data-genos-source="true" style="border:1px solid #dbe3ed;border-radius:10px;margin:10px 0;background:#fff;color:#172b4d;overflow-wrap:anywhere;">',
+            '<summary style="cursor:pointer;padding:14px 16px;font-weight:600;line-height:1.6;">' + e(title) + '</summary>',
+            '<div style="border-top:1px solid #e5eaf1;padding:16px;">',
+            '<p style="margin:0 0 12px;color:#526174;font-size:13px;">위치: ' + e(location or '상세 위치 미기록') + '</p>',
+        ]
+        if source.get('version'):
+            rows.append('<p>판본: ' + e(source['version']) + '</p>')
+        if note:
+            rows.append('<p>' + e(note) + '</p>')
+        if texts:
+            rows.append('<p style="margin:0 0 12px;font-size:13px;color:#526174;">답변에 연결된 원문</p>')
+            for original in texts:
+                rows.append('<div data-source-text="true" style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;margin:12px 0;">' + e(original) + '</div>')
+        else:
+            rows.append('<p>이 답변에 원문 내용이 저장되지 않았습니다.</p>')
+        rows.extend(['</div>', '</details>'])
+        cards.append('\n'.join(rows))
+    if not cards:
+        return ''
+    return '\n'.join([
+        '<!-- GENOS_SOURCES_START -->',
+        '<details data-genos-sources="true" style="margin:16px 0;">',
+        '<summary style="cursor:pointer;width:fit-content;max-width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:9px 14px;background:#f5f8fc;color:#172b4d;font-weight:600;">출처 · ' + str(len(cards)) + '건</summary>',
+        '<div style="margin-top:12px;">',
+        '<p style="font-size:13px;color:#526174;">각 출처를 누르면 해당 원문이 펼쳐집니다.</p>',
+        *cards, '</div>', '</details>', '<!-- GENOS_SOURCES_END -->',
+    ])
 
 
 def _tier_sources(bundle):
-    from html import escape as html_escape
-    def escape(value):
-        return re.sub(r'([\\`*_{}\[\]()!])', r'\\\1', html_escape(str(value)))
-    lines=[]
-    seen=set()
+    records=[]
     for c in sorted(bundle.get("sources",[]),
                     key=lambda item: isinstance(item,dict) and item.get("tier")!="CORE"):
         if not isinstance(c,dict) or c.get("tier") not in {"CORE","SUPPLEMENTAL"}:
             continue
-        name=str(c.get("document_name") or "").strip()
-        location=str(c.get("coordinate_label") or "").strip()
-        if not name or (name,location) in seen:
-            continue
-        seen.add((name,location))
         tier="핵심" if c["tier"]=="CORE" else "보완"
-        label=escape(name+(" · "+location if location else ""))
-        # GENOS chat has no confirmed browser route for the RAG source API.
-        # Markdown links to relative API paths can render as the raw path in chat.
-        lines.append("- "+tier+" · "+label)
-    return "**출처**\n"+"\n".join(lines) if lines else ""
+        records.append((c, tier, ''))
+    return _source_cards(records)
 
 
 def _sources(body):
@@ -1160,20 +1253,17 @@ def _sources(body):
     if isinstance(bundle,dict) and bundle.get('schema_version')=='workflow-source-v1':
         _, records = _report_sources(body)
         if not records:return ''
-        lines = ['### 4. 출처' if body.get('workflow_id') == 'risk_team_compare_workflow'
-                 else '**확인한 출처**', '']
+        cards = []
         for category in ('내규', '외규', '출처'):
             group = [row for row in records if row['category'] == category]
             if not group:continue
-            lines.extend(['**'+category+'**', ''])
             for row in group:
                 source = row['source']
-                lines.extend(['**〔'+row['label']+'〕 '+_ChatProgress._plain(row['name'])+'**', '',
-                    '위치: '+_ChatProgress._plain(source.get('coordinate_label') or '상세 위치 미기록'), ''])
-                if source.get('version'):lines.extend(['판본: '+_ChatProgress._plain(str(source['version'])), ''])
+                note = ''
                 if any(item.get('evidence_id') == source['selection_id'] for item in body.get('unreviewed_sources', [])):
-                    lines.extend(['확보한 원문이며 항목별 해석은 아직 완료되지 않았습니다.', ''])
-        return '\n'.join(lines).strip()
+                    note = '확보한 원문이며 항목별 해석은 아직 완료되지 않았습니다.'
+                cards.append((source, '〔'+row['label']+'〕', note))
+        return _source_cards(cards)
     if isinstance(bundle,dict) and bundle.get("schema_version")=="source-tiers-v4":
         return _tier_sources(bundle)
     assembly = body.get("assembly")
@@ -1181,16 +1271,15 @@ def _sources(body):
     if not isinstance(contexts, list):
         contexts = []
     used = _used_source_ids(body)
-    lines = []
+    records = []
     for item in contexts:
         if not isinstance(item, dict):
             continue
         # claims가 출처를 특정했다면 실제 사용된 근거만 표시한다.
         if used and str(item.get("id") or "") not in used:
             continue
-        lines.append(_source_label(item))
-    unique = list(dict.fromkeys(lines))
-    return "**출처**\n" + "\n".join(unique) if unique else ""
+        records.append((item, '', ''))
+    return _source_cards(records)
 
 
 def _has_found_source(body):
@@ -2003,7 +2092,7 @@ def render(body, *, flow=None):
 def _for_markdown(text):
     # Keep code fences and the generated nested HTML intact. In particular,
     # changing the generated image or nested toggle markup breaks rendering.
-    pieces = re.split(r'(<!-- GENOS_COMPARISON_START -->.*?(?:<!-- GENOS_COMPARISON_END -->|$)|<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$)|(?:^|(?<=\n))\|[^\n]*\|(?:\n\|[^\n]*\|)*)', text, flags=re.S)
+    pieces = re.split(r'(<!-- GENOS_COMPARISON_START -->.*?(?:<!-- GENOS_COMPARISON_END -->|$)|<!-- GENOS_SOURCES_START -->.*?<!-- GENOS_SOURCES_END -->|<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$)|(?:^|(?<=\n))\|[^\n]*\|(?:\n\|[^\n]*\|)*)', text, flags=re.S)
     return ''.join(piece if i % 2 else re.sub(r"(?<!\n)\n(?!\n)", "\n\n", re.sub(r"~", r"\\~", piece))
                    for i, piece in enumerate(pieces))
 
@@ -2224,6 +2313,9 @@ async def _run_once(data):
         if display.blocks:
             failed["agentFlowExecutedData"] = display.blocks
         return failed
+    except QueryModeError as exc:
+        await display.finish(str(exc), failed=True)
+        return {"text": str(exc), "answer_status": "invalid_input", "request_id": request_id}
     except Exception as exc:  # 채팅 단계 밖으로 예외를 내보내지 않는다.
         if _SYSTEM_LOGS is not None:
             _SYSTEM_LOGS.write("workflow.errors.raw.log", (
