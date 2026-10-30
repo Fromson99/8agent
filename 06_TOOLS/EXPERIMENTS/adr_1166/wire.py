@@ -1,0 +1,24 @@
+from pathlib import Path
+import json
+R=Path(__file__).resolve().parents[3];S=R/'02_BACKEND/lawrag/research/candidates/adr_1166/supervised/snapshot';B=S/'02_BACKEND/semantic_runtime/legal_agent'
+def patch(name,old,new):
+ p=B/name;s=p.read_text();assert old in s,(name,old[:80]);p.write_text(s.replace(old,new))
+patch('answer_progress.py',"        props = deepcopy(common); props['status']", "        if status == 'ANSWERABLE' and not current:continue\n        props = deepcopy(common); props['status']")
+for name in ('navigation_input.py','stable_references.py'):
+ patch(name,"('new_reviews','revisions')","('new_reviews','revisions','claim_evidence_refs')")
+patch('law_candidates.py',"DEFAULT_POLICY = {", "DEFAULT_POLICY = {'supervisor_mode':'off', ")
+patch('law_candidates.py',"    length_limit = result['length_recovery_max_tokens']", "    if result['supervisor_mode'] not in ('off','shadow','enforce'):raise ContractError('invalid supervisor mode')\n    if result['supervisor_mode']!='off' and not (result['compact_input'] and result['investigation_control'] and result['minimal_input']):raise ContractError('supervisor requires compact controlled navigation')\n    length_limit = result['length_recovery_max_tokens']")
+patch('bounded_source_session.py',"        if phase in ('source-triage', 'source-omission-review'):","        if phase == 'source-investigation-supervisor-read-choice':\n            # Each durable supervisor reservation is exactly one physical attempt.\n            profile['max_transport_retries'] = 0\n            profile['max_schema_repairs'] = 0\n        if phase in ('source-triage', 'source-omission-review'):")
+patch('decision_projection.py',"    from . import answer_progress as progress\n", "    from . import answer_progress as progress\n    from . import investigation_supervisor as supervisor\n")
+patch('decision_projection.py',"    progress_enabled = progress.enabled(inv)","    supervisor_enabled=supervisor.enabled(inv)\n    supervisor_action_schema=deepcopy(schema)\n    for branch in supervisor_action_schema['anyOf']:\n        branch['properties'].pop('read_review',None)\n        branch['required']=[k for k in branch['required'] if k!='read_review']\n    if supervisor_enabled:schema=supervisor.attach(schema,inv,data,current,key)\n    progress_enabled = progress.enabled(inv)")
+patch('decision_projection.py',"        if progress_enabled:\n            value,_=progress.resolve_action", "        if supervisor_enabled:progress.validate_review(value,current,data['issues'],check_action=False)\n        if progress_enabled:\n            value,_=progress.resolve_action")
+patch('decision_projection.py',"        try:return inv.invoke(prompt, payload,", "        if supervisor_enabled:prompt=supervisor.PROGRESS_PROMPT+'\\n'+prompt\n        try:return inv.invoke(prompt, payload,")
+patch('decision_projection.py',"    if progress_enabled:payload['answer_progress_context']=progress.context(inv,data)","    if progress_enabled:payload['answer_progress_context']=progress.context(inv,data)\n    if supervisor_enabled:\n        payload['answer_progress_context']=supervisor.context(inv,data)\n        payload['candidate_frontier']=supervisor.frontier(inv,data)")
+patch('decision_projection.py',"    inv.p.setdefault('executed_compact_choices',[]).append(deepcopy(value))", "    if supervisor_enabled:\n        decision=supervisor.gate(inv,data,actions,payload,value,decision,supervisor_action_schema,expand,key)\n    inv.p.setdefault('executed_compact_choices',[]).append(deepcopy(value))")
+patch('law_navigation.py',"'ontology_assessment_prepared'):","'ontology_assessment_prepared','investigation_supervisor'):")
+patch('law_navigation.py',"                self.p['accepted'] = {'input_hash': digest(data)","                from . import investigation_supervisor as supervisor\n                supervisor.before_execute(self,data,decision)\n                self.p['accepted'] = {'input_hash': digest(data)")
+patch('law_navigation.py',"            applied = self.execute(decision, data, actions)","            from . import investigation_supervisor as supervisor\n            supervisor.before_execute(self,data,decision)\n            applied = self.execute(decision, data, actions)\n            supervisor.after_execute(self,data,decision,applied)")
+patch('investigation_supervisor.py','from .schema_cache import validate as prepared_validate','from .schema_preparation import validate as prepared_validate')
+patch('investigation_supervisor.py',"('read_judgments','new_reviews','revisions','answer_progress')","('read_review','answer_progress')")
+p=S/'00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json';j=json.loads(p.read_text());j['candidate_navigation']['supervisor_mode']='enforce';p.write_text(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
+print('Supervisor wired; MAIN112 untouched')

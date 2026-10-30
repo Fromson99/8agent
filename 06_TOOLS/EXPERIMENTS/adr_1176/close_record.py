@@ -1,0 +1,30 @@
+from common import *
+import re
+f=read(DES/'freeze.json');r=read(RUN/'result.json');m=read(ADR/'실험/manifest.json')
+r['failed_revisions_preserved']=['rev-001: native generic diagnostic failures4 and fixture setup errors8','rev-002: native received-value failures2 and fixture setup errors8','rev-003:243passed; rev-004 adds4 correction-reference authority contracts','CM001 frozen gate false only because gate.py expected COMPLETED while storage returns canonical COMPLETE; raw result and gate retained']
+r['storage_gate_harness_defect']={'expected_by_runner':'COMPLETED','actual_native_success':'COMPLETE','raw_storage_verified':True,'original_gate_unchanged':True,'corrective_audit_requires_new_followup':True}
+put(RUN/'result.json',r);m['runs'][0]['sha256']=sha(RUN/'result.json');m['results']['error_taxonomy']=['Selected-branch diagnostics were swallowed by minimal output projection; fixed and API fault tested','Consumed exact source lookup stopped preselection before alternative selector; fixed and bounded/restart tested','CM001 storage gate harness used COMPLETED rather than canonical COMPLETE; preserved for separate followup audit'];put(ADR/'실험/manifest.json',m)
+heads=['결정 요약','문제와 변경 전 구조','가설과 사전 판정 기준','실험 설계','데이터·모델·재현성','결과','사례별 오류 분석','비용·지연·회수 규모','해석','한계와 일반화 가능 범위','운영 결정·롤백 조건','재현 명령']
+body=[
+'격리 후보 rev-004의 응답 계약/복구 구현을 완료했다. 247기술검사 통과, 부모와 동일211회귀에서 새 실패0이다. 실제 CM001은8호출·146.752초·HTTP200/READY·ANSWER/COVERED로 반환·저장 일치. 동결 검사기가 저장 성공 enum을 COMPLETED로 잘못 비교하여 gate는 실패로 보존한다. 007/009는 이 ADR에서 미실행. 작업 코드 통합·MAIN 승격·GENOS 배포는 하지 않았다. MAIN112 유지. 법률 품질 미인증.',
+'없는 문서 ID와 coordinate_scope=조 같은 오류가 최소 출력 투영에서 일반 분기 오류로 감춰졌다. 또 확정 원문의 정확 조회를 썼지만 읽기에 도달하지 못하면 모델의 다른 탐색 선택 전에 SOURCE_GOALS_UNRESOLVED로 종료했다. 조사 handoff의 구체 이유도 NO_ANSWER_PROGRESS로 치환되었다. [사전 계획](../../../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MODEL_RESPONSE_CONTRACT_REPAIR_PLAN_20261028.txt).',
+'모델 출력은 실행 전 검증할 제안이다. 같은 view/schema/허용 목록의 기존 담당자가 한 번만 보완하고, 원문 목표와 receipt·예산을 유지한 채 서로 다른 중간 조사 경로를 최대2개 허용한다. 정상 경로 추가 호출0, 권한/해시/상태 오류의 모델 보완0, 무효 제안 도구 부작용0, 새 회귀0을 동결했다. 실제001→007→009는 이전 사례의 원문·완성·저장 gate 통과에만 진행하며 실패 사례를 반복하지 않는다. [사전 기준](artifacts/design/criteria.json).',
+'완료된 ADR1175/scoped의464파일을 부모로 한 repaired 단일 후보이다. 변경은 제품9파일+엔진/파이프라인 pin31파일. 4개 리비전의 실패·보완 이력을 보존했다. 같은 최종464파일로247합성·API검사, 부모/후보211회귀, 저장001 전체 API 재생, 실제001 1회를 순서대로 실행했다. 진단은 응답 분기를 설명하지만 원래 스키마 승인 조건은 완화하지 않았다.',
+'데이터는 MAIN112가 선택한 latest-selection-20261015-r1/generation. 모델 qwen/qwen3.8-27b, Chutes FP8, reasoning none, 출력상한 없음. 확정429에만 Near AI FP8 1회 전환하며 같은 물리 호출 예산에 센다.40호출/1024도구/1800초 유지. 이번 실제 호출8회는 Chutes이며 NearAI 현장 전환 검증이 아니다. 기준답변은 evaluation-only에 두고 제품 입력에 전달하지 않았다. 법령/기준답변 버전 일치와 법률 정답률은 미인증. [동결 코드](artifacts/design/freeze.json).',
+'최종247/247 통과. 부모/후보 회귀는 각각189통과·기존9실패·준비오류13으로 항목별 동일. 새 회귀0. 저장001 재생은7개 보관 응답 뒤 ASSESS_MATERIAL_GAP_REQUIRED 보완 경계에 도달하고 미제공 보완 응답에서 의도한 HTTP502로 종료했다(외부0). 실제001은8호출·146.752초·주장2·원문34/전달60구간 불일치0·권한위반0·물리8=차감8이다. 원래 gate의 실패는 저장 enum 비교 한 곳이며 결과를 사후 덮어쓰지 않는다. 007/009는 미실행. [실행 집계](artifacts/run-001/result.json).',
+'원인별 오류: 최소출력 오류 은폐/무효 ID의 재등록/정확조회 후 조기중단은 오류주입과 실제 API로 수정 확인. CM001 자연실행에서 모든 보완 경로가 발동했다고 확대하지 않는다. rev001/002 검사 실패와 fixture 오류는 보존. 저장 gate 실패는 제품 저장 실패가 아니라 검사기 계약 불일치다. 이를 정정하고 후속 질문을 허용할지는 별도 ADR에서 동일 원시 기록과 실제 저장 코드를 대조한다.',
+'제품 외부8물리호출, 평가모델0, 재실행0. 총146.752초이며 속도 개선율로 쓰지 않는다. '+json.dumps(r['usage'],ensure_ascii=False)+'\n\n회수 원장은 관측 후보→확보 원문→최종 인용, case_id+canonical article-root 좌표 기준이다. [단계 원장](artifacts/run-001/retrieval-ledger.json), [manifest 집계](실험/manifest.json). 미실행007/009는 executed=false이며 오답으로 채점하지 않았다. planned-set recall은 완료한 질문의 법률 정답률이 아니다.',
+'서버 계약 오류와 원문 경로 복구는 재현 가능한 검사로 지지된다. 실제001이 완료됐다는 관측만으로007/009의 원문 선택·제외 판단이 해결됐다고 추론하지 않는다. 저장 검사의 오표기는 후속 기술 감사에서 고쳐야 한다.',
+'알려진 질문의 in-sample probe이며 decision_eligible=false다. 더 좋은 모델 비교·GENOS 대리 모델 사용·현장 GENOS·MAIN 서비스 검증을 수행하지 않았다. 공통 진단을 모든 과거 어댑터에 전역 적용했다고 주장하지 않는다. 기존회귀22건과 과거 실패 유지.',
+'현재 Proposed/main_wiring=unchanged. 수정 후보만 보존하며 작업 제품/선택 MAIN112는 유지한다. 무효 ID 실행, 미확보 목표 소실, 원문/권한/해시 오류, 보완 중첩 또는 같은 상태 반복 시 후보 채택을 중단한다. 격리 후보 롤백은 해당후보를 사용하지 않는 것이며 활성 포인터 변경이 없어 서비스 롤백은 필요 없다. 제품 승격은 별도 동일 코드 자격검사와 공식 승격 절차가 필요하다.',
+'```bash\n.venv/bin/python 06_TOOLS/EXPERIMENTS/adr_1176/check.py\n.venv/bin/python 06_TOOLS/EXPERIMENTS/adr_1176/audit_result.py cm-001\n.venv/bin/python 06_TOOLS/EXPERIMENTS/adr_1176/audit_storage.py cm-001\n.venv/bin/python 06_TOOLS/run_tool.py adr_structure.py validate --path 04_EXPERIMENTS/ADR/ADR-1176-response-contract-route-recovery --final\n```\n\n완료된 산출물을 덮어쓰는 재실행은 새 ADR로 분기한다. live.py는 이미 dispatch된 CM001 재호출을 차단한다. 원시 응답·기준답변은 접근 범위가 다른 자료로 분리 보존한다.'
+]
+p=ADR/'README.md';front=p.read_text().split('---',2)[1];p.write_text('---'+front+'---\n\n# ADR-1176: 모델 응답 계약 진단·보완과 미확보 원문 조사 재개\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{v}' for i,(h,v) in enumerate(zip(heads,body),1))+'\n')
+(ADR/'실험/README.md').write_text('# ADR-1176 실행 인덱스\n\n[CM001](cm-001.md): 실제1회8호출. [CM007](cm-007.md)·[CM009](cm-009.md): 동결 gate에 따라 미실행.\n\n[정본 manifest](manifest.json), [단계별 회수 원장](../artifacts/run-001/retrieval-ledger.json), [실제 원시 응답](../artifacts/live/cm-001/calls.json). 저장 enum 검사 오류를 보존하며, 후속 정정은 새 ADR에서 한다.\n')
+# Correct only a copied label; no raw/evaluation result changes.
+for q in m['questions']:
+ p=ADR/'실험'/q['file'];p.write_text(p.read_text().replace('run-001 / guarded /','run-001 / repaired /'));q['sha256']=sha(p)
+put(ADR/'실험/manifest.json',m)
+a=read(ART/'manifest.json');paths=[p for p in ART.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p!=ART/'manifest.json'];paths+=list(Path(__file__).parent.glob('*.py'))+[ROOT/f['candidate_revision']['manifest_path']]
+a['files']=[{'path':str(p.relative_to(ROOT)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Frozen response recovery implementation, original failed checks and native live/replay evidence','contains_raw_prompts_and_outputs':bool('raw' in p.parts or 'canonical' in p.parts or p.suffix in ('.log','.sqlite','.gz'))} for p in paths];put(ART/'manifest.json',a)
+print('Documented1176 preserving gate failure; no correction of original result')

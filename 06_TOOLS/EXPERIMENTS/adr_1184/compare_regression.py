@@ -1,0 +1,5 @@
+from common import *
+f=read(DES/'freeze.json');tag=f.get('execution_id',f['candidate_revision']['revision_id']);p=read(ART/('regression-parent-'+tag+'.json'));c=read(ART/('regression-candidate-'+tag+'.json'))
+P={r['test']:r['status'] for r in p['rows']};C={r['test']:r['status'] for r in c['rows']}
+r={'parent':{'passed':p['passed'],'failed_or_setup':p['failed']},'candidate':{'passed':c['passed'],'failed_or_setup':c['failed']},'new_regressions':[n for n,v in C.items() if v!='passed' and P.get(n)=='passed'],'status_differences':[n for n in P.keys()|C.keys() if P.get(n)!=C.get(n)],'same_tests':P.keys()==C.keys(),'existing_failures':[n for n,v in P.items() if v!='passed'],'import_leaks':{'parent':p['import_leaks'],'candidate':c['import_leaks']},'same_immutable_candidate':f['candidate_revision'],'model_calls':0}
+put(ART/'regression-comparison.json',r);assert r['same_tests'] and not r['new_regressions'] and not r['status_differences'] and not p['import_leaks'] and not c['import_leaks'];print({k:v for k,v in r.items() if k not in ('existing_failures','same_immutable_candidate')})

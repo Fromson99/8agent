@@ -1,0 +1,2 @@
+from common import *
+f=read(DES/'freeze.json'); p=read(DES/'parent-freeze.json'); assert f['files']==p['files']; assert all(sha(ROOT/f['code_root']/n)==h for n,h in f['files'].items()); x=read(DES/'inheritance.json'); assert sha(ROOT/x['checks'])==x['checks_sha256']; c=read(ROOT/x['checks']); assert c['passed']==247 and c['failed']==0 and not c['import_leaks']; print('464samebytes,247inheritedtests; no new model or test rerun')

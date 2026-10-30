@@ -1,0 +1,41 @@
+from pathlib import Path
+import json,hashlib,shutil,sys
+R=Path(__file__).resolve().parents[3];T=Path(__file__).parent;P=R/'04_EXPERIMENTS/ADR/ADR-1176-response-contract-route-recovery';A=R/'04_EXPERIMENTS/ADR/ADR-1177-response-recovery-followup';D=A/'artifacts/design';ART=A/'artifacts'
+def read(p):return json.loads(p.read_text())
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def put(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+f=read(P/'artifacts/design/freeze.json');m=read(A/'실험/manifest.json');assert read(P/'실험/manifest.json')['reservation']['status']=='completed'
+criteria={'hypothesis':'Canonical request storage success is COMPLETE; repairing only the offline enum assertion validates the already stored same-code001 and permits the originally planned007/009 sequence without repeating001.','product_change':False,'frozen_product':f['candidate_revision'],'inherited_physical_calls':8,'new_live_cases':['cm-007','cm-009'],'checks':['All464product files identical to1176rev004','Inherited247tests and211pairedregressions remain byte-bound','Original001 gate preserved; offline correction must change only storage_complete fromfalse totrue with code and stored response evidence','001 never called again;007 once then009 once only if007 gate passes','Same original integrity/required-original/covered/storage criteria; no lowering other gates'],'failure':'Any original/source/ACL/budget/answer completion failure stops subsequent cases; failed cases never rerun.','scope':'Same-code followup probe only; MAIN112 unchanged. No legal-quality certification or GENOS proxy.','live':read(P/'artifacts/design/criteria.json')['live'],'resource':read(P/'artifacts/design/criteria.json')['resource'],'authorization':'Same user 전체 수정 and prior sequential retest; no new approval needed for the already authorized007/009.'}
+put(D/'criteria.json',criteria)
+for n in ['baseline.json','cases.json','corpus.json','authorization.json','provider-policy.json']:put(D/n,read(P/'artifacts/design'/n))
+put(D/'parent-freeze.json',f);put(ART/'evaluation-only/cases.json',read(P/'artifacts/evaluation-only/cases.json'))
+put(D/'inheritance.json',{'parent_manifest':str((P/'실험/manifest.json').relative_to(R)),'parent_manifest_sha256':sha(P/'실험/manifest.json'),'checks':str((P/'artifacts/check-rev-004.json').relative_to(R)),'checks_sha256':sha(P/'artifacts/check-rev-004.json'),'regression':str((P/'artifacts/regression-comparison.json').relative_to(R)),'regression_sha256':sha(P/'artifacts/regression-comparison.json'),'cm001_result':str((P/'artifacts/live/cm-001/result.json').relative_to(R)),'cm001_result_sha256':sha(P/'artifacts/live/cm-001/result.json'),'original_gate':str((P/'artifacts/live/cm-001/gate.json').relative_to(R)),'original_gate_sha256':sha(P/'artifacts/live/cm-001/gate.json'),'semantics':'Copy read-only evidence; no second001execution and no legal regrade.'})
+for n in ['common.py','live.py','audit_result.py','audit_storage.py','gate.py','resource_guard.py','cm_authorization.py','summarize.py']:
+ s=(R/'06_TOOLS/EXPERIMENTS/adr_1176'/n).read_text().replace('ADR-1176-response-contract-route-recovery','ADR-1177-response-recovery-followup').replace("'ADR-1176'","'ADR-1177'").replace("'repaired'","'continued'")
+ if n=='gate.py':s=s.replace("storage.get('stored_request_status')=='COMPLETED'","storage.get('stored_request_status')=='COMPLETE'")
+ (T/n).write_text(s)
+# Bind a fresh candidate with exactly the same product bytes; no new implementation.
+sys.path.insert(0,str(R/'06_TOOLS/COMMANDS'));import adr_candidate as ac
+present=[n for n in f['files'] if (R/n).is_file()];C=ac.snapshot(A,'continued',present,experiment_id=m['experiment_id'],arm_id='continued',run_ids=['run-001']);S=C/'snapshot'
+for n,h in f['files'].items():
+ assert sha(R/f['code_root']/n)==h
+ (S/n).parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(R/f['code_root']/n,S/n)
+ if n not in present:ac.register_file(C,n,upstream_state='absent')
+ac.freeze(C);assert not ac.validate(C);v=read(C/'candidate.json')['revisions'][-1];code=C/'revisions'/v['revision_id']/'snapshot';files={str((R/x['frozen_path']).relative_to(code)):x['snapshot_sha256'] for x in v['files']};assert files==f['files']
+binding={'manifest_path':str((C/'candidate.json').relative_to(R)),'manifest_sha256':sha(C/'candidate.json'),'revision_id':v['revision_id'],'revision_sha256':v['revision_sha256']}
+(T/'inherit_check.py').write_text("from common import *\nf=read(DES/'freeze.json'); p=read(DES/'parent-freeze.json'); assert f['files']==p['files']; assert all(sha(ROOT/f['code_root']/n)==h for n,h in f['files'].items()); x=read(DES/'inheritance.json'); assert sha(ROOT/x['checks'])==x['checks_sha256']; c=read(ROOT/x['checks']); assert c['passed']==247 and c['failed']==0 and not c['import_leaks']; print('464samebytes,247inheritedtests; no new model or test rerun')\n")
+for n in ['saved-cm001-rejection.json','regression-comparison.json']:put(ART/n,read(P/'artifacts'/n))
+c=read(P/'artifacts/check-rev-004.json');c['inherited_from']={'path':str((P/'artifacts/check-rev-004.json').relative_to(R)),'sha256':sha(P/'artifacts/check-rev-004.json'),'same_all464files':True,'new_test_executions':0};put(ART/('check-'+v['revision_id']+'.json'),c)
+# Small metadata copies; original raw and canonical data remain shared immutable references.
+old=P/'artifacts/live/cm-001';new=ART/'live/cm-001';new.mkdir(parents=True,exist_ok=True)
+for p in old.iterdir():
+ if p.is_file():shutil.copyfile(p,new/p.name)
+ elif p.name in ['raw','canonical','runtime']:(new/p.name).symlink_to(p,target_is_directory=True)
+put(new/'inherited.json',{'source':str(old.relative_to(R)),'actual_calls_in_parent':8,'new_calls':0,'raw_and_canonical_shared':True})
+parent=read(P/'실험/manifest.json');m['lineage']['hypothesis_delta']=criteria['hypothesis'];m['design'].update(hypothesis=criteria['hypothesis'],primary_metric='Same-code continued validation after correcting the offline storage enum',success_criteria=criteria['checks'],failure_criteria=criteria['failure'],criteria_frozen_before_run=True,execution=criteria,arms=[{'id':'continued','role':'candidate','derived_from':['ADR-1176-experiment-v1/repaired'],'changes':'Offline harness COMPLETE assertion only; product identical464files','controls':'Same model/data/source/answer gates and original001 retained'}],retrieval_stage_plan=json.loads(json.dumps(parent['design']['retrieval_stage_plan']).replace('repaired','continued')))
+m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None,candidates=[dict(binding,candidate_id='continued',experiment_id=m['experiment_id'],arm_id='continued',run_ids=['run-001'],runner_path=str((T/'inherit_check.py').relative_to(R)),runner_sha256=sha(T/'inherit_check.py'))]);m['runs'][0].update(arm_ids=['continued'],selection_rule='Inherit001 once; corrected storage enum audit;007 gates009 once each',artifact_path=str((ART/'run-001/result.json').relative_to(R)))
+m['llm_policy']['llm_calls']=[];m['llm_policy']['provider_override']=parent['llm_policy']['provider_override'];m['llm_policy']['provider_override'].update(path=str((D/'provider-policy.json').relative_to(R)),sha256=sha(D/'provider-policy.json'))
+m['dataset'].update(name='Same frozen CM cases;001 inherited and007/009 conditionally new',version='v1',frozen_source=str((D/'cases.json').relative_to(R)),sha256=sha(D/'cases.json'),legal_version_checked=False,reference_version_checked=False)
+m['retrieval_accounting'].update(changed=True,stage_ledger={'mode':'measured','schema_version':'retrieval-stage-ledger-v1','accounting_unit':'case_id + canonical article-root coordinate','artifact_path':str((ART/'run-001/retrieval-ledger.json').relative_to(R)),'sha256':'PENDING','summary_run_id':'run-001'});put(A/'실험/manifest.json',m)
+put(D/'freeze.json',{'code_root':str(code.relative_to(R)),'files':files,'candidate_revision':binding,'pointer_sha256':f['pointer_sha256'],'inputs':{str(p.relative_to(R)):sha(p) for p in D.glob('*.json') if p.name!='freeze.json'},'scripts':{str(p.relative_to(R)):sha(p) for p in T.glob('*.py')},'client_sha256':f['client_sha256']});print('Same464 product frozen; inherited247tests and0018calls; only storage gate corrected')
