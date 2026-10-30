@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "tests": 20,
+  "seconds": 31.13,
+  "test_command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_rag_git_publish.py",
+  "test_file_sha256": "ab9900ee9e11369017db82e3c71b9c588db803f3bd5a1f65c85eb6e783e73801",
+  "publisher_sha256": "d44c99a4c175288de5788e901d3336fa2ccb1e76a3d97a2665e577a5ada17f98",
+  "actual_local_bare_remotes": 2,
+  "actual_final_bash_delivery_tested": true,
+  "product_code_files": 492,
+  "product_changes_from_r3": 0,
+  "failure_and_resume_cases": [
+    "partial push",
+    "lost acknowledgement",
+    "remote divergence",
+    "changed HEAD",
+    "wrong branch",
+    "wrong or multiple URLs",
+    "URL rewriting",
+    "unrelated tracked and staged work",
+    "merge in progress",
+    "package tampering",
+    "pipeline scope",
+    "Git filters",
+    "commit hook adds unrelated file",
+    "commit checkpoint recovery",
+    "postcommit rollback refusal"
+  ],
+  "password_embedded": false,
+  "field_authentication_tested": false,
+  "field_push_performed": false,
+  "field_revision_deployed": false,
+  "live_model_calls": 0,
+  "attachments": [
+    {
+      "filename": "GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4.zip",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_auto_git_20261030_r4/GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4.zip",
+      "bytes": 2657784,
+      "sha256": "3a1d69f6035c5e295fee629d9d271ae5e291a18b6d66d6f04693c958e70ca1bb"
+    },
+    {
+      "filename": "GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_auto_git_20261030_r4/GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt",
+      "bytes": 6322,
+      "sha256": "6bae7214f05fee362df2e7ecd8fe215d62aa8de1c42be52f0c0d19a7cdea6a91"
+    },
+    {
+      "filename": "GUIDE.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_auto_git_20261030_r4/GUIDE.txt",
+      "bytes": 5423,
+      "sha256": "a6626b20fb7239b471c0a52bc2b6f462b17ae5e980227440bb505fc5408514bb"
+    }
+  ]
+}

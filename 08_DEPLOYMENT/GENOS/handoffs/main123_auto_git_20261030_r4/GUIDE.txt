@@ -1,0 +1,61 @@
+GENOS MAIN123 RAG 코드서빙 자동 적용·커밋·푸시 R4
+
+대상은 RAG 코드스페이스의 기존 ~/DEV입니다. 사진처럼 ~/DEV가 /workspace를 가리키는 경우도 지원합니다.
+이 실행 파일은 pipeline/Dataiku 코드서빙용이 아닙니다.
+현재 main 브랜치에서 risk_team과 financial_team 원격의 main으로 같은 검증 커밋을 전송합니다.
+사진으로 확인한 주소:
+  risk_team: http://llmops-gitea-service:3000/llmops/623.git
+  financial_team: http://llmops-gitea-service:3000/llmops/701.git
+기존 원격 이름이 없으면 이 주소로 등록합니다. 다른 주소가 있으면 바꾸거나 전송하지 않고 중단합니다.
+
+첨부 3개를 실제 업로드 TRANSFER에 둡니다.
+  GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4.zip
+  GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt
+  GUIDE.txt
+현재 작업 위치를 그 TRANSFER로 두고 터미널에서 아래 한 줄을 실행합니다.
+
+bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt
+
+ZIP을 미리 풀거나 DEV로 이동할 필요 없습니다. R1/R2/R3 ZIP도 필요하지 않습니다.
+순서: ZIP 검증 → 대상·두 원격 사전 검사 → 기존 파일 백업 → MAIN123 전체 코드 적용 → 코드/엔진/워크플로우 검증 → 해당 492개 파일만 stage/commit → 커밋된 checkout과 ZIP 대조 → risk_team/main·financial_team/main 순서로 push → 각 원격 SHA 재조회.
+코드는 기존 R3와 같은 MAIN123 바이트입니다. 자동 Git 전달 기능만 추가했습니다.
+사용자 데이터·.env·DB·TRANSFER·기존 실행 로그는 커밋 대상이 아닙니다. 대상 밖 추적 파일의 미완료 변경은 보존하고 중단합니다.
+사진에서 이미 적용·커밋한 코드가 같으면 새 빈 커밋을 만들지 않습니다.
+원격이 앞서 있거나 갈라진 경우 강제 push·자동 merge·reset을 하지 않습니다.
+검증된 원본에 포함된 줄끝 공백은 해시 보존을 위해 변경하지 않고 PUBLISH_STATE.json에 검사 결과를 기록합니다.
+
+인증:
+  ID TD8461을 자동 사용합니다.
+  첫 인증 때만 터미널에서 비밀번호를 숨김 입력합니다. 앞서 사용한 비밀번호를 입력하면 됩니다.
+  인증 성공 뒤 비밀번호는 Git credential-cache의 메모리에 최대 8시간만 유지되어 두 원격과 같은 환경의 재실행에 재사용됩니다.
+  코드 ZIP·실행 TXT·Git·메일 본문·로그·설정 파일에 비밀번호를 넣지 않습니다.
+  이미 보안 경로로 GENOS_RAG_GIT_PASSWORD 환경변수를 주입한 환경은 숨김 입력 없이 실행됩니다. 비밀번호를 명령행 인수나 TXT에 적지 않습니다.
+  캐시가 만료되거나 코드스페이스가 재시작되면 다시 숨김 입력합니다.
+
+완료 표시:
+  RAG_COMMIT_VERIFIED=<commit>
+  RAG_PUSH_CONFIRMED=risk_team COMMIT=<commit> 또는 RAG_PUSH_ALREADY_CONFIRMED=risk_team
+  RAG_PUSH_CONFIRMED=financial_team COMMIT=<commit> 또는 RAG_PUSH_ALREADY_CONFIRMED=financial_team
+  RAG_GIT_COMPLETE: risk_team/main and financial_team/main = <commit>
+  MAIN123_AUTO_GIT_EXIT=0
+
+백업·적용 상태·Git 기록은 TRANSFER/GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4/ 아래에 남습니다.
+  backup/, INSTALL_STATE.json, PUBLISH_PREFLIGHT.json, PUBLISH_STATE.json
+실행 로그/종료 코드는 TRANSFER/main123-rag-auto-git-r4-logs/에 남습니다.
+중간 중단이나 한쪽 push 실패 시 같은 한 줄을 다시 실행합니다. 성공한 원격을 재확인하고 아직 반영되지 않은 쪽만 이어갑니다.
+커밋 직후 끊겨도 부모 커밋·패키지 표식·492개 바이트를 확인한 경우에만 동일 커밋을 복구합니다.
+진행 상태: bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt status
+코드 검사만: bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt check
+적용된 코드의 커밋·푸시만 재개: bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt publish
+커밋 전 코드 원복: bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt rollback
+이미 커밋한 뒤의 원복은 별도 검토한 Git revert로 처리합니다. 이 실행기는 기존 커밋·원격 이력을 되돌리지 않습니다.
+
+기본 실행은 코드 checkout/커밋 게이트입니다. Oracle 데이터 게시·연결 변경이나 모델 호출은 하지 않습니다.
+실제 NFS generation을 사용하는 RAG는 확인된 기존 경로를 함께 지정하면 동일 checkout에서 generation 게이트도 통과한 뒤 푸시합니다.
+  bash ./GENOS_MAIN123_RAG_AUTO_GIT_20261030_R4_RUN.txt --generation 실제_선택_GENERATION_절대경로
+경로를 추정하거나 새 generation을 만들지 않습니다. 경로·manifest 해시와 코드 ZIP·커밋 검증 결과를 PUBLISH_STATE.json에 남깁니다.
+코드서빙 리비전 배포와 워크플로우 편집기 반영은 기존 GENOS 화면에서 별도로 수행합니다.
+리비전이 같은 commit/기존 데이터 설정을 선택했는지 확인하고 워크플로우 테스트 화면에서 실제 질문·요청 ID를 확인합니다.
+패키지 안 GENOS_MAIN123_WORKFLOW_PASTE_ALL.txt가 워크플로우 전체본입니다.
+Git push 성공만으로 새 서빙 리비전·실제 답변까지 성공했다고 판단하지 않습니다.
+이 안내와 R4 ZIP/TXT를 앞으로 RAG 반입에 사용합니다. R3 및 이전 파일·백업은 그대로 보존합니다.
