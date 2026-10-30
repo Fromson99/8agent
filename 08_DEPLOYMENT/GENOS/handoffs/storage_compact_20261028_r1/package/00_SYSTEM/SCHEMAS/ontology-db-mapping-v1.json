@@ -1,0 +1,147 @@
+{
+  "version": "ontology-db-mapping-v1",
+  "development_owner": "SIDDA",
+  "registration_status": "DESIGN_NOT_REGISTERED",
+  "tables": {
+    "work": {
+      "name": "LGL_ONT_WORK_A",
+      "columns": [
+        [
+          "BNDL_ID",
+          "VARCHAR2(84 BYTE)",
+          "묶음 ID"
+        ],
+        [
+          "REV_NO",
+          "NUMBER(18)",
+          "작업 판본"
+        ],
+        [
+          "WORK_HASH_VAL",
+          "VARCHAR2(64 BYTE)",
+          "S3 작업 JSON 해시"
+        ],
+        [
+          "ST_CD",
+          "VARCHAR2(32 BYTE)",
+          "검토 상태"
+        ],
+        [
+          "RVWR_ID",
+          "VARCHAR2(512 BYTE)",
+          "승인자"
+        ],
+        [
+          "APRV_HASH_VAL",
+          "VARCHAR2(64 BYTE)",
+          "승인 영수증 해시"
+        ]
+      ]
+    },
+    "event": {
+      "name": "LGL_ONT_EVT_A",
+      "columns": [
+        [
+          "EVT_ID",
+          "VARCHAR2(64 BYTE)",
+          "이벤트 영수증 ID"
+        ],
+        [
+          "BNDL_ID",
+          "VARCHAR2(84 BYTE)",
+          "묶음 ID"
+        ],
+        [
+          "REV_NO",
+          "NUMBER(18)",
+          "작업 판본"
+        ],
+        [
+          "EVT_JSON_CN",
+          "CLOB",
+          "행위자·시간·상태 JSON"
+        ]
+      ]
+    },
+    "publication": {
+      "name": "LGL_ONT_PUB_A",
+      "columns": [
+        [
+          "PUB_ID",
+          "VARCHAR2(64 BYTE)",
+          "게시 ID"
+        ],
+        [
+          "BNDL_ID",
+          "VARCHAR2(84 BYTE)",
+          "묶음 ID"
+        ],
+        [
+          "REV_NO",
+          "NUMBER(18)",
+          "승인 작업 판본"
+        ],
+        [
+          "PKG_HASH_VAL",
+          "VARCHAR2(64 BYTE)",
+          "게시 JSON 해시"
+        ],
+        [
+          "PKG_JSON_CN",
+          "CLOB",
+          "사전 조립 게시 JSON"
+        ]
+      ]
+    },
+    "head": {
+      "name": "LGL_ONT_HEAD_A",
+      "columns": [
+        [
+          "BNDL_ID",
+          "VARCHAR2(84 BYTE)",
+          "묶음 ID"
+        ],
+        [
+          "PUB_ID",
+          "VARCHAR2(64 BYTE)",
+          "활성 게시 ID"
+        ],
+        [
+          "CHG_SEQ_NO",
+          "NUMBER(18)",
+          "활성 포인터 변경 순번"
+        ]
+      ]
+    },
+    "anchor": {
+      "name": "LGL_ONT_ANC_A",
+      "columns": [
+        [
+          "PUB_ID",
+          "VARCHAR2(64 BYTE)",
+          "게시 ID"
+        ],
+        [
+          "ANC_HASH_VAL",
+          "VARCHAR2(64 BYTE)",
+          "원문 좌표 해시"
+        ],
+        [
+          "DOC_ID",
+          "VARCHAR2(512 BYTE)",
+          "문서 ID"
+        ],
+        [
+          "SRC_VER_ID",
+          "VARCHAR2(512 BYTE)",
+          "문서 판본"
+        ],
+        [
+          "UNIT_ID",
+          "VARCHAR2(512 BYTE)",
+          "조항 ID"
+        ]
+      ]
+    }
+  }
+}

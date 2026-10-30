@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-knowledge:reference-v1",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "enum": [
+        "FIELD",
+        "METHOD",
+        "APPLICATION",
+        "WIKI_LINK",
+        "SHORTCUT_LINK",
+        "WIKI",
+        "SHORTCUT",
+        "CONCEPT",
+        "DEFINITION"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "kind",
+    "id",
+    "revision",
+    "content_hash"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# bash GENOS_VECTOR_APPLY.txt /절대경로/VECTOR_INITIAL_CODE_20261028_R1.zip /절대경로/실제_Git_checkout
+: "${1:?코드 ZIP 경로}" "${2:?실제 GENOS 채팅 RAG Git checkout 경로}"
+python3 - "$1" "$2" <<'PY_APPLY'
+import ast,hashlib,json,pathlib,shutil,subprocess,sys,tempfile,time,zipfile
+archive=pathlib.Path(sys.argv[1]).resolve();root=pathlib.Path(sys.argv[2]).resolve()
+assert archive.is_file() and root.is_dir()
+assert subprocess.check_output(['git','rev-parse','--show-toplevel'],cwd=root,text=True).strip()==str(root), 'Git checkout 루트 필요'
+assert not subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=root,text=True).strip(), '기존 작업 변경을 먼저 보관하세요'
+assert hashlib.sha256(archive.read_bytes()).hexdigest()=='7b62532906139a11dbcb4efad700a1846f77e4ed78967385580baf644100afcb', 'ZIP 해시 불일치'
+backup=root.parent/('vector-backup-'+time.strftime('%Y%m%d-%H%M%S'));backup.mkdir(exist_ok=False)
+with zipfile.ZipFile(archive) as z:
+ names=z.namelist();assert len(names)==len(set(names))
+ manifest=json.loads(z.read('CODE_MANIFEST.json'));assert set(names)==set(manifest['files'])|{'CODE_MANIFEST.json'}
+ checked={}
+ for name,h in manifest['preserve_existing'].items():
+  assert (root/name).is_file() and hashlib.sha256((root/name).read_bytes()).hexdigest()==h, '기존 UI JavaScript 버전 불일치: '+name
+ for name,h in manifest['serving_files'].items():
+  if name in manifest['preserve_existing']:continue
+  p=pathlib.PurePosixPath(name);assert not p.is_absolute() and '..' not in p.parts and p.suffix.lower() not in ('.js','.jsx','.mjs','.cjs')
+  target=root/name;assert target.resolve().is_relative_to(root) and not target.is_symlink()
+  body=z.read(name);assert hashlib.sha256(body).hexdigest()==h
+  if name.endswith('.py'):ast.parse(body,filename=name)
+  checked[name]=body
+ receipt={'target':str(root),'zip_sha256':'7b62532906139a11dbcb4efad700a1846f77e4ed78967385580baf644100afcb','files':manifest['serving_files'],'before':{},'git_commit_before':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'field_revision':None,'query_release_id':None}
+ for name in checked:
+  p=root/name
+  if p.exists():
+   assert p.is_file();b=backup/name;b.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,b);receipt['before'][name]=hashlib.sha256(p.read_bytes()).hexdigest()
+  else:receipt['before'][name]=None
+ (backup/'RECEIPT.json').write_text(json.dumps(receipt,indent=2))
+ for name,body in checked.items():
+  p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(body)
+ for name,h in manifest['serving_files'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==h
+ subprocess.run(['git','diff','--check'],cwd=root,check=True)
+ print('CODE_BYTES_VERIFIED',len(checked),'BACKUP',backup)
+ print('현재는 코드 반입만 완료. GUIDE의 Oracle/설정/실제 리비전 검증 후 commit/push/배포하세요.')
+PY_APPLY

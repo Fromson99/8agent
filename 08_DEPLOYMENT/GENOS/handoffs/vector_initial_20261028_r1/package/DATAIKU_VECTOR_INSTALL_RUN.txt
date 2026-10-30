@@ -1,0 +1,40 @@
+# Dataiku LEGAL_RAG 프로젝트 Python 노트북에서 이 TXT 전체를 한 셀로 실행합니다.
+# 먼저 VECTOR_INITIAL_CODE_20261028_R1.zip을 기존 ehA8dpVm 폴더 루트에 업로드하세요.
+# 첫 설치만 아래 실제 배포 모델 정보 3개를 입력합니다. 비밀키는 프로젝트 보안 변수 GENOS_EMBED_KEY에 둡니다.
+EMBED_MODEL = "실제 임베딩 모델 ID"
+EMBED_REVISION = "실제 배포 가중치 버전 또는 SHA256"
+EMBED_DIMENSIONS = 0  # 실제 출력 차원 (예: 1024). 임의 추정하지 않습니다.
+QUERY_RELEASE_ID = ""  # 기존 main query 게시본이면 공란. 신규 적재면 03의 complete.json query_release_id.
+import dataiku,hashlib,io,json,pathlib,sys,tempfile,zipfile,atexit,shutil
+_vector_folder=dataiku.Folder("ehA8dpVm")
+with _vector_folder.get_download_stream("VECTOR_INITIAL_CODE_20261028_R1.zip") as _stream:_vector_bytes=_stream.read(64*1024*1024+1)
+assert len(_vector_bytes)<=64*1024*1024 and hashlib.sha256(_vector_bytes).hexdigest()=="7b62532906139a11dbcb4efad700a1846f77e4ed78967385580baf644100afcb", "코드 ZIP 해시 불일치"
+_vector_root=pathlib.Path(tempfile.mkdtemp(prefix="legal-vector-code-"));atexit.register(shutil.rmtree,_vector_root,ignore_errors=True)
+with zipfile.ZipFile(io.BytesIO(_vector_bytes)) as _zip:
+ _names=_zip.namelist();assert len(_names)==len(set(_names))
+ for _entry in _zip.infolist():
+  _p=pathlib.PurePosixPath(_entry.filename)
+  assert not _p.is_absolute() and ".." not in _p.parts and (_entry.external_attr>>16)&0o170000 != 0o120000
+ _manifest=json.loads(_zip.read("CODE_MANIFEST.json"))
+ assert set(_names)==set(_manifest["files"])|{"CODE_MANIFEST.json"}
+ for _name,_hash in _manifest["files"].items():
+  _body=_zip.read(_name);assert hashlib.sha256(_body).hexdigest()==_hash
+  _dest=_vector_root/_name;_dest.parent.mkdir(parents=True,exist_ok=True);_dest.write_bytes(_body)
+sys.path[:0]=[str(_vector_root/"02_BACKEND"),str(_vector_root/"08_DEPLOYMENT/DATAIKU/vector_initial_20261028_r1")]
+
+from semantic_runtime.initial_vector import profile,endpoint
+assert EMBED_DIMENSIONS>0 and not EMBED_MODEL.startswith("실제") and not EMBED_REVISION.startswith("실제")
+_project=dataiku.api_client().get_default_project()
+_variables=_project.get_variables();_standard=_variables.setdefault("standard",{})
+_env=dataiku.get_custom_variables();_endpoint=endpoint(_env)
+_profile=profile({"schema_version":"legal-vector-profile-v1","model":EMBED_MODEL,"revision":EMBED_REVISION,"dimensions":EMBED_DIMENSIONS,"endpoint_sha256":hashlib.sha256(_endpoint.encode()).hexdigest(),"chunk_chars":800,"overlap_chars":100,"normalization":"l2","metric":"COSINE"})
+if _standard.get("LEGAL_VECTOR_PROFILE") not in (None,_profile):raise ValueError("기존 임베딩 프로필과 다릅니다. 기존 작업을 보존하고 별도 게시 계획을 확인하세요.")
+_standard["LEGAL_VECTOR_PROFILE"]=_profile
+if QUERY_RELEASE_ID:
+ assert len(QUERY_RELEASE_ID)==64 and all(c in "0123456789abcdef" for c in QUERY_RELEASE_ID)
+ if _standard.get("LEGAL_VECTOR_QUERY_RELEASE") not in (None,QUERY_RELEASE_ID):raise ValueError("기존 query release 설정과 다릅니다.")
+ _standard["LEGAL_VECTOR_QUERY_RELEASE"]=QUERY_RELEASE_ID
+_project.set_variables(_variables)
+from install_flow import install
+install(_project,'import dataiku,hashlib,io,json,pathlib,sys,tempfile,zipfile,atexit,shutil\n_vector_folder=dataiku.Folder("ehA8dpVm")\nwith _vector_folder.get_download_stream("VECTOR_INITIAL_CODE_20261028_R1.zip") as _stream:_vector_bytes=_stream.read(64*1024*1024+1)\nassert len(_vector_bytes)<=64*1024*1024 and hashlib.sha256(_vector_bytes).hexdigest()=="7b62532906139a11dbcb4efad700a1846f77e4ed78967385580baf644100afcb", "코드 ZIP 해시 불일치"\n_vector_root=pathlib.Path(tempfile.mkdtemp(prefix="legal-vector-code-"));atexit.register(shutil.rmtree,_vector_root,ignore_errors=True)\nwith zipfile.ZipFile(io.BytesIO(_vector_bytes)) as _zip:\n _names=_zip.namelist();assert len(_names)==len(set(_names))\n for _entry in _zip.infolist():\n  _p=pathlib.PurePosixPath(_entry.filename)\n  assert not _p.is_absolute() and ".." not in _p.parts and (_entry.external_attr>>16)&0o170000 != 0o120000\n _manifest=json.loads(_zip.read("CODE_MANIFEST.json"))\n assert set(_names)==set(_manifest["files"])|{"CODE_MANIFEST.json"}\n for _name,_hash in _manifest["files"].items():\n  _body=_zip.read(_name);assert hashlib.sha256(_body).hexdigest()==_hash\n  _dest=_vector_root/_name;_dest.parent.mkdir(parents=True,exist_ok=True);_dest.write_bytes(_body)\nsys.path[:0]=[str(_vector_root/"02_BACKEND"),str(_vector_root/"08_DEPLOYMENT/DATAIKU/vector_initial_20261028_r1")]\n')
+print("다음: Flow의 LEGAL_04_VECTOR_INITIAL_R1 → Run. 적재·재개·READY 게시까지 실행됩니다.")
