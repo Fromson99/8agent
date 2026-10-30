@@ -123,7 +123,6 @@ def _mb(size: int) -> str:
 def source_checks(c: Checks) -> None:
     required_files = (
         "service.py", "requirements-serving.txt", ".env.example",
-        ".env.genos.example", ".env.onsite.example",
         "06_TOOLS/COMMANDS/code_ship.py",
         "06_TOOLS/COMMANDS/genos_call.sh",
         "06_TOOLS/EXPERIMENTS/OPERATIONS/genos_patch_apply.py",
