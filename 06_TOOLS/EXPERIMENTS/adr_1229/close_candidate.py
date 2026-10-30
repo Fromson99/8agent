@@ -1,0 +1,16 @@
+from common import *
+import re
+f=read(DES/'freeze.json');b=read(DES/'baseline.json');assert read(ART/'checks-first.json')['passed']==82
+put(RUN/'result.json',{'status':'complete','strict_success':True,'technical_conditions':82,'consumer_conditions':56,'candidate':f['candidate_revision'],'files':489,'external_model_calls':0,'quality_certified':False,'superseded_by':'ADR1231 source-contract no-base relation schema'})
+m=read(ADR/'실험/manifest.json');m.update(in_sample=False,decision_eligible=False);m['runs'][0].update(status='complete',sha256=sha(RUN/'result.json'),success_criteria_met=True);m['results'].update(status='complete',by_arm={'baseline':{'status':'complete'},'meaning-evidence':{'status':'complete','technical_conditions':82}},comparisons=[],judge_disagreements=[],usage={'external_model_calls':0},latency={'performance_claim':False},error_taxonomy=[],quality_certified=False)
+heads=['실행 메타','사용자 질문 원문','기준답변 — 채점 전용, 제품 입력 비공개','제품 입력을 구성한 원값','제품 모델 호출 — run·arm별 실제 원문','중간 LLM 호출 — router/compiler/verifier/repair','채점 호출과 반복 판정','사례 최종 판정']
+texts=['run-001/meaning-evidence','원문분석/원기록역할수정·하드코딩제한','합성계약;법률gold없음','[고정기준](../artifacts/design/criteria.json)\n\n### 회수·탈락 단계 원장 — run·arm별\n\n회수변경없음.','새실모델0;실제1230별도','단계당보완1·UNKNOWN무재시도유지','신규35+기존47통과;채점모델0','기술82/서비스56통과·MAIN변경0·최종1231로승계']
+for q in m['questions']:
+ p=ADR/'실험'/q['file'];p.write_text('# 계약검증\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{v}' for i,(h,v) in enumerate(zip(heads,texts),1))+'\n');q['sha256']=sha(p)
+put(ADR/'실험/manifest.json',m)
+meta=(ADR/'README.md').read_text().split('---',2)[1];meta=re.sub(r'(?m)^status:.*$','status: Accepted',meta)
+sections=[('결정 요약','원문해석text/근거quote분리·오류합산.82계약/서비스56통과.실제1230·최종상태1231로분리·MAIN변경0.'),('문제와 변경 전 구조','1228원문해석과정확인용혼동으로누적전거절.'),('가설과 사전 판정 기준','[고정기준](artifacts/design/criteria.json).해석과근거분리·정확인용검증유지·하드코딩없음.'),('실험 설계','1227rev003에일반text/quote분리만추가.489파일·격리후보·합성82와서비스56.'),('데이터·모델·재현성','기존canonicalprofile/compiler불변.단어목록/조문/정답분기없이모델분류와선택근거를결속.'),('결과','82통과/56통과·원래47회귀새실패0. [결과](artifacts/run-001/result.json).'),('사례별 오류 분석','1228실패원본보존.정확인용이아닌요약은계속거절하며해석text는허용.'),('비용·지연·회수 규모','이ADR실모델0·실제1230별도.누적당추가독립분석비용있음.'),('해석','모델해석과인용을분리해검증하며법률의미정답은인증하지않는다.'),('한계와 일반화 가능 범위','기술검증만으로의미정확성/실제누적성공을주장하지않는다.1230은별도실패결과보존.'),('운영 결정·롤백 조건','후보만보존·작업/MAIN변경0.첫묶음SAME생성금지최종1231로승계.'),('재현 명령','prepare_refinement/freeze/check/consumer→별도1230→close_candidate/status/validate --final. [자료](artifacts/manifest.json).')]
+(ADR/'README.md').write_text('---'+meta+'---\n\n# 원문해석과근거분리\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{v}' for i,(h,v) in enumerate(sections,1))+'\n')
+(ADR/'실험/README.md').write_text('# 기술결과\n\n[82검사](../artifacts/run-001/result.json).\n')
+paths=[p for p in ART.rglob('*') if p.is_file() and 'test-runtime' not in p.parts and not any(v.startswith('runtime-') for v in p.parts) and p!=ART/'manifest.json']+list(Path(__file__).parent.glob('*.py'))
+(ART/'manifest.json').write_text(json.dumps({'schema_version':'adr-artifacts-v1','adr_id':'ADR-1229','created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(ROOT)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'기술검증/동결','contains_raw_prompts_and_outputs':False} for p in paths]},ensure_ascii=False,indent=2)+'\n')

@@ -1,0 +1,22 @@
+from common import *
+active=read(ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json');base=read(ROOT/active['manifest_path']);assert active['generation']==120
+assert all(sha(ROOT/n)==h for n,h in base['files'].items())
+old=read(ROOT/'04_EXPERIMENTS/ADR/ADR-1209-cumulative-main-input-audit/artifacts/design/criteria.json')
+suites={'new':['06_TOOLS/EXPERIMENTS/adr_1217/test_regex_wire.py'],'features':old['suites']['core']+old['suites']['features'],'regression':old['suites']['regression']+['05_TESTS/CONTRACTS/test_genos_wire_schema.py']}
+criteria={'scope':'Exact known REF pattern rewrite at final wire boundary and robust authoring finish classification; preserve original server schema and all prior features',
+'success':['Original and wire regex accept identical ID language; positive/negative length/character/newline cases and symbolic count proof','Only exact known regex at schema locations changes; enum/const/default data, other patterns, request content and original schema unchanged','Same failure/success/repair/no-retry boundaries with raw provider receipt, including error with null or JSON-looking content','Existing cumulative348 contract suite passes; shared257 regression identical to MAIN120; no new failures','Candidate and working selected local service binding exact; no data/model/permissions/budget change'],
+'failure':'Any changed accepted ID language, weakened server validator, hidden retry, false completion or new functional regression blocks release',
+'suites':suites,'fixture_hashes':{p:sha(ROOT/p) for paths in suites.values() for p in paths if (ROOT/p).exists()},
+'fixture_plan':'New technical ID-language/transport/error-state contracts frozen before execution. Historical ADR1210 exact wire-text tests are not rerun as unchanged contract: equivalent regex representation intentionally changes; replacement validates inverse canonicalization and acceptance.',
+'external_model_calls':0,'quality_certified':False,'heavy_processes':1,'resource_limit_GiB':6,
+'failure_contract':{'owner':'Existing domain job is sole repair owner; error/refusal/nonstop body is incomplete, never reinterpreted as output; no extra retries','normalization':'Only exact REF zero-to159 character repetition is written as 32+32+32+32+31 zero-start repetitions, same language','state':'Original schema/input/response/receipts preserved; UNKNOWN unchanged','budget':'unchanged'},
+'rollback':'MAIN120 reader unchanged, only wire schema receipt additive; previous release preserved'}
+put(DES/'criteria.json',criteria);put(DES/'baseline.json',{'active':active,'manifest':base,'pointer_sha256':sha(ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json'),'working_files':{n:sha(ROOT/n) for n in base['files']}})
+m=read(ADR/'실험/manifest.json');m['lineage']['hypothesis_delta']=criteria['scope'];m['design'].update(hypothesis=criteria['scope'],primary_metric='Exact regex language and failure-state/consumer contract preservation; no legal quality claim',success_criteria=criteria['success'],failure_criteria=criteria['failure'],criteria_frozen_before_run=True,criteria_freeze_evidence=bind(DES/'criteria.json'),execution=criteria)
+m['design']['arms']=[{'id':'baseline','role':'baseline','derived_from':['ADR-1210-experiment-v1/compact'],'changes':'Exact selected MAIN120','controls':'Same data/model/limits/ontologyOFF'}, {'id':'compatible','role':'candidate','derived_from':['baseline'],'changes':'Exact known regex equivalent wire spelling and incomplete-response rejection','controls':'All semantic validators, source IDs, prompts, model, data, budgets unchanged'}]
+m['dataset'].update(name='Predeclared schema/transport technical matrix and shared contracts',version='v1',frozen_source=str((DES/'criteria.json').relative_to(ROOT)),sha256=sha(DES/'criteria.json'));m['llm_policy']['llm_calls']=[]
+m['runs'][0].update(arm_ids=['baseline','compatible'],selection_rule='Complete predeclared synthetic matrix and regression, saved schemas diagnostic only',artifact_path=str((RUN/'result.json').relative_to(ROOT)))
+m['retrieval_accounting']['not_applicable_reason']='Schema representation only; no new retrieval or legal quality evaluation';m['retrieval_accounting']['stage_ledger']['not_applicable_reason']='Same model/source/data; no retrieval experiment.'
+put(ADR/'실험/manifest.json',m)
+sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'));import adr_candidate as ac
+C=ac.snapshot(ADR,'compatible',sorted(base['files']),experiment_id=m['experiment_id'],arm_id='compatible',run_ids=['run-001']);print(C/'snapshot')
