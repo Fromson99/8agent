@@ -1,0 +1,74 @@
+{
+  "status": "PASS_WORKBOOK_SOURCE_AND_SERIALIZATION_CHECK",
+  "variant": "B03",
+  "file": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R15/법률에이전트_B03_테이블신청_사진확정컬럼_R15.xlsx",
+  "bytes": 87654,
+  "sha256": "ebe6ad903a7449f83b912305acfaa6ea8f9a253a1c38173bb2ad062e017d51f6",
+  "tables": 13,
+  "column_occurrences": 60,
+  "unique_columns": 38,
+  "pk_constraints": 13,
+  "pk_column_rows": 22,
+  "regular_indexes": 11,
+  "indexes_including_pk": 24,
+  "index_column_rows": 54,
+  "partitioned_tables": 0,
+  "sheets": 22,
+  "photo_sources": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/1-사진-1.jpg",
+      "sha256": "db0eafea8c2c1c96a74d5d3338a1d402f4d20a79c13675f19932cd26ca1df606"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/2-사진-2.jpg",
+      "sha256": "14818f266feff7926f12b9f48416553b5b5f921ab2923aa506cf296f60eeb0cc"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/3-사진-3.jpg",
+      "sha256": "4145cc4cceddf80894ba1f4d6b8839968f8c394e74a0f06e0e053fade697d348"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/4-사진-4.jpg",
+      "sha256": "a9f6f970095aeda60cd4eaf7cf95c51d9fbf3fd5e1204c531a1db591185207cb"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/5-사진-5.jpg",
+      "sha256": "d18973b6ead35ec2b31468a6c30fceab6fa9dd1cba553fea16ef721f7b716ff7"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a18a0c-839f-71b2-a112-701c0f551a7d/3A6F90C9-5A7F-493C-A251-336C189625BF/6-사진-6.jpg",
+      "sha256": "3f66bca78158ff1424dcc4a1617aeafbba00fd27177352595deb2fc6d359f7cb"
+    }
+  ],
+  "sources": [
+    {
+      "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r14_photos.json",
+      "sha256": "1dfa55a0da1be6b1ecffbda2016d43046457aa5446e9098c6ece93190973cc34"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_DOMAIN_CORRECTION_20261029_R14/MODEL.json",
+      "sha256": "0062da5f5fb34e78fa76c6f115ec2e776d996c5bb85e74fa1635b6cc535721aa"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_DOMAIN_CORRECTION_20261029_R14/GOLD_B03_DDL_REVIEW.sql",
+      "sha256": "4ad0687bb4f3ac61fbd56c1d0f5487f73ca9ca9ec79b46ebbd2510e674953649"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20261030-gold-column-mapping/input-transcription.json",
+      "sha256": "456440810e2dd4e698c19bfe232430389f41162bead5de5676038967483c1afc"
+    }
+  ],
+  "checks": [
+    "60 physical names/types/nullability/defaults and PK/index order matched to mapping",
+    "38 photo logical names reread from original images",
+    "13 table definitions preserved from R14",
+    "24 index references and 13 PK constraints resolve to renamed columns",
+    "no legacy physical names outside explicit comparison sheet",
+    "serialized XLSX reopened with exact grid-value comparison; no formulas",
+    "copy grids have no merged cells; partition N and unused fields empty"
+  ],
+  "limits": [
+    "No native Excel rendering performed",
+    "No field DB creation or application-screen submission performed"
+  ]
+}

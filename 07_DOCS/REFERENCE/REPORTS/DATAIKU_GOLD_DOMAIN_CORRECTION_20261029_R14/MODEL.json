@@ -1,0 +1,1969 @@
+{
+  "version": "gold-domain-correction-r14",
+  "status": "R14 도메인별 확인값·한글 길이 정정 / DB·제품 미반영",
+  "tables": [
+    {
+      "suffix": "DOC_VER",
+      "short": "문서판본",
+      "logical": "문서판본내역",
+      "definition": "데이터 구성 버전별로 문서의 식별정보, 이름, 내용 확인값 및 부가정보를 관리하는 엔티티이다. 한 건은 특정 데이터 구성 버전에 포함된 문서 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "MNFST_HASH_VALU",
+          "logical": "명세해시값",
+          "domain": "값",
+          "words": "명세 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "데이터 구성 명세의 내용에 해시 함수를 적용하여 산출한 값이다. 데이터 구성 정보의 동일 여부와 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_VER_S.DATA_VER_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "domain": "ID",
+          "words": "문서",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 2,
+          "required": true,
+          "definition": "관리 범위 안에서 문서 한 건을 다른 문서와 구분하기 위해 부여한 식별자이다. 문서 관련 정보를 연결하고 해당 문서를 조회하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_VER_S.DOC_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "DOC_NAME",
+          "logical": "문서명",
+          "domain": "명",
+          "words": "문서",
+          "type": "VARCHAR2(2250 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "2250 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "문서의 내용이나 목적을 나타내기 위해 부여한 이름 또는 제목이다. 문서 목록과 조회 결과에서 해당 문서를 알아볼 수 있도록 표시하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_DOC_VER_S.DOC_NM",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "명 / 사진 기재 2250 BYTE",
+            "base_size": "사진 최종값 2250 BYTE",
+            "korean_multiplier": "추가 곱셈 없음",
+            "physical_size": "2250 BYTE",
+            "basis": "사진 판독 기록에 이미 2250 BYTE로 기재된 최종 길이를 유지. 기준 인포타입 이름이나 최초 환산 전 길이는 추정하지 않음. 중복 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_HASH_VALU",
+          "logical": "문서해시값",
+          "domain": "값",
+          "words": "문서 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "원본 문서의 전체 내용에 해시 함수를 적용하여 산출한 값이다. 원본 문서의 동일 여부와 내용 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_VER_S.SRC_DATA_HASH_VAL",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ADDN_IFMN_CTNT",
+          "logical": "문서부가정보내용",
+          "domain": "내용",
+          "words": "문서 · 부가 · 정보",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": false,
+          "definition": "문서의 출처, 작성 주체, 분류 등 문서를 부가적으로 설명하는 내용이다. 문서의 기본 정보만으로 표현하기 어려운 상세 속성을 관리하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_DOC_VER_S.DOC_JSON_CN",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_DOC_VER_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [],
+      "kind": "SNAPSHOT",
+      "process": "원본 파일을 구조화한 뒤 문서 식별자·문서명·원본 해시를 데이터 구축 세대와 함께 적재한다."
+    },
+    {
+      "suffix": "DOC_UNIT",
+      "short": "문서구조",
+      "logical": "문서구조내역",
+      "definition": "문서의 개별 구조 단위와 구조 단위 간 상하위 관계를 관리하는 엔티티이다. 한 건은 특정 데이터 구성 버전의 문서에 속한 구조 단위 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "MNFST_HASH_VALU",
+          "logical": "명세해시값",
+          "domain": "값",
+          "words": "명세 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "데이터 구성 명세의 내용에 해시 함수를 적용하여 산출한 값이다. 데이터 구성 정보의 동일 여부와 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_UNIT_S.DATA_VER_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "domain": "ID",
+          "words": "문서",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 2,
+          "required": true,
+          "definition": "관리 범위 안에서 문서 한 건을 다른 문서와 구분하기 위해 부여한 식별자이다. 문서 관련 정보를 연결하고 해당 문서를 조회하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_UNIT_S.DOC_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "STRC_UNIT_ID",
+          "logical": "구조단위ID",
+          "domain": "ID",
+          "words": "구조 · 단위",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 3,
+          "required": true,
+          "definition": "문서를 구성하는 장, 절, 항목 등의 개별 구조 단위를 구분하기 위해 부여한 식별자이다. 문서 내부의 계층과 위치 정보를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_UNIT_S.UNIT_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "UPPR_STRC_UNIT_ID",
+          "logical": "상위구조단위ID",
+          "domain": "ID",
+          "words": "상위 · 구조 · 단위",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "문서의 계층 구조에서 해당 구조 단위의 바로 위 단계에 있는 구조 단위의 식별자이다. 구조 단위 간 상하위 관계를 관리하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_UNIT_S.PRNT_UNIT_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "STRC_UNIT_ADDN_IFMN_CTNT",
+          "logical": "구조단위부가정보내용",
+          "domain": "내용",
+          "words": "구조 · 단위 · 부가 · 정보",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": false,
+          "definition": "문서 구조 단위의 종류, 제목, 순서, 위치 등을 부가적으로 설명하는 내용이다. 구조 단위의 상세 속성을 관리하고 문서 구성을 파악하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_DOC_UNIT_S.UNIT_JSON_CN",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_DOC_UNIT_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "UPPR_STRC_UNIT_ID",
+          "STRC_UNIT_ID"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "구조화한 문서에서 각 단위의 식별자와 상위 단위 식별자를 추출해 적재한다."
+    },
+    {
+      "suffix": "DOC_BLK",
+      "short": "원문본문",
+      "logical": "문서본문내역",
+      "definition": "문서 본문을 조각별로 나누어 내용과 위치 정보를 관리하는 엔티티이다. 한 건은 특정 데이터 구성 버전의 문서에 속한 본문 조각 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "MNFST_HASH_VALU",
+          "logical": "명세해시값",
+          "domain": "값",
+          "words": "명세 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "데이터 구성 명세의 내용에 해시 함수를 적용하여 산출한 값이다. 데이터 구성 정보의 동일 여부와 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.DATA_VER_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "domain": "ID",
+          "words": "문서",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 2,
+          "required": true,
+          "definition": "관리 범위 안에서 문서 한 건을 다른 문서와 구분하기 위해 부여한 식별자이다. 문서 관련 정보를 연결하고 해당 문서를 조회하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.DOC_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "BODY_SLC_ID",
+          "logical": "본문조각ID",
+          "domain": "ID",
+          "words": "본문 · 조각",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 3,
+          "required": true,
+          "definition": "문서 본문을 나누어 관리하는 개별 조각을 구분하기 위해 부여한 식별자이다. 필요한 본문 구간을 조회하고 관련 정보와 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.BLK_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "STRC_UNIT_ID",
+          "logical": "구조단위ID",
+          "domain": "ID",
+          "words": "구조 · 단위",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "문서를 구성하는 장, 절, 항목 등의 개별 구조 단위를 구분하기 위해 부여한 식별자이다. 문서 내부의 계층과 위치 정보를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.UNIT_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "BODY_CTNT",
+          "logical": "본문내용",
+          "domain": "내용",
+          "words": "본문",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": false,
+          "definition": "문서의 본문을 구성하는 실제 글의 내용이다. 문서 전체 또는 나누어 관리하는 본문 구간의 내용을 확인하고 조회하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_DOC_BLK_S.BLK_TXT_CN",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        },
+        {
+          "name": "DOC_HASH_VALU",
+          "logical": "문서해시값",
+          "domain": "값",
+          "words": "문서 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "원본 문서의 전체 내용에 해시 함수를 적용하여 산출한 값이다. 원본 문서의 동일 여부와 내용 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.SRC_DATA_HASH_VAL",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "BODY_SLC_ADDN_IFMN_CTNT",
+          "logical": "본문조각부가정보내용",
+          "domain": "내용",
+          "words": "본문 · 조각 · 부가 · 정보",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": false,
+          "definition": "본문 조각의 위치, 순서, 출처 등을 부가적으로 설명하는 내용이다. 개별 본문 조각의 상세 속성을 관리하고 문서 내 위치를 파악하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_DOC_BLK_S.BLK_JSON_CN",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        },
+        {
+          "name": "ADD_INFO_TEXT_OMIT_YN",
+          "logical": "부가정보본문생략여부",
+          "domain": "여부",
+          "words": "부가 · 정보 · 본문 · 생략",
+          "type": "CHAR(1 BYTE)",
+          "dtype": "CHAR",
+          "size": "1 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "본문 조각의 부가정보에서 본문과 중복되는 내용을 생략했는지를 나타내는 값이다. Y는 생략, N은 미생략을 의미하며 값이 없으면 미지정 상태이다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_DOC_BLK_S.JSON_TXT_OMIT_YN",
+          "rule": "코드로 확인: (ADD_INFO_TEXT_OMIT_YN IN ('Y','N'))",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "여부 / CHAR(1 BYTE)",
+            "base_size": "1 BYTE",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "1 BYTE",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_DOC_BLK_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "STRC_UNIT_ID",
+          "BODY_SLC_ID"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "구조화한 문서에서 본문을 분리하고, 문서·구조 단위·원본 해시·본문 중복 생략 표시를 함께 적재한다."
+    },
+    {
+      "suffix": "SRC_POST",
+      "short": "원문게시",
+      "logical": "원문게시내역",
+      "definition": "함께 사용할 원문 자료를 게시본 단위로 묶어 구성 정보와 등록 시점을 관리하는 엔티티이다. 한 건은 원문 자료의 게시본 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "DOC_POST_HASH_VALU",
+          "logical": "원문게시해시값",
+          "domain": "값",
+          "words": "원문 · 게시 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "원문 게시본의 구성 정보에 해시 함수를 적용하여 산출한 값이다. 함께 게시된 원문 자료의 구성을 구분하고 동일 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRC_PBLS_S.SRC_PBLS_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "MNFST_HASH_VALU",
+          "logical": "명세해시값",
+          "domain": "값",
+          "words": "명세 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "데이터 구성 명세의 내용에 해시 함수를 적용하여 산출한 값이다. 데이터 구성 정보의 동일 여부와 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRC_PBLS_S.DATA_VER_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_POST_IFMN_CTNT",
+          "logical": "원문게시정보내용",
+          "domain": "내용",
+          "words": "원문 · 게시 · 정보",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": true,
+          "definition": "원문 게시본에 포함된 자료의 구성, 범위, 버전 등 게시 관련 정보를 설명하는 내용이다. 함께 사용할 원문 자료를 확인하고 관리하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRC_PBLS_S.PBLS_JSON_CN",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        },
+        {
+          "name": "RGSN_AITM",
+          "logical": "등록일시",
+          "domain": "일시",
+          "words": "등록",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "dtype": "TIMESTAMP\nWITH TIME ZONE",
+          "size": "소수초 정밀도 6",
+          "pk": 0,
+          "required": true,
+          "definition": "대상 정보가 시스템에 등록된 날짜와 시각이다. 등록 시점을 확인하고 정보의 생성 순서 및 관리 이력을 파악하는 데 사용한다.",
+          "korean": "해당 없음",
+          "source": "SIDDS.LGL_SRC_PBLS_S.REG_DTM",
+          "rule": "",
+          "change": "R10 유지",
+          "default": "SYSTIMESTAMP",
+          "metadata_basis": {
+            "domain_format": "일시 / TIMESTAMP(6) WITH TIME ZONE",
+            "base_size": "소수초 정밀도 6",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "소수초 정밀도 6",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_SRC_PBLS_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_POST_HASH_VALU"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "원문과 파일의 적재·재조회 검증이 끝나면 세대·파일 목록을 게시 명세로 묶어 저장한다."
+    },
+    {
+      "suffix": "SRCH_POST",
+      "short": "조회게시",
+      "logical": "조회게시내역",
+      "definition": "조회에 함께 사용할 자료의 구성을 게시본 단위로 관리하는 엔티티이다. 한 건은 조회자료의 범위와 구성을 정한 게시본 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "RFRN_POST_HASH_VALU",
+          "logical": "조회게시해시값",
+          "domain": "값",
+          "words": "조회 · 게시 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "조회용으로 게시한 자료의 구성 정보에 해시 함수를 적용하여 산출한 값이다. 조회에 함께 사용할 자료 구성을 구분하고 동일 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_PBLS_S.SRCH_PBLS_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "RFRN_POST_IFMN_CTNT",
+          "logical": "조회게시정보내용",
+          "domain": "내용",
+          "words": "조회 · 게시 · 정보",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": true,
+          "definition": "조회용 게시본에 포함된 자료의 구성, 범위, 버전 등 게시 관련 정보를 설명하는 내용이다. 조회에 사용할 자료의 구성을 확인하고 관리하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_PBLS_S.MNFST_JSON_CN",
+          "rule": "코드로 확인: (RFRN_POST_IFMN_CTNT IS JSON)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_SRCH_PBLS_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [],
+      "kind": "SNAPSHOT",
+      "process": "조회 자료의 검증 결과와 원문 게시본을 하나의 명세로 묶고 게시 식별자를 계산해 저장한다."
+    },
+    {
+      "suffix": "SRCH_ROW",
+      "short": "검색관계",
+      "logical": "검색관계내역",
+      "definition": "조회에 필요한 자료와 자료 간 검색 및 연결 관계를 관리하는 엔티티이다. 한 건은 특정 조회 게시본의 자료 유형에 속한 조회자료 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "RFRN_POST_HASH_VALU",
+          "logical": "조회게시해시값",
+          "domain": "값",
+          "words": "조회 · 게시 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "조회용으로 게시한 자료의 구성 정보에 해시 함수를 적용하여 산출한 값이다. 조회에 함께 사용할 자료 구성을 구분하고 동일 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.SRCH_PBLS_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "RFRN_DTA_TYPE_VALU",
+          "logical": "조회자료유형값",
+          "domain": "값",
+          "words": "조회 · 자료 · 유형",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 2,
+          "required": true,
+          "definition": "조회자료의 성격이나 용도에 따라 구분한 유형을 나타내는 값이다. 자료를 유형별로 분류하고 유형에 맞는 조회 및 처리 기준을 적용하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.ROW_KIND_CD",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "RFRN_DTA_ID",
+          "logical": "조회자료ID",
+          "domain": "ID",
+          "words": "조회 · 자료",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 3,
+          "required": true,
+          "definition": "관리 범위 안에서 개별 조회자료를 다른 자료와 구분하기 위해 부여한 식별자이다. 해당 자료를 조회하고 관련 정보와 연결하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.ROW_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "domain": "ID",
+          "words": "문서",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "관리 범위 안에서 문서 한 건을 다른 문서와 구분하기 위해 부여한 식별자이다. 문서 관련 정보를 연결하고 해당 문서를 조회하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.DOC_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "RFRN_DTA_IDNF_CTNT",
+          "logical": "조회자료식별내용",
+          "domain": "내용",
+          "words": "조회 · 자료 · 식별",
+          "type": "VARCHAR2(3000 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "3000 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "조회자료를 찾거나 구별하는 기준으로 사용하는 이름, 용어, 식별값 등의 내용이다. 조회 조건과 자료를 대응시키고 필요한 자료를 검색하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_SRCH_ROW_S.SRCH_KEY_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / VARCHAR2(1000)",
+            "base_size": "1000",
+            "korean_multiplier": "3",
+            "physical_size": "3000 BYTE",
+            "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+          }
+        },
+        {
+          "name": "BLNG_DTA_IDNF_CTNT",
+          "logical": "소속자료식별내용",
+          "domain": "내용",
+          "words": "소속 · 자료 · 식별",
+          "type": "VARCHAR2(3000 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "3000 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "조회자료가 소속되거나 관계의 출발점이 되는 자료를 구별하기 위한 내용이다. 자료의 소속을 확인하고 관계가 시작되는 대상을 조회하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_SRCH_ROW_S.OWNR_REF_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / VARCHAR2(1000)",
+            "base_size": "1000",
+            "korean_multiplier": "3",
+            "physical_size": "3000 BYTE",
+            "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+          }
+        },
+        {
+          "name": "TAGT_DTA_IDNF_CTNT",
+          "logical": "대상자료식별내용",
+          "domain": "내용",
+          "words": "대상 · 자료 · 식별",
+          "type": "VARCHAR2(3000 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "3000 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "조회자료와 연결된 관계의 대상 자료를 구별하기 위한 내용이다. 관계가 가리키는 자료를 확인하고 관련 자료를 조회하는 데 사용한다.",
+          "korean": "Y",
+          "source": "SIDDS.LGL_SRCH_ROW_S.TGT_REF_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / VARCHAR2(1000)",
+            "base_size": "1000",
+            "korean_multiplier": "3",
+            "physical_size": "3000 BYTE",
+            "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+          }
+        },
+        {
+          "name": "SRCH_DATA_HASH_VALU",
+          "logical": "조회자료해시값",
+          "domain": "값",
+          "words": "조회 · 자료 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "조회자료의 유형, 식별정보 및 상세 내용에 해시 함수를 적용하여 산출한 값이다. 개별 조회자료의 동일 여부와 내용 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.ROW_HASH_VAL",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "SRCH_DATA_CTNT",
+          "logical": "조회자료내용",
+          "domain": "내용",
+          "words": "조회 · 자료",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": true,
+          "definition": "조회자료의 주요 내용과 상세 속성을 담은 정보이다. 자료 유형에 따라 필요한 내용을 확인하고 자료 간 관계를 조회하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_ROW_S.ROW_JSON_CN",
+          "rule": "코드로 확인: (SRCH_DATA_CTNT IS JSON)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_SRCH_ROW_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "RFRN_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "BLNG_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "TAGT_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "DOC_ID"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "원문·목차·검색·용어집 자료를 조회 종류별 행으로 만들고 검색키·관계키·내용 해시를 붙여 적재한다."
+    },
+    {
+      "suffix": "SRCH_CHNL",
+      "short": "조회채널",
+      "logical": "조회채널내역",
+      "definition": "조회 경로별로 사용할 게시본과 변경 순서를 관리하는 엔티티이다. 한 건은 조회 경로 한 건과 해당 경로에서 사용할 게시본의 연결을 의미한다.",
+      "columns": [
+        {
+          "name": "RFRN_CHNL_NAME",
+          "logical": "조회채널명",
+          "domain": "명",
+          "words": "조회 · 채널",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "조회에 사용할 자료를 선택하는 논리적 경로의 이름이다. 이용 목적이나 제공 범위에 따라 조회 경로를 구분하고 사용할 자료를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_CHNL_S.CHNL_NM",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "명 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "RFRN_POST_HASH_VALU",
+          "logical": "조회게시해시값",
+          "domain": "값",
+          "words": "조회 · 게시 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "조회용으로 게시한 자료의 구성 정보에 해시 함수를 적용하여 산출한 값이다. 조회에 함께 사용할 자료 구성을 구분하고 동일 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDS.LGL_SRCH_CHNL_S.SRCH_PBLS_ID",
+          "rule": "같은 명명안의 논리 참조 → SRCH_POST (RFRN_POST_HASH_VALU)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "CHAN_NO",
+          "logical": "변경순번",
+          "domain": "순번",
+          "words": "변경",
+          "type": "NUMBER(30,0)",
+          "dtype": "NUMBER",
+          "size": "정밀도 30 / 소수자리 0",
+          "pk": 0,
+          "required": true,
+          "definition": "대상 정보가 변경될 때 변경 순서를 구분하기 위해 증가시키는 번호이다. 변경 전후의 상태를 식별하고 동시에 발생한 수정 요청의 충돌을 확인하는 데 사용한다.",
+          "korean": "해당 없음",
+          "source": "SIDDS.LGL_SRCH_CHNL_S.CHG_SEQ_NO",
+          "rule": "코드로 확인: (CHAN_NO >= 1)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "순번 / NUMBER(30,0)",
+            "base_size": "정밀도 30 / 소수자리 0",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "정밀도 30 / 소수자리 0",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_SRCH_CHNL_S",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [],
+      "kind": "MASTER",
+      "process": "완료 게시본을 확인한 뒤 기존 게시본·변경 순번이 예상과 같을 때만 채널 선택을 갱신한다."
+    },
+    {
+      "suffix": "ONTL_POST",
+      "short": "온톨로지게시",
+      "logical": "온톨로지게시내역",
+      "definition": "개념과 개념 간 관계를 정리한 지식을 게시본 단위로 관리하는 엔티티이다. 한 건은 개념그룹의 특정 작업 버전을 바탕으로 게시한 지식 한 건을 의미한다.",
+      "columns": [
+        {
+          "name": "ONTL_POST_ID",
+          "logical": "온톨로지게시ID",
+          "domain": "ID",
+          "words": "온톨로지 · 게시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "개념과 개념 간 관계를 정리한 온톨로지의 개별 게시본을 구분하기 위해 부여한 식별자이다. 게시된 지식을 조회하고 관련 정보와 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_PUB_A.PUB_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "CNCP_GROP_ID",
+          "logical": "개념그룹ID",
+          "domain": "ID",
+          "words": "개념 · 그룹",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "서로 관련된 개념을 하나의 관리 단위로 묶은 그룹을 구분하기 위해 부여한 식별자이다. 같은 그룹에 속한 개념과 관련 정보를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_PUB_A.BNDL_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "WORK_VER_NO",
+          "logical": "작업버전번호",
+          "domain": "번호",
+          "words": "작업 · 버전",
+          "type": "NUMBER(30,0)",
+          "dtype": "NUMBER",
+          "size": "정밀도 30 / 소수자리 0",
+          "pk": 0,
+          "required": true,
+          "definition": "작업 대상의 수정 단계에 따라 서로 다른 버전을 구분하기 위해 부여한 번호이다. 작업 내용의 변경 순서를 확인하고 특정 시점의 작업본을 식별하는 데 사용한다.",
+          "korean": "해당 없음",
+          "source": "SIDDA.LGL_ONT_PUB_A.REV_NO",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "번호 / NUMBER(30,0)",
+            "base_size": "정밀도 30 / 소수자리 0",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "정밀도 30 / 소수자리 0",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        },
+        {
+          "name": "POST_CTNT_HASH_VALU",
+          "logical": "게시내용해시값",
+          "domain": "값",
+          "words": "게시 · 내용 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "게시 대상의 전체 내용에 해시 함수를 적용하여 산출한 값이다. 게시 내용의 동일 여부와 게시 이후 내용의 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_PUB_A.PKG_HASH_VAL",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "POST_KNWL_CTNT",
+          "logical": "게시지식내용",
+          "domain": "내용",
+          "words": "게시 · 지식",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "pk": 0,
+          "required": true,
+          "definition": "공유하거나 활용할 수 있도록 게시한 지식의 내용이다. 개념, 개념 간 관계, 적용 조건, 근거 등 지식을 이해하고 재사용하는 데 필요한 정보를 담는다.",
+          "korean": "Y",
+          "source": "SIDDA.LGL_ONT_PUB_A.PKG_JSON_CN",
+          "rule": "코드로 확인: (POST_KNWL_CTNT IS JSON)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDA.LGL_ONT_PUB_A",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "CNCP_GROP_ID",
+          "WORK_VER_NO"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "원문과 승인 판본·해시를 재검증하고 사전 조립 JSON과 게시 ID를 저장한다. 원문 좌표 색인·활성 선택·감사 기록과 한 트랜잭션으로 게시한다."
+    },
+    {
+      "suffix": "ONTL_HEAD",
+      "short": "온톨로지선택",
+      "logical": "온톨로지선택내역",
+      "definition": "개념그룹별로 현재 사용할 온톨로지 게시본과 선택 상태의 변경 순서를 관리하는 엔티티이다. 한 건은 개념그룹 한 건의 게시본 선택 상태를 의미한다.",
+      "columns": [
+        {
+          "name": "CNCP_GROP_ID",
+          "logical": "개념그룹ID",
+          "domain": "ID",
+          "words": "개념 · 그룹",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "서로 관련된 개념을 하나의 관리 단위로 묶은 그룹을 구분하기 위해 부여한 식별자이다. 같은 그룹에 속한 개념과 관련 정보를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_HEAD_A.BNDL_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "ONTL_POST_ID",
+          "logical": "온톨로지게시ID",
+          "domain": "ID",
+          "words": "온톨로지 · 게시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": false,
+          "definition": "개념과 개념 간 관계를 정리한 온톨로지의 개별 게시본을 구분하기 위해 부여한 식별자이다. 게시된 지식을 조회하고 관련 정보와 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_HEAD_A.PUB_ID",
+          "rule": "같은 명명안의 논리 참조 → ONTL_POST (ONTL_POST_ID)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "CHAN_NO",
+          "logical": "변경순번",
+          "domain": "순번",
+          "words": "변경",
+          "type": "NUMBER(30,0)",
+          "dtype": "NUMBER",
+          "size": "정밀도 30 / 소수자리 0",
+          "pk": 0,
+          "required": true,
+          "definition": "대상 정보가 변경될 때 변경 순서를 구분하기 위해 증가시키는 번호이다. 변경 전후의 상태를 식별하고 동시에 발생한 수정 요청의 충돌을 확인하는 데 사용한다.",
+          "korean": "해당 없음",
+          "source": "SIDDA.LGL_ONT_HEAD_A.CHG_SEQ_NO",
+          "rule": "코드로 확인: (CHAN_NO >= 0)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "순번 / NUMBER(30,0)",
+            "base_size": "정밀도 30 / 소수자리 0",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "정밀도 30 / 소수자리 0",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        }
+      ],
+      "source": "SIDDA.LGL_ONT_HEAD_A",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "ONTL_POST_ID",
+          "CNCP_GROP_ID"
+        ]
+      ],
+      "kind": "MASTER",
+      "process": "현재 변경 순번을 확인한 뒤 게시 ID를 바꾸고 순번을 증가시킨다. 이미 시작한 RAG 요청의 선택본은 중간에 바꾸지 않는다."
+    },
+    {
+      "suffix": "ONTL_ANC",
+      "short": "원문지식연결",
+      "logical": "원문지식연결내역",
+      "definition": "원문 문서의 특정 판본과 위치를 게시된 지식에 연결하는 엔티티이다. 한 건은 지식 게시본 한 건과 원문 위치 한 곳의 연결 관계를 의미한다.",
+      "columns": [
+        {
+          "name": "ONTL_POST_ID",
+          "logical": "온톨로지게시ID",
+          "domain": "ID",
+          "words": "온톨로지 · 게시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 1,
+          "required": true,
+          "definition": "개념과 개념 간 관계를 정리한 온톨로지의 개별 게시본을 구분하기 위해 부여한 식별자이다. 게시된 지식을 조회하고 관련 정보와 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_ANC_A.PUB_ID",
+          "rule": "같은 명명안의 논리 참조 → ONTL_POST (ONTL_POST_ID)",
+          "change": "R10 정의·타입·필수·PK 유지; 물리 FK/CHECK는 코드 검증으로 이관",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_LCT_HASH_VALU",
+          "logical": "문서위치해시값",
+          "domain": "값",
+          "words": "문서 · 위치 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 2,
+          "required": true,
+          "definition": "문서 식별정보, 문서 판본 식별정보 및 구조 단위 식별정보의 조합에 해시 함수를 적용하여 산출한 값이다. 특정 판본의 문서 내 위치를 구분하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_ANC_A.ANC_HASH_VAL",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "domain": "ID",
+          "words": "문서",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "관리 범위 안에서 문서 한 건을 다른 문서와 구분하기 위해 부여한 식별자이다. 문서 관련 정보를 연결하고 해당 문서를 조회하는 기준으로 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_ANC_A.DOC_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "DOC_HASH_VALU",
+          "logical": "문서해시값",
+          "domain": "값",
+          "words": "문서 · 해시",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "원본 문서의 전체 내용에 해시 함수를 적용하여 산출한 값이다. 원본 문서의 동일 여부와 내용 변경 여부를 확인하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_ANC_A.SRC_VER_ID",
+          "rule": "",
+          "change": "R10 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "STRC_UNIT_ID",
+          "logical": "구조단위ID",
+          "domain": "ID",
+          "words": "구조 · 단위",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "pk": 0,
+          "required": true,
+          "definition": "문서를 구성하는 장, 절, 항목 등의 개별 구조 단위를 구분하기 위해 부여한 식별자이다. 문서 내부의 계층과 위치 정보를 연결하는 데 사용한다.",
+          "korean": "N",
+          "source": "SIDDA.LGL_ONT_ANC_A.UNIT_ID",
+          "rule": "",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        }
+      ],
+      "source": "SIDDA.LGL_ONT_ANC_A",
+      "phase": "기존 골드 유지",
+      "change": "R10 컬럼 유지; 소프트 FK·일반 인덱스 적용",
+      "indexes": [
+        [
+          "DOC_LCT_HASH_VALU",
+          "ONTL_POST_ID"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "게시본의 원문 좌표별 해시를 계산해 게시 ID와 함께 적재한다. 활성 게시본과 조인하여 원문 도착 시 필요한 묶음만 조회한다."
+    },
+    {
+      "suffix": "VCTR_POST",
+      "short": "벡터게시",
+      "logical": "벡터게시내역",
+      "definition": "동일 원문 판본과 임베딩 모델 설정으로 생성하여 검증을 마친 벡터 묶음을 관리한다. 한 건은 불변 벡터 게시본 한 건이다.",
+      "columns": [
+        {
+          "name": "VCTR_POST_ID",
+          "logical": "벡터게시ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "domain": "ID",
+          "words": "벡터게시",
+          "pk": 1,
+          "required": true,
+          "definition": "검증한 벡터 게시본을 구분하는 식별값이다.",
+          "source": "LGL_VCTR_SET_S.PUB_ID",
+          "rule": "기존 canonical manifest digest 계약 유지; 새 조회 게시 ID 결속 시 새 ID",
+          "korean": "N",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "VCTR_POST_IFMN_CTNT",
+          "logical": "벡터게시정보내용",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "domain": "내용",
+          "words": "벡터게시정보",
+          "pk": 0,
+          "required": true,
+          "definition": "벡터 게시본의 원문 구성, 모델 설정, 분할 기준 및 검증 정보를 담은 내용이다.",
+          "source": "R3 PAYLOAD_JSON.manifest + 완료 영수증; R12 완료 메타 envelope",
+          "rule": "중복 키 없는 JSON. manifest 전체·profile·판본·원문 범위 보존. count/chain/registered_at/profile_sha256은 완료 메타로 보존. digest(manifest)=PK. READY 봉인 후 불변.",
+          "korean": "Y",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_VCTR_SET_S + 완료 검증 영수증",
+      "phase": "벡터 신규",
+      "change": "R11 7열 → R12 2열",
+      "indexes": [],
+      "kind": "SNAPSHOT",
+      "process": "Dataiku가 원천 판본을 고정해 구성·검증하고 봉인된 게시본만 사용 대상으로 전환한다."
+    },
+    {
+      "suffix": "VCTR_ITEM",
+      "short": "원문벡터",
+      "logical": "원문구간벡터내역",
+      "definition": "원문의 일정 구간에서 생성한 벡터와 해당 구간의 연결 정보를 관리한다. 한 건은 벡터 게시본 안의 원문 구간 한 건이다.",
+      "columns": [
+        {
+          "name": "VCTR_POST_ID",
+          "logical": "벡터게시ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "domain": "ID",
+          "words": "벡터게시",
+          "pk": 1,
+          "required": true,
+          "definition": "벡터가 속한 게시본의 식별값이다.",
+          "source": "LGL_VCTR_ITEM_S.PUB_ID",
+          "rule": "게시 완료 시 VCTR_POST 존재",
+          "korean": "N",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "VCTR_SEG_ID",
+          "logical": "벡터구간ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "domain": "ID",
+          "words": "벡터구간",
+          "pk": 2,
+          "required": true,
+          "definition": "원문 구간과 생성 입력을 구분하는 식별값이다.",
+          "source": "LGL_VCTR_ITEM_S.SEG_ID",
+          "rule": "기존 digest([query_release,meta]) 재현",
+          "korean": "N",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "DOC_ID",
+          "logical": "문서ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "domain": "ID",
+          "words": "문서",
+          "pk": 0,
+          "required": true,
+          "definition": "벡터 생성에 사용한 원문 문서의 식별값이다.",
+          "source": "META_JSON.document_id",
+          "rule": "해당 게시본 판본의 DOC_VER 존재; JSON과 일치",
+          "korean": "N",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "SRC_UNIT_ID",
+          "logical": "원문단위ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "50 BYTE",
+          "domain": "ID",
+          "words": "원문단위",
+          "pk": 0,
+          "required": true,
+          "definition": "검색 결과를 묶고 원문을 읽는 기준이 되는 원문 단위의 식별값이다.",
+          "source": "META_JSON.source_id",
+          "rule": "navigation source.id; 문서 구조의 STRC_UNIT_ID와 구분; 현재 권한으로 원문 조회",
+          "korean": "N",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(50)",
+            "base_size": "50",
+            "korean_multiplier": "1",
+            "physical_size": "50 BYTE",
+            "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+          }
+        },
+        {
+          "name": "VCTR_META_CTNT",
+          "logical": "벡터메타정보내용",
+          "type": "CLOB",
+          "dtype": "CLOB",
+          "size": "가변",
+          "domain": "내용",
+          "words": "벡터메타정보",
+          "pk": 0,
+          "required": true,
+          "definition": "원문 구조·본문 조각·구간 위치와 원문 및 입력 확인값을 담은 내용이다.",
+          "source": "LGL_VCTR_ITEM_S.META_JSON 전체",
+          "rule": "기존 META_JSON 전체 보존: document_id/source_id/unit_id/block_id/start/end/source_sha256/block_sha256/input_sha256. 일반 문서/원문 ID와 일치. 입력 해시는 삭제하지 않고 JSON에서 검증.",
+          "korean": "Y",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "내용 / CLOB",
+            "base_size": "가변",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변",
+            "basis": "CLOB에는 고정 문자열 길이 곱셈을 적용하지 않음."
+          }
+        },
+        {
+          "name": "EMBD_VCTR_VALU",
+          "logical": "임베딩벡터값",
+          "type": "VECTOR(*,FLOAT32)",
+          "dtype": "VECTOR",
+          "size": "가변 차원 / FLOAT32",
+          "domain": "값",
+          "words": "임베딩벡터",
+          "pk": 0,
+          "required": true,
+          "definition": "원문 구간의 의미를 임베딩 모델로 표현한 숫자 배열이다.",
+          "source": "LGL_VCTR_ITEM_S.EMBEDDING",
+          "rule": "실제 모델 차원·FLOAT32·유한값·0 아닌 norm·L2 정규화 확인",
+          "korean": "해당 없음",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VECTOR (기존 벡터안)",
+            "base_size": "가변 차원 / FLOAT32",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "가변 차원 / FLOAT32",
+            "basis": "벡터 차원은 문자열 길이가 아님. 기존 설계 유지; 벡터의 정식 인포타입명·현장 지원은 제공 자료에 없어 확인 완료로 표시하지 않음."
+          }
+        }
+      ],
+      "source": "SIDDS.LGL_VCTR_ITEM_S",
+      "phase": "벡터 신규",
+      "change": "R11 7열 → R12 6열",
+      "indexes": [
+        [
+          "VCTR_POST_ID",
+          "DOC_ID",
+          "SRC_UNIT_ID",
+          "VCTR_SEG_ID"
+        ]
+      ],
+      "kind": "SNAPSHOT",
+      "process": "Dataiku가 원천 판본을 고정해 구성·검증하고 봉인된 게시본만 사용 대상으로 전환한다."
+    },
+    {
+      "suffix": "VCTR_HEAD",
+      "short": "벡터선택",
+      "logical": "벡터게시선택내역",
+      "definition": "조회 게시본별로 현재 사용할 벡터 게시본과 변경 순서를 관리한다. 한 건은 조회 게시본 한 건의 벡터 선택 상태이다.",
+      "columns": [
+        {
+          "name": "RFRN_POST_HASH_VALU",
+          "logical": "조회게시해시값",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "domain": "값",
+          "words": "조회게시해시",
+          "pk": 1,
+          "required": true,
+          "definition": "벡터 선택의 기준이 되는 조회 게시본 식별값이다.",
+          "source": "R3 활성 게시본 manifest.query_id",
+          "rule": "SRCH_POST 존재; 조회 게시본당 HEAD 1행",
+          "korean": "N",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "값 / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "VCTR_POST_ID",
+          "logical": "벡터게시ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "dtype": "VARCHAR2",
+          "size": "100 BYTE",
+          "domain": "ID",
+          "words": "벡터게시",
+          "pk": 0,
+          "required": false,
+          "definition": "현재 선택한 벡터 게시본의 식별값이다. 선택이 없으면 비어 있다.",
+          "source": "R3 active_revision이 있는 PUB_ID",
+          "rule": "NULL이면 벡터 비활성; 대상 VCTR_POST의 조회 게시 ID 일치",
+          "korean": "N",
+          "change": "R12 신규 벡터 컬럼; R11 타입·정의 유지",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "ID / VARCHAR2(100)",
+            "base_size": "100",
+            "korean_multiplier": "1",
+            "physical_size": "100 BYTE",
+            "basis": "사진 및 사용자 후속 지시의 같은 도메인 100 재사용. 한글 직접 저장 열이 아니므로 3배 적용 없음."
+          }
+        },
+        {
+          "name": "CHAN_NO",
+          "logical": "변경순번",
+          "type": "NUMBER(30,0)",
+          "dtype": "NUMBER",
+          "size": "정밀도 30 / 소수자리 0",
+          "domain": "순번",
+          "words": "변경",
+          "pk": 0,
+          "required": true,
+          "definition": "벡터 게시본의 선택 상태가 바뀔 때마다 증가하는 순번이다.",
+          "source": "R3 active_revision; 신규 비활성 0",
+          "rule": "0 이상; 활성 시 1 이상; 이전 ID+순번 CAS 및 증가; A→B→A도 증가",
+          "korean": "해당 없음",
+          "change": "R14 도메인별 허용 형식 및 한글 바이트 정정",
+          "default": null,
+          "metadata_basis": {
+            "domain_format": "순번 / NUMBER(30,0)",
+            "base_size": "정밀도 30 / 소수자리 0",
+            "korean_multiplier": "해당 없음",
+            "physical_size": "정밀도 30 / 소수자리 0",
+            "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+          }
+        }
+      ],
+      "source": "R3 PAYLOAD_JSON.active_revision/manifest.query_id를 명시 열로 분리",
+      "phase": "벡터 신규",
+      "change": "R11 3열 → R12 3열",
+      "indexes": [],
+      "kind": "MASTER",
+      "process": "Dataiku가 원천 판본을 고정해 구성·검증하고 봉인된 게시본만 사용 대상으로 전환한다."
+    }
+  ],
+  "relationships": [
+    {
+      "id": "R01",
+      "child": "DOC_UNIT",
+      "child_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "parent": "DOC_VER",
+      "parent_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "condition": "필수",
+      "validation": "같은 판본의 문서가 존재해야 한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R02",
+      "child": "DOC_UNIT",
+      "child_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "UPPR_STRC_UNIT_ID"
+      ],
+      "parent": "DOC_UNIT",
+      "parent_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "STRC_UNIT_ID"
+      ],
+      "condition": "상위 ID가 있을 때",
+      "validation": "부모 누락·순환을 거절하고 루트는 NULL로 보존한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R03",
+      "child": "DOC_BLK",
+      "child_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "parent": "DOC_VER",
+      "parent_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "condition": "필수",
+      "validation": "본문이 속한 같은 판본의 문서를 확인한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R04",
+      "child": "DOC_BLK",
+      "child_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "STRC_UNIT_ID"
+      ],
+      "parent": "DOC_UNIT",
+      "parent_columns": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "STRC_UNIT_ID"
+      ],
+      "condition": "구조 ID가 있을 때",
+      "validation": "같은 문서·판본의 구조 단위를 확인한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R05",
+      "child": "SRCH_ROW",
+      "child_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "parent": "SRCH_POST",
+      "parent_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "condition": "게시 봉인 시 필수",
+      "validation": "행 종류별 건수·내용·manifest 해시를 확인한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R06",
+      "child": "SRCH_CHNL",
+      "child_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "parent": "SRCH_POST",
+      "parent_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "condition": "필수",
+      "validation": "완료된 게시본만 선택하며 이전 ID와 변경순번을 함께 비교한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R07",
+      "child": "ONTL_HEAD",
+      "child_columns": [
+        "ONTL_POST_ID"
+      ],
+      "parent": "ONTL_POST",
+      "parent_columns": [
+        "ONTL_POST_ID"
+      ],
+      "condition": "게시 ID가 있을 때",
+      "validation": "개념그룹 일치도 확인한다. NULL은 선택 중지다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R08",
+      "child": "ONTL_ANC",
+      "child_columns": [
+        "ONTL_POST_ID"
+      ],
+      "parent": "ONTL_POST",
+      "parent_columns": [
+        "ONTL_POST_ID"
+      ],
+      "condition": "필수",
+      "validation": "원문 위치 해시와 게시본의 모든 근거를 대조한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R09",
+      "child": "VCTR_ITEM",
+      "child_columns": [
+        "VCTR_POST_ID"
+      ],
+      "parent": "VCTR_POST",
+      "parent_columns": [
+        "VCTR_POST_ID"
+      ],
+      "condition": "게시 봉인 시 필수",
+      "validation": "건수·모델·입력·원문 구간을 모두 확인한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R10",
+      "child": "VCTR_HEAD",
+      "child_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "parent": "SRCH_POST",
+      "parent_columns": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "condition": "필수",
+      "validation": "조회 게시본마다 PK 1행으로 선택 상태를 관리한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    },
+    {
+      "id": "R11",
+      "child": "VCTR_HEAD",
+      "child_columns": [
+        "VCTR_POST_ID"
+      ],
+      "parent": "VCTR_POST",
+      "parent_columns": [
+        "VCTR_POST_ID"
+      ],
+      "condition": "게시 ID가 있을 때",
+      "validation": "대상 벡터 게시본의 조회 게시 ID 일치와 CAS를 확인한다.",
+      "enforcement": "SOFT · 코드 배치 검증; 물리 FK 없음"
+    }
+  ],
+  "json_contracts": [
+    [
+      "게시 관계",
+      "SRCH_POST JSON→SRC_POST; VCTR_POST JSON→SRCH_POST",
+      "게시본 PK를 먼저 읽고 manifest.query_id/source_release_id/dataset_version을 원천과 대조. JSON에 들어갔어도 검증 유지."
+    ],
+    [
+      "벡터 선택",
+      "VCTR_HEAD PK=query ID; 선택 pub+순번",
+      "HEAD의 query ID와 선택한 게시 manifest.query_id 일치. NULL 비활성, stale CAS 및 A→B→A 차단."
+    ],
+    [
+      "벡터 원문",
+      "ITEM의 DOC_ID/SRC_UNIT_ID + META",
+      "manifest.documents·판본·현재 ACL, 구조/블록/span/원문·입력 해시 검증. 원문 ID와 구조 ID 혼용 금지."
+    ],
+    [
+      "벡터 완료",
+      "POST JSON의 봉인된 manifest+completion",
+      "실제 ITEM count/chain·프로필·차원·유한값 검증. BUILDING/lease/fence는 Agent 제어. 봉인 전 읽기 금지."
+    ],
+    [
+      "전문검색",
+      "기존 SRCH_ROW 종류별 논리 행",
+      "토큰 일반 lookup으로 좁힌 뒤 위치 JSON 확장. global phrase df/BM25·순위·total/cursor·권한 유지."
+    ],
+    [
+      "연결 관계",
+      "SRCH_ROW의 lookup/owner/target/doc",
+      "행 종류별 대상과 후보/미해결 상태 보존. 범위 먼저 좁히고 배치 조회. 모든 target을 문서 FK로 간주하지 않음."
+    ],
+    [
+      "원문 순서",
+      "현행 numeric BLOCK_ID 범위·정렬",
+      "일반 문서/판본 키 필터와 원천 순서 유지. 숫자10이2보다 먼저 오는 문자열 정렬로 교체 금지."
+    ],
+    [
+      "적재·봉인",
+      "공유 PK 공간별 Agent writer 제어",
+      "배치마다 fencing 확인→쓰기 중지/전수 검증→완료 manifest→짧은 HEAD CAS. 완료 뒤 불변, 자동 삭제 없음."
+    ],
+    [
+      "온톨로지",
+      "ONTL_POST/HEAD/ANC Gold; WORK/EVT Agent",
+      "동일 Oracle 트랜잭션 가능 여부 확인. 다른 트랜잭션이면 outbox 계약 선행."
+    ]
+  ],
+  "reduction": [
+    [
+      "FTS_UNIT / FTS_POST / FTS_STAT",
+      19,
+      "전용 FTS 표 3개를 추가하지 않음",
+      "기존 SRCH_ROW의 unit / unit_fts_length / unit_fts_posting / unit_fts_stats와 manifest 유지",
+      "검색·토큰·위치·통계 데이터 삭제 없음. 일반 lookup/owner/target/doc 인덱스 유지."
+    ],
+    [
+      "SRCH_POST",
+      2,
+      "원문 게시 ID·판본의 일반 컬럼 추가 취소",
+      "기존 RFRN_POST_IFMN_CTNT의 manifest.source_release_id / dataset_version",
+      "게시본 PK 조회 후 한 manifest에서 검증. JSON 조건으로 전체 게시본을 검색하지 않음."
+    ],
+    [
+      "DOC_BLK",
+      1,
+      "BODY_SLC_ORD_NO 추가 취소",
+      "기존 원문 ID와 현재 범위/수치 정렬 계약 유지",
+      "판본·문서를 먼저 제한. 큰 단일 문서의 숫자 범위/정렬 최적화는 남음."
+    ],
+    [
+      "VCTR_POST",
+      5,
+      "조회/판본/profile hash/count/등록일시의 별도 컬럼 제거",
+      "VCTR_POST_IFMN_CTNT의 기존 manifest 및 완료 메타",
+      "HEAD PK로 게시본을 찾고 게시 JSON 한 행 검증. 전체 JSON 스캔/함수 인덱스 불필요."
+    ],
+    [
+      "VCTR_ITEM",
+      1,
+      "INPT_HASH_VALU 별도 컬럼 제거",
+      "VCTR_META_CTNT.input_sha256",
+      "선택 구간 PK 배치 조회 후 입력/모델 비교. 전체 입력 해시 검색용 인덱스는 두지 않음."
+    ]
+  ],
+  "change_map": [
+    [
+      "물리 계약",
+      "physical_mapping.py / physical_mapping.yaml",
+      "R10 10표와 벡터3표의 Gold 매핑·일반 인덱스·소프트 검증. dev_silver 검사는 유지."
+    ],
+    [
+      "원문·조회",
+      "oracle_migration.py / oracle_query_publish.py / oracle_query_catalog.py",
+      "기존 generic FTS·manifest 논리 계약 보존. Gold 명명/타입/봉인과 소비자 연결."
+    ],
+    [
+      "벡터",
+      "R3 payload의 initial_vector.py / vector_publish.py / vector_silver/schema.py·publisher.py",
+      "2표6열 검사를 Gold3표11열로 전환. 일반 DOC/SRC·별도 HEAD·완료 JSON·Agent 제어 연결."
+    ],
+    [
+      "FTS/관계 성능",
+      "oracle_query_fulltext.py / oracle_query_db.py / oracle_query_index.py",
+      "페이지 반복 scoring과 IN/JOIN 범위 선제한을 실제 SQL에서 개선. 새 표 생성만으로 해결된다고 하지 않음."
+    ],
+    [
+      "온톨로지·실행",
+      "ontology_work/repository.py·runtime.py / service.py / oracle_query_service.py",
+      "Gold/Agent 트랜잭션과 실제 매핑/code pin 전환·재개·롤백 확인."
+    ]
+  ]
+}

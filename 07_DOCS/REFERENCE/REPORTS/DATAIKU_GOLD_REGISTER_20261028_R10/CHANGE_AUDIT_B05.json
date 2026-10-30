@@ -1,0 +1,194 @@
+[
+  {
+    "sheet": "00_테이블목록",
+    "cell": "A4",
+    "before": "B05 · R9 · 명칭 대응 및 업무 정의 | 엔티티명을 누르면 상세 컬럼 시트로 이동합니다.",
+    "after": "B05 · R10 · 명칭 대응 및 업무 정의 | 엔티티명을 누르면 상세 컬럼 시트로 이동합니다."
+  },
+  {
+    "sheet": "00_테이블목록",
+    "cell": "C10",
+    "before": "IDD_B05_LGL_SRC_PBLS",
+    "after": "IDD_B05_LGL_SRC_POST"
+  },
+  {
+    "sheet": "00_테이블목록",
+    "cell": "C11",
+    "before": "IDD_B05_LGL_SRCH_PBLS",
+    "after": "IDD_B05_LGL_SRCH_POST"
+  },
+  {
+    "sheet": "00_테이블목록",
+    "cell": "C14",
+    "before": "IDD_B05_LGL_ONT_PUB",
+    "after": "IDD_B05_LGL_ONTL_POST"
+  },
+  {
+    "sheet": "00_테이블목록",
+    "cell": "C15",
+    "before": "IDD_B05_LGL_ONT_HEAD",
+    "after": "IDD_B05_LGL_ONTL_HEAD"
+  },
+  {
+    "sheet": "00_테이블목록",
+    "cell": "C16",
+    "before": "IDD_B05_LGL_ONT_ANC",
+    "after": "IDD_B05_LGL_ONTL_ANC"
+  },
+  {
+    "sheet": "01_문서판본",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "02_문서구조",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "03_원문본문",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "04_원문게시",
+    "cell": "A2",
+    "before": "테이블명(물리명·영문): IDD_B05_LGL_SRC_PBLS",
+    "after": "테이블명(물리명·영문): IDD_B05_LGL_SRC_POST"
+  },
+  {
+    "sheet": "04_원문게시",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "05_조회게시",
+    "cell": "A2",
+    "before": "테이블명(물리명·영문): IDD_B05_LGL_SRCH_PBLS",
+    "after": "테이블명(물리명·영문): IDD_B05_LGL_SRCH_POST"
+  },
+  {
+    "sheet": "05_조회게시",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "06_검색관계",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "07_조회채널",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "07_조회채널",
+    "cell": "J8",
+    "before": "NOT NULL\nFK → IDD_B05_LGL_SRCH_PBLS (RFRN_POST_HASH_VALU)",
+    "after": "NOT NULL\nFK → IDD_B05_LGL_SRCH_POST (RFRN_POST_HASH_VALU)"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "cell": "A2",
+    "before": "테이블명(물리명·영문): IDD_B05_LGL_ONT_PUB",
+    "after": "테이블명(물리명·영문): IDD_B05_LGL_ONTL_POST"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "cell": "C7",
+    "before": "ONT_PBLS_ID",
+    "after": "ONTL_POST_ID"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "cell": "G7",
+    "before": "64 BYTE",
+    "after": "100 BYTE"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "cell": "J7",
+    "before": "NOT NULL\nPK (ONT_PBLS_ID)",
+    "after": "NOT NULL\nPK (ONTL_POST_ID)"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "cell": "A2",
+    "before": "테이블명(물리명·영문): IDD_B05_LGL_ONT_HEAD",
+    "after": "테이블명(물리명·영문): IDD_B05_LGL_ONTL_HEAD"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "cell": "C8",
+    "before": "ONT_PBLS_ID",
+    "after": "ONTL_POST_ID"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "cell": "G8",
+    "before": "64 BYTE",
+    "after": "100 BYTE"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "cell": "J8",
+    "before": "NULL 허용\nFK → IDD_B05_LGL_ONT_PUB (ONT_PBLS_ID)",
+    "after": "NULL 허용\nFK → IDD_B05_LGL_ONTL_POST (ONTL_POST_ID)"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "A2",
+    "before": "테이블명(물리명·영문): IDD_B05_LGL_ONT_ANC",
+    "after": "테이블명(물리명·영문): IDD_B05_LGL_ONTL_ANC"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "H2",
+    "before": "B05 · 골드 등록용 R9",
+    "after": "B05 · 골드 등록용 R10"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "C7",
+    "before": "ONT_PBLS_ID",
+    "after": "ONTL_POST_ID"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "G7",
+    "before": "64 BYTE",
+    "after": "100 BYTE"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "J7",
+    "before": "NOT NULL\nPK (ONT_PBLS_ID, DOC_LCT_HASH_VALU)\nFK → IDD_B05_LGL_ONT_PUB (ONT_PBLS_ID)",
+    "after": "NOT NULL\nPK (ONTL_POST_ID, DOC_LCT_HASH_VALU)\nFK → IDD_B05_LGL_ONTL_POST (ONTL_POST_ID)"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "cell": "J8",
+    "before": "NOT NULL\nPK (ONT_PBLS_ID, DOC_LCT_HASH_VALU)",
+    "after": "NOT NULL\nPK (ONTL_POST_ID, DOC_LCT_HASH_VALU)"
+  }
+]

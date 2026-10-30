@@ -1,0 +1,96 @@
+골드 컬럼 매핑 사용 안내 — 2026-10-30
+
+현재 로컬 적용: 실제 Oracle 컬럼9종/16위치를 사진의 이름으로 변경했다.
+기본 선택은 ACTIVE_MAPPING.json → mapping_local_current.json이다.
+테이블13개는 등록된 B03 이름과 이미 일치한다. 데이터 타입·크기는 이름 변경 전 값을 보존했다.
+mapping_r14_photos.json은 사진의 이름+R14 크기 전체를 나타내는 등록 모델용 파일이며,
+현재 로컬의 이름만 바꾼 실제 크기까지 반영한 파일은 mapping_local_current.json이다.
+
+사진 6장의 고유 물리명38개를 13테이블·60컬럼에 반영했다.
+각 대상의 매핑은 JSON 한 파일이다. 별도 DB 매핑 테이블을 조회하지 않고,
+연결을 열 때 파일을 검증·고정한 뒤 SQL의 테이블/컬럼 이름에 적용한다.
+원문·검색·용어·벡터·온톨로지의 내부 논리 키와 JSON 내용·해시는 유지한다.
+
+사진 기준 주요 변경
+DOC_ID → RGLT_DOC_ID
+DOC_NAME → RGLT_DOC_NAME
+ADD_INFO_TEXT_OMIT_YN → ADDN_IFMN_UN_APPN_YN
+DOC_POST_HASH_VALU → BODY_POST_HASH_VALU
+DOC_POST_IFMN_CTNT → BODY_POST_IFMN_CTNT
+CHAN_NO → CHAN_ORD
+SRC_UNIT_ID → BODY_UNIT_ID
+VCTR_META_CTNT → VCTR_DTLS_IFMN_CTNT
+EMBD_VCTR_VALU → EMBD_VCTR
+나머지29개 용어도 매핑 파일에 명시했다. 이름 변경은9종·전체 등록 용어는38종이다.
+각 테이블에서 같은 문서ID/변경번호가 반복되는 위치까지 모두 적용한다.
+
+설정
+- owner: 실제 골드 스키마. --owner로 명시적으로 바꿀 수 있다.
+- tables.<논리 테이블>.name: 실제 테이블명. 사진에는 컬럼만 있어 기존 B03 이름을 유지했다.
+- tables.<논리 테이블>.columns.<논리 키>.name: 실제 컬럼명.
+- type/required/default: 해당 대상의 실제 타입·길이와 필수/기본값 계약.
+파일은 코드와 같은 신뢰 수준의 운영 설정이다. 일반 사용자 요청으로 매핑을 지정하지 않는다.
+중복 컬럼·누락·알 수 없는 키·잘못된 SQL 식별자는 연결 전에 거절한다.
+연결 후 매핑 객체는 불변이며, 매핑의 대상 해시를 요청 binding에 포함한다.
+ALL_TAB_COLUMNS에서 이름·타입·BYTE 길이·정밀도·NULL 허용 여부를 먼저 대조한다.
+실제 DB가 다르면 GOLD_MAP_TARGET_MISMATCH로 종료한다. 기존 이름으로 자동 우회하지 않는다.
+
+실행 — 저장소 루트 기준
+1. 현재 로컬 DB는 실제 이름 변경을 마쳤다. 기본 명령은 활성 매핑을 자동으로 읽는다.
+
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py health
+
+명시하려면 --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_current.json을 지정한다.
+mapping_r12_local.json 및 --config config_b03.json은 변경 전 이름용이다. 현재 DB에서 사용하지 않는다.
+
+2. 사진의 이름과 R14 크기를 모두 적용해 별도로 생성한 DB에는 다음 파일을 지정한다.
+아래 GOLD_OWNER와 자격증명 경로는 해당 환경 값으로 바꾼다. 자격증명 파일 권한은0600이다.
+
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r14_photos.json --owner GOLD_OWNER --credentials /secure/gold-readonly.json health
+
+--channel 또는 --release-id로 그 DB의 검증된 검색 게시본을 지정할 수 있다.
+--documents에는 인증된 허용 문서 ID JSON 배열을 주며 기존21문서보다 좁힐 수만 있다.
+이 엔진 연결기는 여전히 MAIN120/rev036의 고정 Gold 게시 계약에 결속된다.
+현장 전체 문서·새 검색 게시 형식·현재 MAIN123 전체 서빙을 자동 대체하지 않는다.
+
+3. 배포에서 파일 내용도 고정하려면 --mapping-sha256을 함께 지정한다.
+제공한 사진 매핑 SHA256:
+1dfa55a0da1be6b1ecffbda2016d43046457aa5446e9098c6ece93190973cc34
+owner/테이블명을 파일에서 수정했다면 수정한 파일의 SHA256을 사용한다.
+--config는 종전 연결기 호환용이며 --mapping과 동시에 사용할 수 없다.
+로컬 기본 실행은 ACTIVE_MAPPING.json의 파일 해시를 자동으로 검증한다.
+
+Python API
+현재 로컬은 connect.open_store(documents=authorized_ids)로 활성 매핑을 사용한다.
+별도 대상은 아래처럼 매핑·owner·접속·게시본을 명시한다.
+with connect.open_store(mapping=".../mapping_r14_photos.json", owner="GOLD_OWNER",
+                        credentials="/secure/gold-readonly.json", documents=authorized_ids,
+                        release_id=verified_query_release) as (store, request, transport):
+    # 기존 create_app의 data_store=store로 사용한다.
+    ports = store.gold_ports
+    # ports.ontology: 같은 요청의 SQL 예산/권한에 결속된 읽기 전용 온톨로지 repository
+    # ports.source_reader(anchor): 같은 Gold 원문/판본/행 해시를 검증하는 작성용 reader
+    # ports.glossary_binding(): 같은 Gold 용어집의 저장 참조 복원/대조 포트 (사용 후 reader.close)
+
+온톨로지
+- 활성 또는 명시한 매핑을 사용하면 원문 도착 시 사용하는 ontology_work.runtime.repository에 Gold 조회 포트를 연결한다.
+  연결 문맥이 종료되면 이전 factory를 복구한다. 기존과 동일하게 전용 새 프로세스에서 사용한다.
+- RAG 설정 candidate_navigation.ontology_enabled=true 및 ontology_context.mode=DB에서 조회한다.
+  이 변경은 기본 profile의 OFF를 자동으로 바꾸지 않는다.
+- ONTL_POST/HEAD/ANC에 승인 게시 데이터가 있어야 실제 지식이 전달된다. 빈 테이블은 EMPTY다.
+- 승인 지식의 내용 hash·원문 판본·권한·용어집 참조 대조를 유지한다.
+- 저장/게시 작업에서는 ports.mapping.ontology_repository(writer_connect,
+  agent_owner="AGENT_OWNER", read_only=False)를 기존 Workflow/DomainWorkflow에 주입한다.
+  writer_connect는 같은 Oracle DB의 필요한 권한을 가진 DB-API 연결 factory다.
+  작업/감사2테이블은 명시한 Agent owner의 기존 LGL_ONT_WORK_A/LGL_ONT_EVT_A를 사용한다.
+  게시3테이블만 Gold 매핑을 사용하며, 게시·원문 연결·활성 선택·Agent 감사는 같은 트랜잭션이다.
+  기존 운영 설정의 ontology_work.configuration.repository가 이 옵션을 자동으로 읽는 것은 아니다.
+- 이 작업에서 실제 법률 지식을 자동 승인하거나 현재 골드에 적재하지 않았다.
+
+검증
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/test_mapping.py
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/verify_mapping_oracle.py
+두 번째는 기존 로컬 테스트 컨테이너에서만 작동한다. 임시 Gold/Agent 스키마를 만들고 제거하며,
+합성 자료로 새 물리 이름·역순 컬럼·원문/검색/벡터·온톨로지 게시/조회·권한/CAS/롤백을 검증한다.
+실제 운영 데이터·현장 DB를 변경하거나 외부 모델을 호출하지 않는다.
+상세 결과: 09_ARTIFACTS/AUDITS/20261030-gold-column-mapping/변경과_검증결과.txt

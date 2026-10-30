@@ -1,0 +1,14 @@
+﻿table,logical,columns,source,change
+DOC_VER,문서판본내역,5,SIDDS.LGL_DOC_VER_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+DOC_UNIT,문서구조내역,5,SIDDS.LGL_DOC_UNIT_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+DOC_BLK,문서본문내역,8,SIDDS.LGL_DOC_BLK_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+SRC_POST,원문게시내역,4,SIDDS.LGL_SRC_PBLS_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+SRCH_POST,조회게시내역,2,SIDDS.LGL_SRCH_PBLS_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+SRCH_ROW,검색관계내역,9,SIDDS.LGL_SRCH_ROW_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+SRCH_CHNL,조회채널내역,3,SIDDS.LGL_SRCH_CHNL_S,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+ONTL_POST,온톨로지게시내역,5,SIDDA.LGL_ONT_PUB_A,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+ONTL_HEAD,온톨로지선택내역,3,SIDDA.LGL_ONT_HEAD_A,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+ONTL_ANC,원문지식연결내역,5,SIDDA.LGL_ONT_ANC_A,R10 컬럼 유지; 소프트 FK·일반 인덱스 적용
+VCTR_POST,벡터게시내역,2,SIDDS.LGL_VCTR_SET_S + 완료 검증 영수증,R11 7열 → R12 2열
+VCTR_ITEM,원문구간벡터내역,6,SIDDS.LGL_VCTR_ITEM_S,R11 7열 → R12 6열
+VCTR_HEAD,벡터게시선택내역,3,R3 PAYLOAD_JSON.active_revision/manifest.query_id를 명시 열로 분리,R11 3열 → R12 3열

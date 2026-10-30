@@ -1,0 +1,123 @@
+{
+  "source_photo": "sources/metadata_domain_example.jpg",
+  "source_photo_sha256": "7a647f620656786827b6a19bc1a041426a16110ee4d08dac22415e49cf4b90f2",
+  "observed_domain": "데이터값",
+  "observed_physical_suffix": "DATA_VALU",
+  "observed_infotype_example": "데이터값VC60",
+  "infotype_example_is_not_our_required_length": true,
+  "changes": [
+    {
+      "table": "IDD_A03_LGL_DOC_VER",
+      "current_column": "SRC_DATA_HASH_VAL",
+      "before": {
+        "name": "SRC_DATA_HASH_VALU",
+        "logical": "원본자료해시값",
+        "words": "원본+자료+해시+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "SRC_DATA_HASH_DATA_VALU",
+        "logical": "원본자료해시데이터값",
+        "words": "원본+자료+해시+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_DOC_BLK",
+      "current_column": "SRC_DATA_HASH_VAL",
+      "before": {
+        "name": "SRC_DATA_HASH_VALU",
+        "logical": "원본자료해시값",
+        "words": "원본+자료+해시+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "SRC_DATA_HASH_DATA_VALU",
+        "logical": "원본자료해시데이터값",
+        "words": "원본+자료+해시+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_SRCH_ROW",
+      "current_column": "ROW_KIND_CD",
+      "before": {
+        "name": "LGL_ROW_KIND_VALU",
+        "logical": "법규조회유형값",
+        "words": "법규+조회+유형+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "LGL_ROW_KIND_DATA_VALU",
+        "logical": "법규조회유형데이터값",
+        "words": "법규+조회+유형+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_SRCH_ROW",
+      "current_column": "SRCH_KEY_ID",
+      "before": {
+        "name": "LGL_SRCH_KEY_VALU",
+        "logical": "법규검색키값",
+        "words": "법규+검색+키+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "LGL_SRCH_KEY_DATA_VALU",
+        "logical": "법규검색키데이터값",
+        "words": "법규+검색+키+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_SRCH_ROW",
+      "current_column": "ROW_HASH_VAL",
+      "before": {
+        "name": "LGL_ROW_HASH_VALU",
+        "logical": "법규조회행해시값",
+        "words": "법규+조회+행+해시+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "LGL_ROW_HASH_DATA_VALU",
+        "logical": "법규행해시데이터값",
+        "words": "법규+행+해시+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_ONT_PUB",
+      "current_column": "PKG_HASH_VAL",
+      "before": {
+        "name": "ONT_PKG_HASH_VALU",
+        "logical": "지식게시해시값",
+        "words": "지식+게시+해시+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "ONT_PKG_HASH_DATA_VALU",
+        "logical": "지식게시해시데이터값",
+        "words": "지식+게시+해시+데이터값",
+        "domain": "데이터값"
+      }
+    },
+    {
+      "table": "IDD_A03_LGL_ONT_ANC",
+      "current_column": "ANC_HASH_VAL",
+      "before": {
+        "name": "SRC_ANCHOR_HASH_VALU",
+        "logical": "원문좌표해시값",
+        "words": "원문+좌표+해시+값",
+        "domain": "값"
+      },
+      "after": {
+        "name": "SRC_ANCHOR_HASH_DATA_VALU",
+        "logical": "원문좌표해시데이터값",
+        "words": "원문+좌표+해시+데이터값",
+        "domain": "데이터값"
+      }
+    }
+  ],
+  "registration_verified": false
+}

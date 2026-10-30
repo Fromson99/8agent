@@ -1,0 +1,888 @@
+[
+  {
+    "sheet": "01_문서판본",
+    "sequence": 1,
+    "old_logical": "명세해시데이터값",
+    "logical": "명세해시값",
+    "old_physical": "MNFST_HASH_DATA_VALU",
+    "physical": "MNFST_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "명세",
+      "해시"
+    ],
+    "definition": "데이터 구성을 기록한 명세 파일(manifest.json)의 SHA-256 해시값. 함께 구축한 데이터 버전을 구분한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "01_문서판본",
+    "sequence": 2,
+    "old_logical": "법규문서ID",
+    "logical": "문서ID",
+    "old_physical": "LGL_DOC_ID",
+    "physical": "DOC_ID",
+    "domain": "ID",
+    "words": [
+      "문서"
+    ],
+    "definition": "문서를 구분하고 문서 구조·본문·관련 지식을 연결하는 식별값. 같은 명세해시값 안에서 문서를 구분한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "01_문서판본",
+    "sequence": 3,
+    "old_logical": "법규문서명내용",
+    "logical": "문서명",
+    "old_physical": "LGL_DOC_NAME_CTNT",
+    "physical": "DOC_NAME",
+    "domain": "명",
+    "words": [
+      "문서"
+    ],
+    "definition": "문서의 이름 또는 제목. 현재 원천 표시명에 경로가 포함된 경우 그 표시명을 보존한다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "01_문서판본",
+    "sequence": 4,
+    "old_logical": "원본자료해시데이터값",
+    "logical": "문서해시값",
+    "old_physical": "SRC_DATA_HASH_DATA_VALU",
+    "physical": "DOC_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "문서",
+      "해시"
+    ],
+    "definition": "원본 문서 파일에 대해 기록된 전체 SHA-256 해시값. 파일의 동일 여부와 내용 변경을 확인한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "01_문서판본",
+    "sequence": 5,
+    "old_logical": "법규문서JSON내용",
+    "logical": "문서부가정보내용",
+    "old_physical": "LGL_DOC_JSON_CTNT",
+    "physical": "DOC_ADD_INFO_CTNT",
+    "domain": "내용",
+    "words": [
+      "문서",
+      "부가",
+      "정보"
+    ],
+    "definition": "문서의 파일명·경로·출처·담당 팀 및 구조화 관련 부가정보를 묶어 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "02_문서구조",
+    "sequence": 1,
+    "old_logical": "명세해시데이터값",
+    "logical": "명세해시값",
+    "old_physical": "MNFST_HASH_DATA_VALU",
+    "physical": "MNFST_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "명세",
+      "해시"
+    ],
+    "definition": "데이터 구성을 기록한 명세 파일(manifest.json)의 SHA-256 해시값. 함께 구축한 데이터 버전을 구분한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "02_문서구조",
+    "sequence": 2,
+    "old_logical": "법규문서ID",
+    "logical": "문서ID",
+    "old_physical": "LGL_DOC_ID",
+    "physical": "DOC_ID",
+    "domain": "ID",
+    "words": [
+      "문서"
+    ],
+    "definition": "문서를 구분하고 문서 구조·본문·관련 지식을 연결하는 식별값. 같은 명세해시값 안에서 문서를 구분한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "02_문서구조",
+    "sequence": 3,
+    "old_logical": "법규구조단위ID",
+    "logical": "구조단위ID",
+    "old_physical": "LGL_UNIT_ID",
+    "physical": "STRCT_UNIT_ID",
+    "domain": "ID",
+    "words": [
+      "구조",
+      "단위"
+    ],
+    "definition": "문서 안의 장·절·조·항·호 등 구조 단위를 구분하는 식별값. 문서ID와 함께 해당 위치를 찾는다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "02_문서구조",
+    "sequence": 4,
+    "old_logical": "상위법규구조단위ID",
+    "logical": "상위구조단위ID",
+    "old_physical": "PRNT_LGL_UNIT_ID",
+    "physical": "PRNT_STRCT_UNIT_ID",
+    "domain": "ID",
+    "words": [
+      "상위",
+      "구조",
+      "단위"
+    ],
+    "definition": "같은 문서에서 바로 위에 있는 구조단위ID. 문서의 계층 구조를 연결하며 최상위 단위는 비워 둔다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "02_문서구조",
+    "sequence": 5,
+    "old_logical": "법규구조JSON내용",
+    "logical": "구조단위부가정보내용",
+    "old_physical": "LGL_UNIT_JSON_CTNT",
+    "physical": "STRCT_UNIT_ADD_INFO_CTNT",
+    "domain": "내용",
+    "words": [
+      "구조",
+      "단위",
+      "부가",
+      "정보"
+    ],
+    "definition": "조문 번호·제목·계층·원문 위치 등 구조 단위의 세부 정보를 묶어 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 1,
+    "old_logical": "명세해시데이터값",
+    "logical": "명세해시값",
+    "old_physical": "MNFST_HASH_DATA_VALU",
+    "physical": "MNFST_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "명세",
+      "해시"
+    ],
+    "definition": "데이터 구성을 기록한 명세 파일(manifest.json)의 SHA-256 해시값. 함께 구축한 데이터 버전을 구분한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 2,
+    "old_logical": "법규문서ID",
+    "logical": "문서ID",
+    "old_physical": "LGL_DOC_ID",
+    "physical": "DOC_ID",
+    "domain": "ID",
+    "words": [
+      "문서"
+    ],
+    "definition": "문서를 구분하고 문서 구조·본문·관련 지식을 연결하는 식별값. 같은 명세해시값 안에서 문서를 구분한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 3,
+    "old_logical": "법규본문조각ID",
+    "logical": "본문조각ID",
+    "old_physical": "LGL_BLK_ID",
+    "physical": "TEXT_BLK_ID",
+    "domain": "ID",
+    "words": [
+      "본문",
+      "조각"
+    ],
+    "definition": "문서 안의 원문 본문 조각을 구분하는 식별값. 문서ID와 함께 해당 본문을 조회한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 4,
+    "old_logical": "법규구조단위ID",
+    "logical": "구조단위ID",
+    "old_physical": "LGL_UNIT_ID",
+    "physical": "STRCT_UNIT_ID",
+    "domain": "ID",
+    "words": [
+      "구조",
+      "단위"
+    ],
+    "definition": "문서 안의 장·절·조·항·호 등 구조 단위를 구분하는 식별값. 문서ID와 함께 해당 위치를 찾는다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 5,
+    "old_logical": "법규원문내용",
+    "logical": "원문내용",
+    "old_physical": "LGL_TEXT_CTNT",
+    "physical": "SRC_TEXT_CTNT",
+    "domain": "내용",
+    "words": [
+      "원문"
+    ],
+    "definition": "문서에서 추출한 실제 원문 본문. 답변의 근거를 읽고 인용하는 데 사용한다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 6,
+    "old_logical": "원본자료해시데이터값",
+    "logical": "문서해시값",
+    "old_physical": "SRC_DATA_HASH_DATA_VALU",
+    "physical": "DOC_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "문서",
+      "해시"
+    ],
+    "definition": "원본 문서 파일에 대해 기록된 전체 SHA-256 해시값. 파일의 동일 여부와 내용 변경을 확인한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 7,
+    "old_logical": "본문조각JSON내용",
+    "logical": "본문조각부가정보내용",
+    "old_physical": "LGL_BLK_JSON_CTNT",
+    "physical": "TEXT_BLK_ADD_INFO_CTNT",
+    "domain": "내용",
+    "words": [
+      "본문",
+      "조각",
+      "부가",
+      "정보"
+    ],
+    "definition": "본문 조각의 원문 위치·출처 등 세부 정보를 묶어 저장한 내용. 중복 본문이 생략되면 원문내용과 함께 읽는다. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "03_원문본문",
+    "sequence": 8,
+    "old_logical": "JSON본문생략여부",
+    "logical": "부가정보본문생략여부",
+    "old_physical": "JSON_TXT_OMIT_YN",
+    "physical": "ADD_INFO_TEXT_OMIT_YN",
+    "domain": "여부",
+    "words": [
+      "부가",
+      "정보",
+      "본문",
+      "생략"
+    ],
+    "definition": "본문 부가정보에서 중복 본문을 생략했는지 표시한다. Y는 생략, N은 미생략, NULL은 미지정이다. 원문내용의 유무와는 별개다.",
+    "type": "CHAR",
+    "length": "1",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "04_원문게시",
+    "sequence": 1,
+    "old_logical": "원문게시ID",
+    "logical": "원문게시ID",
+    "old_physical": "SRC_PBLS_ID",
+    "physical": "SRC_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "원문",
+      "게시"
+    ],
+    "definition": "검증이 끝난 원문 데이터 묶음의 게시본을 구분하는 식별값. 사용할 원문 데이터 버전을 조회할 때 사용한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "04_원문게시",
+    "sequence": 2,
+    "old_logical": "명세해시데이터값",
+    "logical": "명세해시값",
+    "old_physical": "MNFST_HASH_DATA_VALU",
+    "physical": "MNFST_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "명세",
+      "해시"
+    ],
+    "definition": "데이터 구성을 기록한 명세 파일(manifest.json)의 SHA-256 해시값. 함께 구축한 데이터 버전을 구분한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "04_원문게시",
+    "sequence": 3,
+    "old_logical": "원문게시JSON내용",
+    "logical": "원문게시정보내용",
+    "old_physical": "SRC_PBLS_JSON_CTNT",
+    "physical": "SRC_PBLS_INFO_CTNT",
+    "domain": "내용",
+    "words": [
+      "원문",
+      "게시",
+      "정보"
+    ],
+    "definition": "원문 게시본의 데이터 버전·원문 건수·관련 파일 목록·검증 정보 등을 묶어 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "04_원문게시",
+    "sequence": 4,
+    "old_logical": "원문게시등록일시",
+    "logical": "등록일시",
+    "old_physical": "SRC_PBLS_REG_DATE_TIME",
+    "physical": "REG_DATE_TIME",
+    "domain": "일시",
+    "words": [
+      "등록"
+    ],
+    "definition": "원문 게시정보가 DB에 등록된 날짜와 시간. 시간대 정보를 함께 저장한다.",
+    "type": "TIMESTAMP\nWITH TIME ZONE",
+    "length": "—",
+    "korean_before": "해당 없음",
+    "korean": "해당 없음"
+  },
+  {
+    "sheet": "05_조회게시",
+    "sequence": 1,
+    "old_logical": "법규조회게시ID",
+    "logical": "조회게시ID",
+    "old_physical": "SRCH_PBLS_ID",
+    "physical": "SRCH_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "조회",
+      "게시"
+    ],
+    "definition": "원문과 검색 자료를 함께 사용할 조회 게시본의 식별값. 조회 자료와 조회 채널을 같은 게시본에 연결한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "05_조회게시",
+    "sequence": 2,
+    "old_logical": "조회명세JSON내용",
+    "logical": "조회게시정보내용",
+    "old_physical": "SRCH_MNFST_JSON_CTNT",
+    "physical": "SRCH_PBLS_INFO_CTNT",
+    "domain": "내용",
+    "words": [
+      "조회",
+      "게시",
+      "정보"
+    ],
+    "definition": "조회 게시본이 사용하는 원문 게시본·데이터 버전·자료 종류·건수·해시 등을 묶어 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 1,
+    "old_logical": "법규조회게시ID",
+    "logical": "조회게시ID",
+    "old_physical": "SRCH_PBLS_ID",
+    "physical": "SRCH_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "조회",
+      "게시"
+    ],
+    "definition": "원문과 검색 자료를 함께 사용할 조회 게시본의 식별값. 조회 자료와 조회 채널을 같은 게시본에 연결한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 2,
+    "old_logical": "법규조회유형데이터값",
+    "logical": "조회자료유형값",
+    "old_physical": "LGL_ROW_KIND_DATA_VALU",
+    "physical": "SRCH_DATA_KIND_VALU",
+    "domain": "값",
+    "words": [
+      "조회",
+      "자료",
+      "유형"
+    ],
+    "definition": "조회 자료가 문서 구조·용어·정의·참조 등 어느 종류인지 구분하는 값. 해당 게시본에 정의된 유형을 사용한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 3,
+    "old_logical": "법규조회행ID",
+    "logical": "조회자료ID",
+    "old_physical": "LGL_ROW_ID",
+    "physical": "SRCH_DATA_ID",
+    "domain": "ID",
+    "words": [
+      "조회",
+      "자료"
+    ],
+    "definition": "같은 조회 게시본과 자료 유형 안에서 개별 조회 자료를 구분하는 식별값.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 4,
+    "old_logical": "법규문서ID",
+    "logical": "문서ID",
+    "old_physical": "LGL_DOC_ID",
+    "physical": "DOC_ID",
+    "domain": "ID",
+    "words": [
+      "문서"
+    ],
+    "definition": "조회 자료가 속한 문서의 식별값. 문서별 조회 범위를 확인한다. 문서에 속하지 않는 공통 자료는 비워 둘 수 있다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 5,
+    "old_logical": "법규검색키데이터값",
+    "logical": "검색키값",
+    "old_physical": "LGL_SRCH_KEY_DATA_VALU",
+    "physical": "SRCH_KEY_VALU",
+    "domain": "값",
+    "words": [
+      "검색",
+      "키"
+    ],
+    "definition": "용어 표기나 식별 문자열로 조회 자료를 찾는 값. 긴 값은 정해진 규칙에 따라 해시로 저장하고 전체 값은 조회자료내용에 보관한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 6,
+    "old_logical": "법규소속참조ID",
+    "logical": "소속참조ID",
+    "old_physical": "LGL_OWNR_REF_ID",
+    "physical": "OWNR_REF_ID",
+    "domain": "ID",
+    "words": [
+      "소속",
+      "참조"
+    ],
+    "definition": "조회 자료가 속한 구조 단위·정의·참조 등의 식별값. 자료가 연결되는 출발 위치를 찾는 데 사용한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 7,
+    "old_logical": "법규대상참조ID",
+    "logical": "대상참조ID",
+    "old_physical": "LGL_TGT_REF_ID",
+    "physical": "TGT_REF_ID",
+    "domain": "ID",
+    "words": [
+      "대상",
+      "참조"
+    ],
+    "definition": "관계가 가리키는 대상 또는 상위 단위의 식별값. 참조 대상의 의미는 조회자료유형값에 따라 정해진다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 8,
+    "old_logical": "법규행해시데이터값",
+    "logical": "조회자료해시값",
+    "old_physical": "LGL_ROW_HASH_DATA_VALU",
+    "physical": "SRCH_DATA_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "조회",
+      "자료",
+      "해시"
+    ],
+    "definition": "자료 유형·식별값·문서·연결키·조회자료내용을 함께 계산한 SHA-256 해시값. 조회 자료 전체의 변경 여부를 확인한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "06_검색관계",
+    "sequence": 9,
+    "old_logical": "법규조회JSON내용",
+    "logical": "조회자료내용",
+    "old_physical": "LGL_ROW_JSON_CTNT",
+    "physical": "SRCH_DATA_CTNT",
+    "domain": "내용",
+    "words": [
+      "조회",
+      "자료"
+    ],
+    "definition": "원문 위치·용어·정의·참조 등 조회 자료를 유형에 맞춰 묶어 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "07_조회채널",
+    "sequence": 1,
+    "old_logical": "법규조회채널명",
+    "logical": "조회채널명",
+    "old_physical": "LGL_CHNL_NAME",
+    "physical": "SRCH_CHNL_NAME",
+    "domain": "명",
+    "words": [
+      "조회",
+      "채널"
+    ],
+    "definition": "사용할 조회 게시본을 선택하는 채널의 이름. 채널마다 현재 사용할 조회게시ID를 연결한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "07_조회채널",
+    "sequence": 2,
+    "old_logical": "법규조회게시ID",
+    "logical": "조회게시ID",
+    "old_physical": "SRCH_PBLS_ID",
+    "physical": "SRCH_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "조회",
+      "게시"
+    ],
+    "definition": "원문과 검색 자료를 함께 사용할 조회 게시본의 식별값. 조회 자료와 조회 채널을 같은 게시본에 연결한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "07_조회채널",
+    "sequence": 3,
+    "old_logical": "조회변경순번",
+    "logical": "변경순번",
+    "old_physical": "SRCH_CHG_SEQ_NO",
+    "physical": "CHG_SEQ_NO",
+    "domain": "순번",
+    "words": [
+      "변경"
+    ],
+    "definition": "조회 채널의 게시본을 바꿀 때 증가하는 순번. 1부터 시작하며 여러 요청이 동시에 수정하는 충돌을 확인한다.",
+    "type": "NUMBER",
+    "length": "정밀도 18",
+    "korean_before": "해당 없음",
+    "korean": "해당 없음"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "sequence": 1,
+    "old_logical": "온톨로지게시ID",
+    "logical": "온톨로지게시ID",
+    "old_physical": "ONT_PBLS_ID",
+    "physical": "ONT_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "온톨로지",
+      "게시"
+    ],
+    "definition": "승인된 온톨로지 게시본을 구분하는 식별값. 개념 묶음·작업 버전·승인 정보·게시 내용의 해시를 결속한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "sequence": 2,
+    "old_logical": "온톨로지묶음ID",
+    "logical": "개념묶음ID",
+    "old_physical": "ONT_BNDL_ID",
+    "physical": "CNCP_BNDL_ID",
+    "domain": "ID",
+    "words": [
+      "개념",
+      "묶음"
+    ],
+    "definition": "서로 관련된 개념과 검토 내용을 하나로 묶은 식별값. 작업 버전이 바뀌어도 같은 개념 묶음을 연결한다.",
+    "type": "VARCHAR2",
+    "length": "84 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "sequence": 3,
+    "old_logical": "지식작업판본번호",
+    "logical": "작업버전번호",
+    "old_physical": "ONT_WORK_VER_NO",
+    "physical": "WORK_VER_NO",
+    "domain": "번호",
+    "words": [
+      "작업",
+      "버전"
+    ],
+    "definition": "게시할 때 승인받은 온톨로지 작업본의 버전 번호. 어떤 검토·승인 결과로 게시했는지 확인한다.",
+    "type": "NUMBER",
+    "length": "정밀도 18",
+    "korean_before": "해당 없음",
+    "korean": "해당 없음"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "sequence": 4,
+    "old_logical": "지식게시해시데이터값",
+    "logical": "게시내용해시값",
+    "old_physical": "ONT_PKG_HASH_DATA_VALU",
+    "physical": "PBLS_CTNT_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "게시",
+      "내용",
+      "해시"
+    ],
+    "definition": "게시할 지식과 원문 위치 정보를 정해진 규칙으로 정규화해 계산한 SHA-256 해시값. 승인된 게시 내용의 변경 여부를 확인한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "08_온톨로지게시",
+    "sequence": 5,
+    "old_logical": "지식게시JSON내용",
+    "logical": "게시지식내용",
+    "old_physical": "ONT_PKG_JSON_CTNT",
+    "physical": "PBLS_KNWLG_CTNT",
+    "domain": "내용",
+    "words": [
+      "게시",
+      "지식"
+    ],
+    "definition": "승인된 개념 묶음의 조건·산정 방법·효과·예외·미확인 사항·근거 및 사전 조립한 조사 경로를 저장한 내용. 저장 형식은 JSON이다.",
+    "type": "CLOB",
+    "length": "가변",
+    "korean_before": "Y",
+    "korean": "Y"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "sequence": 1,
+    "old_logical": "온톨로지묶음ID",
+    "logical": "개념묶음ID",
+    "old_physical": "ONT_BNDL_ID",
+    "physical": "CNCP_BNDL_ID",
+    "domain": "ID",
+    "words": [
+      "개념",
+      "묶음"
+    ],
+    "definition": "서로 관련된 개념과 검토 내용을 하나로 묶은 식별값. 작업 버전이 바뀌어도 같은 개념 묶음을 연결한다.",
+    "type": "VARCHAR2",
+    "length": "84 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "sequence": 2,
+    "old_logical": "온톨로지게시ID",
+    "logical": "온톨로지게시ID",
+    "old_physical": "ONT_PBLS_ID",
+    "physical": "ONT_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "온톨로지",
+      "게시"
+    ],
+    "definition": "해당 개념 묶음에서 활성화한 온톨로지 게시본의 식별값. 비어 있으면 활성 게시본이 없거나 게시가 중지된 상태다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "09_온톨로지선택",
+    "sequence": 3,
+    "old_logical": "지식변경순번",
+    "logical": "변경순번",
+    "old_physical": "ONT_CHG_SEQ_NO",
+    "physical": "CHG_SEQ_NO",
+    "domain": "순번",
+    "words": [
+      "변경"
+    ],
+    "definition": "개념 묶음의 활성 게시본을 바꿀 때 증가하는 순번. 초기값 0을 허용하며 게시·중지·롤백 때 변경한다.",
+    "type": "NUMBER",
+    "length": "정밀도 18",
+    "korean_before": "해당 없음",
+    "korean": "해당 없음"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "sequence": 1,
+    "old_logical": "온톨로지게시ID",
+    "logical": "온톨로지게시ID",
+    "old_physical": "ONT_PBLS_ID",
+    "physical": "ONT_PBLS_ID",
+    "domain": "ID",
+    "words": [
+      "온톨로지",
+      "게시"
+    ],
+    "definition": "승인된 온톨로지 게시본을 구분하는 식별값. 개념 묶음·작업 버전·승인 정보·게시 내용의 해시를 결속한다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "sequence": 2,
+    "old_logical": "원문좌표해시데이터값",
+    "logical": "원문위치해시값",
+    "old_physical": "SRC_ANCHOR_HASH_DATA_VALU",
+    "physical": "SRC_LOC_HASH_VALU",
+    "domain": "값",
+    "words": [
+      "원문",
+      "위치",
+      "해시"
+    ],
+    "definition": "문서ID·원문버전ID·구조단위ID의 세 항목을 결합해 계산한 해시값. 해당 원문 위치에 연결된 지식을 찾는다.",
+    "type": "VARCHAR2",
+    "length": "64 BYTE",
+    "korean_before": "N",
+    "korean": "N"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "sequence": 3,
+    "old_logical": "법규문서ID",
+    "logical": "문서ID",
+    "old_physical": "LGL_DOC_ID",
+    "physical": "DOC_ID",
+    "domain": "ID",
+    "words": [
+      "문서"
+    ],
+    "definition": "온톨로지 근거가 속한 문서의 식별값. 원문 문서와 연결하고 조회 권한을 확인한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "sequence": 4,
+    "old_logical": "원문판본ID",
+    "logical": "원문버전ID",
+    "old_physical": "SRC_VER_ID",
+    "physical": "SRC_VER_ID",
+    "domain": "ID",
+    "words": [
+      "원문",
+      "버전"
+    ],
+    "definition": "근거로 사용하는 원문의 버전을 구분하는 식별값. 현재 원천 경로에서는 해당 문서의 전체 원본 해시값을 사용한다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  },
+  {
+    "sheet": "10_원문지식연결",
+    "sequence": 5,
+    "old_logical": "법규구조단위ID",
+    "logical": "구조단위ID",
+    "old_physical": "LGL_UNIT_ID",
+    "physical": "STRCT_UNIT_ID",
+    "domain": "ID",
+    "words": [
+      "구조",
+      "단위"
+    ],
+    "definition": "문서 안의 장·절·조·항·호 등 구조 단위를 구분하는 식별값. 문서ID와 함께 해당 위치를 찾는다.",
+    "type": "VARCHAR2",
+    "length": "512 BYTE",
+    "korean_before": "Y",
+    "korean": "N"
+  }
+]

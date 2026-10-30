@@ -1,0 +1,17 @@
+﻿suffix,logical,phase,columns,source,change
+DOC_VER,문서판본내역,A · 기본 골드,5,SIDDS.LGL_DOC_VER_S,기존 모델 유지·소프트 FK 전환
+DOC_UNIT,문서구조내역,A · 기본 골드,5,SIDDS.LGL_DOC_UNIT_S,기존 모델 유지·소프트 FK 전환
+DOC_BLK,문서본문내역,A · 기본 골드,9,SIDDS.LGL_DOC_BLK_S,본문조각순서번호 1열 추가; 함수 기반 숫자 정렬 의존 축소
+SRC_POST,원문게시내역,A · 기본 골드,4,SIDDS.LGL_SRC_PBLS_S,기존 모델 유지·소프트 FK 전환
+SRCH_POST,조회게시내역,A · 기본 골드,4,SIDDS.LGL_SRCH_PBLS_S,원문 게시·데이터 판본 연결 2열 추출; 기존 manifest 원문·해시 보존
+SRCH_ROW,검색관계내역,A · 기본 골드,9,SIDDS.LGL_SRCH_ROW_S,기존 모델 유지·소프트 FK 전환
+SRCH_CHNL,조회채널내역,A · 기본 골드,3,SIDDS.LGL_SRCH_CHNL_S,기존 모델 유지·소프트 FK 전환
+ONTL_POST,온톨로지게시내역,A · 기본 골드,5,SIDDA.LGL_ONT_PUB_A,기존 모델 유지·소프트 FK 전환
+ONTL_HEAD,온톨로지선택내역,A · 기본 골드,3,SIDDA.LGL_ONT_HEAD_A,기존 모델 유지·소프트 FK 전환
+ONTL_ANC,원문지식연결내역,A · 기본 골드,5,SIDDA.LGL_ONT_ANC_A,기존 모델 유지·소프트 FK 전환
+VCTR_POST,벡터게시내역,A · 벡터 포함,7,SIDDS.LGL_VCTR_SET_S + 완료 검증 영수증,R11 신규
+VCTR_ITEM,원문구간벡터내역,A · 벡터 포함,7,SIDDS.LGL_VCTR_ITEM_S,R11 신규
+VCTR_HEAD,벡터게시선택내역,A · 벡터 포함,3,R3 PAYLOAD_JSON.active_revision/manifest.query_id를 명시 열로 분리,R11 신규
+FTS_UNIT,전문검색단위내역,B · 전문검색 전용 투영,7,SRCH_ROW의 unit·unit_fts_length 논리 행,R11 신규
+FTS_POST,전문검색토큰위치내역,B · 전문검색 전용 투영,7,SRCH_ROW의 unit_fts_posting 논리 행,R11 신규
+FTS_STAT,전문검색통계내역,B · 전문검색 전용 투영,5,SRCH_ROW의 unit_fts_stats + fulltext manifest,R11 신규

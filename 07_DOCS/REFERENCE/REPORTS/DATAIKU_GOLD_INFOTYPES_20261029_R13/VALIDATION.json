@@ -1,0 +1,58 @@
+{
+  "status": "PASS_READBACK",
+  "scope": "R13 submission workbook, not deployed database",
+  "sources": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_SUBMISSION_20261029_R13/법률에이전트_B03_골드신청용_R13.xlsx",
+      "sha256": "51e81eb0813a3907495bd6080d13de84bafa7af8bf0f661db6687f4b0910eb3f"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_SUBMISSION_20261029_R13/법률에이전트_B05_골드신청용_R13.xlsx",
+      "sha256": "b24d8c8026da1bc02e1ad0c4dd78cd59ee704a66a8178d90c8732029a4f9634e"
+    }
+  ],
+  "counts": {
+    "tables": 13,
+    "column_occurrences": 60,
+    "unique_columns": 38,
+    "domain_type_length": 12,
+    "db_type_length": 8
+  },
+  "id1000_standard_exists": false,
+  "id1000_status_source": "user correction 2026-10-29",
+  "local_measurements": {
+    "document.document_id": {
+      "non_null_rows": 1547,
+      "max_chars": 16,
+      "max_utf8_bytes": 16,
+      "non_ascii_rows": 0,
+      "not_hex16": 0
+    },
+    "document.name": {
+      "non_null_rows": 1547,
+      "max_chars": 501,
+      "max_utf8_bytes": 1163,
+      "non_ascii_rows": 1547
+    },
+    "source_unit.unit_id": {
+      "non_null_rows": 256848,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0
+    },
+    "source_unit.parent_id": {
+      "non_null_rows": 250191,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0
+    }
+  },
+  "local_data_path": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+  "active_release_when_measured": "source-accordion-20261029-r1",
+  "source_workbooks_changed": false,
+  "database_changed": false,
+  "output": {
+    "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_INFOTYPES_20261029_R13/골드_R13_인포타입_중복제거_검토.xlsx",
+    "sha256": "4919018fcb530ce4330bb64df5a650ccf1f6f08d11627e6eb9e1c05a87303a1a"
+  }
+}

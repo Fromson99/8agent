@@ -1,0 +1,159 @@
+{
+  "status": "PASS_STATIC_DESIGN_CONSISTENCY",
+  "tables": 13,
+  "columns": 60,
+  "baseline_columns": 49,
+  "vector_columns": 11,
+  "reduced_columns": 28,
+  "unique_column_names": 38,
+  "new_unique_column_names": [
+    "EMBD_VCTR_VALU",
+    "SRC_UNIT_ID",
+    "VCTR_META_CTNT",
+    "VCTR_POST_ID",
+    "VCTR_POST_IFMN_CTNT",
+    "VCTR_SEG_ID"
+  ],
+  "direct_soft_relations": 11,
+  "json_release_relations": 2,
+  "primary_keys": 13,
+  "ordinary_indexes": 11,
+  "physical_foreign_keys": 0,
+  "business_checks": 0,
+  "extra_unique": 0,
+  "function_indexes": 0,
+  "workbooks": [
+    {
+      "file": "법률에이전트_B03_골드축소안_R12.xlsx",
+      "tables": 13,
+      "columns": 60,
+      "sheets": 20,
+      "sha256": "5f64a13b35e96d9af76662aa8828bc8ea5113df64865218f24835461b852baaa"
+    },
+    {
+      "file": "법률에이전트_B05_골드축소안_R12.xlsx",
+      "tables": 13,
+      "columns": 60,
+      "sheets": 20,
+      "sha256": "87e4cd4e2c761cac19d58db1298283df4d8e53a2312c13fd5360cec4e2cce51f"
+    }
+  ],
+  "oracle_ddl_executed": false,
+  "performance_measured": false,
+  "native_excel_render": false,
+  "independent_review": false,
+  "removed_physical_fields": [
+    [
+      "DOC_BLK",
+      "BODY_SLC_ORD_NO"
+    ],
+    [
+      "SRCH_POST",
+      "DOC_POST_HASH_VALU"
+    ],
+    [
+      "SRCH_POST",
+      "MNFST_HASH_VALU"
+    ],
+    [
+      "VCTR_POST",
+      "RFRN_POST_HASH_VALU"
+    ],
+    [
+      "VCTR_POST",
+      "MNFST_HASH_VALU"
+    ],
+    [
+      "VCTR_POST",
+      "MODL_PRFL_HASH_VALU"
+    ],
+    [
+      "VCTR_POST",
+      "VCTR_CNT"
+    ],
+    [
+      "VCTR_POST",
+      "RGSN_AITM"
+    ],
+    [
+      "VCTR_ITEM",
+      "INPT_HASH_VALU"
+    ],
+    [
+      "FTS_UNIT",
+      "RFRN_POST_HASH_VALU"
+    ],
+    [
+      "FTS_UNIT",
+      "FTS_UNIT_KEY_VALU"
+    ],
+    [
+      "FTS_UNIT",
+      "DOC_ID"
+    ],
+    [
+      "FTS_UNIT",
+      "SRC_UNIT_ID"
+    ],
+    [
+      "FTS_UNIT",
+      "TOKEN_CNT"
+    ],
+    [
+      "FTS_UNIT",
+      "ROW_HASH_VALU"
+    ],
+    [
+      "FTS_UNIT",
+      "FTS_UNIT_IFMN_CTNT"
+    ],
+    [
+      "FTS_POST",
+      "RFRN_POST_HASH_VALU"
+    ],
+    [
+      "FTS_POST",
+      "TOKEN_VALU"
+    ],
+    [
+      "FTS_POST",
+      "FTS_UNIT_KEY_VALU"
+    ],
+    [
+      "FTS_POST",
+      "FTS_FLD_NAME"
+    ],
+    [
+      "FTS_POST",
+      "TERM_FREQ"
+    ],
+    [
+      "FTS_POST",
+      "POS_LIST_CTNT"
+    ],
+    [
+      "FTS_POST",
+      "ROW_HASH_VALU"
+    ],
+    [
+      "FTS_STAT",
+      "RFRN_POST_HASH_VALU"
+    ],
+    [
+      "FTS_STAT",
+      "FTS_UNIT_CNT"
+    ],
+    [
+      "FTS_STAT",
+      "TOKEN_CNT"
+    ],
+    [
+      "FTS_STAT",
+      "FTS_PRFL_CTNT"
+    ],
+    [
+      "FTS_STAT",
+      "ROW_HASH_VALU"
+    ]
+  ]
+}

@@ -1,0 +1,338 @@
+[
+  {
+    "table": "DOC_VER",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_UNIT",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_UNIT",
+    "column": "STRC_UNIT_ID",
+    "before": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_UNIT",
+    "column": "UPPR_STRC_UNIT_ID",
+    "before": {
+      "domain": "ID",
+      "words": "상위 · 구조 · 단위",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "상위 · 구조 · 단위",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_BLK",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_BLK",
+    "column": "BODY_SLC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "본문 · 조각",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "본문 · 조각",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "DOC_BLK",
+    "column": "STRC_UNIT_ID",
+    "before": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "SRCH_ROW",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "SRCH_ROW",
+    "column": "RFRN_DTA_IDNF_CTNT",
+    "before": {
+      "domain": "내용",
+      "words": "조회 · 자료 · 식별",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "Y"
+    },
+    "after": {
+      "domain": "내용",
+      "words": "조회 · 자료 · 식별",
+      "type": "VARCHAR2(3000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "3000 BYTE",
+      "korean": "Y"
+    },
+    "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+  },
+  {
+    "table": "SRCH_ROW",
+    "column": "BLNG_DTA_IDNF_CTNT",
+    "before": {
+      "domain": "내용",
+      "words": "소속 · 자료 · 식별",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "Y"
+    },
+    "after": {
+      "domain": "내용",
+      "words": "소속 · 자료 · 식별",
+      "type": "VARCHAR2(3000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "3000 BYTE",
+      "korean": "Y"
+    },
+    "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+  },
+  {
+    "table": "SRCH_ROW",
+    "column": "TAGT_DTA_IDNF_CTNT",
+    "before": {
+      "domain": "내용",
+      "words": "대상 · 자료 · 식별",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "Y"
+    },
+    "after": {
+      "domain": "내용",
+      "words": "대상 · 자료 · 식별",
+      "type": "VARCHAR2(3000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "3000 BYTE",
+      "korean": "Y"
+    },
+    "basis": "사용자가 확인한 내용 도메인 1000을 기준으로 한글 3바이트 지시 적용. 1000×3=3000 BYTE는 물리 저장 길이이며 새 인포타입 3000을 임의 선택한 것이 아님. 기존 검색키 512 BYTE 초과 해시 규칙은 별도 계약으로 유지."
+  },
+  {
+    "table": "ONTL_ANC",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "ONTL_ANC",
+    "column": "STRC_UNIT_ID",
+    "before": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "구조 · 단위",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "VCTR_ITEM",
+    "column": "DOC_ID",
+    "before": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "Y"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "문서",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "VCTR_ITEM",
+    "column": "SRC_UNIT_ID",
+    "before": {
+      "domain": "ID",
+      "words": "원문단위",
+      "type": "VARCHAR2(1000 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "1000 BYTE",
+      "korean": "Y"
+    },
+    "after": {
+      "domain": "ID",
+      "words": "원문단위",
+      "type": "VARCHAR2(50 BYTE)",
+      "dtype": "VARCHAR2",
+      "size": "50 BYTE",
+      "korean": "N"
+    },
+    "basis": "사진 판독 기록의 ID 50을 같은 ID 도메인에 재사용. 현재 로컬 문서16·구조/본문5·원문32 BYTE. 문자열·선행 0 보존. 미래 50 BYTE 초과값은 절단하지 않고 이행 시 거절."
+  },
+  {
+    "table": "VCTR_HEAD",
+    "column": "CHAN_NO",
+    "before": {
+      "domain": "번호",
+      "words": "변경순번",
+      "type": "NUMBER(30,0)",
+      "dtype": "NUMBER",
+      "size": "정밀도 30 / 소수자리 0",
+      "korean": "N"
+    },
+    "after": {
+      "domain": "순번",
+      "words": "변경",
+      "type": "NUMBER(30,0)",
+      "dtype": "NUMBER",
+      "size": "정밀도 30 / 소수자리 0",
+      "korean": "해당 없음"
+    },
+    "basis": "숫자 정밀도·소수자리·시간대·여부 타입은 기존 정의 유지. 문자열 한글 배수와 구분."
+  }
+]

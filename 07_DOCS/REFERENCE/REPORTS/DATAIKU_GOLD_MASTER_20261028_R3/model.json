@@ -1,0 +1,1210 @@
+{
+  "document": {
+    "key": "document",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_DOC_VER_S",
+    "name": "IDD_A03_LGL_DOC_VER",
+    "logical": "법규문서판본내역",
+    "definition": "법령·내규 문서의 이름과 원본 정보, 데이터 구축 세대를 관리한다. 같은 문서도 구축 세대가 다르면 별도 행으로 보관한다.",
+    "origin": "없음 (법제처 등 외규 및 현업 업로드 내규 원본 파일을 구조화하여 적재)",
+    "process": "원본 파일을 구조화한 뒤 문서 식별자·문서명·원본 해시를 데이터 구축 세대와 함께 적재한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 지식",
+    "columns": [
+      {
+        "old": "DATASET_VERSION",
+        "current": "DATA_VER_ID",
+        "name": "DATA_VER_ID",
+        "logical": "데이터구축세대ID",
+        "words": "데이터+구축+세대+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 원문·목차·용어집 조합으로 구축한 데이터 묶음의 식별자. 법령의 개정번호나 시행일과는 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다. 산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "generation": "sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "source_description": "논리명(미승인 후보): 데이터판본ID\n업무 의미: 동일한 구조화 원문·목차·용어 결속을 재현하기 위한 데이터 구축 세대 식별값이다. 법령 시행일이나 개정번호와 다르다.\n허용값·코드·범위: 이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다.\n산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "korean": "N"
+      },
+      {
+        "old": "DOCUMENT_ID",
+        "current": "DOC_ID",
+        "name": "LGL_DOC_ID",
+        "logical": "법규문서ID",
+        "words": "법규+문서+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "데이터 구축 세대 안에서 문서를 구분하는 식별자. 문서·구조·본문을 연결하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용. 산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "generation": "해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "source_description": "논리명(미승인 후보): 문서ID\n업무 의미: 세대 안에서 원문 문서를 식별하고 원문·구조·조회 행을 연결하는 값이다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용.\n산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "korean": "Y"
+      },
+      {
+        "old": "NAME",
+        "current": "DOC_NM",
+        "name": "LGL_DOC_NAME_CTNT",
+        "logical": "법규문서명내용",
+        "words": "법규+문서+명+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": true,
+        "default": null,
+        "definition": "법령 또는 내규 문서의 이름. 원문에 있는 이름을 보관한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "문자열·빈 CLOB·NULL. 현행 원문 전송 상한은 UTF-8 64MiB이며 DB나 표준 인포타입의 최대 길이를 뜻하지 않음. 산식·생성 규칙: 해당 없음: 구조화 document.name을 보존한다. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 일반 NAME 대신 문서명을 나타내는 DOC_NM을 사용한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row",
+        "generation": "해당 없음: 구조화 document.name을 보존한다. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 일반 NAME 대신 문서명을 나타내는 DOC_NM을 사용한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row",
+        "source_description": "논리명(미승인 후보): 문서명\n업무 의미: 원문 문서의 표시 이름이다. 문서 ID와 구분하고 법령·내규 제목을 있는 그대로 보존한다.\n허용값·코드·범위: 문자열·빈 CLOB·NULL. 현행 원문 전송 상한은 UTF-8 64MiB이며 DB나 표준 인포타입의 최대 길이를 뜻하지 않음.\n산식·생성 규칙: 해당 없음: 구조화 document.name을 보존한다.\n타입·NULL·기본값: CLOB / NULL 허용 / 없음\n명칭 선정 이유: 일반 NAME 대신 문서명을 나타내는 DOC_NM을 사용한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row",
+        "korean": "Y"
+      },
+      {
+        "old": "SOURCE_ARTIFACT_SHA256",
+        "current": "SRC_DATA_HASH_VAL",
+        "name": "SRC_DATA_HASH_VALU",
+        "logical": "원본자료해시값",
+        "words": "원본+자료+해시+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "본문이나 문서 정보가 참조하는 원본 자료의 해시값. 원본이 바뀌었는지 확인하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "원본 자료 SHA-256 계약의 문자열 또는 NULL. 원문 이관 검사는 비어 있지 않은 문자열·64바이트 이하만 강제하므로 16진 형식 검증이 항상 수행됐다고 보지 않음. 산식·생성 규칙: 원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "generation": "원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "source_description": "논리명(미승인 후보): 원본자료해시값\n업무 의미: 구조화 결과가 참조하는 원본 출처 자료의 무결성 hash다. 구조화 본문 문자열 자체의 hash와 구분한다.\n허용값·코드·범위: 원본 자료 SHA-256 계약의 문자열 또는 NULL. 원문 이관 검사는 비어 있지 않은 문자열·64바이트 이하만 강제하므로 16진 형식 검증이 항상 수행됐다고 보지 않음.\n산식·생성 규칙: 원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "korean": "N"
+      },
+      {
+        "old": "SOURCE_JSON",
+        "current": "DOC_JSON_CN",
+        "name": "LGL_DOC_JSON_CTNT",
+        "logical": "법규문서JSON내용",
+        "words": "법규+문서+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": true,
+        "default": null,
+        "definition": "문서의 판본·출처 등 부가 정보를 JSON으로 저장한 내용.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다. 산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "generation": "해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "source_description": "논리명(미승인 후보): 문서JSON내용\n업무 의미: 문서 메타정보 원천 객체의 JSON 직렬화 값이다. 기존 필드·판본·출처 정보를 그대로 보존한다.\n허용값·코드·범위: 문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다.\n산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음.\n타입·NULL·기본값: CLOB / NULL 허용 / 없음\n명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "korean": "Y"
+      }
+    ],
+    "pk": [
+      "DATA_VER_ID",
+      "LGL_DOC_ID"
+    ],
+    "checks": [],
+    "fks": [],
+    "indexes": []
+  },
+  "source_unit": {
+    "key": "source_unit",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_DOC_UNIT_S",
+    "name": "IDD_A03_LGL_DOC_UNIT",
+    "logical": "법규문서구조내역",
+    "definition": "문서를 편·장·절·조·항·호·목 등의 단위로 나누고 상위 단위와의 관계를 관리한다. 문서의 목차와 조문 위치를 찾는 데 쓴다.",
+    "origin": "없음 (원본 파일의 구조화 결과). 문서 정보는 LGL_DOC_VER_S와 연결",
+    "process": "구조화한 문서에서 각 단위의 식별자와 상위 단위 식별자를 추출해 적재한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 지식",
+    "columns": [
+      {
+        "old": "DATASET_VERSION",
+        "current": "DATA_VER_ID",
+        "name": "DATA_VER_ID",
+        "logical": "데이터구축세대ID",
+        "words": "데이터+구축+세대+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 원문·목차·용어집 조합으로 구축한 데이터 묶음의 식별자. 법령의 개정번호나 시행일과는 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다. 산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "generation": "sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "source_description": "논리명(미승인 후보): 데이터판본ID\n업무 의미: 동일한 구조화 원문·목차·용어 결속을 재현하기 위한 데이터 구축 세대 식별값이다. 법령 시행일이나 개정번호와 다르다.\n허용값·코드·범위: 이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다.\n산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "korean": "N"
+      },
+      {
+        "old": "DOCUMENT_ID",
+        "current": "DOC_ID",
+        "name": "LGL_DOC_ID",
+        "logical": "법규문서ID",
+        "words": "법규+문서+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "데이터 구축 세대 안에서 문서를 구분하는 식별자. 문서·구조·본문을 연결하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용. 산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "generation": "해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "source_description": "논리명(미승인 후보): 문서ID\n업무 의미: 세대 안에서 원문 문서를 식별하고 원문·구조·조회 행을 연결하는 값이다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용.\n산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "korean": "Y"
+      },
+      {
+        "old": "UNIT_ID",
+        "current": "UNIT_ID",
+        "name": "LGL_UNIT_ID",
+        "logical": "법규구조단위ID",
+        "words": "법규+구조+단위+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "문서 안의 조문·항·호 등 구조 단위를 구분하는 식별자. 데이터 구축 세대와 문서 식별자를 함께 사용한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 구조 단위 테이블에서는 PK 필수, 본문 블록에서는 NULL 허용. 산식·생성 규칙: 해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "generation": "해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "source_description": "논리명(미승인 후보): 구조단위ID\n업무 의미: 문서 내부의 구조 단위 식별값이다. 조문 번호 문자열만으로 전 문서에서 유일한 것으로 해석하지 않는다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 구조 단위 테이블에서는 PK 필수, 본문 블록에서는 NULL 허용.\n산식·생성 규칙: 해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "korean": "Y"
+      },
+      {
+        "old": "PARENT_ID",
+        "current": "PRNT_UNIT_ID",
+        "name": "PRNT_LGL_UNIT_ID",
+        "logical": "상위법규구조단위ID",
+        "words": "상위+법규+구조+단위+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "같은 문서에서 바로 위에 있는 구조 단위의 식별자. 상위 단위가 없으면 NULL이다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 또는 비어 있지 않은 문자열, UTF-8 512바이트 이내. 부모의 실재·같은 문서 여부는 별도 구조 검사 대상이며 현재 물리 FK 없음. 산식·생성 규칙: 해당 없음: 원문의 parent_id를 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 부모가 문서 구조 단위라는 점을 PRNT_UNIT_ID에 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/validate_row",
+        "generation": "해당 없음: 원문의 parent_id를 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 부모가 문서 구조 단위라는 점을 PRNT_UNIT_ID에 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/validate_row",
+        "source_description": "논리명(미승인 후보): 상위구조단위ID\n업무 의미: 같은 데이터 세대·문서에서 상위 구조 단위를 가리키는 값이다. 루트 등 상위 관계가 없는 경우를 구분한다.\n허용값·코드·범위: NULL 또는 비어 있지 않은 문자열, UTF-8 512바이트 이내. 부모의 실재·같은 문서 여부는 별도 구조 검사 대상이며 현재 물리 FK 없음.\n산식·생성 규칙: 해당 없음: 원문의 parent_id를 보존한다.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 부모가 문서 구조 단위라는 점을 PRNT_UNIT_ID에 명시한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/validate_row",
+        "korean": "Y"
+      },
+      {
+        "old": "SOURCE_JSON",
+        "current": "UNIT_JSON_CN",
+        "name": "LGL_UNIT_JSON_CTNT",
+        "logical": "법규구조JSON내용",
+        "words": "법규+구조+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": true,
+        "default": null,
+        "definition": "조문 번호·제목·위치 등 구조 단위의 부가 정보를 JSON으로 저장한 내용.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다. 산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "generation": "해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "source_description": "논리명(미승인 후보): 구조JSON내용\n업무 의미: 문서 구조 단위 원천 객체의 JSON 직렬화 값이다. 기존 필드·판본·출처 정보를 그대로 보존한다.\n허용값·코드·범위: 문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다.\n산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음.\n타입·NULL·기본값: CLOB / NULL 허용 / 없음\n명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "korean": "Y"
+      }
+    ],
+    "pk": [
+      "DATA_VER_ID",
+      "LGL_DOC_ID",
+      "LGL_UNIT_ID"
+    ],
+    "checks": [],
+    "fks": [],
+    "indexes": []
+  },
+  "block_payload": {
+    "key": "block_payload",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_DOC_BLK_S",
+    "name": "IDD_A03_LGL_DOC_BLK",
+    "logical": "법규문서본문내역",
+    "definition": "답변의 근거로 읽고 인용하는 원문 본문을 조각별로 보관한다. 본문이 속한 문서·구조 단위와 원본 해시를 함께 관리한다.",
+    "origin": "없음 (원본 파일의 구조화 결과). LGL_DOC_VER_S·LGL_DOC_UNIT_S와 연결",
+    "process": "구조화한 문서에서 본문을 분리하고, 문서·구조 단위·원본 해시·본문 중복 생략 표시를 함께 적재한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 지식",
+    "columns": [
+      {
+        "old": "DATASET_VERSION",
+        "current": "DATA_VER_ID",
+        "name": "DATA_VER_ID",
+        "logical": "데이터구축세대ID",
+        "words": "데이터+구축+세대+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 원문·목차·용어집 조합으로 구축한 데이터 묶음의 식별자. 법령의 개정번호나 시행일과는 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다. 산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "generation": "sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "source_description": "논리명(미승인 후보): 데이터판본ID\n업무 의미: 동일한 구조화 원문·목차·용어 결속을 재현하기 위한 데이터 구축 세대 식별값이다. 법령 시행일이나 개정번호와 다르다.\n허용값·코드·범위: 이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다.\n산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "korean": "N"
+      },
+      {
+        "old": "DOCUMENT_ID",
+        "current": "DOC_ID",
+        "name": "LGL_DOC_ID",
+        "logical": "법규문서ID",
+        "words": "법규+문서+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "데이터 구축 세대 안에서 문서를 구분하는 식별자. 문서·구조·본문을 연결하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용. 산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "generation": "해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "source_description": "논리명(미승인 후보): 문서ID\n업무 의미: 세대 안에서 원문 문서를 식별하고 원문·구조·조회 행을 연결하는 값이다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용.\n산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "korean": "Y"
+      },
+      {
+        "old": "BLOCK_ID",
+        "current": "BLK_ID",
+        "name": "LGL_BLK_ID",
+        "logical": "법규본문조각ID",
+        "words": "법규+본문+조각+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "문서 안에서 원문 본문 조각을 구분하는 식별자. 데이터 구축 세대와 문서 식별자를 함께 사용한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "비어 있지 않은 문자열, UTF-8 512바이트 이내. 모양이 숫자여도 문자열 계약을 보존한다. 산식·생성 규칙: 해당 없음: 원문의 block_id를 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 본문 블록이라는 의미를 BLK_ID로 표현한다. 기존 값과 순서 해석은 바꾸지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:KEYS/validate_row",
+        "generation": "해당 없음: 원문의 block_id를 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 본문 블록이라는 의미를 BLK_ID로 표현한다. 기존 값과 순서 해석은 바꾸지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:KEYS/validate_row",
+        "source_description": "논리명(미승인 후보): 본문블록ID\n업무 의미: 정확한 원문을 담는 블록의 식별값으로 데이터 세대·문서와 함께 PK를 구성한다.\n허용값·코드·범위: 비어 있지 않은 문자열, UTF-8 512바이트 이내. 모양이 숫자여도 문자열 계약을 보존한다.\n산식·생성 규칙: 해당 없음: 원문의 block_id를 보존한다.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 본문 블록이라는 의미를 BLK_ID로 표현한다. 기존 값과 순서 해석은 바꾸지 않는다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:KEYS/validate_row",
+        "korean": "Y"
+      },
+      {
+        "old": "UNIT_ID",
+        "current": "UNIT_ID",
+        "name": "LGL_UNIT_ID",
+        "logical": "법규구조단위ID",
+        "words": "법규+구조+단위+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "문서 안의 조문·항·호 등 구조 단위를 구분하는 식별자. 데이터 구축 세대와 문서 식별자를 함께 사용한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 구조 단위 테이블에서는 PK 필수, 본문 블록에서는 NULL 허용. 산식·생성 규칙: 해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "generation": "해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "source_description": "논리명(미승인 후보): 구조단위ID\n업무 의미: 문서 내부의 구조 단위 식별값이다. 조문 번호 문자열만으로 전 문서에서 유일한 것으로 해석하지 않는다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 구조 단위 테이블에서는 PK 필수, 본문 블록에서는 NULL 허용.\n산식·생성 규칙: 해당 없음: 원문의 unit_id를 데이터 세대·문서 범위와 함께 보존한다.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 기존 UNIT_ID가 구조 단위를 나타내므로 유지한다. 한글 논리명에 구조 의미를 명시한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:COLUMNS/KEYS/validate_row",
+        "korean": "Y"
+      },
+      {
+        "old": "TEXT",
+        "current": "BLK_TXT_CN",
+        "name": "LGL_TEXT_CTNT",
+        "logical": "법규원문내용",
+        "words": "법규+원문+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": true,
+        "default": null,
+        "definition": "답변의 근거로 읽고 인용하는 원문 본문. 생성한 요약이나 답변이 아니다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "문자열·빈 CLOB·NULL; 현행 전송 상한 UTF-8 64MiB. NULL과 길이 0 CLOB을 구분해 보존한다. 산식·생성 규칙: 해당 없음: 원문 block_payload.text를 그대로 이관한다. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 일반 TEXT 대신 블록 본문 내용이라는 BLK_TXT_CN을 사용한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row/read_rows",
+        "generation": "해당 없음: 원문 block_payload.text를 그대로 이관한다. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 일반 TEXT 대신 블록 본문 내용이라는 BLK_TXT_CN을 사용한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row/read_rows",
+        "source_description": "논리명(미승인 후보): 블록본문내용\n업무 의미: 인용·대사에서 실제로 읽는 원문 본문이다. 생성된 요약이나 답변을 저장하는 필드가 아니다.\n허용값·코드·범위: 문자열·빈 CLOB·NULL; 현행 전송 상한 UTF-8 64MiB. NULL과 길이 0 CLOB을 구분해 보존한다.\n산식·생성 규칙: 해당 없음: 원문 block_payload.text를 그대로 이관한다.\n타입·NULL·기본값: CLOB / NULL 허용 / 없음\n명칭 선정 이유: 일반 TEXT 대신 블록 본문 내용이라는 BLK_TXT_CN을 사용한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row/bind_row/read_rows",
+        "korean": "Y"
+      },
+      {
+        "old": "SOURCE_ARTIFACT_SHA256",
+        "current": "SRC_DATA_HASH_VAL",
+        "name": "SRC_DATA_HASH_VALU",
+        "logical": "원본자료해시값",
+        "words": "원본+자료+해시+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "본문이나 문서 정보가 참조하는 원본 자료의 해시값. 원본이 바뀌었는지 확인하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "원본 자료 SHA-256 계약의 문자열 또는 NULL. 원문 이관 검사는 비어 있지 않은 문자열·64바이트 이하만 강제하므로 16진 형식 검증이 항상 수행됐다고 보지 않음. 산식·생성 규칙: 원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "generation": "원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "source_description": "논리명(미승인 후보): 원본자료해시값\n업무 의미: 구조화 결과가 참조하는 원본 출처 자료의 무결성 hash다. 구조화 본문 문자열 자체의 hash와 구분한다.\n허용값·코드·범위: 원본 자료 SHA-256 계약의 문자열 또는 NULL. 원문 이관 검사는 비어 있지 않은 문자열·64바이트 이하만 강제하므로 16진 형식 검증이 항상 수행됐다고 보지 않음.\n산식·생성 규칙: 원천이 기록한 source_artifact_sha256을 그대로 이관; 여기서 다른 대상의 hash를 새로 계산하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 원본자료 해시값이라는 의미를 SRC_DATA_HASH_VAL로 드러낸다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "korean": "N"
+      },
+      {
+        "old": "SOURCE_JSON",
+        "current": "BLK_JSON_CN",
+        "name": "LGL_BLK_JSON_CTNT",
+        "logical": "본문조각JSON내용",
+        "words": "본문+조각+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": true,
+        "default": null,
+        "definition": "본문 조각의 위치·출처 등 부가 정보를 JSON으로 저장한 내용. 중복 본문을 생략한 경우 별도 본문 열과 함께 읽는다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다. 산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "generation": "해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 허용 / 없음 명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "source_description": "논리명(미승인 후보): 블록JSON내용\n업무 의미: 본문 블록 원천 객체의 JSON 직렬화 값이다. JSON 본문 생략 여부는 별도 표시와 TEXT를 함께 확인한다.\n허용값·코드·범위: 문자열·빈 CLOB·NULL; 원문 전송 상한 UTF-8 64MiB. 현행 원문 DDL에는 IS JSON CHECK가 없고 원문 소비자의 별도 계약을 따른다.\n산식·생성 규칙: 해당 없음: 원천 SQLite json 값을 그대로 이관한다. 내부 JSON 키·원문 좌표·값을 개명하지 않음.\n타입·NULL·기본값: CLOB / NULL 허용 / 없음\n명칭 선정 이유: 원천 객체 종류가 문서·구조 단위·블록 중 무엇인지 컬럼명에서 구분한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_batch; 02_BACKEND/semantic_runtime/oracle_dp_io.py",
+        "korean": "Y"
+      },
+      {
+        "old": "JSON_TEXT_ELIDED",
+        "current": "JSON_TXT_OMIT_YN",
+        "name": "JSON_TXT_OMIT_YN",
+        "logical": "JSON본문생략여부",
+        "words": "JSON+본문+생략+여부",
+        "domain": "여부",
+        "type": "CHAR(1)",
+        "current_type": "NUMBER(1)",
+        "nullable": true,
+        "default": null,
+        "definition": "JSON 안의 중복 본문 생략 표시. Y=생략, N=미생략, NULL=미지정. 별도 본문 내용의 부재를 뜻하지 않는다.",
+        "conversion": "제안 변환: 1→Y, 0→N, NULL 유지. 그 외 값은 오류로 분리. 조회 시 Y→1/N→0 역변환과 왕복 검사 필요; 현재 구현 미적용.",
+        "allowed": "코드 허용값 0, 1, NULL. 1은 JSON 본문 생략·별도 본문 사용, 0은 미생략. NULL은 0으로 추정하지 않고 보존. 현재 DDL은 값 CHECK 없음. 산식·생성 규칙: 해당 없음: 원천의 json_text_elided 값을 보존한다. 타입·NULL·기본값: NUMBER(1) / NULL 허용 / 없음 명칭 선정 이유: JSON 본문의 생략 여부라는 의미를 명시한다. 후보 YN 도메인이 문자형이면 별도 변환 승인 필요. 타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지. 후보 여부 도메인이 문자형이면 0/1/NULL 변환을 별도 승인·검증하며 이번에는 자동 변경하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "generation": "해당 없음: 원천의 json_text_elided 값을 보존한다. 타입·NULL·기본값: NUMBER(1) / NULL 허용 / 없음 명칭 선정 이유: JSON 본문의 생략 여부라는 의미를 명시한다. 후보 YN 도메인이 문자형이면 별도 변환 승인 필요. 타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지. 후보 여부 도메인이 문자형이면 0/1/NULL 변환을 별도 승인·검증하며 이번에는 자동 변경하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "source_description": "논리명(미승인 후보): JSON본문생략여부\n업무 의미: 블록 JSON에서 중복 본문을 생략해 별도 TEXT 값으로 복원해야 하는지를 표시한다. 문서의 원문이 없다는 표시가 아니다.\n허용값·코드·범위: 코드 허용값 0, 1, NULL. 1은 JSON 본문 생략·별도 본문 사용, 0은 미생략. NULL은 0으로 추정하지 않고 보존. 현재 DDL은 값 CHECK 없음.\n산식·생성 규칙: 해당 없음: 원천의 json_text_elided 값을 보존한다.\n타입·NULL·기본값: NUMBER(1) / NULL 허용 / 없음\n명칭 선정 이유: JSON 본문의 생략 여부라는 의미를 명시한다. 후보 YN 도메인이 문자형이면 별도 변환 승인 필요.\n타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지. 후보 여부 도메인이 문자형이면 0/1/NULL 변환을 별도 승인·검증하며 이번에는 자동 변경하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "DATA_VER_ID",
+      "LGL_DOC_ID",
+      "LGL_BLK_ID"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "JSON_TXT_OMIT_YN"
+        ],
+        "expr": "JSON_TXT_OMIT_YN IN ('Y','N')",
+        "status": "여부형 이행 제안"
+      }
+    ],
+    "fks": [],
+    "indexes": []
+  },
+  "source_release": {
+    "key": "source_release",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_SRC_PBLS_S",
+    "name": "IDD_A03_LGL_SRC_PBLS",
+    "logical": "법규원문게시내역",
+    "definition": "검증이 끝난 원문 데이터와 관련 파일을 하나의 게시본으로 묶어 관리한다. 어느 데이터 구축 세대와 파일을 함께 사용해야 하는지 확인하는 데 쓴다.",
+    "origin": "LGL_DOC_VER_S·LGL_DOC_UNIT_S·LGL_DOC_BLK_S·LGL_FILE_PART_S의 적재·검증 결과",
+    "process": "원문과 파일의 적재·재조회 검증이 끝나면 세대·파일 목록을 게시 명세로 묶어 저장한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 게시 지원",
+    "columns": [
+      {
+        "old": "RELEASE_ID",
+        "current": "SRC_PBLS_ID",
+        "name": "SRC_PBLS_ID",
+        "logical": "원문게시ID",
+        "words": "원문+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "검증이 끝난 원문·파일 묶음의 게시본을 구분하는 식별자.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 digest; NULL 불가. 산식·생성 규칙: digest(원문·자산 완료 release 객체). 직렬화 저장 형식과 논리 digest 계산을 구분. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 원문 게시 SRC_PBLS_ID로 조회 게시 식별값과 구분한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "generation": "digest(원문·자산 완료 release 객체). 직렬화 저장 형식과 논리 digest 계산을 구분. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 원문 게시 SRC_PBLS_ID로 조회 게시 식별값과 구분한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "source_description": "논리명(미승인 후보): 원문게시ID\n업무 의미: 완료 원문·자산 게시 명세를 불변 식별하는 값이다.\n허용값·코드·범위: 64자리 소문자 16진 digest; NULL 불가.\n산식·생성 규칙: digest(원문·자산 완료 release 객체). 직렬화 저장 형식과 논리 digest 계산을 구분.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 원문 게시 SRC_PBLS_ID로 조회 게시 식별값과 구분한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "korean": "N"
+      },
+      {
+        "old": "DATASET_VERSION",
+        "current": "DATA_VER_ID",
+        "name": "DATA_VER_ID",
+        "logical": "데이터구축세대ID",
+        "words": "데이터+구축+세대+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 원문·목차·용어집 조합으로 구축한 데이터 묶음의 식별자. 법령의 개정번호나 시행일과는 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다. 산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "generation": "sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "source_description": "논리명(미승인 후보): 데이터판본ID\n업무 의미: 동일한 구조화 원문·목차·용어 결속을 재현하기 위한 데이터 구축 세대 식별값이다. 법령 시행일이나 개정번호와 다르다.\n허용값·코드·범위: 이 경로의 생성값은 manifest 원시 바이트 SHA-256의 64자리 소문자 16진 문자열. 원문 writer는 문자열 길이·NULL/키 계약을 별도로 검사한다.\n산식·생성 규칙: sha256(선택 generation/manifest.json 원시 바이트).hexdigest(); JSON 재직렬화 후 hash로 대체하지 않음.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 판본을 고정하는 식별값임을 DATA_VER_ID로 표현한다. 숫자 버전으로 변환하지 않는다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/lawrag/pipeline/oracle_migration.py:source_binding",
+        "korean": "N"
+      },
+      {
+        "old": "RELEASE_JSON",
+        "current": "PBLS_JSON_CN",
+        "name": "SRC_PBLS_JSON_CTNT",
+        "logical": "원문게시JSON내용",
+        "words": "원문+게시+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": false,
+        "default": null,
+        "definition": "원문 게시본에 포함된 데이터 구축 세대·파일 목록·검색 설정을 JSON으로 저장한 내용.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 불가 JSON 문자열. 현재 DDL에는 IS JSON CHECK 없음; get_release가 JSON·schema_version·COMPLETE·digest 확인. 산식·생성 규칙: ASCII JSON·키 정렬·고정 구분자로 완료 release 객체 직렬화. 집계 산식 해당 없음. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 원문 게시 JSON 내용 PBLS_JSON_CN으로 의미를 드러낸다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "generation": "ASCII JSON·키 정렬·고정 구분자로 완료 release 객체 직렬화. 집계 산식 해당 없음. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 원문 게시 JSON 내용 PBLS_JSON_CN으로 의미를 드러낸다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "source_description": "논리명(미승인 후보): 게시JSON내용\n업무 의미: 완료 원문 세대·자산 inventory·검색 선택 등에 대한 원문 게시 명세다.\n허용값·코드·범위: NULL 불가 JSON 문자열. 현재 DDL에는 IS JSON CHECK 없음; get_release가 JSON·schema_version·COMPLETE·digest 확인.\n산식·생성 규칙: ASCII JSON·키 정렬·고정 구분자로 완료 release 객체 직렬화. 집계 산식 해당 없음.\n타입·NULL·기본값: CLOB / NULL 불가 / 없음\n명칭 선정 이유: 원문 게시 JSON 내용 PBLS_JSON_CN으로 의미를 드러낸다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_assets.py:get_release/put_release",
+        "korean": "N"
+      },
+      {
+        "old": "CREATED_AT",
+        "current": "REG_DTM",
+        "name": "SRC_PBLS_REG_DATE_TIME",
+        "logical": "원문게시등록일시",
+        "words": "원문+게시+등록+일시",
+        "domain": "일시",
+        "type": "TIMESTAMP WITH TIME ZONE",
+        "current_type": "TIMESTAMP WITH TIME ZONE",
+        "nullable": false,
+        "default": "SYSTIMESTAMP",
+        "definition": "원문 게시 행이 DB에 등록된 일시. 현재 시간대 정보도 함께 저장한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "TIMESTAMP WITH TIME ZONE, NULL 불가. 기본값 SYSTIMESTAMP; 시간대 정보 보존. 산식·생성 규칙: 신규 INSERT에서 생략 시 DB SYSTIMESTAMP. 기존 행 이행은 원 등록시각 보존 대상으로 설계. 타입·NULL·기본값: TIMESTAMP WITH TIME ZONE / NULL 불가 / SYSTIMESTAMP 명칭 선정 이유: 등록시각을 날짜와 시간이 포함된 일시 도메인 REG_DTM으로 표현한다. 타입 유지·변경 이유: 등록 날짜·시간·시간대와 DB 기본값을 보존하기 위해 현행 타입 유지. 법령 시행일로 변환하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 08_DEPLOYMENT/DATAIKU/legal_oracle_all_tables_20261019_r1/LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.sql",
+        "generation": "신규 INSERT에서 생략 시 DB SYSTIMESTAMP. 기존 행 이행은 원 등록시각 보존 대상으로 설계. 타입·NULL·기본값: TIMESTAMP WITH TIME ZONE / NULL 불가 / SYSTIMESTAMP 명칭 선정 이유: 등록시각을 날짜와 시간이 포함된 일시 도메인 REG_DTM으로 표현한다. 타입 유지·변경 이유: 등록 날짜·시간·시간대와 DB 기본값을 보존하기 위해 현행 타입 유지. 법령 시행일로 변환하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 08_DEPLOYMENT/DATAIKU/legal_oracle_all_tables_20261019_r1/LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.sql",
+        "source_description": "논리명(미승인 후보): 등록일시\n업무 의미: 원문 게시 행이 DB에 등록된 시각이다. 문서 작성일·법령 시행일·GENOS 처리 시작시각과 다르다.\n허용값·코드·범위: TIMESTAMP WITH TIME ZONE, NULL 불가. 기본값 SYSTIMESTAMP; 시간대 정보 보존.\n산식·생성 규칙: 신규 INSERT에서 생략 시 DB SYSTIMESTAMP. 기존 행 이행은 원 등록시각 보존 대상으로 설계.\n타입·NULL·기본값: TIMESTAMP WITH TIME ZONE / NULL 불가 / SYSTIMESTAMP\n명칭 선정 이유: 등록시각을 날짜와 시간이 포함된 일시 도메인 REG_DTM으로 표현한다.\n타입 유지·변경 이유: 등록 날짜·시간·시간대와 DB 기본값을 보존하기 위해 현행 타입 유지. 법령 시행일로 변환하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 08_DEPLOYMENT/DATAIKU/legal_oracle_all_tables_20261019_r1/LEGAL_ORACLE_ALL_9_TABLES_20261019_R1.sql",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "SRC_PBLS_ID"
+    ],
+    "checks": [],
+    "fks": [],
+    "indexes": []
+  },
+  "query_release": {
+    "key": "query_release",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_SRCH_PBLS_S",
+    "name": "IDD_A03_LGL_SRCH_PBLS",
+    "logical": "법규조회게시내역",
+    "definition": "조회에 사용할 원문 게시본과 검색 자료의 종류·건수·해시를 관리한다. 한 번의 질문에서 같은 버전의 자료를 사용하도록 묶는다.",
+    "origin": "LGL_SRC_PBLS_S 및 LGL_SRCH_ROW_S의 생성·검증 결과",
+    "process": "조회 자료의 검증 결과와 원문 게시본을 하나의 명세로 묶고 게시 식별자를 계산해 저장한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 게시 지원",
+    "columns": [
+      {
+        "old": "RELEASE_ID",
+        "current": "SRCH_PBLS_ID",
+        "name": "SRCH_PBLS_ID",
+        "logical": "법규조회게시ID",
+        "words": "법규+조회+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "조회에 사용할 원문과 검색 자료 묶음의 식별자. 조회 행과 채널을 같은 게시본에 연결한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다. 산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "generation": "조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "source_description": "논리명(미승인 후보): 조회게시ID\n업무 의미: 완료 조회 manifest를 식별한다. 조회 행과 채널이 어떤 조회 게시본에 속하는지 연결한다.\n허용값·코드·범위: 64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다.\n산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "korean": "N"
+      },
+      {
+        "old": "MANIFEST_JSON",
+        "current": "MNFST_JSON_CN",
+        "name": "SRCH_MNFST_JSON_CTNT",
+        "logical": "조회명세JSON내용",
+        "words": "조회+명세+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": false,
+        "default": null,
+        "definition": "조회 게시본의 원문 세대·자료 종류·건수·해시를 JSON으로 저장한 내용.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 불가 JSON, DDL IS JSON. 코드가 schema_version·COMPLETE·manifest digest와 참조 pin을 검증. 산식·생성 규칙: 완료 조회 manifest를 직렬화한다. 집계 산식은 해당 없음; 조회 릴리스 ID는 해당 객체의 digest. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 명세 JSON 내용 MNFST_JSON_CN으로 일반 조회 행 JSON과 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release",
+        "generation": "완료 조회 manifest를 직렬화한다. 집계 산식은 해당 없음; 조회 릴리스 ID는 해당 객체의 digest. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 명세 JSON 내용 MNFST_JSON_CN으로 일반 조회 행 JSON과 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release",
+        "source_description": "논리명(미승인 후보): 명세JSON내용\n업무 의미: 완료 조회 릴리스의 원문 게시 참조·데이터 세대·종류별 투영·검증 정보를 담은 manifest다.\n허용값·코드·범위: NULL 불가 JSON, DDL IS JSON. 코드가 schema_version·COMPLETE·manifest digest와 참조 pin을 검증.\n산식·생성 규칙: 완료 조회 manifest를 직렬화한다. 집계 산식은 해당 없음; 조회 릴리스 ID는 해당 객체의 digest.\n타입·NULL·기본값: CLOB / NULL 불가 / 없음\n명칭 선정 이유: 명세 JSON 내용 MNFST_JSON_CN으로 일반 조회 행 JSON과 구분한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "SRCH_PBLS_ID"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "SRCH_MNFST_JSON_CTNT"
+        ],
+        "expr": "SRCH_MNFST_JSON_CTNT IS JSON",
+        "status": "현행 보존"
+      }
+    ],
+    "fks": [],
+    "indexes": []
+  },
+  "query_row": {
+    "key": "query_row",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_SRCH_ROW_S",
+    "name": "IDD_A03_LGL_SRCH_ROW",
+    "logical": "법규검색관계내역",
+    "definition": "문서 구조·용어·정의·명시 참조와 검색에 필요한 자료를 종류별로 보관한다. 문서나 검색어를 기준으로 필요한 자료만 찾는 데 쓴다.",
+    "origin": "구조화 원문과 구축한 목차·검색·용어집 자료. LGL_SRCH_PBLS_S와 게시 식별자로 연결",
+    "process": "원문·목차·검색·용어집 자료를 조회 종류별 행으로 만들고 검색키·관계키·내용 해시를 붙여 적재한다.",
+    "kind": "SNAPSHOT",
+    "classification": "기존 지식",
+    "columns": [
+      {
+        "old": "RELEASE_ID",
+        "current": "SRCH_PBLS_ID",
+        "name": "SRCH_PBLS_ID",
+        "logical": "법규조회게시ID",
+        "words": "법규+조회+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "조회에 사용할 원문과 검색 자료 묶음의 식별자. 조회 행과 채널을 같은 게시본에 연결한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다. 산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "generation": "조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "source_description": "논리명(미승인 후보): 조회게시ID\n업무 의미: 완료 조회 manifest를 식별한다. 조회 행과 채널이 어떤 조회 게시본에 속하는지 연결한다.\n허용값·코드·범위: 64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다.\n산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "korean": "N"
+      },
+      {
+        "old": "KIND",
+        "current": "ROW_KIND_CD",
+        "name": "LGL_ROW_KIND_VALU",
+        "logical": "법규조회유형값",
+        "words": "법규+조회+유형+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "조회 행이 문서 구조·용어·정의·참조 등 어느 종류인지 구분하는 값. 게시 명세에 선언된 종류를 사용한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "게시기 패턴 [a-z][a-z0-9_.]{0,63}; 실제 조회 때 완료 manifest의 tables에 있는 종류만 허용. 전사 숫자 코드로 자동 재번호화하지 않음. 산식·생성 규칙: 해당 없음: 게시기가 지정한 투영 종류 문자열을 사용한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: KIND가 조회 행 종류임을 ROW_KIND_CD로 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "generation": "해당 없음: 게시기가 지정한 투영 종류 문자열을 사용한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: KIND가 조회 행 종류임을 ROW_KIND_CD로 명시한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "source_description": "논리명(미승인 후보): 조회행종류코드\n업무 의미: 조회 행의 논리 종류로, 같은 릴리스 manifest의 tables에 선언된 투영 스키마를 선택한다.\n허용값·코드·범위: 게시기 패턴 [a-z][a-z0-9_.]{0,63}; 실제 조회 때 완료 manifest의 tables에 있는 종류만 허용. 전사 숫자 코드로 자동 재번호화하지 않음.\n산식·생성 규칙: 해당 없음: 게시기가 지정한 투영 종류 문자열을 사용한다.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: KIND가 조회 행 종류임을 ROW_KIND_CD로 명시한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "korean": "N"
+      },
+      {
+        "old": "ROW_ID",
+        "current": "ROW_ID",
+        "name": "LGL_ROW_ID",
+        "logical": "법규조회행ID",
+        "words": "법규+조회+행+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 조회 종류 안에서 행을 구분하는 식별자. 조회 게시 식별자·자료 유형과 함께 고유해진다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 hash, NULL 불가. 단독 전역 키가 아니라 release·kind와 함께 PK를 이룬다. 산식·생성 규칙: digest(key): JSON 정규 직렬화(키 정렬·고정 구분자·NaN 금지)의 UTF-8 SHA-256. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 기존 ROW_ID 유지. 한글 설명에 조회 행과 digest 의미를 보충한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records; 02_BACKEND/semantic_runtime/oracle_dp_io.py:canonical/digest",
+        "generation": "digest(key): JSON 정규 직렬화(키 정렬·고정 구분자·NaN 금지)의 UTF-8 SHA-256. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 기존 ROW_ID 유지. 한글 설명에 조회 행과 digest 의미를 보충한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records; 02_BACKEND/semantic_runtime/oracle_dp_io.py:canonical/digest",
+        "source_description": "논리명(미승인 후보): 조회행ID\n업무 의미: 한 조회 종류 안에서 행을 재현하고 중복을 판별하는 key의 digest다.\n허용값·코드·범위: 64자리 소문자 16진 hash, NULL 불가. 단독 전역 키가 아니라 release·kind와 함께 PK를 이룬다.\n산식·생성 규칙: digest(key): JSON 정규 직렬화(키 정렬·고정 구분자·NaN 금지)의 UTF-8 SHA-256.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 기존 ROW_ID 유지. 한글 설명에 조회 행과 digest 의미를 보충한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records; 02_BACKEND/semantic_runtime/oracle_dp_io.py:canonical/digest",
+        "korean": "N"
+      },
+      {
+        "old": "DOCUMENT_ID",
+        "current": "DOC_ID",
+        "name": "LGL_DOC_ID",
+        "logical": "법규문서ID",
+        "words": "법규+문서+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "조회 자료가 속한 문서의 ID. 문서별 접근 범위 검사에 쓰며 공통 용어집처럼 문서에 속하지 않는 행은 NULL일 수 있다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용. 산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "generation": "해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "source_description": "논리명(미승인 후보): 문서ID\n업무 의미: 조회 행의 소속 문서를 표시하는 권한 필터용 원문 ID다. 문서에 소속되지 않은 공통 용어집 행은 NULL일 수 있다. NULL을 모든 권한 검사가 불필요하다는 의미로 해석하지 않는다.\n허용값·코드·범위: 값이 있으면 비어 있지 않은 문자열, UTF-8 512바이트 이내. 원문 테이블은 PK 필수; 조회 투영의 문서 비소속 행은 NULL 허용.\n산식·생성 규칙: 해당 없음: 구조화 원문의 document_id를 보존한다. 조회키 hash로 치환하지 않음.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: DOCUMENT를 DOC로 축약하고 기존 ID 계약을 유지한다. ID 예외는 표준 승인 확인 대상이다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_dp_io.py:validate_row; 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/Records.page",
+        "korean": "Y"
+      },
+      {
+        "old": "LOOKUP_ID",
+        "current": "SRCH_KEY_ID",
+        "name": "LGL_SRCH_KEY_VALU",
+        "logical": "법규검색키값",
+        "words": "법규+검색+키+값",
+        "domain": "값",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "용어의 표기나 식별자로 자료를 찾는 검색키. 긴 값은 호출 경로에 따라 해시로 바뀌며 전체 값은 JSON에 보관한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 긴 보조키는 호출자가 lookup_key()를 적용한 경우 sha256: 접두 digest로 인코딩한다. 산식·생성 규칙: lookup_key(v)는 NULL/512바이트 이하 v를 유지, 초과 시 sha256: + digest(v). 원문 DOCUMENT_ID에는 이 인코딩을 적용하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 검색용 키임을 SRCH_KEY_ID로 표시한다. 원문 문서 식별자와 구분한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "generation": "lookup_key(v)는 NULL/512바이트 이하 v를 유지, 초과 시 sha256: + digest(v). 원문 DOCUMENT_ID에는 이 인코딩을 적용하지 않음. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 검색용 키임을 SRCH_KEY_ID로 표시한다. 원문 문서 식별자와 구분한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "source_description": "논리명(미승인 후보): 검색키ID\n업무 의미: 표면형·논리 ID 등 후보를 빠르게 찾는 보조 조회키다. 전체 논리 값은 JSON에 보존한다.\n허용값·코드·범위: NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 긴 보조키는 호출자가 lookup_key()를 적용한 경우 sha256: 접두 digest로 인코딩한다.\n산식·생성 규칙: lookup_key(v)는 NULL/512바이트 이하 v를 유지, 초과 시 sha256: + digest(v). 원문 DOCUMENT_ID에는 이 인코딩을 적용하지 않음.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 검색용 키임을 SRCH_KEY_ID로 표시한다. 원문 문서 식별자와 구분한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "korean": "Y"
+      },
+      {
+        "old": "OWNER_ID",
+        "current": "OWNR_REF_ID",
+        "name": "LGL_OWNR_REF_ID",
+        "logical": "법규소속참조ID",
+        "words": "법규+소속+참조+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "조회 자료가 속한 구조 단위·정의·참조 등을 찾는 식별자. DB 스키마나 사용자 계정을 뜻하지 않는다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 전체 의미는 KIND·manifest와 원본 JSON으로 해석한다. 산식·생성 규칙: 해당 없음: 종류별 게시기가 정한 owner_id; 긴 보조키 인코딩을 사용한 경우 lookup_key 계약 유지. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 스키마 owner와 혼동하지 않도록 소유 참조 키 OWNR_REF_ID로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "generation": "해당 없음: 종류별 게시기가 정한 owner_id; 긴 보조키 인코딩을 사용한 경우 lookup_key 계약 유지. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 스키마 owner와 혼동하지 않도록 소유 참조 키 OWNR_REF_ID로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "source_description": "논리명(미승인 후보): 소유참조ID\n업무 의미: 조회 투영 종류별 소유 단위·정의·참조 등을 찾는 보조키다. DB owner나 사용자 계정 ID가 아니다.\n허용값·코드·범위: NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 전체 의미는 KIND·manifest와 원본 JSON으로 해석한다.\n산식·생성 규칙: 해당 없음: 종류별 게시기가 정한 owner_id; 긴 보조키 인코딩을 사용한 경우 lookup_key 계약 유지.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 스키마 owner와 혼동하지 않도록 소유 참조 키 OWNR_REF_ID로 표현한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "korean": "Y"
+      },
+      {
+        "old": "TARGET_ID",
+        "current": "TGT_REF_ID",
+        "name": "LGL_TGT_REF_ID",
+        "logical": "법규대상참조ID",
+        "words": "법규+대상+참조+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "관계의 대상이나 상위 단위를 찾는 식별자. 자료 유형에 따라 가리키는 대상이 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 모든 종류에서 같은 엔터티를 가리킨다고 보지 않음. 산식·생성 규칙: 해당 없음: 종류별 게시기의 target_id; 보조키 인코딩 사용 여부는 해당 게시 계약 유지. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 참조 대상 키라는 역할을 TGT_REF_ID로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "generation": "해당 없음: 종류별 게시기의 target_id; 보조키 인코딩 사용 여부는 해당 게시 계약 유지. 타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음 명칭 선정 이유: 참조 대상 키라는 역할을 TGT_REF_ID로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "source_description": "논리명(미승인 후보): 대상참조ID\n업무 의미: 조회 투영 종류별 관계 대상 또는 부모를 찾는 보조키다.\n허용값·코드·범위: NULL 또는 비어 있지 않은 UTF-8 512바이트 이하 문자열. 모든 종류에서 같은 엔터티를 가리킨다고 보지 않음.\n산식·생성 규칙: 해당 없음: 종류별 게시기의 target_id; 보조키 인코딩 사용 여부는 해당 게시 계약 유지.\n타입·NULL·기본값: VARCHAR2(512 BYTE) / NULL 허용 / 없음\n명칭 선정 이유: 참조 대상 키라는 역할을 TGT_REF_ID로 표현한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:lookup_key/record",
+        "korean": "Y"
+      },
+      {
+        "old": "ROW_SHA256",
+        "current": "ROW_HASH_VAL",
+        "name": "LGL_ROW_HASH_VALU",
+        "logical": "법규조회행해시값",
+        "words": "법규+조회+행+해시+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "조회 행의 종류·식별자·문서·검색키·JSON 내용을 함께 계산한 해시값. JSON 본문만의 해시와 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 hash, NULL 불가. JSON 본문만의 hash로 대체할 수 없음. 산식·생성 규칙: digest({kind,row_id,document_id,lookup_id,owner_id,target_id,value}); sha256 필드 자체는 제외. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 행 전체의 해시값임을 ROW_HASH_VAL로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records",
+        "generation": "digest({kind,row_id,document_id,lookup_id,owner_id,target_id,value}); sha256 필드 자체는 제외. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 행 전체의 해시값임을 ROW_HASH_VAL로 표현한다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records",
+        "source_description": "논리명(미승인 후보): 조회행해시값\n업무 의미: 조회 행의 종류·키·문서 및 보조키·JSON 값이 변하지 않았는지 확인하는 digest다.\n허용값·코드·범위: 64자리 소문자 16진 hash, NULL 불가. JSON 본문만의 hash로 대체할 수 없음.\n산식·생성 규칙: digest({kind,row_id,document_id,lookup_id,owner_id,target_id,value}); sha256 필드 자체는 제외.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 조회 행 전체의 해시값임을 ROW_HASH_VAL로 표현한다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:record/insert_records",
+        "korean": "N"
+      },
+      {
+        "old": "VALUE_JSON",
+        "current": "ROW_JSON_CN",
+        "name": "LGL_ROW_JSON_CTNT",
+        "logical": "법규조회JSON내용",
+        "words": "법규+조회+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": false,
+        "default": null,
+        "definition": "원문 좌표·용어·정의 등 조회 자료의 내용을 JSON으로 저장한 값. 자료 유형별로 내부 항목이 다르다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NULL 불가, DDL IS JSON. 게시기 json_body의 직렬화 상한 8MiB; KIND별 의미 검증은 별도. 산식·생성 규칙: json_body(value): ASCII JSON·키 정렬·고정 구분자·NaN 금지. 내부 필드명은 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 조회 행 JSON 내용 ROW_JSON_CN으로 상태 객체와 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:json_body/record/insert_records",
+        "generation": "json_body(value): ASCII JSON·키 정렬·고정 구분자·NaN 금지. 내부 필드명은 개명하지 않음. 타입·NULL·기본값: CLOB / NULL 불가 / 없음 명칭 선정 이유: 조회 행 JSON 내용 ROW_JSON_CN으로 상태 객체와 구분한다. 타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:json_body/record/insert_records",
+        "source_description": "논리명(미승인 후보): 조회행JSON내용\n업무 의미: KIND와 완료 manifest가 정의하는 조회 행의 논리 값 JSON이다. 원문 좌표·용어·정의 등 종류별 구조가 다르다.\n허용값·코드·범위: NULL 불가, DDL IS JSON. 게시기 json_body의 직렬화 상한 8MiB; KIND별 의미 검증은 별도.\n산식·생성 규칙: json_body(value): ASCII JSON·키 정렬·고정 구분자·NaN 금지. 내부 필드명은 개명하지 않음.\n타입·NULL·기본값: CLOB / NULL 불가 / 없음\n명칭 선정 이유: 조회 행 JSON 내용 ROW_JSON_CN으로 상태 객체와 구분한다.\n타입 유지·변경 이유: 원문·메타/JSON·인코딩 내용의 가변 길이와 무손실 전송을 보존하기 위해 현행 CLOB 유지. 실측과 승인 인포타입 확인 전 길이 제한 문자열로 축소하지 않음.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:json_body/record/insert_records",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "SRCH_PBLS_ID",
+      "LGL_ROW_KIND_VALU",
+      "LGL_ROW_ID"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "LGL_ROW_JSON_CTNT"
+        ],
+        "expr": "LGL_ROW_JSON_CTNT IS JSON",
+        "status": "현행 보존"
+      }
+    ],
+    "fks": [],
+    "indexes": [
+      {
+        "columns": [
+          "SRCH_PBLS_ID",
+          "LGL_ROW_KIND_VALU",
+          "LGL_SRCH_KEY_VALU"
+        ],
+        "purpose": "게시·유형 내 LGL_SRCH_KEY_VALU 점조회"
+      },
+      {
+        "columns": [
+          "SRCH_PBLS_ID",
+          "LGL_ROW_KIND_VALU",
+          "LGL_OWNR_REF_ID"
+        ],
+        "purpose": "게시·유형 내 LGL_OWNR_REF_ID 점조회"
+      },
+      {
+        "columns": [
+          "SRCH_PBLS_ID",
+          "LGL_ROW_KIND_VALU",
+          "LGL_TGT_REF_ID"
+        ],
+        "purpose": "게시·유형 내 LGL_TGT_REF_ID 점조회"
+      },
+      {
+        "columns": [
+          "SRCH_PBLS_ID",
+          "LGL_ROW_KIND_VALU",
+          "LGL_DOC_ID"
+        ],
+        "purpose": "게시·유형 내 LGL_DOC_ID 점조회"
+      }
+    ]
+  },
+  "query_active": {
+    "key": "query_active",
+    "source_owner": "SIDDS",
+    "source_name": "LGL_SRCH_CHNL_S",
+    "name": "IDD_A03_LGL_SRCH_CHNL",
+    "logical": "법규조회채널내역",
+    "definition": "조회 채널별로 현재 사용할 조회 게시본을 관리한다. 변경 순번을 함께 확인해 동시에 다른 게시본으로 바꾸는 충돌을 막는다.",
+    "origin": "LGL_SRCH_PBLS_S의 완료 게시본과 채널 선택 요청",
+    "process": "완료 게시본을 확인한 뒤 기존 게시본·변경 순번이 예상과 같을 때만 채널 선택을 갱신한다.",
+    "kind": "MASTER",
+    "classification": "기존 게시 지원",
+    "columns": [
+      {
+        "old": "CHANNEL",
+        "current": "CHNL_NM",
+        "name": "LGL_CHNL_NAME",
+        "logical": "법규조회채널명",
+        "words": "법규+조회+채널+명",
+        "domain": "명",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "현재 사용할 조회 게시본을 선택하는 채널의 이름.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "패턴 [a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}, NULL 불가. 실제 채널 목록은 환경 설정으로 별도 확정. 산식·생성 규칙: 해당 없음: 명시한 게시 채널명을 저장한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 채널을 이름 도메인으로 표현한 CHNL_NM 후보다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:channel_name/activate",
+        "generation": "해당 없음: 명시한 게시 채널명을 저장한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 채널을 이름 도메인으로 표현한 CHNL_NM 후보다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:channel_name/activate",
+        "source_description": "논리명(미승인 후보): 게시채널명\n업무 의미: 요청 시작 시 사용할 완료 조회 릴리스를 선택하는 게시 채널 이름이다.\n허용값·코드·범위: 패턴 [a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}, NULL 불가. 실제 채널 목록은 환경 설정으로 별도 확정.\n산식·생성 규칙: 해당 없음: 명시한 게시 채널명을 저장한다.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 채널을 이름 도메인으로 표현한 CHNL_NM 후보다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:channel_name/activate",
+        "korean": "N"
+      },
+      {
+        "old": "RELEASE_ID",
+        "current": "SRCH_PBLS_ID",
+        "name": "SRCH_PBLS_ID",
+        "logical": "법규조회게시ID",
+        "words": "법규+조회+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "조회에 사용할 원문과 검색 자료 묶음의 식별자. 조회 행과 채널을 같은 게시본에 연결한다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다. 산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "generation": "조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다. 타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음 명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다. 타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "source_description": "논리명(미승인 후보): 조회게시ID\n업무 의미: 완료 조회 manifest를 식별한다. 조회 행과 채널이 어떤 조회 게시본에 속하는지 연결한다.\n허용값·코드·범위: 64자리 소문자 16진 digest; NULL 불가. 채널의 값은 조회 게시 테이블을 참조한다.\n산식·생성 규칙: 조회 게시 생성 시 digest(완료 query manifest). 조회 행·채널은 그 값을 참조·보존한다.\n타입·NULL·기본값: VARCHAR2(64 BYTE) / NULL 불가 / 없음\n명칭 선정 이유: 조회 게시 SRCH_PBLS_ID로 원문 게시와 구분하고 참조 컬럼 이름을 맞춘다.\n타입 유지·변경 이유: 문자 식별값·코드·hash 및 선행 0을 보존하기 위해 현행 VARCHAR2 BYTE 계약 유지. 승인 도메인·문자셋과 실제 최대 길이는 추가 확인.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:read_release/insert_records/activate",
+        "korean": "N"
+      },
+      {
+        "old": "REVISION",
+        "current": "CHG_SEQ_NO",
+        "name": "SRCH_CHG_SEQ_NO",
+        "logical": "조회변경순번",
+        "words": "조회+변경+순번",
+        "domain": "순번",
+        "type": "NUMBER(18)",
+        "current_type": "NUMBER(18)",
+        "nullable": false,
+        "default": null,
+        "definition": "채널이나 실행 상태를 바꿀 때마다 증가하는 순번. 1부터 시작하며 동시 수정 충돌을 확인하는 데 쓴다.",
+        "conversion": "원천 값을 변환 없이 보존.",
+        "allowed": "NUMBER(18), 정수 1 이상, NULL 불가. 생성 1, 성공 변경 때 1 증가. 원문 개정번호와 다름. 산식·생성 규칙: 새 revision = expected_revision + 1. 기대 revision과 기존 값 확인 후 CAS 갱신. 타입·NULL·기본값: NUMBER(18) / NULL 불가 / 없음 명칭 선정 이유: REVISION을 변경순번 CHG_SEQ_NO로 표현해 법령 판본과 구분한다. 타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:activate; 02_BACKEND/semantic_runtime/oracle_query_state.py:State.put",
+        "generation": "새 revision = expected_revision + 1. 기대 revision과 기존 값 확인 후 CAS 갱신. 타입·NULL·기본값: NUMBER(18) / NULL 불가 / 없음 명칭 선정 이유: REVISION을 변경순번 CHG_SEQ_NO로 표현해 법령 판본과 구분한다. 타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지. 표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요. 확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:activate; 02_BACKEND/semantic_runtime/oracle_query_state.py:State.put",
+        "source_description": "논리명(미승인 후보): 변경순번\n업무 의미: 같은 채널 또는 상태 객체의 동시 수정 충돌을 확인하는 변경 순번이다.\n허용값·코드·범위: NUMBER(18), 정수 1 이상, NULL 불가. 생성 1, 성공 변경 때 1 증가. 원문 개정번호와 다름.\n산식·생성 규칙: 새 revision = expected_revision + 1. 기대 revision과 기존 값 확인 후 CAS 갱신.\n타입·NULL·기본값: NUMBER(18) / NULL 불가 / 없음\n명칭 선정 이유: REVISION을 변경순번 CHG_SEQ_NO로 표현해 법령 판본과 구분한다.\n타입 유지·변경 이유: 현재 정수 범위·정밀도와 동시성/크기/표시 계약을 보존하기 위해 현행 NUMBER 유지.\n표준 매핑 상태: 표준단어·용어·도메인·인포타입 미확인; 승인 필요.\n확인 근거: 02_BACKEND/semantic_runtime/oracle_query_catalog.py:activate; 02_BACKEND/semantic_runtime/oracle_query_state.py:State.put",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "LGL_CHNL_NAME"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "SRCH_CHG_SEQ_NO"
+        ],
+        "expr": "SRCH_CHG_SEQ_NO >= 1",
+        "status": "현행 보존"
+      }
+    ],
+    "fks": [
+      {
+        "columns": [
+          "SRCH_PBLS_ID"
+        ],
+        "target": "query_release",
+        "target_columns": [
+          "SRCH_PBLS_ID"
+        ]
+      }
+    ],
+    "indexes": []
+  },
+  "publication": {
+    "key": "publication",
+    "source_owner": "SIDDA",
+    "source_name": "LGL_ONT_PUB_A",
+    "name": "IDD_A03_LGL_ONT_PUB",
+    "logical": "법규온톨로지게시내역",
+    "definition": "검토·승인한 개념 묶음의 조건·산정·효과·예외와 원문 근거를 사전에 조립한 게시본으로 보관한다. 같은 묶음의 새 승인 판본도 이전 게시본을 덮어쓰지 않는다.",
+    "origin": "Dataiku S3 승인 작업 JSON·승인 영수증·검증한 법규 원문",
+    "process": "원문과 승인 판본·해시를 재검증하고 사전 조립 JSON과 게시 ID를 저장한다. 원문 좌표 색인·활성 선택·감사 기록과 한 트랜잭션으로 게시한다.",
+    "kind": "SNAPSHOT",
+    "classification": "신규 온톨로지 지식",
+    "columns": [
+      {
+        "old": "PUB_ID",
+        "current": "PUB_ID",
+        "name": "ONT_PBLS_ID",
+        "logical": "온톨로지게시ID",
+        "words": "온톨로지+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "승인 판본의 온톨로지 게시본을 구분하는 해시형 식별자. 묶음 ID·작업 판본·승인 영수증·게시 내용 해시로 계산하며 원문 게시 ID와 구분한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "게시 ID",
+        "korean": "N"
+      },
+      {
+        "old": "BNDL_ID",
+        "current": "BNDL_ID",
+        "name": "ONT_BNDL_ID",
+        "logical": "온톨로지묶음ID",
+        "words": "온톨로지+묶음+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(84 BYTE)",
+        "current_type": "VARCHAR2(84 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 개념 묶음을 여러 작업 판본과 게시본에 걸쳐 연결하는 식별자. 현재 생성기는 cb- 접두어를 사용하며 저장 계약은 84 BYTE다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "묶음 ID",
+        "korean": "N"
+      },
+      {
+        "old": "REV_NO",
+        "current": "REV_NO",
+        "name": "ONT_WORK_VER_NO",
+        "logical": "지식작업판본번호",
+        "words": "지식+작업+판본+번호",
+        "domain": "번호",
+        "type": "NUMBER(18)",
+        "current_type": "NUMBER(18)",
+        "nullable": false,
+        "default": null,
+        "definition": "게시본을 만들 때 승인받은 작업 판본의 번호. 문자열 원문 판본 ID 및 활성 선택의 변경 순번과 다르다. 기존 게시 DDL에는 양수 CHECK가 없으며 작업 승인 경로에서 검사한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "승인 작업 판본",
+        "korean": "N"
+      },
+      {
+        "old": "PKG_HASH_VAL",
+        "current": "PKG_HASH_VAL",
+        "name": "ONT_PKG_HASH_VALU",
+        "logical": "지식게시해시값",
+        "words": "지식+게시+해시+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "사전 조립 시나리오와 원문 좌표를 담은 게시 payload의 정규화 내용 해시. 단순 CLOB 저장 문자열 바이트를 다시 해시한 값으로 대체하지 않는다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "게시 JSON 해시",
+        "korean": "N"
+      },
+      {
+        "old": "PKG_JSON_CN",
+        "current": "PKG_JSON_CN",
+        "name": "ONT_PKG_JSON_CTNT",
+        "logical": "지식게시JSON내용",
+        "words": "지식+게시+JSON+내용",
+        "domain": "내용",
+        "type": "CLOB",
+        "current_type": "CLOB",
+        "nullable": false,
+        "default": null,
+        "definition": "승인 개념 묶음·조건·산정·결과·예외·미확인·근거 좌표와 사전 조립 시나리오를 담은 JSON. 법률 수치 계산 실행 결과나 개별 질문의 정답 묶음이 아니다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "사전 조립 게시 JSON",
+        "korean": "Y"
+      }
+    ],
+    "pk": [
+      "ONT_PBLS_ID"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "ONT_PKG_JSON_CTNT"
+        ],
+        "expr": "ONT_PKG_JSON_CTNT IS JSON",
+        "status": "현행 보존"
+      }
+    ],
+    "fks": [],
+    "indexes": []
+  },
+  "head": {
+    "key": "head",
+    "source_owner": "SIDDA",
+    "source_name": "LGL_ONT_HEAD_A",
+    "name": "IDD_A03_LGL_ONT_HEAD",
+    "logical": "법규온톨로지선택내역",
+    "definition": "개념 묶음마다 현재 사용할 온톨로지 게시본과 변경 순번을 관리한다. 게시 중지 시 게시 ID를 NULL로 두며, 이전 게시본과 감사 이력은 보존한다.",
+    "origin": "승인된 온톨로지 게시본과 게시·중지·롤백 요청",
+    "process": "현재 변경 순번을 확인한 뒤 게시 ID를 바꾸고 순번을 증가시킨다. 이미 시작한 RAG 요청의 선택본은 중간에 바꾸지 않는다.",
+    "kind": "MASTER",
+    "classification": "신규 온톨로지 게시 지원",
+    "columns": [
+      {
+        "old": "BNDL_ID",
+        "current": "BNDL_ID",
+        "name": "ONT_BNDL_ID",
+        "logical": "온톨로지묶음ID",
+        "words": "온톨로지+묶음+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(84 BYTE)",
+        "current_type": "VARCHAR2(84 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "같은 개념 묶음을 여러 작업 판본과 게시본에 걸쳐 연결하는 식별자. 현재 생성기는 cb- 접두어를 사용하며 저장 계약은 84 BYTE다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "묶음 ID",
+        "korean": "N"
+      },
+      {
+        "old": "PUB_ID",
+        "current": "PUB_ID",
+        "name": "ONT_PBLS_ID",
+        "logical": "온톨로지게시ID",
+        "words": "온톨로지+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": true,
+        "default": null,
+        "definition": "해당 개념 묶음에서 활성화한 온톨로지 게시본 ID. NULL은 활성 게시본 없음 또는 게시 중지이며 이전 게시 이력은 삭제하지 않는다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "활성 게시 ID",
+        "korean": "N"
+      },
+      {
+        "old": "CHG_SEQ_NO",
+        "current": "CHG_SEQ_NO",
+        "name": "ONT_CHG_SEQ_NO",
+        "logical": "지식변경순번",
+        "words": "지식+변경+순번",
+        "domain": "순번",
+        "type": "NUMBER(18)",
+        "current_type": "NUMBER(18)",
+        "nullable": false,
+        "default": null,
+        "definition": "개념 묶음의 활성 게시 선택을 바꿀 때 증가하는 순번. 초기 0을 허용하며 게시·중지·롤백 시 증가한다. 원문 조회 채널의 1 이상 순번과 구분한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "활성 포인터 변경 순번",
+        "korean": "N"
+      }
+    ],
+    "pk": [
+      "ONT_BNDL_ID"
+    ],
+    "checks": [
+      {
+        "columns": [
+          "ONT_CHG_SEQ_NO"
+        ],
+        "expr": "ONT_CHG_SEQ_NO >= 0",
+        "status": "현행 보존; 0 허용"
+      }
+    ],
+    "fks": [
+      {
+        "columns": [
+          "ONT_PBLS_ID"
+        ],
+        "target": "publication",
+        "target_columns": [
+          "ONT_PBLS_ID"
+        ]
+      }
+    ],
+    "indexes": []
+  },
+  "anchor": {
+    "key": "anchor",
+    "source_owner": "SIDDA",
+    "source_name": "LGL_ONT_ANC_A",
+    "name": "IDD_A03_LGL_ONT_ANC",
+    "logical": "법규원문지식연결내역",
+    "definition": "문서·원문 판본·구조 단위에 연결된 온톨로지 게시본을 찾는 색인이다. 질문 번호를 중심 키로 삼지 않으며, 조회자가 허용받은 원문 범위를 확인한다.",
+    "origin": "온톨로지 게시 JSON의 provisions.anchor와 검증된 원문 좌표",
+    "process": "게시본의 원문 좌표별 해시를 계산해 게시 ID와 함께 적재한다. 활성 게시본과 조인하여 원문 도착 시 필요한 묶음만 조회한다.",
+    "kind": "SNAPSHOT",
+    "classification": "신규 온톨로지 지식",
+    "columns": [
+      {
+        "old": "PUB_ID",
+        "current": "PUB_ID",
+        "name": "ONT_PBLS_ID",
+        "logical": "온톨로지게시ID",
+        "words": "온톨로지+게시+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "승인 판본의 온톨로지 게시본을 구분하는 해시형 식별자. 묶음 ID·작업 판본·승인 영수증·게시 내용 해시로 계산하며 원문 게시 ID와 구분한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "게시 ID",
+        "korean": "N"
+      },
+      {
+        "old": "ANC_HASH_VAL",
+        "current": "ANC_HASH_VAL",
+        "name": "SRC_ANCHOR_HASH_VALU",
+        "logical": "원문좌표해시값",
+        "words": "원문+좌표+해시+값",
+        "domain": "값",
+        "type": "VARCHAR2(64 BYTE)",
+        "current_type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "문서 ID·원문 판본·구조 단위 ID의 세 항목을 정규화 JSON으로 해시한 조회키. 표시명·본문 해시는 이 키에 포함하지 않고 게시 JSON과 원문 대조에서 별도 검증한다. 이미지 bbox 좌표와 다르다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "원문 좌표 해시",
+        "korean": "N"
+      },
+      {
+        "old": "DOC_ID",
+        "current": "DOC_ID",
+        "name": "LGL_DOC_ID",
+        "logical": "법규문서ID",
+        "words": "법규+문서+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "온톨로지 근거가 속한 법규 문서 식별자. 원문 테이블의 문서 ID와 같은 값이며 조회 권한 확인에 사용한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "문서 ID",
+        "korean": "Y"
+      },
+      {
+        "old": "SRC_VER_ID",
+        "current": "SRC_VER_ID",
+        "name": "SRC_VER_ID",
+        "logical": "원문판본ID",
+        "words": "원문+판본+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "온톨로지 근거 원문의 판본 식별값. 현재 수집 경로는 원본자료 해시를 넣는다. 데이터 구축 세대 ID와 다른 값이며 현행 512 BYTE 계약을 유지한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "문서 판본",
+        "korean": "Y"
+      },
+      {
+        "old": "UNIT_ID",
+        "current": "UNIT_ID",
+        "name": "LGL_UNIT_ID",
+        "logical": "법규구조단위ID",
+        "words": "법규+구조+단위+ID",
+        "domain": "ID",
+        "type": "VARCHAR2(512 BYTE)",
+        "current_type": "VARCHAR2(512 BYTE)",
+        "nullable": false,
+        "default": null,
+        "definition": "온톨로지 근거가 속한 원문 조항 등의 구조 단위 식별자. 원문 테이블의 구조 단위 ID와 같은 값이며 세대·문서·판본 검증을 함께 수행한다.",
+        "conversion": "원천 값·JSON 의미·해시를 변환 없이 보존.",
+        "allowed": "현행 생성기·스키마 및 승인 게시 계약을 따른다.",
+        "generation": "02_BACKEND/semantic_runtime/ontology_work/repository.py 및 schema.py",
+        "source_description": "조항 ID",
+        "korean": "Y"
+      }
+    ],
+    "pk": [
+      "ONT_PBLS_ID",
+      "SRC_ANCHOR_HASH_VALU"
+    ],
+    "checks": [],
+    "fks": [
+      {
+        "columns": [
+          "ONT_PBLS_ID"
+        ],
+        "target": "publication",
+        "target_columns": [
+          "ONT_PBLS_ID"
+        ]
+      }
+    ],
+    "indexes": [
+      {
+        "columns": [
+          "SRC_ANCHOR_HASH_VALU"
+        ],
+        "purpose": "원문 anchor 해시로 게시본 점조회"
+      }
+    ]
+  }
+}

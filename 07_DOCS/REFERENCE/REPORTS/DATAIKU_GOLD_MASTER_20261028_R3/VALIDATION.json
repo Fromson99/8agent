@@ -1,0 +1,49 @@
+{
+  "status": "PASS_DOCUMENT_CHECK",
+  "workbook": "법률에이전트_3번5번_골드테이블컬럼마스터_20261028_R3.xlsx",
+  "sha256": "3a6d7620746e82f190d33fbb3d4af5f037db74dae4a9b9d4aef24af801bc49ab",
+  "bytes": 65908,
+  "agent_numbers": [
+    "A03",
+    "A05"
+  ],
+  "agent_prefix_confirmed": false,
+  "shared_tables": 10,
+  "columns": 49,
+  "existing_tables": 7,
+  "existing_columns": 36,
+  "ontology_tables": 3,
+  "ontology_columns": 13,
+  "excluded_tables": 4,
+  "excluded_columns": 20,
+  "unique_terms": 34,
+  "constraints": {
+    "pk": 10,
+    "check": 6,
+    "fk": 3,
+    "additional_index": 5
+  },
+  "headers_match_reference": true,
+  "current_columns_match_contract": true,
+  "logical_names_utf8_bytes_max": 26,
+  "source_hashes_unchanged": true,
+  "database_access": false,
+  "product_modified": false,
+  "metadata_approval": false,
+  "official_dictionary_checked": false,
+  "native_excel_render": false,
+  "source_files": {
+    "07_DOCS/REFERENCE/REPORTS/DATAIKU_COLUMN_MASTER_20261027_R1/reference_template.xlsx": "4fa269a11657f7b04f95f190ca4fca937bf8d0c07944a957800a536e98fe40ac",
+    "07_DOCS/REFERENCE/REPORTS/DATAIKU_COLUMN_MASTER_20261027_R1/build_workbook.py": "ffdd923ec36429aed6974c859dff973637d367c46a30ef1263fb2ec840b6cbdb",
+    "07_DOCS/REFERENCE/REPORTS/DATAIKU_COLUMN_MASTER_20261027_R1/삼성증권_AI기반PI대표과제_법규_골드컬럼마스터_검토초안_20261027.xlsx": "d074b10f7a63544bef08ad34491ad9a181eb26c4aec4469b8e6c0b9e556d0348",
+    "08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/physical_mapping.yaml": "38383c091ebd9e6aa4c615f3d45aae4916f5b456065d6cc519536377afe34907",
+    "08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/01_CREATE_TABLES.sql": "7ddc819ecf32ed7f46fc86eb67de27236eb23609901126949013d0a38469d4c5",
+    "08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/01_CREATE_TABLES.sql": "b0bba654c086331fba8d1f292a1418635c689c7fff9499e06be0ebbcb7b053a5",
+    "08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/TABLE_COLUMNS.csv": "a3ea4a8c1db6f1531fa24af108677ff2f639906ffdf35b28834fe0c8523ba23e",
+    "08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/TABLE_BIZMETA.csv": "6d5104ecaeae99353b516e7288ad0cbb645d42b3ef64e9e88f1819ac1eba8747",
+    "02_BACKEND/semantic_runtime/ontology_work/repository.py": "caae625912aa76981ca265efdff8b2b5b26b3094298688ccf89ae7b9e0f56cfd",
+    "02_BACKEND/semantic_runtime/ontology_work/schema.py": "ff3f25a592e34f3b19b44a2b732880fa96bbe0986059680e9aa3816cba554444",
+    "02_BACKEND/semantic_runtime/legal_agent/ontology_compiler.py": "8809e19500e658791c36e39bdcc67728c09bd6a425a58a4ffe65b24d8bdc9274",
+    "02_BACKEND/semantic_runtime/contracts.py": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f"
+  }
+}

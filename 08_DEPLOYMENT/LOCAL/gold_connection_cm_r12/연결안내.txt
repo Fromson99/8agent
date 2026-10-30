@@ -1,0 +1,45 @@
+R12 골드 연결 실험 — CM 필수 21문서
+
+결과: Oracle에 13테이블·60컬럼을 만들고 CM 필수 문서 21종의 원문 전체를 적재했다.
+원문 구간 64,629, 구조 단위 56,475, 검색/연결 행 3,344,267, 실제 BGE-M3 벡터 16,085개.
+전체 비시스템 사용자 데이터/색인/LOB 사용량 5.911 GB / 한도 12 GB (49.26%). 실험 상한 9.6 GB.
+Oracle 용량과 C/WSL 파일 사용량은 별개다. 벡터·전체 원문/행 해시·SQL·권한·활성 선택 검증 증거는 ADR1208 artifacts/run-001에 있다.
+
+실행 위치: /home/jin/8-AGENT
+  .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_cm_r12/connect.py documents
+  .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_cm_r12/connect.py search 이사회
+  .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_cm_r12/connect.py references 3521c3aaa5a735fd
+  .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_cm_r12/connect.py vector-search '상장주선인의 의무 인수와 보유 기간'
+  .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_cm_r12/connect.py source 3521c3aaa5a735fd 0
+
+공통 옵션은 명령 앞에 둔다:
+  --config <R12 설정 JSON> --connection <비공개 연결 JSON> --scope <허용문서 JSON> --channel cm-r12
+연결 JSON은 user/password/dsn 필드이며 소유자만 읽을 수 있는 0600 권한이어야 한다.
+기본 연결 파일: ~/.local/state/8-agent/gold-r12-1208/readonly-connection.json
+로컬 DSN: 127.0.0.1:11524/FREEPDB1, 독립 소유자: A8_GR12_CM1208.
+기본 로그인 A8_GR12_CM1208_RO는 13테이블 SELECT만 허용한다. 스키마 소유자는 config_b03.json의 owner로 별도 지정한다. 적재 계정 파일 connection.json은 게시자 전용이다.
+문서 범위는 documents.json의 documents[].document_id를 사용한다. 게시된 21종 밖으로 넓히면 거절한다.
+reference-targets <출발문서ID> <참조ID>는 저장된 참조의 실제 원문을 반환한다. 허용·게시 범위 밖 대상은 TARGET_NOT_AVAILABLE_IN_SCOPE로 남긴다.
+vector-search는 로컬 CPU 모델을 읽으므로 최초 로딩 시간이 든다. 512토큰을 넘는 질문은 잘라내지 않고 거절한다.
+
+범위와 한계
+- CM 51질문·100문서참조는 전부 문서에 대응한다. 조문 좌표는 99건 확인했고 cm-046 상법 1건은 기준 데이터에 좌표가 없어 문서 포함으로만 기록한다.
+- CM 과거 ID 14개는 문서명으로 현행 원문에 대응했다. 과거 판본의 내용 동일성이나 법률 답변 정확성을 보장하지 않는다.
+- 기존 1,547문서 전체를 넣은 결과가 아니다. 사용자 선택 3번에 따라 80% 한도 안의 21문서를 선정했다.
+- 기존 검색 테이블에 전문검색 토큰 위치를 보존했다. 별도 전문검색 테이블은 추가하지 않았다.
+- 문서/조문/블록, 참조 payload/body, 용어 출현과 연결된 의미 그래프는 보존했다. SQLite 물리 rowid 쌍과 재구성 가능한 참조 편의 VIEW는 중복 적재하지 않았다.
+- 외부 전체 용어사전의 저작/이력 묶음과 기존 전체 추론 엔진은 이 실험 범위 밖이다. 온톨로지 3테이블은 빈 상태이며 승인된 온톨로지를 지어 넣지 않았다.
+- 원문 선택과 법률 판단을 대신하는 자동 참조 조사 기능을 추가하지 않았다. 별도 데이터 API/CLI 연결이다.
+- MAIN118, 기존 제품 코드 및 원본 DB 9개는 유지한다. B03 이름으로 실증했으며 B05 전체 적재나 GENOS 배포는 하지 않았다.
+
+시험 DB 운영 변경
+컨테이너 메모리 상한을 2.44GiB에서 4GiB로 늘리고, 10MiB redo 2개를 256MiB redo 3개로 교체했다.
+기존 작은 redo 파일은 삭제하지 않았다. Oracle 자체 데이터/메모리 라이선스 제한은 유지한다.
+로그 변경 중 CURRENT 로그 삭제는 Oracle이 거절했고, INACTIVE 확인/전환 후 완료했다. 실패 기록은 보존했다.
+이 컨테이너의 다른 사용자 스키마는 삭제하지 않았다.
+대량 입력 중 새 SRCH_ROW의 보조 색인4개를 일시 제거했다가 적재 후 동일 정의로 재생성했다. 기본키는 유지했고 최종11개 일반 색인을 검증했다. 중간 사용량 감소를 최종 절감으로 계산하지 않았다.
+
+최종 확인: 독립 폴더 CLI5종 통과. 사용하지 않는 이번 실험의 이전 이관안 SQLite2개만 삭제(7.55GiB). 최종 여유 C 254.75GiB / WSL 436.99GiB.
+사용자 테이블스페이스 파일 할당 6.230GB이며 실제 사용자 세그먼트5.911GB와 구분한다. 둘 다9.6GB 상한 이내다.
+Oracle 통계를 새로 수집한 뒤 상장 검색은 단일 확인에서1.319초였다. 캐시 등 통제 없는 관측이며 일반 성능 인증은 아니다.
+검사기 오류(Oracle 권한 오류번호 차이·문서명 비교·FP16 근사 정규화)를 정정한 과정과 최초 실패 로그를 보존했다. 생성형 답변/법률 품질 평가는 하지 않았다.

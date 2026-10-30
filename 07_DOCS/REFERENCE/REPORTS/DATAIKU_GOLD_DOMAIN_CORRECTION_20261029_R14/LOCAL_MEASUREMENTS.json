@@ -1,0 +1,84 @@
+{
+  "scope": "Selected local generation; not onsite Oracle",
+  "release_id": "source-accordion-20261029-r1",
+  "generation_path": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+  "measurements": [
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "document",
+      "column": "document_id",
+      "limit_bytes": 50,
+      "non_null_rows": 1547,
+      "max_chars": 16,
+      "max_utf8_bytes": 16,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "document",
+      "column": "name",
+      "limit_bytes": 2250,
+      "non_null_rows": 1547,
+      "max_chars": 501,
+      "max_utf8_bytes": 1163,
+      "non_ascii_rows": 1547,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "source_unit",
+      "column": "unit_id",
+      "limit_bytes": 50,
+      "non_null_rows": 256848,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "source_unit",
+      "column": "parent_id",
+      "limit_bytes": 50,
+      "non_null_rows": 250191,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "block_payload",
+      "column": "block_id",
+      "limit_bytes": 50,
+      "non_null_rows": 322389,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/store.sqlite",
+      "table": "block_payload",
+      "column": "unit_id",
+      "limit_bytes": 50,
+      "non_null_rows": 322389,
+      "max_chars": 5,
+      "max_utf8_bytes": 5,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    },
+    {
+      "file": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation/navigation/navigation.sqlite",
+      "table": "source",
+      "column": "id",
+      "limit_bytes": 50,
+      "non_null_rows": 39992,
+      "max_chars": 32,
+      "max_utf8_bytes": 32,
+      "non_ascii_rows": 0,
+      "over_limit": 0
+    }
+  ]
+}
