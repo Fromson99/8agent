@@ -1,0 +1,29 @@
+"""Post-run exact final claims, review references, source quotes and selected binding."""
+from common import *
+import sqlite3
+P=RUN/read(DES/'case.json')['id'];r=read(P/'result.json');a=read(P/'audit.json');s=read(P/'source-audit.json');f=read(DES/'freeze.json');binding=read(RUN/'binding.json')
+response=read(P/'response.json') if (P/'response.json').exists() else {};body=response.get('body') or {};answer=body.get('answer') or {};answer=answer if isinstance(answer,dict) else {}
+public_answer=answer
+j=sqlite3.connect((ROOT/r['journal_paths'][0]).as_uri()+'?mode=ro',uri=True)
+answer=json.loads(j.execute("SELECT payload_json FROM entity_version WHERE kind='case_stage' AND entity_id='case:COMPOSE' ORDER BY version DESC LIMIT 1").fetchone()[0]);assessment=json.loads(j.execute("SELECT payload_json FROM entity_version WHERE kind='case_stage' AND entity_id='case:ASSESS' ORDER BY version DESC LIMIT 1").fetchone()[0]);j.close()
+claims=answer.get('claims',[]);by_id={c['claim_id']:c for c in claims};receipt=answer.get('read_judgment_review',{});review=receipt.get('review') or {};judgments=review.get('judgments',[])
+refs=[]
+for row in judgments:
+ refs.append({'id':row['id'],'disposition':row['disposition'],'claim_refs':row['claim_refs'],'actual_claims':set(row['claim_refs'])<=by_id.keys(),'same_evidence':all(set(by_id[c].get('evidence_refs',[]))&set(row['basis_refs']) for c in row['claim_refs'] if c in by_id),'adoption_has_claim':bool(row['claim_refs']) if row['disposition'] in ('USE','CONDITIONAL') else not row['claim_refs']})
+g=ROOT/read(DES/'baseline.json')['release']['data_path'];db=sqlite3.connect((g/'store.sqlite').as_uri()+'?mode=ro',uri=True);quote_checks=[]
+for c in claims:
+ for span in c.get('span_receipts',[]):
+  row=db.execute('SELECT text FROM source_block WHERE document_id=? AND block_id=?',(span['document_id'],str(span['block_id']))).fetchone()
+  quote_checks.append({'claim_id':c['claim_id'],'evidence_id':span['id'],'exact':bool(row) and row[0][span['start_cp']:span['end_cp']]==span['text'],'allowed':span['document_id'] in read(P/'request.json')['json']['document_ids']})
+db.close()
+public_mapping=(answer['text']==public_answer['text'] and len(public_answer['claims'])==len(claims) and all(p['text']==c['text'] and set(p['source_ids'])=={c['source_id'],*(e['source_id'] for e in c.get('evidence',[]))} for p,c in zip(public_answer['claims'],claims)))
+checks={'public_answer_matches_accepted_claims':public_mapping,'selected_MAIN109_440files':binding['binding']['generation']==109 and not binding['app_injected'] and len(f['files'])==440 and all(sha(ROOT/f['code_root']/n)==h for n,h in f['files'].items()),'active_pointer_unchanged':sha(ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json')==f['pointer_sha256'],
+ 'http200_final_text':r.get('http_status')==200 and bool(answer.get('text','').strip()),'actual_claims':bool(claims) and len(by_id)==len(claims),'actual_original_read':bool(s['read_evidence']) and all(x['exact_original_match'] and x['within_scope'] for x in s['span_checks']),
+ 'final_quotes_exact':bool(quote_checks) and all(q['exact'] and q['allowed'] for q in quote_checks),'published_completed':any(x['status']=='COMPLETED' for x in s['state']),
+ 'judgment_claim_links_valid':bool(refs) and receipt.get('status')=='REVIEWED' and all(x['actual_claims'] and x['same_evidence'] and x['adoption_has_claim'] for x in refs),
+ 'all_final_judgments_reviewed':{x['id'] for x in judgments}=={x['id'] for x in receipt.get('prior_judgments',[])},
+ 'original_input_unchanged':not a['source_mismatches'] and not a['wire_source_mismatches'] and not a['scope_violations'],'stable_ids':not a['stable_id_changes'],'no_output_cap_fields':not a['output_cap_fields'],'no_unknown_calls':all(x['status']=='completed' for x in a['calls'])}
+spans=r.get('observed_spans',[]);glossary=sum(x['seconds'] for x in spans if x['function']=='glossary.load');pacing=sum(x['seconds'] for x in read(P/'provider-pacing.json')) if (P/'provider-pacing.json').exists() else 0;elapsed=r.get('elapsed_seconds');transport=r.get('model_transport_seconds',0)
+out={'status':'complete','success_criteria_met':all(checks.values()),'checks':checks,'MAIN':109,'actual_service':'service.service','app_injected':False,'model_calls':r['model_calls'],'http_status':r.get('http_status'),'native_status':r.get('status'),'answer_status':body.get('answer_status'),'accepted_disposition':assessment.get('disposition'),'answer_coverage':assessment.get('answer_coverage'),'issue_statuses':[x['status'] for x in assessment.get('issue_assessments',[])],'claim_count':len(claims),'judgment_links':refs,'quote_checks':quote_checks,'read_articles':len(s['read_coordinates']),'cited_articles':len(s['final_coordinates']),'read_evidence_units':len(s['span_checks']),'source_span_comparisons':a['source_spans'],'wire_source_comparisons':a['wire_source_checks'],'quality_certified':False,'legal_accuracy':'not_scored','one_second_goal_achieved':False,'genos_executed':False,'latency':{'request_seconds':elapsed,'physical_model_seconds':transport,'application_prepare_seconds':r.get('application_prepare_seconds'),'glossary_seconds':glossary,'experiment_pacing_seconds':pacing,'non_model_request_excluding_glossary_seconds':elapsed-transport-glossary if elapsed else None,'non_model_excluding_test_pacing_and_glossary_seconds':elapsed-transport-glossary-pacing if elapsed else None,'view_count':sum(x['function']=='Investigation.view' for x in spans),'view_seconds':sum(x['seconds'] for x in spans if x['function']=='Investigation.view'),'includes_screens_recovery_persistence':True,'no_population_speed_claim':True},'usage':r.get('usage',[])}
+assert not (RUN/'result.json').exists();put(RUN/'result.json',out)
+print(json.dumps({k:v for k,v in out.items() if k not in ('usage','quote_checks')},ensure_ascii=False,indent=2))

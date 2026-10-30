@@ -1,0 +1,11 @@
+from pathlib import Path
+import json,hashlib,re
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-1109-genos-mode-admission-main';P=R/'04_EXPERIMENTS/ADR/ADR-1108-genos-applied-mode-main'
+def put(p,x):p.write_text(json.dumps(x,ensure_ascii=False,indent=2)+'\n')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+r={'strict_success':False,'checks':{'49_basic_contracts':True,'all_scope_equals_all_final_citations':False,'principal_order_expected':False},'passed':49,'failed':2,'new_model_calls':0,'failures':['Test incorrectly required all authorized documents to appear in final selected citations; scripted model picks only first. Stored state internal→external→ALL and all downstream stages were correct. Must observe actual open document scope and final citations separately.','Workflow reached registered runtime with correct principal; test incorrectly assumed unsorted ID order.'], 'quality_certified':False}
+put(A/'artifacts/run-001/result.json',r)
+p=A/'실험/manifest.json';m=json.loads(p.read_text());m['runs'][0].update(status='complete',artifact_path=str((A/'artifacts/run-001/result.json').relative_to(R)),sha256=sha(A/'artifacts/run-001/result.json'),success_criteria_met=False);m['results'].update(status='complete',by_arm={'baseline':{'status':'complete','role':'immutable MAIN106 reference'},'integrated':{'status':'complete','passed':49,'failed':2}},usage={'new_model_calls':0},error_taxonomy=r['failures'],main_wiring='unchanged');put(p,m)
+meta=(A/'README.md').read_text().split('---',2)[1];meta=re.sub(r'(?m)^status:.*$','status: Rejected',meta)
+body=(P/'README.md').read_text().split('---',2)[2];body=body.replace('첫 검사','선결속 검사').replace('제품6','제품7').replace('37파일','38파일').replace('49통과·2실패','49통과·2검사 기대값 오류').replace('RESEARCH_REPLAN의 KEEP-only 입력이 scope_state 전에 normalize에서 거절됐다. 대사 검사는 install 내부 run을 모듈 함수로 오인했다. 실패 로그를 보존한다.','명시 구분 선결속으로 internal→external→ALL 상태와 PLAN 이하 재실행을 확인했다. 전체 검색 범위와 최종 인용을 동일시한 검사, 권한 ID 목록의 순서를 가정한 검사가 실패했다. 제품 코드는 추가 수정하지 않는다.').replace('adr_1108','adr_1109')
+(A/'README.md').write_text('---'+meta+'---'+body);(A/'실험/README.md').write_text('# 검사 기대값 오류\n\n제품 상태 전환은 확인했지만2검사 기대값 오류로 승격 보류. tests.xml·tests.log·result.json 보존. 다음 ADR에서 실제 open 범위를 관측한다.\n');(A/'artifacts/design/test-modes-original.py').write_bytes((R/'05_TESTS/CONTRACTS/test_genos_applied_mode.py').read_bytes())

@@ -1,0 +1,25 @@
+from pathlib import Path
+import json,hashlib,sys,shutil
+from datetime import datetime,timezone
+ROOT=Path(__file__).resolve().parents[3];ADR=ROOT/'04_EXPERIMENTS/ADR/ADR-1107-stable-judgment-navigation';ART=ADR/'artifacts'
+def read(p):return json.loads(p.read_text())
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def put(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+criteria={'frozen_at':datetime.now(timezone.utc).isoformat(),'hypothesis':'Investigation-wide document and selection IDs, keyed new judgments and one bounded correction allow independent valid unread source actions without adopting rejected judgments. Lazy details are coupled to20visible candidates.', 'scope':['D: bound metadata menu,20visible detail cache, preserve all reachable pages','E: durable request/generation/ACL bound D/J/E aliases; no renumber after reorder/resume; keyed new_reviews plus explicit revisions; omitted originals remain pending','F: typed precise paths and expected source IDs; one shared correction; then only independent valid unread DIRECT actions with no invalid judgment dependency; rejected review retained; replay/unknown outcome fail closed'], 'primary':['Stable references under reorder/new lexically earlier IDs/restart/concurrent save; stored mapping and source data verified; changed binding fails closed; legacy sessions retain original contract or explicit nonmigration.','No old judgment rewritten absent explicit revision; no automatic legal finding; keyed new only and empty omitted pending; exact source evidence retains ACL/hash/quote checks.','Duplicate6/7andmissing6 diagnostics name paths/IDs; wrong basis identifies expected original; complete error payload retained before repair.','One correction success or exhausted partial recovery; invalid judgment not adopted; only current offered DIRECT targets, no dependencyon failed judgment; positive unread cost; budget and deadline enforced by original executor.','No new progress after same identity/restart/rewording; stale/source/ACL failures bypass model repair.','20visible previews only, later-page firstread and cache; changedindex/scope rejected; semantic candidate metadata/order/schema exact relative eager reference.','A-C61observed contracts and source/final provenance continue; no model or promotion in this initial frozen contract run.'], 'resources':{'max_rss_gib':4,'min_available_gib':3,'max_swap_gib':.5,'min_disk_gib':20,'heavy_processes':1},'main_changed':False,'performance_goal':'Whole request nonLLM <=1s excluding glossary only; not claimed by isolated tests','followup':'Fresh model execution against frozen code after contracts; own prospective run/ADR if observed changes needed; final independent qualification before MAIN.'}
+put(ART/'design/criteria.json',criteria)
+m=read(ADR/'실험/manifest.json');m['lineage']['hypothesis_delta']=criteria['hypothesis'];m['design'].update(hypothesis=criteria['hypothesis'],primary_metric='Independent source progress with exact provenance and stable IDs',success_criteria=criteria['primary'],failure_criteria='Any invented semantic finding/source, changed ACL/hash/binding, budget/replay bypass, renumbered alias or adopted invalid judgment',criteria_frozen_before_run=True);m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None);m['dataset'].update(name='Prospective stable references and recovery failures',version='v1',frozen_source=str((ART/'design/criteria.json').relative_to(ROOT)),sha256=sha(ART/'design/criteria.json'));m['llm_policy']['llm_calls']=[]
+for a in m['design']['arms']:a.update(changes='Completed1106A-C' if a['id']=='baseline' else criteria['scope'],controls='Source generation/ACL/budget unchanged; new input contract explicit')
+put(ADR/'실험/manifest.json',m)
+sys.dont_write_bytecode=True;sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'));import adr_candidate as ac
+f=read(ROOT/'04_EXPERIMENTS/ADR/ADR-1106-preparation-without-wire-change/artifacts/design/freeze.json');P=ROOT/f['code_root'];new='02_BACKEND/semantic_runtime/legal_agent/schema_preparation.py'
+C=ac.snapshot(ADR,'stable-judgment-r1',[n for n in f['files'] if n!=new],experiment_id=m['experiment_id'],arm_id='integrated',run_ids=['run-001']);S=C/'snapshot'
+for n,h in f['files'].items():
+ assert sha(P/n)==h;shutil.copyfile(P/n,S/n)
+ac.register_file(C,new,upstream_state='absent')
+# Adopt D implementation from failed1102 only as identified implementation source;
+# its old exact-wire claim was rejected and is not inherited as evidence.
+past=read(ROOT/'04_EXPERIMENTS/ADR/ADR-1102-candidate-page-serialization/artifacts/design/freeze.json');D=ROOT/past['code_root']
+for n in ['law_navigation.py','decision_projection.py','read_candidate_pages.py']:
+ path='02_BACKEND/semantic_runtime/legal_agent/'+n;assert sha(D/path)==past['files'][path];shutil.copyfile(D/path,S/path)
+put(ART/'design/implementation-source.json',{'adr':'ADR-1102','decision':'Rejected wire equivalence','adopted':'Deferred detail implementation only; requalify with changed input contract','baseline':f['binding']});print(S)

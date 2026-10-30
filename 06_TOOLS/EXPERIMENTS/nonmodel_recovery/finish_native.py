@@ -1,0 +1,20 @@
+from pathlib import Path
+import json,hashlib,sys,re,datetime
+R=Path(__file__).resolve().parents[3];A=R/sys.argv[1];ART=A/'artifacts';message=sys.argv[2];accepted='--accepted' in sys.argv
+
+def read(p):return json.loads(p.read_text())
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def put(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+m=read(A/'실험/manifest.json');checks={n:read(ART/('check-'+n+'.json')) for n in ('primary','support','modes')};live=read(ART/'run-002/fsc-hard-005/result.json');audit=read(ART/'run-002/fsc-hard-005/audit.json');passed=sum(d['passed'] for d in checks.values());failed=sum(d['failed'] for d in checks.values());decision='Accepted' if accepted else 'Rejected'
+r={'status':'complete','strict_success':accepted,'checks':{n:d['status']==0 for n,d in checks.items()},'contracts_passed':passed,'contracts_failed':failed,'interpretation':message,'model_calls':live['model_calls'],'live':live,'audit':audit,'main_changed':False,'decision_eligible':False,'quality_certified':False};put(ART/'run-001/result.json',r)
+for run in m['runs']:
+ p=ART/('run-001/result.json' if run['id']=='run-001' else 'run-002/fsc-hard-005/result.json');run.update(status='complete',artifact_path=str(p.relative_to(R)),sha256=sha(p),success_criteria_met=accepted)
+m['decision_eligible']=False
+m['results'].update(status='complete',by_arm={'baseline':{'status':'complete','role':'completed exact parent'},'integrated':{'status':'complete','decision':decision,'contracts_passed':passed,'contracts_failed':failed,'new_model_calls':live['model_calls']}},comparisons=[{'kind':'Native synthetic flow and fresh known public model case','interpretation':message}],usage={'new_model_calls':live['model_calls'],'raw_usage':live['usage']},latency={'elapsed_seconds':live['elapsed_seconds'],'provider_pacing':True,'performance_claim':False},error_taxonomy=[] if accepted else [{'kind':'native_model_contract_diagnosis','description':message}],main_wiring='unchanged',quality_certified=False)
+parent=R/m['lineage']['parents'][0]['manifest_path'];m['retrieval_accounting']=read(parent)['retrieval_accounting'];put(A/'실험/manifest.json',m)
+meta=(A/'README.md').read_text().split('---',2)[1];meta=re.sub(r'(?m)^status:.*$','status: '+decision,meta)
+texts=[('결정 요약',decision+'. '+message),('문제와 변경 전 구조','MAIN107 위 준비 성능·페이지·고정번호·새판단·독립읽기 복구 통합 후보.'),('가설과 사전 판정 기준',m['design']['hypothesis']),('실험 설계','동결된 계약 검사와 알려진 공개 질문 새모델1실행. 관측한 행렬은 회귀이며 신규holdout으로 재명명하지 않는다.'),('데이터·모델·재현성','동일 데이터·권한·Qwen3.8/Parasail FP8·reasoning none·fallback 없음·출력상한 없음·40/1024/1800 예산. 실제 호출간65초는 이 실행 안에서만 적용. 코드·입력·runner해시 동결.'),('결과',f'{passed}조건 통과, {failed}실패. 모델 {live["model_calls"]}호출. '+message),('사례별 오류 분석',message+' 실제 입력/응답/진단/저장 원장 보존.'),('비용·지연·회수 규모',f'전체 {live["elapsed_seconds"]:.3f}초에는 제공자 대기 간격 포함. 성능 개선율로 쓰지 않음. 모델 사용량은 result.json. 원문 대조는 audit.json.'),('해석','검사 통과와 모델의 실제 판단·수정 성공은 구분. 모델 판단을 법률 정답으로 인증하지 않음.'),('한계와 일반화 가능 범위','1초 목표·법률 품질·Oracle/GENOS효과 미인증. 본ADR은 알려진 검사/질문 재실행으로 승격자격 없음.'),('운영 결정·롤백 조건','MAIN107 유지. 실패/부분완료 이력 보존. 후속 수정은 새ADR동결. 실제 모델 임의 재시도없음.'),('재현 명령','해당06_TOOLS/EXPERIMENTS/adr번호의check_integrated_bootstrap.py primary/support/modes 및live.py. 완료산출물덮어쓰기금지. validate --final 및graph.')]
+(A/'README.md').write_text('---'+meta+'---\n\n# 통합 후보 실제 실행\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{t}' for i,(h,t) in enumerate(texts,1))+'\n');(A/'실험/README.md').write_text('# 결과\n\n'+message+'\n')
+put(ART/'manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':m['adr_id'],'created_at':m['reservation']['created_at'],'updated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Native verification evidence','contains_raw_prompts_and_outputs':'canonical' in p.parts or 'wire' in p.parts or 'raw' in p.parts} for p in ART.rglob('*') if p.is_file() and p!=ART/'manifest.json' and 'runtime' not in p.parts]})
+print(decision,passed,failed,live['model_calls'])
