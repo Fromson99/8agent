@@ -1,0 +1,33 @@
+초기 벡터 검색 환경설정 제안 — 아직 미구현, 지금 운영환경에 적용하지 않음
+
+기존 값 재사용:
+  GENOS_BASE_URL           현재 GENOS 게이트웨이 주소
+  기존 DP=oracle 및 Oracle/ORDS 연결·SIDDS 매핑
+
+일반 배포에서 추가/확정할3개:
+  GENOS_RAG_INITIAL_SEARCH=vector
+  GENOS_EMBED_SERVING_ID=<실제 내부 임베딩 서빙 ID>
+  GENOS_EMBED_KEY=<임베딩 인증키: 비밀 저장소에서 주입>
+
+첫 반입은 keyword로 유지하고 내부 임베딩/Oracle/원문 연결 검증 후 vector로 전환.
+GENOS_RAG_INITIAL_SEARCH는 새 제안 변수이며 현재 MAIN111에서는 아직 읽지 않는다.
+GENOS_EMBED_SERVING_ID/KEY는 기존 작업 코드 변수명이며 이번 초기검색 consumer 연결이 추가로 필요하다.
+
+예외 환경만:
+- 임베딩이 별도 주소일 때 GENOS_EMBED_URL 사용. 공통 주소+ID와 충돌하면 준비검사에서 거절.
+- 현장 게이트웨이 tenant/header가 필요하면 기존 관련 설정 재사용.
+- Dataiku Mesh로 구축하면 프로젝트변수 LEGAL_EMBED_LLM_ID 하나(제안). GENOS 질의모델과 같은 identity 확인이 선행.
+
+환경변수로 받지 않음:
+- 모델명·리비전·차원·정규화·chunk/query 정책: 게시된 embedding profile.
+- 후보수100/페이지20/보충10/확장300·재시도한도·timeout: 버전 관리 정책 파일.
+- 테이블/컬럼: 기존 Dataiku 매핑.
+- 로컬 torch/BGE 설치·HF토큰·전체벡터파일경로·GENOS_VDB 인증: 이 Oracle 경로에는 필요 없음.
+
+승호님 변수명과 대응(새 별칭을 동시에 만들지 않음):
+  GENOS_URL → 우리 GENOS_BASE_URL
+  GENOS_EMBED_ID → 우리 GENOS_EMBED_SERVING_ID
+  GENOS_EMBED_TOKEN → 우리 GENOS_EMBED_KEY
+서빙 ID·토큰 값은 추정하지 않는다. LLM키가 임베딩키와 같다고 자동 재사용하지 않는다.
+기존 embedding fingerprint 검사는 유지하고 profile 객체를 주입하도록 코드 변경해야 한다.
+환경변수를 생략한 현재 코드가 자동으로 이 profile을 읽는 것은 아니다.

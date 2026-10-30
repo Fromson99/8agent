@@ -1,0 +1,243 @@
+GENOS 초기 검색 벡터 전환 구현 설계
+작성일: 2026-10-28 / 상태: 설계·코드 대조 완료, 구현·신규 실험·현장 배포 미수행
+
+1. 결정할 구조
+
+자연어 초기 검색은 벡터를 기본으로 바꾼다. 정확한 법령·조문 지정 검색은 유지한다.
+GENOS는 질문 임베딩을 내부 서빙에 요청하고, Oracle에 저장한 벡터에서 후보 좌표만 받아 기존 원문 조사로 넘긴다.
+Dataiku는 문서 임베딩 작업·재시도·로그·결과 저장·Oracle 게시를 관리한다. 원문과 검색 데이터는 개발계 SIDDS.*_S에 둔다.
+GENOS 코드서빙에 torch/BGE 모델, 전체 벡터 파일, 원문 SQLite를 내려받지 않는다. GENOS→S3 직접 연결도 추가하지 않는다.
+
+초기 후보 순서: 정확 지정 경로 → 자연어 벡터 상위 조항 → 별도 키워드 보충 후보.
+벡터와 키워드를 RRF로 섞어 첫20개를 다시 자르지 않는다. 벡터 상위20개를 보존하고 키워드 보충은 뒤에 둔다.
+이후 READ·명시 참조·정의 연결·구조 조회·추가 검색·판단·최종 답변 경로는 보존한다.
+벡터 유사도가 높다는 사실만으로 근거를 읽었다거나 답변이 충분하다고 판정하지 않는다.
+
+2. 확인한 기준과 미확인 경계
+
+로컬 활성 MAIN111: ontology-workflow-20261028-r1. service.py / oracle_query_service.py / law_navigation.py는 작업 파일과 선택 파일 해시가 같다.
+현재 Oracle Factory.application()은 create_app(...vector=False)를 호출한다. 기존 Dense 옵션 하나를 켜면 새 초기 메뉴가 연결되는 구조가 아니다.
+lawrag/core/embedding.py와 pipeline/oracle_query_publish.py는 작업 코드에 있지만 MAIN111 선택 서빙 파일에는 없다.
+따라서 패키지에 포함되지 않은 임베딩 모듈을 서비스에서 import하는 변경만 해서는 GENOS에서 돌지 않는다. 서빙 의존성과 pin을 함께 결속해야 한다.
+
+승호님 코드: 로컬에 이미 확보된 infocz/fde/seungho/integration
+commit 82cb80f6a1311113f7301c7a23bcfa816af693df.
+이번에 원격 최신을 fetch한 것은 아니며 현장 배포 리비전과 동일하다고 주장하지 않는다.
+확인한 원본과 SHA-256은 evidence.json / evidence/에 보존했다. 코드를 실행하거나 현장에 접속하지 않았다.
+
+확인 사항:
+- core/storage/vdb/genos_search.py: GENOS VDB에서 nearVector/keyword/hybrid 조회. document_id/chunk_id로 연결하며 file_hash는 식별자로 쓰지 않는다.
+- core/storage/vdb/oracle_search.py: GENOS 질의 임베딩 → ORDS SQL → Oracle VECTOR_DISTANCE(COSINE) 순위. 개발계 벡터는 SIDDS.ELS_QA_VDB_CHUNK_S 매핑.
+- 같은 파일의 _with_keyword: 벡터 선두를 보존하고 키워드 후보를 뒤에 추가한다. RRF로 벡터 근거가 밀렸던 기록이 있다.
+- embedder.py: 온프렘은 GENOS HTTP 임베딩, 로컬 모델은 개발용. 벡터 차원·응답 건수·정규화 처리.
+- config.py: 미설정 시 다른 로컬 모델로 자동 전환하지 않는다.
+- compute_ELS_QA_VDB_EMBED.py: Dataiku LLM Mesh로 임베딩하고 Oracle에 적재·로그 작성. 기본 모델 이름은 KURE-v1 계열 코드다.
+
+우리 실험은 BGE-M3였다. 승호님 코드의 기본 KURE-v1과 동일 모델이 아니며 차원이 같아도 벡터를 섞으면 안 된다.
+현장 실제 모델/리비전, Mesh와 GENOS 서빙의 동일 가중치, SIDDS 벡터 타입·권한·SQL 실행계획은 미확인이다.
+GENOS에서 실행 가능한 구조를 설계한 것이며 실제 가동 확인은 후속 단계다.
+
+3. 문제별 기존 방식·실제 결과 → 변경 방식·목표
+
+P1. CM007: 자연어 '상장주선인의 의무인수 수량과 보유기간'
+기존: 법령별 article_menu가 조항 후보를8개로 제한하고 메뉴를 구성한다. 보관 첫20개에는 양시장 제13조가 없었다. 이후 코스닥만 확보하고 유가증권 근거는 놓쳤다.
+확인 원인: 유가증권 제13조는 저장소에 있지만 당시 법령별 후보에서 제외됐다. 이후 재검색·다른 경로 선택 부족은 별도 문제다.
+변경: 원 질문 벡터로 권한 내 전체 문서에서 조항을 직접 순위화해 법령별8개 제한을 거치지 않고 첫 후보 페이지에 보낸다.
+목표: 두 제13조가 원문 READ 가능한 후보로 나타난다. 실제 선택·최종답변 성공은 별도로 검사한다.
+실측: ADR1163 벡터 순위 코스닥2·유가증권6. 현장 모델에 대한 보장은 아니다.
+
+P2. 단순 결합으로 좋은 벡터 후보가 밀림
+기존 실험: RRF 결합 시 CM009 코스닥13조가 벡터12위에서24위가 됐다.
+변경: 벡터20조항 순서를 고정하고 중복을 뺀 키워드 보충을 다음 페이지에 붙인다. 정확한 조항 지시는 애초 구조 조회 경로로 처리한다.
+목표: 보충 때문에 기존 벡터 상위20개가 사라지지 않는다. 이는 코드 불변조건으로 검사한다.
+남는 한계: 키워드만 찾은 중요한 조항의 첫화면 노출은 보장하지 않는다. 화면에는 추가 후보 존재를 알려야 한다.
+
+P3. CM009 예외 참조 제31조
+실측: 벡터189위로 초기20개에서 놓쳤다. 벡터만으로 조사를 끝낼 수 없다는 반례다.
+변경: 제13조를 읽은 뒤 기존 FOLLOW_CONNECTION·참조 메뉴로 제31조에 접근하도록 유지한다.
+목표: '초기검색 → 원문 → 연결된 예외 → 판단'까지 검증한다. 기존 충분성·보완 오류가 이번 검색 변경만으로 해결됐다고 하지 않는다.
+
+P4. 로컬 벡터를 GENOS에 그대로 배치
+현재 실험: 모델로딩8.44초, 오래된 부분 캐시 사용. 현장 방식으로 사용한 기록은 없다.
+변경: GENOS 내부 임베딩 HTTP + Oracle 검색. 원문 저장소와 좌표를 공유하고 모델 메모리 로딩 제거.
+목표: GENOS 코드서빙 로컬 전체 데이터·모델 다운로드0, 요청당 필요한 후보/원문만 받는다.
+잔여 위험: HTTP·Oracle 지연이 새로 붙으므로 로컬0.23초보다 느릴 수 있다.
+
+4. 구축 단계: Dataiku → 임베딩 → SIDDS 게시
+
+기존 구조화·원문 좌표를 입력으로 쓰며 임의로 문서를 다시 파싱하지 않는다.
+기존 pipeline의 index/게시 단계에 vector-index 작업을 추가한다(제안). 새 독립 파이프라인은 만들지 않는다.
+입력: 선택 source release, 문서판본, 구조 단위, 원문 span, 권한/분류 매핑, 승인된 embedding profile.
+
+검색 텍스트 v1(제안): 법령명·본문/부칙/별표 구분·조/항/호/목 경로 + 해당 단위 소유 본문.
+긴 본문은 끝부분이 유실되지 않게 길이 제한 내 여러 구역으로 나눈다. 표는 헤더와 행 좌표를 보존한다.
+초기 제안값은 구역800자, 긴 구역 겹침100자이며 모델 토큰 한도를 동시에 검사한다. 모델별 한도와 표 분할은 게시 profile에 기록한다.
+이 방식은 ADR1163의 '기존 구조 구역 앞800자'와 다르다. 실험 결과를 그대로 승계하지 않고, 먼저 동일 구역 조건 대조 후 분할 변경을 별도 arm으로 검증한다.
+청크 수·처리시간은 아직 산정하지 않는다. 실제 선택 데이터에서 전체 범위를 계산해 예산을 동결한다.
+
+Dataiku 레시피는 같은 model identity의 임베딩을 생성한다.
+권장 연결: 기존 Dataiku Mesh가 GENOS 질의 서빙과 같은 가중치·전처리라는 결속이 확인되면 Mesh를 재사용한다.
+동일성 확인이 안 되면 기존 GENOS 계산 단계에서 동일 임베딩 서빙으로 배치 계산하고 Dataiku가 결과를 받아 저장한다. 두 모델을 섞어 완료 처리하지 않는다.
+GENOS 계산 중간 결과는 계산 수명 동안만 보관하며 작업 상태·재시도는 Dataiku가 소유한다.
+
+저장 계약(논리명, 물리 DDL 미확정):
+vector_release: vector_release_id, source_release_id, embedding_profile_id, model_revision/artifact_digest 또는 관리자가 결속한 불변 배포ID,
+  dimension, normalize, metric, document/query preprocessing 버전, expected/complete/failed counts, manifest hash, status.
+vector_segment: release_id, document_id, document_version, unit_id, article_root_id, branch(body/supplement/annex), span,
+  source_text_sha256, embedding_input_sha256, chunk_profile_version, embedding VECTOR, 모델 결속ID.
+원문은 기존 SIDDS 원문 테이블에서 조회한다. 벡터 검색 텍스트를 최종 인용 정본으로 쓰지 않는다.
+접근권한은 기존 SIDDS 허용문서 조회와 결합한다. 테이블명을 모델이 만들거나 사용자 입력으로 받지 않는다.
+물리명은 메타마이너 표준·30바이트 규약·SIDDS/_S에 맞춰 승인한다. 위 이름을 그대로 CREATE하라는 뜻이 아니다.
+SIDDA에는 조사·사용량·오류·감사 기록, Dataiku S3에는 작업 JSON과 결과 이력. 개발계 검색은 SIDDA에 접근하지 않아도 되게 구성한다.
+
+멱등키: source_release + doc_version + unit/span + embedding_input_hash + embedding_profile_id.
+모델·분할·전처리 변경 시 재임베딩. 원문이 같아도 모델이 바뀌면 재사용 금지.
+같은 profile/입력의 완료 항목만 재사용하고 실패 배치만 재시도한다. 응답 index는 0..N-1 유일/완전성을 검사하고 NaN·Inf·0노름·차원오류를 거절한다.
+Dataiku가 동시 게시를 lock/CAS로 직렬화한다. 부분 적재 상태는 BUILDING/FAILED로 두고 질의가 읽지 않는다.
+새 release 완료·원문결속·권한·건수 확인 후 source+vector 묶음 활성 포인터를 원자적으로 전환한다. 기존 release를 먼저 삭제하지 않는다.
+새 문서 공개를 벡터 게시 완료와 함께 묶는다. 긴급 원문 우선 공개는 별도 keyword 모드로 명시하고 불완전 벡터를 READY로 속이지 않는다.
+
+5. 질의 단계: 실제 초기 후보 소비자 연결
+
+A. service.py → Oracle Factory.request: 기존 사용자·팀·문서·조회방식(scope) 검증, source/vector release와 ACL revision을 요청 시작에 고정.
+B. 기존 질문 해석 결과를 사용한다. 임베딩용 질문 재작성 LLM 호출을 추가하지 않는다.
+   새 질문은 원문+명시 업무문맥, 후속 질문은 기존 서버의 현재 질문·확정 범위만 사용한다. 과거 정답이나 평가근거는 넣지 않는다.
+C. 법령+조문이 명시돼 있으면 기존 구조 직접 조회. 애매한 '제2조'는 기존 범위 확인/복수 후보를 유지하고 벡터 점수로 특정 법률을 확정하지 않는다.
+D. 자연어 초기 검색이면 GENOS 임베딩1회. query/profile/release/scope를 같은 요청 안에서 재사용해 화면마다 재호출하지 않는다.
+E. Oracle가 source_release, vector_release, 허용문서, 내규/외규/전체 범위를 먼저 적용한 뒤 COSINE 거리로 조회한다.
+   전체 후보를 GENOS로 가져와 권한을 사후 필터링하거나 Python BM25를 돌리지 않는다.
+F. 조항 내 구역 최저거리로 조항 순위를 정한다. segment top100을 받은 뒤 중복을 제거하는 방식은 피한다.
+   긴 한 조항이100자리를 차지해도 서로 다른20조항을 얻도록 DB에서 조항별 집계를 하고 상위100조항을 요청한다.
+   조항에 들어가지 않는 별표 등은 원문 타입+불변 root로 구분한다. 제목 문자열/조번호만으로 합치지 않는다.
+   우선 정확 검색 SQL로 기준을 만들고 실제 실행계획을 확인한다. 향후 ANN 도입은 별도 회수율·ACL 검증 대상이며 자동 사용하지 않는다.
+G. 좌표/해시/판본 결속을 검증하고 20개만 상세 준비. READ 메뉴는 기존 source unit/span을 받는다.
+   후보 목록은 읽은 근거로 추가하지 않는다. 읽은 후에만 기존 근거 번호/원문 검증/판단 계약을 따른다.
+H. 후보 목록·순위·다음 cursor를 요청 원장에 저장한다. 다음 페이지는 같은 검색 snapshot을 재사용한다.
+   첫 풀100조항 뒤에는 '추가 벡터 검색'을 별도 행동으로 제공한다. 같은 벡터로 최대300조항까지 한 번 확장(제안 기본값).
+   cap 도달은 검색완료/근거부재가 아니라 truncated로 기록한다. scope/질문 변경 시 새 검색, 요청별 총 예산은 초기화하지 않는다.
+I. 키워드 보충은 기존 ORDS/fulltext 검색에서 제한된 후보를 받아 벡터 뒤에 붙인다. 벡터 상위20 순서 불변.
+J. 이후 기존 READ → 연결 탐색 → 판단 → 최종 답변. NEXT/READ는 질의 임베딩을 다시 호출하지 않는다.
+
+신규 반환 계약 InitialCandidate(제안): source_release, vector_release, canonical coordinate, matched_unit/span, distance,
+  ranking_route(vector/keyword/exact), rank, query_fingerprint, scope_fingerprint, cursor, truncated, retrieval_status.
+모델에는 제목·최소 발췌·READ 행동·추가페이지 여부만 제시한다. 내부 해시·벡터·좌표 검증자료는 서버에 둔다.
+본문/부칙/별표와 문서판본을 표시하고 기존 D/J/근거 ID를 유지한다.
+
+6. 코드 변경 지도
+
+현재 service.py / semantic_runtime/oracle_query_service.py:
+  Factory에 초기검색 provider 주입. 기존 vector=False를 무작정 True로 바꾸지 않음. service health에는 설정 검증 상태와 실제 연결 검사 상태를 분리.
+현재 semantic_runtime/legal_agent/law_navigation.py:
+  자연어 초기 창의 article_menu 우회와 벡터 후보 소비 연결. 법령 탐색·직접구조·기존 후속 RESEARCH 경로 보존.
+  첫20 상세준비·고정번호·보관 검색 재사용·READ/권한 소비자까지 연결.
+제안 semantic_runtime/initial_retrieval.py:
+  exact/vector/keyword 전환, 후보 합집합, 조항중복 제거, 요청 원장·페이지·fallback 상태 관리. 독립 답변 에이전트를 만들지 않음.
+제안 semantic_runtime/oracle_query_vector.py:
+  기존 QuerySQL/ORDS 연결·request snapshot 사용. ACL 선적용·조항별 거리 집계·좌표검증·SQL 예산 계측.
+현재 lawrag/core/embedding.py:
+  기존 identity·GENOS HTTP 구현을 검토해 경량 서빙 모듈로 분리 또는 공용화. 로컬모델 자동대체와 /models 조회의 추측은 새 GENOS경로에서 금지.
+  profile 객체 주입을 추가해 env가 없어도 검증된 릴리스 설정으로 identity 검사를 수행하도록 변경. 검사를 끄는 방식으로 환경변수를 줄이지 않음.
+현재 lawrag/pipeline/oracle_query_publish.py 및 pipeline CLI index/게시:
+  vector release manifest와 데이터 게시 검증 연결. 서빙과 구축 패키지의 의존성 목록을 각각 결속.
+00_SYSTEM/PIPELINE.json, 모델/profile 스키마, .env.genos.example, Dataiku 프로젝트 설치/레시피:
+  새 단계·소비자·최소 설정·게시 필드를 명시. 제품 pin/선택 릴리스/설치 묶음의 해시 동시 검증.
+기존 oracle_query_request/catalog/store 및 state:
+  요청의 source/vector 묶음 고정, 재개 시 release/scope 재검증. 권한 변경 후 옛 결과를 재노출하지 않음.
+
+승호님 코드에서 가져올 원칙: 내부 HTTP 임베딩, Oracle 거리 검색, Dataiku 적재, 벡터 선두보존, 오류/모델 로그.
+그대로 가져오지 않을 것: ELS 상품키·상품 전체 스캔·active 사후확인·문서 벡터 삭제후삽입·고정1024차원·LLM토큰 자동재사용.
+우리 환경에서는 판본/권한 선필터, 불변 release, 설정 profile, 명시 임베딩 credential을 사용한다.
+
+7. 환경변수는 최소로, 무결성 자료는 게시 설정으로
+
+기존 GENOS_BASE_URL과 기존 Oracle/ORDS 연결값을 재사용한다. 새 DB URL/패스워드·GENOS VDB 토큰을 추가하지 않는다.
+일반 배포에서 추가 또는 확정할 값은3개:
+  GENOS_RAG_INITIAL_SEARCH=vector  (제안 신규 스위치, vector | keyword; 첫 배포는 keyword로 검증 후 전환)
+  GENOS_EMBED_SERVING_ID=<내부 임베딩 서빙 ID>  (기존 변수명 재사용)
+  GENOS_EMBED_KEY=<임베딩 서빙 인증키>  (기존 변수명 재사용, 비밀 저장소)
+공통 주소가 없을 때만 GENOS_BASE_URL을 설정한다. 임베딩 주소가 별도인 환경에서만 기존 GENOS_EMBED_URL을 대안으로 제공한다. 둘의 주소 충돌은 부팅 시 거절한다.
+현장 게이트웨이가 요구하는 경우만 기존 tenant/header 설정을 재사용하며 별도의 무조건 필수 변수로 만들지 않는다.
+
+환경변수로 늘리지 않는 것:
+- 모델명/불변 리비전/차원/정규화/입력정책/Oracle metric: Dataiku가 게시한 embedding profile과 release manifest.
+- 후보100/첫20/보충10/확장300/재시도·통신 기본값: 버전 관리되는 retrieval policy 파일. 일반 운영자가 입력하지 않음.
+- 테이블/컬럼/스키마 매핑: 기존 Dataiku 물리 매핑. 모델이 결정하지 않음.
+- 로컬모델 경로, HF 토큰, EMBED_DEVICE, GENOS_VDB_*: 이 경로에는 불필요.
+
+모델/profile은 endpoint명만으로 동일성을 추측하지 않는다. 승인된 모델 배포ID와 실제 serving binding을 게시 영수증에 결속한다.
+게이트웨이 응답 model 문자열만으로 가중치 동일성을 증명하지 않는다. 동일 serving ID에 모델 교체 시 새 binding 버전+재색인·재게시 필요.
+Dataiku Mesh 별칭을 쓸 경우 프로젝트변수 LEGAL_EMBED_LLM_ID 하나만 추가(제안); profile의 동일성 검증을 거친다.
+일반 사용자는 모델명·차원·20개 크기·재시도 수를 각자 환경변수로 맞출 필요가 없다.
+
+8. 실패·복구 계약
+
+복구 책임: 초기검색 서비스 한 곳. HTTP클라이언트+서비스 중첩 재시도 금지.
+온라인 기본 제안: 임베딩 통신10초, Oracle조회10초, 전체 요청 남은 기한과 min을 취함. 임베딩/조회 각 최대 물리2회(최초+일시실패1회), 기존 전체 도구·시간 예산 안에서 처리.
+숫자는 성능 실측이 아니라 실패 통제를 위한 초기 정책값이며 비LLM1초 목표를 만족한다는 뜻이 아니다.
+Dataiku 구축 배치는 온라인과 분리된 기존 작업 예산/재시도 정책을 사용하고 단계 재개로 전체 사용량을 초기화하지 않는다.
+
+전송429/일시5xx/timeout: 원인·물리 호출을 기록, 기한 내 한 번 재시도. 여전히 실패하면 같은 source release/ACL의 기존 키워드 경로로 한 번 전환, DEGRADED_KEYWORD 표시.
+인증401/403·설정없음: 재시도하지 않음. vector 진입 준비검사 실패. 일반 요청을 운영자가 keyword로 전환할 수 있으나 vector 성공으로 기록하지 않음.
+모델/차원/입력hash 불일치·원문 결속 실패·미게시release: INVALID_INDEX. 벡터 결과를 버리고 오류 표시. 자동으로 다른 모델을 호출하거나 다른 generation을 선택하지 않음.
+ACL/판본 확인 실패·Oracle공통 조회불능: fail closed. 빈결과/근거없음으로 변환하지 않음.
+정상 벡터0건: EMPTY_VECTOR 상태. 같은 scope의 키워드 검색과 구조 탐색은 허용. 근거가 없다는 법률 판단은 아님.
+게시 중단: 새release 비활성, 이전 완전release 유지. 기존 자료 삭제하지 않음.
+권한/질문 변경: 옛 페이지와 후보 무효화, 재검색. 이전에 읽은 원문도 현재 반환 권한을 다시 확인.
+취소: 현재 네트워크/DB 요청의 취소·기한 처리, Dataiku 작업 취소는 계산 프로세스 종료 확인. 새 작업을 취소 대용으로 시작하지 않음.
+
+원장: stage별 요청ID, source/vector release, profile, scope hash, 후보·순위·탈락이유, 임베딩 물리횟수/SQL횟수/시간, fallback 원인, cache hit, 페이지 준비량.
+토큰/키는 기록하지 않는다. runtime journal의 현재 외부 저장 경로를 재사용하며 최종 SIDDA 저장과 연결됐는지는 별도 확인한다. GENOS 영속 로컬 job registry를 신설하지 않는다.
+
+9. 수치 원장과 기대치
+
+M1 관측: ADR1163 알려진3질문/5필수근거, top20 기존2/5·vector4/5·RRF3/5. 법률답변 정답률이 아니다.
+M2 관측: CM007 두 근거 vector2위/6위, RRF7위/11위. 목표근거는 모두 캐시에 있었음.
+M3 관측: 로컬 벡터 사용구역21023, 조항3880/15777. 계산3880÷15777=24.59% 범위. 부분색인의 경쟁후보 감소 영향이 있음.
+M4 관측: 로컬질문 임베딩+정렬 약0.224~0.238초/문항, 최초모델로드8.440초. GENOS HTTP·Oracle 시간은 포함하지 않음.
+T1 목표: 용어집 로딩만 제외한 전체 요청 비LLM1초. 초기검색뿐 아니라 화면·복구·저장 비용 포함. 현재 달성 미확인.
+D1 제안 정책: 초기100조항/화면20/키워드보충10/최대확장300. 현행20페이지와 일관성을 유지하되100·10·300은 검증 전 후보값.
+
+새 초기 비용 = 임베딩HTTP + Oracle거리조회 + 좌표검증 + 현재20상세준비 + 상태저장.
+비LLM 순절감 = 기존 초기검색 비용 - 새 초기 비용. 추가HTTP/DB 비용보다 제거되는 기존검색 비용이 작으면 오히려 느려진다.
+전체 완료시간 순절감 = 비LLM 순절감 + 줄어든 조사LLM시간 - 추가/반복조사시간. 현재 후속모델 행동 미측정이므로 예상초·절감률은 미산정.
+벡터 저장량 계산식 = 구역수 × 차원 × 값바이트 + 인덱스/메타/복제. 현재부분21023×1024×4≈82.1MiB는 원시값 계산 예시일 뿐 전체 운영용량이 아니다.
+전체 임베딩 비용 = 새입력 구역수×실제 임베딩 처리량/단가. 같은 release 입력 재사용률과 모델변경 여부에 민감하다.
+완료 일정은 현장 모델/Oracle권한/성능 확인 전 미산정. 구현·통합·현장 대기 시간을 섞어 낙관적인 날짜를 제시하지 않는다.
+
+10. 검증과 도입 순서
+
+1) 현장 계약 확인(읽기 중심): 실제 serving URL/인증 규약, model binding, Mesh동일성, Oracle VECTOR/FLOAT32·COSINE·ORDS 대형 벡터 전송, SIDDS 읽기권한 확인.
+   승호 코드의 숫자 검증 후 TO_CLOB 분할 전송을 참조하되 기존 ORDS binding을 우선 재사용한다. 지원 안 되면 현장지원 미완료로 분리하며 SQLite로 복원하지 않는다.
+2) 기술 구현·모의 검사: 임베딩 순서 뒤섞임/중복index/NaN/0노름/차원불일치, timeout·401·429, 비게시세대, 삭제문서, 권한변경, 본문/부칙 동일번호, 중복구역100개, SQL취소를 검사.
+   통과: 무권한·다른판본·잘못된좌표 전달0, 키워드추가에 의한 벡터top20누락0, 모델/캐시 무단대체0, 페이지이동 임베딩 추가0, 실패가 빈결과로 은폐0.
+3) 사전동결 ADR 검색검증: 동일 전체 corpus·질문·권한·chunk/profile 기준으로 현행 vs vector-first 후보를 비교한다.
+   현재3문항은 진단 회귀용. CM51의 나머지를 자동 holdout이라 부르지 않고 기존 노출 이력 확인 후 새 독립 질문 묶음을 정한다.
+   proposed pass: 평가주요근거 recall@20이 기준보다 개선, 정확지정조회 성공률 비열등, 알려진9번제13조 첫20보존. 평가단위/허용회귀를 결과 전에 동결.
+   query표현·분할·후보수 차이는 별도 arm으로 분리한다. 검색성공·읽기선택·최종답변 점수를 혼합하지 않는다.
+4) Dataiku 비활성 새release 적재: 모든대상 구역 완료, 좌표/해시/모델/건수 대조 후 READY. 원문 재구축 대신 파생 벡터만 구축.
+5) 실제 GENOS 격리리비전 검증: 모의HTTP 통과만으로 종료하지 않고 내부 임베딩1회→실제Oracle→후보20→원문READ→참조추가→최종답변·저장까지 추적.
+   vector 모드로 실제 동작했는지 fallback=0 및 실제 revision/hash로 확인. 내규/외규/전체/대사·후속질문·온톨로지ON/OFF·재개를 회귀검사.
+   CM007은 양시장 근거 확보/최종주장 연결, CM009는 제31조 연결조사를 별도 확인. 기존 판단번호·스키마·보완 실패는 검색 개선과 별개로 기록.
+6) 동일 코드 검증→공식 MAIN 승격 절차→GENOS 리비전 반영→실제 서비스 확인. 각 상태를 별도로 기록.
+   모델실험·DDL·게시·배포는 이번 설계 작성에 포함하지 않았다.
+
+롤백:
+- 즉시 정책 스위치 keyword로 되돌리고 요청 시작 때 고정. 이미 진행 중인 요청은 기존 snapshot/예산을 유지하거나 안전중단.
+- source+vector release 포인터를 직전 완전 묶음으로 CAS 복원. release 데이터를 삭제하지 않음.
+- code defect면 이전 검증 코드리비전+pin 복원. 환경변수만 바꿔 스키마 불일치를 덮지 않음.
+- ACL/좌표/판본 위반1건 또는 벡터 장애 은폐는 즉시 전환 중단. latency/recall 회귀 기준은 검증계획에서 사전동결.
+
+11. 자체 검토와 남은 결정
+
+자체 검토이며 독립 감독 검토가 아니다.
+확인: 로컬 모델 성능을 GENOS 측정으로 전용하지 않음; 모델혼용 금지; 환경변수 축소와 identity검사 양립; 현재 서빙에 누락된 모듈 포함 필요;
+  SIDDS 접근만으로 검색·원문검증 가능; 벡터후보와 읽은근거 분리; 보충후보로 벡터상위가 밀리지 않음; 부분게시·권한변경·복구 예산 명시.
+미확인: 현장 Oracle 검색계획/벡터 인덱스, 모델binding, 현재GENOS배포 해시, 신규데이터 전체구역수, 새분할 품질, 서비스 전체1초 및 법률답변 성공.
+권장 첫 구현 범위는 Oracle-backed vector initial provider + Dataiku 벡터게시 + 최소환경설정까지다. 플랫폼 Weaviate 지원까지 동시에 늘리지 않는다.
+
+근거:
+- evidence.json: 활성포인터·선택/작업 파일 해시·승호 코드commit과 원본 사본.
+- 04_EXPERIMENTS/ADR/ADR-1163-cm-vector-process-guard/artifacts/run-001/초기벡터_비교결과.txt
+- 00_SYSTEM/ARCHITECTURE.md: MAIN 단계·Oracle 요청조회·Dataiku 레이어.
+- GENOS.md: 현재 운영 진입점·모델/임베딩 경계.
+- 07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md: 실패분류·복구담당·예산·원문보존.

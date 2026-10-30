@@ -1,5 +1,13 @@
 # 프로토타입 구현 설계
 
+<!-- ONTOLOGY_WORKFLOW_20261028 -->
+## 2026-10-28 생성·승인·게시 연결
+
+기존 Streamlit R3 진입점과 6메뉴를 유지하고 온톨로지 관리·시뮬레이션에 실제 생성·검토·승인·게시 동작을 연결한다. 연결 설정이 없으면 기존 시안이고, 연결 시에도 나머지 메뉴는 기존 시안이다. 운영자는 Dataiku 브라우저 인증으로 확인한다.
+
+[최신 계약·테이블·실행 경로·검증 경계](WORKFLOW_CONNECTED_20261028.md). 아래 날짜별 내용은 당시 기록이며 최신 연결 상태로 확대하지 않는다.
+<!-- /ONTOLOGY_WORKFLOW_20261028 -->
+
 [v4 목차](../ONTOLOGY_V4.md) · [구축 순서](BUILD_PLAN.md) · [지식 축적](CONTROLLED_KNOWLEDGE.md) · [멀티턴](MULTITURN_LEGAL_AGENT.md) · [현재 상태](CURRENT_STATE.md)
 
 2026-10-24 구축 결정과 저장 구조(에이전트 레이어 / S3 JSON / 골드 SQL 적재)에 맞춰 재작성했다. 이전 판은 [HISTORY](HISTORY/20261024_before_build_plan/README.md)에 있다. 아래 파일·모듈·계약은 모두 **구현 계획**이며 아직 만들지 않았다.

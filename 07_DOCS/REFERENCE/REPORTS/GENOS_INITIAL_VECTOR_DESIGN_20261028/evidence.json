@@ -1,0 +1,111 @@
+{
+  "scope": "Read-only code review for design, no execution of upstream code",
+  "upstream_local_tracking_ref": "infocz/fde/seungho/integration",
+  "commit": "82cb80f6a1311113f7301c7a23bcfa816af693df",
+  "remote_fetched_this_turn": false,
+  "upstream_files": [
+    {
+      "upstream_path": "02-els-qa/core/storage/vdb/oracle_search.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__storage__vdb__oracle_search.py",
+      "sha256": "2fc65babb49bd566e20ebde3a1d8629fc42d5002ea02883c1280b095b90cc2f7"
+    },
+    {
+      "upstream_path": "02-els-qa/core/storage/vdb/genos_search.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__storage__vdb__genos_search.py",
+      "sha256": "a0fbba90cd140c8a1fad35468b0ee5f28caf008a24afa6cf8b280fe5a38c9eb5"
+    },
+    {
+      "upstream_path": "02-els-qa/core/storage/vdb/embedder.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__storage__vdb__embedder.py",
+      "sha256": "141a77c623a1d1ae80ddcd2a1a69f7c6ead4ab602ff539394e52674bdd18f1ac"
+    },
+    {
+      "upstream_path": "02-els-qa/core/storage/vdb/config.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__storage__vdb__config.py",
+      "sha256": "b59fec18ba6f1c42073180c780942610ea21dfefaf928bcb933386a4b8e53c7f"
+    },
+    {
+      "upstream_path": "02-els-qa/core/storage/vdb/vdb_schema.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__storage__vdb__vdb_schema.py",
+      "sha256": "f5b50bf9270f0ec926e406cf2697f4312fdf3080f59b79d3320e0927fa96733a"
+    },
+    {
+      "upstream_path": "02-els-qa/core/genos.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/core__genos.py",
+      "sha256": "1e4db980f4c50774fb86494a44c17ca8cec260c580abf629cc01ada276e3d3ac"
+    },
+    {
+      "upstream_path": "02-els-qa/dataiku/project_config/recipes/compute_ELS_QA_VDB_EMBED.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/dataiku__project_config__recipes__compute_ELS_QA_VDB_EMBED.py",
+      "sha256": "67a68cbf8d51daf3d71054a633f803e234fadf784f0b9f1091125b0b88adee8d"
+    },
+    {
+      "upstream_path": "02-els-qa/dataiku/project_config/lib/python/els_dku/vdb.py",
+      "snapshot": "07_DOCS/REFERENCE/REPORTS/GENOS_INITIAL_VECTOR_DESIGN_20261028/evidence/dataiku__project_config__lib__python__els_dku__vdb.py",
+      "sha256": "3be98089190f0afd58d93cd66290929a8e0c769f3aba4c1e9128fdd062e62b43"
+    }
+  ],
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "ontology-workflow-20261028-r1",
+    "generation": 111,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/ontology-workflow-20261028-r1/release.json",
+    "release_manifest_sha256": "3dc663ebe8b943516062e5df261b5bf923d6a51227e7f23506f81496c51f9129",
+    "activated_at": "2026-10-27T22:53:06.952747+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3da66244923cab7b1b912ff2715d035251bbb0a01eb6e8c2f1d626298f58a795",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1160-ontology-workflow-oracle-json/실험/manifest.json",
+        "sha256": "650ffb076fd7cb24856dd4f7152f81dd3bd71f23bd281a7524add51d55322ea7"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1160-ontology-workflow-oracle-json/README.md",
+        "sha256": "ce15ca57decf021fd014cfed0128d404fbd6ebe64740b78b8b8dd081472b0723"
+      },
+      "arm": "connected",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1160-ontology-workflow-oracle-json/artifacts/run-001/result.json",
+        "sha256": "d7fb89c48fe6a31c04ad0f9eb1691065309e6dbddf28068c023dbbd55f59d043"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1160-ontology-workflow-oracle-json/artifacts/design/release-rebase.json",
+        "sha256": "b6ab3713b998ac68025f9d1f5c975cee6b322d06308a7f0de58252808423a4f7"
+      }
+    }
+  },
+  "own_selected_comparison": [
+    {
+      "path": "service.py",
+      "selected_file_exists": true,
+      "selected_sha256": "1f99ddd761ad0505a8d588d3189bad6eb6f4ec9663411207e342daaddc288585",
+      "working_sha256": "1f99ddd761ad0505a8d588d3189bad6eb6f4ec9663411207e342daaddc288585"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "selected_file_exists": true,
+      "selected_sha256": "5c0374fc490547d01ed9e0cdbd6487252f3fb6ab9c55dfd50ca7f2f0afb82dc1",
+      "working_sha256": "5c0374fc490547d01ed9e0cdbd6487252f3fb6ab9c55dfd50ca7f2f0afb82dc1"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "selected_file_exists": true,
+      "selected_sha256": "882c1812a25cb14cf1b4c4744cf3a43a94e8b390a0c2135b799df05226e0a9cc",
+      "working_sha256": "882c1812a25cb14cf1b4c4744cf3a43a94e8b390a0c2135b799df05226e0a9cc"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/embedding.py",
+      "selected_file_exists": false,
+      "selected_sha256": null,
+      "working_sha256": "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/oracle_query_publish.py",
+      "selected_file_exists": false,
+      "selected_sha256": null,
+      "working_sha256": "943d073ff57e4102a711d8cf7a2014bb9285ad83cc4e19dbd271313d5926a76e"
+    }
+  ]
+}

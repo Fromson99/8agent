@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:design-only:ontology-domain-profile-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "runtime_enabled",
+    "profile_id",
+    "revision",
+    "parent_ref",
+    "supported_contracts",
+    "glossary",
+    "value_states",
+    "slots",
+    "node_types",
+    "relations",
+    "matching",
+    "review_rules",
+    "purposes",
+    "examples",
+    "business_overlay_policy",
+    "approval_ref",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ontology-domain-profile-design-v1"
+    },
+    "status": {
+      "const": "DESIGN_ONLY"
+    },
+    "runtime_enabled": {
+      "const": false
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "parent_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supported_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation",
+        "assembly_ir",
+        "compiler_registry"
+      ],
+      "properties": {
+        "observation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assembly_ir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compiler_registry": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "glossary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_source",
+        "reader_contract",
+        "identity_fields",
+        "local_vocabulary_definitions",
+        "canonical_approval_inherited",
+        "unknown_policy"
+      ],
+      "properties": {
+        "binding_source": {
+          "const": "authenticated_task_selected_snapshot.glossary"
+        },
+        "reader_contract": {
+          "const": "existing_lookup_inspect_entry_links"
+        },
+        "identity_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "local_vocabulary_definitions": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "canonical_approval_inherited": {
+          "const": false
+        },
+        "unknown_policy": {
+          "const": "PRESERVE_MENTION_AND_REQUEST_EXISTING_GLOSSARY_REVIEW"
+        }
+      }
+    },
+    "value_states": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "PRESENT",
+          "NOT_RECORDED",
+          "UNSPECIFIED",
+          "NOT_APPLICABLE",
+          "NOT_ACQUIRED",
+          "CONFLICTED",
+          "UNSUPPORTED_SEMANTICS"
+        ]
+      },
+      "minItems": 1
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "value_type",
+          "meaning",
+          "allowed_values"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value_type": {
+            "enum": [
+              "TEXT",
+              "NUMBER",
+              "BOOLEAN",
+              "DATE",
+              "SET",
+              "NODE_REFS"
+            ]
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 1
+          },
+          "allowed_values": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "node_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "core_role",
+          "required_review_slots"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "DEFINITION",
+              "SCOPE",
+              "MEASURE",
+              "CALCULATION",
+              "CONDITION",
+              "EFFECT",
+              "EXCEPTION"
+            ]
+          },
+          "core_role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_review_slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "direction",
+          "allowed_from",
+          "allowed_to",
+          "requires_source_basis",
+          "assembly_role"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "direction": {
+            "enum": [
+              "consumer_to_prerequisite",
+              "exception_to_modified",
+              "navigation_only"
+            ]
+          },
+          "allowed_from": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "allowed_to": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "requires_source_basis": {
+            "const": true
+          },
+          "assembly_role": {
+            "enum": [
+              "DEPENDENCY",
+              "INCOMING_EXCEPTION",
+              "IGNORE_FOR_EXECUTION"
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "matching": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_routes",
+        "comparison_axes",
+        "same_glossary_id_implies_same_rule",
+        "unsearched_candidates"
+      ],
+      "properties": {
+        "candidate_routes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "comparison_axes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "same_glossary_id_implies_same_rule": {
+          "const": false
+        },
+        "unsearched_candidates": {
+          "const": "DEFER_MATCHING"
+        }
+      }
+    },
+    "review_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "operator",
+          "instruction"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "MECHANICAL",
+              "SEMANTIC_REVIEW"
+            ]
+          },
+          "operator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "purposes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "root_roles",
+          "required_review_slots"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "root_roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "required_review_slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "examples": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instruction_examples",
+        "evaluation_gold_visible_to_product"
+      ],
+      "properties": {
+        "instruction_examples": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "evaluation_gold_visible_to_product": {
+          "const": false
+        }
+      }
+    },
+    "business_overlay_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parent_count",
+        "parent_binding",
+        "allowed_changes",
+        "forbidden_changes"
+      ],
+      "properties": {
+        "parent_count": {
+          "const": 1
+        },
+        "parent_binding": {
+          "const": "EXACT_VERSION_AND_HASH"
+        },
+        "allowed_changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "forbidden_changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "approval_ref": {
+      "type": "null"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    }
+  }
+}

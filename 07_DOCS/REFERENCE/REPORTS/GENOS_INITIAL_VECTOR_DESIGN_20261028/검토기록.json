@@ -1,0 +1,30 @@
+{
+  "review": "self_review_not_independent",
+  "checks": {
+    "active_release_unchanged": true,
+    "upstream_snapshots_match": true,
+    "required_sections": true,
+    "existing_retrieval_preserved": true,
+    "fulltext_lexical_caveat_preserved": true,
+    "no_live_model_or_deploy_claim": true,
+    "coverage_math": true,
+    "selected_oracle_vector_false": true
+  },
+  "new_model_calls": 0,
+  "implementation_changes": false,
+  "main_promotion": false,
+  "genos_deployment": false,
+  "files": {
+    "evidence.json": "cba6b5fce56c81a083deeae7ac63fd6d0d09a7c90830b16352265e6a05702155",
+    "설계.txt": "d0801a5a7930424636b7d24f29a7649f8fa1a6f8eda04ec148cf0ea61dd00cc4",
+    "환경설정_제안.txt": "38fe463d5a9fe0eae7e7b94be41c5406af3039d544d5b01e8405eb41837516c4",
+    "evidence/core__storage__vdb__embedder.py": "141a77c623a1d1ae80ddcd2a1a69f7c6ead4ab602ff539394e52674bdd18f1ac",
+    "evidence/core__storage__vdb__genos_search.py": "a0fbba90cd140c8a1fad35468b0ee5f28caf008a24afa6cf8b280fe5a38c9eb5",
+    "evidence/core__storage__vdb__vdb_schema.py": "f5b50bf9270f0ec926e406cf2697f4312fdf3080f59b79d3320e0927fa96733a",
+    "evidence/core__storage__vdb__config.py": "b59fec18ba6f1c42073180c780942610ea21dfefaf928bcb933386a4b8e53c7f",
+    "evidence/dataiku__project_config__recipes__compute_ELS_QA_VDB_EMBED.py": "67a68cbf8d51daf3d71054a633f803e234fadf784f0b9f1091125b0b88adee8d",
+    "evidence/core__storage__vdb__oracle_search.py": "2fc65babb49bd566e20ebde3a1d8629fc42d5002ea02883c1280b095b90cc2f7",
+    "evidence/dataiku__project_config__lib__python__els_dku__vdb.py": "3be98089190f0afd58d93cd66290929a8e0c769f3aba4c1e9128fdd062e62b43",
+    "evidence/core__genos.py": "1e4db980f4c50774fb86494a44c17ca8cec260c580abf629cc01ada276e3d3ac"
+  }
+}

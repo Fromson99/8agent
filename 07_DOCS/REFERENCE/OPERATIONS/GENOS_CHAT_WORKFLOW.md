@@ -1,5 +1,7 @@
 # GENOS 채팅 화면 연결
 
+2026-10-29 출처 원문 펼치기를 **MAIN118 / source-accordion-20261029-r1**에 반영했다. 출처 버튼 → 개별 상자 → 확보 원문 펼침/접힘으로 동작한다. [GENOS 반입 안내](../../../../08_DEPLOYMENT/GENOS/handoffs/source_accordion_main118_20261029_r1/GUIDE.txt)에 코드서빙·워크플로우 편집기 적용을 구분했다. 로컬 선택서비스 검증을 마쳤으며 현장 배포/화면은 미확인이다.
+
 2026-10-06 후속 로깅은 최신 RAG의 `progressive-cursor-v2` 조사·재개 계약에 맞춘다.
 표시 revision은 `agent-input-action-output-20261006-r1`이다. 실제 모델 전송의 질문·작업·
 자료 수와 일부 위치를 짧게 표시하고, 출력의 다음 행동·읽기 제안·새 검색어·충분성 판단을
@@ -159,7 +161,33 @@ HTTP 500은 `failure_kind=http_error`, `http_status=500`, `tm_total`을 반환�
 [최신 SSE 인계](GENOS_SSE_TRANSPORT_20260928.md)를 따른다.
 
 
-## 2026-09-24 채팅 답변 형식
+## 2026-10-29 출처 원문 펼치기 — 작업 코드
+
+사용자 요청으로 기존 경로/문서명 목록을 `출처 · N건` 버튼과 문서별 접이식
+박스로 바꿨다. 출처를 누르면 목록이 열리고 각 박스를 누르면 응답에 연결된
+원문이 아래로 펼쳐진다. 다시 누르면 접힌다. 문서명·조항·있을 경우 판본을
+표시하며 원문의 빈 줄·문자·긴 본문을 보존한다.
+
+공통 표시 함수는 `08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py`의
+`_source_cards`다. 일반 RAG는 채택된 `assembly.context[].text`, v4/v5와
+이전 대사 응답은 검증된 source bundle의 `spans[].text`를 쓴다. 과거 응답에
+spans 필드가 없으면 저장된 text/excerpt를 사용한다. 새 원문을 조회하거나
+요약을 생성하지 않는다. 원문 없는 과거 답변은 미저장 안내, 미확보 후보는
+표시 제외, 부분 확보는 확보한 범위만 보여 준다. 다른 판본·원문 범위는
+제목이 같아도 합치지 않는다. 이미 원문을 접어서 표시하는 대사표는 유지한다.
+
+native `/chat` JSON/SSE와 workflow 표시가 같은 렌더러를 사용한다.
+`ANSWER_DISPLAY_REVISION=workflow-source-accordion-20261029-r1`로 이전
+표시 결과의 재사용을 막는다. HTML/Markdown 문자는 실행하지 않고 원문으로
+표시하며 새 브라우저 API 경로나 모델 호출은 필요 없다.
+
+이번 완료 범위는 작업 코드·로컬 검사·모의 브라우저 확인이다. 선택 MAIN117과
+GENOS 현장은 변경하지 않았다. GENOS 적용 시 코드서빙에 이 파일을 포함하고,
+별도 workflow Python 단계를 사용하는 환경은 편집기 코드도 함께 반영해야 한다.
+현장 HTML 허용/스타일과 실제 클릭은 워크플로우 테스트 화면에서 확인한다.
+[검사 결과·미리보기](../../../../09_ARTIFACTS/AUDITS/20261029-genos-source-accordion/결과.txt).
+
+## 2026-09-24 채팅 답변 형식 (이전 기록)
 
 워크플로우는 법률 답변 뒤에 실제 채택된 문서명·조문 위치를 핵심/보완으로
 구분해 `출처` 목록으로 붙인다. GENOS 채팅에서는 원문 API 경로를 링크로

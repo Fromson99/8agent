@@ -1,0 +1,59 @@
+{
+  "schema_version": "ontology-business-profile-design-v1",
+  "status": "DESIGN_ONLY",
+  "runtime_enabled": false,
+  "profile_id": "listing-disclosure-proposed",
+  "revision": 1,
+  "display_name": "상장·공시 업무",
+  "parent": {
+    "profile_id": "legal-core-proposed",
+    "revision": 1,
+    "design_file": "domain-profile.example.json",
+    "sha256": "d2a37b3db946e89a19a8374ef92008059ccd2abcf44e3b7bd373a854faae8a66"
+  },
+  "glossary": {
+    "binding_source": "authenticated_task_selected_snapshot.glossary",
+    "selected_concept_refs": [],
+    "empty_selection_policy": "USE_AUTHORIZED_SNAPSHOT_CANDIDATES",
+    "vocabulary_definitions": []
+  },
+  "document_scope": "AUTHENTICATED_TASK_ALLOWED_DOCUMENTS",
+  "selected_purposes": [
+    "applicability",
+    "required-action",
+    "calculation-basis"
+  ],
+  "comparison_axes": [
+    "actor",
+    "object",
+    "scope",
+    "time_basis",
+    "modality",
+    "action",
+    "unit",
+    "denominator",
+    "aggregation"
+  ],
+  "selected_review_rules": [
+    "origin-locator",
+    "known-glossary-ref",
+    "edge-endpoints",
+    "graph-closure",
+    "faithful-observation",
+    "obligation-vs-condition",
+    "scope-and-quantity"
+  ],
+  "additional_review_questions": [
+    "적용 시장·행위자·적용 시점이 다른 규칙을 같은 용어라는 이유로 합쳤는가?",
+    "위임·참조 대상의 필요한 하위 범위가 실제로 확보되었는가?",
+    "최종 목적에서 사용하지 않은 원문을 다른 목적에서도 불필요하다고 일반화했는가?"
+  ],
+  "instruction_example_refs": [],
+  "approval_ref": null,
+  "notes": [
+    "업무명은 프로필 표시이며 새 용어집 개념을 만드는 것이 아니다.",
+    "현재 실제 업무용 concept ID를 임의 선택하지 않았다. 구현 시 인증된 snapshot에서 조회해 선택한다.",
+    "빈 선택은 허용 snapshot 내 후보 조회이며 권한 없는 전체 사전/문서 접근을 허용하지 않는다.",
+    "이 예시는 기본 틀의 목적·비교축·검토 규칙을 선택한다. 새 의미 역할이나 실행 동작을 정의하지 않는다."
+  ]
+}

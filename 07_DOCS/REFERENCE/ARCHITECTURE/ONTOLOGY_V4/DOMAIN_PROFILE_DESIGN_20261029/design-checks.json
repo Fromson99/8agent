@@ -1,0 +1,64 @@
+{
+  "version": "ontology-design-document-check-v1",
+  "checked_at": "2026-10-29T07:12:44.152627+00:00",
+  "scope": "Documentation/example syntax, internal references and arithmetic only; not product/runtime or model quality validation.",
+  "checks": [
+    "domain-profile: schema PASS",
+    "business-profile: schema PASS",
+    "profile references, exact parent hash, no vocabulary duplication, inactive: PASS",
+    "planned workload and call ceilings: PASS",
+    "local file links and code fences: PASS",
+    "selected local MAIN117 retained: PASS"
+  ],
+  "local_link_count": 54,
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_IMPLEMENTATION_PLAN_20261029.md",
+      "sha256": "f6521d7f69058077b5eb03b7e649757c26c569c774748c253b25cff341086167",
+      "bytes": 41422
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/KNOWLEDGE_COMPILATION_DESIGN_20261029.md",
+      "sha256": "834e6039caa97301bdc94477f6d413f489d80d863a8cec9c56877db62c462473",
+      "bytes": 42533
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/README.md",
+      "sha256": "741526825e4aefc9e9927b1d7849878e3352f4de2e4df8bddbd3e53a4803dde6",
+      "bytes": 2158
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/domain-profile.design.schema.json",
+      "sha256": "a17ce71e7b7543b512cf8dd1213a4d51d3c85dd4a3a8ec25a15276a1dd7b7134",
+      "bytes": 9949
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/domain-profile.example.json",
+      "sha256": "d2a37b3db946e89a19a8374ef92008059ccd2abcf44e3b7bd373a854faae8a66",
+      "bytes": 11836
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/business-profile.design.schema.json",
+      "sha256": "64f3a142c48daf0051c89da3cfe1ca77d00658502e7585c494229b2c91034698",
+      "bytes": 3317
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/business-profile.example.json",
+      "sha256": "803cfea1fb70e01b9ff0641c83c061172173b215ab8efb70ea339027a67c29dd",
+      "bytes": 2136
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/DOMAIN_PROFILE_DESIGN_20261029/experiment-plan.example.json",
+      "sha256": "83d0af7d075a9e7a4c8a900e3b1039947667cd97967625d5b5dd9a93528c3bb3",
+      "bytes": 4890
+    }
+  ],
+  "model_calls": 0,
+  "experiments_executed": 0,
+  "product_implementation": "NOT_PERFORMED",
+  "selected_release": {
+    "generation": 117,
+    "release_id": "accepted-answer-20261029-r1"
+  },
+  "review_kind": "AUTHOR_SELF_CHECK"
+}

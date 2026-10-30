@@ -1,0 +1,136 @@
+{
+  "schema_version": "ontology-profile-experiment-design-v1",
+  "status": "PRE_REGISTRATION_DESIGN",
+  "executed": false,
+  "adr_id": null,
+  "main_wiring": "unchanged",
+  "boundary": "후속 ADR 예약·후보 구현·데이터/기준 동결을 위한 설계. 실행기나 승인 영수증이 아니다.",
+  "E1": {
+    "purpose": "형식 변경에 대한 관찰 추출 충실도",
+    "basic_cases": [
+      {
+        "id": "obligation-condition",
+        "meaning": "해야 하는 행위를 이행한 경우라는 조건으로 기록한 오답"
+      },
+      {
+        "id": "permission-obligation",
+        "meaning": "허용을 의무로 잘못 기록한 의견"
+      },
+      {
+        "id": "presumption-deeming",
+        "meaning": "추정과 간주가 혼동된 이전 의견과 정정"
+      },
+      {
+        "id": "denominator-time",
+        "meaning": "분모와 기준일이 다른 산정 주장"
+      },
+      {
+        "id": "conditional-exception",
+        "meaning": "일반 효과와 조건부 예외 및 대상"
+      },
+      {
+        "id": "withdraw-correction",
+        "meaning": "이전 의견 철회와 이후 의견; 일부 이유 미기록"
+      },
+      {
+        "id": "selected-not-acquired",
+        "meaning": "읽기 선택은 있으나 실제 도구 실패로 원문 미확보"
+      },
+      {
+        "id": "ambiguous-term",
+        "meaning": "같은 표기의 복수 기존 glossary 후보"
+      }
+    ],
+    "representations": [
+      "flat-json",
+      "nested-json",
+      "ordered-text"
+    ],
+    "logical_jobs": 24,
+    "independent_legal_samples": 0,
+    "sample_unit": "합성 기본 사례 8개; 변환 24개는 독립 법률 사례가 아님",
+    "evaluation": "세 표현 모두 격리된 expected observation과 비교. 같은 오답끼리 일치한 경우 실패."
+  },
+  "E2": {
+    "purpose": "누적 판단·반례·예외·판본과 목적별 조립",
+    "histories": [
+      "complement-and-scope",
+      "repeated-error-and-correction",
+      "exception-and-definition",
+      "version-and-stale-commit"
+    ],
+    "checkpoints": [
+      "A",
+      "A+B",
+      "A+B+C"
+    ],
+    "arms": [
+      "current-v1-recipe-comparison-wrapper",
+      "profiled-incremental-graph"
+    ],
+    "logical_jobs": 24,
+    "shared_normalization": "사전에 고정한 관찰. 실패 사례는 NOT_READY로 분모에 남김. 공유 비용 별도 포함.",
+    "attribution": "구조와 누적 방식이 함께 바뀌는 복합 후보; 단일 구성요소의 인과효과 주장 금지"
+  },
+  "budget_per_experiment": {
+    "normal_calls": 24,
+    "max_schema_repairs_per_job": 1,
+    "max_provider_switches_shared_batch": 1,
+    "max_physical_calls": 49,
+    "model_deadline_seconds": 180,
+    "batch_deadline_seconds": 1800,
+    "heavy_concurrency": 1,
+    "automatic_new_batch": false,
+    "output_token_cap": null
+  },
+  "policies": {
+    "model_policy_file": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+    "routing_policy_file": "00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json",
+    "freeze_effective_policy_before_execution": true,
+    "gold_in_product_input": false,
+    "evaluator_llm_required": false,
+    "semantic_repair_to_make_gold_pass": false
+  },
+  "required_artifacts": [
+    "frozen-input-manifest",
+    "profile-and-generated-contract-hashes",
+    "source-and-glossary-bindings",
+    "exposure-and-family-split-ledger",
+    "separate-gold-annotations",
+    "format-transform-location-map",
+    "exact-request-response-receipts",
+    "candidate-and-discard-ledger",
+    "normalized-observations",
+    "graph-diffs",
+    "compiled-purpose-packages",
+    "per-case-verdict-and-uncertainty",
+    "physical-call-usage-time-cost-ledger"
+  ],
+  "zero_tolerance_contract_failures": [
+    "unauthorized-source-accepted",
+    "invented-glossary-id-accepted",
+    "invalid-locator-accepted",
+    "hash-mismatch-accepted",
+    "stale-overwrite",
+    "failed-result-marked-success"
+  ],
+  "semantic_probe_gate": "각 기본 사례의 사전 기대 주장·반례·정정·미확인·관계를 모두 보존해야 해당 사례 통과. 실패 및 미실행 포함 분모 보고.",
+  "E3_followup": {
+    "synthetic_integration": "native API/CLI/UI와 동일 서비스를 통한 저장·재조회·staging·rollback·source binding 검사",
+    "real_model_evaluation": "새 ADR에서 실제 질문·원문/개념 가족 holdout·expected annotations·총예산 동결",
+    "selected_service_checks": [
+      "OFF",
+      "ON-unconfigured",
+      "ON-empty",
+      "ON-published"
+    ],
+    "automatic_cm007_cm009_retest": false
+  },
+  "unresolved_before_live": [
+    "actual immutable event/source inputs",
+    "independent exposure ledger and reviewed annotations",
+    "candidate revision and runner hashes",
+    "all call-stage budgets and current provider client scope",
+    "Dataiku/Oracle field mappings for field deployment"
+  ]
+}

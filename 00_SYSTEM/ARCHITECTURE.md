@@ -1,5 +1,12 @@
 # MAIN — 원문과 용어 기반 탐색
 
+<!-- ONTOLOGY_WORKFLOW_MAIN111 -->
+**2026-10-28 온톨로지 운영 연결:** [생성·기존 화면 승인·DB 게시·RAG 사용](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/WORKFLOW_CONNECTED_20261028.md). 로컬 MAIN111에 코드·필수 스키마만 반영하며 기본 OFF와 기존 데이터를 유지한다. 개발계 SIDDA 온톨로지5테이블 설계·Dataiku 작업JSON 스트림·원문 도착 조회가 연결된다. 실제 S3/Flow/GENOS/SIDDA 권한은 현장 확인과 구분한다.
+<!-- /ONTOLOGY_WORKFLOW_MAIN111 -->
+
+> 2026-10-27 원문 구조화 실행 책임 정정: Dataiku가 작업 상태·진행·로그·취소·재시도·결과 S3 보관과 실버 적재를 담당한다. GENOS legal_pipeline_serving은 비동기 요청의 계산 리소스이며 S3에 직접 접속하지 않는다. Dataiku가 응답/결과를 받아 S3에 쓴다. 현재 계산을 취소할 임시 프로세스 핸들 및 전송 버퍼만 GENOS에 두며 영속 job registry/지난 작업 ACK 해제는 새 운영 구조에서 제거한다. [구현·현장 적용 순서](../08_DEPLOYMENT/DATAIKU/pipeline_stateless_20261027_r1/GUIDE.txt). 단일 worker/replica와 임시 핸들 lease 조건이며 현장 배포는 아직 미확인이다.
+
+
 <!-- MAIN104_SQL_FOLLOWUP -->
 **2026-10-27 — MAIN105 반영·실제 서비스 확인 완료:** [전체 반영·실제 실행·온톨로지 후속](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 최초211초 원인의 MAIN104 SQL 수정에 반복 원문 확인 재사용과 네 연결 TEMP VIEW의 ID 점조회를 더했다. 보관응답1회 재생의 동일 계측35화면736.500→93.718초(87.275% 감소), 원문·행동·최종 답변 동일, 새 모델 호출0회다. 신규237조건·관측보조1,345조건을 구분한 ADR1081 검증 후 MAIN105 `navigation-validation-20261027-r1`을 선택했고 실제 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)이 통과했다. 작업 코드 통합에서 새4검사 통과, 기존7실패는 변경 전후 동일하다. 온톨로지는1074 부분실패→1077 상태 전환 수리→MAIN105 결합1079 실모델1셀/10호출을 완료했다. 두 원문의 판단 보존을 확인했지만 근거 연결 보완1회·제한 답변으로 품질 효과는 미인증이다. MAIN105 최종 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했다. 설치144명령·SQL18·상태13쌍을 통과했으며 MAIN104 첨부를 대체한다. P0~P4 전체 구현·전체 응답시간 개선·법률 품질·온톨로지 MAIN·GENOS 현장 배포 완료로 확대하지 않는다. 아래 이전 상태 기록과 구분한다.
 <!-- /MAIN104_SQL_FOLLOWUP -->
@@ -12,6 +19,15 @@
 
 
 <!-- CURRENT_LOCAL_RAG_RELEASE -->
+
+2026-10-28 사용자 지시에 따라 **로컬 RAG MAIN110 / workflow1.20.8**을 선택했다. 릴리스 `ontology-selection-20261028-r1`, 정본 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`. 최신 MAIN109의 SQL·최소입력·고정번호·독립 원문조사 복구를 유지하고 온톨로지 선택 지침 한 곳만 374→365자로 교체했다. 일반 성립·적용 요건에서 성립과 제외·예외 경로를 함께 선택하도록 안내하며 두 개를 서버가 강제하지 않는다. **ON/OFF 유지·기본 OFF·온톨로지 데이터 미포함**, ON+빈 데이터는 기존 RAG다. 제품1+종속pin31 변경, 작업·검증·선택440파일 일치. 기술226조건(1152의216+1153 재실행10)을1154가 동일 코드로 상속하고 영수증12조건을 확인했다. 실제 선택service OFF/ON빈데이터 각37·총74확인, 모의HTTP2·새모델0. 앞선1150의 알려진8질문11반복11/11은 인샘플이며 이번 기술승격을 새 법률 품질 인증으로 확대하지 않는다. 1152 검사 경로 실패·1153 영수증 누락과 기존graph9오류를 보존했다. `VALIDATED_ADR_PROMOTION / quality_gate_override=false / quality_certified=false`. 데이터·모델·출력상한 없음·40/1024/1800예산 유지. GENOS 현장·데이터 게시·Git commit/push·메일 미수행. [반영·설정·검증·롤백](../09_ARTIFACTS/AUDITS/20261028-ontology-selection-main110/반영과_사용방법.txt).
+
+직전 선택 단계의 보존 기록:
+
+2026-10-27 사용자 지시에 따라 **로컬 RAG MAIN108 / workflow1.20.8**을 선택했다. 릴리스 `ontology-framework-20261027-r1`. 온톨로지 사전 시나리오 조립·원문 결속·복수 선택·충분성/재선택·기존 탐색 복귀의 공통 코드만 반영하고 **데이터는 미이행, 기본 OFF**다. `GENOS_RAG_ONTOLOGY_ENABLED=on/off` 설정 후 프로세스를 재시작한다. ON이어도 연결된 데이터가 없으면 일반 RAG로 동작한다. ADR1139의 총216기술 계약 통과, 기존236검사151통과·85실패는 MAIN107과 항목별 동일하여 새 회귀0.437서빙파일·46변경을 공식 승격으로 결속했다. 실제 선택 서비스의 OFF/ON-빈데이터 각34개, 총68확인과 모의 HTTP2회가 통과했다(실제 모델0회).1136 실행기 오류·1137 제한 환경의 TestClient 대기는 보존했다.1135의 선택 누락/충분성 판단 실패는 남으며 법률 품질 인증이 아니다. `VALIDATED_ADR_PROMOTION / quality_gate_override=false / quality_certified=false`. 기존 원문·색인·모델·출력상한 없음·40/1024/1800예산 유지. GENOS 현장·온톨로지 데이터 게시·Git commit/push·메일은 미수행. [설정·범위·검증](../09_ARTIFACTS/AUDITS/20261027-ontology-framework-main108/사용과_반영결과.txt).
+
+이전 선택의 보존 기록:
+
 2026-10-27 사용자 지시에 따라 **로컬 RAG MAIN105 / workflow1.20.8**을 선택했다. 릴리스 `navigation-validation-20261027-r1`, 정본 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`. MAIN104의420파일 중 반복 원문 검증 재사용·네 연결 권한 VIEW 점조회의 제품3파일과pin31파일만 변경하고 기존 정의 조회 수정을 유지했다. 신규237조건·관측보조1,345조건, 원래38응답/35화면/최종답변 동등성, 실제 선택 서비스19확인(HEALTH·모의 HTTP1회·새 모델0회)을 통과했다. 보관응답1회 재생의 동일35화면736.500→93.718초(87.275% 감소), 모델호출0이며 전체 서비스 개선율이 아니다. `VALIDATED_ADR_PROMOTION / quality_gate_override=false / quality_certified=false`. 데이터·검색·모델·출력상한 없음·40호출/1024도구/1800초 예산 동일. 작업 코드의 기존directory/별표 기능을 보존해3hunk 통합했고100검사통과·기존7실패 동일이다. 온톨로지 MVP는 별도1079 후보이며 MAIN 기능 전체에 포함하지 않았다. 반영 후1079 실모델1셀/10호출에서 상태 전환 수리는 확인했지만 제한 답변으로 품질 효과는 미인증이다. MAIN105 누적본433파일·첨부4개를 삼성메일 SENT `1a17ae4c6976a0f7`로 발송·확인했고 MAIN104 첨부를 대체한다. GENOS 현장 배포·Git commit/push 미수행. [승격·실행·인계·남은 상태](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MAIN_SQL_AND_ONTOLOGY_FOLLOWUP_20261027.md). 과거 실행·실패·MAIN103/104·인계본은 보존한다.
 <!-- /CURRENT_LOCAL_RAG_RELEASE -->
 
@@ -84,6 +100,12 @@ GENOS의 에이전트 실행에서 생성한 질문·판단·로그는 에이전
 <a id="dataiku-gold-schema-convention"></a>
 
 ### 골드 레이어 스키마·메타데이터 규약 — 사용자 제공 2026-10-22
+
+**도메인·길이 최신 정정 R14 — 2026-10-29:** [정정본과 중복 제거 목록](../07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_DOMAIN_CORRECTION_20261029_R14/README.txt). 사용자 확인값은 해당 도메인의 허용 형식이며, 다른 도메인으로 길이를 일괄 복사하지 않는다. 실측값에 여유를 더해 임의 길이를 만들지 않고 같은 도메인에서 확인된 크기를 선택한다. ID1000은 없다는 정정에 따라 문서·구조·본문·원문ID는 확인된 ID50으로, 게시/자료/그룹ID는 기존 ID100으로 맞췄다. 한글 내용3열은 기준1000×3=물리3000 BYTE를 분리 표기하고 이미BYTE로 기재된 문서명2250은 유지했다. 13표60열·PK·일반인덱스와 원천 문자열 의미를 보존하며 실측 초과0을 확인했다. DB/제품/MAIN/GENOS 반영은 미수행이다. R12/R13은 과거 작성·발송본으로 보존한다.
+
+**최신 축소 설계 R12 — 2026-10-29:** 사용자 요청으로 [13표·60컬럼 안](../07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_COMPACT_20261029_R12/DESIGN.md)을 작성했다. R10 기존49열+벡터11열이며 R11 대비28열 축소다. FTS는 기존 SRCH_ROW를 재사용하고 모델·판본·건수·입력 해시는 JSON에서 검증한다. 검색용 문서/원문 ID·일반 인덱스·HEAD PK/변경순번은 유지한다. 아래 R11의16표/88열은 이전 제안이며 전용 FTS3표·기존표 추출3열은 R12에 적용하지 않는다. 문서 변경만 수행했으며 개발계·제품·MAIN/GENOS와 실제 Oracle 성능은 별도다.
+
+**2026-10-29 골드 재설계 후보:** 사용자 후속 사진과 소프트 FK·벡터 골드 포함 요청에 따라 [R11 설계서·등록 엑셀](../07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_REDESIGN_20261029_R11/DESIGN.md)을 작성했다. R10의 B03/B05·ONTL·POST 및 기존49컬럼을 유지하고, 기존표 추출3컬럼·벡터3표·전문검색3표를 더한 최종16표/88컬럼이다. Gold는 PK/NOT NULL·일반 인덱스를 유지하고 물리 FK/업무 CHECK/PK 외 UNIQUE/함수 인덱스 대신 게시 전 코드 검증을 사용하도록 설계한다. 벡터의 활성 선택은 별도 HEAD PK와 변경순번으로 관리한다. 연결 ID·권한·원문 판본·해시 검증은 유지한다. **문서 설계이며 실제 생성/코드 전환은 미수행이다.** 현행 개발 SIDDS/SIDDA 계약을 일괄 변경하지 않는다. native VECTOR/ANN의 현장 지원·승인은 별도이며 성능 향상을 인증하지 않는다.
 
 **향후 골드 레이어의 테이블·컬럼 설계와 생성 신청은 이 규약을 따른다.** 출처는 사용자가 제공한 사진 1~4의 내부 문서 **「AI데이터플랫폼 (AI데이터허브) 골드레이어」**다. 사진 1~2는 표준화·문자열 타입·등록 절차, 사진 2~3은 테이블 Description, 사진 4는 컬럼 Description 및 운영 테이블 생성 관련 댓글을 담고 있다. 화면에 안내된 참고 자료는 `삼성증권_메타마이너 사용자 가이드_v0.9.pptx`이며, 같은 날 가이드의 7~11·20~23쪽 사진 9장과 12~18쪽 사진 7장이 추가 제공되었다. 이어서 **골드 테이블 목록·Bizmeta·등록 대상·컬럼 정의의 엑셀 화면 사진 7장**이 추가되었다. PPTX·XLSX 파일 자체는 미제공이다. 아래는 사진에서 읽을 수 있는 규약을 정리한 것으로, 잘린 댓글이나 미제공 페이지의 내용은 추정하지 않는다. **[내용 정리·원본 사진 27장·출처 목록](../07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/README.md)**에 네 사진 묶음을 구분해 보관했다.
 

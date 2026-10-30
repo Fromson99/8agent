@@ -1,0 +1,196 @@
+모델 응답 계약 검증·보완과 원문 조사 재개 설계
+작성: 2026-10-28 / 상태: 코드·저장 로그를 확인한 설계안
+
+1. 결정
+
+모델 응답 형식은 행동별로 미리 정의한다. 현재 요청에서 선택할 수 있는 문서·도구·원문·판단 ID를 그 계약에 결속한다. 응답을 받은 뒤 서버가 검증하고, 복구 가능한 입력 오류이면 같은 단계에 구체적인 오류와 기대 형식을 돌려주어 1회 보완한다. 검증을 통과한 행동만 실행한다.
+
+제외하는 것은 잘못된 제안이다. 이미 확인된 원문 필요, 유효한 조사 목표, 확보한 원문을 제외하지 않는다. 아직 형식 검증조차 통과하지 않은 신규 좌표는 실행 가능한 목표로 저장하지 않고, 거절 출력과 미완료 선택을 기록한다. 서버가 조→body, D99→D1, 제12조→제13조처럼 의미나 대상을 추정해서 고치지 않는다.
+
+계약 보완과 추가 조사는 분리한다. 형식이 틀렸다면 실행 전 보완하고, 형식이 맞지만 실제 조회가 0건이면 조회 결과를 보고 다른 유효 경로를 선택한다. 0건은 문서 부재·전체 경로 소진의 증명이 아니다.
+
+이번 작업은 설계와 읽기 전용 확인이다. 제품 코드 수정·새 모델 호출·시험·MAIN 승격을 수행하지 않았다. 선택 릴리스는 MAIN112다. 분석 대상 후보는 ADR1175 scoped rev-002이며, 이 후보도 MAIN에 반영되지 않았다.
+
+2. 현재 구현과 실제 문제
+
+이미 있는 기능:
+- output_contract.py: 엄격한 JSON 검사, 스키마 진단, 오류 분류, DecisionJournal, CorrectionBudget, bounded_decision의 최초 응답+1회 보완.
+- decision_projection.choose_read: 행동별 분기와 현재 대상 enum을 생성하고 canonical 행동으로 복원·검증.
+- read_candidate_pages.choose: 현재 페이지의 선택 가능한 대상과 같은 view/schema로 보완.
+- bounded_source_session.structured: 단계가 보완을 맡으면 gateway의 schema repair를 0으로 설정해 중첩 재시도를 방지.
+- ADR1175 source_goal_control: coordinate_scope를 body/addendum/annex/form/repeated/appendix로 제한하고 실행 전 검증. 저장 상태의 범위 오류는 별도로 차단.
+- completion_execution 및 ADR1174 이후 assessment_consistency: 판단·근거 관계와 PARTIAL/INSUFFICIENT의 핵심 부족을 검증.
+
+따라서 공통 재시도 실행기를 새로 만드는 대신 기존 계약과 진단을 연결·확장한다. 과거 ACTION_CHOICE_CONTRACT 문서의 action_choice_contract/read_review_patch 파일명이 현재 후보의 실제 진입점을 대신하지 않도록 한다. 현재 후보의 조사 진입은 law_navigation.request_decision → decision_projection.choose_read → read_candidate_pages.choose/output_contract.bounded_decision이며, compact_model_input 및 stable_references가 전송 표시를 담당한다.
+
+관측 O1 — ADR1174 CM009:
+모델이 coordinate_scope=조를 제출했고, 당시 자유 문자열 계약을 통과했다. 서버가 유가증권시장 상장규정 제12조를 잘못된 범위로 조회했다. 원문 저장소에는 body:제12조가 존재한다. 이 사실은 제12조가 질문의 정답 근거라는 의미는 아니다.
+source_goal_control.resolve는 LOOKUP 경로를 사용한 것으로 기록했다. 다음 preselect는 읽기 후보가 없고 LOOKUP도 사용한 상태에서 SOURCE_GOALS_UNRESOLVED:SG1로 중단했다. preselect는 내부적으로 종료 행동을 전달하므로 일반 모델 선택까지 도달하지 못했다.
+최종 판단이 추가 조사를 요청했지만 같은 상태로 재진입하여 추가 도구 실행 0회, gap을 UNRESOLVED로 닫았다. 상위 law_navigation은 구체 원인을 NO_ANSWER_PROGRESS로 뭉뚱그려 기록했다.
+최종 사용량: 물리 모델 6/40회, 도구 20/1024회. 예산 소진에 의한 중단이 아니다.
+
+관측 O2 — ADR1175:
+잘못된 scope의 선제 거절을 구현하고 177개 기술검사를 통과한 기록이 있다. 추가 모델 호출은 0이다. 이 계약 수정이 CM009의 실제 전체 답변을 해결했다는 증거는 없으며, 위 조기 종료 제어는 별도 개선 대상이다.
+
+3. 오류별 계약과 처리
+
+A. JSON 문법·형태
+예: 잘린 JSON, 중복 키, 숫자가 와야 하는 곳에 문자열, 필수 항목 누락, 허용하지 않은 필드.
+처리: 완료된 응답의 복구 가능한 형식 오류는 도구 실행 전 거절. 같은 단계가 전체 응답 또는 기존에 허용된 필드 보완을 요청한다. 전송 결과 불명, 제공자 출력 제한·거절은 일반 문법 오류로 덮지 않고 원래 완료 상태에 따라 별도 분류한다.
+기대: 실패 응답을 빈 객체나 성공으로 치환하지 않음. 모델 호출은 사용량에 포함하되 도구 실행·조사 결과는 발생하지 않음.
+
+B. 현재 목록에 없는 ID
+예: D1·D2만 제시했는데 D99 선택, 문서 ID 자리에 도구 ID, 다른 페이지의 읽기 번호, 없는 claim 참조.
+처리: 모델이 제안한 잘못된 선택은 UNKNOWN_DOCUMENT_REF/UNKNOWN_TARGET_REF 등 명시적 입력 오류로 거절하고 현재 허용 목록에서 다시 선택하도록 한다. 내부 DB에 같은 ID가 있는지 탐색해 허용 범위를 확장하지 않는다. 해당 필드가 현재 페이지 제한인지 요청 전체 목록인지 계약에 명시한다.
+기대: 원래 허용 대상 안에서만 보완. 실제 서버의 권한 위반·registry/hash 오류는 이 입력 오류로 낮춰 처리하지 않음.
+
+C. 허용 값·구조 수준 혼동
+예: coordinate_scope에 조, relation에 임의 문자열, choice에 없는 행동.
+처리: enum과 의미 설명을 같은 계약에서 생성. coordinate_scope는 본문·부칙 등 범위이며 조·항·호는 구조 수준이라는 오류를 반환. 허용 scope는 현재 구현 계약의 값으로 제한한다. 범위 자체를 모르면 임의 값을 넣는 대신 현재 메뉴의 구조 탐색을 선택한다.
+기대: 잘못된 범위는 목표 저장·조회 전에 거절. 서버가 본문으로 자동 보정하지 않음.
+
+D. 행동과 대상·필수 입력 불일치
+예: READ인데 검색 전용 대상 선택, LOCATE에 위치 없음, 검색에 검색어 없음, DEPENDENCY에 유효한 출발 원문 없음.
+처리: 행동별 완전한 객체 스키마와 현재 메뉴의 action↔target 관계 검증. 선택한 행동에 필요한 항목만 돌려준다. 기존 검증된 출발 목적이나 단일 고정값의 기계적 복원은 유지한다.
+기대: JSON만 유효한 잘못된 도구 호출을 실행하지 않음.
+
+E. 근거·판단·종료 상태의 기계적 모순
+예: 없는 C1을 USE, 읽지 않은 원문으로 RESOLVED, PARTIAL인데 핵심 gap 없음, 미확보 목표를 이유 한 문장으로 삭제.
+처리: 관련 필드와 충돌 규칙을 함께 반환하여 담당 판단 단계가 보완. 실제 읽기 receipt, 현재 근거, claim↔judgment 관계를 재검증한다. 독립적으로 검증 가능한 읽기는 기존 복구 계약 아래 계속할 수 있지만 거절된 판단은 채택하지 않는다.
+기대: 재시도 통과를 위해 상태를 COVERED로 올리거나 gap·예외를 자동 삭제하지 않음. 실제 법률 의미의 타당성은 스키마만으로 인증할 수 없음.
+
+F. 형식은 유효하지만 조회 0건·도구 실패
+예: 유효한 본문 제12조 조회가 0건, 연결 조회 실패, 다른 판본에 같은 번호가 있음.
+처리: 모델 형식 보완이 아니라 조사 결과로 기록. 현재 메뉴에서 다른 조회·목차·연결 경로를 선택하게 하고 같은 실패 조회의 무의미한 반복은 차단한다. 신규 경로나 목표 위치 변경은 모델의 명시적 선택과 서버 검증을 요구한다. 단순히 실패 횟수를 초기화하지 않는다.
+기대: 미확보 목표 유지. 실제 허용 경로를 확인하지 않은 채 원문 부재나 전체 소진으로 처리하지 않음.
+
+G. 오래된 상태·권한·무결성
+예: 실제 revision 변경, 같은 표시 ID의 다른 결속, 다른 사용자의 문서, 원문 hash 불일치.
+처리: 실행 차단. 서버가 바뀐 상태를 확인하고 기존 재개 절차로 새 view를 결속한다. 모델 재작성만으로 기존 응답을 유효하게 만들지 않는다. 권한·해시 검사 실패는 운영 오류로 보존한다.
+기대: 이전 목록에 새 대상·권한을 섞지 않음. 진단에 비허용 문서의 내용·실제 존재 여부를 노출하지 않음.
+
+H. 전송·공급자 오류
+예: 확정 429, 타임아웃, 연결 종료, 다른 HTTP 오류.
+처리: 응답 계약 보완과 분리해 기존 gateway가 담당. 현행 공급자 정책의 확정429 1회 전환과 물리 호출 차감을 유지한다. 형식 오류를 공급자 전환 사유로 사용하지 않는다.
+
+4. 모델에 반환할 보완 정보
+
+정상 호출부터 현재 선택 목록, 각 행동의 필수 필드, 허용 enum과 설명을 제공한다. 가능한 제공자에는 기존 구조화 응답 스키마를 사용하되, 서버의 원래 스키마·상태 검증을 최종 기준으로 유지한다.
+
+아래는 새 공통 진단의 제안 예시다. D1·D2는 설명용이며 실제로는 해당 요청의 허용 목록을 사용한다. 새로운 외부 응답 API가 아니라 기존 repair_contract.validation의 확장으로 연결한다.
+
+{
+  "response_mode": "FULL_DECISION",
+  "same_evidence_scope": true,
+  "max_attempts": 1,
+  "validation": {
+    "issues": [
+      {
+        "code": "UNKNOWN_DOCUMENT_REF",
+        "path": "/source_targets/0/document_ref",
+        "received": "D99",
+        "expected_constraint": {"enum": ["D1", "D2"]},
+        "message": "현재 제시한 문서 ID 중에서 선택하세요."
+      },
+      {
+        "code": "INVALID_COORDINATE_SCOPE",
+        "path": "/source_targets/0/coordinate_scope",
+        "received": "조",
+        "expected_constraint": {
+          "enum": ["body", "addendum", "annex", "form", "repeated", "appendix"]
+        },
+        "message": "이 필드는 본문·부칙 등의 범위입니다. 조·항·호는 구조 수준입니다."
+      }
+    ]
+  }
+}
+
+기존 request·schema·presentation·현재 참조 목록의 결속도 보존한다. 예시는 오류 구조 설명이며 실제 법률 판단·정답 좌표를 반환하지 않는다. 값 목록이 길면 같은 view의 명시적인 허용 목록을 참조한다. 알려진 오류 여러 개를 한 번에 돌려주되 안전하게 검사 가능한 항목만 수집한다.
+
+현재 output_contract.validate_shape는 복합 anyOf 실패를 'one complete permitted action alternative'로 줄이고, diagnostics의 ValidationError 경로는 단일 schema_issue를 반환한다. 선택한 choice가 유효하면 해당 분기의 실제 필드 오류를 추출하고, choice부터 잘못됐으면 허용 행동 목록을 반환하도록 개선한다. 이를 위해 서버 검증을 통과 기준으로 바꾸거나 다른 분기를 임의 선택하지 않는다. 진단에 쓰는 표시 ID와 모델이 제출한 ID는 같은 namespace여야 한다. canonical ID를 그대로 모델에 노출해 보완을 다시 실패시키지 않는다.
+
+5. 상태와 예산
+
+논리적 처리 순서:
+제안 수신 → JSON/형식 → 현재 ID/행동 관계 → 필드 간 계약 → 근거/권한/판본/상태 → 승인 → 도구 실행 → 실제 결과 기록.
+오류이면 승인 이전에서 거절 → 같은 단계의 보완 → 모든 관련 검사 재적용.
+
+- 기존 최초 응답+1회 보완을 기본으로 유지한다. 여러 오류를 한 번에 알려 새 필드 오류마다 1회를 추가하지 않는다.
+- 보완 담당은 단계별 하나다. read-choice의 오류를 gateway나 상위 law-navigation이 새 오류로 받아 다시 보완하지 않는다.
+- 보완 호출·429 전환 호출도 같은 물리 모델 예산과 최초 deadline에서 차감한다. 종료용 예산을 보존한다.
+- 거절된 제안은 실제 도구 실패·원문 조회 0건·조사 무진행으로 세지 않는다. 모델 사용량과 형식 실패 기록에는 센다.
+- 같은 논리적 결정의 오류는 페이지 이동·표시 ID 변경·ASSESS 재진입·재시작으로 보완 횟수가 초기화되지 않게 한다. 현재 CorrectionBudget의 근거·목표 결속을 재사용한다.
+- 보완 실패 뒤에도 이미 유효하게 확정된 독립 원문 행동이 있으면 그 기존 실행 계약을 유지한다. 무효 객체 전체를 부분 실행하거나 임의 법률 판단을 복구하지 않는다.
+- 최종 종료에는 FORMAT_REPAIR_EXHAUSTED, SOURCE_ROUTE_EXHAUSTED, BUDGET_EXHAUSTED 같은 원인 구분을 기존 진단 구조에 제안한다. 실제 wire enum 추가 여부는 소비자를 확인해 결정한다. NO_ANSWER_PROGRESS로 모두 덮지 않는다.
+- 제한 답변은 검증된 주장과 미확보 범위를 표시한다. 확인된 주장이 없다면 전체 답변 성공으로 취급하지 않는다. HTTP/저장 성공과 질문 해결 여부를 별도 보고한다.
+
+6. 변경 지도와 전후 기대
+
+output_contract.py / issue, diagnostics, validate_shape, bounded_decision
+기존: 공통 오류·1회 보완은 있으나 복합 스키마의 구체 경로가 항상 보장되지 않는다.
+제안: 선택 분기에 맞는 field/received/expected/현재 목록 진단을 수집한다. 출력 namespace를 맞추고 중첩 보완 방지·실패 보존을 검증한다.
+목표: 잘못된 입력 → 도구0회 → 오류 정보 → 1회 보완 → 재검증 성공 후 도구 실행. 이 포괄 개선의 실모델 결과는 미관측이다.
+
+decision_projection.py / choose_read, read_candidate_pages.py / choose,
+compact_model_input.py 및 stable_references.py
+기존: 행동별 스키마, 페이지별 후보, 고정 참조가 존재한다.
+제안: 모델 선택 ID의 불일치와 내부 결속 실패를 구분하고, 정상/preview/보완의 동일 목록·스키마·decoder를 검사한다. 이미 정상인 계약을 중복 생성하지 않는다.
+목표: 유효 ID는 정상 실행, 없는 ID는 허용 목록으로 보완, 내부 권한·결속 오류는 차단.
+
+source_goal_control.py / fields, validate, record, preselect, resolve, after_execute
+기존 실제 결과: O1에서 잘못된 범위가 조회0건으로 전파되고, 선집행 중단이 일반 선택과 ASSESS 재조사를 막았다. O2에서 범위 계약만 수정됐다.
+제안: O2 검증을 유지한다. 선집행에서 현재 실행할 exact 경로가 없으면 '일반 선택으로 복귀할지, 정말 경로/예산이 소진됐는지'를 구분해 반환한다. 목표·기존 실패 receipt를 그대로 제시하고 기존 대체 경로 한도를 이용한다. 모델 FINISH만으로 미확보 목표를 지우지 않는다. 잘못된 입력 거절과 실제 도구 결과를 분리한다.
+목표: 원문 선집행이 모델의 복구 선택을 막지 않으며, 추가 조사 재진입 직후 행동0회로 같은 중단을 반복하지 않음. 무한 반복 방지 한도는 유지.
+
+law_navigation.py / request_decision, ProgressHandoff 처리, bounded_result
+기존 실제 결과: SOURCE_GOALS_UNRESOLVED가 NO_ANSWER_PROGRESS로 바뀜.
+제안: 구체 원인과 미확보 목표·남은 경로·예산을 진단에 보존한다. 형식 실패로 조사 진행 카운터를 소모하지 않는다. 선집행→보완/대체경로→최종 판단의 책임을 분리한다.
+목표: 어떤 한도에 왜 걸렸는지 실제 실행 기록으로 설명 가능.
+
+completion_execution.py / finish_assessment, assessment_consistency.py,
+request_repair.py / 기존 gap 복귀 경로
+기존: 핵심 gap이 새로 생기면 조사에 복귀하지만 같은 미해결 상태로 즉시 닫힐 수 있음.
+제안: 추가 조사 가능성은 실제 목표·경로 시도 상태에 연결한다. 이전과 같은 실패 제안을 새 재시도 예산으로 만들지 않는다. 판단 보완과 독립 원문 조사를 계속 분리한다.
+목표: 미해결 사실을 답변에 보존하고, 조사할 수 있었는데 종료한 경우와 실제 제한에 도달한 경우를 구분.
+
+bounded_source_session.py / structured 및 실제 gateway
+제안: 단계별 보완 소유권, 전송 투영, 실제 물리 호출 차감, 기존 429 전환을 통합 검증한다. 형식 오류 때문에 공급자를 바꾸지 않는다.
+
+7. 검증·도입 순서
+
+기존 완료 ADR와 실모델 결과는 수정하지 않는다. 후속 구현은 새 격리 후보와 동결 기준으로 진행한다. DB 원문 재구축은 이 설계의 요구사항이 아니다. 진단 payload 변경은 기존 저널 소비자·보고서·저장 계약과 함께 검증한다.
+
+먼저 저장 응답과 오류 주입으로 다음을 확인한다.
+1) 정상 응답: 추가 보완 호출0, 기존 행동·원문·답변 보존.
+2) 없는 문서/도구/원문/판단/claim ID: 잘못된 실행0, 현재 허용 목록 제시, 수정 성공 뒤 실행.
+3) scope=조/항/임의 값: 잘못된 목표 저장0·조회0, 1회 보완 후 정상 처리.
+4) 복수 오류: 같은 응답의 ID·enum·필수 필드 문제를 한 번에 진단.
+5) 반복 실패: 세 번째 동일 결정 호출0, 목표·원문·사용량 보존.
+6) 정상 JSON의 필드 충돌: 잘못된 판단 채택0, 가능한 독립 읽기 보존.
+7) 실제 0건 조회: 다음 선택 기회 또는 입증된 종료, 원문 부재 단정0.
+8) ASSESS 재진입: 기존 목표/경로/보완 예산 보존, 즉시 같은 정지 반복 방지.
+9) stale/권한/원문 hash: 도구0, 범위 확대0, 무조건 모델 보완0.
+10) 재시작·중복 요청·페이지 전환: 완료 도구 중복 실행0, 보완 예산 초기화0.
+11) 정상/preview/보완: 전달 스키마·ID 목록·오류의 표시 번호 결속 일치.
+12) API와 저장: 사용자 답변·미확보·실패 원인 일치, 질문 완성 실패를 성공 재사용 결과로 등록하지 않음.
+
+그다음 동일 동결본으로 기존 계획의 실제001 1회 → 통과하면007·009 순서를 적용한다. 기술 게이트와 질문 완성 게이트를 사전에 분리한다. 같은 실패가 재현되면 후속 질문을 자동 진행하지 않는다. 이미 관측한 사례는 원인 회귀 검사이며 독립 정답률 인증이 아니다. 통과 후 작업 제품 통합·동일 코드 검증·MAIN 선택·선택 서비스 확인을 별도 단계로 진행한다. 롤백은 검증된 이전 선택 포인터와 코드를 보존하는 기존 릴리스 절차를 따른다.
+
+8. 기대와 한계
+
+목표: 잘못된 입력의 도구 실행을 막고, 수정 가능한 오류는 실제 원문 조사로 돌아오게 한다. 정답률·지연 개선율은 아직 산정하지 않는다.
+보완이 필요한 결정은 최초 호출 외에 최대1회 모델 호출 비용이 든다. 정상 경로에 새 모델 검증 호출을 추가하지 않는다. 효과는 잘못된 도구 실행·후속 실패를 얼마나 줄이는지에 달려 있으며 실측 전 절감 효과를 단정하지 않는다.
+계약을 지켜도 다른 시장 누락, 관련 없는 조문 선택, 잘못된 원문 해석은 남을 수 있다. 이들은 원문 조사·의미 판단 검사로 다룬다. 기대 정답 조문을 오류 메시지에 넣어 형식 보완 효과처럼 보이게 하지 않는다.
+
+9. 근거 위치
+
+07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md
+07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/ACTION_CHOICE_CONTRACT_20261026.md
+01_DATA/ACTIVE/local/ACTIVE_RELEASE.json
+08_DEPLOYMENT/RELEASES/vector-initial-20261028-r1/release.json
+04_EXPERIMENTS/ADR/ADR-1174-assessment-answer-consistency/artifacts/scope-bug.json
+04_EXPERIMENTS/ADR/ADR-1174-assessment-answer-consistency/artifacts/live/cm-009/runtime/legal-agent/runs/20261028/729254a3d8544975b7080c214ed434d4/journal.sqlite
+04_EXPERIMENTS/ADR/ADR-1175-source-goal-scope-contract/README.md
+02_BACKEND/lawrag/research/candidates/adr_1175/scoped/revisions/rev-002/snapshot/02_BACKEND/semantic_runtime/legal_agent/
+
+독립 감독 검토를 수행하지 않았다. 코드·로그 대조에 따른 자체 설계 검토다.
