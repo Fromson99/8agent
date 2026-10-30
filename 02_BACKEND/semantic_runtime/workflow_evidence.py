@@ -3,6 +3,7 @@
 Exploration stays in the child journal. No model, inferred relevance or legal
 conclusion is introduced here; source completeness remains a separate check.
 """
+from .legal_agent import journal_storage
 from copy import deepcopy
 import json
 import sqlite3
@@ -24,7 +25,7 @@ def judgment(child, ref, stage):
     paths = list(child.path.parents[2].glob('*/'+ref['run_id']+'/journal.sqlite'))
     if len(paths) != 1:
         raise ContractError('workflow origin judgment missing')
-    with sqlite3.connect(paths[0].resolve().as_uri()+'?mode=ro', uri=True) as db:
+    with journal_storage.connect(paths[0].resolve().as_uri()+'?mode=ro', uri=True) as db:
         _ref(db, ref, stage)
         return json.loads(db.execute('SELECT payload_json FROM entity_version WHERE kind=? AND entity_id=? AND version=?',
                                     (ref['kind'], ref['entity_id'], ref['version'])).fetchone()[0])
@@ -282,7 +283,7 @@ def retained_context(child,port):
     c=_commit(child);path=Path(c['case_db']);runtime=child.path.parents[4]
     if path.resolve() not in {(runtime/'case-memory'/'cases-v3.sqlite').resolve(),selected_store(runtime).resolve()}:
         raise ContractError('retained result authority path changed')
-    with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+    with journal_storage.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
         owner=db.execute('SELECT owner,team FROM session WHERE id=?',(c['session_id'],)).fetchone()
         principal=json.loads(c['principal_json'])
         if owner!=(principal['user_id'],principal['team_id']):raise ContractError('retained result owner changed')

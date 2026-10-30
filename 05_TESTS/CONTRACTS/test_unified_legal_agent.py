@@ -139,7 +139,8 @@ def test_v6_still_rejects_fabricated_quote_without_semantic_judge(unified,monkey
     assert '원문에 없는 위조 인용문' not in response.text and 'fabricated source quote' not in response.text
     journals=list((runtime/'legal-agent'/'runs').glob('*/*/journal.sqlite'))
     assert journals
-    with sqlite3.connect(journals[-1]) as db:
+    from semantic_runtime.legal_agent.journal_storage import connect
+    with connect(journals[-1]) as db:
         rejected=[json.loads(r[0]) for r in db.execute("SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE'") if 'fabricated source quote' in r[0]]
     assert len(fabricated_calls)==2
     assert list((runtime/'runs').glob('*.json'))==[]

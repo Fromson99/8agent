@@ -7,7 +7,11 @@ from .errors import ProposalError, ContractError
 
 VERSION = 'investigation-completion-v8'
 CONTENT = 'source-modality-v4'
-PROMPT = '규정 내용은 rule에 한 번 작성하고 explanation=""로 둔다. 순수 설명은 rule=null과 근거에 연결한 explanation을 쓴다. rule의 subject·scope·action은 필수이며 action은 짧은 행위명이다. 발생 전제는 condition_tree, 효과·수치·기한·행동 의무는 norms, 예외는 exceptions로 구분한다. 별도 전제는 condition_tree=null이며 의무 자체를 전제로 중복하지 않는다.\nnorm.kind는 원문 맥락에 따른 OBLIGATION/PERMISSION/PROHIBITION/UNSPECIFIED다. norm.source_ref는 주된 원문 ID 하나이고 norm.evidence_refs에도 포함해야 한다. 인용문·위치·해시는 서버가 조립하므로 source_quote/conclusion/details를 작성하지 않는다. 같은 효과·적용 맥락은 한 norm으로 모은다. 원문의 조건·예외·주체와 특정 항·호의 준용 범위를 유지한다.\n필요한 자료·사실의 부족은 gaps, 확인된 내용은 claims에 함께 유지한다. 제외하거나 요청에 불필요한 내용을 gap으로 만들지 않으며 필요한 자료가 모두 있으면 gaps=[]다. 스키마의 필수 값과 제시된 ID만 사용한다.'
+PROMPT = '''규칙·조건·의무·허용·금지·예외를 설명하는 claim은 rule에 작성하고 explanation=""로 둔다. 단순 요약이라는 이유로 규정을 rule=null의 설명으로 바꾸지 않는다. 순수 설명은 rule=null과 근거에 연결한 explanation을 쓴다.
+rule의 subject·scope·action은 필수다. subject는 적용 주체·대상, scope는 해당 규칙의 적용 범위, action은 짧은 행위명이다. 발생 전제는 condition_tree, 효과·수치·기한·행동 의무는 norms, 예외는 exceptions에 연결한다. 별도 전제가 없으면 condition_tree=null이며 의무 자체를 전제로 중복하지 않는다.
+norm.text는 답변에 표시할 완결된 효과를 쓴다. 수치만 쓰지 말고 그 수치가 적용되는 대상·산정 기준·단위·상한 조건·기간의 기산점을 포함한다. 적용 주체나 지역·시점의 한정은 subject/scope 또는 해당 norm.text에 명시한다. claim 전체에 적용되지 않는 조건을 공통 scope로 확대하지 않는다. exceptions는 어떤 효과의 예외인지 target과 text로 밝힌다. 같은 내용을 여러 필드에서 반복하지 않는다.
+norm.kind는 원문 맥락에 따른 OBLIGATION/PERMISSION/PROHIBITION/UNSPECIFIED다. norm.source_ref는 주된 원문 ID 하나이며 norm.evidence_refs에도 포함한다. 추가 범위·조건을 뒷받침하는 현재 원문도 해당 evidence_refs에 연결한다. 인용문·위치·해시는 서버가 조립하므로 source_quote/conclusion/details를 작성하지 않는다. 자동 인용은 norm.text에서 빠뜨린 내용을 채워 주지 않는다. 같은 효과·적용 맥락은 한 norm으로 모으되 서로 다른 적용 범위를 합치지 않는다.
+필요한 자료·사실의 부족은 gaps, 확인된 내용은 claims에 유지한다. 요청에 불필요한 내용은 gap으로 만들지 않으며 필요한 자료가 모두 있으면 gaps=[]다. 스키마의 필수 값과 제시된 ID만 사용한다.'''
 
 
 def assessment_schema(issues, materials, options, facts, previous_keys=()):

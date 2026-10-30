@@ -9,11 +9,11 @@ from . import observability as obs
 
 log = obs.get_logger('rag')
 
-_QUESTION_SOURCE_PREFIX = re.compile(r'^\s*(내규|외규)\s*[:,：，]\s*')
+_QUESTION_SOURCE_PREFIX = re.compile(r'^\s*(전체 법령|전체|내규|외규)\s*[:,：，]\s*')
 
 
 def route_question(question):
-    """An explicit leading source marker narrows the request before any retrieval."""
+    """An explicit source marker selects a category or the full authorized scope."""
     if not isinstance(question, str):
         return question, None
     match = _QUESTION_SOURCE_PREFIX.match(question)
@@ -22,7 +22,7 @@ def route_question(question):
     remainder = question[match.end():].strip()
     if not remainder:
         raise ValueError('source prefix requires a question')
-    return remainder, 'internal' if match.group(1) == '내규' else 'external'
+    return remainder, {'내규': 'internal', '외규': 'external', '전체 법령': 'ALL', '전체': 'ALL'}[match.group(1)]
 
 class Pipeline:
     def __init__(self,root,store,provider=None,vector=None,*,implementation=None,legal_agent_profile=None,legal_agent_transport=None):
@@ -90,7 +90,7 @@ class Pipeline:
             with obs.step(log,'plan.scope_documents'):
                 documents=self.scope_documents(scope or default_scope)
             if not documents:raise ValueError('scope has no documents in this generation: '+str(scope or default_scope))
-        if source_category is not None:
+        if source_category in ('internal', 'external'):
             from types import SimpleNamespace
             from .folder_navigation import bind_catalogue, load_origin_projection
             projection = load_origin_projection(self.contracts.root, self.term_agent.config, self.store)
@@ -196,7 +196,7 @@ class Pipeline:
                         release=options.get('release'),runtime=options['runtime'],
                         **({'admission_lease':admission_lease} if admission_lease is not None else {}),
                         external_public_question=options.get('external_public_question') is True,
-                        requested_source_category=source_category) as session:
+                        requested_source_category=source_category if source_category != 'ALL' else None) as session:
                     obs.event(log,'session.open.ready',duration_ms=int((time.perf_counter()-session_started)*1000))
                     obs.event(log,'rag.loop.started',elapsed_ms=int((time.perf_counter()-started)*1000))
                     result=coordinate(self,session,runner)

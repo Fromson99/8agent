@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 import hashlib
 import json
-from jsonschema import validate
+from .schema_preparation import validate
 from .corrected_memory import MemoryError, Reenter, encoded, digest, object_schema, array
 from .source_recall import SourceRecall
 from .source_selection import originals, select_sources
@@ -150,7 +150,7 @@ class NativeExecution(CompletionExecution):
         options={'timeout':timeout} if timeout is not None and 'timeout' in inspect.signature(self.host.invoke).parameters else {}
         out=self.host.invoke(system,data,schema,phase,**options)
         with latency.span('model.output_validate',phase=phase):
-            validate(out,schema)
+            validate(out,schema,owner=self.s)
         with latency.span('model.output_journal',phase=phase):
             self.s.work.event('MEMORY_MODEL_OUTPUT',{'phase':phase,'output':out})
         return out
@@ -188,7 +188,7 @@ class NativeExecution(CompletionExecution):
                 lambda payload,attempt:self.invoke('현재 목적의 개념명을 추출한다. 조건·과거 오답을 개념으로 승인하지 않는다. purpose는 수행 목적이며 concepts는 검색용 개념명이다. issues가 요구되면 원문 질문을 대상·요구별로 나누어 Q1부터 순서대로 기록한다. 원문 요구나 명시 범위를 삭제하지 않는다. JSON만 출력한다.',payload,wire,'memory-intent' if not attempt else 'memory-intent-repair'),check_intent)
         elif stage=='PLAN':
             result={'query':self.s.context.query,'queries':state['queries'] or [state['task']],
-                'law_names':[self.s.sources.matcher.documents[d['id']] for d in self.s.sources.matcher.starts(self.host.question(state),self.s.sources.scope)['documents']],'binding':self.host.binding}
+                'law_names':[self.s.sources.matcher.documents[d['id']] for d in self.s.sources.matcher.document_starts(self.host.question(state),self.s.sources.scope)],'binding':self.host.binding}
         elif stage=='RECALL':
             self.s.sources.recall_query_plan={k:parts['PLAN']['payload'][k] for k in ('law_names','queries')}
             extra=getattr(self.s.sources,'additional_recall_queries',[])

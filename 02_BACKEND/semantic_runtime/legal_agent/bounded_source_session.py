@@ -90,13 +90,18 @@ class _Gateway(ModelGateway):
         schema = self.protocol.schema(schema_name)
         instructions=''
         if view.get('input_projection')=='compact-selection-source-v3':
-            from .navigation_input import NavigationReferences, INSTRUCTIONS
+            from .navigation_input import NavigationReferences, INSTRUCTIONS, STABLE_INSTRUCTIONS
             references=references or NavigationReferences(view)
             view,schema=references.view(view),references.schema(schema)
-            instructions='\n'+INSTRUCTIONS+' text_ref는 sources의 text_id와 start/end 유니코드 문자 위치로 지정한 정확한 원문이다.'
+            instructions='\n'+(STABLE_INSTRUCTIONS if references.stable else INSTRUCTIONS)+' text_ref는 sources의 text_id와 start/end 유니코드 문자 위치로 지정한 정확한 원문이다.'
         self._generation_schema = deepcopy(schema)
         schema = genos_wire_schema(schema)
-        user = {'view': compact_wire_view(view, phase) if self.compact else view}
+        from . import compact_model_input as minimal
+        wire_view = compact_wire_view(view, phase) if self.compact else view
+        if minimal.applies(self.profile, view):
+            wire_view = minimal.project(wire_view, schema)
+            instructions = '\n' + minimal.INSTRUCTIONS
+        user = {'view': wire_view}
         if not self.compact:
             user['output_schema'] = schema
         return {'model': self.transport.binding['model'], 'temperature': 0,
@@ -223,15 +228,16 @@ class BoundedSourceSession(ObligationSession):
             data={**data,'input_projection':('compact-selection-source-v3' if self.profile.get('candidate_navigation',{}).get('completion_policy_version')in ('investigation-completion-v6','investigation-completion-v7','investigation-completion-v8') else 'compact-selection-source-v2')}
         if self.work.VERSION==6:
             offered={s['source_id']:s['text'] for s in data.get('sources',[]) if 'source_id' in s and 'text' in s}
-            evidence_ids=[e['evidence_id'] for e in self.work.evidence()
+            acquired = {e['evidence_id']: e for e in self.work.evidence()}
+            evidence_ids=[e['evidence_id'] for e in acquired.values()
                 if e['source_id'] in offered and all(p['text'] in offered[e['source_id']] for p in e['spans'])]
             if evidence_ids:
-                data={**data,'exact_evidence':[{'evidence':ident,'text':self.work.evidence(ident)['text'],
-                    'spans':self.work.evidence(ident)['spans']} for ident in evidence_ids]}
+                data={**data,'exact_evidence':[{'evidence':ident,'text':acquired[ident]['text'],
+                    'spans':acquired[ident]['spans']} for ident in evidence_ids]}
             if phase in ('memory-assess', 'memory-assess-repair'):
-                projected = compact_assessment_evidence(data, self.work.evidence())
+                projected = compact_assessment_evidence(data, list(acquired.values()))
                 if projected:
-                    existing = {e['evidence_id'] for e in self.work.evidence()}
+                    existing = set(acquired)
                     new = [e for e in projected if e['evidence_id'] not in existing]
                     for e in projected:
                         self.sources.source.verify(e)
@@ -240,12 +246,14 @@ class BoundedSourceSession(ObligationSession):
                             {'tool': 'assessment_option_projection', 'args': {'options_hash': digest(data['evidence_options'])}},
                             {'status': 'REUSED', 'kind': 'EXACT_ACQUIRED_SUBSPANS', 'model_delivery': 'NOT_YET_SENT'},
                             new, verify=self.sources.source.verify)
+                    if new:
+                        acquired = {e['evidence_id']: e for e in self.work.evidence()}
                     evidence_ids = list(dict.fromkeys(evidence_ids + [e['evidence_id'] for e in projected]))
                     data = {**data, 'exact_evidence': [
-                        {'evidence': ident, 'text': self.work.evidence(ident)['text'],
-                         'source_id': self.work.evidence(ident)['source_id'],
-                         'document_id': self.work.evidence(ident)['document_id'],
-                         'spans': self.work.evidence(ident)['spans']} for ident in evidence_ids]}
+                        {'evidence': ident, 'text': acquired[ident]['text'],
+                         'source_id': acquired[ident]['source_id'],
+                         'document_id': acquired[ident]['document_id'],
+                         'spans': acquired[ident]['spans']} for ident in evidence_ids]}
         from .completion_contracts import enabled
         completion = enabled(self.profile)
         finalizing = completion and phase in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
@@ -254,7 +262,12 @@ class BoundedSourceSession(ObligationSession):
             'shared_request_budget':True})
         native_phase = 'compose' if finalizing else 'investigate'
         budget_class = 'FINALIZE' if finalizing else 'INVESTIGATE'
-        view = self.work.save_view(native_phase, {**data, 'source_stage': phase, **({'budget_class':budget_class} if completion else {})}, evidence_ids)
+        from . import compact_model_input as minimal
+        data = {**data, 'source_stage': phase}
+        if minimal.applies(self.profile, data):
+            data = minimal.bind(data, schema, stable=self.profile.get('candidate_navigation',{}).get('stable_navigation_references',False),
+                document_names=self.sources.matcher.documents)
+        view = self.work.save_view(native_phase, {**data, **({'budget_class':budget_class} if completion else {})}, evidence_ids)
         profile = {**self.profile, 'numbered_references_enabled': False,
                    'max_output_tokens': max_tokens,
                    'max_transport_retries': self.profile['max_transport_retries'] if completion else 0}
@@ -264,6 +277,10 @@ class BoundedSourceSession(ObligationSession):
                 'override_reason':'release-bound completion contract; gateway owns retries'})
         if output.owner_for(phase) != 'gateway':
             # Investigation owns the single correction; avoid a nested wire retry.
+            profile['max_schema_repairs'] = 0
+        if phase == 'source-law-navigation-supervisor-read-choice':
+            # Each durable supervisor reservation is exactly one physical attempt.
+            profile['max_transport_retries'] = 0
             profile['max_schema_repairs'] = 0
         if phase in ('source-triage', 'source-omission-review'):
             choices = schema['properties']['choices']

@@ -64,6 +64,8 @@ def register(work):
 
 
 def reserve(work, kind):
+    from .storage_admission import checkpoint
+    checkpoint()
     parent = getattr(work, 'workflow_parent', None)
     if parent is None:
         return
@@ -78,7 +80,7 @@ def reserve(work, kind):
             policy=owner.context.binding.get('execution_policy',{})
             if policy:
                 reserve=owner.budget()['finalization_reserve']
-                spent=owner.db.execute("SELECT count(*) FROM event WHERE kind='WORKFLOW_CHILD_RESERVED' AND json_extract(payload_json,'$.call_id')=? AND json_extract(payload_json,'$.kind')='model'",(parent['call_id'],)).fetchone()[0]
+                spent=owner.db.execute("SELECT count(*) FROM event WHERE kind='WORKFLOW_CHILD_RESERVED' AND json_extract(journal_text(payload_json),'$.call_id')=? AND json_extract(journal_text(payload_json),'$.kind')='model'",(parent['call_id'],)).fetchone()[0]
                 if spent>=policy['max_child_model_attempts']:
                     raise BudgetExhausted('workflow child investigation call limit reached')
             changed = owner.db.execute('''UPDATE budget SET model_reserved=model_reserved+1

@@ -166,7 +166,7 @@ class UnitFulltextIndex:
                 self.manifest['source_store_sha256'], self.manifest['navigation_index_sha256'],
                 self.manifest['index_sha256'], SCHEMA)
 
-    def _projection(self, db, terms, allowed):
+    def _projection(self, db, terms, allowed, unit_keys=None):
         """Reuse exact rank metadata, or fall back to complete SQL on overflow.
 
         No truncation is exposed to callers. Main DB bytes and schema stay immutable.
@@ -176,7 +176,8 @@ class UnitFulltextIndex:
         if not isinstance(db, _SearchConnection):
             return None
         scope = self.source_ids if allowed is None else frozenset(allowed)
-        binding = ('matches', self.cache_namespace(), tuple(terms), scope, MATCH_CACHE_ROWS)
+        units = None if unit_keys is None else tuple(sorted(set(unit_keys)))
+        binding = ('matches', self.cache_namespace(), tuple(terms), scope, units, MATCH_CACHE_ROWS)
         hit = getattr(db, '_match_binding', None) == binding
         with latency.span('unit_fts.projection', cache_hit=hit, allowed_count=len(scope),
                           term_count=len(terms), cache_scope='process') as metrics:
@@ -188,8 +189,10 @@ class UnitFulltextIndex:
                 matches = latency.rows(db,
                     'SELECT u.key,u.document_id,u.source_id,unit_fts.rank FROM unit_fts '
                     'JOIN unit u ON u.key=unit_fts.key WHERE unit_fts MATCH ? '
-                    'AND u.source_id IN (SELECT value FROM json_each(?)) LIMIT ?',
-                    [expression(terms), json.dumps(sorted(scope)), MATCH_CACHE_ROWS+1], 'project_matches')
+                    'AND u.source_id IN (SELECT value FROM json_each(?))' +
+                    ('' if units is None else ' AND u.key IN (SELECT value FROM json_each(?))') + ' LIMIT ?',
+                    [expression(terms), json.dumps(sorted(scope)),
+                     *([] if units is None else [json.dumps(units)]), MATCH_CACHE_ROWS+1], 'project_matches')
                 if len(matches) > MATCH_CACHE_ROWS:
                     self.check_unchanged()
                     return None  # Share the overflow marker; fallback SQL remains complete.
@@ -290,7 +293,7 @@ class UnitFulltextIndex:
         where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'laws', unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
-        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        projection = self._projection(db, terms, allowed, unit_keys)
         if projection is not None:
             return self._cached_page(projection['laws'], binding, offset, limit)
         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
@@ -309,7 +312,7 @@ class UnitFulltextIndex:
         where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'articles', document_id, unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
-        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        projection = self._projection(db, terms, allowed, unit_keys)
         if projection is not None:
             return self._cached_page(projection['articles'].get(document_id, []), binding, offset, limit)
         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
@@ -326,7 +329,7 @@ class UnitFulltextIndex:
         where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'hits', source_id, unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
-        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        projection = self._projection(db, terms, allowed, unit_keys)
         if projection is not None:
             hits = projection['hits'].get(source_id, [])
             keys = [key for _, key in hits[offset:offset+limit]]

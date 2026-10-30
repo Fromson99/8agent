@@ -135,14 +135,35 @@ class Store:
     def sources(self, did, bids):
         """Bounded batch read preserving caller order, duplicates and missing-ID errors."""
         self.check_unchanged()
-        ids = [str(b) for b in bids]
+        requested = [str(b) for b in bids]
+        ids = list(dict.fromkeys(requested))
         found = {}
         for start in range(0, len(ids), 800):
             part = list(dict.fromkeys(ids[start:start+800]))
             marks = ','.join('?' for _ in part)
             found.update((str(r['block_id']), dict(r)) for r in self.db.execute(
                 'SELECT * FROM source_block WHERE document_id=? AND block_id IN ('+marks+')', [did,*part]))
-        return [found[b] if b in found else self.source(did,b) for b in ids]
+        self.check_unchanged()
+        for b in requested:
+            if b not in found:raise KeyError((did,b))
+        return [dict(found[b]) for b in requested]
+
+    def source_lengths(self, did, bids):
+        """Exact codepoint lengths from the same bound source view, no body copy."""
+        self.check_unchanged()
+        requested = [str(b) for b in bids]
+        ids = list(dict.fromkeys(requested)); found = {}
+        for start in range(0, len(ids), 800):
+            part = ids[start:start+800]
+            marks = ','.join('?' for _ in part)
+            for bid, size, nul_text in self.db.execute(
+                'SELECT block_id,LENGTH(text),CASE WHEN instr(text,char(0))>0 THEN text END '
+                'FROM source_block WHERE document_id=? AND block_id IN ('+marks+')', [did,*part]):
+                found[str(bid)] = len(nul_text) if nul_text is not None else size
+        self.check_unchanged()
+        for b in requested:
+            if b not in found:raise KeyError((did,b))
+        return {b:found[b] for b in requested}
 
     def source_scope(self,did,bid):
         source=self.source(did,bid)

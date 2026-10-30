@@ -120,7 +120,7 @@ class GeminiExperimentClient:
             with httpx.Client(timeout=120,trust_env=False,follow_redirects=False,transport=self.transport) as client:
                 response=client.post(f'{ENDPOINT}/models/{self.model}:generateContent',headers={'x-goog-api-key':self._key},json=payload)
         except httpx.HTTPError as exc:
-            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start})
+            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start,'transport_diagnostics':getattr(exc,'diagnostics',{})})
             raise ExperimentCallError('Gemini transport failed: '+type(exc).__name__) from None
         try:raw=response.json()
         except ValueError:
@@ -210,6 +210,7 @@ class OpenRouterProxyClient:
         Caller-owned messages are preserved; the output-cap policy is applied
         to a copy. No hidden repair: one invocation is one physical request.
         """
+        request_started=time.monotonic()
         if self.calls >= self.max_calls:raise ExperimentCallError('model_call_budget_exhausted')
         if not isinstance(body,dict):raise ValueError('chat completion body must be an object')
         if not phase or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in phase):
@@ -233,13 +234,14 @@ class OpenRouterProxyClient:
         if schema is not None:self._write(out/'validation-schema.json',schema)
         self._write(out/'binding.json',{'provider':'openrouter','model':self.model,'endpoint':PROXY_ENDPOINT,
                                         'genos_model':self.proxy['genos_model'],'policy_sha256':self.policy_hash})
-        start=time.monotonic()
+        start=request_started
         try:
             timeout=max(.001,min(180,float(timeout_seconds)))
-            with httpx.Client(timeout=timeout,trust_env=False,follow_redirects=False,transport=self.transport) as client:
-                response=client.post(f'{PROXY_ENDPOINT}/chat/completions',headers={'Authorization':'Bearer '+self._key},json=payload)
+            from lawrag.core.request_deadline import post_json
+            response=post_json(f'{PROXY_ENDPOINT}/chat/completions',headers={'Authorization':'Bearer '+self._key},
+                               json_body=payload,deadline=start+timeout,transport=self.transport)
         except httpx.HTTPError as exc:
-            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start})
+            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start,'transport_diagnostics':getattr(exc,'diagnostics',{})})
             raise ExperimentTransportError('OpenRouter transport failed: '+type(exc).__name__,
                 retryable=isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout)),
                 unknown=not isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))) from None
@@ -272,6 +274,7 @@ class OpenRouterProxyClient:
         return envelope
 
     def _call(self, messages, schema, phase):
+        request_started=time.monotonic()
         if self.calls >= self.max_calls:raise ExperimentCallError('model_call_budget_exhausted')
         payload={'model':self.model,
                  'messages':messages,
@@ -285,12 +288,13 @@ class OpenRouterProxyClient:
         self._write(out/'validation-schema.json',schema)
         self._write(out/'binding.json',{'provider':'openrouter','model':self.model,'endpoint':PROXY_ENDPOINT,
                                         'genos_model':self.proxy['genos_model'],'policy_sha256':self.policy_hash})
-        start=time.monotonic()
+        start=request_started
         try:
-            with httpx.Client(timeout=180,trust_env=False,follow_redirects=False,transport=self.transport) as client:
-                response=client.post(f'{PROXY_ENDPOINT}/chat/completions',headers={'Authorization':'Bearer '+self._key},json=payload)
+            from lawrag.core.request_deadline import post_json
+            response=post_json(f'{PROXY_ENDPOINT}/chat/completions',headers={'Authorization':'Bearer '+self._key},
+                               json_body=payload,deadline=start+180,transport=self.transport)
         except httpx.HTTPError as exc:
-            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start})
+            self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start,'transport_diagnostics':getattr(exc,'diagnostics',{})})
             raise ExperimentTransportError('OpenRouter transport failed: '+type(exc).__name__,
                 retryable=isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout)),
                 unknown=not isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))) from None
@@ -405,7 +409,7 @@ class GemmaExperimentClient(QwenExperimentClient):
 class Qwen38ExperimentClient(GemmaExperimentClient):
     """Default Qwen3.8 Parasail FP8 experiment route; no provider fallback."""
     def __init__(self, root, output, *, max_calls=24, max_output_tokens=None,
-                 transport=None, schema_in_prompt=False, max_repairs=0):
+                 transport=None, schema_in_prompt=False, max_repairs=0, provider_policy=None):
         self.root=Path(root).resolve();self.output=Path(output)
         policy=load_policy(self.root)
         route={'only':['parasail/fp8'],'order':['parasail/fp8'],
@@ -431,6 +435,68 @@ class Qwen38ExperimentClient(GemmaExperimentClient):
         self.output.mkdir(parents=True,exist_ok=True)
         self.policy_hash=hashlib.sha256(
             (self.root/'00_SYSTEM/EXPERIMENT_MODEL_POLICY.json').read_bytes()).hexdigest()
+
+        self._configure_provider_policy(provider_policy)
+
+    def _configure_provider_policy(self, selected):
+        self.provider_policy_path = Path(selected) if selected is not None else self.root/'00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json'
+        self.provider_policy = None
+        if not self.provider_policy_path.exists():
+            if selected is not None:raise ValueError('Explicit provider policy is missing')
+            return
+        raw=self.provider_policy_path.read_bytes();cfg=json.loads(raw)
+        from semantic_runtime.legal_agent.provider_routing import validate_policy
+        validate_policy(cfg,self.model)
+        self.provider_policy=cfg;self.provider_policy_hash=hashlib.sha256(raw).hexdigest()
+        self.provider_index=0;self.provider_switches=[]
+        self._write(self.output/'provider-policy.json',{'source_path':str(self.provider_policy_path),'sha256':self.provider_policy_hash,'policy':cfg,'default_model_policy_sha256':self.policy_hash})
+        self._apply_provider()
+
+    def _apply_provider(self):
+        if hashlib.sha256(self.provider_policy_path.read_bytes()).hexdigest()!=self.provider_policy_hash:
+            raise ExperimentCallError('Provider policy changed after client creation')
+        provider=self.provider_policy['providers'][self.provider_index]
+        from semantic_runtime.legal_agent.provider_routing import route
+        self.proxy['provider_routing']=route(provider)
+        self.proxy['allowed_upstream_providers']=[provider['name']]
+
+    def chat_completions(self, body, *, phase='generate', timeout_seconds=180):
+        if self.provider_policy is None:
+            return super().chat_completions(body,phase=phase,timeout_seconds=timeout_seconds)
+        if 'provider' in body:raise ValueError('Scoped provider selection requires client-owned routing')
+        started=time.monotonic()
+        while True:
+            self._apply_provider()
+            remaining=timeout_seconds-(time.monotonic()-started)
+            if remaining<=0:raise ExperimentCallError('Provider switch deadline exhausted')
+            try:return super().chat_completions(body,phase=phase,timeout_seconds=remaining)
+            except ExperimentProviderError as exc:
+                # Only an explicit HTTP429 is known to be a rejected request.
+                # Unknown outcomes, schema errors and other HTTP codes never switch.
+                if ((exc.response or {}).get('status_code')!=429
+                        or len(self.provider_switches)>=self.provider_policy['max_provider_switches']
+                        or self.provider_index+1>=len(self.provider_policy['providers'])
+                        or self.calls>=self.max_calls):raise
+                old=self.provider_policy['providers'][self.provider_index]
+                self.provider_index+=1;new=self.provider_policy['providers'][self.provider_index]
+                self.provider_switches.append({'after_physical_call':self.calls,'http_status':429,
+                    'from':old,'to':new,'model':self.model,'response_sha256':exc.response.get('body_sha256'),
+                    'policy_sha256':self.provider_policy_hash,'model_changed':False})
+                self._write(self.output/'provider-switches.json',self.provider_switches)
+
+    def _call(self,messages,schema,phase):
+        if self.provider_policy is None:return super()._call(messages,schema,phase)
+        body={'model':self.model,'messages':messages,'temperature':self.proxy['temperature'],
+            'response_format':{'type':'json_schema','json_schema':{'name':'output','strict':True,'schema':_schema_for_api(schema)}}}
+        raw=self.chat_completions(body,phase=phase)
+        content=raw['body_json']['choices'][0]['message'].get('content') or ''
+        try:result=json.loads(content)
+        except ValueError:raise _FormatError('output is not complete JSON',content,response=raw) from None
+        self._write(self.output/f'call-{self.calls:03d}-{phase}'/'output.json',result)
+        try:jsonschema.validate(result,schema)
+        except jsonschema.ValidationError as exc:raise _FormatError('schema: '+exc.message,content,response=raw) from None
+        return result
+
 
 
 def ExperimentClient(root, output, **kwargs):

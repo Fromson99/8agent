@@ -1,6 +1,7 @@
 """Public-only local Qwen3.8 transport; GENOS model binding remains independent."""
 from __future__ import annotations
 
+import time
 import copy
 import hashlib
 import json
@@ -37,11 +38,8 @@ def provider_request(body: dict) -> dict:
         for key in ('anyOf', 'oneOf', 'allOf', 'prefixItems'):
             for child in node.get(key, []): adapt(child)
     adapt(((payload.get('response_format') or {}).get('json_schema') or {}).get('schema'))
-    from .wire_schema import factor_schema, navigation_shape
-    envelope=(payload.get('response_format') or {}).get('json_schema')
-    if envelope and isinstance(envelope.get('schema'),dict):
-        envelope['schema']=factor_schema(navigation_shape(envelope['schema']))
-    return payload
+    from .wire_schema import project_request
+    return project_request(payload)[0]
 
 
 class LocalGemmaTransport:
@@ -77,9 +75,13 @@ class LocalGemmaTransport:
         self._key = os.environ.get(key_name) or dotenv_values(Path(workspace_root)/'.env').get(key_name)
         if not self._key:
             raise ContractError('local Qwen3.8 credential is not configured')
+        from .provider_routing import validate_policy
+        self.routing_path=self.code_root/'00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json'
+        self.provider_policy=validate_policy(json.loads(self.routing_path.read_text())) if self.routing_path.exists() else None
+        self.routing_hash=_sha(self.routing_path) if self.provider_policy else None
         self.binding = {
             'provider': 'openrouter', 'model': self.policy['model'],
-            'adapter_version': 'openrouter-local-public-v2',
+            'adapter_version': 'openrouter-local-public-v3:'+self.routing_hash if self.provider_policy else 'openrouter-local-public-v2',
             'endpoint_identity': hashlib.sha256(self.policy['endpoint'].encode()).hexdigest(),
             'trust_zone': 'external', 'max_input_bytes': 2_000_000,
         }
@@ -150,26 +152,40 @@ class LocalGemmaTransport:
     def send_once(self, *, body, ticket):
         if body.get('model') != self.binding['model'] or body.get('stream') is not False:
             raise ContractError('local Qwen3.8 request differs from pinned model')
+        deadline = min(float(ticket.get('deadline', float('inf'))), time.monotonic() + min(180, float(ticket['remaining_seconds'])))
         payload = provider_request(body)
         if self.policy['max_output_tokens'] is None:
             for key in ('max_tokens', 'max_completion_tokens', 'max_output_tokens'):
                 payload.pop(key, None)
-        payload['provider'] = copy.deepcopy(self.policy['provider_routing'])
+        selected=None
+        if self.provider_policy:
+            from .provider_routing import route
+            if _sha(self.routing_path)!=self.routing_hash:raise ContractError('serving provider policy changed')
+            index=ticket.get('provider_index')
+            if type(index) is not int or not 0<=index<len(self.provider_policy['providers']):raise ContractError('gateway provider selection missing')
+            selected=self.provider_policy['providers'][index]
+            if body.get('provider')!=route(selected):raise ContractError('provider request differs from reserved physical attempt')
+        payload['provider'] = route(selected) if selected else copy.deepcopy(self.policy['provider_routing'])
         payload['reasoning'] = copy.deepcopy(self.policy['reasoning'])
         payload['usage'] = {'include': True}
-        seconds = max(.001, min(180, float(ticket['remaining_seconds'])))
         try:
-            with httpx.Client(timeout=seconds, trust_env=False, follow_redirects=False) as client:
-                response = client.post(self.policy['endpoint']+'/chat/completions',
-                                       headers={'Authorization': 'Bearer '+self._key}, json=payload)
+            from lawrag.core.request_deadline import post_json
+            response = post_json(self.policy['endpoint']+'/chat/completions',
+                                 headers={'Authorization': 'Bearer '+self._key}, json_body=payload, deadline=deadline)
         except httpx.HTTPError as exc:
             preaccept=isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))
-            raise TransportError('local Qwen3.8 transmission failed: '+type(exc).__name__,
-                retryable=preaccept, unknown=not preaccept) from exc
+            error = TransportError('local Qwen3.8 transmission failed: '+type(exc).__name__,
+                retryable=preaccept, unknown=not preaccept,
+                response={'transport_diagnostics': getattr(exc, 'diagnostics', {})})
+            from lawrag.core.request_deadline import AbsoluteDeadlineExceeded
+            if isinstance(exc, AbsoluteDeadlineExceeded):
+                error.code = 'MODEL_DEADLINE_EXCEEDED'; error.http_status = 504
+            raise error from exc
         try:
             data = response.json()
         except ValueError as exc:
-            raise TransportError('local Qwen3.8 returned non-JSON response', retryable=False) from exc
+            if response.status_code==429:data={}
+            else:raise TransportError('local Qwen3.8 returned non-JSON response', retryable=False,unknown=response.status_code>=500) from exc
         envelope = {'status_code': response.status_code, 'body_json': data,
                     'body_text': None, 'body_sha256': hashlib.sha256(response.content).hexdigest(),
                     'response_bytes': len(response.content),
@@ -178,7 +194,11 @@ class LocalGemmaTransport:
         if not response.is_success or data.get('error'):
             raise TransportError('local Qwen3.8 provider error', retryable=response.status_code==429,
                                  unknown=response.status_code>=500, response=envelope)
-        if data.get('provider') != 'Parasail' or data.get('model') != self.binding['model']:
+        if selected:
+            from .provider_routing import validate_response
+            try:validate_response(data,selected,self.binding['model'])
+            except ValueError as exc:raise ContractError(str(exc)) from exc
+        if data.get('provider') != (selected['name'] if selected else 'Parasail') or data.get('model') != self.binding['model']:
             raise ContractError('local Qwen3.8 response model/provider mismatch')
         choices = data.get('choices') or []
         if ((data.get('usage') or {}).get('completion_tokens_details') or {}).get('reasoning_tokens') or any(
@@ -198,6 +218,11 @@ class LocalGemmaTransport:
             error = ProposalError('local Qwen3.8 returned an incomplete response')
             error.response = envelope
             raise error
+        if time.monotonic() >= deadline:
+            error = TransportError('model response completed after deadline', unknown=True, response={'transport_diagnostics': response.extensions.get('absolute_deadline', {})})
+            error.code = 'MODEL_DEADLINE_EXCEEDED'; error.http_status = 504
+            raise error
+        envelope['transport_diagnostics'] = response.extensions.get('absolute_deadline', {})
         return envelope
 
 

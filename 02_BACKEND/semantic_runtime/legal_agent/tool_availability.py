@@ -34,7 +34,7 @@ def article_plan(s, identity):
         bound={str(b['block_id']) for b in src['blocks']}
         if not set(wanted)<=bound:return None,'SUBTREE_CROSSES_SOURCE_BOUNDARY'
         if not ur.blocks(s,did,uid,'exact'):
-            if not any(s.store.source(did,b)['text'] for b in wanted):
+            if not any(ur.block_lengths(s,did,wanted).values()):
                 return None,'NO_ORIGINAL_IN_SELECTED_SCOPE'
         if identity.get('unit_id') is not None or not ur.blocks(s,did,uid,'exact'):
             hit=lc.structure_hit(s,sid,uid)
@@ -54,8 +54,9 @@ def read_cost(s, hit, offer, evidence):
         if e['source_id']==hit['source_id']:
             for bid,ranges in intervals(e['spans']).items():known.setdefault(bid,[]).extend(ranges)
     missing=0;lengths=[]
+    lengths_by_block = ur.block_lengths(s, hit['document_id'], offer['block_ids'])
     for bid in offer['block_ids']:
-        size=len(s.store.source(hit['document_id'],bid)['text']);end=0
+        size=lengths_by_block[str(bid)];end=0
         for lo,hi in sorted(known.get(str(bid),[])):
             length=max(0,min(lo,size)-end)
             if length:lengths.append(length)
@@ -78,8 +79,9 @@ def sequence_cost(s, plans, evidence):
         added,count=read_cost(s,hit,offer,known);chars+=added;calls+=count
         # Planning only: these spans never leave this local calculation and
         # cannot enter the evidence repository or count as verified originals.
+        lengths = ur.block_lengths(s, hit['document_id'], offer['block_ids'])
         known.append({'source_id':hit['source_id'],'spans':[
-            {'block_id':str(b),'start_cp':0,'end_cp':len(s.store.source(hit['document_id'],b)['text'])}
+            {'block_id':str(b),'start_cp':0,'end_cp':lengths[str(b)]}
             for b in offer['block_ids']]})
     return chars,calls
 

@@ -4,6 +4,7 @@ Network filesystems use rollback journaling. SQLite's file locks and existing
 BEGIN IMMEDIATE transactions serialize writes; no lock bypass is permitted.
 This policy does not certify a deployment's NFS locking or fsync behaviour.
 """
+from .legal_agent import journal_storage
 from pathlib import Path
 import os
 import re
@@ -70,7 +71,7 @@ def connect(path, *, requested=None):
     path = Path(path).resolve()
     mode = journal_policy(path, requested)
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    db = sqlite3.connect(path, isolation_level=None, timeout=30)
+    db = journal_storage.connect(path, isolation_level=None, timeout=30)
     try:
         configure(db, path, requested=mode)
         return db
@@ -82,4 +83,4 @@ def connect(path, *, requested=None):
 def readonly(path):
     """Feature/session inspection never initializes or changes the authority."""
     path = Path(path).resolve()
-    return sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=30)
+    return journal_storage.connect(path.as_uri() + '?mode=ro', uri=True, timeout=30)

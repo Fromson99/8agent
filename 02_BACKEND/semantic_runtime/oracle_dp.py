@@ -50,7 +50,12 @@ def client_from_environment():
     # Match the successful R6 SDK_DEFAULT contract; do not substitute the table owner for the alias.
     if os.environ.get('ORACLE_ORDS_BASE_URL','').strip():
         options['base_url']=os.environ['ORACLE_ORDS_BASE_URL'].strip()
-    try:return ORDSClient(**options)
+    try:
+        client=ORDSClient(**options)
+        if os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
+            from .physical_mapping import SchemaMap
+            client.schema_map=SchemaMap.load(Path(__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/physical_mapping.yaml')
+        return client
     except Exception as exc:raise DPError('DP_CONNECT: '+type(exc).__name__) from None
 
 

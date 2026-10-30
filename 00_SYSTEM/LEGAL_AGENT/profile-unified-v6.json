@@ -58,8 +58,24 @@
     "answer_first": false,
     "selected_connection_scope": true,
     "small_connection_context": false,
-    "read_judgment": true
+    "read_judgment": true,
+    "minimal_input": true,
+    "read_candidate_page_size": 20,
+    "ontology_enabled": false,
+    "ontology_context": {
+      "mode": "A0"
+    },
+    "ontology_direct_assessment": true,
+    "stable_navigation_references": true,
+    "new_read_reviews": true,
+    "independent_read_recovery": true,
+    "supervisor_mode": "enforce",
+    "source_goal_control": true,
+    "assessment_consistency": true,
+    "scope_completion": true,
+    "requirement_coverage": true,
+    "reference_bundle_review": true
   },
   "request_entry_policy": "fused-title-v1",
-  "answer_presentation": "grounded-narrative-v1"
+  "answer_presentation": "accepted-content-v1"
 }

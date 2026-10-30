@@ -26,6 +26,10 @@ def legal_error_payload(exc, request_id=None, *, status=None):
     from .chat_adapter import views
     request_id = request_id or obs._CONTEXT.get().get('request_id')
     public = views().public_failure(request_id, status=status, exc=exc)
+    from .legal_agent.storage_admission import StorageCapacity
+    if isinstance(exc, StorageCapacity):
+        public.update(error_code=exc.code, message='기록 보관 공간이 부족해 추가 실행을 중단했습니다. '
+            '기존 기록은 보존됩니다. 관리자에게 저장공간 확인을 요청해 주세요.')
     obs.event(log, 'request.error', level=40, request_id=public['request_id'],
               error_type=type(exc).__name__, failure_diagnostics=exception_diagnostics(exc))
     return public
@@ -325,6 +329,11 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         return prepare(pipeline,runtime,body,trusted,require_memory=require_memory)
 
     def execute_ask(body:dict,request:Request=None):
+        from .legal_agent.storage_admission import admission
+        with admission(runtime):
+            return execute_ask_admitted(body,request)
+
+    def execute_ask_admitted(body:dict,request:Request=None):
         started=time.perf_counter()
         ident=uuid.uuid4().hex
         question=body.get('question',body.get('q'))

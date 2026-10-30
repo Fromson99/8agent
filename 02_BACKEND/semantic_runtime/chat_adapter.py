@@ -39,6 +39,9 @@ def request_body(data,question,trusted_platform=False):
     team_present=bool(data.get('team_id') or os.environ.get('TEAM_ID'))
     if data.get('memory') is True or memory_enabled or (session_present and team_present):
         return view._request_body(question,data)
+    question = view._selected_question(question, data)
+    if question.startswith('대사:'):
+        return view._request_body(question, data)
     # Ordinary single turns do not select saved session state.
     body={'API_TYPE':'LEGAL_AGENT','question':question,'request_id':data['request_id'],'channel':'genos-chat'}
     for name in ('document_ids','use_llm','scope','public_question'):
@@ -134,6 +137,8 @@ async def chat(data,*,trusted_platform=False,on_progress=None,on_answer=None):
             if isinstance(case,dict):result['case']=case
             for name in ('question_id','revision','experience_id','status','executed','response_schema'):
                 if name in raw:result[name]=raw[name]
+    except view.QueryModeError as exc:
+        result.update(text=str(exc), answer_status="invalid_input")
     except Exception as exc:
         from . import observability as obs
         from .legal_agent.investigation_diagnostics import exception_diagnostics

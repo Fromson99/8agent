@@ -257,10 +257,10 @@ class ModelGateway:
                 schema['properties']['checks']['maxItems']=len(claims)
         numbered_instructions = ''
         if view.get('input_projection')=='compact-selection-source-v3':
-            from .navigation_input import NavigationReferences, INSTRUCTIONS
+            from .navigation_input import NavigationReferences, INSTRUCTIONS, STABLE_INSTRUCTIONS
             references=references or NavigationReferences(view)
             view,schema=references.view(view),references.schema(schema)
-            numbered_instructions=INSTRUCTIONS
+            numbered_instructions=STABLE_INSTRUCTIONS if references.stable else INSTRUCTIONS
         elif self.profile.get('numbered_references_enabled', False):
             from .numbered_references import NumberedReferences, INSTRUCTIONS
             references = references or NumberedReferences(view)
@@ -277,6 +277,10 @@ class ModelGateway:
         if view.get('input_projection') in ('compact-selection-source-v1','compact-selection-source-v2','compact-selection-source-v3'):
             schema=compact_empty_arrays(schema)
             prompt+='\n원문은 sources[].text 또는 evidence_options[].text에 제공한다. text_ref가 있으면 해당 sources[].text_id의 본문에서 start 이상 end 미만(유니코드 문자 위치)의 정확한 원문이다. evidence_options의 text_ref도 같은 원문이며 인용에는 기존 S ID를 선택한다. 위치·해시는 서버가 검증한다.'
+        from . import compact_model_input as minimal
+        if minimal.applies(self.profile, view):
+            view = minimal.project(view, schema)
+            numbered_instructions = minimal.INSTRUCTIONS
         user = {'view': view}
         if not self.compact:
             user['output_schema'] = schema
@@ -349,6 +353,13 @@ class ModelGateway:
         logical = 'L'+uuid.uuid4().hex
         retries = attempt = 0
         while True:
+            routing=getattr(self.transport,'provider_policy',None)
+            provider_index=None
+            if routing:
+                from . import provider_routing
+                provider_state,_=provider_routing.current(self.repo,routing,self.transport.routing_hash,self.context.binding_hash)
+                provider_index=provider_state['index']
+                request={**request,'provider':provider_routing.route(routing['providers'][provider_index]),'reasoning':{'effort':'none'}}
             remaining = self.context.remaining()
             with latency.span('model.request_encode',phase=phase) as metrics:
                 input_metrics = request_metrics(request)
@@ -358,6 +369,12 @@ class ModelGateway:
             numbered_args = {'numbered_references': references} if references is not None else {}
             if self.compact:
                 numbered_args['wire_projection'] = WIRE_PROJECTION
+            from . import compact_model_input as minimal
+            if minimal.applies(self.profile, view):
+                if view.get('minimal_input_binding') != minimal.bind(view, self.protocol.schema(schema_name), stable=self.profile.get('candidate_navigation',{}).get('stable_navigation_references',False),
+                    document_names=view.get('minimal_input_binding',{}).get('document_names'))['minimal_input_binding']:
+                    raise ContractError('minimal input schema binding differs from canonical view')
+                numbered_args['minimal_input_projection'] = minimal.VERSION
             with latency.span('model.attempt_reserve',phase=phase):
                 ident = self.repo.reserve_attempt(view, request, logical, attempt, phase, **numbered_args)
                 self.repo.attempt_sent(ident)
@@ -380,7 +397,7 @@ class ModelGateway:
             try:
                 if self.transport.binding['trust_zone'] == 'external':
                     self.transport.validate_authorization(self.context)
-                ticket = {'attempt_id': ident, 'remaining_seconds': remaining}
+                ticket = {'attempt_id': ident, 'remaining_seconds': self.context.remaining(), 'deadline': self.context.deadline, **({'provider_index':provider_index} if routing else {})}
                 try:
                     from ..execution_metrics import transport_attempt
                     with latency.span('model.transport',phase=phase,request_bytes=request_bytes,pressure=True), transport_attempt(view.get('source_stage') or view.get('phase') or phase, ident):
@@ -388,6 +405,10 @@ class ModelGateway:
                             raw = self.transport.send_stream_once(body=request, ticket=ticket, on_content=projection.feed)
                         else:
                             raw = self.transport.send_once(body=request, ticket=ticket)
+                        if time.monotonic() >= self.context.deadline:
+                            error = TransportError('model response arrived after stage deadline', unknown=True)
+                            error.code = 'MODEL_DEADLINE_EXCEEDED'; error.http_status = 504
+                            raise error
                 except (TransportError, ProposalError, ContractError):
                     raise
                 except Exception as adapter_error:
@@ -431,6 +452,13 @@ class ModelGateway:
                     if response.get('status_code')==429:
                         exc.http_status=503
                         exc.code='MODEL_UPSTREAM_UNAVAILABLE'
+                if routing:
+                    budget=self.repo.budget()
+                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
+                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
+                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
+                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
+                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='transport', error_code=exc.code,
                           http_status=response.get('status_code'), unknown=exc.unknown,
@@ -453,6 +481,13 @@ class ModelGateway:
                     exc.generation_failure = 'OUTPUT_LENGTH_LIMIT'
                 self.repo.finish_attempt(ident, 'FAILED', getattr(exc, 'response', None),
                                          {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
+                if routing:
+                    budget=self.repo.budget()
+                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
+                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
+                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
+                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
+                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='proposal', error_code=exc.code,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
@@ -463,6 +498,13 @@ class ModelGateway:
                 raise
             except Exception as exc:
                 self.repo.finish_attempt(ident, 'UNKNOWN', None, {'model': self.transport.binding['model'], 'usage': None, 'error': type(exc).__name__})
+                if routing:
+                    budget=self.repo.budget()
+                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
+                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
+                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
+                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
+                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='adapter', error_type=type(exc).__name__,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
@@ -486,10 +528,18 @@ class ModelGateway:
             try:
                 validate_response_model(self.transport.binding, body)
             except ContractError:
+                if routing:
+                    budget=self.repo.budget()
+                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
+                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
+                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
+                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
+                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='model_mismatch', actual_model=receipt['model'])
                 raise
             content = None
+            raw_value = None
             try:
                 from .completion_contracts import enabled
                 content = structured_content(body,
@@ -498,6 +548,7 @@ class ModelGateway:
                 from .evidence_inventory import record_delivery
                 record_delivery(self.repo, view, ident)
                 value = output.strict_json(content)
+                raw_value = deepcopy(value)
                 raw_hash = digest(value)
                 if str(role).startswith('source-law-navigation-'):
                     from . import request_repair
@@ -526,6 +577,19 @@ class ModelGateway:
                 # A stale view is a runtime consistency failure, not bad JSON.
                 raise
             except (ProposalError, ValidationError) as exc:
+                if (role in ('memory-assess', 'memory-assess-repair')
+                        and isinstance(exc, output.OutputContractError)
+                        and exc.category == 'OUTPUT_SHAPE_INVALID'):
+                    from .read_judgment_final import independent_core
+                    core = independent_core(raw_value, minimal_output.schema, references, schema_name)
+                    if core is not None:
+                        # Keep this attempt rejected. The owning assessment stage
+                        # still validates source semantics and its bounded recovery.
+                        exc.proposal = core
+                        exc.raw_proposal_hash = digest(raw_value)
+                        self.repo.event('REJECTED_FINAL_CORE_RECONSTRUCTED', {
+                            'attempt_id':ident, 'raw_proposal_hash':digest(raw_value),
+                            'core_hash':digest(core), 'accepted':False})
                 if _response_diagnostics(body).get('finish_reason') == 'length':
                     exc.generation_failure = 'OUTPUT_LENGTH_LIMIT'
                 repair_scheduled = (output.repairable(exc) and repairs < repair_limit

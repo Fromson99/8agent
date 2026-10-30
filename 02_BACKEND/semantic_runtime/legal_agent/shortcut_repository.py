@@ -70,7 +70,8 @@ class ShortcutRepository:
         self.owns_db = db is None
         self.db = connect(self.path) if db is None else db
         if db is not None: configure(db, self.path, borrowed=True)
-        self.db.row_factory = sqlite3.Row
+        from .journal_storage import row
+        self.db.row_factory = row
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
         if version not in (0, 4):
             if self.owns_db: self.db.close()

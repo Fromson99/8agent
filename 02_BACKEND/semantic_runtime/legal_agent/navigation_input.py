@@ -17,15 +17,29 @@ INSTRUCTIONS = ('선택 ID는 이 화면에만 유효한 짧은 문자열이다.
  'navigation_segments는 순서대로 이어 붙이는 목록 묶음이다. '
  'navigation_card_ref는 shared_navigation_cards에서 같은 이름의 완전한 위치·선택 정보를 참조한다. '
  '그 참조는 내용 삭제나 요약이 아니며 원래 객체·배열과 동일하다.')
+STABLE_INSTRUCTIONS=INSTRUCTIONS.replace('선택 ID는 이 화면에만 유효한 짧은 문자열이다.', '문서·판단·근거·선택 ID는 이 조사 동안 같은 대상을 가리키며 화면이나 재개 시 바뀌지 않는다.')
 OPAQUE=re.compile(r'^[A-Z][0-9a-f]{16,64}$')
 TEXT_FIELDS={'explanation','text','quote','source_quote','request_quote','question','current_request','request_text',
- 'conclusion','reason','sufficiency_reason','notes','description','label','name','document_name','heading','title','surface','missing_need','missing_target'}
+ 'finding','conclusion','reason','sufficiency_reason','notes','description','label','name','document_name','heading','title','surface','missing_need','missing_target'}
 # These verify storage/indices, not a model selection. Keep their original journal copy.
 AUDIT_FIELDS={'query_fingerprint','index_sha256','source_artifact_sha256','source_artifact_hash',
  'span_hash','block_hash','text_hash','source_hash','decision_hash','request_hash','schema_sha256'}
 
 class NavigationReferences:
     def __init__(self,view):
+        registry=view.get('reference_registry')
+        self.document_forward={r['document_id']:r['id'] for r in (registry or {}).get('documents',[])}
+        self.document_reverse={v:k for k,v in self.document_forward.items()}
+        if registry is not None:
+            from .stable_references import checked,identities as collect
+            checked(registry);found,_=collect(view)
+            if found-registry['mapping'].keys():raise ProposalError('unregistered stable reference')
+            self.forward={k:v for k,v in registry['mapping'].items() if k in found}
+            self.reverse={v:k for k,v in self.forward.items()}
+            self.ids={'navigation':sorted(found),'claims':[]}
+            self.stable=True
+            return
+        self.stable=False
         identities=set();strings=set()
         def scan(v,key=None):
             if isinstance(v,str):
@@ -45,9 +59,20 @@ class NavigationReferences:
         self.reverse={v:k for k,v in self.forward.items()}
         self.ids={'navigation':sorted(identities),'claims':[]}
     def _map(self,value,mapping,key=None):
-        if isinstance(value,str):return mapping.get(value,value) if key not in TEXT_FIELDS else value
+        if isinstance(value,str):
+            if key=='document_ref':return getattr(self,'document_forward' if mapping is self.forward else 'document_reverse',{}).get(value,value)
+            if self.stable and key=='document_id':return value
+            if key in ('contract_error','error','expected_constraint','path','related_paths'):
+                for ident,alias in sorted(mapping.items(),key=lambda p:-len(p[0])):value=value.replace(ident,alias)
+                return value
+            return mapping.get(value,value) if key not in TEXT_FIELDS else value
         if isinstance(value,list):return [self._map(v,mapping,key) for v in value]
-        if isinstance(value,dict):return {k:self._map(v,mapping,k) for k,v in value.items()}
+        if isinstance(value,dict):
+            if key=='reference_registry':return deepcopy(value)
+            # A rejected wire response already uses the exact current aliases.
+            # Never allocate/remap its unknown IDs into apparently valid choices.
+            if value.get('contract_version')=='output-contract-v1' and value.get('reference_space')=='wire':return deepcopy(value)
+            return {(mapping.get(k,k) if key in ('new_reviews','revisions','claim_evidence_refs') else k):self._map(v,mapping,k) for k,v in value.items()}
         return deepcopy(value)
     def view(self,view):return self._map(view,self.forward)
     def schema(self,schema):
@@ -57,18 +82,19 @@ class NavigationReferences:
             if not isinstance(node,dict):return deepcopy(node)
             out={}
             for k,v in node.items():
-                if k=='properties':out[k]={name:walk(child,name) for name,child in v.items()}
+                if k=='enum' and key=='document_ref':out[k]=[self.document_forward.get(x,x) for x in v]
+                elif k=='properties':out[k]={(self.forward.get(name,name) if key in ('new_reviews','revisions','claim_evidence_refs') else name):walk(child,name) for name,child in v.items()}
                 elif k=='enum' and key not in TEXT_FIELDS:out[k]=[self.forward.get(x,x) if isinstance(x,str) else deepcopy(x) for x in v]
                 elif k=='const' and key not in TEXT_FIELDS and isinstance(v,str):out[k]=self.forward.get(v,v)
                 else:out[k]=walk(v,key)
             return out
         return walk(schema)
     def decode(self,value,wire_schema,schema_name=None):
-        try:Draft202012Validator(wire_schema).validate(value)
-        except ValidationError as exc:raise ProposalError('invalid request-local selection at '+str(list(exc.absolute_path))+': '+exc.message) from exc
+        from .output_contract import validate_shape
+        validate_shape(value,wire_schema,reference_space='wire')
         return self._map(value,self.reverse)
     def restore(self,value):return self._map(value,self.reverse)
-    def receipt(self,view):return {'schema_version':'navigation-handles-v1','view_hash':digest(view),'mapping':dict(self.forward)}
+    def receipt(self,view):return {'schema_version':'navigation-handles-v2' if self.stable else 'navigation-handles-v1','view_hash':digest(view),'mapping':dict(self.forward)}
 
 
 def compact_cards(view):

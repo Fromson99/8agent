@@ -75,7 +75,7 @@ ROOT_FILES = (
     "08_DEPLOYMENT/GENOS/stream_app.py", "08_DEPLOYMENT/GENOS/start_sse.py",
     "08_DEPLOYMENT/GENOS/requirements-sse.txt", "08_DEPLOYMENT/GENOS/requirements-socketio.txt",
     "genos_diagnostics.py", "genos_log_runner.py",
-    ".gitignore", ".env.example", ".env.genos.example", ".env.onsite.example",
+    ".gitignore", ".env.example",
     "README.md", "service.py", "service/service.py", "service/__init__.py", "genos_install.sh", "genos_git_publish.sh",
     "genos_unpack_all.sh", "pyproject.toml",
     "requirements.txt", "requirements-serving.txt", "requirements-pipeline.txt",

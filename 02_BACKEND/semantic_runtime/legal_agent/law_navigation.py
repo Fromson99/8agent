@@ -769,7 +769,7 @@ class Investigation:
         records.update({key: r for key, r in self.p['contexts'].items() if r['source_id'] in sources})
         return records
 
-    def register_read(self, group, material, *, reason):
+    def register_read(self, group, material, *, reason, acquire_context=True):
         """Checkpoint a verified body before obtaining optional ancestor context.
 
         A later context failure cannot erase the body's delivery plan. The
@@ -800,6 +800,7 @@ class Investigation:
             self.save()
 
         prepare_delivery()
+        if not acquire_context:return
         context_records = {gid: material}
         try:
             # Only this newly selected extent authorizes more context I/O.
@@ -875,25 +876,66 @@ class Investigation:
     @latency.timed('law.select.article_menu')
     def article_menu(self, law, offer):
         did=law['document_id']
+        if self.p.get('window')=='search' and self.p['catalogue'].get('search_policy')=='vector-initial-v1':return []
         if self.policy['structure_first'] and did not in self.p['fulltext_scopes']:return []
         limit=8
         key=digest([self.p['catalogue']['query_fingerprint'],did,self.p.get('article_pages',{}).get(did),self.p['fulltext_scopes'].get(did),self.p['fulltext_queries'].get(did),limit])
         cache=self.p.setdefault('article_menu_cache',{})
+        key = digest([key, 'visible-details-v2']) if self.policy.get('minimal_input') else key
         if key not in cache:
             page=self.p.get('article_pages',{}).get(did) or self.idx.article_groups_page(self.db,self.fulltext_terms(did),did,lc.allowed(self.s),limit=limit,**self.fulltext_args(did))
             rows=[]
             for item in page['items'][:limit]:
-                sid=item['source_id'];source=self.s.tools.sources[sid]
-                hits=self.idx.hit_page(self.db,self.fulltext_terms(did),sid,lc.allowed(self.s),limit=3,**self.fulltext_args(did))['items']
-                body=next((h for h in hits if str(h['unit_id'])!=str(h['article_unit_id'])),hits[0] if hits else None)
-                rows.append({'source_id':sid,'article':source.get('heading',''),'matched_units':item['unit_count'],
-                    'preview':body['text'][:240] if body else ''})
+                sid=item['source_id'];source=self.s.matcher.sources[sid]
+                row={'source_id':sid,'article':source.get('heading',''),'matched_units':item['unit_count']}
+                if self.policy.get('minimal_input'):
+                    # One immutable query descriptor per law/menu, not per row.
+                    self.p.setdefault('candidate_preview_queries', {}).setdefault(key, {
+                        'terms':list(self.fulltext_terms(did)), 'allowed':sorted(lc.allowed(self.s)),
+                        'args':{k:sorted(v) if isinstance(v,(set,frozenset)) else deepcopy(v) for k,v in self.fulltext_args(did).items()}, 'document_id':did,
+                        'index_sha256':self.idx.manifest['index_sha256']})
+                    row['deferred_preview']={'query':key,'source_id':sid}
+                else:
+                    hits=self.idx.hit_page(self.db,self.fulltext_terms(did),sid,lc.allowed(self.s),limit=3,**self.fulltext_args(did))['items']
+                    body=next((h for h in hits if str(h['unit_id'])!=str(h['article_unit_id'])),hits[0] if hits else None)
+                    row['preview']=body['text'][:240] if body else ''
+                rows.append(row)
             cache[key]=rows
         out=deepcopy(cache[key])
         for row in out:
             if not any(r['source_id']==row['source_id'] for r in self.p['selected'].values()):
                 row['read_action']=offer('READ_ARTICLES',{'source_id':row['source_id'],'document_id':did, **({'unit_id':lc.scoped_read_unit(self.s,row['source_id'],self.p['fulltext_scopes'][did])} if self.policy['structure_first'] and self.p['fulltext_scopes'][did] is not None else {})},row['article']+' 전체 원문 읽기')
         return out
+
+    def prepare_read_details(self, data, candidates, targets):
+        """Prepare only visible excerpts; durable query and body cache survive resume."""
+        self.s.store.check_unchanged(); self.idx.check_unchanged()
+        allowed=set(lc.allowed(self.s)); targets=set(targets)
+        changed=False
+        value=deepcopy(data)
+        for law in value.get('laws', []):
+            for row in law.get('article_matches', []):
+                descriptor=row.pop('deferred_preview', None)
+                if not descriptor or row.get('read_action') not in targets:continue
+                target=row['read_action']; action=candidates[target]
+                sid=descriptor['source_id']; query=self.p['candidate_preview_queries'][descriptor['query']]
+                if (action['identity']['source_id']!=sid or sid not in allowed
+                        or not set(query['allowed'])<=allowed
+                        or query['document_id']!=law['document_id']
+                        or query['index_sha256']!=self.idx.manifest['index_sha256']):
+                    raise ContractError('candidate detail query binding changed')
+                key=digest([self.p['binding'],descriptor,query])
+                cache=self.p.setdefault('candidate_preview_cache', {})
+                if key not in cache:
+                    hits=self.idx.hit_page(self.db,query['terms'],sid,query['allowed'],limit=3,**query['args'])['items']
+                    body=next((h for h in hits if str(h['unit_id'])!=str(h['article_unit_id'])),hits[0] if hits else None)
+                    self.s.store.check_unchanged(); self.idx.check_unchanged()
+                    cache[key]=body['text'][:240] if body else ''
+                    changed=True
+                row['preview']=cache[key]
+        self.s.store.check_unchanged(); self.idx.check_unchanged()
+        if changed:self.save()
+        return value
 
     def bind_reference_delivery(self, include_current=False, current_pages=()):
         if not self.control:return
@@ -1120,7 +1162,7 @@ class Investigation:
                     data['gap_rule'] = ('gap_targets의 READ 또는 문서 범위 도구로 부족한 대상을 확인한다. '
                         'RESOLVED는 실제 전달된 원문을 인용하고 대상 충족 여부는 직접 판단한다. 빠진 항목은 UNRESOLVED로 보존한다. '
                         'NOT_AVAILABLE은 정확한 대상의 완료된 부재 조회 receipt만 허용한다. '
-                        '오류·부분 조회·미확보·조사 한도는 UNRESOLVED, 불필요한 대상은 NOT_NEEDED와 이유를 쓴다.')
+                        '오류·부분 조회·미확보·조사 한도는 UNRESOLVED, 불필요한 대상은 NOT_NEEDED와 현재 원문 basis_refs 및 대상·쟁점을 연결한 이유를 쓴다.')
             if self.p.get('prior_investigation'):
                 data['prior_investigation']=deepcopy(self.p['prior_investigation'])
             for branch in data['branches']:
@@ -1470,6 +1512,8 @@ class Investigation:
                 law['article_matches']=self.article_menu(law,offer)
                 if self.policy['compact_input'] and search_window:
                     law['more_article_matches_action']=law['open_action']
+        from ..vector_navigation import attach as vector_attach
+        vector_attach(self,data,offer)
         data['presentation_id'] = lc.token(self.s, 'P', digest(data))
         return data, actions
 
@@ -1842,11 +1886,17 @@ class Investigation:
                     plan['status']='INTERRUPTED';self.save();raise
                 requested=self.p.setdefault('requested_originals',[])
                 if gid not in requested:requested.append(gid)
+                if self.policy.get('ontology_enabled') is True and self.policy.get('ontology_context',{}).get('mode','A0')!='A0':
+                    plan.setdefault('primary_records',{})[gid]=deepcopy(self.p['selected'][gid])
                 plan['completed'][target]=gid;plan['status']='STARTED';self.save()
                 ids.append(gid)
             plan['status']='ACQUIRED';plan.pop('remaining_target',None);self.save()
             from .definition_context import acquire as acquire_definition_context
-            if model_selected:ids.extend(acquire_definition_context(self,list(ids)))
+            if model_selected:
+                primary=list(ids)
+                from .ontology_context import acquire as acquire_ontology
+                ids.extend(acquire_ontology(self,primary,primary_records=plan.get('primary_records')))
+                ids.extend(acquire_definition_context(self,primary))
             self.p['window']='read';self.p['window_groups']=list(dict.fromkeys(ids))
         elif kind in ('READ_PARENT', 'READ_SCOPE'):
             group = self.p['groups'][identity['branch_id']]
@@ -1863,6 +1913,10 @@ class Investigation:
                     'unit': group['id'], 'offer': offer, 'reason': decision['reason'],
                     'input_location': ur.unit_label(self.s, group['hit']), 'read_location': offer['label'],
                     'expanded': True, 'read_required': True})
+                if model_selected:
+                    from .ontology_context import acquire as acquire_ontology
+                    added=acquire_ontology(self,[group['id']])
+                    self.p['window_groups']=list(dict.fromkeys(self.p['window_groups']+added))
             read = self.p['selected'].get(group['id'])
             self.p['structure_location'] = {'document_id': group['hit']['document_id'],
                 'unit_id': read['offer']['unit_id'] if read else group['hit']['unit_id'], 'offset': 0}
@@ -1890,6 +1944,9 @@ class Investigation:
             if page.get('selection_resolution'):
                 selected_set = page['selection_resolution']
                 self.p['structure_selections'][selected_set['hash']] = deepcopy(selected_set)
+                if self.modern and self.policy.get('read_judgment'):
+                    from .need_continuity import bind_structure
+                    bind_structure(self,data,decision,selected_set)
             did = identity['document_id']
             if did is None:
                 docs = {r['document_id'] for r in page['items']}
@@ -2064,6 +2121,9 @@ class Investigation:
                         self.p['law_reasons'][group['law_id']]={'law_id':group['law_id'],'status':'INVESTIGATE',
                             'reason':follows[-1][1]['reason'],'issue_refs':['Q1'],'basis_refs':[],
                             'origin':'verified_reference_follow'}
+            if model_selected and new_groups:
+                from .ontology_context import acquire as acquire_ontology
+                new_groups.extend(acquire_ontology(self,list(new_groups)))
             self.p['window']='references';self.p['window_groups']=list(dict.fromkeys(self.p.get('window_groups',[])+new_groups))
         if kind=='READ_SCOPE' or (kind=='READ_PARENT' and not identity.get('continuation')):
             self.p.setdefault('read_choices',[]).append(digest({'action':action,'query':self.p['catalogue']['query_fingerprint']}))
@@ -2266,6 +2326,9 @@ class Investigation:
         return value
 
     def request_decision(self, data, actions, phase):
+        from . import source_goal_control as source_goals
+        required=source_goals.preselect(self,data,actions)
+        if required is not None:return required
         stopped = self.p.get('decision_stop') if self.modern else None
         if stopped and stopped['epoch'] == self.p.get('investigation_epoch', 0):
             if stopped['kind'] == 'CONTRACT': raise ContractError(stopped['message'])
@@ -2323,6 +2386,9 @@ class Investigation:
         from .decision_projection import choose_read
         read_choice=choose_read(self,data,actions,phase)
         if read_choice is not None:return read_choice
+        if self.policy.get('minimal_input'):
+            candidates={k:a for k,a in actions.items() if a['action']=='READ_ARTICLES'}
+            data=self.prepare_read_details(data,candidates,candidates)
         system=SELECTABLE_SYSTEM if self.policy['selectable_search'] else SYSTEM
         if self.policy['compact_input']:
             system+='\n미선택 법령의 document_structure.deferred는 상세 목차를 아직 펼치지 않았다는 뜻이다. 현재 적중의 read_action으로 바로 읽거나 open_action/structure_open_action으로 더 본다. 짧은 목록을 전체 검색 결과로 해석하지 않는다.'
@@ -2477,20 +2543,33 @@ class Investigation:
         return self.result(decision)
 
     def assessment_handoff(self):
-        if not (self.modern and self.completion and lc.answer_first(self.s.profile)):
-            return None
+        if not (self.modern and self.completion):return None
         if self.p.get('accepted') or self.p.get('decision_retry'):return None
+        from . import ontology_assessment
+        ontology = ontology_assessment.ready(self)
+        if not (ontology or lc.answer_first(self.s.profile)):return None
         limit=max(self.s.profile['max_read_chars'],(self.s.profile.get('max_context_chars') or 100000)//2)
         originals,evidence,omitted=inventory.acquired_originals_for(self.s,self.p,limit)
         if not originals:return None
         # A list reorder does not create new evidence or justify another assessment.
-        signature=digest({'question':self.question,'evidence':sorted({digest(e) for e in evidence})})
-        if signature in self.p.get('assessment_handoffs',[]):return None
-        self.p.setdefault('assessment_handoffs',[]).append(signature)
-        self.s.repo.event('ACQUIRED_ORIGINALS_TO_ASSESS',{'material_hash':signature,
-            'source_ids':[s['source_id'] for s in originals],'omitted_evidence_ids':omitted,
-            'navigation_delivery_claimed':False,'automatic_adoption':False,'evidence_sufficient':False})
-        self.save()
+        signature=digest({'question':self.question,'evidence':sorted({digest(e) for e in evidence}),
+            **({'ontology_snapshot':self.p['ontology_context']['snapshot_sha256']} if ontology else {})})
+        # A crash between saving the prepared handoff and SELECT commit must
+        # resume that same handoff. A later ASSESS review/gap consumes it; the
+        # unchanged material cannot send that new investigation straight back.
+        guard = digest({'assessment_reviews':self.p.get('assessment_reviews', []),
+                        'assessment_gaps':self.p.get('assessment_gaps', [])})
+        receipt = {'material_hash':signature, 'assessment_context_hash':guard}
+        repeated = signature in self.p.get('assessment_handoffs', [])
+        if repeated and not (ontology and self.p.get('ontology_assessment_prepared') == receipt):return None
+        if not repeated:
+            self.p.setdefault('assessment_handoffs',[]).append(signature)
+            if ontology:self.p['ontology_assessment_prepared'] = receipt
+            self.s.repo.event('ACQUIRED_ORIGINALS_TO_ASSESS',{'material_hash':signature,
+                'source_ids':[s['source_id'] for s in originals],'omitted_evidence_ids':omitted,
+                'navigation_delivery_claimed':False,'automatic_adoption':False,'evidence_sufficient':False,
+                **({'reason':'ONTOLOGY_DIRECT_ASSESSMENT'} if ontology else {})})
+            self.save()
         return self.acquired_handoff_result({'next_action':'FINISH','queries':[],'reason':'확보 원문의 답변 가능 범위를 먼저 판단',
             'sufficiency_reason':'충분성과 현재 질문에 대한 적용성은 ASSESS가 판단','evidence_sufficient':False},originals,evidence,omitted)
 
@@ -2509,7 +2588,10 @@ class Investigation:
         return result
 
     def run(self):
-        if (self.p['decisions'] and self.p['decisions'][-1]['decision']['next_action']=='FINISH'
+        from .scope_completion import before_handoff
+        before_handoff(self)
+        from .source_goal_control import pending_before_selection
+        if (not pending_before_selection(self) and self.p['decisions'] and self.p['decisions'][-1]['decision']['next_action']=='FINISH'
                 and not self.p.get('assessment_gaps') and not self.p.get('reopened')):
             return self.result(self.p['decisions'][-1]['decision'])
         from ..basis_links.resolver import acquire as acquire_basis
@@ -2524,15 +2606,17 @@ class Investigation:
         while True:
             recovery = None
             acquire_basis(self)
-            handoff=self.assessment_handoff()
+            from .source_goal_control import pending_before_selection
+            required_priority=pending_before_selection(self)
+            handoff=None if required_priority else self.assessment_handoff()
             if handoff is not None:return handoff
             if self.completion and not self.p.get('accepted'):
                 budget=self.s.repo.budget()
-                if budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']<2:
+                if not required_priority and budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']<2:
                     return self.bounded_result('INVESTIGATION_BUDGET')
                 if self.left()<=max(1,self.s.profile['selection_time_reserve_seconds']):
                     return self.bounded_result('FINALIZATION_TIME_RESERVE')
-                if self.p['no_progress']>=self.s.profile['max_no_progress']:
+                if not required_priority and self.p['no_progress']>=self.s.profile['max_no_progress']:
                     recovery = rr.no_progress_recovery(self)
                     if recovery is None:return self.bounded_result('NO_PROGRESS')
             if self.left() <= 1: raise BudgetExhausted('law investigation request time exhausted')
@@ -2542,9 +2626,10 @@ class Investigation:
                 # the journal; reference navigation resumes its separately saved cursor.
                 progressed = {k: deepcopy(self.p[k]) for k in ('read_state', 'reference_state','reference_reads','reference_turn','action_chain','reference_states','reentry_counters','no_progress','stop_reason','progress_gap_signature','request_progress','original_progress','discovery_changed','investigation_epoch','decision_retry_history','no_progress_recovery') if k in self.p}
                 if self.modern:
-                    for key in ('connection_directories','selected_connection_scope','connection_scope_history','read_judgments'):
+                    for key in ('connection_directories','selected_connection_scope','connection_scope_history','read_judgments','ontology_context','ontology_database','ontology_work_inputs','ontology_assessment_prepared','investigation_supervisor','structure_need_bindings'):
                         if key in self.p:progressed[key]=deepcopy(self.p[key])
-                if self.modern and (accepted['decision']['next_action']=='READ_ARTICLES' or
+                ontology_read=(self.policy.get('ontology_enabled') is True and self.policy.get('ontology_context',{}).get('mode','A0')!='A0' and accepted['decision']['next_action'] in ('READ_PARENT','READ_SCOPE','FOLLOW_CONNECTION'))
+                if self.modern and (ontology_read or accepted['decision']['next_action']=='READ_ARTICLES' or
                         (accepted['decision']['next_action']=='FOLLOW_CONNECTION' and self.policy.get('small_connection_context'))):
                     # This accepted action is read-only. Completed target receipts
                     # and their acquired originals survive a process interruption.
@@ -2579,7 +2664,7 @@ class Investigation:
                     data, actions = self.view(); phase = 'source-law-navigation-'+str(self.p['turn']+1)
                 from .answer_progress import ProgressHandoff
                 try:decision = self.request_decision(data, actions, phase)
-                except ProgressHandoff:
+                except ProgressHandoff as handoff:
                     # The accepted progress opinion stops the proposed tool, not
                     # the delivery of the original pages it has just reviewed.
                     # Validate the full batch before recording any receipt.
@@ -2589,16 +2674,21 @@ class Investigation:
                         inventory.acknowledge(self.s,self.p,page,data.get('presentation_id'))
                     self.p['completion_basis_refs']=[page['id'] for page in data['sources']]
                     self.save()
-                    return self.bounded_result('NO_ANSWER_PROGRESS')
+                    return self.bounded_result(str(handoff) or 'NO_ANSWER_PROGRESS')
                 except (ProposalError,ValidationError,BudgetExhausted) as error:
                     if not self.completion:raise
                     if rr.is_unattempted_gap(error):
                         return self.bounded_result(rr.gap_review_capacity(self) or 'UNATTEMPTED_GAP_REVIEW_EXHAUSTED')
                     return self.bounded_result('MODEL_DECISION_UNRESOLVED')
+                from . import investigation_supervisor as supervisor
+                supervisor.before_execute(self,data,decision)
                 self.p['accepted'] = {'input_hash': digest(data), 'decision': decision, 'phase': phase,
                     'data': data, 'actions': actions, 'before': deepcopy(self.p)}
                 self.save()
+            from . import investigation_supervisor as supervisor
+            supervisor.before_execute(self,data,decision)
             applied = self.execute(decision, data, actions)
+            supervisor.after_execute(self,data,decision,applied)
             rr.finish_no_progress_recovery(self.p, phase)
             if applied is False:
                 self.p['turn'] += 1; self.p.pop('accepted', None); self.p.pop('decision_retry', None); self.save()

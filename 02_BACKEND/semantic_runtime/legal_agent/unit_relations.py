@@ -258,7 +258,7 @@ def detached_annex(ref, origin, annex_index):
             'detached_annex': {'document_id': did, 'label': cited, 'basis': annex_files.BASIS}}
 
 
-def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None, max_connections=None, preparation=None):
+def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_references=None, max_connections=None, preparation=None, grant_reads=True):
     """Validate both ends before exposing closed READ offers; read no target body."""
     groups = OrderedDict()
     statuses, limits, unresolved = [], [], []
@@ -379,9 +379,10 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
                 if qs.active(s) and not anchor_blocks.get(anchor,set()) & qs.permitted_blocks(s,anchor):continue
                 hit = hit_for(s, target, end.get('unit_id'))
                 from .query_scope import grant
-                grant(s,target,endpoint,witness={
-                    'anchor_source_id':anchor,'reference_id':ref['id'],'direction':direction,
-                    'witness_sha256':expected,'target_unit_id':end.get('unit_id')})
+                if grant_reads:
+                    grant(s,target,endpoint,witness={
+                        'anchor_source_id':anchor,'reference_id':ref['id'],'direction':direction,
+                        'witness_sha256':expected,'target_unit_id':end.get('unit_id')})
                 try:
                     opts, blocked = offer_plan(s, hit)
                 except KeyError as exc:

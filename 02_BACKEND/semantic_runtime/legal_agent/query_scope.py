@@ -176,6 +176,18 @@ def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=
                 if any(label and ''.join(structure.split()) == ''.join(str(label).split()) for label in labels):
                     if node.get('coordinate_binding', {}).get('mode') != 'unresolved':
                         candidates.append(str(node_id))
+            # A bare persisted coordinate denotes the body branch. Addenda have
+            # their own scope and cannot compete merely because surface matches.
+            # Use the same stored coordinate grammar as typed selections, never
+            # infer a legal scope from the question or article title.
+            from lawrag.core.legal_coordinate import parse_label
+            requested = parse_label(structure)
+            if requested is not None and ''.join(structure.split()) == requested.canonical_surface():
+                coordinates = getattr(matcher, 'stored_coordinates', {})
+                candidates = [candidate for candidate in candidates
+                    if matcher.units[(did,candidate)].get('coordinate_scope') == 'body'
+                    and coordinates.get((did,candidate)) is not None
+                    and coordinates[(did,candidate)].as_dict() == requested.as_dict()]
             if len(candidates) != 1:
                 raise UnresolvedScope('지정 문서에서 목차·조항을 하나로 확인하지 못했습니다: ' + structure)
             uid = candidates[0]
@@ -424,5 +436,8 @@ def restore_grants(session, checkpoint):
                     if bid in set(blocks(session,child['document_id'],str(w['parent_unit_id']),'exact')):
                         grant(session,sid,[bid],witness=w)
         if sum(len(v) for v in session.scope_read_grants.values())==before:break
+    if any(w.get('kind')=='REQUIRED_CONNECTED_TARGET' for rows in saved.values() for w in rows.values()):
+        from .source_goal_control import grant_required_targets
+        grant_required_targets(session,checkpoint,restore=True)
     if any(not set(rows) <= permitted_blocks(session,sid) for sid,rows in saved.items()):
         raise ContractError('persisted reference scope has no current verified witness')

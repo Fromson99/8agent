@@ -36,6 +36,10 @@ class QuerySQL(SQL):
         self.deadline, self.max_calls, self.calls = deadline, max_calls, 0
         self.progress = None
 
+    def query(self,statement,binds=(),*,limit=100):
+        from .oracle_silver_reads import rewrite
+        return super().query(rewrite(statement,getattr(self.client,'schema_map',None)),binds,limit=limit)
+
     def event(self, status, **extra):
         obs.event(log, 'oracle.sql', binding=self.binding, call=self.calls,
                   status=status, **extra)

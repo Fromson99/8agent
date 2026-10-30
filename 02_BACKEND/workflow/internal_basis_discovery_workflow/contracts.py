@@ -94,7 +94,7 @@ def research_call(ctx,action,call_id,*,source=False):
             detail=json.loads(old['error_json'])
             events=ctx.repo.db.execute(
                 "SELECT payload_json,payload_hash FROM event WHERE kind='WORKFLOW_CALL_FAILED' "
-                "AND json_extract(payload_json,'$.call_id')=?",(call_id,)).fetchall()
+                "AND json_extract(journal_text(payload_json),'$.call_id')=?",(call_id,)).fetchall()
             if len(events)!=1:
                 raise WorkflowError('WORKFLOW_CALL_INTEGRITY','실패 호출의 원래 기록을 확인할 수 없습니다.',409)
             event=json.loads(events[0][0])
@@ -105,7 +105,7 @@ def research_call(ctx,action,call_id,*,source=False):
             permitted=detail.get('type')=='ContractError' and skippable_detail(detail)
             classified=ctx.repo.db.execute(
                 "SELECT payload_json,payload_hash FROM event WHERE kind='BASIS_RESEARCH_FAILURE_CLASSIFIED' "
-                "AND json_extract(payload_json,'$.call_id')=?",(call_id,)).fetchall()
+                "AND json_extract(journal_text(payload_json),'$.call_id')=?",(call_id,)).fetchall()
             if classified:
                 if len(classified)!=1:
                     raise WorkflowError('WORKFLOW_CALL_INTEGRITY','실패 분류 기록이 중복되었습니다.',409)

@@ -1,4 +1,5 @@
 """A native response may publish only an accepted, still-current case commit."""
+from . import journal_storage
 import json
 from pathlib import Path
 import sqlite3
@@ -34,8 +35,8 @@ def validate_saved(repo,result):
     runtime=repo.path.parents[4]
     from .shortcut_store import selected_store
     if path.resolve() not in {(runtime/'case-memory'/'cases-v3.sqlite').resolve(),selected_store(runtime).resolve()}:raise ContractError('case authority path mismatch')
-    with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
-        db.row_factory=sqlite3.Row
+    with journal_storage.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+        db.row_factory=journal_storage.row
         g=db.execute('SELECT * FROM goal WHERE id=? AND session=?',(c['question_id'],c['session_id'])).fetchone()
         principal=json.loads(c['principal_json'])
         owner=db.execute('SELECT owner,team FROM session WHERE id=?',(c['session_id'],)).fetchone()
@@ -59,7 +60,7 @@ def validate_saved(repo,result):
             else:
                 journals=list(repo.path.parents[2].glob('*/'+ref['run_id']+'/journal.sqlite'))
                 if len(journals)!=1:raise ContractError('origin judgment journal missing')
-                with sqlite3.connect('file:'+str(journals[0])+'?mode=ro',uri=True) as native:
+                with journal_storage.connect('file:'+str(journals[0])+'?mode=ro',uri=True) as native:
                     _ref(native,ref,stage)
         if meta.get('judgment_view'):
             from .judgment_view import build

@@ -101,7 +101,7 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                 row['laws']=[{**law,'selection':law_reasons.get(key),
                     'branches':[b for b in navigation.get('branches',[]) if b['law_id']==key]} for key,law in laws.items()]
                 row['decisions'] += [laws[key]['name']+' · '+str(choice['reason']) for key,choice in law_reasons.items()]
-                row['limitations']=payload.get('completion_limitations',[])
+                row['limitations']=list(payload.get('completion_limitations',[]))
                 row['completion_policy']=payload.get('completion_policy')
                 if payload.get('completion_contract'):
                     row['completion_contract']=payload['completion_contract']
@@ -117,7 +117,7 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
             for ledger in ledgers:
                 labels={'CORE':'직접 근거 후보','SUPPORT':'보조 근거 후보','CONDITIONAL':'조건부 사용 후보',
                         'DEFER':'판단 보류','EXCLUDE':'사용 제외'}
-                for head in ledger['heads'].values():
+                for _,head in sorted(ledger['heads'].items()):
                     label=sources.get(head['source_id'],{'source_id':head['source_id'],
                         'document_name':head.get('document_name') or head['document_id'],
                         'coordinate':head.get('heading') or ''})
@@ -126,9 +126,9 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                         'judgment_version':head['version']})
                     row['decisions'].append(labels[head['use']]+' · '+head['finding']+' · 이유: '+head['reason'])
                 row.setdefault('limitations',[]).extend('미확인: '+n['text']+' · '+n['reason']
-                    for n in ledger['needs'].values() if n['status']=='OPEN')
+                    for _,n in sorted(ledger['needs'].items()) if n['status']=='OPEN')
                 row['limitations'].extend('판단 충돌: '+c['reason']
-                    for c in ledger['conflicts'].values() if c['status']=='OPEN')
+                    for _,c in sorted(ledger['conflicts'].items()) if c['status']=='OPEN')
         elif stage in ('ASSESS', 'COMPOSE'):
             row['actions'] = ['선택한 원문을 현재 조건에 적용' if stage == 'ASSESS'
                               else '현재 판단과 출처를 유지해 최종 답변 작성']
@@ -162,5 +162,9 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
     view = {'schema_version': 'judgment-view-v1', 'revision': REVISION,
             'question_id': case['question_id'], 'question_revision': case['revision'],
             'route_id': case['route_id'], 'run_id': run_id, 'stages': stages}
+    # The API applies the release's public projection after publication.
+    # Hash the same projection here, retaining full diagnostics in the journal.
+    from ..chat_adapter import views
+    view = views().public_response(view)
     view['content_sha256'] = digest(view)
     return view

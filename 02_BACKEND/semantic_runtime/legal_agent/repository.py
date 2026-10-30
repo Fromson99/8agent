@@ -13,6 +13,7 @@ log=obs.get_logger('journal')
 from .context import now
 from .errors import BudgetExhausted, ContractError, ProposalError, StaleProposal
 from . import protocol
+from . import journal_storage
 
 
 def encoded(value):
@@ -31,8 +32,7 @@ class WorkRepository:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         create = not self.path.exists()
-        self.db = sqlite3.connect(self.path, isolation_level=None)
-        self.db.row_factory = sqlite3.Row
+        self.db = journal_storage.connect(self.path, isolation_level=None)
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('PRAGMA busy_timeout=5000')
@@ -66,6 +66,7 @@ class WorkRepository:
         elif self.db.execute('PRAGMA user_version').fetchone()[0] != self.VERSION:
             self.close()
             raise ContractError('journal migration required')
+        journal_storage.initialize(self.db)
         self.binding = json.loads(self.run()['binding_json'])
         if digest(self.binding) != self.run()['binding_hash']:
             self.close()
@@ -74,6 +75,9 @@ class WorkRepository:
             self.close()
             raise ContractError('request binding mismatch')
         self._changed = False
+
+    def stored(self, value):
+        return journal_storage.store(self.db, encoded(value))
 
     def close(self):
         self.db.close()
@@ -172,14 +176,14 @@ class WorkRepository:
         seq = r['next_event_seq']
         self.db.execute('INSERT INTO event VALUES(?,?,?,?,?,?,?,?)',
                         (seq, event_id or uuid.uuid4().hex, kind, r['state_revision'], after,
-                         encoded(payload), digest(payload), now()))
+                         self.stored(payload), digest(payload), now()))
         self.db.execute('UPDATE run SET state_revision=?,evidence_revision=evidence_revision+?,next_event_seq=? WHERE singleton=1',
                         (after, int(evidence), seq+1))
         from .readable_log import is_error_event
         if is_error_event(kind):
             obs.event(log,'agent.error',level=40,run_id=r['run_id'],
                 journal_seq=seq,error_event=kind,error_diagnostics=payload,
-                error_record=encoded(payload))
+                error_payload_hash=digest(payload))
         return seq
 
     def head(self, kind, ident, *, current=True, expected=None):
@@ -231,7 +235,7 @@ class WorkRepository:
         if old:
             self.invalidate(kind, ident, old[0])
         self.db.execute('INSERT INTO entity_version VALUES(?,?,?,?,?,?)',
-                        (kind, ident, version, encoded(payload), digest(payload), seq))
+                        (kind, ident, version, self.stored(payload), digest(payload), seq))
         self.db.execute('INSERT INTO entity_head VALUES(?,?,?,?) ON CONFLICT(kind,entity_id) DO UPDATE SET version=excluded.version,validity=excluded.validity',
                         (kind, ident, version, validity))
         self.db.executemany('INSERT INTO dependency VALUES(?,?,?,?,?,?)',
@@ -242,11 +246,18 @@ class WorkRepository:
         return ident
 
     def evidence(self, ident=None):
-        rows = self.db.execute('SELECT * FROM evidence_unit'+(' WHERE evidence_id=?' if ident else '')+' ORDER BY evidence_id',
-                               (ident,) if ident else ())
+        rows = list(self.db.execute('SELECT * FROM evidence_unit'+(' WHERE evidence_id=?' if ident else '')+' ORDER BY evidence_id',
+                               (ident,) if ident else ()))
+        # One request-owned journal, two indexed/order-compatible reads. Keep
+        # per-evidence span order and the original byte/hash validation below.
+        spans_by_id = {}
+        if rows:
+            for span in self.db.execute('SELECT * FROM evidence_span'+(' WHERE evidence_id=?' if ident else '')+' ORDER BY evidence_id,ordinal',
+                                        (ident,) if ident else ()):
+                spans_by_id.setdefault(span['evidence_id'], []).append(dict(span))
         result = []
         for row in rows:
-            spans = [dict(s) for s in self.db.execute('SELECT * FROM evidence_span WHERE evidence_id=? ORDER BY ordinal', (row['evidence_id'],))]
+            spans = spans_by_id.get(row['evidence_id'], [])
             text = '\n'.join(s['text'] for s in spans)
             if text_hash(text) != row['text_hash']:
                 raise ContractError('stored evidence hash mismatch')
@@ -286,7 +297,7 @@ class WorkRepository:
             with self.transaction():
                 seq = self.event('MODEL_VIEW', {'view_id': ident, 'hash': digest(body)})
                 self.db.execute('INSERT INTO model_view VALUES(?,?,?,?,?,?,?)',
-                                (ident, phase, r['state_revision'], r['evidence_revision'], encoded(body), digest(body), seq))
+                                (ident, phase, r['state_revision'], r['evidence_revision'], self.stored(body), digest(body), seq))
                 for e in evidence_ids:
                     self.db.execute('INSERT INTO presentation VALUES(?,?,?)', (ident, e, self.evidence(e)['text_hash']))
             return body
@@ -309,7 +320,7 @@ class WorkRepository:
             self.db.execute('UPDATE budget SET model_reserved=model_reserved+1 WHERE singleton=1')
             self.db.execute('''INSERT INTO model_attempt(attempt_id,logical_call_id,attempt_no,view_id,request_json,
                 request_hash,status,started_at,created_seq) VALUES(?,?,?,?,?,?,'PREPARED',?,?)''',
-                (ident, logical_call_id, attempt_no, view['view_id'], encoded(request), digest(request), now(), seq))
+                (ident, logical_call_id, attempt_no, view['view_id'], self.stored(request), digest(request), now(), seq))
         return ident
 
     def attempt_sent(self, ident):
@@ -327,8 +338,8 @@ class WorkRepository:
                 status = 'IGNORED_LATE'
             self.db.execute('''UPDATE model_attempt SET status=?,response_json=?,response_hash=?,receipt_json=?,
                 input_tokens=?,output_tokens=?,finished_at=? WHERE attempt_id=? AND status='SENT' ''',
-                (status, encoded(response) if response is not None else None, digest(response) if response is not None else None,
-                 encoded(receipt), usage.get('prompt_tokens'), usage.get('completion_tokens'), now(), ident))
+                (status, self.stored(response) if response is not None else None, digest(response) if response is not None else None,
+                 self.stored(receipt), usage.get('prompt_tokens'), usage.get('completion_tokens'), now(), ident))
             self.event('ATTEMPT_FINISHED', {'attempt_id': ident, 'status': status})
         return status
 
@@ -353,12 +364,12 @@ class WorkRepository:
             for e in new_evidence:
                 self.db.execute('INSERT INTO evidence_unit VALUES(?,?,?,?,?,?,?,?,?,?,?)',
                     tuple(e[k] for k in ('evidence_id', 'source_id', 'document_id', 'unit_id', 'generation_id', 'source_artifact_hash', 'text_hash', 'role', 'temporal_status'))+
-                    (encoded(e['metadata']), seq))
+                    (self.stored(e['metadata']), seq))
                 for n, s in enumerate(e['spans']):
                     self.db.execute('INSERT INTO evidence_span VALUES(?,?,?,?,?,?,?,?)',
-                        (e['evidence_id'], n, s['block_id'], s['start_cp'], s['end_cp'], s['text'], s['block_hash'], s['span_hash']))
+                        (e['evidence_id'], n, s['block_id'], s['start_cp'], s['end_cp'], journal_storage.store(self.db, s['text']), s['block_hash'], s['span_hash']))
             self.db.execute('INSERT INTO observation VALUES(?,?,?,?,?,?,?,?)',
-                            (ident, action['tool'], key, encoded(action), encoded(result), digest(result), result['status'], seq))
+                            (ident, action['tool'], key, self.stored(action), self.stored(result), digest(result), result['status'], seq))
             self.db.executemany('INSERT INTO observation_evidence VALUES(?,?)', [(ident, e['evidence_id']) for e in evidence])
             if new_evidence:
                 self.db.execute('UPDATE stage_artifact SET valid=0')
@@ -383,7 +394,7 @@ class WorkRepository:
         if self.db.execute('SELECT 1 FROM frontier WHERE dedupe_key=?', (key,)).fetchone():
             return
         self.db.execute("INSERT INTO frontier VALUES(?,?,?,?,'PENDING',?,?,NULL,?)",
-                        ('T'+uuid.uuid4().hex, issue_id, encoded(action), key, 1, reason, seq))
+                        ('T'+uuid.uuid4().hex, issue_id, self.stored(action), key, 1, reason, seq))
 
     def finish_frontier(self, ident, observation):
         with self.transaction():
@@ -399,7 +410,7 @@ class WorkRepository:
             self.db.execute('UPDATE stage_artifact SET valid=0 WHERE stage=?', (stage,))
             self.db.execute('INSERT INTO stage_artifact VALUES(?,?,?,?,?,?,?,1,?)',
                             ('ART'+uuid.uuid4().hex, stage, revision, self.run()['evidence_revision'],
-                             self.dependency_hash(), encoded(payload), digest(payload), seq))
+                             self.dependency_hash(), self.stored(payload), digest(payload), seq))
 
     def dependency_hash(self):
         return digest({'heads': [h for h in self.heads() if h['kind'] in ('issue', 'fact', 'assessment', 'finding')],

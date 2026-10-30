@@ -6,6 +6,7 @@ JSONL sidecar preserves returned content, refusal and filter signals for diagnos
 """
 from __future__ import annotations
 
+from .legal_agent import journal_storage
 from contextlib import contextmanager, nullcontext
 from contextvars import copy_context
 from copy import deepcopy
@@ -694,8 +695,8 @@ class _LiveLog(logging.Handler):
                     return
                 path = self.journal_path = found[0]
             last_seq, process_last_seq = self.journal_cursors.get(run_id, (0, 0))
-            with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=1) as db:
-                db.row_factory = sqlite3.Row
+            with journal_storage.connect(f"file:{path}?mode=ro", uri=True, timeout=1) as db:
+                db.row_factory = journal_storage.row
                 events = db.execute("SELECT * FROM event WHERE seq>? ORDER BY seq LIMIT 256", (last_seq,)).fetchall()
                 if not events:
                     return
@@ -1017,8 +1018,8 @@ def _journal(runtime: Path, run_id: str, *, path=None) -> dict[str, Any]:
         return {"status": "NOT_FOUND"}
     if len(found) != 1:
         return {"status": "AMBIGUOUS", "matches": len(found)}
-    with sqlite3.connect(f"file:{found[0]}?mode=ro", uri=True) as db:
-        db.row_factory = sqlite3.Row
+    with journal_storage.connect(f"file:{found[0]}?mode=ro", uri=True) as db:
+        db.row_factory = journal_storage.row
         tables: dict[str, list[dict[str, Any]]] = {}
         names = [row[0] for row in db.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]

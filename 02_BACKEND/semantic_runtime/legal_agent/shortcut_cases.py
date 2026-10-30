@@ -64,7 +64,7 @@ class ShortcutCases(CaseRepository):
             if result.get('state'):self.sync_facts(result['goal_id'],result['state']['facts'])
             result={**result,'investigation_id':self.active_case,'investigation_revision':self.shortcut.investigation(self.active_case,principal,body['session_id'])['revision'],
                     'intake_id':self.intake_id,'original_session_id':body['session_id']}
-            self.db.execute("UPDATE sw_intake SET status='COMPLETED',response=? WHERE id=?",(encoded(result),self.intake_id))
+            self.db.execute("UPDATE sw_intake SET status='COMPLETED',response=? WHERE id=?",(self.stored(result),self.intake_id))
             return result
         except BaseException:
             self.db.execute("UPDATE sw_intake SET status='FAILED' WHERE id=? AND status<>'COMPLETED'",(self.intake_id,))

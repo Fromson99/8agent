@@ -5,6 +5,7 @@ Never project raw model responses, prompts, source text or hidden reasoning.
 """
 from __future__ import annotations
 
+from .legal_agent import journal_storage
 from contextlib import contextmanager
 import logging
 import hashlib
@@ -262,7 +263,7 @@ class ProgressCapture(logging.Handler):
         try:
             path = self._journal_path()
             if path:
-                with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=0.2) as db:
+                with journal_storage.connect(f"file:{path}?mode=ro", uri=True, timeout=0.2) as db:
                     row = db.execute("SELECT body_json FROM model_view ORDER BY created_seq DESC LIMIT 1").fetchone()
                     if row:
                         return json.loads(row[0]).get("source_stage")
@@ -378,7 +379,7 @@ class ProgressCapture(logging.Handler):
             path = self._journal_path()
             if path is None:
                 return
-            with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=0.2) as db:
+            with journal_storage.connect(f"file:{path}?mode=ro", uri=True, timeout=0.2) as db:
                 self._bind_scope(db)
                 rows = db.execute("SELECT seq,kind FROM event WHERE seq>? ORDER BY seq",
                                   (self.last_journal_seq,)).fetchall()
@@ -496,7 +497,7 @@ class ProgressCapture(logging.Handler):
                             continue
                         selected = db.execute("SELECT COUNT(*) FROM entity_head h JOIN entity_version v "
                             "USING(kind,entity_id,version) WHERE h.kind='source_selection' "
-                            "AND h.validity='CURRENT' AND json_extract(v.payload_json,'$.status')='SELECTED'").fetchone()[0]
+                            "AND h.validity='CURRENT' AND json_extract(journal_text(v.payload_json),'$.status')='SELECTED'").fetchone()[0]
                         self.publish("selected", "답변 검토용 근거를 선택함", count=selected,
                                      basis={"kind": event_kind, "journal_seq": seq})
                     elif event_kind == "SOURCE_SELECTION_EXCLUDED":

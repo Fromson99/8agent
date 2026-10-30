@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+from . import journal_storage
 import uuid
 from jsonschema import validate, ValidationError
 from .memory_methods import METHODS, normalize, history_projection, history_answer, offered, require_offered
@@ -100,8 +101,7 @@ class Memory:
         from ..state_sqlite import journal_policy, configure
         try: journal_mode=journal_policy(path,os.environ.get('GENOS_MEMORY_JOURNAL_MODE'))
         except ValueError as exc: raise MemoryError(str(exc)) from exc
-        self.db=sqlite3.connect(path, isolation_level=None, timeout=30)
-        self.db.row_factory=sqlite3.Row
+        self.db=journal_storage.connect(path, isolation_level=None, timeout=30)
         version=self.db.execute('PRAGMA user_version').fetchone()[0]
         existing=self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='knowledge'").fetchone()
         if version not in (0, self.VERSION) or (existing and version != self.VERSION):
@@ -112,6 +112,7 @@ class Memory:
         except BaseException:
             self.db.close()
             raise
+        journal_storage.initialize(self.db)
         self.db.executescript('''PRAGMA foreign_keys=ON;
         CREATE TABLE IF NOT EXISTS session(id TEXT PRIMARY KEY,owner TEXT NOT NULL,team TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS goal(id TEXT PRIMARY KEY,session TEXT NOT NULL,ordinal INTEGER NOT NULL,state TEXT NOT NULL,revision INTEGER NOT NULL,status TEXT NOT NULL,pending TEXT,UNIQUE(session,ordinal));
@@ -139,6 +140,9 @@ class Memory:
         try:
             if getattr(self,'model_resource',None) is not None:self.model_resource.close()
         finally:self.db.close()
+    def stored(self, value):
+        return journal_storage.store(self.db, encoded(value))
+
     @contextmanager
     def transaction(self):
         self.db.execute('BEGIN IMMEDIATE')
@@ -313,6 +317,12 @@ class Memory:
         from . import output_contract as output
         def prepare(raw):
             output.validate_shape(raw,closed)
+            # UI/source scope is explicit request configuration. Bind it before
+            # validating a replan so a model KEEP cannot erase the user's change.
+            if raw.get('method_id') in ('CASE_START','PURPOSE_REVISE','RESEARCH_REPLAN'):
+                from ..pipeline import route_question
+                _, category = route_question(context['utterance'])
+                if category is not None:raw = {**raw, 'source_category': category}
             try:command=normalize(raw,context)
             except ValueError as exc:
                 raise output.OutputContractError(str(exc),[output.issue('COMMAND_FIELDS_CONFLICT')],category='DECISION_CONFLICT') from exc
@@ -406,7 +416,7 @@ class Memory:
         except Exception as exc:
             self.db.execute("UPDATE request SET status='FAILED' WHERE id=?",(request_id,))
             raise
-        self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",(encoded(result),request_id))
+        self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",(self.stored(result),request_id))
         return result
     def _execute(self,body,principal):
         self._resolve_request={'body':body,'principal':principal}
@@ -510,7 +520,7 @@ class Memory:
                         if hasattr(execution,'rebind'):execution.rebind(stage,payload)
                         with self.transaction():
                             if self.goal(gid,session)['revision']!=revision:raise Conflict('late experience rebind')
-                            cur=self.db.execute('INSERT INTO node(goal,stage,revision,payload,hash,parent) VALUES(?,?,?,?,?,?)',(gid,stage,revision,encoded(payload),digest(payload),parent))
+                            cur=self.db.execute('INSERT INTO node(goal,stage,revision,payload,hash,parent) VALUES(?,?,?,?,?,?)',(gid,stage,revision,self.stored(payload),digest(payload),parent))
                             self.db.execute('INSERT OR REPLACE INTO head VALUES(?,?,?)',(gid,stage,cur.lastrowid));parts[stage]={'id':cur.lastrowid,'payload':payload};parent=cur.lastrowid
                             self.stage_recorded(cur.lastrowid,stage,payload,execution)
                             if getattr(self,'resume_requests',False):
@@ -625,7 +635,7 @@ class Memory:
                     with self.transaction():
                         if self.goal(gid,session)['revision']!=revision:raise Conflict('late stage output')
                         old=self.db.execute('SELECT node FROM head WHERE goal=? AND stage=?',(gid,stage)).fetchone()
-                        cur=self.db.execute('INSERT INTO node(goal,stage,revision,payload,hash,parent,supersedes) VALUES(?,?,?,?,?,?,?)',(gid,stage,revision,encoded(payload),digest(payload),parent,old[0] if old else None))
+                        cur=self.db.execute('INSERT INTO node(goal,stage,revision,payload,hash,parent,supersedes) VALUES(?,?,?,?,?,?,?)',(gid,stage,revision,self.stored(payload),digest(payload),parent,old[0] if old else None))
                         self.db.execute('INSERT OR REPLACE INTO head VALUES(?,?,?)',(gid,stage,cur.lastrowid))
                         pending=('SELECT' if payload.get('terminal')=='SOURCE_HANDOFF' else STAGES[next_stage+1] if next_stage+1<len(STAGES) else stage)
                         self.db.execute('UPDATE goal SET pending=? WHERE id=?',(pending,gid))

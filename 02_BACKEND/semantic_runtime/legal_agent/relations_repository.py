@@ -71,6 +71,9 @@ class RelationsRepository(ToolsRepository):
             if e.get('text')!=raw['text'] or e.get('spans')!=raw['spans']:
                 raise ContractError('view exact evidence text differs from stored source')
         with self.transaction():
+            if body.get('minimal_input_binding', {}).get('stable_references'):
+                from .stable_references import bind
+                body=bind(self,body)
             view = super().save_view(phase, body, evidence_ids)
             for n in view.get('relation_notices',[]):
                 stored=self.notice(n['relation_id'])
@@ -89,7 +92,7 @@ class RelationsRepository(ToolsRepository):
             visit(view)
             return view
 
-    def reserve_attempt(self, view, request, *args, numbered_references=None, wire_projection=None):
+    def reserve_attempt(self, view, request, *args, numbered_references=None, wire_projection=None, minimal_input_projection=None):
         # The receipt names what went onto the wire, not an untransmitted saved view.
         try:
             wire = json.loads(request['messages'][1]['content'])['view']
@@ -101,6 +104,9 @@ class RelationsRepository(ToolsRepository):
             from .numbered_references import NumberedReferences
             if stored.get('input_projection')=='compact-selection-source-v3':
                 from .navigation_input import NavigationReferences
+                if stored.get('reference_registry'):
+                    from .stable_references import verify
+                    verify(self,stored['reference_registry'])
                 verified=NavigationReferences(stored)
             else:verified = NumberedReferences(stored)
             if numbered_references.receipt(view) != verified.receipt(stored):
@@ -111,6 +117,19 @@ class RelationsRepository(ToolsRepository):
             if self.VERSION not in (5,6) or wire_projection != WIRE_PROJECTION:
                 raise ContractError('unsupported wire projection')
             expected = compact_wire_view(expected, stored['phase'])
+        if minimal_input_projection is not None:
+            from . import compact_model_input as minimal
+            binding = stored.get('minimal_input_binding')
+            if (self.VERSION != 6 or wire_projection is None or minimal_input_projection != minimal.VERSION
+                    or not isinstance(binding, dict) or set(binding) not in ({'version', 'selection_refs'}, {'version','selection_refs','stable_references'}, {'version','selection_refs','stable_references','document_names'})
+                    or binding['version'] != minimal.VERSION or not isinstance(binding['selection_refs'], list)
+                    or any(not isinstance(r, str) for r in binding['selection_refs'])
+                    or not minimal.applies({'candidate_navigation': {'minimal_input': True}}, stored)):
+                raise ContractError('unsupported minimal input binding')
+            if 'document_names' in binding:
+                from .stable_references import verify_document_catalogue
+                verify_document_catalogue(stored)
+            expected = minimal.project(expected)
         if wire != expected or view != stored:
             raise ContractError('wire view differs from stored presentation')
         with self.transaction():
@@ -121,6 +140,10 @@ class RelationsRepository(ToolsRepository):
             if wire_projection is not None:
                 self.event('WIRE_PROJECTION', {'attempt_id': ident, 'projection': wire_projection,
                     'stored_view_hash': digest(stored), 'wire_view_hash': digest(wire)})
+            if minimal_input_projection is not None:
+                self.event('MINIMAL_INPUT_PROJECTION', {'attempt_id': ident, 'projection': minimal_input_projection,
+                    'stored_view_hash': digest(stored), 'wire_view_hash': digest(wire),
+                    'selection_refs_hash': digest(binding['selection_refs'])})
             return ident
 
     def item_visible(self, view_id, kind, ident, content_hash):

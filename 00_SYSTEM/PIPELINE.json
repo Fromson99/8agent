@@ -27,7 +27,8 @@
     "legal_llm_wiki": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_LLM_WIKI.md",
     "unified_legal_agent": "07_DOCS/REFERENCE/OPERATIONS/UNIFIED_LEGAL_AGENT_20261002.md",
     "minimum_unit_fulltext": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md",
-    "oracle_query_serving": "09_ARTIFACTS/AUDITS/20261019-oracle-query/IMPLEMENTATION_UTF8.txt"
+    "oracle_query_serving": "09_ARTIFACTS/AUDITS/20261019-oracle-query/IMPLEMENTATION_UTF8.txt",
+    "domain_profile_authoring": "07_DOCS/REFERENCE/OPERATIONS/DOMAIN_PROFILE_WORKFLOW_20261029.txt"
   },
   "contracts": {
     "runtime.request": {
@@ -412,123 +413,123 @@
   "engines": {
     "term-retrieve@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
-      "sha256": "ea2c8fa2e7d6fc2d2c4ed996263b4e4a2cbe726a296291a1de4eaa94948d7957"
+      "sha256": "bdfe7fd1064577711a8585820d778accef6dc87514cd4b49bf881ae7d3b969da"
     },
     "term-select@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
-      "sha256": "f352acaca17be4dbdb9134ba6f0a7b4b87ebd463d69a1731633243121ee7a799"
+      "sha256": "5a1951a028d18a28044c69b4e34d1d977a7239cb3207e5e1243e722099a68aae"
     },
     "term-assemble@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
-      "sha256": "a70790333d7df635bc1f5fba4a5e6be692a2f08fd8dfb9b365e95062959bb6fe"
+      "sha256": "2f31b894e36c7f2ccf23ad08dd136cf1740111d5f229a96281c0f51ce70cde8e"
     },
     "term-answer@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
-      "sha256": "84eaca308ae6ad1ac1fa571c319df8cb48193f7dc22d5359e5eea70144b996e8"
+      "sha256": "2eea61d09f868e3aa241bec57a835db1cf2c13a9d4bf620c7371ae7330ac8ab7"
     },
     "term-feedback@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
-      "sha256": "cc8d162888ec38f543bdf30c576b0988fc137779abbe8f346574263bd815d269"
+      "sha256": "4e820f7e7cd629bbb9660ba41af67f9e7f8c9a2dc4fc509c42c4375f24139613"
     },
     "term-load@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
-      "sha256": "be22fb6ae432db273142ed5a0f659adcd0eebfb50bfa3bcfe6dfd37a28448ea0"
+      "sha256": "6f79a9c7c50610fbb211ba0f910c212e2736370d753552c991d7be2999acb9ac"
     },
     "legal-retrieve@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
-      "sha256": "d711dc8a422117e83bbacdf0c90fac604c694c4a7a3675f9ef1c37831b83b154"
+      "sha256": "eb4df3cc5ad7399bc485b34395d9bda6be441926d38683a69d8287ffc2b5360c"
     },
     "legal-select@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
-      "sha256": "9ec72ecee555d0b6e960c25b7d762a4deccc26b0d3c75f4aeb790c68c12cca2e"
+      "sha256": "e99a72884ccf6590a6d15fcb5a1c8de8aafde6332d6401b94e0871b12abb5259"
     },
     "legal-assemble@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
-      "sha256": "6afd19b90d3620a2b7beb26936460d2d8f86e10417951026792e22a94402bf61"
+      "sha256": "6c3b753bd9bb127986caf0a740259e9fd9a05af193fc93522df35b327da82256"
     },
     "legal-answer@candidate-v1": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
-      "sha256": "17c5eb60c5a436f551c87910be26ad8e1a00effb7fb095a56491a07ba9172fc3"
+      "sha256": "111cee5c9aae52e1e0d60164636023a8f1c4e2f5151d0bb38513696cd598c09f"
     },
     "legal-v2-retrieve@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
-      "sha256": "7f41aeacae9d6841ba51a4c9f2da585ca5a502cbd537eed0b425c6cab004674f"
+      "sha256": "ba4f235f794e9ce7b9a89ec8c8944ddd4530ba13cbfe314566232511d7dedf78"
     },
     "legal-v2-select@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
-      "sha256": "1d7d2e795ccb7b1a7c06fa93db05bd61985f3ecc15e4ebff0120047056f0134a"
+      "sha256": "9ffed68675c5a5316c2d86a07d9ce05b785ba3a64fd231510f05b6bd2da61f22"
     },
     "legal-v2-assemble@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
-      "sha256": "e77feaa59cffccb981eeb3843a8f3893d201d0514ad2998a268be62dc96bcdef"
+      "sha256": "4497f9bdd96bfe0f73792b9bee05a1ca5ef2c351cb024a53aecd538b5ec5c9dc"
     },
     "legal-v2-answer@2.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
-      "sha256": "ec77f69583493f7797f0d670ad300aa0b6758dda280cc68fab5695129b05721b"
+      "sha256": "1d182ee2c14cb96670d67345c06cccf426e5462f1942c1c3a02bea6f1034be46"
     },
     "legal-v3-retrieve@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
-      "sha256": "14d409352d0890878fe83d41bd9e136ae637e2a4b3e2322bc42c03cd228f616a"
+      "sha256": "2dfbf8c82cc22d70dece7cd20331a2db67bdc69d757e937c5383f86b9ae3e4d0"
     },
     "legal-v3-select@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
-      "sha256": "691b2d433f962ae6bdd7f4209472efc2d373b56e072a584145ad3bb163f373b0"
+      "sha256": "77978ed387cc5335f36a4155e07efcd232ad554d399fb545660b1d6baef296ea"
     },
     "legal-v3-assemble@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
-      "sha256": "cf700aa2aa2355b3e25d02795ab3faee620f927d1077132b92a330c973e8ae91"
+      "sha256": "4a5ef78667d2c292908bc0d1736c6e0d5021e9602d46e49c172b5d786b8d51f6"
     },
     "legal-v3-answer@3.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
-      "sha256": "7464f8e1bc8e372b2d1b49fa40aa35e8e246df9f74b81d4d09a82511756d69aa"
+      "sha256": "108e3297332ee8928fd1ed0cbc17dea487a4f0c4c7b4662d86b5489c6f3adfa5"
     },
     "legal-v4-retrieve@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
-      "sha256": "629551831a8f0c5ca9b1eb1a572713adebda31a7c03d985162ce8c6d3031a2fd"
+      "sha256": "a83990f057f1234e43aaa3f48e25f54093f15886fc351adf32b25088b2d283a7"
     },
     "legal-v4-select@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
-      "sha256": "c311137d6d797f7b2262df1e7af60392ab845018f8d8f5f4f4b049dfe9b373a5"
+      "sha256": "c549b15d04bcfb3cb6af4b9469def7dd1dbd8e22909410edb55014644d9c6c4f"
     },
     "legal-v4-assemble@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
-      "sha256": "46cdbcac5deb8f5c7e45d84141b294f773f7790e82a13d9ae5651a7ddd1f53dd"
+      "sha256": "51b3a08af3ac7a536411a2697383fa7b1685be7d55d966965bfe167d794e1ff3"
     },
     "legal-v4-answer@4.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
-      "sha256": "da9823367a851afe161f468ad1fab591ffe28772dac18e0098d7bb755c893c48"
+      "sha256": "4096d02d3683120076fe8c5c172c44fc2ead832f86169f64a7497fbe028c1044"
     },
     "legal-v5-retrieve@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
-      "sha256": "984ea6811aa736685e4fa9e61f75609b241cb2352f527fc95a3e2d3f9c53d5d2"
+      "sha256": "76792342e1c38d325a512295bb560b0fe864055cfe9b7fa64b5158d89714681e"
     },
     "legal-v5-select@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
-      "sha256": "7b31f58a3538b752bbf3b4259a435b82e8c1564492643050336eb75241b2bd32"
+      "sha256": "5861d2991245e888e908ef890bd9572b88952858822268763c02bf989b79843c"
     },
     "legal-v5-assemble@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
-      "sha256": "68632176910911abe3b4f1dcf3d55ba46f00327c5c04eb584d32ea5edafd2b45"
+      "sha256": "6422e2d8475412473fea3525f4a27d70bce5b76190ae1f895d26e45cfb579a1d"
     },
     "legal-v5-answer@5.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
-      "sha256": "01eb258b6dcaa8d105265938e9349676e861c756a5f160fb13a3cda52a780a2e"
+      "sha256": "cc68cbb56bc2d5a3ccdfe6478f6bee5dcdb21005fe23c07623a05564c24a225e"
     },
     "legal-v6-retrieve@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
-      "sha256": "a7fd847038c41765c3e3800faaf32715c042d95f1ee8aca8c50508426bf85ac8"
+      "sha256": "7fb7376342bb1c719b5474b96835ba4b34d723f36744ce5887f145199fb3542a"
     },
     "legal-v6-select@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
-      "sha256": "f121f97e2b18a5dd9e9e44d3869de060723b89958b2bca7af608e35f1abbbcad"
+      "sha256": "71a2966a9256a1a1681e40b72ba2c984a016425f06ac8fe7464e94bdbd1cc19c"
     },
     "legal-v6-assemble@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
-      "sha256": "0154c6fb3f76d7999e1ac74a1856fe1e114c610b480d1519645a0b9a97aa1560"
+      "sha256": "362ac2158bf696965c35b888e6d79106b45eea90a1ff8c1e9e5b59d6c0829ebe"
     },
     "legal-v6-answer@6.0.0": {
       "manifest": "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
-      "sha256": "41a31364004bdcd46d7e3ef16b007ff121b60537f196b20bea11e2b317982ace"
+      "sha256": "24b1b5a7ad8057b0fd2b092d45cfc3642aaab7a7087feb21443bca639e66da14"
     }
   },
   "profiles": {
@@ -1869,13 +1870,13 @@
         "id": "risk_team_compare_workflow",
         "version": "1.20.8",
         "manifest": "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json",
-        "sha256": "4d71e225a41e3c16e64a7718dde3f62a98357c87a382921d23ea71b906a55c37"
+        "sha256": "8885536ced9458b8a6b4b53ca48b44dde9c0f360a14faa6c45204c4cb6a9adf4"
       },
       {
         "id": "internal_basis_discovery_workflow",
         "version": "1.2.1",
         "manifest": "02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json",
-        "sha256": "9150a40649b99984b1af68b66b5e7e9851c0129a5cc917368787e3f83fe715bd"
+        "sha256": "eeff654c782cea969a4d41420beca9846ef620d65c3d700b6a1b00e75c471459"
       }
     ],
     "entrypoints": [

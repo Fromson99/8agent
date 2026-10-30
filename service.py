@@ -157,6 +157,24 @@ def _genos_v5_admission_profile(value):
     return {**value, 'max_concurrent_requests_per_process': 0}
 
 
+def _ontology_environment():
+    raw = os.environ.get('GENOS_RAG_ONTOLOGY_ENABLED', '').strip().lower()
+    if not raw:return None
+    if raw in ('on', 'true', '1'):return True
+    if raw in ('off', 'false', '0'):return False
+    raise ValueError('GENOS_RAG_ONTOLOGY_ENABLED must be on or off')
+
+
+def _ontology_status(value):
+    policy = value.get('candidate_navigation', {})
+    context = policy.get('ontology_context', {'mode': 'A0'})
+    enabled = policy.get('ontology_enabled') is True
+    configured = context.get('mode', 'A0') != 'A0'
+    return {'enabled': enabled, 'data_configured': configured,
+            'active': enabled and configured,
+            'fallback': 'ordinary-rag' if not (enabled and configured) else None}
+
+
 def _investigation_profile(value):
     """Apply operator budgets to a copy; request bodies cannot override them."""
     result = {**value, 'candidate_navigation': dict(value.get('candidate_navigation', {}))}
@@ -183,6 +201,12 @@ def _investigation_profile(value):
             raise ValueError(f'{name} must exceed tool_finalization_reserve ({value["tool_finalization_reserve"]})')
         target = result['candidate_navigation'] if nested else result
         target[key] = limit
+    ontology = _ontology_environment()
+    if ontology is not None:
+        result['candidate_navigation']['ontology_enabled'] = ontology
+        if ontology:result['candidate_navigation']['ontology_direct_assessment'] = True
+    if result['candidate_navigation'].get('ontology_enabled') and os.environ.get('GENOS_RAG_ONTOLOGY_CONFIG','').strip() and result['candidate_navigation'].get('ontology_context',{'mode':'A0'}) == {'mode':'A0'}:
+        result['candidate_navigation']['ontology_context'] = {'mode':'DB'}
     return result
 
 
@@ -386,6 +410,9 @@ def _oracle_factory():
     if _APP is None:
         _APP=Factory(sys.modules.get(__name__) or SimpleNamespace(**globals()))
         _BINDING=dict(_APP.binding)
+        _BINDING.update(ontology_environment=_ontology_environment(), ontology=_ontology_status(_APP.profile))
+    elif (_BINDING or {}).get('ontology_environment') != _ontology_environment():
+        raise RuntimeError('ontology setting changed; restart this process')
     if not isinstance(_APP,Factory):
         raise RuntimeError('data provider changed; restart before selecting Oracle')
     return _APP
@@ -401,6 +428,8 @@ def application():
     if getattr(_APP,'is_oracle_query_factory',False):
         raise RuntimeError('data provider changed; restart before selecting SQLite')
     if _APP is not None:
+        if (_BINDING or {}).get('ontology_environment') != _ontology_environment():
+            raise RuntimeError('ontology setting changed; restart this process')
         from semantic_runtime.oracle_dp import enabled as dp_enabled, environment_binding as dp_environment_binding
         if dp_enabled() != ((_BINDING or {}).get('mode') == 'oracle-dp'):
             raise RuntimeError('data provider changed; restart this process before reusing the application')
@@ -526,6 +555,8 @@ def application():
                 from semantic_runtime.legal_agent.workflow_tiers_policy import profile as budget_profile
             options['legal_agent_profile'] = budget_profile(_investigation_profile(options['legal_agent_profile']))
             binding.update(
+                ontology_environment=_ontology_environment(),
+                ontology=_ontology_status(options['legal_agent_profile']),
                 investigation_budget=_investigation_budget(options['legal_agent_profile']),
                 effective_profile_sha256=hashlib.sha256(json.dumps(options['legal_agent_profile'],
                     sort_keys=True, separators=(',', ':')).encode()).hexdigest(),

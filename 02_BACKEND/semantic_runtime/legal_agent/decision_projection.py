@@ -2,6 +2,7 @@
 from copy import deepcopy
 import json
 from jsonschema import validate
+from .schema_preparation import validate as prepared_validate, OrderedSchemaValidators
 from .errors import ProposalError
 from .output_contract import OutputContractError, issue
 from ..contracts import digest
@@ -109,8 +110,9 @@ def prepare(schema,view=None):
     from . import completion_contracts as cc
     if (view or {}).get('completion_contract') in (cc.V5,cc.V6,cc.V7,cc.V8):
         wire=gap_resolution_wire(wire)
+    validators = OrderedSchemaValidators()
     def expand(raw):
-        validate(raw,wire)
+        validators.validate(raw,wire)
         value=deepcopy(raw)
         for name,default in neutral.items():
             if name in schema.get('properties',{}):value.setdefault(name,deepcopy(default))
@@ -141,7 +143,7 @@ def prepare(schema,view=None):
                     raise ProposalError('supplied request quote conflicts with selected issue')
                 row['request_quote']=quote
                 row.setdefault('source_quote','')
-        validate(value,schema)
+        validators.validate(value,schema)
         return value
     return wire,expand,{'version':'action-constants-v3','binding_hash':digest([defaults,issue_quotes,sorted(linked_actions),sorted(single_actions)]),
                        'single_target_actions':sorted(single_actions),'system_derived_fields':['targets','exploration.target','issue_refs','request_quote','source_quote'],
@@ -197,7 +199,7 @@ def read_candidate_rows(data, candidates, matcher=None):
                 expected = candidates[target]['identity'].get('document_id')
                 if document_id is not None and expected is not None and document_id != expected:
                     raise ContractError('read candidate document differs from offered action')
-                add(target, {'document': document, **{k: value[k] for k in hint_fields if k in value}})
+                add(target, {'document': document, 'document_id':expected or document_id, **{k: value[k] for k in hint_fields if k in value}})
             for name, child in value.items():
                 if name not in ('sources', 'investigation_chain'):
                     walk(child, document, document_id)
@@ -205,6 +207,7 @@ def read_candidate_rows(data, candidates, matcher=None):
             for child in value:
                 walk(child, document, document_id)
 
+    walk(data.get('initial_vector_candidates', []))
     walk(data.get('laws', []))
     walk(data.get('structure_catalogue', {}))
     walk(data.get('document_term_candidates', {}))
@@ -310,6 +313,7 @@ def choose_read(inv, data, actions, phase):
     from .law_navigation import decision_schema
     from . import request_repair as rr
     from . import answer_progress as progress
+    from . import investigation_supervisor as supervisor
     if not inv.modern or not data.get('issues'):return None
     current={s['id']:s for s in data.get('sources',[]) if s.get('text')}
     basis=sorted(set(current)&{b['id'] for b in data.get('basis',[]) if b.get('branch_id')})
@@ -353,10 +357,23 @@ def choose_read(inv, data, actions, phase):
     elif not basis:
         alternatives.append(obj({'choice':{'const':'PENDING'},'reason':reason}))
         bindings['PENDING']=next(b for b in canonical['anyOf'] if b['properties']['next_action']['const']=='PENDING')
+    from . import source_goal_control as goals
+    if goals.enabled(inv):
+        goal_ids=[g['goal_id'] for g in goals.state(inv,data).get('source_goals',[]) if g['status'] in ('REQUIRED','BLOCKED')]
+        if goal_ids:alternatives.append(obj({'choice':{'const':'SOURCE_GOAL'},'goal_id':{'enum':goal_ids}}))
     schema={'type':'object','anyOf':alternatives}
     from . import read_judgment as judgment
     judgment_context = judgment.context(inv,data,key) if judgment.enabled(inv) else None
     if judgment_context is not None:schema=judgment.attach(schema,judgment_context,current,issues)
+    from . import source_goal_control as goals
+    supervisor_enabled=supervisor.enabled(inv)
+    if goals.enabled(inv):schema=goals.attach(schema,inv,data,actions)
+    supervisor_action_schema=deepcopy(schema)
+    for branch in supervisor_action_schema['anyOf']:
+        for field in ('read_review','source_targets','source_goal_exclusions'):
+            branch['properties'].pop(field,None)
+        branch['required']=[k for k in branch['required'] if k not in ('read_review','source_targets','source_goal_exclusions')]
+    if supervisor_enabled:schema=supervisor.attach(schema,inv,data,current,key)
     progress_enabled = progress.enabled(inv)
     if progress_enabled:schema=progress.attach(schema,inv,data,current,key)
     payload={'request':inv.question,'current_request':data.get('current_request',inv.question),
@@ -398,16 +415,22 @@ def choose_read(inv, data, actions, phase):
             'last_recovery_selection':(inv.p.get('no_progress_recovery',{}).get('status')=='RESERVED'
                 and inv.p['no_progress_recovery'].get('selection_count',1)>=3)}}
     def expand(value):
-        validate(value,schema)
+        prepared_validate(value,schema,owner=inv.s)
+        if goals.enabled(inv):
+            goals.validate(value,inv,data,actions)
+            goals.validate_recovery_choice(inv,data,actions,value)
         if judgment_context is not None:
-            value,_=judgment.normalize_review(value,judgment_context)
-            judgment.validate_review(value,judgment_context,current,issues)
+            reviewed,_=judgment.normalize_review(value,judgment_context)
+            judgment.validate_review(reviewed,judgment_context,current,issues,owner=inv.s)
+        if supervisor_enabled:progress.validate_review(value,current,data['issues'],check_action=False)
         if progress_enabled:
             value,_=progress.resolve_action(inv,data,value)
-            validate(value,schema)
+            prepared_validate(value,schema,owner=inv.s)
             progress.validate_review(value,current,data['issues'],data=data,inv=inv)
             value=progress.bind_action(value,data,inv)
-        choice=value['choice'];branch=bindings[choice];kind=branch['properties']['next_action']['const']
+        choice=value['choice']
+        if choice=='SOURCE_GOAL':return goals.from_goal_id(inv,data,actions,value['goal_id'])
+        branch=bindings[choice];kind=branch['properties']['next_action']['const']
         decision={}
         for name,rule in branch['properties'].items():
             if 'const' in rule:decision[name]=rule['const']
@@ -434,7 +457,9 @@ def choose_read(inv, data, actions, phase):
             if 'structure_filter' in value:decision['structure_filter']=deepcopy(value['structure_filter'])
         inv.validate(decision,data,actions)
         return decision
-    def invoke(payload,attempt):
+    from . import need_continuity
+    observe_need = need_continuity.observe_progress(inv,data,schema,key) if supervisor_enabled else None
+    def invoke(payload,attempt,wire_schema=None,page_suffix=''):
         from .law_name_recovery import PROMPT as name_recovery_prompt
         from .structure_selection import PROMPT as selection_prompt
         scope_prompt = ('\nconnection_scope_choices가 있으면 현재 원문이 요청에 어떤 도움을 주는지 판단하고, '
@@ -448,28 +473,65 @@ def choose_read(inv, data, actions, phase):
             '필요한 법령명·좌표를 알면 LOCATE/CATALOG_SEARCH → READ로 계속한다. '
             '실패한 같은 연결 조회를 반복하지 않는다. 원문을 읽은 다음에는 그 내용으로 다시 다음 행동을 판단한다.'
             if inv.policy.get('selected_connection_scope') else '')
-        try:return inv.invoke((judgment.PROMPT+'\n' if judgment_context is not None else '')+(progress.PROMPT+'\n' if progress_enabled else '')+EXECUTABLE_CHOICE_PROMPT+scope_prompt+'\n'+name_recovery_prompt+'\n'+selection_prompt+
-            '\nLOCATE에서 structure_filter={selection:구조화 선택}을 쓴다. structure_selection_progress는 실제 전달 범위이며 미전달 항목을 전체 확인으로 표현하지 않는다.',
-            payload,schema,phase+'-read-choice'+('-repair' if attempt else ''),min(180,inv.left()))
+        from . import compact_model_input as minimal
+        prompt = (minimal.NAVIGATION_PROMPT if minimal.enabled(inv.s.profile) else
+            EXECUTABLE_CHOICE_PROMPT+scope_prompt+'\n'+name_recovery_prompt+'\n'+selection_prompt+
+            '\nLOCATE에서 structure_filter={selection:구조화 선택}을 쓴다. structure_selection_progress는 실제 전달 범위이며 미전달 항목을 전체 확인으로 표현하지 않는다.')
+        # Judgment/progress semantics keep their existing authoritative contract.
+        prompt = ((judgment.NEW_PROMPT if judgment_context.get('wire_version')==judgment.NEW_WIRE_VERSION else judgment.PROMPT)+'\n' if judgment_context is not None else '')+(progress.PROMPT+'\n' if progress_enabled else '')+prompt
+        if supervisor_enabled:prompt=supervisor.PROGRESS_PROMPT+'\n'+prompt
+        if goals.enabled(inv):prompt=goals.PROMPT+'\n'+prompt
+        call_phase = phase+'-read-choice'+page_suffix+('-repair' if attempt else '')
+        try:
+            value = inv.invoke(prompt, payload, wire_schema if wire_schema is not None else schema,
+                call_phase,min(180,inv.left()))
         finally:
             from . import evidence_inventory as inventory
-            if inv.control and inventory.reconcile_delivery(inv.s,inv.p,data,phase+'-read-choice'):inv.save()
+            if inv.control and inventory.reconcile_delivery(inv.s,inv.p,data,phase+'-read-choice'+page_suffix):inv.save()
+        if observe_need is not None:observe_need(value,call_phase)
+        return value
     if judgment_context is not None:payload['read_judgments']=judgment_context
     if progress_enabled:payload['answer_progress_context']=progress.context(inv,data)
-    value=output.bounded_decision(inv.s.repo,'read-choice',payload,schema,invoke,expand,
-        can_repair=lambda:rr.gap_review_capacity(inv) is None,
-        identity={'binding':inv.p['binding'],'presentation':data['presentation_id'],'key':key},
-        correction_scope=judgment.correction_scope(judgment_context) if judgment_context is not None else None)
+    if supervisor_enabled:
+        payload['answer_progress_context']=supervisor.context(inv,data)
+        payload['candidate_frontier']=supervisor.frontier(inv,data)
+    if goals.enabled(inv):
+        payload['source_goal_context']=goals.context(inv,data)
+        payload['source_target_options']=goals.public_options(data,actions)
+    from . import read_candidate_pages as pages
+    correction_scope = judgment.correction_scope(judgment_context) if judgment_context is not None else None
+    def recover(raw,error):
+        from .independent_read_recovery import plan
+        return plan(inv,data,judgment_context or {},actions,raw,error)
+    recovery=recover if judgment_context is not None and inv.policy.get('independent_read_recovery') else None
+    if pages.enabled(inv):
+        def prepare_page(view):
+            targets=[r['target'] for r in view['read_candidates']]
+            if not hasattr(inv, 'prepare_read_details'):return view
+            prepared=inv.prepare_read_details(data,candidates,targets)
+            visible={k:candidates[k] for k in targets}
+            detailed={r['target']:r for r in read_candidate_rows(prepared,visible,getattr(inv.s,'matcher',None))}
+            return {**view,'read_candidates':[detailed[k] for k in targets]}
+        value = pages.choose(inv,payload,schema,invoke,expand,key=key,correction_scope=correction_scope,prepare_page=prepare_page,recover=recovery)
+    else:
+        value=output.bounded_decision(inv.s.repo,'read-choice',payload,schema,invoke,expand,
+            can_repair=lambda:rr.gap_review_capacity(inv) is None,
+            identity={'binding':inv.p['binding'],'presentation':data['presentation_id'],'key':key},
+            correction_scope=correction_scope,recover=recovery)
     decision=expand(value)
     if judgment_context is not None:
         normalized,changes=judgment.normalize_review(value,judgment_context)
         judgment.record(inv,data,normalized,key,judgment_context,actions,wire_value=value,normalizations=changes)
+    if goals.enabled(inv):goals.close_gaps(inv,data,value)
     original=deepcopy(value);correction=None
     if progress_enabled:value,correction=progress.resolve_action(inv,data,value)
     if progress_enabled and progress.record(inv,data,value,key,original=original,correction=correction,actions=actions):
         inv.s.repo.event('ANSWER_PROGRESS_HANDOFF',{'reason':'NO_ANSWER_PROGRESS','proposal_hash':digest(value),
             'choice_not_executed':value['choice'],'originals_preserved':True})
         raise progress.ProgressHandoff('NO_ANSWER_PROGRESS')
+    if supervisor_enabled:
+        decision=supervisor.gate(inv,data,actions,payload,value,decision,supervisor_action_schema,expand,key,
+            prepare_page=prepare_page if pages.enabled(inv) else None)
     inv.p.setdefault('executed_compact_choices',[]).append(deepcopy(value))
     inv.save()
     inv.s.repo.event('READ_CHOICE_SELECTED',{'key':key,'choice':value,'canonical_hash':digest(decision),'automatic_adoption':False})
@@ -524,7 +586,7 @@ def gap_resolution_wire(schema):
             branches=[]
             for status in props['status'].get('enum',[]):
                 branch=deepcopy(node);branch['properties']['status']={'const':status}
-                fixed=('basis_refs','action_refs') if status in ('NOT_NEEDED','UNRESOLVED') else ('basis_refs',) if status=='NOT_AVAILABLE' else ()
+                fixed=('basis_refs','action_refs') if status=='UNRESOLVED' else ('basis_refs',) if status=='NOT_AVAILABLE' else ()
                 for name in fixed:
                     branch['properties'][name]={'type':'array','maxItems':0,'items':deepcopy(props[name]['items'])}
                     if name not in branch['required']:branch['required'].append(name)

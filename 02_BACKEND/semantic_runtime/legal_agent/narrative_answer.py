@@ -7,9 +7,11 @@ from copy import deepcopy
 import json
 import re
 from jsonschema import validate
+from ..contracts import digest
 from .errors import ContractError, ProposalError
 
 VERSION = 'grounded-narrative-v1'
+PRESERVED_VERSION = 'accepted-content-v1'
 PHASE = 'memory-compose'
 SCHEMA = 'GroundedAnswer'
 
@@ -18,7 +20,7 @@ PROMPT = '확인된 accepted_claims와 인용 원문 sources로 사용자 질문
 ASSESS_GUIDANCE = '최종 답변에 필요한 구체 결론·이유·주체·수치·기한·절차·예외를 근거에 연결해 작성한다. 의무를 의무의 발생 조건으로 바꾸지 않는다.'
 
 def enabled(profile):
-    return profile.get('answer_presentation', 'structured') == VERSION
+    return profile.get('answer_presentation', 'structured') in (VERSION, PRESERVED_VERSION)
 
 
 def schema(claim_ids):
@@ -73,7 +75,10 @@ def input_data(question, assessment, sources, format):
                        'source_ids':list(dict.fromkeys(r['source_id'] for r in refs))})
     return {'question':question,'requested_format':format,'answer_presentation':VERSION,
             'answer_claim_ids':[c['claim_id'] for c in claims], 'accepted_claims':claims,
-            'sources':list(evidence.values()),'limitations':deepcopy(assessment['limitations'])}
+            'sources':list(evidence.values()),'limitations':deepcopy(assessment['limitations']),
+            'issue_assessments':deepcopy(assessment.get('issue_assessments',[])),
+            'answer_coverage':assessment.get('answer_coverage'),
+            'disposition':assessment.get('disposition')}
 
 
 def plan(assessment, value):
@@ -208,3 +213,32 @@ class TokenStream:
     def feed(self, fragment):
         self.validation.feed(fragment)
         self.projection.feed(fragment)
+
+
+def preserved(profile):
+    return profile.get('answer_presentation') == PRESERVED_VERSION
+
+
+def preserved_plan(assessment, requested_format=None, issues=None):
+    """Choose layout only. Accepted text is the sole author of legal content."""
+    from . import completion_contracts as cc
+    value = cc.default_plan(assessment, requested_format, issues)
+    if requested_format == 'bullets':
+        value['layout'] = 'bullets'
+    value.update(presentation=PRESERVED_VERSION,
+                 accepted_assessment_hash=digest(assessment))
+    verify_preserved_plan(assessment, value)
+    return value
+
+
+def verify_preserved_plan(assessment, value):
+    from .completion_v5 import verify_content
+    allowed = {'layout', 'claim_order', 'issue_sections', 'presentation',
+               'accepted_assessment_hash', 'gap_reason_presentation'}
+    if (value.get('presentation') != PRESERVED_VERSION or set(value) - allowed
+            or value.get('accepted_assessment_hash') != digest(assessment)):
+        raise ContractError('preserved answer plan differs from accepted assessment')
+    for claim in assessment['claims']:
+        # Recompile subject, scope, nested conditions, norms and exceptions; do
+        # not trust a redundant text field that no longer matches its content.
+        verify_content(claim)

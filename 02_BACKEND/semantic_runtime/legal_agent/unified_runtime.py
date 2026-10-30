@@ -92,7 +92,7 @@ def result_port(pipeline,session,cases,result):
             meta['source_reply_contract'] = composition['source_excerpt_reply']['schema_version']
         if composition.get('composition_plan',{}).get('presentation'):
             meta['narrative_presentation']={'version':composition['composition_plan']['presentation'],
-                'streaming':'text-deltas-during-generation', 'semantic_quality_certified':False}
+                'streaming':('verified-complete-answer' if composition['composition_plan']['presentation'] == 'accepted-content-v1' else 'text-deltas-during-generation'), 'semantic_quality_certified':False}
         assessment=parts['ASSESS']['payload']
         meta['accepted_outcome']={'schema_version':'accepted-outcome-v1',
             'basis':'committed-ASSESS-and-verified-COMPOSE','assessment_hash':digest(assessment),
@@ -209,7 +209,7 @@ def execute(pipeline,body,principal,options,cases):
     prepare(session.work,port,options.get('release'),pipeline.contracts,metadata=extra)
     key=cases.request_key(body,principal)
     with cases.transaction():
-        cases.db.execute('UPDATE request SET response=? WHERE id=?',(encoded({**result,'public_run_id':session.context.run_id}),key))
+        cases.db.execute('UPDATE request SET response=? WHERE id=?',(cases.stored({**result,'public_run_id':session.context.run_id}),key))
     envelope=export(session.work,runtime/'runs')
     finish_shortcut(cases,result,principal,envelope,session.work)
     if (hasattr(cases,'procedure') and result.get('status')=='READY' and not cases.flags.get('core_evidence_route')

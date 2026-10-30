@@ -137,9 +137,16 @@ class GenosTransport:
             raise TransportError(message, retryable=True, unknown=True) from exc
 
     def send_once(self, *, body, ticket):
-        with asyncio.Runner() as runner:
-            return runner.run(self._request('POST', '/chat/completions', body,
-                                            ticket['remaining_seconds'], attempt_id=ticket.get('attempt_id')))
+        from .wire_schema import project_request
+        wire, receipt = project_request(body)
+        try:
+            with asyncio.Runner() as runner:
+                response = runner.run(self._request('POST', '/chat/completions', wire,
+                    ticket['remaining_seconds'], attempt_id=ticket.get('attempt_id')))
+        except TransportError as exc:
+            exc.response = {**(exc.response or {}), 'schema_projection': receipt}
+            raise
+        return {**response, 'schema_projection': receipt}
 
     async def _stream_request(self, body, ticket, on_content):
         """One HTTP send; reconstruct the canonical response and retain SSE events."""
@@ -251,8 +258,15 @@ class GenosTransport:
             raise TransportError('invalid model stream', unknown=True, response=partial()) from exc
 
     def send_stream_once(self, *, body, ticket, on_content):
-        with asyncio.Runner() as runner:
-            return runner.run(self._stream_request(body, ticket, on_content))
+        from .wire_schema import project_request
+        wire, receipt = project_request(body)
+        try:
+            with asyncio.Runner() as runner:
+                response = runner.run(self._stream_request(wire, ticket, on_content))
+        except TransportError as exc:
+            exc.response = {**(exc.response or {}), 'schema_projection': receipt}
+            raise
+        return {**response, 'schema_projection': receipt}
 
     def validate_model(self):
         # Startup diagnostic only. Never discover or switch models during a query.

@@ -337,11 +337,18 @@ class ReverseMatcher:
             uid = self.units[key]['parent']
         return []
 
-    def starts(self, question, scope):
+    def _document_matches(self, question, scope):
         scope=set(self.tools.validate_scope(scope))
         docs=self.document_names.match(question)
         docs=[h for h in docs if not any(x['start']<=h['start'] and x['end']>=h['end'] and len(x['key'])>len(h['key']) for x in docs)]
-        named={d for h in docs for d in h['values'] if d in scope}
+        return scope, docs, {d for h in docs for d in h['values'] if d in scope}
+
+    def document_starts(self, question, scope):
+        _, _, named = self._document_matches(question, scope)
+        return [{'id':d,'name':self.documents[d],'document_context':self.document_context.get(d,{})} for d in sorted(named)]
+
+    def starts(self, question, scope):
+        scope, docs, named = self._document_matches(question, scope)
         # A glossary surface or structure title strictly inside a matched law title or
         # abbreviation is part of that name (자본시장법 -> 자본시장 + 법), not a question concept.
         titles=[(h['start'],h['end']) for h in docs if h['key'] in getattr(self,'title_keys',()) and any(d in scope for d in h['values'])]

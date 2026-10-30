@@ -23,7 +23,7 @@ def profile(value, *, require_model=False):
     if type(p['bounded_source_selection_enabled']) is not bool: raise ContractError('bounded_source_selection_enabled must be bool')
     if type(p['final_review_enabled']) is not bool: raise ContractError('final_review_enabled must be bool')
     if p['request_entry_policy'] not in ('legacy','fused-v1','fused-title-v1'):raise ContractError('unknown request entry policy')
-    if p['answer_presentation'] not in ('structured','grounded-narrative-v1'):raise ContractError('unknown answer presentation')
+    if p['answer_presentation'] not in ('structured','grounded-narrative-v1','accepted-content-v1'):raise ContractError('unknown answer presentation')
     from .law_candidates import validate_policy
     p['candidate_navigation']=validate_policy(p['candidate_navigation'])
     for k in set(DEFAULT_PROFILE)-set(v3.DEFAULT_PROFILE)-{'question_obligations_enabled', 'numbered_references_enabled', 'bounded_source_selection_enabled', 'final_review_enabled', 'candidate_navigation', 'request_entry_policy', 'answer_presentation'}:

@@ -341,9 +341,8 @@ def refresh_limitations(value, issues, stop_reason=None, *, closed=None, notes=(
     if stop_reason == 'ASSESSMENT_OUTPUT_LIMIT':
         items.append({'id':'L-review-incomplete', 'kind':'EXECUTION_LIMIT', 'issue_id':None,
             'text':'원문은 확보했으나 답변 검토가 출력 한도에서 끝나 완료하지 못했습니다. 아래 원문은 확정된 법률 판단이 아닙니다.'})
-    elif stop_reason and not items:
-        items.append({'id': 'L-stop', 'kind': 'EXECUTION_LIMIT', 'issue_id': None,
-                      'text': '확인한 원문 범위에서 답변하며, 나머지 범위는 확인하지 못했습니다.'})
+    # An investigation stop is diagnostic history, not evidence of an unread scope.
+    # Preserve it below; user limitations require a material gap or incomplete final review.
     value['limitation_items'] = list({r['id']: r for r in items}.values())
     # Detailed gap identities stay separate; identical display text is emitted once.
     value['limitations'] = list(dict.fromkeys(r['text'] for r in value['limitation_items']))
@@ -405,7 +404,7 @@ def internal_schema(base, stage):
     if stage == 'COMPOSE':
         extra.update(composition_plan={'type': 'object'}, assessment_hash={'type': 'string'})
     schema['properties'].update(assessment_basis={'type':'object'},model_proposal={'type':'object'},
-                                read_judgment_review={'type':'object'})
+                                read_judgment_review={'type':'object'},requirement_review={'type':'object'})
     schema['properties']['source_excerpt_reply'] = obj({
         'schema_version': {'const': SOURCE_REPLY_CONTRACT},
         'sources': {'type': 'array', 'minItems': 1, 'items': obj({
@@ -482,6 +481,9 @@ def displayed_limitations(assessment, plan):
 
 
 def render(assessment, plan):
+    from .narrative_answer import PRESERVED_VERSION, verify_preserved_plan
+    if plan.get('presentation') == PRESERVED_VERSION:
+        verify_preserved_plan(assessment, plan)
     claims = {c['claim_id']: c for c in assessment['claims']}
     order = plan.get('claim_order', [])
     if len(order) != len(claims) or set(order) != set(claims):
@@ -558,6 +560,7 @@ def compose(assessment, plan):
     return {**({'assessment_basis': deepcopy(assessment['assessment_basis'])} if 'assessment_basis' in assessment else {}),
             **({'source_excerpt_reply': deepcopy(assessment['source_excerpt_reply'])} if 'source_excerpt_reply' in assessment else {}),
             **({'read_judgment_review': deepcopy(assessment['read_judgment_review'])} if 'read_judgment_review' in assessment else {}),
+            **({'requirement_review': deepcopy(assessment['requirement_review'])} if 'requirement_review' in assessment else {}),
             'text': render(assessment, plan), 'claims': deepcopy(assessment['claims']),
             'limitations': deepcopy(assessment['limitations']),
             'completion_contract': assessment.get('completion_contract', V1),
@@ -573,6 +576,7 @@ def verify_composition(assessment, answer):
             or answer.get('claims') != assessment['claims']
             or answer.get('source_excerpt_reply') != assessment.get('source_excerpt_reply')
             or answer.get('read_judgment_review') != assessment.get('read_judgment_review')
+            or answer.get('requirement_review') != assessment.get('requirement_review')
             or answer.get('limitations') != assessment['limitations']
             or answer.get('limitation_items') != assessment['limitation_items']
             or answer.get('stop_reason') != assessment.get('stop_reason')

@@ -21,6 +21,8 @@ def resources(agent,scope):
         matcher=Matcher(store,tools,glossary,document_aliases=aliases,origin_projection=projection)
         matcher.fulltext=matcher.unit_fulltext=UnitIndex(tools.request)
         matcher.fulltext_db=matcher.unit_fulltext_db=matcher.fulltext
+        from .initial_vector import Retriever,mode
+        if mode()!='keyword':matcher.initial_vector=Retriever(tools.request)
         yield index,tools,glossary,matcher
         store.check_unchanged();glossary.check_unchanged()
     finally:

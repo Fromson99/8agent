@@ -1,4 +1,5 @@
 """Full Pipeline question/answer calls and verified return packages for workflows."""
+from .legal_agent import journal_storage
 import json
 from pathlib import Path
 from .contracts import digest
@@ -24,7 +25,7 @@ def verify_returns(port):
             root=port.services.runtime/'workflows'/port.session.context.run_id/'children'
             if not path.is_relative_to(root.resolve()) or not path.is_file():
                 raise ContractError('saved child journal outside workflow')
-            child=sqlite3.connect(path.as_uri()+'?mode=ro',uri=True);child.row_factory=sqlite3.Row
+            child=journal_storage.connect(path.as_uri()+'?mode=ro',uri=True);child.row_factory=journal_storage.row
             try:
                 run=child.execute('SELECT * FROM run').fetchone()
                 observations=[dict(r) for r in child.execute('SELECT observation_id,request_json,result_json FROM observation ORDER BY created_seq')]
@@ -45,7 +46,7 @@ def verify_returns(port):
 def failed_child_receipt(port, action, call_id):
     """A failed model operation is not reexecuted to reconstruct its read export."""
     rows=port.session.repo.db.execute(
-        "SELECT payload_json,payload_hash FROM event WHERE kind='WORKFLOW_CHILD_FAILED' AND json_extract(payload_json,'$.call_id')=? ORDER BY seq",
+        "SELECT payload_json,payload_hash FROM event WHERE kind='WORKFLOW_CHILD_FAILED' AND json_extract(journal_text(payload_json),'$.call_id')=? ORDER BY seq",
         (call_id,)).fetchall()
     if not rows:return None
     if len(rows)!=1:raise ContractError('ambiguous workflow child failure receipt')

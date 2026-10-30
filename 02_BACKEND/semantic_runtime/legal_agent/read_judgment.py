@@ -12,6 +12,13 @@ from .errors import ContractError, ProposalError
 
 VERSION = 'read-judgment-v1'
 WIRE_VERSION = 'read-judgment-delta-v2'
+NEW_WIRE_VERSION = 'read-judgment-new-entries-v3'
+NEW_PROMPT = '''D/J/E 번호는 이 조사 동안 고정된다. read_judgments.new_review_ids의 새 판단만 read_review.new_reviews의 J번호 키에 작성한다. 이미 있는 판단은 다시 쓰지 않는다. 실제 수정할 때만 revisions의 J번호 키에 operation과 변경 이유·근거를 쓴다. CORE/SUPPORT/CONDITIONAL/DEFER/EXCLUDE는 이번 답에 사용할 역할이다. finding은 실제 원문과 질문을 대조한 판단, basis_refs는 그 J번호에 연결된 source_refs다. 다른 J의 원문으로 대신하지 않는다.
+저장된 판단은 read_judgments.judgments에 있는 것뿐이다. rejected_decision은 채택되지 않은 응답이다. 보완에서도 new_review_ids에 남아 있는 J번호는 아직 새 판단이다. 그 J번호를 judgment_refs로 사용할 때는 같은 보완 응답의 new_reviews에도 판단을 작성해야 한다. 이전 거절 응답에 썼다는 이유로 생략하지 않는다.
+작성하지 않은 새 판단은 미완료로 남는다. 판단이 미완료여도 독립된 필요한 원문을 READ할 수 있다. DIRECT의 judgment_refs는 실제 의존하는 기존/새 판단이 있을 때만 쓴다. 판단을 근거로 하지 않은 직접 조사에는 []다. DEPENDENCY는 현재 원문과 유효한 판단을 연결한다. missing_need에는 이번 읽기로 확인할 내용을 쓴다.
+처음 쓰는 일반 판단은 operation을 생략하거나 SET으로 쓴다. 원문에 답이 없거나 추가 원문이 필요하다는 뜻으로 CONFLICT를 쓰지 않는다. CONFLICT는 서로 다른 두 판단이 실제로 충돌할 때만 쓰며 use=DEFER와 상대 판단 번호 conflicts_with가 필요하다. 이전 판단이 없는 새 판단에서 자기 번호를 conflicts_with로 쓰면 안 된다. SET이면 conflicts_with를 생략하거나 []로 쓴다.
+기존 판단·부족·충돌은 생략해도 보존된다. need_updates/conflict_updates는 실제 상태를 수정할 때만 작성한다. RESOLVED는 원문 근거가 필요하다. FOLLOW_CONNECTION 등 DEPENDENCY 행동에는 그 이유로 사용한 유효한 판단의 J번호를 judgment_refs에 넣는다. 오류 안내의 위치·기대 근거를 고쳐 한 번 보완한다. 근거 없는 판단은 채택하지 않는다.'''
+
 USES = ['CORE', 'SUPPORT', 'CONDITIONAL', 'DEFER', 'EXCLUDE']
 PROMPT = '''현재 원문을 읽은 판단과 다음 행동을 이 응답 하나에 함께 쓴다.
 read_judgments.required에는 새로 전달된 원문 묶음이 있다. 각 judgment_id를 read_review.judgments에서 빠짐없이 검토한다. CORE=질문의 직접 근거, SUPPORT=보조 근거, CONDITIONAL=특정 조건에서 사용, DEFER=판단 보류, EXCLUDE=이번 답에 사용하지 않음이다. finding에는 확인한 내용, reason에는 질문과 실제 원문을 대조한 이유, basis_refs에는 그 판단의 현재 원문을 쓴다. 원문을 읽었다는 사실만으로 적용·충분성이 확정되지 않는다.
@@ -91,7 +98,9 @@ def context(inv, data, key):
     heads = state.get('heads', {})
     required = [jid for jid, row in visible.items()
                 if set(row['material']) - set(heads.get(jid, {}).get('seen_material', []))]
-    return {'version': VERSION, 'request_key': request_key(inv, data),
+    extra=({'wire_version':NEW_WIRE_VERSION,'new_review_ids':[j for j in visible if j not in heads],
+        'issue_ids':[i['id'] for i in data['issues']]} if inv.policy.get('new_read_reviews') else {})
+    return {**extra,'version': VERSION, 'request_key': request_key(inv, data),
         'state_hash': state.get('state_hash'), 'required': required,
         'current_originals': list(visible.values()), 'judgments': list(deepcopy(heads).values()),
         'needs': list(deepcopy(state.get('needs', {})).values()),
@@ -126,13 +135,38 @@ def attach(schema, ctx, current, issues):
         branch['required'].append('read_review')
         if branch['properties']['choice']['const'] not in ('FINISH', 'PENDING'):
             target = branch['properties']['selections']['items'] if branch['properties']['choice']['const'] == 'READ' else branch
-            target['properties']['judgment_refs'] = strings(ids, minimum=1 if ids else 0)
+            target['properties']['judgment_refs'] = strings(ids, minimum=0 if ctx.get('wire_version')==NEW_WIRE_VERSION else (1 if ids else 0))
             target['required'].append('judgment_refs')
+    if ids and ctx.get('wire_version')==NEW_WIRE_VERSION:
+        # Use complete alternatives on the generation wire. Partial allOf
+        # objects can be treated as standalone productions by model grammars.
+        def alternatives(node):
+            out=[]
+            for relation in ('DIRECT','DEPENDENCY'):
+                branch=deepcopy(node)
+                branch['properties']['relation']={'const':relation}
+                branch['properties']['judgment_refs']['minItems']=int(relation=='DEPENDENCY')
+                out.append(branch)
+            return out
+        branches=[]
+        for branch in value['anyOf']:
+            kind=branch['properties']['choice']['const']
+            if kind=='READ':
+                node=branch['properties']['selections']['items']
+                # Keep the parent properties: the pager narrows its target enum;
+                # canonical validation intersects that bound with each variant.
+                node['anyOf']=alternatives(node)
+                branches.append(branch)
+            elif kind in ('FINISH','PENDING'):branches.append(branch)
+            else:branches.extend(alternatives(branch))
+        value['anyOf']=branches
     return value
 
 
 def wire_review_schema(ctx, current, issues):
     """Do not ask the model to regenerate host-owned retained opinions."""
+    if ctx.get('wire_version')==NEW_WIRE_VERSION:
+        return new_review_schema(ctx,current,issues)
     schema = review_schema(ctx, current, issues)
     row = schema['properties']['judgments']['items']
     alternatives = []
@@ -153,10 +187,99 @@ def wire_review_schema(ctx, current, issues):
     return schema
 
 
+def new_review_schema(ctx,current,issues):
+    schema=review_schema(ctx,current,issues);template=schema['properties']['judgments']['items']
+    def row(prior=False):
+        r=deepcopy(template);r['properties'].pop('judgment_id');r['required'].remove('judgment_id')
+        if not prior:
+            r['properties']['operation']={'enum':['SET','CONFLICT']};r['required'].remove('operation')
+        for name in ('missing','conflicts_with'):
+            r['required'].remove(name)
+        if len(issues)==1:r['required'].remove('issue_refs')
+        return r
+    fresh={jid:row() for jid in ctx['new_review_ids']}
+    revised={}
+    for head in ctx['judgments']:
+        options=[]
+        for op in ('SET','CONFLICT','KEEP','WITHDRAW'):
+            r=row(True);r['properties']['operation']={'const':op}
+            if op in ('KEEP','WITHDRAW'):
+                for name in ('use','finding','issue_refs','missing','conflicts_with'):
+                    r['properties'].pop(name,None)
+                    if name in r['required']:r['required'].remove(name)
+            options.append(r)
+        revised[head['id']]={'anyOf':options}
+    result=obj({'new_reviews':{'type':'object','properties':fresh,'additionalProperties':False},
+        'revisions':{'type':'object','properties':revised,'additionalProperties':False},
+        'need_updates':schema['properties']['need_updates'],'conflict_updates':schema['properties']['conflict_updates']})
+    result['required']=['new_reviews']
+    return result
+
+
+def review_diagnostics(value,ctx):
+    from .output_contract import OutputContractError,issue
+    review=value.get('read_review',{});rows=review.get('judgments',[]);seen={};errors=[];messages=[]
+    visible={r['id']:r for r in ctx['current_originals']};new=ctx.get('wire_version')==NEW_WIRE_VERSION
+    old={r['id']:r for r in ctx['judgments']};ids={r.get('judgment_id') for r in rows}
+    def path(index,jid):
+        if new:return '/read_review/'+('new_reviews' if jid in ctx['new_review_ids'] else 'revisions')+'/'+jid
+        return '/read_review/judgments/'+str(index)
+    for i,row in enumerate(rows):
+        jid=row.get('judgment_id');where=path(i,jid)
+        if jid in seen:
+            before=seen[jid];errors.append(issue('READ_JUDGMENT_DUPLICATE',where+'/judgment_id',related=[path(before,jid)+'/judgment_id'],expected={'judgment_id':jid,'rows':[before+1,i+1],'occurrences':1}))
+            messages.append(f'{before+1}·{i+1}행의 {jid}가 중복')
+        else:seen[jid]=i
+        if jid in visible and not set(row.get('basis_refs',[]))&set(visible[jid]['source_refs']):
+            errors.append(issue('READ_JUDGMENT_WRONG_ORIGINAL',where+'/basis_refs',expected={'judgment_id':jid,'allowed_source_refs':visible[jid]['source_refs']}))
+            messages.append(f"{jid}의 basis_refs는 {visible[jid]['source_refs']} 중 실제 사용한 원문이어야 함")
+        if new:
+            def problem(code,field,message,expected):
+                errors.append(issue(code,where+'/'+field,expected=expected));messages.append(jid+': '+message)
+            op=row.get('operation');others=row.get('conflicts_with',[])
+            if op=='CONFLICT' and (not others or row.get('use')!='DEFER'):
+                problem('READ_JUDGMENT_CONFLICT_FIELDS','operation','CONFLICT는 use=DEFER와 실제 상대 판단 conflicts_with가 필요함; 일반 판단은 SET',{'operation':'CONFLICT','use':'DEFER','conflicts_with_minimum':1,'ordinary_operation':'SET'})
+            if op!='CONFLICT' and others:
+                problem('READ_JUDGMENT_UNDECLARED_CONFLICT','conflicts_with','SET 등 일반 판단의 conflicts_with는 []이어야 함',{'operation':op,'conflicts_with':[]})
+            for other in others:
+                if (other==jid and jid not in old) or other not in old and other not in ids:
+                    problem('READ_JUDGMENT_CONFLICT_TARGET','conflicts_with','기존 판단이 없는 자기 자신이나 미제출 판단을 충돌 상대로 쓸 수 없음',{'allowed_judgment_ids':sorted((set(old)|ids)-({jid} if jid not in old else set()))})
+            if not row.get('reason','').strip():problem('READ_JUDGMENT_REASON','reason','원문에 근거한 이유가 필요함',{'nonempty':True})
+            if op in ('SET','CONFLICT') and not row.get('finding','').strip():problem('READ_JUDGMENT_FINDING','finding','판단 내용이 필요함',{'nonempty':True})
+    if not new:
+        missing=[jid for jid in ctx['required'] if jid not in seen]
+        if missing:
+            errors.append(issue('READ_JUDGMENT_MISSING','/read_review/judgments',expected={'missing_judgment_ids':missing}));messages.append('새 판단 '+', '.join(missing)+'이 빠짐 (omitted)')
+    judgment_errors=bool(errors)
+    if new and value.get('choice') not in ('FINISH','PENDING'):
+        actions=value.get('selections',[]) if value.get('choice')=='READ' else [value]
+        valid=set(old)|ids
+        for i,action in enumerate(actions):
+            refs=action.get('judgment_refs',[]);prefix='/selections/'+str(i) if value.get('choice')=='READ' else ''
+            if (((old or visible) and not refs and action.get('relation')!='DIRECT') or set(refs)-valid):
+                errors.append(issue('READ_ACTION_JUDGMENT_REFERENCE',prefix+'/judgment_refs',expected={'allowed_judgment_ids':sorted(valid),'retained_judgment_ids':sorted(old),'submitted_in_this_response':sorted(ids),'new_ids_requiring_submission_if_referenced':list(ctx['new_review_ids']),'required_for_dependency':True,'independent_direct_may_be_empty':True,'rejected_response_is_not_committed':True}))
+                messages.append(prefix+'/judgment_refs: DEPENDENCY에는 행동 이유로 사용한 유효한 판단 번호가 필요함. 저장된 판단이 아닌 새 J번호를 참조하면 같은 보완 응답의 new_reviews에도 그 판단을 작성해야 함')
+    if errors:raise OutputContractError('; '.join(messages),errors,category='READ_JUDGMENT_INVALID' if judgment_errors else 'READ_ACTION_INVALID')
+
+
 def normalize_review(value, ctx):
     """Pure reconstruction from an exact prior head, never semantic repair."""
     from .output_contract import OutputContractError, issue
     result = deepcopy(value); changes = []
+    if ctx.get('wire_version')==NEW_WIRE_VERSION and 'new_reviews' in result['read_review']:
+        wire=result['read_review'];rows=[]
+        for kind in ('new_reviews','revisions'):
+            for jid,raw in wire.get(kind,{}).items():
+                row=deepcopy(raw);row.update(judgment_id=jid)
+                if kind=='new_reviews':row.setdefault('operation','SET')
+                for name,fixed in (('missing',[]),('conflicts_with',[])):
+                    row.setdefault(name,deepcopy(fixed))
+                if len(ctx['issue_ids'])==1:row.setdefault('issue_refs',list(ctx['issue_ids']))
+                rows.append(row)
+        result['read_review']={'judgments':rows,'need_updates':deepcopy(wire.get('need_updates',[])),
+            'conflict_updates':deepcopy(wire.get('conflict_updates',[]))}
+        changes.append({'rule':'KEYED_NEW_OR_EXPLICIT_REVISION','new_ids':list(wire.get('new_reviews',{})),
+            'revision_ids':list(wire.get('revisions',{})),'automatic_finding':False})
     old = {r['id']:r for r in ctx['judgments']}
     for index, row in enumerate(result['read_review']['judgments']):
         op = row['operation']
@@ -197,16 +320,22 @@ def correction_scope(ctx):
             for h in ctx['judgments']],key=lambda h:h['id'])}
 
 
-def validate_review(value, ctx, current, issues):
+def validate_review(value, ctx, current, issues, *, owner=None):
     review = value['read_review']
-    validate(review, review_schema(ctx, current, issues))
+    review_diagnostics(value,ctx)
+    schema = review_schema(ctx, current, issues)
+    if owner is None:
+        validate(review, schema)
+    else:
+        from .schema_preparation import validate as prepared_validate
+        prepared_validate(review, schema, owner=owner)
     old = {r['id']: r for r in ctx['judgments']}
     visible = {r['id']: r for r in ctx['current_originals']}
     ids = [r['judgment_id'] for r in review['judgments']]
     problems = []
     if len(ids) != len(set(ids)):
         problems.append('one judgment update per original bundle')
-    if set(ctx['required']) - set(ids):
+    if ctx.get('wire_version')!=NEW_WIRE_VERSION and set(ctx['required']) - set(ids):
         problems.append('newly delivered originals omitted from read review')
     for row in review['judgments']:
         jid = row['judgment_id']; prior = old.get(jid); op = row['operation']
@@ -255,7 +384,8 @@ def validate_review(value, ctx, current, issues):
     if value['choice'] not in ('FINISH', 'PENDING'):
         for action in value['selections'] if value['choice'] == 'READ' else [value]:
             refs = action['judgment_refs']
-            if (old or visible) and not refs or set(refs) - (set(old) | set(ids)):
+            independent=(ctx.get('wire_version')==NEW_WIRE_VERSION and action.get('relation')=='DIRECT')
+            if ((old or visible) and not refs and not independent) or set(refs) - (set(old) | set(ids)):
                 problems.append('next action must refer to retained/reviewed judgment')
             linked = [next((r for r in review['judgments'] if r['judgment_id'] == j), old.get(j)) for j in refs]
             if any(action['issue_id'] not in r['issue_refs'] for r in linked if r):
@@ -275,7 +405,7 @@ def record(inv, data, value, key, ctx, actions, *, wire_value=None, normalizatio
     if ctx['request_key'] != request_key(inv, data) or ctx['state_hash'] != state.get('state_hash'):
         raise ContractError('stale read judgment revision')
     current = {s['id']: s for s in data.get('sources', []) if s.get('text')}
-    validate_review(value, ctx, current, [i['id'] for i in data['issues']])
+    validate_review(value, ctx, current, [i['id'] for i in data['issues']], owner=inv.s)
     from . import evidence_inventory as inventory
     for row in value['read_review']['judgments']:
         for ref in row['basis_refs']:
@@ -332,11 +462,20 @@ def record(inv, data, value, key, ctx, actions, *, wire_value=None, normalizatio
             | {'action': deepcopy(actions.get(a.get('target')))} for a in selected],
         'automatic_adoption': False, 'additional_model_call': False}
     if wire_value is not None:
-        receipt.update(wire_version=WIRE_VERSION,wire_proposal_hash=digest(wire_value),
+        receipt.update(wire_version=ctx.get('wire_version',WIRE_VERSION),wire_proposal_hash=digest(wire_value),
             normalizations=deepcopy(list(normalizations)))
+    if ctx.get('wire_version')==NEW_WIRE_VERSION:
+        pending=ns.setdefault('pending',{})
+        for jid,bundle in visible.items():
+            unseen=set(bundle['material'])-set(ns['heads'].get(jid,{}).get('seen_material',[]))
+            if unseen:pending[jid]={'judgment_id':jid,'document_id':bundle['document_id'],'source_id':bundle['source_id'],
+                'material':sorted(unseen),'status':'PENDING','reason':'NO_VALID_REVIEW_SUBMITTED'}
+            else:pending.pop(jid,None)
     ns['receipts'][key] = receipt
     ns['history'].append(key)
     ns['state_hash'] = seal(ns)
     inv.p.setdefault('read_judgments', {})[ctx['request_key']] = ns
     inv.s.repo.event('READ_JUDGMENT_RECORDED', {k: deepcopy(v) for k, v in receipt.items() if k != 'context'})
     inv.save()
+    from ..ontology_work.capture import record_if_enabled
+    record_if_enabled(inv)

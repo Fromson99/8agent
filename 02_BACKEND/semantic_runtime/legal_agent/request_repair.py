@@ -407,6 +407,10 @@ def validate_resolutions(investigation, value, data):
     for row in rows:
         gap = gaps[row['gap_id']]; status = row['status']
         if not row['reason'].strip(): raise ProposalError('gap resolution needs a reason')
+        if status == 'NOT_NEEDED' and investigation.policy.get('source_goal_control'):
+            from .source_goal_control import validate_gap_closure
+            validate_gap_closure(investigation,data,row)
+            continue
         if status in ('NOT_NEEDED', 'UNRESOLVED'):
             if row.get('basis_refs') or row.get('action_refs'):
                 raise ProposalError(status + ' must not claim verified resolution evidence')
@@ -421,6 +425,9 @@ def validate_resolutions(investigation, value, data):
                 raise ProposalError('NOT_AVAILABLE requires completed exact-target absence; unrelated reads, empty fulltext or partial lookup are UNRESOLVED')
             continue
         if status != 'RESOLVED': raise ProposalError('unknown gap resolution')
+        if investigation.policy.get('source_goal_control'):
+            from .source_goal_control import validate_gap_closure
+            validate_gap_closure(investigation,data,row)
         refs = set(row.get('basis_refs', []))
         # The current presentation is validated against the immutable original by
         # the existing page/decision gate; expose it to the coverage check too.
@@ -524,6 +531,9 @@ def validate_unattempted_gap_finish(investigation, value, data, actions):
 
 def add_target_actions(investigation, actions):
     from . import law_candidates as lc
+    if investigation.policy.get('source_goal_control'):
+        from .source_goal_control import grant_required_targets
+        grant_required_targets(investigation.s,investigation.p)
     result = []
     for gap in investigation.p.get('assessment_gaps', []):
         target = gap.get('target_binding', {})

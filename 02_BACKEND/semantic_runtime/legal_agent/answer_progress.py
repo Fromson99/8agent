@@ -117,6 +117,7 @@ def schema(current, issues, has_previous):
               'previous_effect': {'enum': ['ANSWER_CHANGED', 'NEED_NARROWED', 'NO_CHANGE', 'TOOL_FAILED'] if has_previous else ['INITIAL']}}
     alternatives = []
     for status in ('ANSWERABLE', 'NEEDS_SOURCE', 'NO_PROGRESS'):
+        if status == 'ANSWERABLE' and not current:continue
         props = deepcopy(common); props['status'] = {'const': status}
         if status == 'ANSWERABLE':
             props['answer_so_far']['minLength'] = 1

@@ -1,4 +1,5 @@
 """Shared workflow runtime: one durable budget, isolated state and no ask recursion."""
+from semantic_runtime.legal_agent import journal_storage
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -29,7 +30,7 @@ class Runtime:
             journal=folder/'journal.sqlite'
             if journal.is_file():
                 import sqlite3
-                with sqlite3.connect('file:'+str(journal)+'?mode=ro',uri=True) as db:
+                with journal_storage.connect('file:'+str(journal)+'?mode=ro',uri=True) as db:
                     saved=db.execute('SELECT request_hash,binding_hash FROM workflow_state WHERE singleton=1').fetchone()
                 if saved is not None and (saved[0]!=digest(normalized) or saved[1]!=digest(binding)):
                     raise WorkflowError('WORKFLOW_BINDING_CHANGED','같은 요청의 입력·코드·원문 결속이 다릅니다.',409)
@@ -126,7 +127,7 @@ class Runtime:
         from semantic_runtime.legal_agent.repository import WorkRepository
         from semantic_runtime.state_sqlite import readonly
         import sqlite3
-        old=WorkRepository.__new__(WorkRepository);old.db=readonly(self.root/run_id/'journal.sqlite');old.db.row_factory=sqlite3.Row
+        old=WorkRepository.__new__(WorkRepository);old.db=readonly(self.root/run_id/'journal.sqlite');old.db.row_factory=journal_storage.row
         try:evidence=[e for e in old.evidence() if e['evidence_id'] in needed]
         finally:old.db.close()
         return {**checkpoint,'request':body,'evidence':evidence,'usage':{'this_run':result['usage'],'previous':result.get('previous_usage')}}
@@ -138,8 +139,8 @@ class Runtime:
             raise WorkflowError('WORKFLOW_NOT_FOUND','실행을 찾을 수 없습니다.',404)
         path=self.root/run_id/'journal.sqlite'
         if not path.is_file():raise WorkflowError('WORKFLOW_NOT_FOUND','실행을 찾을 수 없습니다.',404)
-        with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
-            db.row_factory=sqlite3.Row
+        with journal_storage.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+            db.row_factory=journal_storage.row
             row=dict(db.execute('SELECT * FROM workflow_state').fetchone())
             saved=json.loads(row['request_json'])
             if digest(saved)!=row['request_hash'] or digest(json.loads(row['checkpoint_json']))!=row['checkpoint_hash']:

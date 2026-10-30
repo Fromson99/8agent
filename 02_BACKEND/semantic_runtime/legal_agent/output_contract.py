@@ -74,10 +74,12 @@ def diagnostics(exc):
             cause = cur
         if isinstance(cur, OutputContractError):
             return result({'contract_version': VERSION, 'category': cur.category,
-                    'repairable': repairable(cur), 'issues': cur.issues})
+                    'repairable': repairable(cur), 'issues': cur.issues,
+                    'reference_space':getattr(cur,'reference_space','canonical')})
         if isinstance(cur, ValidationError):
             return result({'contract_version': VERSION, 'category': 'OUTPUT_SHAPE_INVALID',
-                    'repairable': True, 'issues': [schema_issue(cur)]})
+                    'repairable': True, 'issues': getattr(cur,'response_contract_issues',None) or schema_issues([cur]),
+                    'reference_space':'canonical'})
         detail=getattr(cur,'diagnostic',None)
         if isinstance(detail,dict):
             contract=detail.get('output_contract',detail)
@@ -153,24 +155,72 @@ def strict_json(content, *, max_chars=4194304, max_depth=128):
 
 
 def schema_issue(error):
-    return issue('SCHEMA_'+str(error.validator).upper(), pointer(error.absolute_path),
+    row = issue('SCHEMA_'+str(error.validator).upper(), pointer(error.absolute_path),
         rule='json-schema:'+pointer(error.absolute_schema_path),
         expected=deepcopy(error.validator_value))
+    # A bounded diagnostic preview, not a source or a new executable proposal.
+    value = error.instance
+    row['received'] = (value[:300] if isinstance(value,str) else deepcopy(value)
+                       if value is None or isinstance(value,(bool,int,float)) else
+                       {'type':type(value).__name__})
+    row['message'] = error.message[:500]
+    return row
 
 
-def validate_shape(value, schema):
-    errors = []
-    for error in Draft202012Validator(schema).iter_errors(value):
-        # AnyOf alternatives can carry huge repeated schemas. Return the rule
-        # location; semantic validators produce the domain-specific conflicts.
-        row = schema_issue(error)
-        if error.validator in ('anyOf', 'oneOf', 'allOf'):
-            row['expected_constraint'] = 'one complete permitted action alternative'
-        errors.append(row)
-        if len(errors) == MAX_ISSUES:
-            break
+def schema_issues(errors):
+    """Explain only the uniquely selected branch; acceptance still uses all rules."""
+    rows = []
+    def collect(error):
+        if len(rows) >= MAX_ISSUES:return
+        if error.validator in ('anyOf','oneOf') and error.context:
+            selected = None
+            if isinstance(error.instance,dict):
+                for key in ('choice','next_action','operation','kind','status','disposition'):
+                    if key not in error.instance:continue
+                    matches = [n for n,branch in enumerate(error.validator_value)
+                        if isinstance(branch,dict) and
+                        branch.get('properties',{}).get(key,{}).get('const',object()) == error.instance[key]]
+                    if len(matches)==1:
+                        selected=matches[0];break
+            if selected is not None:
+                children=[child for child in error.context if list(child.schema_path)[:1]==[selected]]
+                if children:
+                    for child in children:collect(child)
+                    return
+            row=schema_issue(error)
+            row['expected_constraint']='one complete permitted action alternative'
+            row['message']='Choose one permitted action and supply its required fields.'
+            if isinstance(error.instance,dict):
+                choices=list(dict.fromkeys(b.get('properties',{}).get('choice',{}).get('const')
+                    for b in error.validator_value if isinstance(b,dict)))
+                choices=[x for x in choices if x is not None]
+                if choices and error.instance.get('choice') not in choices:
+                    row.update(path=pointer((*error.absolute_path,'choice')),
+                        expected_constraint={'enum':choices},received=error.instance.get('choice'))
+            rows.append(row);return
+        if error.validator=='required' and isinstance(error.instance,dict):
+            for name in error.validator_value:
+                if name not in error.instance and len(rows)<MAX_ISSUES:
+                    row=schema_issue(error);rule=error.schema.get('properties',{}).get(name,{})
+                    row.update(path=pointer((*error.absolute_path,name)),received={'missing':True},
+                        expected_constraint={k:deepcopy(v) for k,v in rule.items() if k in ('type','enum','const','minItems','maxItems')},
+                        message='Required field is missing.')
+                    if row not in rows:rows.append(row)
+            return
+        row=schema_issue(error)
+        if error.validator=='enum' and list(error.absolute_path)[-1:]==['coordinate_scope']:
+            row['message']='coordinate_scope selects a structural branch (body/addendum/annex/form/repeated/appendix); 조/항/호/목 are levels.'
+        if row not in rows:rows.append(row)
+    for error in errors:collect(error)
+    return rows[:MAX_ISSUES]
+
+
+def validate_shape(value, schema, *, reference_space='canonical'):
+    errors = schema_issues(Draft202012Validator(schema).iter_errors(value))
     if errors:
-        raise OutputContractError('model output does not match the original schema', errors)
+        exc=OutputContractError('model output does not match the original schema', errors)
+        exc.reference_space=reference_space
+        raise exc
     return value
 
 
@@ -277,7 +327,9 @@ class DecisionJournal:
                 raise ContractError('output decision journal binding mismatch')
             return value
         if hasattr(self.repo, 'db'):
-            row = self.repo.db.execute("SELECT payload_json,payload_hash FROM event WHERE kind=? AND json_extract(payload_json,'$.decision_key')=? ORDER BY seq DESC LIMIT 1",
+            from .journal_storage import register
+            register(self.repo.db)
+            row = self.repo.db.execute("SELECT payload_json,payload_hash FROM event WHERE kind=? AND json_extract(journal_text(payload_json),'$.decision_key')=? ORDER BY seq DESC LIMIT 1",
                                       (self.EVENT, self.key)).fetchone()
             if row is None:
                 return None
@@ -368,7 +420,7 @@ class CorrectionBudget(DecisionJournal):
 
 
 def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=None, can_repair=None,
-                     correction_scope=None):
+                     correction_scope=None, recover=None):
     """One full correction with the same data/schema and durable budget.
 
     invoke(payload, attempt) is the existing stage call; no alternate transport.
@@ -377,7 +429,7 @@ def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=No
     journal = DecisionJournal(repo, owner, identity or data, schema)
     shared = CorrectionBudget(repo,owner,correction_scope) if correction_scope is not None else None
     prior = journal.state()
-    if prior and prior['status'] == 'ACCEPTED':
+    if prior and prior['status'] in ('ACCEPTED','ACTION_RECOVERED'):
         value = deepcopy(prior['value'])
         validate(value)
         return value
@@ -403,6 +455,18 @@ def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=No
             retry=not attempt and repairable(exc) and (can_repair is None or can_repair())
             journal.reject(attempt, exc, value,can_retry=retry,correction_budget=shared)
             if not retry:
+                if recover is not None and value is not None:
+                    with journal.transaction():
+                        recovered=recover(value,exc)
+                        if recovered is not None:
+                            candidate,receipt=recovered
+                            validate(candidate)
+                            repo.event('INDEPENDENT_READ_RECOVERY',{**receipt,'owner':owner,'decision_key':journal.key,
+                                'rejected_proposal':deepcopy(value),'rejected_diagnostics':diagnostics(exc),
+                                'action_value_hash':digest(candidate),'judgments_adopted':False})
+                            journal._put('ACTION_RECOVERED',attempt,value=candidate,value_hash=digest(candidate),
+                                rejected_proposal=deepcopy(value),failure=diagnostics(exc),recovery=receipt)
+                            return candidate
                 raise
             prior = journal.state()
             continue

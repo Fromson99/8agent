@@ -49,16 +49,31 @@ def blocks(s,did,uid,extent):
     return [str(r[0]) for r in s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<? ORDER BY CAST(block_id AS INTEGER)',(did,lo,hi))]
 
 
+def block_lengths(s, did, ids):
+    """Request-owned metadata; changed store or permission binding cannot hit."""
+    s.store.check_unchanged()
+    binding = (s.store, getattr(s.store, '_binding_state', None), frozenset(s.scope))
+    if getattr(s, '_unit_block_chars_binding', None) != binding:
+        s._unit_block_chars = {}
+        s._unit_block_chars_binding = binding
+    cache = s._unit_block_chars
+    wanted = list(dict.fromkeys(str(b) for b in ids))
+    missing = [b for b in wanted if (did,b) not in cache]
+    if missing:
+        if hasattr(s.store, 'source_lengths'):
+            lengths = s.store.source_lengths(did, missing)
+        else:
+            # Adapters without an exact metadata contract keep their full checks.
+            lengths = {b:len(s.store.source(did,b)['text']) for b in missing}
+        s.store.check_unchanged()
+        if set(lengths) != set(missing):raise ContractError('source length batch is incomplete')
+        cache.update({(did,b):n for b,n in lengths.items()})
+    return {b:cache[(did,b)] for b in wanted}
+
+
 def block_chars(s, did, ids):
-    cache = getattr(s, '_unit_block_chars', None)
-    if cache is None: cache = s._unit_block_chars = {}
-    missing = [str(b) for b in ids if (did, str(b)) not in cache]
-    for start in range(0, len(missing), 400):
-        batch = missing[start:start+400]
-        rows = s.store.db.execute('SELECT block_id,LENGTH(text) FROM source_block WHERE document_id=? '
-            'AND block_id IN ('+','.join('?' for _ in batch)+')', (did, *batch))
-        cache.update({(did, str(b)): n for b,n in rows})
-    return sum(cache[(did, str(b))] for b in ids)
+    lengths = block_lengths(s, did, ids)
+    return sum(lengths[str(b)] for b in ids)
 
 
 def exact_offer(s, hit):
@@ -286,7 +301,7 @@ def read(s,hit,offer,*,action_state):
             s.repo.record_observation({'tool':'unit_evidence_projection','args':{'source_id':hit['source_id'],'scope':offer['id']}},
                 {'status':'REUSED'}, [e], verify=s.source.verify)
         existing.append(e)
-    source = {'id': hit['source_id'], 'blocks': [s.store.source(hit['document_id'], b) for b in offer['block_ids']]}
+    source = {'id': hit['source_id'], 'blocks': s.store.sources(hit['document_id'], offer['block_ids'])}
     segments=[];known_ranges=defaultdict(list)
     for e in existing:
         for p in e['spans']:known_ranges[str(p['block_id'])].append((p['start_cp'],p['end_cp']))
@@ -424,8 +439,8 @@ def prepare(recall):
         if not by_source[sid]:
             source=s.tools.sources[sid]; did=source['document_id'];root=str(source['unit_id'])
             candidates=[]
-            for b in source['blocks']:
-                raw=s.store.source(did,b['block_id']); uid=str(raw.get('unit_id') or root)
+            for raw in s.store.sources(did, [b['block_id'] for b in source['blocks']]):
+                uid=str(raw.get('unit_id') or root)
                 # Compatibility with article-only FTS: preserve every matching
                 # owning unit, without reading an entire annex just to preview it.
                 if discovery.get('discovery_mode') != 'structure' and not any(t in raw['text'] for t in terms):

@@ -9,6 +9,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'02_BACKEND'))
 from semantic_runtime.contracts import digest
+from semantic_runtime.legal_agent import journal_storage
 
 
 def read_trace(runtime,run_id):
@@ -18,9 +19,9 @@ def read_trace(runtime,run_id):
     if len(found)!=1: raise ValueError('run must resolve uniquely in explicit runtime root')
     path=found[0].resolve(strict=True); path.relative_to(root)
     if path.stat().st_uid!=os.getuid(): raise ValueError('journal must be owned by current operator')
-    with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
-        db.row_factory=sqlite3.Row
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (3,4,5): raise ValueError('v3/v4/v5 trace required')
+    with journal_storage.connect(path.as_uri()+'?mode=ro',uri=True) as db:
+        db.row_factory=journal_storage.row
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (3,4,5,6): raise ValueError('v3/v4/v5/v6 trace required')
         run=dict(db.execute('SELECT * FROM run').fetchone()); binding=json.loads(run['binding_json'])
         if run['run_id']!=run_id or digest(binding)!=run['binding_hash']: raise ValueError('run binding mismatch')
         events=[]

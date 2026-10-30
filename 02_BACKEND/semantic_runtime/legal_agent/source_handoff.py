@@ -47,7 +47,7 @@ def commit(cases,gid,revision,body,state,parts,executed,execution):
         cases.db.execute('DELETE FROM stage_progress_evidence WHERE goal=?',(gid,))
         cases.db.execute("UPDATE goal SET status='SOURCES_RETURNED',pending='PLAN' WHERE id=?",(gid,))
         cases.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",
-            (encoded(result),cases.request_key(body,cases._entry_principal)))
+            (cases.stored(result),cases.request_key(body,cases._entry_principal)))
     return result
 
 

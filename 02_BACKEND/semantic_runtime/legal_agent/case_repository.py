@@ -108,7 +108,7 @@ class CaseRepository(Memory):
                     'method_id':json.loads(row['command'])['method_id']}
                 self.validate_response(result,principal,body['session_id'])
                 self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",
-                    (encoded(result),self.request_key(body,principal)))
+                    (self.stored(result),self.request_key(body,principal)))
                 return result
         return super().execute(body,principal)
 
@@ -174,7 +174,7 @@ class CaseRepository(Memory):
             filters=dict(self.request_routing['catalogue'])
             from ..pipeline import route_question
             _,category=route_question(context['utterance'])
-            if category is not None:filters['document_category']=category
+            if category is not None:filters['document_category']='all' if category == 'ALL' else category
             # Reuse the bound, budgeted catalogue tools. A model cannot supply
             # the returned document names or expand the request allowlist.
             allowed=set(self._entry_principal['document_ids'])

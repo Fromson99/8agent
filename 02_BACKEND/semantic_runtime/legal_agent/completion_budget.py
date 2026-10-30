@@ -33,6 +33,8 @@ def restore(model):
     deadline=min(session.context.deadline,time.monotonic()+
         (datetime.fromisoformat(deadline_at)-datetime.now(timezone.utc)).total_seconds())
     carried={'model_reserved':0,'tool_used':0};previous=[]
+    transport=session.transport if hasattr(session,'transport') else session.gateway.transport if session.gateway is not None else None
+    routing=getattr(transport,'provider_policy',None);provider_resume=None
     budget=session.work.budget()
     root=(Path(model.runtime)/'legal-agent'/'runs').resolve()
     for row in db.execute('SELECT * FROM completion_request_run WHERE request_key=?',(key,)):
@@ -41,8 +43,15 @@ def restore(model):
             raise ContractError('request resume journal missing or outside runtime')
         with closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True)) as prior:
             prior.row_factory=sqlite3.Row
-            run=prior.execute('SELECT run_id,deadline_at FROM run WHERE singleton=1').fetchone()
+            run=prior.execute('SELECT run_id,deadline_at,binding_hash FROM run WHERE singleton=1').fetchone()
             b=prior.execute('SELECT * FROM budget WHERE singleton=1').fetchone()
+            if routing and run:
+                from types import SimpleNamespace
+                from . import provider_routing
+                state,hashed=provider_routing.current(SimpleNamespace(db=prior),routing,transport.routing_hash,run['binding_hash'])
+                if state['switches'] and (provider_resume is None or state['switches']>provider_resume['switches']):
+                    provider_resume={**state,'binding_hash':session.context.binding_hash,'prior_run_id':run['run_id'],'prior_state_hash':hashed,'previous':None}
+
         if not run or run['run_id']!=row['run_id'] or run['deadline_at']!=deadline_at or b is None:
             raise ContractError('request resume journal identity changed')
         if any(b[k]!=budget[k] for k in ('model_limit','finalization_reserve','tool_limit')):
@@ -57,6 +66,7 @@ def restore(model):
         session.work.db.execute('UPDATE budget SET model_reserved=?,tool_used=? WHERE singleton=1',
             (carried['model_reserved'],carried['tool_used']))
         session.work.db.execute('UPDATE run SET deadline_at=? WHERE singleton=1',(deadline_at,))
+        if provider_resume:session.work.event(provider_routing.EVENT+'_RESUMED',provider_resume)
         session.work.event('REQUEST_BUDGET_BOUND',{'request_key':key,'binding_hash':binding,
             'previous_run_ids':previous,'carried':carried,'deadline_at':deadline_at})
     journal=session.work.db.execute('PRAGMA database_list').fetchone()[2]

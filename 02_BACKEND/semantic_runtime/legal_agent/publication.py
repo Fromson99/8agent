@@ -58,7 +58,7 @@ def prepare(repo, result, release, contracts, *, metadata=None):
             raise ContractError('run cannot prepare publication')
         seq = repo.event('PUBLICATION_PREPARED', {'result_hash': digest(envelope)})
         repo.db.execute("INSERT INTO publication VALUES(1,?,?,?,'PENDING',?,NULL)",
-                        (encoded(envelope), digest(envelope), r['run_id']+'.json', seq))
+                        (repo.stored(envelope), digest(envelope), r['run_id']+'.json', seq))
         repo.db.execute("UPDATE run SET status='COMMIT_READY',phase='PUBLISH' WHERE singleton=1")
     return envelope
 

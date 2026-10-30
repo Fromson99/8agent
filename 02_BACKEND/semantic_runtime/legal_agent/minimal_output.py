@@ -240,40 +240,60 @@ class _Node:
             self.item = _Node(schema['items'])
             self.wire['items'] = self.item.wire
 
-    def expand(self, raw):
+    def expand(self, raw, path=()):
+        from .output_contract import schema_issues, pointer
+        def reject(message, rows):
+            error=OutputContractError(message,rows)
+            error.reference_space='wire'
+            raise error
+        def rows_for(value,schema):
+            rows=schema_issues(Draft202012Validator(schema).iter_errors(value))
+            for row in rows:
+                row['path']=pointer(path).rstrip('/')+row['path']
+            return rows
         if self.variants:
-            if not isinstance(raw, dict) or self.discriminator not in raw:
-                raise OutputContractError('minimal output missing discriminator: '+str(self.discriminator),
-                    [issue('MINIMAL_OUTPUT_DISCRIMINATOR', expected=self.discriminator)])
+            if not isinstance(raw,dict) or self.discriminator not in raw:
+                reject('minimal output missing discriminator: '+str(self.discriminator),
+                    [issue('MINIMAL_OUTPUT_DISCRIMINATOR',pointer((*path,self.discriminator)),
+                           expected={'enum':[label for label,_ in self.variants]})])
             matches, errors = {}, []
             for label, child in self.variants:
-                if _key(label) != _key(raw[self.discriminator]):
-                    continue
+                if _key(label)!=_key(raw[self.discriminator]):continue
                 try:
-                    value = child.expand(raw)
+                    value=child.expand(raw,path)
                     Draft202012Validator(self.schema).validate(value)
-                    matches[_key(value)] = value
-                except (ValidationError, ProposalError) as exc:
-                    errors.append(exc.message if isinstance(exc, ValidationError) else str(exc))
-            if len(matches) != 1:
-                detail = '; '.join(errors)[:1500] if errors else 'unknown or ambiguous action'
-                raise OutputContractError('minimal output branch: '+detail,
-                    [issue('MINIMAL_OUTPUT_BRANCH', expected='one unambiguous canonical action')])
+                    matches[_key(value)]=value
+                except (ValidationError,OutputContractError) as exc:errors.append(exc)
+            if len(matches)!=1:
+                if len(errors)==1 and isinstance(errors[0],OutputContractError):raise errors[0]
+                problems=[]
+                for error in errors:
+                    problems.extend(error.issues if isinstance(error,OutputContractError) else rows_for(raw,self.schema))
+                reject('minimal output has no unambiguous valid action',problems or
+                    [issue('MINIMAL_OUTPUT_BRANCH',pointer((*path,self.discriminator)),
+                           expected={'enum':list(dict.fromkeys(label for label,_ in self.variants))})])
             return next(iter(matches.values()))
-        value = deepcopy(raw)
-        if isinstance(value, dict) and isinstance(self.schema, dict) and self.schema.get('type') == 'object':
-            for name, expected in self.fixed.items():
-                if name in value and _key(value[name]) != _key(expected):
-                    raise OutputContractError('minimal output conflicts with host constant: '+name,
-                        [issue('MINIMAL_OUTPUT_CONSTANT', expected={name:expected})])
-                if name in value or name in self.schema.get('required', []):
-                    value[name] = deepcopy(expected)
-            for name, child in self.children.items():
+        value=deepcopy(raw);problems=[];failed_paths=[]
+        if isinstance(value,dict) and isinstance(self.schema,dict) and self.schema.get('type')=='object':
+            for name,expected in self.fixed.items():
+                if name in value and _key(value[name])!=_key(expected):
+                    problems.append({**issue('MINIMAL_OUTPUT_CONSTANT',pointer((*path,name)),expected={'const':expected}),
+                        'received':deepcopy(value[name]),'message':'Choose the schema-bound value; the submitted value was not accepted.'})
+                    failed_paths.append(pointer((*path,name)));continue
+                if name in value or name in self.schema.get('required',[]):value[name]=deepcopy(expected)
+            for name,child in self.children.items():
                 if name in value:
-                    value[name] = child.expand(value[name])
-        elif isinstance(value, list) and self.item is not None:
-            value = [self.item.expand(v) for v in value]
-        Draft202012Validator(self.schema).validate(value)
+                    try:value[name]=child.expand(value[name],(*path,name))
+                    except OutputContractError as exc:
+                        problems.extend(exc.issues);failed_paths.append(pointer((*path,name)))
+        elif isinstance(value,list) and self.item is not None:
+            for n,v in enumerate(value):
+                try:value[n]=self.item.expand(v,(*path,n))
+                except OutputContractError as exc:
+                    problems.extend(exc.issues);failed_paths.append(pointer((*path,n)))
+        for row in rows_for(value,self.schema):
+            if not any(row['path']==p or row['path'].startswith(p+'/') for p in failed_paths):problems.append(row)
+        if problems:reject('minimal output fields do not match the expected action',problems)
         return value
 
     def project(self, value):

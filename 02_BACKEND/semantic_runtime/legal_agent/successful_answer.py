@@ -3,6 +3,7 @@
 Receipts use the existing immutable event ledger. No failed intake is deleted.
 Operator-curated source packages retain their separate, explicitly checked contract.
 """
+from . import journal_storage
 import json
 from .corrected_memory import MemoryError, digest
 
@@ -133,8 +134,8 @@ def backfill(repo, runtime):
     runtime=Path(runtime).resolve();report={'verified':0,'skipped':0,'errors':[]}
     for path in sorted((runtime/'legal-agent'/'runs').glob('*/*/journal.sqlite')):
         try:
-            with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
-                db.row_factory=sqlite3.Row
+            with journal_storage.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+                db.row_factory=journal_storage.row
                 pub=db.execute('SELECT * FROM publication WHERE singleton=1').fetchone()
                 run=db.execute('SELECT * FROM run WHERE singleton=1').fetchone()
                 commit=db.execute('SELECT * FROM case_commit WHERE singleton=1').fetchone()

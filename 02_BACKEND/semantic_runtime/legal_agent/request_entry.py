@@ -18,7 +18,7 @@ from .structure_selection import PROMPT as ENTRY_SELECTION_PROMPT
 ENTRY_SCOPE_PROMPT = ENTRY_SELECTION_PROMPT + """
 search.scope_decision은 이 최초 요청의 유일한 범위 판단이다. NAMED_SCOPE의 targets에는 실제 요청한 문서명과 구조만 넣고 user_quote는 현재 question의 연속 원문을 그대로 복사한다.
 생략·대명사·약칭이 가리키는 법령은 문맥을 보고 해석한 문서명으로 targets에 작성하고 reason에 해석 이유를 쓴다. user_quote에는 해석 전 현재 질문의 원문을 그대로 보존한다. 확인되지 않은 이름을 지어내지 않는다.
-문서 전체는 structure=null, selection=null이다. 번호의 복수·범위·제외는 selection으로 표현하고 structure=null이다. 번호 없는 목차 제목은 structure에 쓴다. 범위 없이 허용 자료에서 찾는 AUTHORIZED_SCOPE는 targets=[], user_quote=""다.
+문서 전체는 structure=null, selection=null이다. 단일 조문 번호도 selection으로 표현하고 structure=null이다. 예를 들어 본문 제2조는 coordinate_scope="body", groups=[{parent_path:[],unit:"조",include:[{kind:"SINGLE",value:{n:2}}],exclude:[]}]다. 부칙을 요청한 경우 본문으로 바꾸지 않고 해당 부칙 범위를 구분한다. 번호의 복수·범위·제외도 selection으로 표현한다. 번호 없는 목차 제목은 structure에 쓴다. 범위 없이 허용 자료에서 찾는 AUTHORIZED_SCOPE는 targets=[], user_quote=""다.
 법령을 검색 대상으로 준 질문은 NAMED_SCOPE다. 검색 대상의 명시 여부와 실제 문서의 검색 가능 여부는 별개다. 법령명이 law_title_hints에 없거나 저장소에 없을 것 같아도 사용자가 그 법령에 따른 설명을 요청하면 NAMED_SCOPE와 그 이름을 보존한다. 문서 해석·검증 실패는 시스템이 미확인으로 처리하므로 허용 전체 범위로 바꾸지 않는다. 조문 번호가 없어도 특정 법령 전체를 요청한 것이다. 단순 배경 언급, 적용 가정, 읽기 제외를 구분하며 reason에 요청에 근거한 결정을 짧게 설명한다. STRUCTURE/FULLTEXT 모두 이 범위를 쓴다.
 """
 
@@ -294,7 +294,7 @@ def run(repo,context):
     if repo._entry_body.get('document_ids'):scope &= set(repo._entry_body['document_ids'])
     from ..pipeline import route_question
     _,category=route_question(context['utterance'])
-    if category:scope={d for d in scope if session.sources.matcher.document_context.get(d,{}).get('source_category')==category}
+    if category in ('internal', 'external'):scope={d for d in scope if session.sources.matcher.document_context.get(d,{}).get('source_category')==category}
     import time
     started=time.perf_counter()
     repo._entry_title_hints=hints(context['utterance'],session.sources.matcher,scope)
