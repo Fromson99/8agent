@@ -1,0 +1,475 @@
+{
+  "schema_version": "ontology-domain-profile-v1",
+  "status": "DRAFT",
+  "runtime_enabled": false,
+  "profile_id": "legal-core-v1",
+  "revision": 1,
+  "parent_ref": null,
+  "supported_contracts": {
+    "observation": "normalized-observation-v1",
+    "assembly_ir": "ontology-assembly-ir-v1",
+    "compiler_registry": "legal-assembly-ops-v1"
+  },
+  "glossary": {
+    "binding_source": "authenticated_task_selected_snapshot.glossary",
+    "reader_contract": "existing_lookup_inspect_entry_links",
+    "identity_fields": [
+      "source",
+      "node_id",
+      "concept_id",
+      "binding.manifest_sha256",
+      "binding.dictionary_sha256"
+    ],
+    "local_vocabulary_definitions": [],
+    "canonical_approval_inherited": false,
+    "unknown_policy": "PRESERVE_MENTION_AND_REQUEST_EXISTING_GLOSSARY_REVIEW"
+  },
+  "value_states": [
+    "PRESENT",
+    "NOT_RECORDED",
+    "UNSPECIFIED",
+    "NOT_APPLICABLE",
+    "NOT_ACQUIRED",
+    "CONFLICTED",
+    "UNSUPPORTED_SEMANTICS"
+  ],
+  "slots": [
+    {
+      "id": "statement",
+      "value_type": "TEXT",
+      "meaning": "원래 판단 또는 제안 규칙의 문장; 객체 종류에 따라 지위를 구분",
+      "allowed_values": null
+    },
+    {
+      "id": "actor",
+      "value_type": "TEXT",
+      "meaning": "행위 주체. 용어집 참조는 별도 glossary_refs로 연결",
+      "allowed_values": null
+    },
+    {
+      "id": "action",
+      "value_type": "TEXT",
+      "meaning": "이행/금지/허용되는 행위",
+      "allowed_values": null
+    },
+    {
+      "id": "object",
+      "value_type": "TEXT",
+      "meaning": "행위나 측정의 대상",
+      "allowed_values": null
+    },
+    {
+      "id": "scope",
+      "value_type": "TEXT",
+      "meaning": "시장·관할·대상·사건과 적용 범위",
+      "allowed_values": null
+    },
+    {
+      "id": "time_basis",
+      "value_type": "TEXT",
+      "meaning": "시행 시점·기준일·기간",
+      "allowed_values": null
+    },
+    {
+      "id": "modality",
+      "value_type": "TEXT",
+      "meaning": "의무·허용·금지·추정·간주 등 법률 양태. 자유 문자열 실행 금지",
+      "allowed_values": [
+        "NONE",
+        "OBLIGATION",
+        "PERMISSION",
+        "PROHIBITION",
+        "PRESUMPTION",
+        "DEEMING",
+        "EXCLUSION",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "conditions",
+      "value_type": "NODE_REFS",
+      "meaning": "실제로 적용되는 선행 조건",
+      "allowed_values": null
+    },
+    {
+      "id": "exceptions",
+      "value_type": "NODE_REFS",
+      "meaning": "등록 예외를 검토하는 대응표; MODIFIES 방향은 예외에서 대상으로 고정",
+      "allowed_values": null
+    },
+    {
+      "id": "delegation",
+      "value_type": "NODE_REFS",
+      "meaning": "세부 기준을 정하는 위임/참조 원문에 관한 요소",
+      "allowed_values": null
+    },
+    {
+      "id": "inputs",
+      "value_type": "NODE_REFS",
+      "meaning": "측정·산정에 필요한 입력",
+      "allowed_values": null
+    },
+    {
+      "id": "unit",
+      "value_type": "TEXT",
+      "meaning": "측정 단위",
+      "allowed_values": null
+    },
+    {
+      "id": "denominator",
+      "value_type": "TEXT",
+      "meaning": "비율 산정 분모의 의미",
+      "allowed_values": null
+    },
+    {
+      "id": "aggregation",
+      "value_type": "TEXT",
+      "meaning": "합산/제외 범위",
+      "allowed_values": null
+    },
+    {
+      "id": "expression",
+      "value_type": "TEXT",
+      "meaning": "원문에 근거한 산정 또는 조건 설명. 실행하지 않음",
+      "allowed_values": null
+    },
+    {
+      "id": "modified_targets",
+      "value_type": "NODE_REFS",
+      "meaning": "예외가 변경하는 효과/산정/조건",
+      "allowed_values": null
+    }
+  ],
+  "node_types": [
+    {
+      "kind": "DEFINITION",
+      "core_role": "DEFINITION",
+      "required_review_slots": [
+        "statement",
+        "scope",
+        "time_basis"
+      ]
+    },
+    {
+      "kind": "SCOPE",
+      "core_role": "SCOPE",
+      "required_review_slots": [
+        "statement",
+        "actor",
+        "object",
+        "time_basis"
+      ]
+    },
+    {
+      "kind": "MEASURE",
+      "core_role": "MEASURE",
+      "required_review_slots": [
+        "statement",
+        "object",
+        "unit",
+        "scope",
+        "time_basis"
+      ]
+    },
+    {
+      "kind": "CALCULATION",
+      "core_role": "CALCULATION",
+      "required_review_slots": [
+        "statement",
+        "inputs",
+        "unit",
+        "denominator",
+        "aggregation",
+        "time_basis",
+        "expression"
+      ]
+    },
+    {
+      "kind": "CONDITION",
+      "core_role": "CONDITION",
+      "required_review_slots": [
+        "statement",
+        "scope",
+        "expression",
+        "time_basis"
+      ]
+    },
+    {
+      "kind": "EFFECT",
+      "core_role": "EFFECT",
+      "required_review_slots": [
+        "statement",
+        "actor",
+        "action",
+        "object",
+        "scope",
+        "modality",
+        "conditions",
+        "exceptions",
+        "delegation",
+        "time_basis"
+      ]
+    },
+    {
+      "kind": "EXCEPTION",
+      "core_role": "EXCEPTION",
+      "required_review_slots": [
+        "statement",
+        "conditions",
+        "modified_targets",
+        "scope",
+        "time_basis"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "REQUIRES_INPUT",
+      "direction": "consumer_to_prerequisite",
+      "allowed_from": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "MEASURE",
+        "CALCULATION"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "DEPENDENCY"
+    },
+    {
+      "id": "REQUIRES_CONDITION",
+      "direction": "consumer_to_prerequisite",
+      "allowed_from": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "CONDITION"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "DEPENDENCY"
+    },
+    {
+      "id": "REQUIRES_SCOPE",
+      "direction": "consumer_to_prerequisite",
+      "allowed_from": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "SCOPE"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "DEPENDENCY"
+    },
+    {
+      "id": "REQUIRES_DEFINITION",
+      "direction": "consumer_to_prerequisite",
+      "allowed_from": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "DEFINITION"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "DEPENDENCY"
+    },
+    {
+      "id": "MODIFIES",
+      "direction": "exception_to_modified",
+      "allowed_from": [
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "EFFECT",
+        "CALCULATION",
+        "CONDITION"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "INCOMING_EXCEPTION"
+    },
+    {
+      "id": "RELATED_TO",
+      "direction": "navigation_only",
+      "allowed_from": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "allowed_to": [
+        "DEFINITION",
+        "SCOPE",
+        "MEASURE",
+        "CALCULATION",
+        "CONDITION",
+        "EFFECT",
+        "EXCEPTION"
+      ],
+      "requires_source_basis": true,
+      "assembly_role": "IGNORE_FOR_EXECUTION"
+    }
+  ],
+  "matching": {
+    "candidate_routes": [
+      "existing_glossary_refs",
+      "verified_source_anchors",
+      "existing_bundle_index",
+      "explicit_source_references"
+    ],
+    "comparison_axes": [
+      "actor",
+      "object",
+      "scope",
+      "time_basis",
+      "modality",
+      "action",
+      "unit",
+      "denominator",
+      "aggregation"
+    ],
+    "same_glossary_id_implies_same_rule": false,
+    "unsearched_candidates": "DEFER_MATCHING"
+  },
+  "review_rules": [
+    {
+      "id": "origin-locator",
+      "kind": "MECHANICAL",
+      "operator": "EXACT_LOCATOR",
+      "instruction": "원래 기록의 위치·hash·연속 인용을 대조한다."
+    },
+    {
+      "id": "known-glossary-ref",
+      "kind": "MECHANICAL",
+      "operator": "BOUND_GLOSSARY_ID",
+      "instruction": "제공 후보와 선택 snapshot에 존재하는 ID만 채택한다."
+    },
+    {
+      "id": "edge-endpoints",
+      "kind": "MECHANICAL",
+      "operator": "TYPED_EDGE",
+      "instruction": "등록된 방향·끝점 타입·근거를 검사한다."
+    },
+    {
+      "id": "graph-closure",
+      "kind": "MECHANICAL",
+      "operator": "PURPOSE_CLOSURE",
+      "instruction": "목적의 의존과 등록 예외를 추적하고 부족을 후속 요소에 전달한다."
+    },
+    {
+      "id": "faithful-observation",
+      "kind": "SEMANTIC_REVIEW",
+      "operator": null,
+      "instruction": "틀린 의견도 원래 의견으로 보존하고 원문에 맞게 몰래 고치지 않는다."
+    },
+    {
+      "id": "obligation-vs-condition",
+      "kind": "SEMANTIC_REVIEW",
+      "operator": null,
+      "instruction": "해야 하는 행위를 이미 수행한 경우라는 적용 조건으로 바꾸지 않았는지 원문과 비교한다."
+    },
+    {
+      "id": "scope-and-quantity",
+      "kind": "SEMANTIC_REVIEW",
+      "operator": null,
+      "instruction": "주체·범위·분모·기준일·합산·예외가 문장과 구조에서 일치하는지 비교한다."
+    }
+  ],
+  "purposes": [
+    {
+      "id": "applicability",
+      "label": "적용 여부 검토",
+      "root_roles": [
+        "EFFECT"
+      ],
+      "required_review_slots": [
+        "scope",
+        "conditions",
+        "exceptions",
+        "time_basis"
+      ]
+    },
+    {
+      "id": "required-action",
+      "label": "행위와 이행 기준 설명",
+      "root_roles": [
+        "EFFECT"
+      ],
+      "required_review_slots": [
+        "actor",
+        "action",
+        "object",
+        "modality",
+        "conditions",
+        "exceptions",
+        "delegation"
+      ]
+    },
+    {
+      "id": "calculation-basis",
+      "label": "산정 기준 설명",
+      "root_roles": [
+        "CALCULATION"
+      ],
+      "required_review_slots": [
+        "inputs",
+        "unit",
+        "denominator",
+        "aggregation",
+        "time_basis",
+        "exceptions"
+      ]
+    }
+  ],
+  "examples": {
+    "instruction_examples": [],
+    "evaluation_gold_visible_to_product": false
+  },
+  "business_overlay_policy": {
+    "parent_count": 1,
+    "parent_binding": "EXACT_VERSION_AND_HASH",
+    "allowed_changes": [
+      "select_purposes",
+      "add_review_questions",
+      "select_glossary_scope_refs",
+      "add_comparison_axes",
+      "add_versioned_instruction_examples"
+    ],
+    "forbidden_changes": [
+      "duplicate_glossary_definitions",
+      "weaken_source_or_acl_validation",
+      "invent_default_semantic_values",
+      "execute_free_text",
+      "auto_approve_new_meanings"
+    ]
+  },
+  "approval_ref": null,
+  "notes": [
+    "미승인 템플릿. 등록·내용 검토 후 exact work hash를 설정에 선택한다."
+  ]
+}

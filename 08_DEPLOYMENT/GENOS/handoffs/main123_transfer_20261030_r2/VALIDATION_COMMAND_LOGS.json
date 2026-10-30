@@ -1,0 +1,148 @@
+[
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_TRANSFER_FAILED: R1 ZIP hash mismatch; no code changed\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003716Z-611512.log\n",
+    "stderr": ""
+  },
+  {
+    "r1_photo_reproduction": true,
+    "exit": 2,
+    "stdout": "TRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\nFAILED: Extract outside the DEV checkout; use the actual TRANSFER folder\nMAIN123_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-full-r1-logs/20261030T003716Z-611517.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_TRANSFER_FAILED: R1 installation state already exists; preserve its recovery history: /tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_20261030_R1/INSTALL_STATE.json\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003716Z-611525.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_TRANSFER_FAILED: Symlink path refused: /tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003716Z-611530.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_TRANSFER_FAILED: [Errno 11] Resource temporarily unavailable\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003716Z-611535.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "PREPARING_PACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/.GENOS_MAIN123_TRANSFER_20261030_R2.prepare-cc4t9121\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nFAILED: Local changes preserved; replacement refused: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003716Z-611540.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nFAILED: Required MAIN123 file differs: 02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003717Z-611550.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003717Z-611562.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003722Z-611854.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003726Z-611873.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "check"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003730Z-611890.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_TRANSFER_FAILED: R2 package file changed: payload/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003731Z-611900.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "check",
+      "--root",
+      "/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev"
+    ],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev\", \"inside_checkout\": false}\nFAILED: DEV target changed since first check; no automatic retargeting\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003731Z-611906.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "gate-code"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nCODE_CHECK PASS {\"code_files\": 491, \"commit\": \"51e9481d59fabbeb68d87a5130dabbf806165b24\", \"code_zip_sha256\": \"e8c5dae250ba40cbdd0407cef5af97b16f5fb2681bb78de76c7cb329a24b2249\", \"code_manifest_sha256\": \"b5c76b370f29c8847c250d7cf7a81027dbce3e58f99f7d8bdaae2fbbfe6f61c7\"}\nGENOS_RELEASE_GATE PASS\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003731Z-611918.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nFAILED: Newer changes exist; rollback refused: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003733Z-611933.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nROLLED_BACK_CODE: previous code bytes restored; data untouched\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003733Z-611941.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace\", \"inside_checkout\": true}\nFAILED: This delivery was rolled back; preserve its state and use a new extraction for a new install\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T003734Z-611949.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": false,
+    "exit": 0,
+    "stdout": "PREPARING_PACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/.GENOS_MAIN123_TRANSFER_20261030_R2.prepare-3crbib7w\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\", \"inside_checkout\": false}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\", \"inside_checkout\": false}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/main123-transfer-r2-logs/20261030T003736Z-611971.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": false,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER\nPACKAGE=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-transfer-r2-validation-_tlzv64i/outside/workspace\", \"inside_checkout\": false}\nROLLED_BACK_CODE: previous code bytes restored; data untouched\nMAIN123_TRANSFER_EXIT=0 LOG=/tmp/main123-transfer-r2-validation-_tlzv64i/outside/TRANSFER/main123-transfer-r2-logs/20261030T003740Z-611988.log\n",
+    "stderr": ""
+  }
+]

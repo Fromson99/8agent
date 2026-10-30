@@ -1,0 +1,28 @@
+MAIN123 — TRANSFER에서 한 번에 설치
+
+기존 GENOS_MAIN123_FULL_20261030_R1.zip이 있는 TRANSFER에 GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt을 올립니다.
+현재 TRANSFER 터미널에서 아래 한 줄을 실행합니다.
+
+bash ./GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt
+
+압축 준비 → 검사 → 원본 백업 → ~/DEV 적용 → 코드 검증을 자동 수행합니다.
+DEV 아래의 TRANSFER도 지원합니다. 폴더 이동과 사전 압축 해제가 필요 없습니다.
+성공: APPLIED MAIN123 및 MAIN123_TRANSFER_EXIT=0.
+같은 명령 재실행은 기존 백업/상태를 유지합니다. 원래 R1 폴더/실패 로그도 보존합니다.
+R2 설치 패키지와 backup/은 현재 TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2/에 남습니다.
+로그/종료코드: 현재 TRANSFER/main123-transfer-r2-logs/.
+검사 실패 시 적용을 시작하지 않습니다. 적용 중 실패는 백업/상태를 보존하며 성공으로 표시하지 않습니다.
+
+조회: bash ./GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt status
+검사만: bash ./GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt check
+필요할 때 원복: bash ./GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt rollback
+검토 및 commit 후 코드 게이트: bash ./GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt gate-code
+다른 checkout은 --root 실제_DEV경로를 붙입니다. 첫 검사 뒤 대상을 바꿀 수 없습니다.
+파일 검토/commit은 패키지의 COMMIT_PATHS.txt를 기준으로 수행합니다.
+Git push/코드서빙 리비전 배포와 워크플로우 편집기 반영은 별도입니다.
+현장 질문 검증은 워크플로우 테스트 화면에서 수행합니다.
+
+변경 범위: 설치 경로 검사와 한 번 실행하는 진입점. R1의 제품 코드/워크플로우/JS 보존 조건은 동일합니다.
+R1 자체를 수정하지 않으며 R2는 고정 R1 ZIP으로만 준비합니다. 데이터/비밀값은 설치 대상이 아닙니다.
+MAIN123의 개발·실험 한계는 동봉 MAIN123_RESULTS.txt에 보존합니다.
+로컬 검증은 현장 배포 및 실제 질문 성공을 의미하지 않습니다.

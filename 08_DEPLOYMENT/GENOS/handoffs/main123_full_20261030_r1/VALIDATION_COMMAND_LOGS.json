@@ -1,0 +1,62 @@
+[
+  {
+    "command": "check",
+    "exit": 2,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nFAILED: Required MAIN123 file differs: 02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js\nMAIN123_EXIT=2 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162159Z-9.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "check",
+    "exit": 2,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nFAILED: Local changes preserved; replacement refused: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_EXIT=2 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162159Z-19.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "check",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162159Z-29.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "apply",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162200Z-39.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "apply",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123: code only; data, credentials and Git history unchanged\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162204Z-51.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "gate",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162206Z-63.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "gate-code",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nCODE_CHECK PASS {\"code_files\": 491, \"commit\": \"1b118d567084f3333c53149a7ec251f79be21d18\", \"code_zip_sha256\": \"e8c5dae250ba40cbdd0407cef5af97b16f5fb2681bb78de76c7cb329a24b2249\", \"code_manifest_sha256\": \"b5c76b370f29c8847c250d7cf7a81027dbce3e58f99f7d8bdaae2fbbfe6f61c7\"}\nGENOS_RELEASE_GATE PASS\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162208Z-77.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "rollback",
+    "exit": 2,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nFAILED: Newer changes exist; rollback refused: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_EXIT=2 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162210Z-92.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "rollback",
+    "exit": 0,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nROLLED_BACK_CODE: previous code bytes restored; data untouched\nMAIN123_EXIT=0 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162210Z-100.log\n",
+    "stderr": ""
+  },
+  {
+    "command": "apply",
+    "exit": 2,
+    "stdout": "TRANSFER=/tmp/main123-mail-check-u37hqafy/TRANSFER\nPACKAGE=/tmp/main123-mail-check-u37hqafy/TRANSFER/GENOS_MAIN123_FULL_20261030_R1\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-mail-check-u37hqafy/DEV\", \"physical\": \"/tmp/main123-mail-check-u37hqafy/DEV\"}\nFAILED: This delivery was rolled back; preserve its state and use a new extraction for a new install\nMAIN123_EXIT=2 LOG=/tmp/main123-mail-check-u37hqafy/TRANSFER/main123-full-r1-logs/20261029T162210Z-108.log\n",
+    "stderr": ""
+  }
+]

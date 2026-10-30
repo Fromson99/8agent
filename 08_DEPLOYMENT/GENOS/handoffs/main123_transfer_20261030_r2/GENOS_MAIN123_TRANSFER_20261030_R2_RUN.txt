@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+TASK_LOG_DIR="$PWD/main123-transfer-r2-logs"
+if [[ -L "$TASK_LOG_DIR" ]]; then echo "Refuse symlink log folder" >&2; exit 2; fi
+mkdir -p "$TASK_LOG_DIR"
+TASK_LOG="$TASK_LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_RC=$?; printf "%s\n" "$TASK_RC" > "$TASK_LOG.exit"; echo "MAIN123_TRANSFER_EXIT=$TASK_RC LOG=$TASK_LOG"' EXIT
+python3 -u - "$@" <<'MAIN123_TRANSFER_PY'
+"""Prepare the pinned installer beside the uploaded ZIP and invoke its original CLI."""
+import argparse
+import base64
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import stat
+import subprocess
+import sys
+import tempfile
+import zipfile
+import zlib
+
+NAME = 'GENOS_MAIN123_TRANSFER_20261030_R2'
+SOURCE_NAME = 'GENOS_MAIN123_FULL_20261030_R1'
+SOURCE_SHA256 = 'f6236b965ee5528e5130a79e277ec9b76e536be43bb8074ecaccceabd3d9f924'
+SPEC_SHA256 = '4000ba03afc0a4fe35e48c9f0e4342e4e906b22c889c3f91bb98a9f2ca4f36b2'
+OVERRIDES = json.loads(zlib.decompress(base64.b64decode('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')))
+
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def plain(path):
+    if any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError('Symlink path refused: ' + str(path))
+    return path
+
+
+def encoded(value):
+    return (json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()
+
+
+def verify(package):
+    plain(package)
+    raw = plain(package / 'PACKAGE.json').read_bytes()
+    if digest(raw) != SPEC_SHA256:
+        raise ValueError('R2 package manifest changed; existing state preserved')
+    spec = json.loads(raw)
+    for name, expected in spec['payload'].items():
+        if digest(plain(package / name).read_bytes()) != expected:
+            raise ValueError('R2 package file changed: ' + name)
+
+
+def prepare(transfer):
+    package = plain(transfer / NAME)
+    if package.exists():
+        verify(package)
+        print('REUSE_PACKAGE: existing backup and install state retained', flush=True)
+        return package
+    prior_state = transfer / SOURCE_NAME / 'INSTALL_STATE.json'
+    if prior_state.exists() or prior_state.is_symlink():
+        raise ValueError('R1 installation state already exists; preserve its recovery history: ' + str(prior_state))
+    archive = plain(transfer / (SOURCE_NAME + '.zip'))
+    if not archive.is_file():
+        raise ValueError('Run in the uploaded TRANSFER folder containing ' + archive.name)
+    if digest(archive.read_bytes()) != SOURCE_SHA256:
+        raise ValueError('R1 ZIP hash mismatch; no code changed')
+    # A preparation failure is retained here; the final package is published atomically.
+    staging = Path(tempfile.mkdtemp(prefix='.' + NAME + '.prepare-', dir=transfer))
+    print('PREPARING_PACKAGE=' + str(staging), flush=True)
+    with zipfile.ZipFile(archive) as source:
+        members = source.infolist()
+        names = [i.filename for i in members]
+        if len(names) != len(set(names)):
+            raise ValueError('Duplicate archive member')
+        for member in members:
+            path = PurePosixPath(member.filename)
+            if (path.is_absolute() or '..' in path.parts or '\\' in member.filename
+                    or stat.S_ISLNK(member.external_attr >> 16)):
+                raise ValueError('Unsafe archive member: ' + member.filename)
+        source.extractall(staging)
+    spec = json.loads((staging / 'PACKAGE.json').read_bytes())
+    for name, expected in spec['payload'].items():
+        if digest(plain(staging / name).read_bytes()) != expected:
+            raise ValueError('R1 payload mismatch: ' + name)
+    for name, text in OVERRIDES.items():
+        raw = text.encode()
+        (staging / name).write_bytes(raw)
+        spec['payload'][name] = digest(raw)
+    spec['version'] = NAME
+    raw = encoded(spec)
+    if digest(raw) != SPEC_SHA256:
+        raise ValueError('Derived R2 manifest mismatch; no code changed')
+    (staging / 'PACKAGE.json').write_bytes(raw)
+    verify(staging)
+    staging.rename(package)
+    return package
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command', nargs='?', default='apply',
+                        choices=['check', 'apply', 'gate', 'gate-code', 'gate-sqlite', 'rollback', 'status'])
+    parser.add_argument('--root', type=Path, default=Path.home() / 'DEV')
+    args = parser.parse_args()
+    transfer = Path.cwd().resolve(strict=True)
+    plain(transfer)
+    with plain(transfer / '.main123-transfer-r2.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        package = prepare(transfer)
+        print('TRANSFER=' + str(transfer), flush=True)
+        print('PACKAGE=' + str(package), flush=True)
+        print('DEV_REQUESTED=' + str(args.root), flush=True)
+        command = [sys.executable, '-u', str(package / 'runner.py')]
+        if args.command == 'apply':
+            checked = subprocess.call(command + ['check', '--root', str(args.root)])
+            if checked:
+                return checked
+        return subprocess.call(command + [args.command, '--root', str(args.root)])
+
+
+if __name__ == '__main__':
+    try:
+        raise SystemExit(main())
+    except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
+        print('MAIN123_TRANSFER_FAILED: ' + str(exc), file=sys.stderr, flush=True)
+        raise SystemExit(2)
+
+MAIN123_TRANSFER_PY

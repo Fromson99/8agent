@@ -1,0 +1,69 @@
+{
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "main": 123,
+  "attachments": [
+    {
+      "filename": "GENOS_MAIN123_FULL_20261030_R1.zip",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_full_20261030_r1/GENOS_MAIN123_FULL_20261030_R1.zip",
+      "bytes": 5043865,
+      "sha256": "f6236b965ee5528e5130a79e277ec9b76e536be43bb8074ecaccceabd3d9f924"
+    },
+    {
+      "filename": "GENOS_MAIN123_FULL_20261030_R1_RUN.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_full_20261030_r1/GENOS_MAIN123_FULL_20261030_R1_RUN.txt",
+      "bytes": 1031,
+      "sha256": "a85721ffa58881100ad36f0e4c89e45a4c4e0880a2f3d5d16ba2022b44019dc9"
+    },
+    {
+      "filename": "GENOS_MAIN123_WORKFLOW_PASTE_ALL.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_full_20261030_r1/GENOS_MAIN123_WORKFLOW_PASTE_ALL.txt",
+      "bytes": 135781,
+      "sha256": "c059486140f5db8c8d7b356fb5aa4e01d80df80077ad28be2bb8786eaef0c7f3"
+    },
+    {
+      "filename": "MAIN123_RESULTS.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_full_20261030_r1/MAIN123_RESULTS.txt",
+      "bytes": 7711,
+      "sha256": "7e56c1074a8993c3c92c7a5ab2adfa4fe67d7ff5b15b1443b1f225b3bb716b2f"
+    },
+    {
+      "filename": "GUIDE.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main123_full_20261030_r1/GUIDE.txt",
+      "bytes": 4188,
+      "sha256": "44670ca8947fbcdb844d7004330322d335f8f6306dd9d6d9e2576be2525fc745"
+    }
+  ],
+  "code_files": 491,
+  "preserved_js": {
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+  },
+  "selected_binding": {
+    "main": 123,
+    "release_id": "source-semantics-20261030-r1",
+    "selected_serving_files": 489,
+    "included_serving_files": 488,
+    "auxiliary_files": [
+      "requirements-serving.txt",
+      "requirements.txt",
+      "06_TOOLS/COMMANDS/genos_generation_e2e.py"
+    ],
+    "preserve_existing": {
+      "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+    },
+    "tested_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/source-semantics-20261030-r1/code",
+    "release_manifest_sha256": "7c813df54c34c9111adeeb0b0337b58b812768c2ea537f8209ea7160855c7b5a",
+    "code_zip_sha256": "e8c5dae250ba40cbdd0407cef5af97b16f5fb2681bb78de76c7cb329a24b2249",
+    "workflow_sha256": "c059486140f5db8c8d7b356fb5aa4e01d80df80077ad28be2bb8786eaef0c7f3",
+    "local_generation_path": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+    "local_generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "deployment_checkout_requested": "~/DEV",
+    "field_checkout_physical": null,
+    "field_commit": null,
+    "field_generation_path": null,
+    "field_generation_manifest_sha256": null,
+    "field_code_serving_revision": null,
+    "field_runtime": null,
+    "quality_certified": false,
+    "field_deployment_verified": false
+  }
+}

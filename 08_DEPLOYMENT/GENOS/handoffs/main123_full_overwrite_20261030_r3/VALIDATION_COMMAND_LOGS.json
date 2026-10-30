@@ -1,0 +1,158 @@
+[
+  {
+    "r2_photo_reproduction": true,
+    "exit": 2,
+    "stdout": "PREPARING_PACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/.GENOS_MAIN123_TRANSFER_20261030_R2.prepare-vhyvq8nh\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_TRANSFER_20261030_R2\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nFAILED: Required MAIN123 file differs: 02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js\nMAIN123_TRANSFER_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-transfer-r2-logs/20261030T010009Z-621704.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_FULL_FAILED: R3 ZIP hash mismatch; no code changed\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010010Z-621718.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_FULL_FAILED: Symlink path refused: /tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010010Z-621723.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_FULL_FAILED: [Errno 11] Resource temporarily unavailable\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010010Z-621728.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "PREPARING_PACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/.GENOS_MAIN123_FULL_OVERWRITE_20261030_R3.prepare-py34poet\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\nFAILED: Symlink path refused: /tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/02_BACKEND/semantic_runtime/ontology_work/recorded_fields.py\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010010Z-621733.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "check"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010010Z-621741.log\n",
+    "stderr": ""
+  },
+  {
+    "injected_actual_write_failure": true,
+    "exit": 17,
+    "stdout": "{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nINJECTED_DISK_WRITE_FAILURE_AFTER_FOUR_FILES\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123 FULL R3: all 492 code files verified; original files backed up\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010012Z-621757.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123 FULL R3: all 492 code files verified; original files backed up\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010016Z-621768.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nFAILED: Checkout changed after preparation: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621848.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nFAILED: Newer changes exist; rollback refused: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621870.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nFAILED: Backup changed: 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621878.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "MAIN123_FULL_FAILED: R3 package file changed: payload/02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js.txt\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621886.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "check",
+      "--root",
+      "/tmp/main123-full-r3-validation-6z8tzbin/another-dev"
+    ],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/another-dev\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/another-dev\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/another-dev\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/another-dev\", \"inside_checkout\": false}\nFAILED: DEV target changed since first check; no automatic retargeting\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621892.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "check"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010021Z-621900.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "gate-code"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nCODE_CHECK PASS {\"code_files\": 492, \"commit\": \"c36c426a3ca176f2e073ab102bd0f988dc4bea5f\", \"code_zip_sha256\": \"b536774c3d4e7dda1b6742bf7e2d3ba8cbeb203030edfae723ca74523a162540\", \"code_manifest_sha256\": \"08a8e01e1a6e7af9f27f1e3722ca8cd798bc599982c61d9b9d74a07147b5efbd\"}\nGENOS_RELEASE_GATE PASS\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010023Z-621913.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": true,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nROLLED_BACK_CODE: previous code bytes restored; data untouched\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010025Z-621926.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": true,
+    "exit": 2,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace\", \"inside_checkout\": true}\nFAILED: This delivery was rolled back; preserve its state and use a new extraction for a new install\nMAIN123_FULL_EXIT=2 LOG=/tmp/main123-full-r3-validation-6z8tzbin/nested/workspace/TRANSFER/main123-full-overwrite-r3-logs/20261030T010025Z-621934.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [],
+    "nested": false,
+    "exit": 0,
+    "stdout": "PREPARING_PACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/.GENOS_MAIN123_FULL_OVERWRITE_20261030_R3.prepare-xr7aic1y\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/outside/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\", \"inside_checkout\": false}\nCHECK_PASS MAIN123: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\", \"inside_checkout\": false}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\", \"files\": 492, \"python\": \"/usr/bin/python3\", \"version\": \"3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN123 FULL R3: all 492 code files verified; original files backed up\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/main123-full-overwrite-r3-logs/20261030T010028Z-622010.log\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "rollback"
+    ],
+    "nested": false,
+    "exit": 0,
+    "stdout": "REUSE_PACKAGE: existing backup and install state retained\nTRANSFER=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER\nPACKAGE=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\nDEV_REQUESTED=/tmp/main123-full-r3-validation-6z8tzbin/outside/home/genos/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/home/genos/DEV\", \"physical\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3\", \"checkout\": \"/tmp/main123-full-r3-validation-6z8tzbin/outside/workspace\", \"inside_checkout\": false}\nROLLED_BACK_CODE: previous code bytes restored; data untouched\nMAIN123_FULL_EXIT=0 LOG=/tmp/main123-full-r3-validation-6z8tzbin/outside/TRANSFER/main123-full-overwrite-r3-logs/20261030T010032Z-622163.log\n",
+    "stderr": ""
+  }
+]

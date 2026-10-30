@@ -1,0 +1,45 @@
+{
+  "schema_version": "qwen38-provider-routing-v1",
+  "model": "qwen/qwen3.8-27b",
+  "providers": [
+    {
+      "tag": "parasail/fp8",
+      "name": "Parasail"
+    },
+    {
+      "tag": "near-ai/fp8",
+      "name": "Near AI"
+    }
+  ],
+  "switch_http_status": [
+    429
+  ],
+  "max_provider_switches": 1,
+  "model_fallback": false,
+  "quantizations": [
+    "fp8"
+  ],
+  "reasoning": {
+    "effort": "none"
+  },
+  "authorization": {
+    "source": "user_message",
+    "text": "parasail로 바꿔봐봐",
+    "session_id": "01a18102-29c3-78b3-9b53-cc33aaca63e7",
+    "date": "2026-10-29",
+    "retained_rule": "Previously authorized known HTTP429 only, one switch to Near AI"
+  },
+  "reason": "User requested Parasail primary after Chutes noncompletion diagnosis; speed/reliability improvement unverified.",
+  "previous_error": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1171-source-goal-execution-model-probe/artifacts/model-probe/qwen38/cm-001/1/raw/call-001-saved-next-action/response.json",
+    "sha256": "b38398179ff37b2a2328a371c1500810f38fc20d7682627903fa3e4e88a11243"
+  },
+  "metadata": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1171-source-goal-execution-model-probe/artifacts/qwen38-provider-endpoints-after429.json",
+    "sha256": "14e1753caab0335e07196ffc5a60526fe4bad69c7799e61fc317469df201ae0f"
+  },
+  "previous_policy": {
+    "path": "08_DEPLOYMENT/RELEASES/requirement-coverage-20261029-r1/code/00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json",
+    "sha256": "5756a4397dc9e1d3f74fd869b4fa288e63c7ad165d4fa0fc4484413abd4a9c9e"
+  }
+}

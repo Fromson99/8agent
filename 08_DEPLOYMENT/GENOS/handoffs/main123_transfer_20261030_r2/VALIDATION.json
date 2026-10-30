@@ -1,0 +1,224 @@
+{
+  "passed": 54,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic R1 ZIP hash mismatch",
+      "passed": true
+    },
+    {
+      "name": "bad ZIP leaves code and package untouched",
+      "passed": true
+    },
+    {
+      "name": "exact R1 photo failure reproduced before any code changes",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic R1 installation state already exists",
+      "passed": true
+    },
+    {
+      "name": "prior installer state preserved",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic Symlink path refused",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic Resource temporarily unavailable",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic Local changes preserved",
+      "passed": true
+    },
+    {
+      "name": "check failure never enters apply",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic Required MAIN123 file differs",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic APPLIED MAIN123",
+      "passed": true
+    },
+    {
+      "name": "all 489 selected code files match after default command",
+      "passed": true
+    },
+    {
+      "name": "data and env unchanged",
+      "passed": true
+    },
+    {
+      "name": "R1 package and failure logs retained in TRANSFER",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic REUSE_PACKAGE",
+      "passed": true
+    },
+    {
+      "name": "repeat preserves original state and every backup byte",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic APPLIED MAIN123",
+      "passed": true
+    },
+    {
+      "name": "partial application resumes with original backup/state",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['check'] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic REUSE_PACKAGE",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic R2 package file changed",
+      "passed": true
+    },
+    {
+      "name": "tampered package refuses without changing checkout",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['check', '--root', '/tmp/main123-transfer-r2-validation-_tlzv64i/another-dev'] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic DEV target changed",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['gate-code'] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic CODE_GATE_PASS",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['rollback'] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic Newer changes exist",
+      "passed": true
+    },
+    {
+      "name": "rollback refusal makes no partial restoration",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['rollback'] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic ROLLED_BACK_CODE",
+      "passed": true
+    },
+    {
+      "name": "rollback restores exact pre-install code set and bytes",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] refuses",
+      "passed": true
+    },
+    {
+      "name": "diagnostic This delivery was rolled back",
+      "passed": true
+    },
+    {
+      "name": "every wrapper run retains log and exit code",
+      "passed": true
+    },
+    {
+      "name": "location overlap refused: workspace",
+      "passed": true
+    },
+    {
+      "name": "location overlap refused: nested",
+      "passed": true
+    },
+    {
+      "name": "location overlap refused: package",
+      "passed": true
+    },
+    {
+      "name": "location overlap refused: 02_BACKEND",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT [] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic APPLIED MAIN123",
+      "passed": true
+    },
+    {
+      "name": "actual one-command TXT ['rollback'] succeeds",
+      "passed": true
+    },
+    {
+      "name": "diagnostic ROLLED_BACK_CODE",
+      "passed": true
+    },
+    {
+      "name": "external TRANSFER remains supported",
+      "passed": true
+    }
+  ],
+  "model_calls": 0,
+  "field_genos_verified": false
+}

@@ -1,0 +1,28 @@
+# GENOS code serving and data pipeline (Python 3.11).
+# PDF layout/OCR runs in the GENOS preprocessor. Keep docling-core only to
+# validate its structured response. Local PDF/DOCX Docling parsing needs a
+# separate opt-in installation and is outside this GENOS deployment profile.
+beautifulsoup4==4.15.0
+docling-core==2.97.0
+fastapi==0.141.1
+httpx==0.28.1
+jsonschema==4.26.0
+# Fulltext build and serving must use the same PeCab tokenizer version.
+pecab==1.0.8
+pyarrow==25.0.1
+regex==2026.9.10
+emoji==1.2.0
+pytest==9.1.1  # PeCab 1.0.8 declares pytest as an install dependency.
+numpy==2.4.6
+openpyxl==3.1.5
+pdfplumber==0.11.10
+pyhwp==0.1b15
+pymupdf==1.28.2
+python-docx==1.2.0
+python-dotenv==1.2.2
+python-multipart==0.0.32
+pyyaml==6.0.3
+referencing==0.37.0
+requests==2.34.2
+# Translate maintained relational reads for the Oracle query provider.
+sqlglot==30.23.0

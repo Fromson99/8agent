@@ -1,0 +1,42 @@
+GENOS MAIN123 전체 덮어쓰기 R3
+
+대상: GENOS 코드스페이스의 기존 ~/DEV. 이전 R1/R2 또는 과거 패치를 먼저 적용할 필요 없습니다.
+첨부 GENOS_MAIN123_FULL_OVERWRITE_20261030_R3.zip, GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt, 이 GUIDE.txt를 실제 업로드 TRANSFER에 올립니다.
+현재 작업 위치를 그 TRANSFER로 두고 터미널에서 아래 한 줄을 실행합니다.
+
+bash ./GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt
+
+사전 압축 해제와 폴더 이동 없이 ZIP 검증 → 준비 → 검사 → 원본 백업 → 492개 코드 덮어쓰기 → 전체 코드/엔진/워크플로우 해시 검증을 수행합니다.
+선택 MAIN123의 489개 서빙 파일과 기존 인계 운영보조 3개를 포함합니다.
+누락 파일, 옛 파일, 현장 수정본, 미추적 코드 대상까지 현재 상태를 백업한 뒤 교체합니다. 사진에서 불일치한 app.js도 포함됩니다.
+메일 첨부 확장자 기준에 맞춰 app.js 본문은 ZIP 안에서 app.js.txt로 전달하고, 설치 시 원래 app.js 경로에 정확한 바이트로 복원합니다.
+제품 코드 내용은 선택 MAIN123과 같습니다. DB/원문/세대/.env/가상환경/Git 이력/기존 반입 폴더와 대상 밖 파일은 덮어쓰지 않습니다.
+
+완료 확인:
+APPLIED MAIN123 FULL R3: all 492 code files verified; original files backed up
+MAIN123_FULL_EXIT=0
+
+백업/상태: 현재 TRANSFER/GENOS_MAIN123_FULL_OVERWRITE_20261030_R3/backup/ 및 INSTALL_STATE.json.
+로그/종료코드: 현재 TRANSFER/main123-full-overwrite-r3-logs/.
+이 폴더들은 원복에 필요하므로 보존합니다. 원래 R1/R2 폴더와 실패 로그도 그대로 남습니다.
+중간에 끊겼으면 같은 명령을 다시 실행합니다. 기존 백업과 진행 상태를 읽어 before/after가 일치하는 파일만 이어갑니다.
+설치 시작 이후 별도 수정, 패키지/백업 변조, 다른 DEV 대상은 자동 덮어쓰지 않고 중단합니다.
+재실행 상태 조회: bash ./GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt status
+검사만: bash ./GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt check
+원복이 필요한 경우: bash ./GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt rollback
+원복은 R3 실행 직전 코드 바이트를 복원합니다. 원복한 설치 상태를 새 설치로 초기화하지 않습니다.
+
+Git commit/push, 코드서빙 리비전 배포, 워크플로우 편집기 반영은 별도입니다.
+검토: git -C ~/DEV diff --check
+검토: git -C ~/DEV diff --stat
+GENOS_MAIN123_FULL_OVERWRITE_20261030_R3/COMMIT_PATHS.txt의 코드 파일 목록을 검토해 commit합니다. TRANSFER 전체를 git add하지 않습니다.
+commit 후 게이트: bash ./GENOS_MAIN123_FULL_OVERWRITE_20261030_R3_RUN.txt gate-code
+NFS generation을 쓰는 환경에서만 기존 실제 선택 세대를 대상으로 별도 gate-sqlite 검증을 수행합니다.
+해당 세대 경로/manifest 해시와 통과 commit을 기록한 뒤 push·새 코드서빙 리비전 배포를 수행합니다.
+워크플로우 편집기는 패키지 안 GENOS_MAIN123_WORKFLOW_PASTE_ALL.txt 전체를 반영합니다.
+실제 질문/웜업은 워크플로우 테스트 화면에서 수행하고 요청 ID/답변을 확인합니다.
+현장 세대/리비전/실제 질문 성공은 여기서 확인한 것이 아닙니다.
+
+필요할 때만 --root 실제_DEV경로를 명령 끝에 붙입니다. 기본값은 기존 ~/DEV이며 첫 검사 뒤 대상을 바꿀 수 없습니다.
+이전 R1/R2 실행 안내 대신 이 R3 ZIP과 R3 실행 TXT를 함께 사용합니다.
+MAIN123의 개발·실험 한계는 동봉 MAIN123_RESULTS.txt에 보존했습니다.

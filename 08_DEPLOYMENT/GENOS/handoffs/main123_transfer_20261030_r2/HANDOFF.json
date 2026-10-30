@@ -1,0 +1,42 @@
+{
+  "run_file": "GENOS_MAIN123_TRANSFER_20261030_R2_RUN.txt",
+  "run_sha256": "8f8f4a3db995aff438a1c28abaa40aceee23fd9121469d4112647c03ca0796a1",
+  "run_bytes": 12131,
+  "source_zip_sha256": "f6236b965ee5528e5130a79e277ec9b76e536be43bb8074ecaccceabd3d9f924",
+  "derived_package_sha256": "4000ba03afc0a4fe35e48c9f0e4342e4e906b22c889c3f91bb98a9f2ca4f36b2",
+  "source_runner_sha256": "c4d621d3d4a2c48e3e2f0a778f437638cc44f6a0635bc6b399a7cfa4137b8d1a",
+  "runner_sha256": "7f3dd439fab06d24f6a0fe466797c224af1e2cefebe312042da58eba00a6baa0",
+  "code_files": 492,
+  "selected_binding": {
+    "main": 123,
+    "release_id": "source-semantics-20261030-r1",
+    "selected_serving_files": 489,
+    "included_serving_files": 488,
+    "auxiliary_files": [
+      "requirements-serving.txt",
+      "requirements.txt",
+      "06_TOOLS/COMMANDS/genos_generation_e2e.py"
+    ],
+    "preserve_existing": {
+      "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+    },
+    "tested_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/source-semantics-20261030-r1/code",
+    "release_manifest_sha256": "7c813df54c34c9111adeeb0b0337b58b812768c2ea537f8209ea7160855c7b5a",
+    "code_zip_sha256": "e8c5dae250ba40cbdd0407cef5af97b16f5fb2681bb78de76c7cb329a24b2249",
+    "workflow_sha256": "c059486140f5db8c8d7b356fb5aa4e01d80df80077ad28be2bb8786eaef0c7f3",
+    "local_generation_path": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+    "local_generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "deployment_checkout_requested": "~/DEV",
+    "field_checkout_physical": null,
+    "field_commit": null,
+    "field_generation_path": null,
+    "field_generation_manifest_sha256": null,
+    "field_code_serving_revision": null,
+    "field_runtime": null,
+    "quality_certified": false,
+    "field_deployment_verified": false
+  },
+  "product_code_changed": false,
+  "field_deployment_verified": false,
+  "email_sent": false
+}
