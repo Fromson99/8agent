@@ -1,0 +1,17 @@
+사용자 요청: 이관 지연 구조 진단 + 실제 Dataiku load의 1회 6시간 cap 제거.
+봉인 R3에서 R4를 만든다. 이미 배포된 R2/R3/현재 MAIN/현장 DB는 직접 수정하지 않는다.
+분석: 20행/256KiB 배치, SOURCE_JSON/TEXT의 1000 UTF-16 조각 조회,
+매 SQL STARTED/ACKNOWLEDGED 각각 fsync, 64SQL마다 S3 예산 예약,
+적재중 readback + verify + final_source verify, verify 재개 시 cursor=0.
+이는 코드 경로 확인이며 현장 시간 비율/속도 실측은 아니다.
+변경: existing_client seconds=None + import_generation None 지원/21600 상한 제거.
+원래 저장된 7일 deadline과 누적 SQL/HTTP 호출예산은 유지한다.
+단일한 알려진 R2/R3 full 코드 hash의 동일 data/generation/target checkpoint만 호환한다.
+기존 identity와 journal binding은 변경하지 않는다. 원래 checkpoint의 hash와
+이번 execution code hash를 별도 호환 영수증에 기록하여 원 코드와 실행 코드를 구분한다.
+UNKNOWN/다른 target/data/generation/code는 거절. 기존 pending/실패/호출/기한 보존.
+검증: 봉인 패키지/실제 전달 노트북을 쓰는 합성 Oracle/Dataiku 포트 검사;
+가상 clock 6시간 경과 후 계속 실행, 원래 deadline/호출 소진 차단, R2/R3 재개,
+반복 load 중복 쓰기 없음, 호환되지 않는 binding 거절. 실제 6시간 대기나 현장 A/B 아님.
+새 프로파일/실모델/실제 DB DML/DDL/GENOS 배포/Git/전체 코퍼스 실험 없음.
+첨부는 실제 코드 ZIP + 실행 TXT 두 개. 외부 묶음 ZIP을 만들지 않는다.

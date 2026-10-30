@@ -1,0 +1,41 @@
+{
+  "to": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "[기존 NFS 이관 R3] 속도 개선 · R2 중단 지점 재개",
+  "attachments": [
+    {
+      "filename": "DATAIKU_EXISTING_NFS_FAST_R3_20261030.zip",
+      "sha256": "c172fa9b6ef4940837a35c6a4f17073b3307c25c5f50fe0e573f29639ff7f66b",
+      "bytes": 312453
+    },
+    {
+      "filename": "DATAIKU_EXISTING_NFS_RUN_R3.txt",
+      "sha256": "a5cb4e914385b08e0f23a4a9e55eda61cbe82064791f85015b93525c961db0c8",
+      "bytes": 4414
+    },
+    {
+      "filename": "DATAIKU_NFS_PROGRESS_R3.txt",
+      "sha256": "70a453059fbeb45a0d3411b730d435bffc24f201e56ba5cbf28aa37fd19bfbca",
+      "bytes": 5440
+    },
+    {
+      "filename": "GUIDE.txt",
+      "sha256": "adf6f84ef15f2047c0ca446de0d7cc356d447e53892bc8d69a96a24a5d8df7ed",
+      "bytes": 4475
+    }
+  ],
+  "zip_checks": [
+    {
+      "archive": "DATAIKU_EXISTING_NFS_FAST_R3_20261030.zip/DATAIKU_EXISTING_NFS_CLIENT_20261030_R3.zip",
+      "members": 78,
+      "javascript_files": 0
+    },
+    {
+      "archive": "DATAIKU_EXISTING_NFS_FAST_R3_20261030.zip",
+      "members": 6,
+      "javascript_files": 0
+    }
+  ],
+  "user_requested_send": true,
+  "estimate": "conditional calculation only; f=0.5 or 0.8, k=4, S=1/(1-f+f/k)",
+  "field_speedup_measured": false
+}

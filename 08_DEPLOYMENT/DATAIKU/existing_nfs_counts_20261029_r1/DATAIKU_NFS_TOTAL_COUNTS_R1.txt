@@ -1,0 +1,43 @@
+# Dataiku 조회용 Python 노트북의 새 셀에 전체 내용을 붙여넣고 실행하세요.
+# Python 셀용입니다. bash로 실행하지 않습니다.
+# 저장된 manifest만 읽습니다. Oracle/GENOS 호출, 적재, 파일 쓰기는 없습니다.
+import json
+import tempfile
+from pathlib import Path
+import dataiku
+
+
+def show_total_counts():
+    base = Path(dataiku.get_custom_variables().get("LEGAL_PIPELINE_SCRATCH")
+                or tempfile.gettempdir()).expanduser().resolve()
+    path = (base / "legal-existing-nfs-20261029-r1"
+            / "financial-risk-success-20261005-schema-r2" / "full-manifest.json")
+    print("조회 파일:", path)
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        print("이 노트북에서 manifest가 보이지 않습니다.")
+        print("기존 로그 조회 노트북과 같은 실행 환경 및 LEGAL_PIPELINE_SCRATCH 설정을 확인하세요.")
+        print("파일이 안 보인다는 이유만으로 적재 중단이나 데이터 0건으로 판단하지 마세요.")
+        return
+    except (OSError, ValueError) as exc:
+        print("manifest 읽기 실패:", type(exc).__name__)
+        return
+    counts = manifest.get("source_counts") if isinstance(manifest, dict) else None
+    keys = ("document", "source_unit", "block_payload")
+    if (not isinstance(counts, dict) or set(counts) != set(keys)
+            or any(type(counts[key]) is not int or counts[key] < 0 for key in keys)):
+        print("source_counts의 원문 3테이블 건수 형식을 확인할 수 없습니다.")
+        return
+    print("데이터 버전:", manifest.get("dataset_version", "미기록"))
+    for key, label in (("document", "문서"), ("source_unit", "원문 구조 단위"),
+                       ("block_payload", "원문 본문 블록")):
+        print("{} ({}): {:,}건".format(label, key, counts[key]))
+    print("원문 적재 전체 행 수: {:,}건".format(sum(counts.values())))
+    print("사진의 337,340건은 당시 source_unit의 검증 완료 건수입니다.")
+    print("source_unit 총건수와 비교하세요. 사진의 수치는 현재 진행률이 아닙니다.")
+    print("전체 행 수는 원문 3테이블의 합계이며 서로 다른 문서 수가 아닙니다.")
+    print("후속 자산·조회 색인 게시 및 재검증 작업량은 이 합계에 포함되지 않습니다.")
+
+
+show_total_counts()

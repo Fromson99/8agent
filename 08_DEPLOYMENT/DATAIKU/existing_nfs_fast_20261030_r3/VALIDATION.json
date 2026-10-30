@@ -1,0 +1,49 @@
+{
+  "status": "LOCAL_VALIDATION_PASSED_FIELD_UNVERIFIED",
+  "created_at": "2026-10-30T00:02:36.826755+00:00",
+  "tests_passed": 28,
+  "tests": {
+    "contracts": {
+      "log": "test-final.log",
+      "result": "23 passed",
+      "sha256": "38ee0eb6d1e1e7295ca5e9e1456edcc727f3400edf2019fcb8945a795e69f2bb"
+    },
+    "native_notebook": {
+      "log": "test-notebook-third.log",
+      "result": "1 passed",
+      "sha256": "818a3f2c8256c9c216cc3810277c3f36702943fa8f458e32950897df90ae115a"
+    },
+    "local_oracle_readonly": {
+      "log": "test-oracle-32-final.log",
+      "result": "4 passed",
+      "sha256": "e39660eefe18bfac53a5441edc2a808d51f48e848d2055481d34da0ec0f61d4e"
+    }
+  },
+  "client_zip": {
+    "sha256": "9c9e6d5bcaf1bff809a763c9d13ee6d0f455322697cc09f2bf8c6b6480c62006",
+    "bytes": 308464
+  },
+  "checkpoint_identity_unchanged": true,
+  "field_sql_sha256_match": {
+    "kind": "block_payload",
+    "column": "SOURCE_JSON",
+    "sha256": "8554f318fb41795771c8910e68d4175713dfdb648d3f4c21ccf1ad7ba85bc5de"
+  },
+  "field_performance_measured": false,
+  "local_oracle": "26ai / SELECT-only synthetic CLOB; no table DML or DDL",
+  "server_changed": false,
+  "main_changed": false,
+  "email_sent": false,
+  "preexisting_whitespace_failure": "02_BACKEND/semantic_runtime/legal_agent/wire_schema.py:99",
+  "failure_logs": [
+    "test-initial.log",
+    "test-notebook-initial.log",
+    "test-notebook-second.log",
+    "test-oracle-final.log",
+    "test-oracle-fourth.log",
+    "test-oracle-initial.log",
+    "test-oracle-second.log",
+    "test-oracle-third.log",
+    "test-second.log"
+  ]
+}

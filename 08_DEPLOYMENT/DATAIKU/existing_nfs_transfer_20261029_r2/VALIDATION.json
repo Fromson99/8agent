@@ -1,0 +1,62 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "total_tests": 106,
+  "new_tests": 24,
+  "related_tests": 82,
+  "test_log": "test-qualified.log",
+  "test_log_sha256": "dde7dd500bbc481ce0f50d25fda7e7313cbd891a1df24098403c6a9021efdced",
+  "tests": [
+    "05_TESTS/CONTRACTS/test_existing_nfs_mapped_recovery.py",
+    "05_TESTS/CONTRACTS/test_oracle_full_package.py",
+    "05_TESTS/CONTRACTS/test_oracle_deferred_indexes.py",
+    "05_TESTS/CONTRACTS/test_oracle_existing_nfs.py",
+    "05_TESTS/CONTRACTS/test_oracle_query_schema.py",
+    "05_TESTS/CONTRACTS/test_oracle_query_blob_export.py",
+    "05_TESTS/CONTRACTS/test_dataiku_pipeline_mapped.py",
+    "05_TESTS/CONTRACTS/test_dataiku_pipeline_layers.py"
+  ],
+  "new_test_sha256": "383abafe47a7f0e21d4b003d932299e2d4375088630eb41ef3e65715a81195d9",
+  "native_notebook_runner_sha256": "d9d3bba35198b5046d0127ae8bd392e62d9d402787bc503c24dc971dc600d25b",
+  "code_files": {
+    "PACKAGE_FILES.json": "b2d541e9b2974565eabbcb690371444d4373d692a1d7f8fe65f6bef53b5a4ae6",
+    "client/02_BACKEND/lawrag/pipeline/oracle_full_package.py": "36e52b270f8b9f73b1bfdd92d60a742afcc04fed969bce98af828dda6e54d267",
+    "client/02_BACKEND/lawrag/pipeline/oracle_query_publish.py": "7bc91abe44fe90a6facbbf1f393ec0406795e8fa595dd660e5766d3dc27fbbeb",
+    "client/CODE_PINS.json": "fba7c2a3c86000513ab61f6707a9b552d5d6cb359b212d85935319d52013b897",
+    "existing_client.py": "de07f99ee18f444eba8b808a0542e3d06c9eadeef86a166e5ca1e0259363043f"
+  },
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "verified": [
+    "sealed R1 KeyError reproduced before source writes",
+    "real SchemaMap.preflight checks all declared objects; no mapped missing-index bypass",
+    "full importer mapped row write/readback and count; old physical SQL rejected at boundary",
+    "native delivered notebook check/transfer/load/status, R1 failure and R2 recovery",
+    "old kernel rejected before network call",
+    "original failure archive and append-only checkpoints byte-identical",
+    "full scratch loss before/after R2 restored from managed folder without NFS chunk reread",
+    "same original deadline and cumulative HTTP/SQL budget",
+    "duplicate full load adds no writes; uncertain source/asset/query writes reconcile",
+    "tampered readback, invalid old code/target/stage/write/status and expired budget rejected",
+    "legacy schemas and BLOB exact-byte contracts retained",
+    "ZIP manifest and inner pins verified, packaged Python3.9 syntax, working/payload file equality"
+  ],
+  "boundaries_mocked": [
+    "Oracle SQL execution",
+    "Dataiku SDK",
+    "GENOS network"
+  ],
+  "initial_failures": {
+    "test-initial.log": "1 product failure: additional legacy query publication SQL exposed; 18 passed",
+    "test-notebook-initial.log": "same product failure plus test runner import setup error; 18 passed",
+    "test-second.log": "product corrected; runner import setup error remained; 19 passed",
+    "test-third.log": "20 passed after runner isolated test doubles with AST; subsequent expanded final suite has 106 passed"
+  },
+  "inherited_working_change": "existing BLOB response base64-v1 transport was missing from R1 client; included and regression-tested",
+  "main_release": "accepted-answer-20261029-r1 / MAIN117 unchanged",
+  "server_code_sha256": "4128545aa472ea5af38ff50fffb3e65b89cb8c6322940d1f60abbf683c1ae0a9",
+  "server_changed": false,
+  "field_applied": false,
+  "field_oracle_loaded": false,
+  "new_model_calls": 0,
+  "git_commit_push": false,
+  "email_sent": false
+}

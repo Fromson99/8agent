@@ -1,0 +1,32 @@
+{
+  "status": "LOCAL_CONTRACTS_PASSED",
+  "unique_tests": 48,
+  "test_log_sha256": "cec25ec9907b0988edab3720148314b5c361d3ba0a706c02ea23c0c28d3b53ce",
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "server_code_sha256": "4128545aa472ea5af38ff50fffb3e65b89cb8c6322940d1f60abbf683c1ae0a9",
+  "checks": [
+    "whole delivered Dataiku notebook check/transfer/load/status with SDK+Oracle boundary fixtures",
+    "503 read retry and capped exhaustion; original deadline and reserved budget retained",
+    "whole local scratch loss restores from managed-folder chunks and Oracle receipts without duplicate writes",
+    "source byte/mtime unchanged, changed source/metadata/WAL/selection and undeclared file rejected",
+    "3.3MB fulltext manifest accepted with metadata16MiB",
+    "native delivered async service INFO/READ and no compute handles",
+    "actual synthetic Git checkout apply/reapply/stage/commit/code verification/generation E2E/verify_assets/rollback",
+    "existing full importer regressions and silver/agent mapping contracts",
+    "bash syntax; Python3.9 parse for packaged Python; no JavaScript recursively"
+  ],
+  "mock_boundaries": [
+    "Dataiku SDK/Oracle execution ports",
+    "fixed NFS root replaced with synthetic fixture in native tests"
+  ],
+  "earlier_build_error": "INITIAL_FAILURES.json",
+  "earlier_test_failures": 0,
+  "review_correction": "NFS_VERIFY runs in check and before push, not in pre-commit stage; environment/commit/entry hashes reported",
+  "field_nfs_bytes_verified": false,
+  "field_revision_verified": false,
+  "field_oracle_loaded": false,
+  "new_model_calls": 0,
+  "main_changed": false,
+  "active_release_changed": false,
+  "performance_or_legal_quality_certification": false
+}

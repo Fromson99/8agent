@@ -1,0 +1,80 @@
+NFS→Dataiku→Oracle 이관 지연 구조와 6시간 제한 제거 / 2026-10-30
+
+판정
+이관 코드에 대규모 데이터에서 비용이 커지는 구조가 확인된다.
+원문 본문을 작은 조각으로 원격 조회하는 방식, 작은 배치, 여러 번의 전체 검증,
+전체 검증 중단 시 처음부터 다시 읽는 구조가 핵심이다. 현장 각 비용의 비율과
+Oracle 서버 내부 실행계획/성능은 미측정이므로 이 증거만으로 병목 점유율이나
+몇 배 빨라질지, 완료시간을 확정하지 않는다.
+
+현장 관찰과 코드 증거
+- 사진: 원문 단계 PAUSED, 문서 2,121 / source_unit 356,537 /
+  block_payload 205,707 검증, 누적 SQL 158,847. pending 4는 당시 배치만 뜻한다.
+- 반복 SQL hash 8554f318fb41795771c8910e68d4175713dfdb648d3f4c21ccf1ad7ba85bc5de는
+  R2 block_payload.SOURCE_JSON 후속 1000 UTF-16 단위 조회와 일치한다(앞선 R3 검증).
+- 사진의 저장 상태는 실행 중 프로세스의 확정 증거가 아니다. 첫 두 사진의 마지막
+  SQL과 시각이 동일했고 최신 사진이 PAUSED였다. 전체 검증 반복이 실제 발생한
+  사진은 아니므로 해당 구조를 현장 발생 사실로 확대하지 않는다.
+
+1. 배치가 작고, 배치마다 원격 읽기/쓰기/읽기를 반복한다.
+  봉인 R3의 client/02_BACKEND/lawrag/pipeline/oracle_migration.py:
+  BATCH_ROWS=20, BATCH_BYTES=256KiB (18~19행); source_batch 76~91행.
+  transfer 146~153행: read_batch → compare → missing일 때 PL/SQL insert → read_batch.
+  256KiB를 넘는 다음 행은 다음 배치로 넘기므로 실제 배치는 20보다 작아질 수 있다.
+  각 요청은 oracle_query_dataiku.DataikuClient.request의 query_to_df로 이어진다.
+
+2. 긴 본문 전체를 네트워크로 되읽는다.
+  oracle_dp_io.py의 LOB_UNITS=1000, read_rows 221행 이후.
+  최초 1000단위 뒤 나머지를 전부 복원하고 Python compare_batch로 대조한다.
+  R2는 행/컬럼별 추가 조각마다 요청, R3는 독립적인 다음 조각 최대32개를 묶는다.
+  한 긴 CLOB만 남는 경우 다음 위치를 실제 수신 길이로 계산하므로 직렬 의존이 남는다.
+  R3는 왕복 일부를 줄였으나 대량적재 전용 전송·검증 구조로 바뀐 것은 아니다.
+
+3. 원문 내용을 적재 직후 확인한 뒤 전체를 두 번 더 읽는다.
+  R3 oracle_full_package.py 307~316행: source(run) → verify → assets → query.
+  같은 파일 320~321행: final_source → source(verify), 이후 자산/검색행 최종 대조.
+  source(run)의 새 행도 이미 배치별 readback을 한다. 즉 정상 신규 적재에서 원문은
+  적재 직후, 별도 verify, 최종 final_source의 세 검증 흐름으로 읽힌다.
+  각각 맡은 불변조건이 있으므로 검증을 통째로 제거하는 것을 해결로 삼지 않았다.
+
+4. verify는 중단 후 첫 행부터 다시 시작한다.
+  oracle_migration.py 138~141행: action=='verify'이면 cursor=None/rows=0/chain 초기값.
+  159행: verify는 run의 cursor에 검증 진행 위치를 저장하지 않는다.
+  따라서 verify 한 번이 6시간을 넘는 조건에서는 6시간 cap과 결합해 재실행 때
+  같은 앞부분을 반복할 수 있다. source(run)의 저장 cursor 재개와 구분한다.
+  R4는 시간 cap을 없앴지만 수동중단/환경종료 뒤 verify 이어읽기는 아직 구현하지 않았다.
+
+5. SQL 왕복마다 기록 I/O도 붙는다.
+  oracle_dp_io.SQL.request/event: STARTED와 ACKNOWLEDGED를 각각 기록하고 fsync.
+  managed_job.BudgetClient는 64호출 단위로 SQL 예산을 S3에 예약하고 읽어 대조한다.
+  Dataiku renderer는 CLOB 쓰기에 900자 조각별 임시 LOB 조립문을 만든다.
+  이 경로의 존재는 확인했지만 디스크/S3/SQL 변환의 현장 지연 기여도는 미측정이다.
+
+이번 완료 수정
+- R3의 existing_client.py seconds=min(21600,...) → seconds=None.
+- import_generation의 21600초 상한 거절을 제거하고 None일 때 저장된 최초 deadline 사용.
+- 원래 7일 작업 기한, SQL/HTTP 누적 100만 호출 한도, 잠금/무결성/전체 검증 유지.
+- 기존 oracle-import-r2의 R2/R3 원본 code hash와 같은 target/data/generation만 호환.
+  기존 identity·SQL journal binding은 그대로 두고, 원래 full-state 바이트 사본과
+  compatible_executor에 현재 실행 코드 hash/원래 기록 hash/정책을 따로 남긴다.
+- R3의 묶음 읽기/문자 경계/NULL/빈값 대조/원문·권한·물리매핑/쓰기 로직은 그대로다.
+- 전달 패키지의 78파일 중 제품2+pin/manifest2만 변경, 나머지74파일 바이트 동일.
+
+검증과 한계
+- 정확한 R4 ZIP 대상으로 20계약 통과: 현재/호환 identity, 원래 기록 보존,
+  다른 코드/DB/데이터/경로 거절, >6시간/None 수용, 잘못된 시간값 거절,
+  원래 deadline/누적 SQL 예산 소진 차단, 모든 pin 확인.
+- 실제 전달 TXT 전체 진입점 2검사 통과: R1 실패 보존 → R2 또는 R3 쓰기직후
+  일시정지 → R4 stale kernel 거절 → 저장소 복원 → 가상시계 21,601초 진행 →
+  FULL_DATA_VERIFIED → 반복 load 중복쓰기0. 원래 pending 해소/기한/카운터 보존.
+- 포트는 모의 Oracle/Dataiku/S3다. 6시간 실제 기다림, 현장 이관, 속도 A/B는 아니다.
+- 이전 R3의 28검사를 이번 새 검사 수에 다시 합산하지 않는다. 이번 22검사 통과.
+- MAIN/GENOS/원문 데이터/현장 DB/스키마/기존 봉인 패키지 변경 없음.
+
+근본 개선 방향
+검증할 범위·원본 결속·쓰기 결과 불명을 보존하면서 배치 전체의 전달/검증 왕복을
+줄이는 대량 적재 경로와 검증 전용 재개 cursor를 설계해야 한다. 전체 재조회 간
+목적이 겹치는 부분은 보장 범위를 먼저 대조하고, 완료 범위·원본/대상 변경 감지와
+최종 publish 검증을 연결한 뒤 줄여야 한다. 현장 Oracle 실행계획과 실제 SQL/기록
+시간을 분리해 봐야 다음 변경의 우선순위와 속도 효과를 확정할 수 있다.
+이번 R4는 6시간 강제 중단을 제거한 것이며 이 구조 전체를 최적화했다고 보고하지 않는다.

@@ -1,0 +1,68 @@
+기존 NFS 이관 R2 — deferred_indexes 오류 수정
+
+사진의 원인
+oracle_full_package.py가 schema['deferred_indexes']를 읽었지만 실버 매핑의
+SchemaMap.preflight()는 status/tables/target_map_sha256만 반환했습니다.
+R1의 실제 코드로 같은 KeyError를 로컬에서 재현했습니다.
+사진의 중단 지점은 이번 load의 Oracle 원문 INSERT 전입니다.
+이전에 다른 작업이 적재한 데이터의 유무나 현장 전체 상태를 뜻하지는 않습니다.
+
+사용할 파일과 실행 순서
+1. DATAIKU_EXISTING_NFS_CLIENT_20261029_R2.zip을 압축 해제하지 말고
+   기존 LEGAL_RAG / ehA8dpVm 관리 폴더에 정확한 파일명으로 업로드합니다.
+   R1 ZIP과 기존 수신 조각·작업 기록은 그대로 둡니다.
+2. 기존 노트북 실행이 끝난 상태에서 Kernel > Restart로 커널을 재시작합니다.
+   DATAIKU_EXISTING_NFS_RUN_R2.txt 전체를 한 셀에 붙여넣습니다.
+   이전 R1 셀을 다시 실행하지 않습니다. 새 커널은 캐시된 R1 코드 제거용이며
+   Dataiku 관리 폴더의 수신 데이터·체크포인트를 지우는 절차가 아닙니다.
+3. ACTION = 'check'로 실행합니다. NFS_READY_FOR_TRANSFER를 확인합니다.
+4. 같은 R2 셀 맨 위를 ACTION = 'load'로 바꾸어 실행합니다.
+   이미 보관된 수신 조각을 재사용하므로 transfer를 별도로 다시 실행할 필요가 없습니다.
+   임시 디렉터리가 사라졌으면 기존 관리 폴더의 조각과 적재 기록에서 복원합니다.
+5. FULL_DATA_VERIFIED가 최종 적재·행 대조 완료 표시입니다.
+   ACTION = 'status'는 저장 상태 조회이며 전체 행을 다시 대조하지는 않습니다.
+
+기존 LEGAL_PIPELINE_URL/TOKEN, LEGAL_PIPELINE_SCRATCH, 프로젝트, 결과 관리 폴더와
+작업 이름을 유지합니다. 이 노트북은 한 개만 실행합니다.
+현재 GENOS의 EXISTING_NFS R1 서버를 그대로 사용합니다.
+GENOS 재설치·Git push·리비전 재배포·구조화·재색인은 필요하지 않습니다.
+기존 00/01/02/03 레시피도 이 수정 적용에 다시 실행하지 않습니다.
+
+수정 내용
+- 매핑 검사를 통과한 경우에만 deferred_indexes=[]를 반환합니다.
+  매핑된 인덱스는 모두 필수이며 누락·열·PK·제약 검사 실패를 무시하지 않습니다.
+- 전체 적재기의 asset 사전 검사, 검색 게시기의 종류별 행 수/게시 SQL,
+  최종 전체 행 수 검사가 동일한 물리 테이블·컬럼 매핑을 사용합니다.
+  지식은 SIDDS.*_S, 에이전트 상태 매핑은 SIDDA.*_A입니다.
+- R1 실패 파일의 정확한 코드 해시, 동일 데이터·대상·경로, FAILED/KeyError,
+  매핑 검사 READY, 적재 stage 없음, 읽기 전용 SQL 이력을 확인한 경우만
+  oracle-import-r2로 이어갑니다. 기존 oracle-import와 원본 S3 실패 archive는 보존합니다.
+- 최초 기한과 누적 HTTP/SQL 예산을 유지합니다. 코드/대상/데이터 변경, 이미 진행한
+  적재 stage, 만료·예산 소진을 새 작업명이나 상태 삭제로 우회하지 않습니다.
+- R1 모듈이 남은 커널은 요청 전에 중단하고 커널 재시작을 안내합니다.
+- R1 클라이언트에 빠져 있던 기존 작업 코드의 source_request.response BLOB
+  무손실 base64 전송도 포함했습니다. 원본 압축 바이트/해시를 보존하고 형식을
+  명시하며, 임의의 다른 BLOB이나 잘못된 타입을 허용하지 않습니다.
+
+오류가 다시 나면
+출력과 기존 기록을 보존합니다. 기존 기한 안의 일시적 적재 중단은 같은 R2의
+ACTION='load'로 재개할 수 있습니다. 쓰기 응답이 불명이면 기존 행을 대조한 뒤
+남은 작업을 진행합니다. IMPORT_UPGRADE/IMPORT_BINDING/해시/기한 오류는 자동으로
+초기화하지 않습니다. 다른 R1 실패나 R1에서 이미 적재를 시작한 경우는 이번
+KeyError 전용 이행 대상이 아니므로 오류 출력을 확인해야 합니다.
+
+중단·복원
+R1 ZIP과 GENOS 서버는 변경하지 않았습니다. R2 사용을 중단하려면 실행을 종료하고
+수신 데이터와 R1/R2 기록을 보존합니다. R2 진행 후 R1 load로 돌아가 새 적재를
+시도하는 것은 지원하지 않습니다. S3/Oracle 데이터를 삭제하거나 active를 바꾸는
+롤백 작업은 이 패키지에 없습니다. 현재 RAG active release는 자동 전환하지 않습니다.
+
+검증 범위
+VALIDATION.json 및 test-qualified.log를 참고합니다. 실제 SchemaMap 검사, 전체
+적재기/검색 게시기, 봉인 ZIP의 전달 노트북을 사용했습니다. Oracle SQL 실행,
+Dataiku SDK와 GENOS 네트워크 경계만 모의이며 현장 Oracle을 직접 시험하지 않았습니다.
+원래 R1 테스트는 schema_map=None으로 바꾸고 preflight를 대체하여 이 경로를
+누락했습니다. 과거 48검사 통과 기록은 보존하며 이번 오류 해결 증거로 사용하지 않습니다.
+수정 과정의 첫 매핑 검사에서 추가 legacy SQL 누락이 드러난 기록과 노트북 검사용
+모듈 import 준비 오류도 원본 로그로 보존했습니다.
+로컬 MAIN 선택, 현장 코드 적용, 실제 전체 NFS 데이터 적재 완료는 별도 상태입니다.

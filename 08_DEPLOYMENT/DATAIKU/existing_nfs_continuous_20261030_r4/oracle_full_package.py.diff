@@ -1,0 +1,78 @@
+--- R3/client/02_BACKEND/lawrag/pipeline/oracle_full_package.py
++++ R4/client/02_BACKEND/lawrag/pipeline/oracle_full_package.py
+@@ -5,6 +5,7 @@
+ from __future__ import annotations
+ import hashlib
+ import json
++import math
+ from pathlib import Path
+ import time
+ import uuid
+@@ -248,10 +249,52 @@
+                     'error': previous['error']}}
+ 
+ 
++def _import_identity(state, expected, logs):
++    """Keep checkpoint origin/journal binding; record the exact compatible executor."""
++    original = state['identity']
++    if original == expected:
++        return expected
++    previous_code = '36e52b270f8b9f73b1bfdd92d60a742afcc04fed969bce98af828dda6e54d267'
++    if (not isinstance(original, dict) or original.get('code') != previous_code or
++            {k:v for k,v in original.items() if k != 'code'} !=
++            {k:v for k,v in expected.items() if k != 'code'}):
++        raise io.DPError('IMPORT_BINDING: data/code/target changed')
++    record = state.get('compatible_executor')
++    if record is not None:
++        if (not isinstance(record, dict) or record.get('origin_code_sha256') != previous_code or
++                record.get('execution_code_sha256') != expected['code'] or
++                record.get('policy') != 'existing-nfs-r4-remove-invocation-cap-v1'):
++            raise io.DPError('IMPORT_BINDING: compatible executor record differs')
++    else:
++        receipt = logs / 'full-state.json'
++        raw = receipt.read_bytes()
++        receipt_sha = hashlib.sha256(raw).hexdigest()
++        # Preserve pre-upgrade state exactly, including pending work and failure.
++        backup = logs / ('pre-r4-state-' + receipt_sha + '.json')
++        if backup.exists():
++            if backup.read_bytes() != raw:
++                raise io.DPError('IMPORT_BINDING: pre-upgrade receipt differs')
++        else:
++            with backup.open('xb') as saved:
++                saved.write(raw); saved.flush(); io.os.fsync(saved.fileno())
++        state['compatible_executor'] = {
++            'origin_code_sha256': previous_code,
++            'execution_code_sha256': expected['code'],
++            'policy': 'existing-nfs-r4-remove-invocation-cap-v1',
++            'prior_receipt_sha256': receipt_sha,
++            'prior_receipt_file': backup.name,
++            'at': time.time(),
++        }
++    # SQL journals continue using their original binding and cumulative counts.
++    return original
++
++
+ def import_generation(client, folder, *, target_binding, directory, action='check', seconds=3600,
+                       allow_missing_lookup_indexes=False, prior_schema_failure_directory=None):
+     if action not in {'check', 'publish', 'status'}: raise io.DPError('ACTION: check / publish / status')
+-    if not 1 <= seconds <= 21600: raise io.DPError('BUDGET: seconds 1..21600')
++    if seconds is not None and (type(seconds) not in (int, float) or
++                                not math.isfinite(seconds) or seconds < 1):
++        raise io.DPError('BUDGET: seconds must be None or finite and >= 1')
+     if type(allow_missing_lookup_indexes) is not bool:
+         raise io.DPError('QUERY_INDEX_POLICY: expected a boolean')
+     root, info = verify_restored(folder)
+@@ -259,11 +302,11 @@
+         receipt = logs / 'full-state.json'
+         identity = {'target': target_binding, 'data': io.digest(info), 'generation': str(root), 'code': io.file_sha(__file__)}
+         state = bounded_json(receipt) if receipt.exists() else {'identity': identity, 'deadline': time.time()+7*86400, 'stages': {}}
+-        if state['identity'] != identity: raise io.DPError('IMPORT_BINDING: data/code/target changed')
++        identity = _import_identity(state, identity, logs)
+         if not receipt.exists() and prior_schema_failure_directory is not None:
+             state.update(_prior_schema_failure(prior_schema_failure_directory, identity))
+         io.atomic_json(receipt, state)
+-        end = min(time.time()+seconds, state['deadline'])
++        end = state['deadline'] if seconds is None else min(time.time()+seconds, state['deadline'])
+         def remaining():
+             check()
+             resources(logs)

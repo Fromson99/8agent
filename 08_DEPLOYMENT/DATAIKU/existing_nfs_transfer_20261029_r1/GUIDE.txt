@@ -1,0 +1,94 @@
+기존 NFS SQLite 재사용 이관 R1 — 구조화·재색인 생략
+
+사진에서 errors=[]와 store.sqlite, navigation/navigation.sqlite,
+fulltext/units.sqlite, glossary dictionary/cache 파일 존재를 확인했습니다.
+source.sqlite가 없는 것은 이 generation의 store.sqlite 형식에서 정상입니다.
+사진의 CANDIDATE_METADATA_ONLY는 파일 존재 확인이며 데이터 검증 완료는 아닙니다.
+
+사용할 경로는 아래 하나로 고정했습니다.
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+
+이 generation에 이미 저장된 원문·구조·탐색·본문검색·용어집을 그대로 읽습니다.
+새 원문 묶음과 문서 범위가 같은지는 아직 확인되지 않았습니다. 새 업로드를 처리한
+결과로 표시하지 않습니다. 없는 문서나 vectors를 생성하는 기능은 없습니다.
+
+실행 순서
+
+1. GENOS 기존 legal_pipeline_serving에 읽기 기능 적용
+첨부 DATAIKU_EXISTING_NFS_20261029_R1.zip을 TRANSFER에 반입합니다.
+터미널에서 실제 첨부 ZIP이 있는 폴더로 이동한 다음 아래를 실행합니다.
+
+python3 -m zipfile -e DATAIKU_EXISTING_NFS_20261029_R1.zip existing_nfs_r1
+cd existing_nfs_r1
+bash GENOS_EXISTING_NFS_INSTALL.txt
+
+이 명령은 ~/DEV의 기존 계산용 Git checkout을 백업·반영·commit·검증·push합니다.
+RAG 채팅 앱 checkout에 적용하면 안 됩니다. 기존 계산 프로세스가 진행 중이면
+Dataiku에서 취소하고 GENOS 프로세스 종료를 확인한 뒤 리비전을 바꿉니다.
+전달본 자체는 이전 실패 작업을 재실행하거나 취소하지 않습니다.
+
+출력에 VERIFY_PIPELINE_RELEASE와 NFS_SOURCE_VERIFIED 성공이 있어야 합니다.
+NFS_SOURCE_VERIFIED에는 실제 manifest 해시·파일 수·원문 행 수가 나옵니다.
+전체 SQLite 해시·기존 consumer·generation E2E를 확인하므로 시간이 걸릴 수 있습니다.
+검사 중 원본을 수정하거나 구조화/색인을 다시 만들지 않습니다.
+실패하면 push까지 진행되지 않습니다. 해시를 고치거나 체크포인트를 지우지 마세요.
+
+성공 후 GENOS 화면에서 방금 출력된 커밋의 새 코드서빙 리비전을 배포합니다.
+같은 legal_pipeline_serving URL과 기존 토큰을 사용합니다.
+Git push와 실제 리비전 배포는 별도입니다. 아래 check가 새 코드값을 확인합니다.
+이번 서버는 봉인 R10을 기반으로 1,279개 기존 파일을 보존하며 읽기 API를 추가했습니다.
+
+2. Dataiku에 클라이언트 ZIP 업로드
+압축을 푼 폴더의 DATAIKU_EXISTING_NFS_CLIENT_20261029_R1.zip을
+LEGAL_RAG / ehA8dpVm 관리 폴더에 원래 파일명 그대로 업로드합니다.
+기존 RAW_INPUT.zip이나 레시피 설치 ZIP을 바꿀 필요는 없습니다.
+LEGAL_RAG에서 새 Python 노트북과 새 커널을 엽니다.
+DATAIKU_EXISTING_NFS_RUN.txt 전체를 한 셀에 붙여넣습니다.
+기존 프로젝트의 LEGAL_PIPELINE_URL/TOKEN 및 AIDP 연결을 읽습니다.
+결과 관리 폴더는 기존 LEGAL_02_STRUCTURE_GENOS_R1 설정에서 확인합니다.
+
+3. 같은 셀의 맨 위 ACTION 값만 바꾸어 순서대로 실행
+ACTION = 'check'     : 새 서버 코드, 원본 목록, SIDDS 실버/기존 SIDDA 상태 테이블 확인
+ACTION = 'transfer'  : 원본 SQLite를 작은 조각으로 받아 Dataiku 관리 폴더에 보관·검증
+ACTION = 'load'      : 수신 결과 재사용 후 기존 전체 Oracle 적재기로 적재·실제 행 대조
+ACTION = 'status'    : 저장된 이관 상태 확인(완료 데이터 전체 재검증 명령은 아님)
+
+check의 bytes가 수신할 데이터 크기입니다. Dataiku 임시 디스크에는 최소 이 크기와
+512MiB 여유가 필요하고, 적재 로그 등 추가 공간도 필요합니다. 메모리에 전체 DB를
+올리지 않습니다. LEGAL_PIPELINE_SCRATCH가 설정되어 있으면 그 디렉터리를 사용합니다.
+기존 00/01/02/03 레시피는 이 NFS 이관에 실행하지 않습니다.
+이 노트북은 같은 작업에 한 개만 실행합니다. 동시 실행하지 않습니다.
+
+완료 표시는 transfer의 NFS_RECEIVED_VERIFIED, load의 FULL_DATA_VERIFIED입니다.
+load가 끝나도 현재 RAG의 active release/조회 매핑을 자동 전환하지 않습니다.
+원문 중심 지식·검색 데이터는 SIDDS.*_S, 에이전트 상태용 매핑은 SIDDA.*_A입니다.
+기존 행과 다르면 덮어쓰기 대신 불일치로 중단합니다. 운영 골드 생성/승인 작업은 없습니다.
+
+중단과 재개
+읽기 요청의 502/503/504 또는 네트워크 오류만 요청당 최대3회 시도합니다.
+GENOS 계산 재시도는 0회입니다. S3에 확인된 조각은 다시 받지 않습니다.
+전송 중단 시 같은 ACTION='transfer', 적재 중단 시 같은 ACTION='load'를 실행합니다.
+기존 작업명·관리 폴더·URL·임시 경로를 유지합니다. 이미 적재된 행은 대조 후 재사용합니다.
+최초 기한7일과 누적 HTTP/SQL 예약 사용량을 유지하며, 소진 시 임의 초기화하지 않습니다.
+기존 02 실패 checkpoint는 이관하지도 지우지도 않으며 새 이관은 기존 NFS 데이터에 결속합니다.
+영속 진행·수신 조각·적재 영수증은 기존 Dataiku 결과 폴더의
+_pipeline/existing-nfs-v1/ 아래 보관합니다. GENOS에는 새 영속 작업 저장소를 만들지 않습니다.
+원본 변경/코드 불일치/수신 해시 오류는 재시도하지 않습니다. 해당 오류 출력을 보존합니다.
+
+복원
+코드를 이전 상태로 돌릴 때 이 폴더의 bash ROLLBACK_GENOS.txt를 사용하고,
+GENOS 화면에서는 기존에 사용하던 리비전을 다시 선택합니다.
+이관 노트북은 기존 Flow 레시피를 수정하지 않으므로 Dataiku 레시피 원복은 없습니다.
+이미 들어간 S3/Oracle 데이터는 복원 명령으로 삭제하지 않습니다.
+
+검증 범위
+합성 generation과 모의 Dataiku/Oracle로 수신·중단·이어받기·전체 적재·실제 적재기
+행 대조·전체 전달 TXT 실행·실제 service 진입점·설치/재설치/원복을 확인했습니다.
+실제 설치 checkout에서 generation E2E와 verify_assets도 합성 데이터로 실행했습니다.
+일반 genos_release_gate는 루트 CODE_MANIFEST 형식만 받으므로 이 계산 서버의
+prefix/CODE_PINS 형식에는 전용 VERIFY_PIPELINE_RELEASE + NFS_VERIFY를 사용합니다.
+로컬 검사는 VALIDATION.json에 기록합니다. 이전 R1 검사기의 1MiB metadata 제한
+오류와 최초 포장 보조 오류는 기록을 보존했습니다. 이 전달본은 metadata16MiB입니다.
+현장 NFS 전체 데이터 내용·실제 GENOS 리비전·Dataiku 수신·Oracle 적재는 아직 미확인입니다.
+법률 내용의 최신성/완전성·전체 시간·성능 개선율을 인증한 결과가 아닙니다.
+MAIN116, 이전 ZIP과 실패 기록은 유지합니다.

@@ -1,0 +1,130 @@
+# NFS가 보이는 GENOS Jupyter의 새 Python 셀에 전체 붙여넣어 실행합니다.
+# 또는 이 TXT가 있는 폴더에서: python3 ./GENOS_EXISTING_SQLITE_CHECK.txt
+# 파일 목록·작은 manifest만 조회합니다. SQLite/원문 본문 읽기, 쓰기,
+# 구조화, 색인, 모델, HTTP, DB 적재, 서비스 변경을 수행하지 않습니다.
+# 경로를 알면 아래에 지정하세요. 빈 값이면 설정과 과거 기록의 후보를 표시합니다.
+GENERATION_PATH = ""
+
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+
+HISTORICAL_PATH = "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation"
+MAX_METADATA = 1024 * 1024
+
+
+def small_json(path):
+    with Path(path).open("rb") as stream:
+        raw = stream.read(MAX_METADATA + 1)
+    if len(raw) > MAX_METADATA:
+        raise ValueError("METADATA_EXCEEDS_1MiB")
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("METADATA_NOT_OBJECT")
+    return value, hashlib.sha256(raw).hexdigest()
+
+
+def inspect_generation(path):
+    root = Path(path).expanduser()
+    result = {"path": str(root), "content_verified": False}
+    if not root.is_absolute():
+        return {**result, "status": "ABSOLUTE_PATH_REQUIRED"}
+    if not root.is_dir():
+        return {**result, "status": "DIRECTORY_NOT_FOUND"}
+    root = root.resolve()
+    files, errors = [], []
+
+    def metadata(relative):
+        relative = PurePosixPath(relative)
+        if relative.is_absolute() or ".." in relative.parts or "\\" in str(relative):
+            raise ValueError("REFERENCE_OUTSIDE_GENERATION")
+        candidate = root / str(relative)
+        candidate.resolve().relative_to(root)
+        return candidate
+
+    def record(relative):
+        candidate = metadata(relative)
+        entry = {"file": str(relative), "exists": candidate.is_file()}
+        if entry["exists"]:
+            entry["bytes"] = candidate.stat().st_size
+        files.append(entry)
+
+    for name in ("store.sqlite", "source.sqlite", "manifest.json"):
+        record(name)
+    manifest_path = root / "manifest.json"
+    manifest = {}
+    if manifest_path.is_file():
+        # Resolve first, so a manifest link cannot escape this generation.
+        manifest, digest = small_json(metadata("manifest.json"))
+        result.update(manifest_sha256=digest,
+                      schema_version=manifest.get("schema_version"),
+                      generation_id=manifest.get("generation_id"))
+    for kind in ("navigation", "fulltext", "glossary"):
+        descriptor = manifest.get(kind)
+        result[kind + "_declared"] = bool(descriptor)
+        if not descriptor:
+            continue
+        try:
+            if not isinstance(descriptor, dict):
+                raise ValueError("DESCRIPTOR_NOT_OBJECT")
+            directory = descriptor["bundle" if kind == "glossary" else "path"]
+            name = str(PurePosixPath(directory) / "manifest.json")
+            record(name)
+            sub, _ = small_json(metadata(name))
+            if kind == "navigation":
+                record(str(PurePosixPath(directory) / "navigation.sqlite"))
+            elif kind == "fulltext":
+                fmt = sub.get("schema_version")
+                dbname = {"semantic-unit-fulltext-v1": "units.sqlite",
+                          "semantic-fulltext-v2": "fulltext.sqlite"}.get(fmt)
+                if dbname:
+                    record(str(PurePosixPath(directory) / dbname))
+                else:
+                    errors.append({"section": kind, "error": "UNRECOGNIZED_FULLTEXT_SCHEMA"})
+            else:
+                record(descriptor["dictionary"])
+                receipt = str(PurePosixPath(descriptor["cache"]) / descriptor["cache_receipt"])
+                record(receipt)
+                record(str(PurePosixPath(receipt).with_suffix(".sqlite")))
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            errors.append({"section": kind, "error": type(exc).__name__})
+    result.update(status="CANDIDATE_METADATA_ONLY", files=files, errors=errors,
+                  vectors_declared=bool(manifest.get("vectors")),
+                  note="파일 존재 확인만 수행. 내용 무결성·사용할 판본·Oracle 적합성은 미검증.")
+    return result
+
+
+def run():
+    candidates, settings_errors = {}, []
+
+    def add(value, origin):
+        if isinstance(value, str) and value.strip():
+            candidates.setdefault(value.strip(), []).append(origin)
+
+    if GENERATION_PATH.strip():
+        add(GENERATION_PATH, "explicit_path")
+    else:
+        add(os.environ.get("GENOS_GENERATION"), "GENOS_GENERATION_setting")
+        settings_path = Path.home() / "DEV/00_SYSTEM/GENOS_SERVING_PATHS.json"
+        try:
+            if settings_path.is_file():
+                settings, _ = small_json(settings_path)
+                add(settings.get("generation"), "DEV_saved_setting")
+        except (OSError, ValueError) as exc:
+            settings_errors.append({"source": "DEV_saved_setting", "error": type(exc).__name__})
+        add(HISTORICAL_PATH, "historical_20261021_record_not_confirmed_current")
+    print("EXISTING_SQLITE_CHECK_BEGIN", flush=True)
+    print(json.dumps({"settings_errors": settings_errors,
+                      "automatic_selection": False, "source_modified": False}, ensure_ascii=False))
+    for path, origins in candidates.items():
+        try:
+            value = inspect_generation(path)
+        except (OSError, ValueError, TypeError) as exc:
+            value = {"path": path, "status": "INSPECTION_FAILED", "error": type(exc).__name__}
+        print(json.dumps({"origin": origins, **value}, ensure_ascii=False, indent=2), flush=True)
+    print("EXISTING_SQLITE_CHECK_END", flush=True)
+
+
+if __name__ == "__main__":
+    run()

@@ -1,0 +1,22 @@
+--- R3/existing_client.py
++++ R4/existing_client.py
+@@ -24,7 +24,7 @@
+ GENERATION = '/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation'
+ JOB_NAME = 'financial-risk-success-20261005-schema-r2'
+ NAMESPACE = '_pipeline/existing-nfs-v1/'
+-CLIENT_REVISION = 'existing-nfs-20261030-r3'
++CLIENT_REVISION = 'existing-nfs-20261030-r4'
+ 
+ 
+ class Scope:
+@@ -284,8 +284,9 @@
+                     budget = BudgetClient(oracle, store)
+                     budget.source_clob_batch_size = clob_batch_size
+                     print('CLOB_READ_BATCH_SIZE=' + str(clob_batch_size), flush=True)
++                    print('LOAD_INVOCATION_CAP=NONE; ORIGINAL_JOB_DEADLINE=' + str(store.value['deadline']), flush=True)
+                     result = full.import_generation(budget, local, target_binding=binding,
+-                        directory=attempt, action='publish', seconds=min(21600, max(1, int(store.value['deadline'] - time.time()))),
++                        directory=attempt, action='publish', seconds=None,
+                         prior_schema_failure_directory=previous if (previous/'full-state.json').exists() else None)
+                     if result['status'] != 'FULL_DATA_VERIFIED':
+                         raise ValueError('NFS_ORACLE_NOT_COMPLETE')

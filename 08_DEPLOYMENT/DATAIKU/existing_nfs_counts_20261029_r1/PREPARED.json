@@ -1,0 +1,31 @@
+{
+  "to": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "[NFS 적재 총건수 확인] Dataiku 조회용 실행 TXT + ZIP",
+  "attachments": [
+    {
+      "name": "DATAIKU_NFS_TOTAL_COUNTS_20261029_R1.zip",
+      "bytes": 2752,
+      "sha256": "6603f75918a5fba320ad80ab3be43e7b0d5071b5eccbd547d3a4aa4233e96936",
+      "mime_type": "application/zip"
+    },
+    {
+      "name": "DATAIKU_NFS_TOTAL_COUNTS_R1.txt",
+      "bytes": 2446,
+      "sha256": "d9206c0efa16a6dfa39f1ad53ff68110b715e2b1c6194516cea320d3c7708343",
+      "mime_type": "text/plain"
+    },
+    {
+      "name": "GUIDE.txt",
+      "bytes": 1973,
+      "sha256": "ab886e111b271fa4b65a42859b243bd6aa8480f80b3b447cd024220ac0b2bdf6",
+      "mime_type": "text/plain"
+    }
+  ],
+  "checks": [
+    "Python 3.9 syntax PASS",
+    "ZIP integrity PASS",
+    "ZIP and standalone TXT match PASS",
+    "JavaScript files 0"
+  ],
+  "field_executed": false
+}

@@ -1,0 +1,31 @@
+{
+  "old_script_sha256": "6c924060a63b18914b269c36d2827355d4c5aaca5451c87e0eff15c3cf3ed828",
+  "new_script_sha256": "5742379fdbfe9fc9a36dcda11b697e7749695e79329d773d5b69c630fb7048ac",
+  "checks": [
+    "syntax",
+    "R1 rejects 3.3MB JSON before index existence check",
+    "R2 reads same 3.3MB JSON and identifies units.sqlite",
+    "original bytes unchanged",
+    "same-notebook MAX_METADATA override works",
+    "malformed JSON retains error detail",
+    "16MiB limit retained"
+  ],
+  "checks_passed": 7,
+  "field_execution": false,
+  "source_modified": false,
+  "deployment_changed": false,
+  "photo_observations": {
+    "store_sqlite_exists": true,
+    "navigation_sqlite_exists": true,
+    "glossary_dictionary_exists": true,
+    "glossary_cache_exists": true,
+    "fulltext_manifest_exists": true,
+    "fulltext_manifest_larger_than_1MiB": true,
+    "fulltext_database_exists": "not checked by R1 due to metadata limit"
+  },
+  "limitations": [
+    "Photo does not show generation path at top",
+    "File existence is not content/hash verification",
+    "No Oracle migration or regeneration performed"
+  ]
+}

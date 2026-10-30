@@ -1,0 +1,64 @@
+기존 NFS→Oracle 이관 R3: 긴 본문 조회 묶음 처리
+
+현재 사진의 작업을 이어서 실행하는 Dataiku 클라이언트입니다.
+원래 R2 ZIP/적재 데이터/작업 기록을 보존합니다.
+
+적용 순서
+1. DATAIKU_EXISTING_NFS_CLIENT_20261030_R3.zip을 압축 해제하지 않고
+   기존 LEGAL_RAG / ehA8dpVm 관리 폴더에 정확한 파일명으로 업로드합니다.
+2. 기존 R2 적재 실행이 종료됐거나 PAUSED인 것을 확인합니다.
+   실행 중인 load와 R3 load를 동시에 돌리지 않습니다.
+3. 적재 노트북의 Kernel > Restart로 캐시된 R2 코드를 제거합니다.
+   DATAIKU_EXISTING_NFS_RUN_R3.txt 전체를 새 셀에 붙여넣습니다.
+   조회 전용 show_progress 셀이 아니라 적재 실행 셀입니다.
+4. 기본 ACTION = 'check', CLOB_BATCH_READS = 32로 실행합니다.
+   NFS_READY_FOR_TRANSFER를 확인합니다.
+5. 같은 전체 셀의 ACTION을 'load'로 바꾸어 실행합니다.
+   CLOB_READ_BATCH_SIZE=32가 나오는지 확인합니다.
+   기존 oracle-import-r2 체크포인트의 마지막 검증 위치에서 이어갑니다.
+   이전 pending 배치는 먼저 DB와 대조합니다. transfer부터 다시 할 필요는 없습니다.
+6. FULL_DATA_VERIFIED가 전체 적재·검증 완료입니다.
+   SOURCE_COMPLETE나 조회 응답 ACKNOWLEDGED만으로 전체 완료로 판단하지 않습니다.
+
+진행 확인
+DATAIKU_NFS_PROGRESS_R3.txt 전체를 별도 조회 노트북 셀에 붙여넣어 실행합니다.
+전체 중단 사유(error), 원문 일시정지 사유(reason), 누적 SQL 호출,
+최초 작업 기한, 검증된 누적 건수, 마지막 5줄을 표시합니다.
+PAUSED 상태는 자동으로 재개되지 않습니다.
+1회 실행 제한 6시간과 최초 작업 기한/누적 SQL 예산은 그대로 유지합니다.
+새 작업명이나 상태 파일 삭제로 기한·예산을 초기화하지 않습니다.
+
+변경 사항
+사진의 반복 SQL 해시
+8554f318fb41795771c8910e68d4175713dfdb648d3f4c21ccf1ad7ba85bc5de
+는 block_payload.SOURCE_JSON의 1000 UTF-16 단위 후속 조각 조회와 일치합니다.
+기존에는 행·컬럼마다 이 SQL을 별도로 호출했습니다. R3는 여러 행·컬럼의
+다음 조각을 최대 32개씩 한 SQL 요청으로 묶습니다. 한 CLOB의 다음 위치는
+실제로 받은 UTF-16 길이로 계산하므로 한글·이모지 경계를 임의로 건너뛰지 않습니다.
+전체 내용을 받아 기존 compare_batch로 원본과 대조합니다.
+NULL/빈 CLOB, ID/판본/권한 매핑, 원본 hash, 쓰기 전후 검증을 유지합니다.
+SQL 응답 누락/중복/순서 변경/내용·길이 불일치/초과/DB 오류를 확인합니다.
+
+재개 검사에서 발견한 부수 복구 문제도 수정했습니다. 과거 복원용 임시 ZIP이
+남은 채 새 체크포인트를 복원하면 이름이 겹치던 문제입니다. R3는 내용 hash를
+임시 파일명에 넣고 기존 파일·해시 검증을 유지합니다. 과거 파일을 삭제하지 않습니다.
+
+변경하지 않은 부분
+R2의 oracle_full_package.py / oracle_migration.py / managed_job.py / 물리 매핑 /
+GENOS 서버 코드 hash는 같은 바이트입니다. full-state의 identity를 바꾸지 않습니다.
+MAIN 선택/GENOS 재설치/Git push/서빙 리비전/DB DDL/원문 재구축/색인 재생성은 없습니다.
+
+오류 또는 원복
+새 SQL이 현장 Oracle/JDBC에서 거절되면 해당 오류를 보존합니다.
+R3 전체 셀에서 CLOB_BATCH_READS = 1로 바꾸어 같은 ACTION='load'를 실행하면
+같은 체크포인트와 예산으로 기존 직렬 조회를 사용합니다. 자동 재시도는 없습니다.
+예산 소진/기한 만료/해시·대상 불일치면 이 설정으로 우회되지 않습니다.
+SOURCE_CHANGED/ROW_CONFLICT/READBACK_MISSING은 원본과 DB 대조 실패입니다.
+데이터나 체크포인트를 삭제하지 않습니다.
+
+속도에 관한 한계
+32는 묶을 수 있는 독립 조각 수의 상한이며 전체 속도 32배를 뜻하지 않습니다.
+남은 긴 CLOB가 하나뿐인 구간은 순차 offset 검증을 하므로 이득이 작습니다.
+INSERT/Oracle 내부 처리/후속 자산·검색 게시/전체 검증 시간은 그대로 남습니다.
+현장 Oracle19/Dataiku에서의 시간 단축 배수와 완료 시각은 아직 측정하지 않았습니다.
+구체적인 검사 결과와 실패 이력은 VALIDATION.json 및 검증결과.txt를 참고하세요.

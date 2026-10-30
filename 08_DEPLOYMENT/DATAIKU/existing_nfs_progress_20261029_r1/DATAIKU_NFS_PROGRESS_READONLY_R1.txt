@@ -1,0 +1,34 @@
+# Dataiku Python 노트북의 새 셀에 전체를 붙여넣어 실행합니다.
+# 현재 load가 실행 중인 커널은 중단/재시작하지 않습니다.
+# 별도 커널에서 상태를 조회한 노트북의 새 셀을 사용하세요.
+# 파일 읽기만 수행합니다. Oracle/GENOS 호출, 적재/재개, 파일 쓰기는 없습니다.
+import json, tempfile, dataiku
+from pathlib import Path
+from datetime import datetime
+
+base = Path(
+    dataiku.get_custom_variables().get("LEGAL_PIPELINE_SCRATCH")
+    or tempfile.gettempdir()
+).expanduser().resolve()
+
+job = (base / "legal-existing-nfs-20261029-r1"
+       / "financial-risk-success-20261005-schema-r2"
+       / "oracle-import-r2")
+p = job / "full-state.json"
+
+if p.is_file():
+    s = json.loads(p.read_text())
+    print("마지막 저장 단계:", s.get("stage", "사전검사"))
+    print("완료된 단계:", list(s.get("stages", {})))
+    print("저장 상태:", s.get("status", "완료 상태 미기록"))
+
+    logs = sorted(job.rglob("*.jsonl"),
+                  key=lambda f: f.stat().st_mtime)
+    for f in logs[-3:]:
+        st = f.stat()
+        print(str(f.relative_to(job)),
+              datetime.fromtimestamp(st.st_mtime).astimezone().isoformat(),
+              "크기:", st.st_size)
+else:
+    print("이 커널에서 적재 기록 경로가 보이지 않습니다.")
+    print("별도 실행 환경일 수 있으므로 중단됐다는 뜻은 아닙니다.")

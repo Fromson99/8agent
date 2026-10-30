@@ -1,0 +1,82 @@
+--- R1/02_BACKEND/lawrag/pipeline/oracle_query_publish.py
++++ R2/02_BACKEND/lawrag/pipeline/oracle_query_publish.py
+@@ -8,6 +8,7 @@
+ from __future__ import annotations
+ 
+ from collections import defaultdict
++import base64
+ from .oracle_transfer_progress import report, sqlite_work
+ import json
+ from pathlib import Path
+@@ -17,6 +18,7 @@
+ 
+ from semantic_runtime.oracle_dp_io import DPError, SQL, atomic_json, digest, file_sha
+ from semantic_runtime.oracle_dp_assets import get_release, inventory, checked_path
++from semantic_runtime.physical_mapping import names
+ from semantic_runtime.oracle_query_catalog import (
+     SCHEMA, RELEASE, ROW, DDL, record, insert_records, json_body, read_release, activate,
+     LOOKUP_ENCODING, lookup_key,
+@@ -112,6 +114,9 @@
+                 'lookup_encoding':LOOKUP_ENCODING,
+                 'columns':{r[1]:{'type':'null','max_bytes':0,'has_null':False,'has_empty':False} for r in columns},
+                 'primary_key':[r[1] for r in sorted(columns,key=lambda r:r[5]) if r[5]]}
++            if name == 'source_request' and 'response' in result[_kind(relative,name)]['columns']:
++                result[_kind(relative,name)]['columns']['response'].update(
++                    source_storage='blob', transport_encoding='base64-v1')
+         return result
+     finally:
+         db.close()
+@@ -216,6 +221,16 @@
+         rows = db.execute('SELECT '+','.join(_name(c) for c in columns)+' FROM '+_name(table))
+         for ordinal, row in enumerate(rows):
+             value = dict(row)
++            # The glossary retains compressed collection responses as evidence.
++            # Encode the exact bytes, never decompress, discard or stringify them.
++            # This column is explicitly marked in the query schema; text/NULL and
++            # every other logical row keep their existing representation.
++            if table == 'source_request' and 'response' in value:
++                response = value['response']
++                if response is not None and not isinstance(response, bytes):
++                    raise DPError('QUERY_EXPORT_BINARY_TYPE: source_request.response must be BLOB or NULL')
++                if response is not None:
++                    value['response'] = base64.b64encode(response).decode('ascii')
+             if any(isinstance(v, bytes) for v in value.values()):
+                 raise DPError('QUERY_EXPORT_BLOB: binary table needs an explicit projection: '+table)
+             try:
+@@ -402,12 +417,14 @@
+                 if file_sha(path) != expected_sha:
+                     raise DPError('QUERY_SOURCE_CHANGED: input changed during upload')
+             for kind, expected in tables.items():
+-                result = sql.query(f'SELECT COUNT(*) AS N FROM {ROW} WHERE RELEASE_ID=:release AND KIND=:kind',
++                row_names = names(sql, 'query_row', ROW)
++                result = sql.query(f'SELECT COUNT(*) AS N FROM {row_names.table} WHERE {row_names.c("RELEASE_ID")}=:release AND {row_names.c("KIND")}=:kind',
+                                    [('release',release_id,'VARCHAR2'),('kind',kind,'VARCHAR2')], limit=1)
+                 if result != [{'N': expected['rows']}]:
+                     raise DPError('QUERY_ROW_COUNT: remote table differs')
+-            statement = (f'DECLARE n NUMBER; BEGIN SELECT COUNT(*) INTO n FROM {RELEASE} WHERE RELEASE_ID=:release; '
+-                         f'IF n=0 THEN INSERT INTO {RELEASE}(RELEASE_ID,MANIFEST_JSON) VALUES(:release,:body); END IF; '
++            release_names = names(sql, 'query_release', RELEASE)
++            statement = (f'DECLARE n NUMBER; BEGIN SELECT COUNT(*) INTO n FROM {release_names.table} WHERE {release_names.c("RELEASE_ID")}=:release; '
++                         f'IF n=0 THEN INSERT INTO {release_names.table}({release_names.c("RELEASE_ID")},{release_names.c("MANIFEST_JSON")}) VALUES(:release,:body); END IF; '
+                          'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
+             sql.request(statement, [('release', release_id, 'VARCHAR2'), ('body', json_body(value), 'CLOB')], write=True)
+             if read_release(sql, release_id) != value:
+@@ -444,12 +461,15 @@
+     Oracle DDL commits independently. An uncertain response remains a failure;
+     the next explicit invocation inspects the dictionary before attempting DDL.
+     """
++    if type(allow_missing_lookup_indexes) is not bool:
++        raise DPError('QUERY_INDEX_POLICY: expected a boolean')
+     physical=getattr(sql.client,'schema_map',None)
+     if physical:
+         if create:raise DPError('MAPPED_DDL_SEPARATE: execute generated creation SQL first')
+-        return physical.preflight(sql,keys=['query_release','query_row','query_active','query_state'])
+-    if type(allow_missing_lookup_indexes) is not bool:
+-        raise DPError('QUERY_INDEX_POLICY: expected a boolean')
++        result = physical.preflight(sql,keys=['query_release','query_row','query_active','query_state'])
++        # Mapped preflight requires every declared index. Nothing was deferred;
++        # expose the same result contract consumed by full/clean importers.
++        return {**result, 'missing': [], 'deferred_indexes': []}
+     expected = {}
+     indexes = {}
+     for statement in DDL:

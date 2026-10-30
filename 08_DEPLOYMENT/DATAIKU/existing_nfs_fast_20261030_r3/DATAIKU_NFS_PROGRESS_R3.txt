@@ -1,0 +1,127 @@
+# Dataiku Python 노트북의 새 셀에 전체 내용을 붙여넣고 실행하세요.
+# 저장된 파일을 읽기만 합니다. 적재 실행/재개, DB 호출, 파일 쓰기는 없습니다.
+# 기존 적재 커널은 재시작하지 마세요. 별도 조회 노트북에서 실행할 수 있습니다.
+import json
+import tempfile
+from pathlib import Path
+from datetime import datetime
+import dataiku
+
+TAIL_LINES = 5
+# 기본값은 가장 최근 수정된 calls.jsonl입니다.
+# 특정 파일을 보려면 아래 최근 로그 목록의 상대경로를 따옴표 안에 넣으세요.
+LOG_RELATIVE_PATH = ""
+
+
+def tail_snapshot(path, count):
+    """파일 끝에서 역방향으로 읽어 조회 시작 시점의 마지막 count줄을 반환."""
+    with path.open("rb") as stream:
+        end = stream.seek(0, 2)
+        position, newlines, chunks = end, 0, []
+        while position > 0 and newlines <= count:
+            size = min(65536, position)
+            position -= size
+            stream.seek(position)
+            chunk = stream.read(size)
+            chunks.append(chunk)
+            newlines += chunk.count(b"\n")
+        raw = b"".join(reversed(chunks))
+    lines = raw.split(b"\n")
+    if raw.endswith(b"\n"):
+        lines.pop()
+    if not raw:
+        lines = []
+    return ([line.decode("utf-8", errors="replace") for line in lines[-count:]],
+            bool(raw and not raw.endswith(b"\n")))
+
+
+def read_state(path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print("상태 파일 읽기 실패:", path.name, type(exc).__name__)
+        return None
+
+
+def show_progress():
+    base = Path(dataiku.get_custom_variables().get("LEGAL_PIPELINE_SCRATCH")
+                or tempfile.gettempdir()).expanduser().resolve()
+    job = (base / "legal-existing-nfs-20261029-r1"
+           / "financial-risk-success-20261005-schema-r2" / "oracle-import-r2")
+    print("조회 시각:", datetime.now().astimezone().isoformat())
+    print("적재 기록 경로:", job)
+    if not job.is_dir():
+        print("이 노트북에서 기록 경로가 보이지 않습니다.")
+        print("다른 실행 환경일 수 있으므로 이 결과만으로 중단됐다고 판단하지 마세요.")
+        return
+
+    full_path = job / "full-state.json"
+    if full_path.is_file():
+        full = read_state(full_path)
+        if full is not None:
+            print("전체 마지막 저장 단계:", full.get("stage", "사전검사"))
+            print("완료된 단계:", list(full.get("stages", {})))
+            print("전체 저장 상태:", full.get("status", "완료 상태 미기록"))
+            if full.get("error"):
+                print("전체 중단 사유:", full["error"])
+            if full.get("failure"):
+                print("전체 오류 기록:", full["failure"])
+
+    for path in sorted(job.glob("source/*/state.json")):
+        state = read_state(path)
+        if state is None:
+            continue
+        print("\n원문 적재 상태 파일:", path.relative_to(job))
+        print("데이터 버전:", state.get("binding", {}).get("dataset_version"))
+        print("저장된 상태:", state.get("status"))
+        print("일시정지 사유:", state.get("reason"))
+        print("저장된 누적 SQL 호출:", state.get("calls"))
+        if state.get("deadline"):
+            print("최초 작업 기한:", datetime.fromtimestamp(state["deadline"]).astimezone().isoformat())
+        print("검증된 누적 건수:", {
+            name: item.get("rows", 0)
+            for name, item in state.get("tables", {}).items()
+        })
+        print("처리 중 기록:", state.get("pending"))
+        print("오류 기록:", state.get("failure"))
+
+    logs = []
+    for path in job.rglob("*.jsonl"):
+        try:
+            logs.append((path.stat().st_mtime, path))
+        except FileNotFoundError:
+            continue
+    logs.sort(key=lambda entry: (entry[0], str(entry[1])))
+    print("\n최근 로그 목록 (최대 8개):")
+    for modified, path in logs[-8:]:
+        print(datetime.fromtimestamp(modified).astimezone().isoformat(),
+              str(path.relative_to(job)))
+
+    if LOG_RELATIVE_PATH:
+        target = (job / LOG_RELATIVE_PATH).resolve()
+        if job.resolve() not in target.parents or not target.is_file():
+            print("선택한 로그가 적재 기록 경로 안에 없습니다. 상대경로를 확인하세요.")
+            return
+    else:
+        sql_logs = [entry for entry in logs if entry[1].name == "calls.jsonl"]
+        candidates = sql_logs or logs
+        if not candidates:
+            print("현재 보이는 JSONL 로그가 없습니다.")
+            return
+        target = candidates[-1][1]
+
+    print("\n선택한 로그:", target.relative_to(job))
+    print("상태는 마지막 저장값입니다. PAUSED이면 자동 재개되지 않습니다.")
+    print("실행 중인 작업의 진전은 검증 건수와 로그 시각을 비교하세요.")
+    try:
+        lines, partial = tail_snapshot(target, TAIL_LINES)
+    except OSError as exc:
+        print("로그 읽기 실패:", type(exc).__name__)
+        return
+    if partial:
+        print("참고: 마지막 줄에 줄바꿈이 없습니다. 쓰는 중인 줄일 수 있습니다.")
+    print("\n--- 마지막 {}줄 (요청 최대 {}줄) ---".format(len(lines), TAIL_LINES))
+    print("\n".join(lines))
+
+
+show_progress()

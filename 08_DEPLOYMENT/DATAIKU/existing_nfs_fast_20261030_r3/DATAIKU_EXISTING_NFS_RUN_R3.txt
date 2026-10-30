@@ -1,0 +1,93 @@
+# LEGAL_RAG 새 Python 노트북. 기존 00/01/02/03 레시피는 실행하지 않습니다.
+ACTION = 'check' # check → transfer → load, 상태만 확인: status
+CLOB_BATCH_READS = 32  # 1이면 기존 직렬 조회로 같은 체크포인트에서 재개
+LANDING_ID = 'ehA8dpVm'
+PACKAGE_NAME = 'DATAIKU_EXISTING_NFS_CLIENT_20261030_R3.zip'
+PACKAGE_SHA256 = '9c9e6d5bcaf1bff809a763c9d13ee6d0f455322697cc09f2bf8c6b6480c62006'
+PACKAGE_BYTES = 308464
+"""Inserted into each recipe and installer with pinned constants."""
+import hashlib
+import importlib.util
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import sys
+import tempfile
+import zipfile
+import dataiku
+
+
+def verified_package():
+    if dataiku.default_project_key() != 'LEGAL_RAG':
+        raise RuntimeError('LEGAL_RAG 프로젝트에서 실행하세요.')
+    parent = dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH') or None
+    if parent:
+        parent = str(Path(parent).expanduser().resolve())
+        if not Path(parent).is_dir():
+            raise RuntimeError('LEGAL_PIPELINE_SCRATCH 디렉터리가 없습니다.')
+    work = Path(tempfile.mkdtemp(prefix='legal-recipes-', dir=parent))
+    os.chmod(work, 0o700)
+    if shutil.disk_usage(work).free < PACKAGE_BYTES + 512*1024*1024:
+        raise RuntimeError('LOCAL_SCRATCH_CAPACITY')
+    archive = work / 'package.zip'
+    folder = dataiku.Folder(LANDING_ID)
+    h, total = hashlib.sha256(), 0
+    with folder.get_download_stream('/'+PACKAGE_NAME) as source, archive.open('wb') as target:
+        for block in iter(lambda: source.read(1024*1024), b''):
+            total += len(block)
+            if total > PACKAGE_BYTES:
+                raise RuntimeError('PACKAGE_SIZE')
+            target.write(block)
+            h.update(block)
+    if total != PACKAGE_BYTES or h.hexdigest() != PACKAGE_SHA256:
+        raise RuntimeError('PACKAGE_HASH')
+    with zipfile.ZipFile(archive) as z:
+        if len(z.namelist()) != len(set(z.namelist())):
+            raise RuntimeError('PACKAGE_DUPLICATE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if (str(p) != item.filename or p.is_absolute() or '..' in p.parts
+                    or '\\' in item.filename or ':' in item.filename or item.is_dir()
+                    or stat.S_ISLNK(item.external_attr >> 16) or item.file_size > 8*1024*1024):
+                raise RuntimeError('PACKAGE_PATH')
+        z.extractall(work/'code')
+    root = work/'code'
+    # A recipe runs in its own process. Install cells use no pipeline imports.
+    return work, root
+
+
+def run_recipe(stage, cfg):
+    work, root = verified_package()
+    sys.path[:0] = [str(root), str(root/'client'), str(root/'client/02_BACKEND')]
+    try:
+        import recipes_runtime
+        from named_inputs import install_input_selection
+        install_input_selection(recipes_runtime)
+        import controller
+        controller.execute(stage, cfg, work)
+    except BaseException:
+        print('실패 기록을 보존했습니다. WORK_DIR=' + str(work), flush=True)
+        raise
+    else:
+        shutil.rmtree(work)  # Verified S3 originals/results/checkpoints remain.
+
+work, root = verified_package()
+# R2 적재가 끝나거나 PAUSED인 것을 확인한 뒤 커널을 재시작하여 R3를 읽습니다.
+for module, relative in {
+    'semantic_runtime.oracle_dp_io': 'client/02_BACKEND/semantic_runtime/oracle_dp_io.py',
+    'semantic_runtime.oracle_dp_batched_read': 'client/02_BACKEND/semantic_runtime/oracle_dp_batched_read.py',
+    'existing_client': 'existing_client.py',
+    'lawrag.pipeline.oracle_full_package': 'client/02_BACKEND/lawrag/pipeline/oracle_full_package.py',
+    'lawrag.pipeline.oracle_query_publish': 'client/02_BACKEND/lawrag/pipeline/oracle_query_publish.py',
+}.items():
+    loaded = sys.modules.get(module)
+    if loaded is not None and (
+        not getattr(loaded, '__file__', None) or
+        hashlib.sha256(Path(loaded.__file__).read_bytes()).hexdigest() !=
+        hashlib.sha256((root/relative).read_bytes()).hexdigest()
+    ):
+        raise RuntimeError('이전 코드가 커널에 남아 있습니다. 적재 종료를 확인한 뒤 Kernel > Restart 후 이 R3 셀만 실행하세요.')
+sys.path[:0] = [str(root), str(root/'client'), str(root/'client/02_BACKEND')]
+import existing_client
+NFS_RESULT = existing_client.run(ACTION, clob_batch_size=CLOB_BATCH_READS)

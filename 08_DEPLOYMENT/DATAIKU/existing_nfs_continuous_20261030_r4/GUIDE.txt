@@ -1,0 +1,25 @@
+R4: 기존 NFS 이관의 적재 1회 6시간 제한 제거
+
+이메일의 첨부는 실제 코드 ZIP과 실행 TXT 두 개다. 바깥 묶음 ZIP은 없다.
+1. DATAIKU_EXISTING_NFS_CLIENT_20261030_R4.zip을 압축 해제하지 않고
+   LEGAL_RAG / ehA8dpVm 관리 폴더에 정확한 이름으로 업로드한다.
+2. 기존 적재 종료/PAUSED를 확인한 뒤 적재 노트북 Kernel > Restart.
+3. DATAIKU_EXISTING_NFS_RUN_R4.txt 전체를 새 Python 셀에 붙여넣는다.
+4. ACTION='check', CLOB_BATCH_READS=32로 NFS_READY_FOR_TRANSFER 확인.
+5. 같은 전체 셀의 ACTION만 'load'로 바꿔 실행한다. transfer 재실행은 필요 없다.
+6. CLOB_READ_BATCH_SIZE=32 및 LOAD_INVOCATION_CAP=NONE 출력 확인.
+   oracle-import-r2의 기존 검증 위치에서 재개한다. pending은 먼저 DB와 대조한다.
+7. FULL_DATA_VERIFIED가 전체 완료다.
+
+1회 적재의 6시간 강제 중단은 없다. 최초 작업에 저장된 7일 기한과 누적 SQL/HTTP
+100만 호출 한도는 유지한다. 기관의 노트북/세션/DB 자체 제한까지 없앤 것은 아니다.
+기존 실행을 동시에 두 개 돌리지 않는다. 구버전 재실행보다 같은 R4를 계속 사용한다.
+R4가 호환하는 이전 import 코드 hash는 R2/R3의 알려진 한 버전으로 제한한다.
+같은 target/data/generation인지 검증하고 원래 full-state를 보존하며 실행 코드
+hash를 compatible_executor에 기록한다. 데이터/상태/기한을 지우거나 초기화하지 않는다.
+R3의 묶음 조회에 현장 SQL 호환 문제가 있으면 CLOB_BATCH_READS=1로 원래 직렬 조회를
+선택할 수 있다. 이 경우에도 R4의 적재 6시간 제한 제거는 그대로 유지된다.
+원래 조회 전용 진행 확인 TXT도 계속 사용할 수 있다.
+
+22개 로컬 계약/전달 노트북 검사 통과. 6시간 경과는 가상시계 검사이며 현장 성능
+실측이 아니다. 자세한 지연 원인과 남은 구조 개선은 진단결과.txt에 기록했다.

@@ -1,0 +1,26 @@
+R2 원문 이관의 긴 CLOB 조각 조회 묶음 처리 / 2026-10-30
+
+범위: 봉인 R2 클라이언트 ZIP에서 Dataiku용 R3만 만든다. MAIN/GENOS 서버/
+선택 generation/Oracle 스키마/기존 R2 산출물은 변경하지 않는다.
+사진: 전체/source PAUSED, 마지막 SQL 158847, 본문 검증 205707, pending 4행.
+R2는 첫 1000 UTF-16 단위 뒤의 각 행/컬럼 조각마다 SQL을 별도로 요청한다.
+R3는 서로 독립적인 다음 조각 최대 32개를 UNION ALL로 조회한다. 각 CLOB의
+다음 offset은 실제 수신 UTF-16 길이로 계산하여 supplementary 경계를 보존한다.
+
+불변: 전체 바이트 비교/NULL와 EMPTY_CLOB/키/물리 매핑/응답 완전성/쓰기 전후
+검증/잠금/원래 deadline/누적 SQL 예산/실패 이력/마지막 확인 cursor.
+full_package.py, oracle_migration.py의 바이트는 R2와 같다. 체크포인트 identity
+수정이나 신규 작업 이름 없이 같은 oracle-import-r2에서 재개한다.
+실패: 누락/중복/다른 slot/길이 변경/빈 조각/초과/DB 오류를 기존 FAILED 경로로
+보낸다. 자동 재시도나 자동 serial 전환은 없다. 명시적으로 1개 읽기를 선택하면
+같은 R3와 체크포인트로 기존 직렬 조회를 사용할 수 있다.
+
+검증: 일반 계약 검사와 봉인 ZIP의 실제 노트북 실행, Oracle/Dataiku 경계만
+모의한다. UTF-16 경계/NULL/빈값/32개 상한/응답 순서/오류/중단·재개/중복
+쓰기/기한·누적 호출/원본 R2 pin 및 checkpoint identity를 확인한다.
+성능 A/B·현장 시간 측정·대형 실제 데이터 실험·실모델은 수행하지 않는다.
+묶음 요청의 상한 검사는 구현 계약이며 현장 속도 배수나 완료시간 측정이 아니다.
+
+기존 환경 검사: WSL/Git 설정 통과. 전역 diff --check는 이번 작업 전부터
+02_BACKEND/semantic_runtime/legal_agent/wire_schema.py:99 공백 오류 1개로 실패.
+해당 병행 파일은 보존한다. 이번 변경 범위 공백/문법/계약을 별도 확인한다.

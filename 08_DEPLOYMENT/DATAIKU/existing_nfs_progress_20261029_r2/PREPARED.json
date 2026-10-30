@@ -1,0 +1,37 @@
+{
+  "to": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "[NFS 적재 로그 tail 500] Dataiku 읽기 전용 조회 TXT R2",
+  "attachments": [
+    {
+      "name": "DATAIKU_NFS_PROGRESS_TAIL500_20261029_R2.zip",
+      "bytes": 4168,
+      "sha256": "db7414ff9564f70958cf236474a31cfc3396be9202c408679ffc1d166cda24e4",
+      "mime_type": "application/zip"
+    },
+    {
+      "name": "DATAIKU_NFS_PROGRESS_TAIL500_R2.txt",
+      "bytes": 5096,
+      "sha256": "c7f2c36817694421b9bb7d841186b2c23751e7ada3ae3a97c6be3c93c16ec846",
+      "mime_type": "text/plain"
+    },
+    {
+      "name": "GUIDE.txt",
+      "bytes": 3326,
+      "sha256": "291a5064d534ddd51832380d113963d8f8361309da5b77a97fdcf86ec67ca2dd",
+      "mime_type": "text/plain"
+    }
+  ],
+  "zip_content_check": "PASS",
+  "javascript_files": 0,
+  "checks": [
+    "Python 3.9 syntax: PASS",
+    "Fixture notebook execution, state summary and latest SQL log selection: PASS",
+    "500-line UTF-8 tail: PASS",
+    "Fixture state/log files unchanged: PASS",
+    "Empty, fewer-than-500, final partial line and reverse chunk boundary cases: PASS",
+    "Missing record path is reported without declaring load stopped: PASS"
+  ],
+  "field_executed": false,
+  "dataiku_stub": "get_custom_variables only; no database/network API",
+  "product_code_modified": false
+}
