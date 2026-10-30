@@ -11,6 +11,11 @@ import re
 import time
 import uuid
 import streamlit as st
+import os
+from pathlib import Path
+import sys
+if os.environ.get("GENOS_RAG_ONTOLOGY_CONFIG"):
+    sys.path.insert(0,str(Path(os.environ.get("GENOS_ONTOLOGY_CODE_ROOT",Path(__file__).resolve().parents[3]))/"02_BACKEND"))
 
 NAV = ['배치 모니터', '구조화 누락 승인', '숏컷 승인', 'Legal Wiki', '온톨로지 관리', '시뮬레이션']
 STRUCTURES = [
@@ -147,9 +152,12 @@ def sidebar():
         for i,(name,icon) in enumerate(zip(NAV,icons)):
             if i==3: html('<div class="nav-label">KNOWLEDGE & VALIDATION</div>')
             st.button(str(i)+'  '+name,key='nav_'+name,icon=icon,use_container_width=True,type='primary' if state()['page']==name else 'secondary',on_click=navigate,args=(name,))
-        html('<div class="side-foot">DATAIKU · ORACLE<br>개발 미리보기 / 운영 API 미연결<br>예시를 수정해 화면 흐름을 확인하세요.</div>')
+        if os.environ.get('GENOS_RAG_ONTOLOGY_CONFIG'):
+            html('<div class="side-foot">DATAIKU · ORACLE<br>온톨로지 관리·시뮬레이션 연결 모드<br>다른 메뉴는 설계 미리보기입니다.</div>')
+        else:
+            html('<div class="side-foot">DATAIKU · ORACLE<br>설계 미리보기 / 실제 승인 미연결</div>')
         with st.expander('연결 상태'):
-            st.caption('중계서버·배치·승인·위키·온톨로지·시뮬레이션의 실제 API는 미연결입니다.')
+            st.caption('온톨로지: 설정된 DB·작업 폴더 연결 사용. 나머지 메뉴는 기존 시안입니다.' if os.environ.get('GENOS_RAG_ONTOLOGY_CONFIG') else '온톨로지 설정이 없어 시안 데이터를 표시합니다.')
             st.caption('배치 모니터의 Oracle 점검만 기존 읽기 전용 연결 예시입니다.')
 
 
@@ -345,6 +353,9 @@ def graph(item):
 
 
 def render_ontology():
+    if os.environ.get("GENOS_RAG_ONTOLOGY_CONFIG"):
+        from ontology_dashboard import render
+        return render(embedded=True, initial_page='검토 대시보드')
     header(4,'생성된 개념과 연결 관계를 살펴보고, 조건·제외·재개 기준을 검토합니다.')
     left,right=st.columns([1,2.25],gap='large')
     with left:
@@ -382,6 +393,9 @@ def render_ontology():
 
 
 def render_simulation():
+    if os.environ.get("GENOS_RAG_ONTOLOGY_CONFIG"):
+        from semantic_runtime.ontology_work.ui import render
+        return render(simulation=True)
     header(5,'온톨로지 버전과 질문 묶음을 고정하고, 예상한 동작과 실제 결과의 차이를 확인합니다.')
     st.caption('시뮬레이션 화면 시안 · 고정된 예시 결과를 표시하며 엔진·LLM을 실행하거나 실제 품질을 평가하지 않습니다.')
     control,results=st.columns([1,2.25],gap='large')

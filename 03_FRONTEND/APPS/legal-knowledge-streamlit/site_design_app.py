@@ -2,6 +2,13 @@
 Upload this entire Python file into a Streamlit webapp. No other UI files needed.
 The embedded UI is derived from the verified Sites v2 source; see SOURCE_ASSETS.
 """
+import os
+if os.environ.get('GENOS_RAG_ONTOLOGY_CONFIG'):
+    import runpy
+    from pathlib import Path
+    runpy.run_path(str(Path(__file__).with_name('app.py')),run_name='__main__')
+    import streamlit as st
+    st.stop()
 import streamlit as st
 import streamlit.components.v1 as components
 
