@@ -1,0 +1,101 @@
+{
+  "status": "LOCAL_PASS",
+  "tests": [
+    {
+      "file": "CONTRACT_TEST.xml",
+      "tests": 41,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "NATIVE_PDF_TEST.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "total_tests": 44,
+  "code_sha256": "6903032227143a1b94fe0eec8a701592d819a2e08f061ce76453b42df687121c",
+  "recipe_package_sha256": "1dd87105d700f94cb57568417182a95ed338c20edc2635e27bef9e21445dc9dd",
+  "baseline_code_sha256": "868b23d7b0b4ac0d825a1a38644a582966118caad7796ca8b6e780df9f322dfa",
+  "service_changed": [
+    "CODE_PINS.json",
+    "service.py",
+    "worker.py",
+    "parser_config.py"
+  ],
+  "service_unchanged_files": 1136,
+  "native_pdf": {
+    "status": "PASS",
+    "mock_parser_http_calls": 1,
+    "input_sha256": "2c4474e6c91175a474bff8b789ba400084632df0c93ea1224ab326c55d4e8aa4",
+    "actual_stages": [
+      "STRUCTURE",
+      "PREPARE",
+      "INDEX",
+      "RETURN"
+    ],
+    "local_docling_model_calls": 0,
+    "real_model_calls": 0,
+    "field_server_tested": false,
+    "oracle_retested": false,
+    "fixture_glossary_and_pin_rebound": true,
+    "product_python_bytes_unchanged": true,
+    "result_zip_bytes": 156227
+  },
+  "negative_native_pdf": [
+    {
+      "status": "EXPECTED_FAILURE",
+      "scenario": "chunks_only",
+      "mock_parser_http_calls": 1,
+      "local_fallback": false,
+      "result_published": false,
+      "shared_input_retained": true,
+      "model_calls": 0,
+      "field_server_tested": false
+    },
+    {
+      "status": "EXPECTED_FAILURE",
+      "scenario": "http_error",
+      "mock_parser_http_calls": 1,
+      "local_fallback": false,
+      "result_published": false,
+      "shared_input_retained": true,
+      "model_calls": 0,
+      "field_server_tested": false
+    }
+  ],
+  "coverage": [
+    "preprocessor env missing/URL priority/defaults/shared path/symlink/secret non-disclosure",
+    "HEALTH diagnostic, OPEN preflight rejection, RUN configuration drift rejection; cancel still allowed",
+    "exact packaged worker forwarding to existing pipeline without local parser argument",
+    "R1 terminal checkpoint upgrade, original deadline/SQL/HTTP/attempt budget, repeat idempotence",
+    "UNKNOWN/running/mismatched handle/returned results/exhausted budget/input/hash mismatch rejection",
+    "process-tree cancel/lease/deadline, duplicate RUN, input/result hash, durable log-offset contracts",
+    "actual public DSS SDK adapter install/repeat/rollback/unknown edits refusal",
+    "actual disposable Git checkout install/repeat/stage/commit/pin check/rollback",
+    "native synthetic PDF, mock HTTP Docling JSON with table -> structure/prepare/index/return ZIP",
+    "remote HTTP error and chunk-only response: no local fallback, result not published"
+  ],
+  "real_model_calls": 0,
+  "oracle_retested": false,
+  "field_genos_dataiku_preprocessor_tested": false,
+  "field_env": "USER_WILL_CONFIGURE",
+  "field_git_commit_push": false,
+  "field_revision": "NOT_DEPLOYED",
+  "local_rag_main_changed": false,
+  "mail_sent": false,
+  "failure_history": [
+    {
+      "file": "CONTRACT_FIRST.xml",
+      "reason": "test helper accessed missing config_sha256 before OPEN; negative test corrected to call OPEN directly; product unchanged"
+    }
+  ],
+  "limitations": [
+    "HEALTH checks local environment/path only, not remote HTTP or shared mount",
+    "Docling document JSON required; structural VLM remains off; chunk-only endpoint unsupported here",
+    "Cancelled worker does not confirm cancellation of a request already running in separate preprocessor",
+    "R1 partial successes were not published as reusable results; retry retransfers/recomputes the batch",
+    "native fixture rebinds only synthetic glossary configuration/pin; all Python delivery bytes exact"
+  ]
+}

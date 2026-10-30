@@ -1,0 +1,12 @@
+Scope: diagnostic only for photographed LEGAL_02_STRUCTURE_GENOS_R1_NP GENOS_BUSY.
+Failure class: START admission rejected by the sealed single-job worker.
+Owner: existing GENOS lifecycle; no recovery ownership or retry changes.
+Consumer: Dataiku notebook output of bound checkpoint STATUS.
+Allowed: HEALTH and STATUS only; one attempt, bounded requests and record reads.
+Unchanged: prior artifacts, worker, client, Flow recipes, Oracle, active MAIN,
+job ids/capabilities/deadlines/SQL budgets and persisted failure records.
+Final state: blocking job identified within inspected records, or unconfirmed;
+never represent an empty list/failed STATUS as no work or completed recovery.
+Required checks: sealed service START BUSY, FAILED/RUNNING/COMPLETE/RELEASED,
+lost job, stale instance, hash/conflicting checkpoints, credential redaction,
+HTTP failure/budget, no state-changing operations, delivered TXT byte identity.

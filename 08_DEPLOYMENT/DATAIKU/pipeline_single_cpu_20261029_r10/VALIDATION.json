@@ -1,0 +1,45 @@
+{
+  "status": "LOCAL_SINGLE_CPU_CORRECTION_PASS",
+  "suites": {
+    "protocol_install_upgrade": {
+      "tests": 116,
+      "passed": 116,
+      "failed": [],
+      "sha256": "c79129d69317d52d6a1026ca84f45d96c6b3494d6b6dd2f831d497b29eb5b290"
+    },
+    "native_pipeline": {
+      "tests": 4,
+      "passed": 4,
+      "failed": [],
+      "sha256": "323324cb57f5731e507a3d9a1c7ca4658e1ffe5f84308083d7ad48ce479b3ba2"
+    },
+    "spawn_import": {
+      "tests": 3,
+      "passed": 3,
+      "failed": [],
+      "sha256": "be5a6bd41bcb7c7a5332990be0d8d5f6f1e15bfd067c8a2987bb6edf7eba3ebc"
+    }
+  },
+  "tests_passed": 123,
+  "server_files": 1282,
+  "unchanged_r9_files": 1280,
+  "changed_server_files": [
+    "CODE_PINS.json",
+    "worker.py"
+  ],
+  "cpu_allocation_corrected_from": 4,
+  "cpu_allocation_corrected_to": 1,
+  "ram_gib": 16,
+  "fulltext_workers": 1,
+  "model_calls": 0,
+  "new_performance_run": false,
+  "whole02_1hour_verified": false,
+  "r9_2_49x_does_not_apply_to_single_cpu": true,
+  "existing_01_reusable": true,
+  "failed_added_resume": false,
+  "requires_02_recompute": true,
+  "main_changed": false,
+  "onsite_deployed": false,
+  "email_sent": false,
+  "historical_limits_preserved": "R8 historical compatibility failure and R9 initial native failures remain in original records."
+}

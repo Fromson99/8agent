@@ -1,0 +1,38 @@
+# 압축 해제한 TRANSFER 전달 폴더에서 실행: bash POD_RUNTIME_CHECK_20261028_R4.txt
+# 실제 코드서빙과 같은 이미지/Python에서 실행해야 유효합니다.
+# 기본은 읽기 전용 점검. fork 미설치 시 ACTION=install-fork bash ... 로 동봉 wheel만 설치.
+# GENOS_STRUCTURE_CONFIG는 layout/OCR/table 연결이 설정된 전용 YAML의 절대경로.
+set -e
+TRANSFER_DIR="$PWD"
+ACTION="${ACTION:-check}"
+if [ "$ACTION" = "install-fork" ]; then
+  python3 - "$TRANSFER_DIR/GENOS_POD_RUNTIME_20261028_R4.zip" <<'PY_WHEEL'
+import sys,zipfile,tempfile,subprocess,hashlib
+from pathlib import Path
+expected_runtime_sha='b82fbb678ad752f84938e63dc39368e97d8052d21307cef4006de3d71f469e67'
+if hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest()!=expected_runtime_sha:raise SystemExit('RUNTIME_ZIP_HASH_MISMATCH')
+with tempfile.TemporaryDirectory(prefix='pod-fork-') as tmp:
+    with zipfile.ZipFile(sys.argv[1]) as z:
+        name='packages/genon_docling-2.41.0+genon.0-py3-none-any.whl'
+        data=z.read(name)
+    p=Path(tmp)/Path(name).name;p.write_bytes(data)
+    subprocess.run([sys.executable,'-m','pip','install','--no-index','--no-deps',str(p)],check=True)
+PY_WHEEL
+elif [ "$ACTION" != "check" ]; then
+  echo 'ACTION은 check 또는 install-fork'; exit 2
+fi
+cd "$HOME/DEV"
+PYTHONPATH="$PWD/02_BACKEND${PYTHONPATH:+:$PYTHONPATH}" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 - <<'PY_CHECK'
+import json,os,sys
+from pathlib import Path
+if not os.environ.get('GENOS_STRUCTURE_CONFIG'):
+    raise SystemExit('GENOS_STRUCTURE_CONFIG를 먼저 설정하세요. GUIDE의 기존 parser YAML 보존·준비 절차 참고.')
+from lawrag.core.genos_pod import Settings,preflight
+try:
+    print(json.dumps(preflight(Settings.from_env()),ensure_ascii=False,indent=2))
+except ImportError as exc:
+    raise SystemExit('POD_RUNTIME_IMPORT_FAILED: '+str(exc))
+except Exception as exc:
+    raise SystemExit('POD_RUNTIME_FAILED: '+type(exc).__name__+'; 의존성/변환기와 parser YAML을 확인하세요.')
+print('실제 문서 변환·모델 호출은 아직 하지 않았습니다.')
+PY_CHECK

@@ -1,0 +1,190 @@
+# LEGAL_RAG Python 노트북 새 셀에서 전체 실행. 조회만 하며 배치를 실행/취소/해제하지 않습니다.
+"""Find prior batch capabilities in this project's checkpoints; never release work."""
+import hashlib
+import json
+import math
+from pathlib import Path
+import re
+import time
+
+MAX_FOLDERS = 50
+MAX_JOBS = 100
+MAX_STATUSES = 40
+
+
+def discover(d, dataiku, local_roots=()):
+    if dataiku.default_project_key() != d.PROJECT:
+        raise d.InspectionError('LEGAL_RAG_PROJECT_REQUIRED')
+    remote = d.StatusClient(dataiku.get_custom_variables())
+    health = remote.call('HEALTH')
+    if health.get('code_sha256') != d.SERVICE_SHA:
+        raise d.InspectionError('DEPLOYED_CODE_MISMATCH')
+    if not re.fullmatch('[0-9a-f]{32}',str(health.get('instance',''))):
+        raise d.InspectionError('HEALTH_CONTRACT')
+    project = dataiku.api_client().get_project(d.PROJECT)
+    known = project.list_managed_folders()
+    if len(known) > MAX_FOLDERS:
+        raise d.InspectionError('FOLDER_LIMIT')
+    ids = [v['id'] for v in known]
+    if len(ids) != len(set(ids)) or any(not isinstance(i,str) or not i for i in ids):
+        raise d.InspectionError('FOLDER_IDS')
+    rows, cache, contracts, counters = [], {}, {}, {'checkpoints':0,'folders':0,'local_clients':0}
+    scan_deadline = time.monotonic()+120
+
+    def emit(row):
+        rows.append(row)
+        print('DISCOVER_JOB',json.dumps(row,ensure_ascii=False,sort_keys=True),flush=True)
+
+    def status(row, state, deadline=None):
+        if (not re.fullmatch('[0-9a-f]{32}',str(state.get('job_id','')))
+                or not re.fullmatch('[0-9a-f]{64}',str(state.get('job_token','')))
+                or state.get('code_sha256') != d.SERVICE_SHA):
+            raise d.InspectionError('CLIENT_AUTH_BINDING')
+        row['job_id'] = state['job_id']
+        row['saved_status'] = state.get('status') if state.get('status') in d.STATUSES else 'UNKNOWN'
+        if deadline is not None and (type(deadline) not in (int,float) or not math.isfinite(deadline)
+                                     or state.get('deadline') != deadline):
+            raise d.InspectionError('CLIENT_DEADLINE_BINDING')
+        if state.get('instance') != health['instance']:
+            row['status'] = 'INSTANCE_CHANGED_NO_CALL'
+            return row
+        auth = {k:state[k] for k in ('job_id','job_token','instance','code_sha256')}
+        key = hashlib.sha256(json.dumps(auth,sort_keys=True).encode()).hexdigest()
+        contract = (state.get('archives'),state.get('deadline'))
+        if key in contracts and contracts[key] != contract:
+            raise d.InspectionError('DUPLICATE_CLIENT_BINDING')
+        contracts[key] = contract
+        if key not in cache:
+            if len(cache) >= MAX_STATUSES:
+                raise d.InspectionError('STATUS_LIMIT')
+            try:
+                reply = remote.call('STATUS',**auth)
+                if any(reply.get(k) != auth[k] for k in ('job_id','instance','code_sha256')):
+                    raise d.InspectionError('STATUS_BINDING')
+                if reply.get('status') not in {'UPLOADING','RUNNING','COMPLETE','FAILED','CANCELLED','INTERRUPTED','RELEASED'}:
+                    raise d.InspectionError('STATUS_CONTRACT')
+                # A known client also binds the server's exact input declarations.
+                if state.get('archives') and reply.get('archives') != state['archives']:
+                    raise d.InspectionError('STATUS_ARCHIVES_BINDING')
+                if state.get('deadline') is not None and reply.get('deadline') != state['deadline']:
+                    raise d.InspectionError('STATUS_DEADLINE_BINDING')
+                phase = reply.get('phase')
+                cache[key] = {'status':reply['status'], 'blocks_new_start':reply['status']!='RELEASED',
+                    'phase':phase if phase in {'VERIFY_INPUTS','STRUCTURE','PREPARE','INDEX','QUERY','PACKAGE','RETURN','RETURN_READY'} else 'UNSPECIFIED'}
+                if reply.get('error'):
+                    cache[key]['error_code'] = d.error_code(reply['error'])
+            except d.InspectionError as exc:
+                cache[key] = {'status':'STATUS_UNCONFIRMED','error_code':str(exc)}
+        row.update(cache[key])
+        return row
+
+    for item in known:
+        if counters['checkpoints'] >= MAX_JOBS:
+            emit({'source':'managed','status':'TOTAL_CHECKPOINT_LIMIT_REACHED'});break
+        if time.monotonic() >= scan_deadline:
+            emit({'source':'managed','status':'SCAN_BUDGET_REACHED'})
+            break
+        fid = item['id']; counters['folders'] += 1
+        found = 0
+        try:
+            folder = dataiku.Folder(fid,project_key=d.PROJECT)
+            # Existing hash-verified, bounded latest-checkpoint reader. Only
+            # _pipeline/jobs/*/checkpoint-...json contents are opened.
+            for name, checkpoint in d.latest_checkpoints(folder):
+                found += 1; counters['checkpoints'] += 1
+                if counters['checkpoints'] > MAX_JOBS:
+                    raise d.InspectionError('TOTAL_CHECKPOINT_LIMIT')
+                row={'source':'managed','folder_id':fid,'job_name':name,
+                     'local_phase':checkpoint.get('phase') if checkpoint.get('phase') in d.STATUSES else 'UNKNOWN'}
+                binding=checkpoint.get('binding',{});inputs=binding.get('input',{})
+                legacy=(inputs.get('project')==d.PROJECT and inputs.get('folder_id')==fid
+                        and inputs.get('client_sha256') in d.CLIENT_SHAS)
+                recipe=(binding.get('version')=='recipes-20261027-r1'
+                        and inputs.get('landing') in ids and inputs.get('raw') in ids)
+                if (not (legacy or recipe) or binding.get('service_code')!=d.SERVICE_SHA
+                        or binding.get('service_url_sha256')!=remote.endpoint_sha):
+                    row['status']='SKIPPED_BINDING'
+                elif not checkpoint.get('client'):
+                    row['status']='NO_CLIENT_STATE'
+                else:
+                    row=status(row,checkpoint['client'],checkpoint.get('deadline'))
+                emit(row)
+            print('DISCOVER_FOLDER',fid,'checkpoints=',found,flush=True)
+        except d.InspectionError as exc:
+            emit({'source':'managed','folder_id':fid,'status':'CHECKPOINT_UNCONFIRMED','error_code':str(exc)})
+        except Exception as exc:
+            emit({'source':'managed','folder_id':fid,'status':'FOLDER_UNCONFIRMED','error_type':type(exc).__name__})
+
+    # Only the earlier runner's explicitly known work directories, not a home or
+    # filesystem search. These local files lack checkpoint filename signatures;
+    # project/input support binding + current server instance/auth are required.
+    checked_roots=set()
+    for candidate in local_roots:
+        root=Path(candidate).expanduser().absolute()
+        if str(root) in checked_roots:
+            continue
+        checked_roots.add(str(root))
+        if len(checked_roots)>2:
+            raise d.InspectionError('LOCAL_ROOT_LIMIT')
+        if time.monotonic()>=scan_deadline:
+            emit({'source':'local','status':'SCAN_BUDGET_REACHED'});break
+        row={'source':'local','work_dir':str(root)}
+        try:
+            if any(p.is_symlink() for p in (root,*root.parents)):
+                raise d.InspectionError('LOCAL_SYMLINK')
+            if not root.exists():
+                emit({**row,'status':'LOCAL_WORK_DIR_NOT_FOUND'});continue
+            marker=root/'input-binding.json'
+            if marker.is_symlink() or not marker.is_file():
+                raise d.InspectionError('LOCAL_INPUT_BINDING_REQUIRED')
+            with marker.open('rb') as stream:inputs=json.loads(d.read_small(stream))
+            if (inputs.get('project')!=d.PROJECT or inputs.get('client_sha256') not in d.CLIENT_SHAS
+                    or not isinstance(inputs.get('folder_id'),str) or not inputs['folder_id']):
+                raise d.InspectionError('LOCAL_PROJECT_BINDING')
+            jobs=root/'jobs'
+            if jobs.is_symlink() or not jobs.is_dir():
+                raise d.InspectionError('LOCAL_JOBS_DIRECTORY')
+            count=0
+            for index,job in enumerate(jobs.iterdir()):
+                if index>=100 or count>=20:
+                    raise d.InspectionError('LOCAL_JOB_LIMIT')
+                if not job.is_dir() or not re.fullmatch('[A-Za-z0-9_-]{1,80}',job.name):
+                    continue
+                if job.is_symlink():raise d.InspectionError('LOCAL_SYMLINK')
+                path=job/'client.json'
+                if not path.exists():continue
+                if path.is_symlink():raise d.InspectionError('LOCAL_SYMLINK')
+                with path.open('rb') as stream:raw=d.read_small(stream)
+                state=json.loads(raw);count+=1;counters['local_clients']+=1
+                if (state.get('archives',{}).get('support') != inputs.get('archives',{}).get('PIPELINE_SUPPORT.zip')
+                        or not state.get('archives',{}).get('support')):
+                    raise d.InspectionError('LOCAL_SUPPORT_BINDING')
+                emit(status({**row,'job_name':job.name,'local_client_sha256':hashlib.sha256(raw).hexdigest(),
+                             'local_binding':'project/support/code/current-instance; no signed checkpoint'},state))
+            print('DISCOVER_LOCAL',str(root),'clients=',count,flush=True)
+        except d.InspectionError as exc:
+            emit({**row,'status':'LOCAL_UNCONFIRMED','error_code':str(exc)})
+        except Exception as exc:
+            emit({**row,'status':'LOCAL_UNCONFIRMED','error_type':type(exc).__name__})
+    blockers=sorted({row['job_id'] for row in rows if row.get('blocks_new_start')})
+    summary={'inspection':'FINISHED','blocking_job_ids':blockers,'counts':counters,
+             'http_calls':remote.calls,'scope':'this project managed folders and explicitly known old notebook work dirs',
+             'note':'빈 목록/조회 실패는 서버에 다른 작업이 없다는 증명이 아닙니다.'}
+    print('DISCOVER_SUMMARY',json.dumps(summary,ensure_ascii=False,sort_keys=True),flush=True)
+    print('원문/ZIP 다운로드·START·UPLOAD·EXECUTE·CANCEL·ACK·SQL·S3 쓰기 없음. STATUS는 유실 실행 상태를 갱신할 수 있습니다.',flush=True)
+    return rows,summary
+
+import types
+BASE_INSPECTION = '"""Inspect the existing notebook and Flow checkpoints; never submit/release work."""\nimport hashlib\nimport json\nimport re\nimport time\nimport urllib.error\nimport urllib.parse\nimport urllib.request\n\nPROJECT = \'LEGAL_RAG\'\nLANDING = \'ehA8dpVm\'\nSERVICE_SHA = \'771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46\'\nCLIENT_SHAS = {\n    \'9d553a32d460b6ddfe4b73a4186dea5501a0b878512ccd622fa7cbae631b9bb3\',\n    \'4f0f301f37208624fc51a5dde9bab84333eb2eeed1f5f7fd217d831e5c2bfef5\',\n}\nPATTERN = re.compile(r\'_pipeline/jobs/([A-Za-z0-9_-]{1,80})/checkpoint-(\\d{10})-([0-9a-f]{64})\\.json\')\nSTATUSES = {\'NEW\', \'UPLOADING\', \'RUNNING\', \'FAILED\', \'CANCELLED\', \'INTERRUPTED\',\n            \'COMPLETE\', \'RELEASED\', \'DOWNLOADED\', \'STRUCTURED\', \'LOAD_VERIFIED\',\n            \'LOAD_VERIFIED_ACK_PENDING\', \'STOPPED\'}\nERRORS = {\'BUSY\', \'JOB_LOST\', \'UNKNOWN_JOB\', \'INSTANCE_CHANGED\', \'INSTANCE_MISMATCH\',\n          \'CODE_BINDING_CHANGED\', \'JOB_CODE_CHANGED\', \'JOB_AUTH\', \'STAGE_FAILED\',\n          \'WORKER_LOST\', \'DEADLINE_EXHAUSTED\', \'INVALID_JOB_CREDENTIALS\'}\n\n\nclass InspectionError(RuntimeError):\n    pass\n\n\ndef read_small(stream):\n    parts, total = [], 0\n    while True:\n        block = stream.read(min(65536, 1024 * 1024 + 1 - total))\n        if not block:\n            return b\'\'.join(parts)\n        total += len(block)\n        if total > 1024 * 1024:\n            raise InspectionError(\'RECORD_TOO_LARGE\')\n        parts.append(block)\n\n\ndef error_code(value):\n    code = str(value).split(\':\', 1)[0]\n    return code if code in ERRORS else \'DETAIL_WITHHELD\'\n\n\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n    def redirect_request(self, req, fp, code, msg, headers, newurl):\n        return None\n\n\nclass StatusClient:\n    def __init__(self, variables):\n        self.url = variables.get(\'LEGAL_PIPELINE_URL\', \'\')\n        self.token = variables.get(\'LEGAL_PIPELINE_TOKEN\', \'\')\n        if not isinstance(self.url, str) or not isinstance(self.token, str) or not self.token.strip():\n            raise InspectionError(\'PROJECT_VARIABLE_REQUIRED\')\n        parsed = urllib.parse.urlsplit(self.url)\n        if (parsed.scheme != \'https\' or not parsed.hostname or parsed.username\n                or parsed.password or parsed.fragment):\n            raise InspectionError(\'HTTPS_ENDPOINT_REQUIRED\')\n        self.endpoint_sha = hashlib.sha256(self.url.encode()).hexdigest()\n        self.deadline = time.monotonic() + 120\n        self.calls = 0\n\n    def call(self, operation, **fields):\n        if operation not in {\'HEALTH\', \'STATUS\'}:\n            raise InspectionError(\'INSPECTION_OPERATION_ONLY\')\n        remaining = self.deadline - time.monotonic()\n        if remaining <= 0 or self.calls >= 41:\n            raise InspectionError(\'INSPECTION_BUDGET\')\n        self.calls += 1\n        request = urllib.request.Request(self.url, method=\'POST\',\n            data=json.dumps({\'API_TYPE\': operation, **fields}).encode(),\n            headers={\'Content-Type\': \'application/json\', \'Authorization\': \'Bearer \' + self.token})\n        try:\n            with urllib.request.build_opener(NoRedirect()).open(request, timeout=min(15, remaining)) as response:\n                raw = read_small(response)\n        except urllib.error.HTTPError as exc:\n            code = exc.code\n            exc.close()\n            raise InspectionError(\'GENOS_HTTP_\' + str(code)) from None\n        except (urllib.error.URLError, TimeoutError, OSError):\n            raise InspectionError(\'GENOS_TRANSPORT_UNCONFIRMED\') from None\n        try:\n            reply = json.loads(raw)\n        except (ValueError, UnicodeError):\n            raise InspectionError(\'GENOS_NOT_JSON\') from None\n        if not isinstance(reply, dict):\n            raise InspectionError(\'GENOS_REPLY_CONTRACT\')\n        if reply.get(\'code\') != 0:\n            raise InspectionError(error_code(reply.get(\'error\', \'\'))) from None\n        if not isinstance(reply.get(\'data\'), dict):\n            raise InspectionError(\'GENOS_REPLY_CONTRACT\')\n        return reply[\'data\']\n\n\ndef latest_checkpoints(folder):\n    latest = {}\n    for index, path in enumerate(folder.list_paths_in_partition()):\n        if index >= 100000:\n            raise InspectionError(\'CHECKPOINT_PATH_LIMIT\')\n        clean = path.lstrip(\'/\')\n        match = PATTERN.fullmatch(clean)\n        if not match:\n            if clean.startswith(\'_pipeline/jobs/\') and \'/checkpoint-\' in clean:\n                raise InspectionError(\'CHECKPOINT_NAME\')\n            continue\n        name, seq, sha = match[1], int(match[2]), match[3]\n        if name not in latest or seq > latest[name][0]:\n            latest[name] = (seq, [(sha, path)])\n        elif seq == latest[name][0]:\n            latest[name][1].append((sha, path))\n    if len(latest) > 20:\n        raise InspectionError(\'CHECKPOINT_JOB_LIMIT\')\n    for name, (_, records) in sorted(latest.items()):\n        if len(records) != 1:\n            raise InspectionError(\'CONCURRENT_JOB_CHECKPOINT\')\n        sha, path = records[0]\n        with folder.get_download_stream(path) as stream:\n            raw = read_small(stream)\n        if hashlib.sha256(raw).hexdigest() != sha:\n            raise InspectionError(\'CHECKPOINT_HASH\')\n        try:\n            value = json.loads(raw)\n        except (ValueError, UnicodeError):\n            raise InspectionError(\'CHECKPOINT_JSON\') from None\n        if not isinstance(value, dict):\n            raise InspectionError(\'CHECKPOINT_CONTRACT\')\n        yield name, value\n\n\ndef inspect_folder(folder, role, raw_id, remote, health):\n    rows = []\n    for name, checkpoint in latest_checkpoints(folder):\n        row = {\'folder_role\': role, \'job_name\': name}\n        binding = checkpoint.get(\'binding\', {})\n        inputs = binding.get(\'input\', {})\n        if role == \'legacy\':\n            match = (inputs.get(\'project\') == PROJECT and inputs.get(\'folder_id\') == LANDING\n                     and inputs.get(\'client_sha256\') in CLIENT_SHAS)\n        else:\n            match = (binding.get(\'version\') == \'recipes-20261027-r1\'\n                     and inputs.get(\'landing\') == LANDING and inputs.get(\'raw\') == raw_id)\n        if not match or binding.get(\'service_url_sha256\') != remote.endpoint_sha or binding.get(\'service_code\') != SERVICE_SHA:\n            row[\'status\'] = \'SKIPPED_BINDING\'\n        elif not checkpoint.get(\'client\'):\n            row[\'status\'] = \'NO_CLIENT_STATE\'\n        else:\n            state = checkpoint[\'client\']\n            row[\'saved_status\'] = state.get(\'status\') if state.get(\'status\') in STATUSES else \'UNKNOWN\'\n            if (not re.fullmatch(\'[0-9a-f]{32}\', str(state.get(\'job_id\', \'\')))\n                    or not re.fullmatch(\'[0-9a-f]{64}\', str(state.get(\'job_token\', \'\')))\n                    or state.get(\'code_sha256\') != SERVICE_SHA):\n                raise InspectionError(\'CHECKPOINT_AUTH_BINDING\')\n            row[\'job_id\'] = state[\'job_id\']\n            if state.get(\'instance\') != health[\'instance\']:\n                row[\'status\'] = \'INSTANCE_CHANGED\'\n            else:\n                auth = {k: state[k] for k in (\'job_id\', \'job_token\', \'instance\', \'code_sha256\')}\n                try:\n                    status = remote.call(\'STATUS\', **auth)\n                    if any(status.get(k) != auth[k] for k in (\'job_id\', \'instance\', \'code_sha256\')):\n                        raise InspectionError(\'STATUS_BINDING\')\n                    if status.get(\'status\') not in STATUSES - {\'NEW\', \'DOWNLOADED\', \'STRUCTURED\', \'LOAD_VERIFIED\', \'LOAD_VERIFIED_ACK_PENDING\', \'STOPPED\'}:\n                        raise InspectionError(\'STATUS_CONTRACT\')\n                    row[\'status\'] = status[\'status\']\n                    row[\'phase\'] = status.get(\'phase\') if status.get(\'phase\') in {\'PREPARE\', \'STRUCTURE\', \'INDEX\', \'QUERY\', \'PACKAGE\'} else \'UNSPECIFIED\'\n                    if status.get(\'error\'):\n                        row[\'error_code\'] = error_code(status[\'error\'])\n                    row[\'blocks_new_start\'] = status[\'status\'] != \'RELEASED\'\n                except InspectionError as exc:\n                    row.update(status=\'STATUS_UNCONFIRMED\', error_code=str(exc))\n        rows.append(row)\n    return rows\n\n\ndef inspect_all(dataiku):\n    if dataiku.default_project_key() != PROJECT:\n        raise InspectionError(\'LEGAL_RAG_PROJECT_REQUIRED\')\n    remote = StatusClient(dataiku.get_custom_variables())\n    health = remote.call(\'HEALTH\')\n    if health.get(\'code_sha256\') != SERVICE_SHA:\n        raise InspectionError(\'DEPLOYED_CODE_MISMATCH\')\n    if not re.fullmatch(\'[0-9a-f]{32}\', str(health.get(\'instance\', \'\'))):\n        raise InspectionError(\'HEALTH_CONTRACT\')\n    project = dataiku.api_client().get_project(PROJECT)\n    known = project.list_managed_folders()\n    def folder_id(name):\n        found = [x[\'id\'] for x in known if x[\'name\'] == name]\n        if len(found) != 1:\n            raise InspectionError(\'FLOW_FOLDER_MISSING_OR_AMBIGUOUS\')\n        return found[0]\n    raw_id = folder_id(\'LEGAL_RAW_SOURCE_R1\')\n    folders = [(\'legacy\', LANDING), (\'structured\', folder_id(\'LEGAL_STRUCTURED_RESULT_R1\')),\n               (\'load\', folder_id(\'LEGAL_LGL_LOAD_RESULT_R1\'))]\n    rows = []\n    for role, fid in folders:\n        try:\n            current = inspect_folder(dataiku.Folder(fid, project_key=PROJECT), role, raw_id, remote, health)\n        except InspectionError as exc:\n            current = [{\'folder_role\': role, \'status\': \'CHECKPOINT_UNCONFIRMED\', \'error_code\': str(exc)}]\n        rows.extend(current)\n        for row in current:\n            print(json.dumps(row, ensure_ascii=False), flush=True)\n    blockers = sorted({r[\'job_id\'] for r in rows if r.get(\'blocks_new_start\')})\n    print(json.dumps({\'inspection\': \'FINISHED\', \'blocking_job_ids\': blockers,\n        \'blocking_job_identified\': bool(blockers), \'genos_calls\': remote.calls,\n        \'note\': \'조회 범위에서 찾은 작업입니다. 빈 목록은 GENOS 작업 부재의 증명이 아닙니다.\'}, ensure_ascii=False), flush=True)\n    print(\'ACK·CANCEL·START·EXECUTE·Oracle·S3 쓰기 없음. STATUS는 유실 실행을 INTERRUPTED로 갱신할 수 있습니다.\', flush=True)\n    return rows\n\n\ndef main():\n    import dataiku\n    try:\n        return inspect_all(dataiku)\n    except InspectionError as exc:\n        print(\'INSPECTION_STOPPED: \' + str(exc), flush=True)\n    except Exception as exc:\n        # SDK exception text may contain URLs or credentials. Keep it out of shared logs.\n        print(\'INSPECTION_STOPPED: SDK_OR_RECORD_ERROR / \' + type(exc).__name__, flush=True)\n\n\nif __name__ == \'__main__\':\n    PIPELINE_JOBS = main()\n'
+_discovery_base = types.ModuleType('verified_busy_inspection_r1')
+exec(compile(BASE_INSPECTION, '<verified-busy-inspection-r1>', 'exec'), _discovery_base.__dict__)
+import dataiku
+_known_local_roots = ['./legal_pipeline_work']
+if isinstance(globals().get('WORK_DIR'), str) and WORK_DIR.strip():
+    _known_local_roots.append(WORK_DIR)
+try:
+    DISCOVERY_ROWS, DISCOVERY_SUMMARY = discover(_discovery_base, dataiku, _known_local_roots)
+except _discovery_base.InspectionError as exc:
+    print('DISCOVERY_STOPPED',str(exc),flush=True)
+except Exception as exc:
+    print('DISCOVERY_STOPPED',type(exc).__name__,flush=True)

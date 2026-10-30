@@ -1,0 +1,82 @@
+# 상태 조회/허용 TXT를 실행했던 같은 LEGAL_RAG 노트북의 새 셀에서 전체 실행.
+# 저장 로그 읽기 전용. 새 허용/02 시작/취소/GENOS 호출/데이터 쓰기 없음.
+"""Read-only tail of one execution's immutable Dataiku log chunks."""
+import codecs
+import re
+import time
+
+
+class LogTail:
+    def __init__(self, folder, prefix):
+        self.folder, self.prefix = folder, prefix
+        self.offset = None
+        self.decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
+
+    def read_new(self):
+        files = {}
+        for path in self.folder.list_paths_in_partition():
+            name = path.lstrip('/')
+            if not name.startswith(self.prefix):
+                continue
+            match = re.fullmatch(r'(\d{16})\.log', name[len(self.prefix):])
+            if match:
+                offset = int(match[1])
+                if offset in files:
+                    raise ValueError('DUPLICATE_LOG_OFFSET')
+                files[offset] = path
+        if not files:
+            return
+        first = self.offset is None
+        if first:
+            self.offset = max(files)  # Begin at the latest available chunk.
+        while self.offset in files:
+            with self.folder.get_download_stream(files[self.offset]) as stream:
+                raw = stream.read(2*1024*1024 + 1)
+            if not raw or len(raw) > 2*1024*1024:
+                raise ValueError('LOG_CHUNK_SIZE')
+            value = self.decoder.decode(raw, final=False)
+            self.offset += len(raw)
+            if first:
+                value = ''.join(value.splitlines(keepends=True)[-60:])
+                first = False
+            if value:
+                yield value
+
+
+def follow(folder, prefix, interval=10):
+    reader = LogTail(folder, prefix)
+    last_notice = 0.0
+    print('TAIL 시작: ' + prefix, flush=True)
+    print('Dataiku에 저장된 새 로그를 10초 간격으로 읽습니다. 중단: Kernel → Interrupt.', flush=True)
+    try:
+        while True:
+            received = False
+            for value in reader.read_new():
+                print(value, end='', flush=True)
+                received = True
+            if received:
+                last_notice = time.monotonic()
+            elif time.monotonic() - last_notice >= 30:
+                print('\n[' + time.strftime('%H:%M:%S') + '] 새 저장 로그 대기', flush=True)
+                last_notice = time.monotonic()
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print('\n로그 보기만 중단했습니다. 02 작업에는 취소를 보내지 않았습니다.', flush=True)
+
+
+import dataiku
+import controller as c
+from updater import config
+
+if dataiku.default_project_key() != 'LEGAL_RAG':
+    raise ValueError('LEGAL_RAG 프로젝트에서 실행하세요.')
+project = dataiku.api_client().get_project('LEGAL_RAG')
+cfg = config(project.get_recipe('LEGAL_02_STRUCTURE_GENOS_R1').get_settings().get_code(), 'structure')
+folder = dataiku.Folder(cfg['structured'])
+job_name = dataiku.get_custom_variables().get('LEGAL_RECIPE_JOB_NAME', 'recipes_20261027_r1')
+latest = c.legacy_state(c.Scope(folder), job_name)
+handle = ((latest or {}).get('value', {}).get('compute') or {}).get('handle', '')
+if not re.fullmatch(r'[0-9a-f]{32}', handle):
+    raise ValueError('현재 실행 핸들이 없습니다. 02 시작 상태를 확인하세요.')
+print('현재 저장 상태:', latest['value'].get('phase'), flush=True)
+follow(folder, c.NAMESPACE + 'attempts/' + handle + '/logs/')

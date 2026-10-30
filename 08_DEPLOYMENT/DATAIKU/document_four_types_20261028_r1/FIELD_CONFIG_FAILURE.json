@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "source": "user screenshot C10B7805-5690-46DB-90F7-8DD8E1E38BA7/1-사진-1.jpg",
+  "observed": {
+    "dataiku_remote_preflight_error": "POD_EXISTING_PARSER_CONFIG_NOT_FOUND",
+    "client_exception": "POD_EXISTING_PARSER_SETUP_NOT_READY",
+    "dataiku_notebook_libreoffice_or_soffice_on_path": null
+  },
+  "code_based_inference": {
+    "stopped_at": "PROBE_HEALTH before selection.pick / OPEN / RUN",
+    "document_conversion_attempted_in_this_call": false,
+    "document_parsing_attempted_in_this_call": false,
+    "remote_config": "No explicit valid config and no config found in the implemented automatic search locations"
+  },
+  "not_established": [
+    "Absence of all parser YAML files everywhere in the serving Pod",
+    "GENOS Pod LibreOffice/rhwp/PDF SDK installation",
+    "Actual document conversion or parsing outcome",
+    "187 runtime configuration and image compatibility"
+  ],
+  "next_action": "Read-only configuration/converter/dependency check in the actual legal_pipeline_serving execution Pod; reuse confirmed site parser settings and persist GENOS_STRUCTURE_CONFIG in the serving revision environment. Do not infer endpoint/key values or install a converter in Dataiku from this screenshot."
+}

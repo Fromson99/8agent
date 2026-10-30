@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "tests": 16,
+  "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/pipeline_busy_discovery_20261027_r2/test_discovery.py --junitxml=08_DEPLOYMENT/DATAIKU/pipeline_busy_discovery_20261027_r2/TEST_RESULTS.xml",
+  "baseline_inspector_sha256": "681506f72824e6974298c70748ab9321831803adae8d1f8aff44f2f67c1b55af",
+  "service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "scope": "Reused the existing bounded read-only HTTP client and checkpoint hash reader. Tests call the sealed GENOS R2 service handler locally with synthetic checkpoints and an in-memory Dataiku adapter.",
+  "cases": [
+    "Current NEW/JOB_LOST plus prior FAILED job in another managed folder",
+    "Same capability queried once across managed/local records",
+    "Endpoint/code/instance/folder/client/deadline mismatches block STATUS",
+    "Corrupt checkpoint blocked while other folders remain inspectable",
+    "Explicit old notebook work directory with project/support/current-instance binding",
+    "Local wrong project/support and symlink rejection",
+    "No original/ZIP content reads",
+    "Folder SDK error preserved as unconfirmed without secret text",
+    "Full delivered notebook executes and ZIP/TXT bytes match"
+  ],
+  "source_documents_downloaded": 0,
+  "genos_start_execute_cancel_ack": 0,
+  "sql_calls": 0,
+  "field_discovery_performed": false,
+  "field_blocker_identified": false,
+  "field_busy_released": false,
+  "recipe_or_worker_changed": false,
+  "model_calls": 0
+}

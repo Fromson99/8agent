@@ -1,0 +1,47 @@
+{
+  "status": "LOCAL_SYNTHETIC_AND_MOCK_PASS",
+  "tests": 83,
+  "suites": {
+    "TEST.xml": 79,
+    "NATIVE_TEST.xml": 4
+  },
+  "failures": 0,
+  "errors": 0,
+  "actual_model_calls": 0,
+  "code_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+  "archive_hashes": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R7.zip": {
+      "sha256": "eb5eb048a0da802fde74f72a98d837c41204fbd069ba249c9214d7bb66e7fa22",
+      "bytes": 6623074
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R7.zip": {
+      "sha256": "f8deb2c891c0bf109707c15ba8bb1b130c1fe158396a7877d06e16c0739daf56",
+      "bytes": 293517
+    }
+  },
+  "covered": [
+    "HEALTH/OPEN ready without preprocessor, YAML, converter or model configuration",
+    "stale HTTP/Pod environment cannot override fixed skip policy",
+    "PDF bypass before parsing and block indirect local PDF fallback",
+    "actual native DOCX plus PDF/DOC bypass reaches selection/prepare/index/query export/result ZIP with zero HTTP calls",
+    "native-only complete; all-PDF and corrupt native stop without successful result",
+    "originals preserved, bypass vs processing failure reason/counts and exact successful IDs",
+    "Dataiku return hash/coverage publication and exact generation IDs before SQL consumer",
+    "original deadline/budgets/zero-review proof and R3-R6 failure migration",
+    "R1/R3/R4/R5/R6 apply/repeat/commit/check/rollback in isolated actual Git checkouts",
+    "Dataiku SDK install/repeat/rollback and unknown code rejection",
+    "legacy document parser probe explicitly disabled"
+  ],
+  "mock_boundaries": [
+    "Dataiku SDK and managed storage",
+    "SQL loader consumer spy; no onsite Oracle execution",
+    "Local HTTP trap rejects any parser/converter/model request; verified zero requests"
+  ],
+  "initial_test_failure": "INITIAL_NATIVE_TEST.xml/log: 3 pass, mixed test failed because DOC bypass was labelled ordinary failure in actual team_raw route. Corrected route and CSV source name. Final rebuilt code passed all 83 tests. INITIAL_TEST 79 passes preserved.",
+  "field_documents": "NOT_TESTED",
+  "field_model_connectivity": "NOT_TESTED",
+  "field_revision": "NOT_DEPLOYED",
+  "historical_1631_recovery": "NOT_ESTABLISHED",
+  "local_main_changed": false,
+  "root_git_commit_push": false
+}

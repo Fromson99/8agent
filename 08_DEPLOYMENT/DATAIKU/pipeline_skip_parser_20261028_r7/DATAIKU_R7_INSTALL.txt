@@ -1,0 +1,81 @@
+# LEGAL_RAG Python 노트북. 02를 중지한 뒤 새 셀에서 전체 실행.
+ACTION = 'apply' # apply / inspect / rollback
+LANDING_ID = 'ehA8dpVm'
+PACKAGE_NAME = 'DATAIKU_COMPUTE_RECIPES_20261028_R7.zip'
+PACKAGE_SHA256 = 'f8deb2c891c0bf109707c15ba8bb1b130c1fe158396a7877d06e16c0739daf56'
+PACKAGE_BYTES = 293517
+"""Inserted into each recipe and installer with pinned constants."""
+import hashlib
+import importlib.util
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import sys
+import tempfile
+import zipfile
+import dataiku
+
+
+def verified_package():
+    if dataiku.default_project_key() != 'LEGAL_RAG':
+        raise RuntimeError('LEGAL_RAG 프로젝트에서 실행하세요.')
+    parent = dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH') or None
+    if parent:
+        parent = str(Path(parent).expanduser().resolve())
+        if not Path(parent).is_dir():
+            raise RuntimeError('LEGAL_PIPELINE_SCRATCH 디렉터리가 없습니다.')
+    work = Path(tempfile.mkdtemp(prefix='legal-recipes-', dir=parent))
+    os.chmod(work, 0o700)
+    if shutil.disk_usage(work).free < PACKAGE_BYTES + 512*1024*1024:
+        raise RuntimeError('LOCAL_SCRATCH_CAPACITY')
+    archive = work / 'package.zip'
+    folder = dataiku.Folder(LANDING_ID)
+    h, total = hashlib.sha256(), 0
+    with folder.get_download_stream('/'+PACKAGE_NAME) as source, archive.open('wb') as target:
+        for block in iter(lambda: source.read(1024*1024), b''):
+            total += len(block)
+            if total > PACKAGE_BYTES:
+                raise RuntimeError('PACKAGE_SIZE')
+            target.write(block)
+            h.update(block)
+    if total != PACKAGE_BYTES or h.hexdigest() != PACKAGE_SHA256:
+        raise RuntimeError('PACKAGE_HASH')
+    with zipfile.ZipFile(archive) as z:
+        if len(z.namelist()) != len(set(z.namelist())):
+            raise RuntimeError('PACKAGE_DUPLICATE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if (str(p) != item.filename or p.is_absolute() or '..' in p.parts
+                    or '\\' in item.filename or ':' in item.filename or item.is_dir()
+                    or stat.S_ISLNK(item.external_attr >> 16) or item.file_size > 8*1024*1024):
+                raise RuntimeError('PACKAGE_PATH')
+        z.extractall(work/'code')
+    root = work/'code'
+    # A recipe runs in its own process. Install cells use no pipeline imports.
+    return work, root
+
+
+def run_recipe(stage, cfg):
+    work, root = verified_package()
+    sys.path[:0] = [str(root), str(root/'client'), str(root/'client/02_BACKEND')]
+    try:
+        import recipes_runtime
+        from named_inputs import install_input_selection
+        install_input_selection(recipes_runtime)
+        import controller
+        controller.execute(stage, cfg, work)
+    except BaseException:
+        print('실패 기록을 보존했습니다. WORK_DIR=' + str(work), flush=True)
+        raise
+    else:
+        shutil.rmtree(work)  # Verified S3 originals/results/checkpoints remain.
+
+BOOTSTRAP = 'LANDING_ID = \'ehA8dpVm\'\nPACKAGE_NAME = \'DATAIKU_COMPUTE_RECIPES_20261028_R7.zip\'\nPACKAGE_SHA256 = \'f8deb2c891c0bf109707c15ba8bb1b130c1fe158396a7877d06e16c0739daf56\'\nPACKAGE_BYTES = 293517\n"""Inserted into each recipe and installer with pinned constants."""\nimport hashlib\nimport importlib.util\nimport os\nfrom pathlib import Path, PurePosixPath\nimport shutil\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\n\ndef verified_package():\n    if dataiku.default_project_key() != \'LEGAL_RAG\':\n        raise RuntimeError(\'LEGAL_RAG 프로젝트에서 실행하세요.\')\n    parent = dataiku.get_custom_variables().get(\'LEGAL_PIPELINE_SCRATCH\') or None\n    if parent:\n        parent = str(Path(parent).expanduser().resolve())\n        if not Path(parent).is_dir():\n            raise RuntimeError(\'LEGAL_PIPELINE_SCRATCH 디렉터리가 없습니다.\')\n    work = Path(tempfile.mkdtemp(prefix=\'legal-recipes-\', dir=parent))\n    os.chmod(work, 0o700)\n    if shutil.disk_usage(work).free < PACKAGE_BYTES + 512*1024*1024:\n        raise RuntimeError(\'LOCAL_SCRATCH_CAPACITY\')\n    archive = work / \'package.zip\'\n    folder = dataiku.Folder(LANDING_ID)\n    h, total = hashlib.sha256(), 0\n    with folder.get_download_stream(\'/\'+PACKAGE_NAME) as source, archive.open(\'wb\') as target:\n        for block in iter(lambda: source.read(1024*1024), b\'\'):\n            total += len(block)\n            if total > PACKAGE_BYTES:\n                raise RuntimeError(\'PACKAGE_SIZE\')\n            target.write(block)\n            h.update(block)\n    if total != PACKAGE_BYTES or h.hexdigest() != PACKAGE_SHA256:\n        raise RuntimeError(\'PACKAGE_HASH\')\n    with zipfile.ZipFile(archive) as z:\n        if len(z.namelist()) != len(set(z.namelist())):\n            raise RuntimeError(\'PACKAGE_DUPLICATE\')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if (str(p) != item.filename or p.is_absolute() or \'..\' in p.parts\n                    or \'\\\\\' in item.filename or \':\' in item.filename or item.is_dir()\n                    or stat.S_ISLNK(item.external_attr >> 16) or item.file_size > 8*1024*1024):\n                raise RuntimeError(\'PACKAGE_PATH\')\n        z.extractall(work/\'code\')\n    root = work/\'code\'\n    # A recipe runs in its own process. Install cells use no pipeline imports.\n    return work, root\n\n\ndef run_recipe(stage, cfg):\n    work, root = verified_package()\n    sys.path[:0] = [str(root), str(root/\'client\'), str(root/\'client/02_BACKEND\')]\n    try:\n        import recipes_runtime\n        from named_inputs import install_input_selection\n        install_input_selection(recipes_runtime)\n        import controller\n        controller.execute(stage, cfg, work)\n    except BaseException:\n        print(\'실패 기록을 보존했습니다. WORK_DIR=\' + str(work), flush=True)\n        raise\n    else:\n        shutil.rmtree(work)  # Verified S3 originals/results/checkpoints remain.\n'
+work, root = verified_package()
+sys.path.insert(0,str(root))
+# A previous notebook may still hold R1's updater module. Load these verified bytes explicitly.
+spec=importlib.util.spec_from_file_location('pipeline_skip_r7_updater',root/'updater.py')
+module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+module.update(dataiku.api_client().get_project('LEGAL_RAG'),root,BOOTSTRAP,ACTION)
+print('SKIP_R7_FLOW_READY: 전처리기 설정 불필요. GENOS R7 적용 후 00 → 기존 02 → 기존 03')

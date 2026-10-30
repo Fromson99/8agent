@@ -1,0 +1,37 @@
+{
+  "status": "LOCAL_PASS",
+  "tests": 11,
+  "code_sha256": "8789724175dbe2177eb52c535a6e6b2279af7a4687d7fb0ec24c28a241e52685",
+  "test_xml_sha256": "1ccc5d7272332d30910270071219aec34caf3f35523e56e8f961c028fd9cbf2e",
+  "checked": [
+    "delivered Bash TXT to child process: DOCX conversion+parse+PDF/text/JSON/report ZIP",
+    "existing PDF skips conversion honestly",
+    "conversion failure vs parser failure vs invalid config vs abrupt exit distinguished",
+    "partial PDF retained after parser failure",
+    "total deadline and Ctrl+C terminate worker and descendant",
+    "directory input rejected; no recursive/bulk processing",
+    "changed R4 code rejected before document execution",
+    "default bundled archive hash/pins verified; temporary code cleaned"
+  ],
+  "mocked": [
+    "upstream parser facade/model result",
+    "soffice executable"
+  ],
+  "unchanged_product": [
+    "GENOS R4 bridge",
+    "official conversion backend chain",
+    "PDF/source validation",
+    "process supervision",
+    "report packaging"
+  ],
+  "real_model_calls": 0,
+  "field_document_tested": false,
+  "field_revision_tested": false,
+  "full_flow_run": false,
+  "sql_writes": false,
+  "git_commit_push": false,
+  "preserved_failures": [
+    "TEST_INITIAL_FIXTURE_FAILURE.log: fixture Python symlink lost virtualenv; fixed wrapper",
+    "TEST_NEWLINE_EXPECTATION_FAILURE.log: expected one extra newline in test; corrected assertion"
+  ]
+}

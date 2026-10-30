@@ -1,0 +1,67 @@
+{
+  "status": "LOCAL_DELIVERY_PASS_WITH_EXISTING_HISTORICAL_COMPATIBILITY_TEST_FAILURE",
+  "suites": {
+    "TEST.xml": {
+      "tests": 91,
+      "passed": 91,
+      "failed": []
+    },
+    "NATIVE_TEST.xml": {
+      "tests": 4,
+      "passed": 4,
+      "failed": []
+    },
+    "QUERY_TEST.xml": {
+      "tests": 39,
+      "passed": 38,
+      "failed": [
+        "test_export_resume_and_cli_uses_same_bundled_code"
+      ]
+    },
+    "BASELINE_COMPAT_TEST.xml": {
+      "tests": 1,
+      "passed": 0,
+      "failed": [
+        "test_export_resume_and_cli_uses_same_bundled_code"
+      ]
+    }
+  },
+  "delivery_tests_passed": 95,
+  "working_query_tests_passed": 38,
+  "historical_compatibility_failure": "Same named test fails with pre-change HEAD publisher/package too (navigation compiler fingerprints). R8 additionally declares the intentional base64 response schema; historical package remains unchanged.",
+  "real_glossary": {
+    "status": "PASS",
+    "scope": "local selected draft source_request table only; not onsite corpus or full generation",
+    "rows": 30675,
+    "non_null_binary_rows": 30675,
+    "byte_mismatches": 0,
+    "source_file_unchanged": true,
+    "source_file_sha256": "dc13f302aaffbdcd6f6256a834974da162723a1847e4e63837030c986874a404",
+    "sealed_publisher_sha256": "4c0cc3d4384c26f62eeb3fea9f6f6af535962680a5268856c9d93d3ad80cc351",
+    "actual_model_calls": 0,
+    "speed_measurement": false
+  },
+  "code_sha256": "f88b1426f29bc16a862a1a67c72bff8a0d15b106a84aa2ca3dc9f80f4820c084",
+  "server_files": 1282,
+  "changed_server_files": [
+    "02_BACKEND/lawrag/pipeline/oracle_query_package.py",
+    "02_BACKEND/lawrag/pipeline/oracle_query_publish.py",
+    "CODE_PINS.json",
+    "worker.py"
+  ],
+  "unchanged_server_files": 1278,
+  "actual_model_calls": 0,
+  "speedup_percentage": null,
+  "onsite_total_latency_measured": false,
+  "current_failed_generation_recovered": false,
+  "resume_failed_added_offset": false,
+  "preserved_failures": [
+    "INITIAL_TEST.log/xml: 76 passed, 4 missing SDK failures",
+    "INTERRUPTED_TEST.log: user interrupted before completion",
+    "QUERY_TEST.log/xml and BASELINE_COMPAT_TEST.log/xml"
+  ],
+  "onsite_oracle": "NOT_RUN",
+  "onsite_genos": "NOT_DEPLOYED",
+  "email_sent": false,
+  "main_changed": false
+}

@@ -1,0 +1,18 @@
+R9 = 봉인 R8 + worker의 fulltext_workers 1→4 + unit_fulltext.build의 작업 묶음16→1.
+원래 분석 단위·문자 분할·PeCab·태그·FTS 행·문서 범위는 그대로입니다.
+128개 단위의 상한 있는 입력 배치를 유지하고, 쓰기는 기존 단일 SQLite writer가 처리합니다.
+프로세스그룹 메모리 상한6144MiB·기한·취소·무결성 검사는 유지합니다.
+
+새 서버1282파일 중 worker.py, unit_fulltext.py, 06_TOOLS/pipeline.py, CODE_PINS.json만 R8과 다릅니다.
+unit_fulltext.py는 동결 후보의 build 함수만 반영해 작업 코드의 다른 조회 변경을 가져오지 않습니다.
+1180에서 느려진 추가 chunk 캐시는 제외했습니다.
+
+클라이언트는 새 code pin과 bootstrap을 결속하고 R7/R8 종료 상태의 이행을 허용합니다.
+감사 기록이 있으면 계속 검증하며, 없을 때는 봉인 코드의 no-model 경로라는 정적 근거를
+기록합니다. 이를 현장 모델0회 계측으로 바꾸어 기록하지 않습니다.
+
+기존 실패의 중간 색인/added 위치 재개, 실제 GENOS 배포, 현장1시간 달성은 이 파일의
+존재로 완료되지 않습니다. 검증과 측정의 정확한 범위는 VALIDATION.json을 확인합니다.
+
+실제 병렬 worker 검사에서 발견한 CLI의 불필요한 engine_host import를 main 실행에만 한정했습니다.
+초기 실패2건과 최초 반입 후보는 pipeline_speed_20261028_r9_initial_failed에 보존합니다.

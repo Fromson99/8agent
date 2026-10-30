@@ -1,0 +1,51 @@
+{
+  "status": "LOCAL_MOCK_PASS",
+  "tests": 46,
+  "failures": 0,
+  "errors": 0,
+  "actual_model_calls": 0,
+  "tests_from_final_compute_and_client_archives": true,
+  "code_sha256": "78811f3b4620c91057a995eaf567cf078c886c6090d3ea02061f3bef2ec5901c",
+  "archive_hashes": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R5.zip": {
+      "sha256": "7373b07740b51444bcee7afc83d5c957ca1f30be543cd1863878d2d998baefac",
+      "bytes": 6615616
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R5.zip": {
+      "sha256": "46dc52d94daa4d99b62ee865c92f65e52b13f7e606abe5cffd3feb8b817d08a1",
+      "bytes": 291276
+    }
+  },
+  "covered": [
+    "actual RAW sampling one per extension",
+    "receipt/snapshot/source binding",
+    "inner ZIP selection and missing formats",
+    "same Pod configuration discovery/ambiguity/missing/change",
+    "four-document real worker branch with mocked converter/parser",
+    "conversion vs parsing failure and remaining documents",
+    "missing/extra inputs",
+    "actual service purpose isolation and auth",
+    "Dataiku upload/read/hash/publication",
+    "uncertain RUN reply resumes same handle",
+    "completed results avoid repeated compute",
+    "partial cancellation has four terminal rows",
+    "original source mismatch not published",
+    "full pipeline transport/cancel/deadline supervision",
+    "R4 migration preserves review proof/deadline/budgets",
+    "R1/R3/R4 installer commit/hash/rollback",
+    "Dataiku SDK update/rollback",
+    "delivered notebook package/bootstrap and stale kernel rejection"
+  ],
+  "mock_boundaries": [
+    "upstream GENOS parser facade",
+    "OS soffice converter",
+    "Dataiku SDK/storage",
+    "HTTP transport routed to local service handler; no field network"
+  ],
+  "preserved_initial_failure": "TEST_INITIAL_TMP_CAPACITY_FAILURE.log (29 passed, 4 failures, 5 setup errors caused by /tmp tmpfs full; moved test scratch to filesystem, no integrity checks bypassed)",
+  "field_documents": "NOT_TESTED",
+  "field_model_connectivity": "NOT_TESTED",
+  "field_revision": "NOT_DEPLOYED",
+  "local_main_changed": false,
+  "root_git_commit_push": false
+}

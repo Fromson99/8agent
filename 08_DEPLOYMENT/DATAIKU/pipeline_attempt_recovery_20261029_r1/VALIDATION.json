@@ -1,0 +1,56 @@
+{
+  "server_code_sha256": "55ab3cf767199ed70f29475e15403874b7ccacc1e306130f6467da04c5b3499d",
+  "server_changed": false,
+  "baseline_client_sha256": "947c62bb1a8796ee6de1ee730d36cf3a93ec9b07417405f2259efb6926d9843c",
+  "changed_client_files": [
+    "PACKAGE_FILES.json",
+    "REFERENCE.json",
+    "checkpoint_upgrade.py",
+    "updater.py",
+    "one_attempt.py"
+  ],
+  "unchanged_client_files": 70,
+  "client_files": 75,
+  "package_sha256": "34118187c25455bf1c476640529b12d873cc4c641148ac36387c19696f63862d",
+  "package_bytes": 297102,
+  "status": "LOCAL_EXPLICIT_ONE_ATTEMPT_RECOVERY_PASS",
+  "unique_tests_passed": 78,
+  "test_runs": [
+    {
+      "file": "TEST_INITIAL.xml",
+      "tests": 34,
+      "failed": [],
+      "sha256": "cd004b014a44eb3ab48e9db073a29d7cda15084b6a8f450d3b2dde7551e22e97"
+    },
+    {
+      "file": "REGRESSION.xml",
+      "tests": 42,
+      "failed": [
+        "08_DEPLOYMENT.DATAIKU.pipeline_attempt_recovery_20261029_r1.test_compute::test_genos_install_same_checkout_commit_verify_rollback[r7]"
+      ],
+      "sha256": "d0fbcf77117d52c9de09003584d345f0d1cbba752d5fbdf324ddedf7513bf250"
+    },
+    {
+      "file": "REGRESSION_REPAIR.xml",
+      "tests": 3,
+      "failed": [],
+      "sha256": "6fbb3a9274347170d5821641e64bbea3b7352e893c3084c1f20ad8082d47b6f0"
+    }
+  ],
+  "initial_test_harness_failure": "Regression selection also selected the sealed R10 GENOS installer fixture; its copied helper pointed to a missing local installer. Corrected fixture path to original sealed R10 installer and reran that case successfully. Original REGRESSION.xml retained.",
+  "default_action": "inspect",
+  "grant_requires_explicit_operator_action": true,
+  "counter_reset": false,
+  "deadline_extended": false,
+  "usage_reset": false,
+  "maximum_additional_compute_attempts": 1,
+  "old_checkpoints_preserved": true,
+  "original_input_reusable": true,
+  "stage02_restarts_from_beginning": true,
+  "actual_genos_contacted": false,
+  "actual_dataiku_changed": false,
+  "actual_grant_written": false,
+  "new_performance_run": false,
+  "model_calls": 0,
+  "main_changed": false
+}

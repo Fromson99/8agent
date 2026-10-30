@@ -1,0 +1,61 @@
+{
+  "code_zip": {
+    "sha256": "eb5eb048a0da802fde74f72a98d837c41204fbd069ba249c9214d7bb66e7fa22",
+    "bytes": 6623074
+  },
+  "code_manifest": "CODE_MANIFEST.json",
+  "code_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+  "important_file_sha256": {
+    "worker.py": "74cbaa88097cf4057e53ea0633bc00df4482c908a9a7e1af8f6fabef2cbcf42c",
+    "service.py": "bd192a214c2e702702fa68db4a31af8a77b2c24d88851f60cf1868485c592e4c",
+    "partial_pipeline.py": "cd5e9c4d7adc08c107f087fd2a0ebbc8218c95946d72383c95139e3d216af74c",
+    "parser_config.py": "8a64462e3a19c4df1b817855079fab314c946292dec61467dde2d68e6354a876",
+    "pipeline_coverage.py": "5d2b8134b33c3708ea2d8b6e7628f38b0f3ecb9a2090e236df46bf343943006b",
+    "02_BACKEND/lawrag/pipeline/genos_stages.py": "f9d324be24e1b7d3e889a38b62da0c7d29415eee7a9cd8669501c7c80030775f",
+    "02_BACKEND/lawrag/pipeline/team_raw.py": "b82591127be51edbe0d88bc756bfbf00668a3298d2b4df27b319c427811d4a1e",
+    "02_BACKEND/lawrag/pipeline/genos_build.py": "b7c41447603979f79fec242a5f9388557254830fac7c0d95a4d09138cd7f11f2",
+    "02_BACKEND/lawrag/pipeline/genos_corpus.py": "da7ea4ec860bd5863e55556f71d9420baf6685b235e3f3f957f04b1be5c21bbe",
+    "02_BACKEND/lawrag/pipeline/raw_preprocess.py": "2e7ea1869be12dd0cc593e9e3dfd3564730cca19a450fd3abedfbc6bb21fb89d",
+    "02_BACKEND/lawrag/core/parse_adapter.py": "bd9f45647557bb3167b7c609937c131e934daf95d11409f28b5c63844f7924be"
+  },
+  "verified_local_installer_checkouts": [
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/skip-r7-tests/pytest-of-jin/pytest-3/test_genos_install_same_checko0/DEV",
+      "commit": "64ef34cae5e82e0c5df11e6ba60bf4ef2731fbe3",
+      "committed_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/skip-r7-tests/pytest-of-jin/pytest-3/test_genos_install_same_checko1/DEV",
+      "commit": "5b5308ea69a1110ccf6e104bf8b88cdbf434d070",
+      "committed_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/skip-r7-tests/pytest-of-jin/pytest-3/test_genos_install_same_checko2/DEV",
+      "commit": "6fa062c1aa26b6c381a2bac26218581035d988b0",
+      "committed_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/skip-r7-tests/pytest-of-jin/pytest-3/test_genos_install_same_checko3/DEV",
+      "commit": "5734fd3d1b70410cc70b6a0cb3d0ca4deb752e32",
+      "committed_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/skip-r7-tests/pytest-of-jin/pytest-3/test_genos_install_same_checko4/DEV",
+      "commit": "47d5d926f643163beed0df155dac09870cd09149",
+      "committed_pins_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+      "installer_check_passed_then_rolled_back": true
+    }
+  ],
+  "field_push_checkout": "~/DEV (legal_pipeline_serving; actual absolute path unconfirmed)",
+  "field_commit": null,
+  "field_revision": null,
+  "field_generation": null,
+  "generation_policy": "Ephemeral per-compute generation returned to Dataiku; no persistent GENOS active generation.",
+  "native_test_code": "All native worker product Python matches ZIP. Only synthetic glossary policy/pin rebound. No parser/converter/model response mocks; trap HTTP server asserts zero calls.",
+  "root_repository_commit_push": false,
+  "active_rag_main_changed": false
+}

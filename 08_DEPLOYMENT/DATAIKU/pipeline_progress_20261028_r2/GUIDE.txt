@@ -1,0 +1,46 @@
+Dataiku R7 — 저장 상태와 최근 수신 로그 조회 (2026-10-28 R2)
+
+사용법
+1. LEGAL_RAG 프로젝트에서 새 Python 노트북을 엽니다.
+2. DATAIKU_R7_PROGRESS_READONLY.txt 전체를 한 셀에 붙여넣고 실행합니다.
+3. 같은 셀을 다시 실행하면 직전 조회와 수신 로그 바이트/체크포인트 순번을 비교합니다.
+사용자가 바꿀 값은 없습니다. 기존 R7 client ZIP이 LEGAL_RAG/ehA8dpVm에 있어야 합니다.
+이미 상태 조회에 성공한 사진의 R7 패키지와 동일한 이름·크기·SHA256을 확인합니다.
+
+이 파일은 설치용 DATAIKU_R7_INSTALL.txt 대신 사용하는 조회용 추가 파일입니다.
+설치 파일에 ACTION='status'를 넣지 않습니다. 02 재실행·취소·리비전 교체는 필요 없습니다.
+기존 R7 서버/client와 이전 설치 첨부를 교체하는 패치가 아닙니다.
+
+ZIP 이용
+ZIP에는 동일 실행 TXT와 이 안내가 있습니다. Windows에서 압축을 풀어 TXT를 열어도 됩니다.
+Linux/GENOS 코드스페이스에서 풀 경우 ZIP을 실제 업로드한 폴더를 현재 위치로 두고:
+  python3 -m zipfile -e ./DATAIKU_R7_PROGRESS_READONLY_20261028_R2.zip ./dataiku_progress_r2
+압축 안의 DATAIKU_R7_PROGRESS_READONLY.txt를 열어 Dataiku 노트북 한 셀에 붙여넣습니다.
+이 TXT는 Dataiku Python용입니다. GENOS 터미널에서 bash로 실행하지 않습니다.
+
+표시 내용
+- Dataiku에 저장된 작업 상태와 GENOS의 마지막 저장 관측
+- 실제 수신 확인된 로그 바이트(log_offset), 체크포인트 순번과 직전 조회 대비 변화
+- 처음 1개와 마지막 4개 로그 조각에서 찾은 단계 시작 기록, 로그 마지막 20행
+- 02 결과 저장 여부(03 실버 적재 완료와 별도)
+로그 읽기는 조각당 최대 1MiB, 최대 5조각으로 제한합니다.
+
+해석
+사진의 COMPUTING / RUNNING / NATIVE_PIPELINE은 마지막 저장 관측입니다.
+last_observed는 단계 변경 때 갱신되므로 log_bytes=72도 최신 수신량으로 단정하지 않습니다.
+error=None은 그 관측에 오류가 없다는 뜻이며 현재 정상 진행을 보장하지 않습니다.
+result_saved=False는 아직 02 결과가 저장되지 않았다는 뜻입니다.
+model_execution_possible=True는 RUN 요청 전 세우는 기록이며 실제 모델 호출 증거가 아닙니다.
+lease_seconds=900은 연결 유지 유예 설정이며 남은 처리 시간이 아닙니다.
+STRUCTURE=원문 구조화, SELECT_VERIFIED_SUCCESSES=성공 문서 검증·선택,
+PREPARE=용어 연결·배포 데이터 준비, INDEX=검색 색인, RETURN=반환 데이터 구성·압축.
+PHASE는 시작 기록입니다. 현재 처리 문서·완료·정상 진전의 보증이 아닙니다.
+체크포인트 증가에는 HTTP 예산 예약도 포함되므로 문서 처리 건수로 해석하지 않습니다.
+로그 변화가 없다는 것만으로 정지·실패를 확정하지 않습니다.
+처리 건수/전체 진행률/남은 시간은 이 기록으로 계산하지 않습니다.
+
+범위
+Dataiku 저장 상태/로그 및 기존 R7 client ZIP을 읽고 노트북 임시 폴더에 패키지를 풉니다.
+Flow 설치/수정, GENOS HTTP 호출, 모델 호출, S3/Oracle 쓰기, 재시도·취소를 하지 않습니다.
+기존 체크포인트 SHA256·동일 순번 충돌 검사와 로그 범위 검사를 재사용합니다.
+로컬 문법·패키지 결속·ZIP 내용 검사는 완료했으며, 현장 노트북 실행은 수신 후 확인합니다.

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "tests": 21,
+  "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/pipeline_resume_20261027_r3/test_resume.py --junitxml=08_DEPLOYMENT/DATAIKU/pipeline_resume_20261027_r3/TEST_RESULTS.xml",
+  "checked_service_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "baseline_package_sha256": "23a316af80006c55565a223b5ff37ef08fa90ab39f215a9f5685df48bf4276c7",
+  "execution": "Unchanged packaged dataiku_run/ManagedJob plus hash-checked sealed GENOS R2 service handler. Worker completion is synthetic; no parsing/model/Oracle server execution in these tests.",
+  "dataiku_sdk": "Public 15.2.0 Python SDK with in-memory REST adapter; actual delivered notebook and updated recipe bootstrap executed locally.",
+  "cases": [
+    "BUSY: no raw/support/blob downloads or preflight SQL budget reservation (existing target-identity read still occurs in context)",
+    "Partial upload: same remote ID, original deadline, original ZIP and correct offset",
+    "RUNNING/COMPLETE: no input downloads or second EXECUTE",
+    "DOWNLOADED: result blob only; completed repetition preserves immutable proof",
+    "Lost START reply: same remote job resumed",
+    "Expired deadline, wrong blob/support/result binding and corrupted blob refused",
+    "Terminal FAILED retained without ACK/CANCEL",
+    "Original first-preparation path still works",
+    "Bounded HEALTH/STATUS inspection, duplicate job query deduplicated, tokens omitted",
+    "R1/R2 known recipe update, exact rollback, unknown edits preserved, lost-save readback",
+    "Python3.9 syntax, ZIP/TXT equality and no JavaScript members"
+  ],
+  "initial_test_adjustment": "Two assertions initially treated verified output-blob readback as input download. Assertions were corrected to distinguish original raw blob from returned result; runtime code was unchanged.",
+  "field_dataiku_genos_tested": false,
+  "field_fix_applied": false,
+  "busy_released": false,
+  "oracle_or_worker_changed": false,
+  "models_called": 0,
+  "main_changed": false,
+  "git_commit_push": false
+}

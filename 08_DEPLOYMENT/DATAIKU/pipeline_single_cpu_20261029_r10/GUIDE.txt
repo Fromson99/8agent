@@ -1,0 +1,55 @@
+1코어 / 메모리16GB 정정본 R10 — R9 설치 완료, 02 실행 전
+
+이 수정본을 적용한 뒤 02를 시작합니다. R9와 R10 원본 ZIP은 함께 보관합니다.
+R10은 R9의 반환 오류 수정·반환 작업 감소·단계별 로그를 유지하고,
+본문 색인 작업자만4개에서1개로 바꿉니다. 계산 코드1282파일 중 worker.py와
+CODE_PINS.json만 바뀌며, Dataiku가 확인하는 코드값도 함께 갱신합니다.
+
+설정에 대한 답
+- 현재 R9에는 작업자 수를 바꾸는 UI/환경변수 설정이 없습니다.
+- R10은 작업자1개로 고정되어 있으므로 별도 숫자 설정을 할 필요가 없습니다.
+- GENOS 할당 CPU1/메모리16GB, 서비스 프로세스 worker1/replica1을 유지합니다.
+  색인 작업자 수와 서비스 프로세스/replica 수는 별개입니다.
+- worker.py의 숫자만 직접 수정하거나 임의로 해시를 다시 쓰면 안 됩니다.
+  이 전달본은 검증한 서버와 Dataiku client 한 쌍으로 적용합니다.
+
+1. GENOS 반영
+첨부 ZIP을 TRANSFER에 반입한 뒤 그 ZIP이 있는 폴더에서 실행합니다.
+기존 speed_r9 폴더와 구분되는 새 single_cpu_r10 폴더에 풉니다.
+
+python3 -m zipfile -e DATAIKU_SINGLE_CPU_20261029_R10.zip single_cpu_r10
+cd single_cpu_r10
+bash GENOS_R10_INSTALL.txt
+
+설치기는 기존 legal_pipeline_serving의 ~/DEV Git checkout에 적용하고
+백업·검증·commit·동일 checkout 검사·push를 수행합니다.
+그다음 GENOS 화면에서 해당 커밋의 새 리비전을 배포합니다.
+RAG 채팅 서비스 checkout에 적용하지 않습니다. 실제 리비전 배포는 별도 단계입니다.
+
+2. Dataiku 반영
+압축을 푼 폴더 안의 DATAIKU_COMPUTE_RECIPES_20261029_R10.zip을
+기존 LEGAL_RAG/ehA8dpVm 관리 폴더에 업로드합니다.
+LEGAL_RAG의 새 Python 노트북 커널에서 DATAIKU_R10_INSTALL.txt 전체를
+한 셀에 붙여넣어 실행합니다. ACTION='apply'를 그대로 둡니다.
+기존 R9 설치를 인식해 갱신하며 관리 폴더나 원문을 새로 만들지 않습니다.
+
+3. 실행
+00 연결 확인 → 02 구조화·색인·반환 → 03 적재 순서로 실행합니다.
+입력과 설정이 같으면 기존 원문·01 snapshot을 재사용합니다.
+02는 아직 시작하지 않았으므로 이 설정 정정을 위해 작업 취소를 할 필요가 없습니다.
+기존 실패의 added 위치부터 이어가는 기능은 없으며02는 재계산합니다.
+기존 기한·사용량·시도 이력은 유지합니다. 기한/시도 소진 오류가 나오면
+그 내용을 확인하고, 체크포인트 삭제나 작업명 변경으로 제한을 우회하지 않습니다.
+
+원복
+GENOS는 ROLLBACK_GENOS.txt와 이전 R9 리비전으로 되돌립니다.
+Dataiku는 DATAIKU_R10_INSTALL.txt의 ACTION='rollback'으로 이전 레시피를 복원합니다.
+DATAIKU_R10_CONTROL.txt의 기본 ACTION='status'는 상태 조회입니다.
+원문·실패 이력·01/02 결과·기존 ZIP은 삭제하지 않습니다.
+
+검증과 한계
+로컬 검사 결과는 VALIDATION.json과 RELEASE_BINDING.json에 기록합니다.
+현장 GENOS 설치·리비전 배포·전체02시간은 사용자의 현장 출력으로 확인해야 합니다.
+이번 수정은1코어 자원 조건 정정이며 새 성능 실험이 아닙니다.
+기존4작업자 로컬2.49배 개선 수치는1코어 환경에 적용하지 않습니다.
+1시간 완료·중간 재개·현장 배포를 보장하지 않습니다.

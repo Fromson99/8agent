@@ -1,0 +1,36 @@
+GENOS 같은 Pod 변환·파싱 R4 설치
+
+0. 이번 전체 ZIP은 이전 preprocessor R3 전달본을 대체합니다. 원문/이전 ZIP/실패 로그는 지우지 마세요. Dataiku 02가 실행 중이면 Dataiku에서 취소하고 계산 프로세스 종료를 확인한 뒤 적용합니다.
+
+1. GENOS legal_pipeline_serving의 기존 코드스페이스에서 실제 TRANSFER 위치로 이동합니다. 그곳에서 DATAIKU_GENOS_POD_20261028_R4.zip을 전용 폴더에 풉니다.
+   python3 -m zipfile -e DATAIKU_GENOS_POD_20261028_R4.zip pod-r4
+   cd pod-r4
+   bash GENOS_POD_INSTALL_20261028_R4.txt
+   TXT는 현재 전달 폴더에서 시작하여 기존 ~/DEV를 검사하고 적용·stage·commit·checkout 검증을 합니다. 설치기 해시와 기존 파일 검사를 통과해야 합니다. RAG용 ~/DEV에는 적용하지 않습니다. 사용자 변경과 새 파일 충돌은 중단합니다.
+   위 TXT가 검증한 commit을 push하고 새 코드서빙 리비전에 선택합니다. 이미 push했다는 메시지가 나오지 않은 경우 직접 git push를 수행합니다. 관리 URL을 호출 URL로 쓰지 않습니다.
+
+2. 계산 Pod를 GENOS 파서에 필요한 라이브러리/변환기가 들어 있는 승인된 이미지로 준비합니다. 일반 RAG Python 이미지에 새 .py만 올려서는 안 됩니다.
+   동봉 GENOS_POD_RUNTIME_20261028_R4.zip에는 matching fork wheel과 upstream-pyproject.toml이 있습니다.
+   fork만 빠진 경우 전달 폴더에서:
+   ACTION=install-fork bash POD_RUNTIME_CHECK_20261028_R4.txt
+   이 명령은 pip --no-index --no-deps를 사용합니다. 의존성 전체·LibreOffice/rhwp/PDF SDK·모델 파일을 설치하는 명령은 아닙니다. 이미지 빌드에도 같은 wheel/의존성을 반영해야 리비전에서 유지됩니다.
+
+3. 기존 GENOS parser YAML을 이 Pod에서 사용할 수 있게 준비합니다. layout/OCR/table 연결, 로컬 모델 경로, 상대 resource 파일을 보존합니다. 현재187 전용 attachment YAML을 임의로 parser YAML이라고 쓰지 않습니다.
+   기존 YAML 옆에 새 설정 생성(실제 경로로 바꿔 실행):
+   python3 "$HOME/DEV/prepare_pod_config.py" /실제/경로/parser_processor_config.yaml /실제/경로/agent8_pod_parser.yaml
+   GENOS_STRUCTURE_CONFIG=/실제/경로/agent8_pod_parser.yaml 을 실제 코드서빙 환경에도 저장합니다. 원본 YAML을 덮어쓰지 않습니다. GENOS_ENVIRONMENT.txt의 환경을 적용합니다.
+   전달 폴더에서 같은 이미지/Python으로 bash POD_RUNTIME_CHECK_20261028_R4.txt 실행.
+   ready=true는 import/설정/변환기 사전 검사이며 실제 모델 연결이나 문서 성공 확인이 아닙니다.
+
+4. Dataiku LEGAL_RAG 업로드 폴더 ehA8dpVm에 DATAIKU_COMPUTE_RECIPES_20261028_R4.zip만 추가 업로드합니다. 전체 ZIP을 대신 올리지 마세요.
+   Dataiku Python 노트북에 DATAIKU_POD_INSTALL_20261028_R4.txt 전체를 실행합니다. ACTION='apply' 기본. 기존 Flow 이름/입출력을 유지하며 00/02/03를 검사 후 업데이트합니다. 01 원문 보관은 기존 방식 유지.
+   기존 00 연결 검사: code hash 일치, preprocessor.transport=same-pod, ready=true 확인. preprocessor errors이면 02를 먼저 돌리지 말고 같은 리비전의 런타임/YAML을 확인합니다.
+
+5. 기존 02를 실행하면 Dataiku가 현재 체크포인트/예산과 R4 hash를 확인합니다. R3 실패는 같은 입력/대상, 확정 FAILED/CANCELLED, 결과 미발행, 유효 기한, 남은 총3시도, 저장 audit의 검수0 증거가 있어야 이행합니다.
+   R3_MODEL_LEDGER_RESUME_REQUIRED / R3_ZERO_REVIEW_AUDIT_REQUIRED / COMPUTE_ATTEMPT_BUDGET_EXHAUSTED / ORIGINAL_DEADLINE_EXHAUSTED는 작업 이력을 지우거나 JOB_NAME을 자동 변경하라는 뜻이 아닙니다. 기존 audit/체크포인트를 보존하고 원인을 확인합니다.
+   정상 완료 뒤 기존 03 적재. 실패의 audit ZIP은 진단 전용입니다. audit/derivatives/에는 원문 상대경로별 PDF와 RAW_DERIVATIVES.json이 있습니다.
+   처음 현장 확인에서 PDF 한 건과 변환 대상 한 건의 receipt.transport=same-pod, 유효 PDF, 모델 검수 및 Dataiku 반환을 확인하세요. 샘플용 입력/작업은 원래 전체 작업과 별도 명시적으로 관리합니다.
+
+6. 롤백: Dataiku 실행 중지/계산 종료 후 bash ROLLBACK_GENOS.txt. 복원 파일을 검토·commit/push하고 이전 코드 리비전/이전 환경으로 복귀합니다. Dataiku 설치 TXT의 ACTION='rollback'도 실행합니다. 설치 Python wheel의 변경은 이전 이미지로 복귀해야 합니다. 작업/실패 이력은 되돌리지 않습니다.
+
+로컬 검증과 현장 적용은 별도입니다. 이 전달 시점에 현장 push·리비전·모델 접속·전체 문서 완주는 수행하지 않았습니다.

@@ -1,0 +1,36 @@
+R6 패치노트 — 전체 Dataiku 파이프라인의 문서별 실패 보류
+
+문제
+문서별로 실패를 기록하고 나머지를 처리했지만, 구조화가 일부 실패로 끝나면
+계산 worker가 PREPARE/INDEX를 실행하지 않아 성공 문서도 03 적재로 넘어가지 못했습니다.
+
+수정
+1. 구조화 종료값 0(완료)·2(문서 실패 포함 완료)를 구분하고 실제 상태 원장을 검증합니다.
+2. 기존 document-release 성공 선택 기능을 연결합니다. 성공 receipt/source.sqlite를 검증하고
+   실패 원장·제외 문서·원인을 보존한 별도 선택 범위로 PREPARE/INDEX/반환을 실행합니다.
+3. 반환 ZIP과 Dataiku에 pipeline-coverage.json / excluded-documents.csv를 저장합니다.
+   부분 결과는 STRUCTURED_WITH_OMISSIONS / COMPLETE_WITH_OMISSIONS로 표시합니다.
+4. 반환 전에 generation 문서 ID와 성공 선택 ID를 대조하며, Dataiku도 반환 해시·건수·부분 상태를
+   검증한 뒤 구조화 결과로 게시합니다. SQL 호출 전 generation 문서 ID를 다시 대조합니다.
+5. 원래 전체 Flow용 existing-http를 기본으로 명시하고, same-pod를 별도로 선택할 수 있습니다.
+   원래 전처리기 연결이 필요하며, 새 Pod 테스트의 YAML 미발견을 파싱 성공으로 처리하지 않습니다.
+6. R5 이전 실패의 버전 이행에도 보관 audit·검수0·원래 기한·사용량·총3시도 검사를 유지합니다.
+7. R5 네 문서 진단 기능, 문서 검수·색인 검증, Dataiku 저장 책임과 SIDDS 적재 매핑을 유지합니다.
+
+중단을 유지하는 조건
+전체 성공 문서 0, 설정/입력 전체 오류, 취소/비정상 종료, 원문·receipt 해시 변경,
+끝나지 않은 상태, 반환 범위 불일치, 검수/색인/SQL 검증 실패, 예산·기한 소진.
+
+사용
+GUIDE.txt 순서대로 GENOS_R6_INSTALL.txt와 DATAIKU_R6_INSTALL.txt를 적용합니다.
+unzip 없이 python3 -m zipfile -e로 풉니다. 실행 TXT는 ZIP 안과 메일 첨부 양쪽에 있습니다.
+기존 R3/R4/R5 전체 Flow 설치본 대신 이번 R6 서버/client 한 쌍을 사용합니다.
+이전 진단 도구의 오래된 client를 R6 서버에 그대로 연결하면 코드 해시 검사가 막습니다.
+
+검증·한계
+최종 로컬 99검사 통과(전송/선택/적재 소비자/설치/진단90 + HTTP 전체 경로5 + 같은 Pod 경로4).
+해시·모의 경계는 VALIDATION.json, 적용 checkout/커밋 결속은 RELEASE_BINDING.json을 참고합니다.
+실제 구조화→성공 선택→prepare→index→결과 ZIP 경로에 모의 PDF 성공/실패를 주입해 확인합니다.
+SQL 적재 소비자는 모의 검사이며 현장 Oracle 적재를 실행한 것은 아닙니다.
+과거 1,631건 자산의 복원, 26건 파서 오류 해결, 실제 현장 전체 완료는 보장하지 않습니다.
+RAG MAIN·활성 데이터·현장 Git/리비전은 이 전달만으로 변경되지 않습니다.

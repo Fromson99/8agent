@@ -1,0 +1,20 @@
+2026-10-27: recipe 02 failed at START with GENOS_BUSY. Batch scope remains unchanged.
+Failure class: remote job ownership/lifecycle conflict; not a source parse failure.
+Recovery owner: existing recipe02 + sealed dataiku_run.process/ManagedJob.
+Durable job ID/token, archive SHA/bytes, target mapping, endpoint/code/instance,
+deadline and reserved SQL budget remain bound. No new job to bypass BUSY.
+Resume START is idempotent and uses the original fields. It occurs before raw/blob
+downloads. Its reply is consumed once by the original client; no extra START retry.
+BUSY: no corpus/blob download, no extra SQL preflight, no CANCEL/ACK.
+UPLOADING: restore original raw ZIP and support ZIP; existing chunk offsets resume.
+RUNNING/COMPLETE: no input download. DOWNLOADED: restore verified result only.
+Missing client: original first preparation remains, including full materialization.
+Failed terminal attempt: preserve state, report exact terminal status; no reset.
+Diagnosis reads at most20 latest checkpoints from known landing/structured/load
+folders; same endpoint/code/instance only. It performs HEALTH/STATUS, never ACK.
+STATUS can update the server's lost-worker record; it is not a rerun.
+No protocol/worker/Oracle changes, no release deployment, no model calls.
+Mandatory tests: BUSY before downloads, same ID/budget, partial upload, running and
+complete resume, lost START reply, DOWNLOADED recovery, completed idempotence,
+hash/binding/deadline refusal, actual recipe SDK code save/readback/rollback,
+unknown edits and lost-save recovery, diagnostics credential redaction.

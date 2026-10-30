@@ -1,0 +1,24 @@
+{
+  "source_photo": "BBAA31AA-CE2B-406D-B9B4-80A85DAA4B1D/1-사진-1.jpg",
+  "observed": {
+    "inspection": "FINISHED",
+    "managed_folders": 6,
+    "checkpoints": 1,
+    "local_clients": 0,
+    "http_calls": 2,
+    "blocking_job_ids": [],
+    "current_job_name": "recipes_20261027_r1",
+    "current_local_phase": "NEW",
+    "current_saved_status": "NEW",
+    "current_status": "STATUS_UNCONFIRMED",
+    "current_error_code": "JOB_LOST",
+    "local_work_dir": "LOCAL_WORK_DIR_NOT_FOUND"
+  },
+  "interpretation": "The inspected Dataiku locations contain only the new job checkpoint. No capability for the earlier blocking job was recovered. The notebook's own relative work directory is not the earlier notebook's working directory.",
+  "confirmed_server_contract": "At START, sealed service rejects a new ID if any state.json has status other than RELEASED; FAILED, COMPLETE and expired deadlines do not by themselves release the gate. STATUS of an uncreated new ID returns JOB_LOST.",
+  "not_established": ["Whether the old blocker is running, failed or complete", "Its current ID", "Whether BUSY is still returned by a new START now", "Source loss", "Server restart"],
+  "next_boundary": "Inspect the actual legal_pipeline_serving runtime container's PIPELINE_SCRATCH/state records and running processes. Development ~/DEV disk is not assumed to be the runtime disk.",
+  "field_release_performed": false,
+  "new_recipe_execution_performed": false,
+  "service_code_changed": false
+}

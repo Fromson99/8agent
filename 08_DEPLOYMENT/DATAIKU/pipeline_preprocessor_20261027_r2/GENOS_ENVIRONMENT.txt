@@ -1,0 +1,35 @@
+설정 위치: legal_pipeline_serving의 실제 GENOS 코드서빙 환경변수
+Dataiku 프로젝트 변수나 개발용 터미널 export만으로 실행 컨테이너에 반영된다고 가정하지 마세요.
+환경변수 저장 후 R2 코드가 포함된 리비전을 배포/재시작하고 Dataiku 00을 실행합니다.
+
+GENOS_PDF_PARSER=preprocessor
+GENOS_PREPROCESSOR_RESPONSE_MODE=docling
+GENOS_PREPROCESSOR_ID=<실제 파싱용 전처리기 숫자 ID>
+GENOS_PREPROCESSOR_SHARED_ROOT=<코드서빙에서 보이는 기존 공유 폴더 절대경로>
+
+ID 대신 URL을 쓰는 경우:
+GENOS_PREPROCESSOR_URL=<실제 전처리기 호출 주소: 기본 주소 또는 /run 또는 /parser>
+URL이 설정되어 있으면 ID보다 우선합니다. GENOS 관리 화면 URL은 호출 주소가 아닙니다.
+
+필요한 경우 추가:
+GENOS_PREPROCESSOR_REMOTE_ROOT=<같은 공유 폴더가 전처리기에서 보이는 절대경로>
+  양쪽 경로가 같으면 생략합니다. 기존 공유 마운트여야 하며 /tmp 작업 폴더가 아닙니다.
+GENOS_PREPROCESSOR_API_KEY=<전처리기에 별도 인증이 필요할 때만 비밀 값>
+GENOS_PREPROCESSOR_REVISION=<실제 전처리기 코드/모델/설정 판본의 식별자>
+GENOS_PREPROCESSOR_TIMEOUT=900
+GENOS_PREPROCESSOR_MAX_RESPONSE_MB=128
+
+꺾쇠로 표시한 값은 실제 값으로 입력합니다. 코드에 ID/URL/비밀 값을 고정하지 않습니다.
+SHARED_ROOT의 누락/상대경로/심볼릭 링크/로컬 접근 불가는 00에서 실패합니다.
+00의 preprocessor.ready=true는 로컬 설정 확인입니다. HTTP 연결/원격 마운트는 미검증입니다.
+02가 실제 PDF를 보내 응답을 받아야 원격 경로까지 확인됩니다.
+
+이번 R2의 서버 응답 계약:
+  {"code": 0, "data": {"document": <DoclingDocument JSON>}}
+기존 구조화 엔진의 VLM off 계약을 유지합니다. 단순 청크 배열만 반환하는 첨부용
+전처리기는 이 계약을 만족하지 않습니다. 임의 텍스트/표 변환이나 로컬 Docling fallback은 없습니다.
+서버의 enrichment(요약/그림 설명/표 재작성)는 끄고 파싱/OCR 결과를 반환하도록 설정합니다.
+전처리기 자체 모델 자산은 해당 전처리기가 관리합니다. 본 코드서빙에 Heron을 반입하지 않습니다.
+
+기존 Dataiku LEGAL_PIPELINE_URL / LEGAL_PIPELINE_TOKEN과 AIDP 연결은 유지합니다.
+이 파일은 설명이며 그대로 셸이나 Python 셀에 실행하는 파일이 아닙니다.

@@ -1,0 +1,215 @@
+"""One local document -> same-Pod GENOS PDF conversion -> parsing, using sealed R4."""
+import argparse
+from contextlib import contextmanager
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import signal
+import stat
+import subprocess
+import sys
+import tempfile
+import time
+import traceback
+import zipfile
+
+CODE_SHA = '8789724175dbe2177eb52c535a6e6b2279af7a4687d7fb0ec24c28a241e52685'
+ARCHIVE_SHA = '3f7b61f916f9c6db07cc3519296276d89c120303611bcc2e7b874b34c935b8fc'
+ARCHIVE = 'GENOS_DATAIKU_COMPUTE_20261028_R4.zip'
+SUFFIXES = {'.doc','.docx','.hwp','.hwpx','.ppt','.pptx','.pdf'}
+
+
+def sha(path):
+    value=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(1024*1024),b''):value.update(block)
+    return value.hexdigest()
+
+
+def save(path,value):
+    path=Path(path);temp=path.with_name(path.name+'.tmp')
+    temp.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    temp.replace(path)
+
+
+def checked(root,name):
+    p=PurePosixPath(name)
+    if p.is_absolute() or '..' in p.parts or str(p)!=name or '\\' in name:raise ValueError('CODE_PATH_INVALID')
+    result=root.joinpath(*p.parts)
+    if any(x.is_symlink() for x in (result,*result.parents)):raise ValueError('CODE_SYMLINK')
+    return result
+
+
+def verify(root):
+    if sha(root/'CODE_PINS.json')!=CODE_SHA:raise ValueError('R4_CODE_PINS_MISMATCH')
+    pins=json.loads((root/'CODE_PINS.json').read_text())['files']
+    for name,digest in pins.items():
+        if sha(checked(root,name))!=digest:raise ValueError('R4_CODE_FILE_CHANGED: '+name)
+
+
+@contextmanager
+def code_root(args):
+    if args.code_root:
+        root=Path(args.code_root).expanduser().resolve(strict=True);verify(root);yield root;return
+    archive=Path(args.archive).expanduser().resolve(strict=True)
+    if sha(archive)!=ARCHIVE_SHA:raise ValueError('R4_ARCHIVE_HASH_MISMATCH')
+    with tempfile.TemporaryDirectory(prefix='pod-one-code-') as temp:
+        root=Path(temp)
+        with zipfile.ZipFile(archive) as z:
+            for info in z.infolist():
+                checked(root,info.filename)
+                if stat.S_ISLNK(info.external_attr>>16) or info.is_dir():raise ValueError('CODE_ARCHIVE_ENTRY')
+            z.extractall(root)
+        root=root/ARCHIVE[:-4];verify(root);yield root
+
+
+def worker(root,source,out,config,expected_source):
+    state=json.loads((out/'summary.json').read_text())
+    def phase(name,status='RUNNING',**details):
+        state['phase']=name;state[name]={'status':status,**details};save(out/'summary.json',state)
+        print(name+': '+status,flush=True)
+    try:
+        phase('code_check');verify(root);phase('code_check','PASS')
+        if sha(source)!=expected_source:raise ValueError('ORIGINAL_CHANGED_BEFORE_TEST')
+        sys.path[:0]=[str(root/'02_BACKEND'),str(root)]
+        os.environ.update(GENOS_PREPROCESSOR_TRANSPORT='pod',GENOS_PDF_PARSER='preprocessor',
+                          GENOS_PREPROCESSOR_RESPONSE_MODE='docling',GENOS_STRUCTURE_CONFIG=config,
+                          HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',PYTHONDONTWRITEBYTECODE='1')
+        from lawrag.core import genos_pod as pod,genos_preprocessor as wire
+        from lawrag.pipeline.raw_preprocess import pdf_check
+        phase('pdf_conversion')
+        if source.suffix.lower()=='.pdf':
+            pdf_check(source);shutil.copyfile(source,out/'result.pdf')
+            phase('pdf_conversion','SKIPPED_ALREADY_PDF',invocations=0)
+        else:
+            phase('pdf_conversion',invocations=1)
+            result,receipt=pod.convert(source,out/'conversion')
+            shutil.copyfile(result,out/'result.pdf')
+            phase('pdf_conversion','PASS',invocations=1,receipt='conversion/conversion.json')
+        state['pdf_pages']=pdf_check(out/'result.pdf');state['pdf_sha256']=sha(out/'result.pdf')
+        phase('parsing',invocations=0)
+        settings=pod.Settings.from_env();state['parser']=settings.identity()
+        phase('parsing',invocations=1)
+        with wire.using(settings,out/'parser-evidence'):
+            document,receipt=pod.parse(out/'result.pdf',settings)
+        save(out/'parsed.docling.json',document.model_dump(mode='json'))
+        save(out/'parse-receipt.json',receipt)
+        raw=out/'parser-evidence'/receipt['request_id']/'response.json'
+        full=json.loads(raw.read_text(encoding='utf-8'))['data']['full_text']
+        (out/'parsed.txt').write_text(full,encoding='utf-8')
+        state.update(parsed_pages=len(document.pages),text_items=len(document.texts),tables=len(document.tables),
+                     pictures=len(document.pictures),text_characters=len(full))
+        if sha(source)!=expected_source:raise ValueError('ORIGINAL_CHANGED_DURING_TEST')
+        if sha(out/'result.pdf')!=state['pdf_sha256']:raise ValueError('RESULT_PDF_CHANGED')
+        verify(root)
+        phase('parsing','PASS',invocations=1)
+        state.update(status='PASS',original_unchanged=True,
+                     conversion_tested=source.suffix.lower()!='.pdf')
+        return 0
+    except BaseException as exc:
+        state['status']='CANCELLED' if isinstance(exc,KeyboardInterrupt) else 'FAILED'
+        phase_name=state.get('phase','code_check')
+        state.setdefault(phase_name,{})['status']=state['status']
+        state['error_type']=type(exc).__name__
+        state['original_unchanged']=source.is_file() and sha(source)==expected_source
+        traceback.print_exc()
+        return 1
+    finally:
+        state['finished_at']=datetime.now(timezone.utc).isoformat()
+        save(out/'summary.json',state)
+
+
+def stop(child):
+    if child.poll() is not None:return
+    try:os.killpg(child.pid,signal.SIGTERM)
+    except ProcessLookupError:return
+    try:child.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:os.killpg(child.pid,signal.SIGKILL)
+        except ProcessLookupError:pass
+        child.wait()
+
+
+def launch(root,source,out,config,timeout):
+    original=sha(source)
+    save(out/'summary.json',{'status':'RUNNING','phase':'starting','source_name':source.name,
+        'source_sha256':original,'code_sha256':CODE_SHA,'code_root':str(root),
+        'execution_scope':'local Pod process; deployed revision not verified',
+        'python_version':sys.version,'python_executable':sys.executable,
+        'started_at':datetime.now(timezone.utc).isoformat(),'timeout_seconds':timeout,
+        'application_review_calls':0,'parser_internal_model_calls':'NOT_COUNTED',
+        'dataiku_flow_run':False,'indexing':False,'database_writes':False})
+    # The TXT is self-contained: materialize exactly its embedded Python to run
+    # an isolated child group. Never invoke the full pipeline worker/service.
+    runner=out/'runner.py'
+    runner.write_text(RUNNER_SOURCE,encoding='utf-8')
+    env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1','HF_HUB_OFFLINE':'1','TRANSFORMERS_OFFLINE':'1',
+         'OMP_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1'}
+    child=None
+    try:
+        with (out/'test.log').open('wb') as log:
+            child=subprocess.Popen([sys.executable,'-B',str(runner),'--worker',str(root),str(source),str(out),config,original],
+                cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+            try:result=child.wait(timeout=timeout)
+            except (subprocess.TimeoutExpired,KeyboardInterrupt) as exc:
+                stop(child);state=json.loads((out/'summary.json').read_text())
+                state.update(status='TIMEOUT' if isinstance(exc,subprocess.TimeoutExpired) else 'CANCELLED',
+                             finished_at=datetime.now(timezone.utc).isoformat(),original_unchanged=sha(source)==original)
+                name=state.get('phase','starting');state.setdefault(name,{})['status']=state['status']
+                save(out/'summary.json',state);result=124 if state['status']=='TIMEOUT' else 130
+        state=json.loads((out/'summary.json').read_text())
+        if state.get('status')=='RUNNING':
+            state.update(status='FAILED',error_type='WORKER_EXITED',worker_exit=result,original_unchanged=sha(source)==original)
+            state.setdefault(state.get('phase','starting'),{})['status']='FAILED'
+            save(out/'summary.json',state)
+        return result
+    finally:
+        if child is not None:stop(child)
+        # Keep original bytes outside the report ZIP; include conversion/parser receipts.
+        with zipfile.ZipFile(out/'report.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+            for p in sorted(out.rglob('*')):
+                if not p.is_file() or p.is_symlink() or p.name in {'report.zip','runner.py'}:continue
+                if p.name=='result.pdf' or p.suffix in {'.json','.txt','.log'}:
+                    z.write(p,str(p.relative_to(out)))
+
+
+def main():
+    parser=argparse.ArgumentParser(description='한 문서 PDF 변환+파싱. DOC/DOCX/HWP/HWPX/PPT/PPTX/PDF 지원.')
+    parser.add_argument('document',help='이 Pod에서 읽을 원문 파일 한 개')
+    parser.add_argument('--config',default=os.environ.get('GENOS_STRUCTURE_CONFIG',''),help='현장 parser YAML 절대경로')
+    parser.add_argument('--archive',default=ARCHIVE,help='동봉 R4 계산 코드 ZIP')
+    parser.add_argument('--code-root',help='선택 사항: ZIP 대신 이미 R4가 적용된 코드 경로')
+    parser.add_argument('--output-parent',default='.',help='결과 폴더를 생성할 위치')
+    parser.add_argument('--timeout-seconds',type=int,default=1800,help='총 실행 제한 초, 기본30분; 자동 재시도 없음')
+    args=parser.parse_args()
+    if sys.version_info<(3,11):parser.error('Python 3.11 이상을 사용하세요')
+    source=Path(args.document).expanduser().resolve(strict=True)
+    if not source.is_file() or source.suffix.lower() not in SUFFIXES:parser.error('지원되는 문서 파일 한 개를 지정하세요')
+    if not 1<=args.timeout_seconds<=7200:parser.error('timeout-seconds는 1~7200')
+    if not args.config:parser.error('--config /실제/경로/parser.yaml 또는 GENOS_STRUCTURE_CONFIG 설정 필요')
+    config=str(Path(args.config).expanduser().resolve(strict=True))
+    parent=Path(args.output_parent).expanduser().resolve(strict=True)
+    if not parent.is_dir():parser.error('output-parent는 기존 디렉터리여야 합니다')
+    with code_root(args) as root:
+        out=Path(tempfile.mkdtemp(prefix='pod-one-'+datetime.now().strftime('%Y%m%d-%H%M%S')+'-',dir=parent))
+        print('RESULT_DIR='+str(out),flush=True)
+        print('한 문서만 처리합니다. 진행 확인: '+str(out/'test.log'),flush=True)
+        result=launch(root,source,out,config,args.timeout_seconds)
+        state=json.loads((out/'summary.json').read_text())
+        print('STATUS='+state['status'],flush=True)
+        print('PDF_CONVERSION='+state.get('pdf_conversion',{}).get('status','NOT_RUN'),flush=True)
+        print('PARSING='+state.get('parsing',{}).get('status','NOT_RUN'),flush=True)
+        print('REPORT='+str(out/'report.zip'),flush=True)
+        return result
+
+
+# The build inserts the exact preamble+functions here. It is only used to launch
+# the identical code from both the standalone Python and the embedded Bash TXT.
+RUNNER_SOURCE = __RUNNER_SOURCE__
+if __name__=='__main__':
+    if len(sys.argv)==7 and sys.argv[1]=='--worker':
+        raise SystemExit(worker(Path(sys.argv[2]),Path(sys.argv[3]),Path(sys.argv[4]),sys.argv[5],sys.argv[6]))
+    raise SystemExit(main())

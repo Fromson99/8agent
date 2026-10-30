@@ -1,0 +1,32 @@
+2026-10-27 사용자 정정: Dataiku가 작업·재시도·로그·상태·결과·SQL 적재를 소유한다.
+후속 정정: GENOS→S3 직접 접속 없음. 비동기 HTTP 반환을 Dataiku가 받아 S3에 쓴다.
+GENOS는 영속 job registry/전역 stale BUSY 잠금 없이 임시 계산 핸들만 유지한다.
+취소를 위해 현재 프로세스 핸들·전송 offset·수거 전 결과는 메모리/임시 디스크에 존재한다.
+이것은 영속 업무 job/재시도/이력 관리가 아니다. OPEN/PUT/RUN/POLL/READ/CANCEL/CLOSE는
+짧은 HTTP 요청이며 Dataiku가 상태 전환·재개·예산·S3 저장·SQL을 담당한다.
+기존 봉인 R2의 구조화/prepare/index/export 엔진을 그대로 호출한다.
+입력은 기존 RAW_INPUT.zip 및 PIPELINE_SUPPORT.zip 전체 묶음이며 내규 최신판 선택은
+기존 반입 계약을 유지한다. 외규 임의 필터링·새 모델 호출 없음.
+
+Dataiku가 원본 ZIP을 S3에서 스트리밍해 GENOS로 보내고, 진행/로그/결과를 HTTP로 받아
+S3에 저장한다. GENOS는 S3 자격/주소를 받지 않는다. 00은 코드/프로토콜을 검사한다.
+GENOS에는 일시 작업 공간만 남으며 CLOSE 또는 lease 만료 시 정리한다.
+취소는 CANCEL_REQUESTED→실제 자식 프로세스 종료 확인→CANCELLED 순서다.
+Dataiku 중단/네트워크 단절에는 lease 만료로 계산을 중단한다. UNKNOWN은 취소 완료가 아니다.
+
+실패 분류/담당/한도:
+- 입력·코드·DB·스키마 불일치: Dataiku가 제출 전 중단. 자동 대체 없음.
+- 계산 실패: GENOS가 제한된 오류 코드/로그를 HTTP로 반환, Dataiku가 S3에 FAILED 기록.
+- HTTP 응답 유실: Dataiku UNKNOWN; 같은 핸들의 POLL/offset으로 확인, RUN 중복 실행 없음.
+- 회수 기한 경과/실패: 자동 새 attempt 없음. 원래 deadline·SQL 예산·이력 보존.
+- SQL 응답 유실: 기존 검증/멱등 loader 사용. GENOS ACK 불필요.
+- 강제 컨테이너 종료: 미전송 결과/로그 유실 가능; Dataiku에서 HANDLE_LOST를 기록.
+자동 compute 재시도 0회. Dataiku 재실행은 미전송→1회 제출 또는 기존 결과 회수만 한다.
+한 논리 작업에는 한 Dataiku 실행만 허용(Scenario 동시 실행 1). S3 체크포인트는 CAS가 아니다.
+기존 체크포인트는 삭제하지 않고 hash/기한/SQL 예산을 새 protocol 계보에 보존한다.
+기존 원격 작업에는 접근하지 않는다. 신규 리비전 전환 뒤 기존 작업의 상태는 미확인이다.
+
+필수 검증: 봉인 코드 해시, HTTPS/redirect/비밀 비출력, 입력/결과 hash, 단계 실패,
+취소 실제 프로세스 종료, lease 만료, 통신 유실 후 회수 및 중복 계산 0, 이전 예산 이행,
+중단·재실행, Flow 설치/복원,
+실제 native 합성 문서→결과 및 로컬 Oracle 적재. 현장 설치/통신과 구분해 기록.

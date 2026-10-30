@@ -1,0 +1,40 @@
+GENOS_BUSY 이전 작업 찾기 — 2026-10-27 R2
+
+현재 사진
+RESUME_FIX_APPLIED: 레시피02 재개 수정은 적용됐습니다.
+이번 recipes_20261027_r1의 local_phase=NEW, STATUS_UNCONFIRMED / GENOS_JOB_LOST:
+GENOS가 이번 작업 ID를 찾지 못했습니다. 앞서 START가 BUSY로 거절돼 생성되지 않았을 수 있습니다.
+S3 원문이 사라졌다는 뜻이 아닙니다. BUSY를 막고 있는 별도 작업은 아직 특정하지 못했습니다.
+
+실행
+1. DATAIKU_GENOS_BUSY_DISCOVERY_20261027_R2.txt 전체를 LEGAL_RAG Python 노트북 새 셀에서 실행합니다.
+   R3를 실행한 노트북에서 먼저 실행하세요. 이 TXT는 02를 다시 수정하지 않습니다.
+   새 S3 업로드·GENOS 재배포·SQL 실행은 필요 없습니다.
+2. DISCOVER_JOB 중 blocks_new_start=true인 행과 마지막 DISCOVER_SUMMARY를 보내주세요.
+3. 새 작업 ID를 만들거나 기존 작업을 임의 취소/삭제하지 마세요.
+
+확장한 조회 범위
+- 이전 조회: 현재 업로드/구조화/적재 세 폴더.
+- 이번 조회: LEGAL_RAG의 접근 가능한 관리 폴더 목록에서 _pipeline/jobs 체크포인트를 찾습니다.
+  원문 파일의 목록이 보일 수 있지만 내용은 열지 않습니다. 읽는 것은 최대1MiB 체크포인트뿐입니다.
+- 옛 실행기 기본 경로 ./legal_pipeline_work, 노트북에 WORK_DIR가 남아 있으면 그 경로도 확인합니다.
+  다른 홈/디스크를 검색하지 않습니다. jobs/*/client.json과 input-binding.json만 읽습니다.
+  다른 노트북의 작업 디렉터리는 여기서 보이지 않을 수 있습니다.
+- 상태를 찾지 못하면 10월23일 기존 파이프라인을 실행한 노트북에서도 같은 TXT를 실행할 수 있습니다.
+  원래 WORK_DIR를 임의로 바꾸지 마세요.
+
+기존 기록에 run_20261023_01_20261023_01의 FAILED/STRUCTURE 관찰이 있지만,
+지금의 차단 작업이라고 확정하지 않았습니다. 이 도구가 현재 STATUS로 확인합니다.
+현재 endpoint/code/instance와 맞는 작업에만 STATUS를 요청하고 같은 capability는 중복 조회하지 않습니다.
+다른 instance나 binding은 건너뛰며 임의 이행/인증값 출력/자동 해제를 하지 않습니다.
+
+한도: 최대50폴더, 폴더당20체크포인트·목록10만항목, 전체100체크포인트,
+최대40개 고유 STATUS, HTTP 총41회/120초, 요청별 최대15초·자동 재시도0회.
+Dataiku SDK 목록/파일 읽기 시간은 HTTP 한도 밖입니다.
+
+RUNNING/UPLOADING은 작업을 확인해 이어가고, COMPLETE는 결과 회수·검증 뒤 해제합니다.
+FAILED/CANCELLED/INTERRUPTED는 해당 작업의 입력·실패 로그를 보존한 뒤 해제할 수 있습니다.
+이 TXT는 HEALTH/STATUS 조회만 합니다. 자동 START·CANCEL·ACK·삭제·배치 실행은 없습니다.
+모든 기록에서 못 찾으면 GENOS 실제 배포 컨테이너의 임시 작업 상태를 운영 측에서 확인해야 합니다.
+개발용 ~/DEV 터미널의 디스크를 실제 실행 컨테이너 디스크와 동일하다고 가정하지 않습니다.
+아직 현장 차단 작업 발견·해제·구조화·적재가 완료된 것은 아닙니다.

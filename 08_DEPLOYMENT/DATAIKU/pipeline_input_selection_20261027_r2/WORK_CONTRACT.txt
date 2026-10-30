@@ -1,0 +1,13 @@
+Input: verified R1 recipe source and Flow edges; explicit canonical filename set.
+Consumer: existing R1 input_receipts via a read-only selected-name folder adapter.
+Failure categories: selected-file missing; malformed receipt; ZIP hash mismatch;
+unknown recipe edit/edge; uncertain SDK save response. No silent fallback/auto retry.
+Recovery owner: updater accepts original or exact patched recipe source and verifies
+each save. Re-run reconciles a partial save. Pipeline owns its original durable
+identity/deadline/budget. No new jobs/calls/SQL or S3 copy/delete/move operations.
+Terminal states: INPUT_SELECTION_APPLIED only after all three recipe readbacks;
+uncertain/failed writes preserve code backup and append-only local update log.
+Tests: both naming variants together; differing copies remain unselected/preserved;
+selected missing; receipt mismatch; corrupt raw ZIP; idempotent adapter; actual
+Dataiku SDK updater+reinstall+rollback+partial-save recovery; unknown code/Flow
+refusal before writes; exact R1 package/engine pin/SQL/worker bytes remain unchanged.

@@ -1,0 +1,89 @@
+{
+  "baseline_code_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+  "code_sha256": "1982ddf7ab401b01ab4a59b37b4006a395adfaead7c7231a4520e2d965c35e5c",
+  "service_files": 1282,
+  "unchanged_baseline_files": 1270,
+  "changed_files": [
+    "02_BACKEND/lawrag/core/parse_adapter.py",
+    "02_BACKEND/lawrag/pipeline/genos_build.py",
+    "02_BACKEND/lawrag/pipeline/genos_corpus.py",
+    "02_BACKEND/lawrag/pipeline/genos_stages.py",
+    "02_BACKEND/lawrag/pipeline/raw_preprocess.py",
+    "02_BACKEND/lawrag/pipeline/team_raw.py",
+    "CODE_PINS.json",
+    "parser_config.py",
+    "partial_pipeline.py",
+    "pipeline_coverage.py",
+    "service.py",
+    "worker.py"
+  ],
+  "files": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R7.zip": {
+      "sha256": "eb5eb048a0da802fde74f72a98d837c41204fbd069ba249c9214d7bb66e7fa22",
+      "bytes": 6623074
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R7.zip": {
+      "sha256": "f8deb2c891c0bf109707c15ba8bb1b130c1fe158396a7877d06e16c0739daf56",
+      "bytes": 293517
+    }
+  },
+  "field_revision": "NOT_DEPLOYED",
+  "field_documents": "NOT_TESTED",
+  "actual_model_calls": 0,
+  "local_main_changed": false,
+  "git_push": false,
+  "delivery_files": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R7.zip": {
+      "bytes": 6623074,
+      "sha256": "eb5eb048a0da802fde74f72a98d837c41204fbd069ba249c9214d7bb66e7fa22"
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R7.zip": {
+      "bytes": 293517,
+      "sha256": "f8deb2c891c0bf109707c15ba8bb1b130c1fe158396a7877d06e16c0739daf56"
+    },
+    "CODE_MANIFEST.json": {
+      "bytes": 163855,
+      "sha256": "c129b3a47ed3ce662ba6cbef29dcad72e4aa1c6769bbc2c1e4a331d793f8cf93"
+    },
+    "RELEASE_BINDING.json": {
+      "bytes": 3813,
+      "sha256": "f4ec7919cba621b30d6065048b1192cf008a056e25bd16b582619feae1ccf15f"
+    },
+    "GENOS_R7_INSTALL.txt": {
+      "bytes": 22695,
+      "sha256": "986f620ac4962d691f57a264a7e0de45003025d37d08408aa09fca307e2ffa19"
+    },
+    "DATAIKU_R7_INSTALL.txt": {
+      "bytes": 6621,
+      "sha256": "151f4565d7f4a2c38478f5dfdebce73d87ea02141892e39e2c6aae0dcc335426"
+    },
+    "DATAIKU_R7_CONTROL.txt": {
+      "bytes": 3294,
+      "sha256": "64a6698f22e9381a7ca71882ae59b0e6aa6c98f954086208b41ec6c5125fdc7a"
+    },
+    "ROLLBACK_GENOS.txt": {
+      "bytes": 10562,
+      "sha256": "1be8e3caa2d7dfa238b8e626adf27c86426ee3cb700dff9bed3bdb1a083a393d"
+    },
+    "install_compute.py": {
+      "bytes": 10409,
+      "sha256": "a2bd17622cf5ceb3229b833e5e3c37460e0c414dd46cea2bd2ed4f9e1ebceb3a"
+    },
+    "GUIDE.txt": {
+      "bytes": 5329,
+      "sha256": "5f7a02c953022ca6ce0530ad001b72bd19441c1f202c4dc74d07105aeb746931"
+    },
+    "PATCH_NOTES.txt": {
+      "bytes": 3089,
+      "sha256": "c6e3b3e29474620a801b960462488a12c0d171bb68ecaab467cff65abf03b8a9"
+    },
+    "VALIDATION.json": {
+      "bytes": 2271,
+      "sha256": "a59dd82b9bab32aa98a0871518cce835dd0a8a1ec9e7ccf94a39138c2f162bd0"
+    },
+    "DATAIKU_SKIP_PARSER_20261028_R7.zip": {
+      "bytes": 6680528,
+      "sha256": "09225d27a58ad51df7bc7a38643718ea2da7d58e3156700d0824f92e64920769"
+    }
+  }
+}

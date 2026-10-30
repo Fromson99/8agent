@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "tests": 15,
+  "test_receipt_sha256": "a3334be1fb7a082892075ab3112bacaee47b5d80f0120aaeb4bbd5acff64bd51",
+  "cases": [
+    "duplicate-name reproduction and selected original unpack",
+    "missing selected input without fallback",
+    "receipt validation and raw hash preserved",
+    "read-only source preservation",
+    "actual public SDK apply/idempotent/rollback",
+    "unknown code and Flow refused before saves",
+    "save-response-loss reconciliation",
+    "full delivered notebook cell",
+    "updated recipe wrapper runs original unpack"
+  ],
+  "public_sdk": "15.2.0 with local REST adapter",
+  "source_and_output_storage": "in-memory managed folder adapter",
+  "field_patch_run": false,
+  "s3_move_root_cause_resolved": false,
+  "heavy_oracle_retest": false,
+  "model_calls": 0,
+  "field_network_calls": 0
+}

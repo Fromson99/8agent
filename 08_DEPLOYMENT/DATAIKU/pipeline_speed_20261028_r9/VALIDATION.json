@@ -1,0 +1,66 @@
+{
+  "status": "LOCAL_TECHNICAL_DELIVERY_PASS_FIELD_1H_UNVERIFIED",
+  "suites": {
+    "protocol_install_resume": {
+      "tests": 103,
+      "passed": 103,
+      "failed": []
+    },
+    "native_pipeline": {
+      "tests": 4,
+      "passed": 4,
+      "failed": []
+    },
+    "spawn_entrypoint": {
+      "tests": 3,
+      "passed": 3,
+      "failed": []
+    }
+  },
+  "tests_passed": 110,
+  "server_files": 1282,
+  "unchanged_r8_files": 1278,
+  "changed_server_files": [
+    "02_BACKEND/semantic_runtime/unit_fulltext.py",
+    "06_TOOLS/pipeline.py",
+    "CODE_PINS.json",
+    "worker.py"
+  ],
+  "performance": {
+    "scope": "Local PeCab token generation for12288fixedunitinputs, not wholeindex/02/GENOS",
+    "first_1worker_seconds": 265.4852380090001,
+    "fresh_3worker_cache_seconds": 128.9431632730002,
+    "4worker_balanced_seconds": 106.82289766700023,
+    "first_1worker_to_final_ratio": 2.485283996288877,
+    "fresh_followup_reduction_percent": 17.155051143864565,
+    "mismatches": 0,
+    "peak_process_group_bytes": 1003495424,
+    "single_runs_fixed_order": true,
+    "local_logical_cpus": 16,
+    "field_cpu": 4,
+    "field_ram_gib": 16,
+    "records": [
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-1180-pipeline02-bounded-index-speed/artifacts/run-001/result.json",
+        "sha256": "2173de141ef054253f53aea4710f142d42423bcaee1f3e7471a03c0563bcc487"
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-1181-pipeline02-balanced-tokenization/artifacts/run-001/result.json",
+        "sha256": "265b549949bf61df1fd2dfa5e1dc7cfbb480df83739ca89fdfc5a83d4f98967c"
+      }
+    ]
+  },
+  "model_calls": 0,
+  "onsite_total_seconds": null,
+  "goal_1hour_achieved": false,
+  "intermediate_failed_added_resume": false,
+  "raw_01_reusable": true,
+  "requires_02_recompute": true,
+  "main_changed": false,
+  "onsite_deployed": false,
+  "email_sent": false,
+  "preserved_diagnostics": [
+    "../pipeline_speed_20261028_r9_initial_failed/: sandbox async waits and initial2nativeCLIspawnfailures retained; no tokenalgorithmchange in repair"
+  ],
+  "inherited_r8_compatibility_note": "R8 historical compatibility test failure is preserved in its validation; this delivery does not relabel the old suite as all-pass."
+}

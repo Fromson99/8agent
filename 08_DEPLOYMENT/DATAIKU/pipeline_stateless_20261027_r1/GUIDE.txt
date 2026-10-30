@@ -1,0 +1,86 @@
+Dataiku가 작업을 관리하는 GENOS 계산 리소스 — 2026-10-27 R1
+
+책임 구분
+Dataiku: 원문 S3 읽기, 비동기 요청·진행 기록·로그·취소 의도·재개·재시도 예산,
+결과 S3 저장, 검증, SIDDS.*_S 적재. 기존 Oracle 연결 AIDP와 SIDDA.*_A 구분 유지.
+GENOS: 받은 전체 입력 묶음의 구조화/prepare/index/export 계산만 수행.
+GENOS→S3 직접 접속 없음. S3 주소/자격도 GENOS에 전달하지 않음.
+취소·진행 반환을 위한 프로세스 핸들과 전송 중 임시 파일은 GENOS에 잠시 존재한다.
+영속 job 목록/상태 파일/지난 작업 로그/전역 stale BUSY 잠금은 사용하지 않는다.
+
+이전 R1/R2/R3와 호환성
+GENOS 서비스와 Dataiku 00/02/03을 함께 바꾸는 새 프로토콜이다.
+기존 실패 작업을 찾아 ACK하거나 GENOS 로그를 조사할 필요가 없다.
+단, 새 리비전 배포가 필요하다. 기존 RAG 채팅 앱이 아닌 legal_pipeline_serving(761)
+Git checkout ~/DEV에 적용한다. Python service(config,data) 진입점은 유지한다.
+단일 프로세스 worker 1, replica 1을 사용한다. 핸들은 해당 프로세스 수명 안에서만 유효하다.
+여러 worker/replica로 분산하면 INSTANCE_CHANGED가 발생하며 자동 재전송하지 않는다.
+컨테이너 재시작 시 이전 계산의 미전송 결과는 소실될 수 있다.
+
+적용 순서
+0. 현재 02 실행이 있다면 중복 실행하지 않는다. 설치 중 Dataiku 배치를 돌리지 않는다.
+1. 전달 ZIP을 풀어 GENOS_COMPUTE_INSTALL_20261027_R1.txt와 같은 위치의
+   GENOS_DATAIKU_COMPUTE_20261027_R1.zip을 GENOS에 반입한다.
+   TXT는 그 반입 디렉터리에서 전체 실행. 기존 ~/DEV 백업→적용→Git stage/commit→
+   검증→push를 수행한다. 새 리비전 배포는 GENOS 화면에서 위 commit을 선택한다.
+   실행 TXT/설치기/ZIP은 Git 코드 파일 묶음에 포함하지 않는다.
+2. DATAIKU_COMPUTE_RECIPES_20261027_R1.zip을 기존 LEGAL_PIPELINE_WORKSPACE
+   (ehA8dpVm)에 파일명 그대로 업로드한다. 원문 ZIP/기존 결과/체크포인트는 삭제하지 않는다.
+3. LEGAL_RAG Python 노트북에서 DATAIKU_COMPUTE_INSTALL_20261027_R1.txt 전체를
+   한 셀에 붙여넣어 실행한다. 기존 R1, 정본 입력 R2, 02 재개 R3 소스만 수용하며
+   사용자 추가 수정이 있으면 덮어쓰지 않고 멈춘다. 이전 코드는 landing S3에 백업한다.
+4. Flow에서 LEGAL_00_CHECK_GENOS_R1 실행: CONNECTED_COMPUTE_CODE_MATCH 확인.
+   이는 배포 코드/프로토콜 연결 검사이며 대량 원문 처리 성공은 아니다.
+5. 01이 이미 RAW_SAVED라면 LEGAL_02_STRUCTURE_GENOS_R1만 실행한다.
+   전체 RAW_INPUT.zip/PIPELINE_SUPPORT.zip을 버퍼 단위로 전송한다. 기존 내규 최신판
+   선택과 외규 전체 범위를 유지하며 Dataiku에서 모든 원문을 임시 폴더로 다시 풀지 않는다.
+6. 02 STRUCTURED 확인 후 LEGAL_03_LOAD_SILVER_R1 실행. COMPLETE가 실버 적재 완료다.
+   기존 적재 SQL/검증을 사용한다. 새 DDL/테이블 재생성/자동 RAG 조회 채널 전환 없음.
+
+취소·진행 확인·재시도 (모두 Dataiku에서)
+DATAIKU_COMPUTE_CONTROL_20261027_R1.txt의 ACTION 값을 정해 노트북 한 셀 전체 실행:
+- status: Dataiku S3에 저장된 상태/로그 위치만 표시한다. GENOS 로그 조사 API를 호출하지 않는다.
+- cancel: Dataiku에 취소 의도를 먼저 저장하고 현재 계산 핸들에 취소를 보낸다.
+  CANCEL_REQUESTED는 접수/대기, CANCELLED만 실제 하위 프로세스 종료 확인이다.
+  이미 완료됐다면 ALREADY_COMPLETED, 통신이 끊겼다면 CANCEL_UNCONFIRMED다.
+  Dataiku 레시피 UI의 강제 Stop만으로 즉시 취소 확인을 대신하지 않는다.
+- retry: Dataiku가 FAILED/CANCELLED를 확인한 동일 작업만 재시도 준비한다.
+  이후 멈춘 02를 다시 실행하면 새 계산 핸들을 만들되 원래 기한/SQL/HTTP 예산을 유지한다.
+  총 계산 시도 상한3, 자동 계산 재시도0. UNKNOWN/HANDLE_LOST를 완료/취소로 바꾸지 않는다.
+취소 후 02가 중단된 상태라면 02를 다시 실행해 종료 상태·남은 로그를 회수한다.
+통신/프로세스 유실은 기존 상태를 보존해 표시하며 무조건 새 핸들로 재제출하지 않는다.
+
+연결과 임시 공간
+짧은 HTTP OPEN/PUT/RUN/POLL/READ/CANCEL/CLOSE 호출을 사용한다. GENOS는 RUN을
+접수한 후 비동기로 계산하고, Dataiku가 약3초 간격으로 진행/로그/결과를 받는다.
+실제 모델 호출은 추가하지 않는다. 기존 native-no-models 엔진을 재사용한다.
+Dataiku가 수신 결과를 S3에 해시 검증해 보관한 뒤 GENOS 임시 공간을 닫는다.
+미접속15분 lease 만료 시 계산을 취소하고 임시 공간을 정리한다. 따라서 노트북/레시피가
+끊긴 채 오래 지나면 미전송 결과/로그를 되살릴 수 없다. 이미 Dataiku가 받은 것은 남는다.
+GENOS의 계산 RSS 상한6GiB, 원래 작업 기한7일 이내를 유지한다. 플랫폼 자체 한도는 별도.
+Dataiku 시나리오 동시 실행은1로 설정하고 같은 논리 작업의 02를 동시에 수동 실행하지 않는다.
+S3 관리 폴더 체크포인트는 분산 CAS 잠금이 아니다.
+
+S3 위치
+원문: 기존 LEGAL_RAW_SOURCE_R1/snapshots/<RAW sha>/files/... 유지.
+작업/로그/결과: LEGAL_STRUCTURED_RESULT_R1/_pipeline/dataiku-owned-v1/
+  _pipeline/jobs/<job>/checkpoint-*.json : Dataiku 상태/예산/계보
+  attempts/<handle>/logs/*.log : Dataiku가 수신한 로그
+  attempts/<handle>/result/* : 수신 결과 조각/해시
+  _pipeline/blobs/<sha>.zip : 검증한 완성 반환 ZIP
+  controls/<job>/ : 취소·재시도 요청과 관찰
+적재/검증: LEGAL_LGL_LOAD_RESULT_R1/_pipeline/dataiku-owned-v1/
+기존 구프로토콜 체크포인트는 읽기만 하고 원래 기한/SQL 예산을 계승한다.
+이미 구프로토콜 STRUCTURED 결과가 있으면 새 계산으로 덮지 않고 별도 처리 필요를 표시한다.
+
+복원
+Dataiku 설치 TXT에서 ACTION='rollback' 실행: S3 백업의 실제 이전 레시피 코드 복원.
+GENOS는 ROLLBACK_GENOS.txt로 백업 복원 후 검토·commit/push/이전 리비전 배포.
+원문/결과/과거 실패 이력은 삭제하지 않는다. 진행 중 계산은 먼저 Dataiku에서 취소·확인한다.
+
+검증과 현장 경계
+VALIDATION.json을 따른다. 합성 원문/로컬 Oracle/공개 SDK 어댑터의 로컬 검증이며
+실제 사내 Dataiku/GENOS/ADB의 반입·배포·네트워크·전체 데이터 완료는 아직 미확인이다.
+파이프라인 구조 변경은 로컬 RAG MAIN105, 모델, 원문 판본, SQL 소유 스키마를 변경하지 않는다.
+참고: Dataiku 공식 관리 폴더 API https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
+승호 integration c507cd450d90671858603e97f8849c8df3a7bc8d의 ELS_QA_PREPROCESS를 대조했다.

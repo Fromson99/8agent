@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "tests": 16,
+  "failed": 0,
+  "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/pipeline_busy_inspection_20261027_r1/test_inspection.py",
+  "junit": "TESTS.xml",
+  "python_3_10_syntax": true,
+  "sealed_genos_r2_code_sha256": "771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46",
+  "entrypoint": "actual sealed service.service via simulated HTTP plus delivered TXT under simulated Dataiku SDK",
+  "source_equals_delivered_txt": true,
+  "new_worker_code": false,
+  "field_api_calls": 0,
+  "model_calls": 0,
+  "oracle_calls": 0,
+  "s3_writes": 0,
+  "field_verified": false,
+  "limits": [
+    "Needs existing checkpoints visible to the project",
+    "HEALTH/STATUS cannot enumerate all worker jobs",
+    "No release or recovery applied",
+    "Dataiku SDK call times outside HTTP budget"
+  ],
+  "tested_files": {
+    "inspect_jobs.py": "681506f72824e6974298c70748ab9321831803adae8d1f8aff44f2f67c1b55af",
+    "DATAIKU_GENOS_BUSY_CHECK_20261027_R1.txt": "681506f72824e6974298c70748ab9321831803adae8d1f8aff44f2f67c1b55af",
+    "test_inspection.py": "ac40288e518edaa832e2f2e143a6320e05a14b50ec22f27b1690d402f43850d4",
+    "GUIDE.txt": "1e369af5fa14c738a2ca4fb44fd3f9fd90cfcf313b657e4b80232c86cb1cabed",
+    "WORK_CONTRACT.txt": "f09bb4f4201302051abc505f7094770ac43b94d9fae7af10e0e8bd1961a701a1"
+  }
+}

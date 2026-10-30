@@ -1,0 +1,53 @@
+187번 기존 전처리기 응답 호환 수정 R3 — R2를 대체합니다.
+
+R2 오류: 정상 청크 목록을 반환해도 data.document 형식만 허용했고,
+기존 청크 후속 PDF 검수도 --structure-vlm off로 꺼두었습니다.
+R3: 기존 /run 요청, 전체 청크 결합/구조 응답 수신, 기존 GENOS PDF 검수를 사용합니다.
+187 자체는 수정하지 않습니다. 로컬 Docling 모델 다운로드/fallback도 없습니다.
+빈/누락/순서/페이지/해시가 잘못된 응답 검사는 유지합니다.
+
+1. Dataiku 02가 종료 또는 중지된 상태인지 확인합니다. 원문/체크포인트는 보존합니다.
+2. DATAIKU_GENOS_PREPROCESSOR_20261027_R3.zip을 압축 해제합니다.
+3. 아래 두 파일을 legal_pipeline_serving 개발환경의 기존 TRANSFER 폴더에 올립니다.
+   GENOS_DATAIKU_COMPUTE_20261027_R3.zip (이 내부 ZIP은 압축 그대로)
+   GENOS_PREPROCESSOR_INSTALL_20261027_R3.txt
+4. 두 파일이 있는 TRANSFER 폴더의 터미널에서 실행합니다.
+   bash GENOS_PREPROCESSOR_INSTALL_20261027_R3.txt
+   스크립트가 ~/DEV로 ZIP 복사 -> 기존 R1 또는 R2 코드 확인 -> 백업/패치 ->
+   같은 checkout 검증 -> commit/push를 수행합니다. 임의 수정본은 덮어쓰지 않습니다.
+5. GENOS_ENVIRONMENT.txt대로 실제 코드서빙 환경을 설정합니다.
+   preprocessor / ID187 / response_mode auto와 기존 공유경로를 사용합니다.
+   기존 RAG 구축의 GENOS 검수 모델 연결 설정도 실행 환경에 있어야 합니다.
+   해당 commit으로 GENOS 새 리비전을 배포합니다. worker1/replica1 유지.
+6. DATAIKU_COMPUTE_RECIPES_20261027_R3.zip을 기존 ehA8dpVm 관리 폴더에 올립니다.
+   LEGAL_RAG Python 노트북 새 셀에 DATAIKU_PREPROCESSOR_INSTALL_20261027_R3.txt
+   전체를 붙여넣어 실행합니다. R1/R2에서 갱신하며 01/SQL/Flow 연결은 유지합니다.
+7. 00 실행: CONNECTED_COMPUTE_CODE_MATCH와 preprocessor.ready=true 확인.
+   PREPROCESSOR_REVIEW_CONFIG_REQUIRED이면 기존 검수 모델 연결 설정을 확인합니다.
+8. 기존 LEGAL_RECIPE_JOB_NAME 그대로 02 실행 -> STRUCTURED 뒤 03 실행.
+   이미 원문 보관한 01은 재실행하지 않습니다. 03 COMPLETE가 실버 적재 완료입니다.
+   R1/R2에서 확인된 FAILED/CANCELLED만 원래 기한/사용량/총3시도 안에서 R3로 이행합니다.
+   이전 1,631건 성공은 완료 ZIP이 아니므로 02 입력 묶음을 다시 처리합니다.
+
+상태/취소: DATAIKU_PREPROCESSOR_CONTROL_20261027_R3.txt ACTION=status 또는 cancel.
+R3는 실제 검수 모델 호출이 가능하므로 RUN 요청 이후 실패/취소를 새 계산으로 retry하여
+기존 모델 사용량을 초기화하지 않습니다. 실패 원인·보존된 검수 원장을 확인해야 합니다.
+R1/R2 실패 이행과 달리 R3 실패의 자동 새 시도는 지원하지 않습니다.
+단순 HTTP 응답 유실은 같은 handle을 POLL하며 계산을 중복 시작하지 않습니다.
+
+저장: 원문/진행/로그/완성 반환은 Dataiku S3. GENOS는 계산 수명의 임시 파일만 보유합니다.
+정상 반환 ZIP에는 파서 응답·검수 기록·예약 모델 호출 수가 들어갑니다.
+실패/취소는 계산 프로세스 종료 후 진단 ZIP을 Dataiku S3에 검증 저장한 뒤 CLOSE합니다.
+진단 ZIP은 성공 결과로 SQL 적재하지 않습니다. 진단 전송 실패는 같은02로 전송만 재시도합니다.
+컨테이너 소실/lease 만료 전에 받지 못한 기록은 복구를 보장하지 않습니다.
+187로 이미 보낸 원격 요청은 계산 worker 취소와 함께 종료됐다고 보장하지 않습니다.
+
+DB: 02의 테이블 구조 사전 조회는 유지합니다. 조회 불가이면 계산 전에 중단합니다.
+03 쓰기 권한 실패 시 수신 완료된 결과는 S3에 남습니다. 일부 SQL 배치는 이미 반영될 수 있습니다.
+
+복원: 02 중지 뒤 ROLLBACK_GENOS.txt 실행, 복원 코드 검토/commit/push와 이전 리비전 선택.
+Dataiku 설치 TXT ACTION=rollback은 실제 설치 전 R1 또는 R2 레시피를 복원합니다.
+R3 실행 이력/예산은 되돌리거나 삭제하지 않습니다.
+
+검증은 VALIDATION.json. 로컬 모의 HTTP/합성 문서이며 현장187/검수 모델/전체 문서
+성공 또는 GENOS 배포 완료를 뜻하지 않습니다. RAG MAIN은 변경하지 않습니다.

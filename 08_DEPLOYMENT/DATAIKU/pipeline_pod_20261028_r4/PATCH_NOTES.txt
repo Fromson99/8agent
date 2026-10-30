@@ -1,0 +1,22 @@
+GENOS 같은 Pod 문서 변환·파싱 R4 — 2026-10-28
+대체 대상: 2026-10-27 DATAIKU_GENOS_PREPROCESSOR_R3 (삼성메일 SENT 1a17c9005e138be6).
+RAG MAIN111 패치가 아니라 Dataiku legal_pipeline_serving 계산 서비스 패치입니다.
+
+변경
+1. Dataiku가 올린 원문을 계산 Pod에서 직접 읽고 GENOS 파서를 호출합니다. 별도 187 Pod에 /tmp 파일 경로만 보내던 HTTP 호출을 제거했습니다.
+2. PDF 변환을 켭니다. 없는 DOC/DOCX/HWP/HWPX/PPT/PPTX PDF를 GENOS 공식 변환 코드(PDF SDK → rhwp/LibreOffice 형식별 순서)로 같은 Pod에서 생성합니다. 기존 PDF는 검증 후 재사용합니다. XLS/XLSX 제외 지시는 유지합니다.
+3. 실제 출력의 PDF 헤더·페이지·암호화·해시를 검사합니다. None/깨진 PDF/변경된 원문을 성공 처리하지 않습니다. 변환 작업에는 ASCII 사본명을 사용해 한글 출력 파일명 불일치를 피합니다.
+4. DOCX/HWPX는 원래 구조 파싱 경로를 유지하면서 열람용 PDF를 추가합니다. PDF는 GENOS parser facade의 Docling 구조를 받아 기존 구조화·GENOS 검수·prepare·index로 연결합니다.
+5. 변환 PDF와 원문 매핑/해시를 audit/derivatives/에 포함해 기존 결과·실패 진단 ZIP으로 Dataiku가 S3에 보관합니다. 실패 진단은 SQL 적재 성공 결과가 아닙니다.
+6. HEALTH/OPEN/worker 시작에서 동일 Pod 의존성·변환기·YAML 검사를 합니다. 공유 /tmp/NFS 경로 설정은 이 경로에서 필요하지 않습니다. 실제 모델 접속 검사는 별도입니다.
+7. 공식 소스 aa610c3db24aaa02c65e953279f1a60d014babaf와 matching fork wheel을 고정합니다. 승호님 integration 82cb80f6a1311113f7301c7a23bcfa816af693df의 같은 프로세스 DocumentProcessor 호출을 참고했습니다. 현장187 소스/리비전을 확보했다는 뜻은 아닙니다. 현장 연결값이 필요한 기본 예시 YAML은 동봉하지 않으며 기존 parser YAML을 별도로 준비합니다.
+8. R3 실패 재개는 Dataiku에 보관된 audit ZIP의 해시와 검수 호출 0을 확인한 경우만 허용합니다. 원래 기한·HTTP/SQL 사용량·총3시도를 유지합니다. 검수 호출이 있거나 증거가 없으면 새 실행으로 예산을 초기화하지 않습니다.
+
+유지
+Dataiku가 작업/진행/취소/로그/S3/SQL을 소유하고 GENOS는 임시 계산만 수행합니다. 원문·기존 실패 기록·Flow 이름·실버 SIDDS 매핑·검수 모델·RAG MAIN은 유지합니다. GENOS→S3 직접 접속은 추가하지 않았습니다.
+
+적용 전제/확인 경계
+코드만으로 운영체제 변환기나 모델 가중치가 설치되지는 않습니다. 계산 Pod 이미지에 변환기와 호환 의존성, 현장 parser YAML/모델 연결이 필요합니다. 동봉 fork wheel은 --no-index --no-deps로만 설치 가능하며 나머지는 기존 승인된 파서 이미지/내부 wheelhouse를 사용합니다.
+로컬 검증은 합성 원문·모의 파서/변환 실행파일·모의 GENOS 검수 응답으로 수행합니다. 실제 PDF SDK/LibreOffice/HWP 변환 품질·현장 모델·전체1657건·GENOS 리비전 성공은 미확인입니다. 자세한 검사 결과는 VALIDATION.json을 확인하세요.
+
+검증 결과: 전달본 계약36 + 실제 패키지 worker 합성4 = 40검사 통과. 관련 회귀36통과, 기존 mock의 bind_recovery 누락1실패는 변경 전 R3에서도 동일. 실제 모델 호출0.

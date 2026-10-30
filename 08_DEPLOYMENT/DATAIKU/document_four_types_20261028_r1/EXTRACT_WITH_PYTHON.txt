@@ -1,0 +1,6 @@
+# unzip 없이 Python 표준 기능으로 압축을 풉니다. 추가 설치 불필요.
+# 받은 DATAIKU_FOUR_FORMAT_TEST_20261028_R1.zip이 있는 폴더에서 실행하세요.
+# 마지막 명령은 앞서 안내한 기존 ~/DEV 코드 적용·검증·commit·push입니다.
+python3 -m zipfile -e DATAIKU_FOUR_FORMAT_TEST_20261028_R1.zip document_four_types_r1 &&
+cd document_four_types_r1 &&
+bash GENOS_R5_INSTALL.txt

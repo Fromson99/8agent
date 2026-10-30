@@ -1,0 +1,365 @@
+# LEGAL_RAG Python 노트북의 한 셀에서 전체 실행합니다.
+# 실패한 02가 종료된 상태에서 실행. 자동 배치 실행/취소/ACK 없음.
+ACTION = 'apply'  # apply / inspect / rollback
+"""Update only known recipe 02 sources and preserve the real prior code."""
+import ast
+import hashlib
+import json
+from pathlib import Path
+
+
+def expected(code, baseline, named, resume):
+    call = ast.parse(code).body[-1]
+    if (not isinstance(call, ast.Expr) or not isinstance(call.value, ast.Call)
+            or not isinstance(call.value.func, ast.Name) or call.value.func.id != 'run_recipe'
+            or len(call.value.args) != 2 or call.value.keywords):
+        raise ValueError('RECIPE_ENTRY_CHANGED')
+    stage, cfg = map(ast.literal_eval, call.value.args)
+    if (stage != 'structure' or not isinstance(cfg,dict)
+            or set(cfg) != {'landing','connection','raw','structured','load'}
+            or cfg['landing'] != 'ehA8dpVm'
+            or any(not isinstance(v,str) or not v for v in cfg.values())):
+        raise ValueError('RECIPE_CONFIG_CHANGED')
+    ending = '\nrun_recipe(' + repr(stage) + ', ' + repr(cfg) + ')\n'
+    anchor = '\ndef run_recipe(stage, cfg):\n'
+    invoke = '        import recipes_runtime\n        recipes_runtime.execute(stage, cfg, work)'
+    if baseline.count(anchor) != 1 or baseline.count(invoke) != 1:
+        raise ValueError('BASELINE_ANCHOR_CHANGED')
+    r1 = baseline + ending
+    r2 = baseline.replace(anchor,'\n'+named+anchor).replace(invoke,
+        '        import recipes_runtime\n        install_input_selection(recipes_runtime)\n'
+        '        recipes_runtime.execute(stage, cfg, work)') + ending
+    r3 = baseline.replace(anchor,'\n'+named+'\n'+resume+anchor).replace(invoke,
+        '        import recipes_runtime\n        install_input_selection(recipes_runtime)\n'
+        '        install_resume(recipes_runtime)\n        recipes_runtime.execute(stage, cfg, work)') + ending
+    if code not in (r1,r2,r3):
+        raise ValueError('EXISTING_RECIPE_CODE_CHANGED')
+    compile(r3,'<resume-recipe>','exec')
+    return cfg, r3, (r1,r2)
+
+
+def update(project, baseline, named, resume, directory, action='apply'):
+    if action not in ('apply','rollback','inspect'):
+        raise ValueError('ACTION')
+    recipe = project.get_recipe('LEGAL_02_STRUCTURE_GENOS_R1')
+    settings = recipe.get_settings()
+    before = settings.get_code()
+    cfg, target, old = expected(before,baseline,named,resume)
+    inputs = {cfg[k] for k in ('landing','raw','connection')}
+    outputs = {cfg['structured']}
+    def edges(s):
+        return set(s.get_flat_input_refs()) == inputs and set(s.get_flat_output_refs()) == outputs
+    if not edges(settings):
+        raise ValueError('RECIPE_FLOW_CHANGED')
+    if action == 'inspect':
+        return cfg
+    directory = Path(directory)
+    directory.mkdir(parents=True,exist_ok=True)
+    backup = directory/'LEGAL_02_STRUCTURE_GENOS_R1.before.txt'
+    if backup.exists():
+        if backup.read_text(encoding='utf-8') not in old:
+            raise ValueError('BACKUP_CONFLICT')
+    elif before in old:
+        backup.write_text(before,encoding='utf-8')
+    if action == 'rollback':
+        if not backup.is_file():
+            raise ValueError('ORIGINAL_BACKUP_REQUIRED')
+        target = backup.read_text(encoding='utf-8')
+    current = recipe.get_settings()
+    if current.get_code() != before or not edges(current):
+        raise ValueError('RECIPE_CONCURRENT_CHANGE')
+    def event(status):
+        with (directory/'updates.jsonl').open('a',encoding='utf-8') as out:
+            out.write(json.dumps({'action':action,'status':status,
+                'before':hashlib.sha256(before.encode()).hexdigest(),
+                'after':hashlib.sha256(target.encode()).hexdigest()})+'\n')
+    if before != target:
+        event('SAVE_INTENT')
+        current.set_code(target)
+        try:
+            current.save()
+        except Exception:
+            event('SAVE_UNCONFIRMED')
+            raise
+    observed = recipe.get_settings()
+    if observed.get_code() != target or not edges(observed):
+        raise ValueError('RECIPE_READBACK')
+    event('VERIFIED')
+    print('RESUME_FIX_APPLIED' if action == 'apply' else 'RESUME_FIX_ROLLED_BACK', flush=True)
+    return cfg
+
+import socket
+import ssl
+import urllib.error
+import urllib.parse
+import urllib.request
+from types import SimpleNamespace
+def bounded_read(stream,limit):
+    chunks=[];count=0
+    while True:
+        block=stream.read(min(1024*1024,limit+1-count))
+        if not block:break
+        count+=len(block)
+        if count>limit:raise ValueError('CHECKPOINT_SIZE')
+        chunks.append(block)
+    return b''.join(chunks)
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+class CheckedClient:
+    def __init__(self, url, token):
+        self.url, self.token = url, token
+        self.deadline, self.calls = time.monotonic()+120, 0
+
+    """Existing wire contract, one HTTP attempt, secret-free diagnostic codes."""
+    def call(self, operation, **fields):
+        if operation not in {'HEALTH','STATUS'}:
+            raise ValueError('INSPECTION_ONLY')
+        if time.monotonic() >= self.deadline or self.calls >= 21:
+            raise ValueError('INSPECTION_BUDGET')
+        self.calls += 1
+        parsed = urllib.parse.urlsplit(self.url)
+        if (parsed.scheme != 'https' or not parsed.hostname or parsed.username
+                or parsed.password or parsed.fragment):
+            raise ValueError('HTTPS_ENDPOINT_REQUIRED')
+        request = urllib.request.Request(self.url, method='POST',
+            data=json.dumps({'API_TYPE': operation, **fields}).encode(),
+            headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + self.token})
+        try:
+            opener = urllib.request.build_opener(NoRedirect())
+            with opener.open(request, timeout=min(15, max(0.001, self.deadline-time.monotonic()))) as response:
+                payload = bounded_read(response, 4*1024*1024)
+        except urllib.error.HTTPError as exc:
+            status = exc.code
+            exc.close()
+            raise RuntimeError('GENOS_HTTP_' + str(status)) from None
+        except urllib.error.URLError as exc:
+            reason = exc.reason
+            if isinstance(reason, ssl.SSLCertVerificationError): code = 'GENOS_TLS_CERTIFICATE'
+            elif isinstance(reason, ssl.SSLError): code = 'GENOS_TLS'
+            elif isinstance(reason, socket.gaierror): code = 'GENOS_DNS'
+            elif isinstance(reason, (TimeoutError, socket.timeout)): code = 'GENOS_TIMEOUT'
+            else: code = 'GENOS_NETWORK'
+            raise RuntimeError(code) from None
+        except (TimeoutError, socket.timeout):
+            raise RuntimeError('GENOS_TIMEOUT') from None
+        try:
+            reply = json.loads(payload)
+        except (ValueError, UnicodeError):
+            raise RuntimeError('GENOS_NOT_JSON') from None
+        if not isinstance(reply, dict) or reply.get('code') != 0 or not isinstance(reply.get('data'), dict):
+            # Server text can contain capabilities/echoed request data. Keep a hash,
+            # never arbitrary response text in a DSS public log.
+            code = 'GENOS_REPLY_' + hashlib.sha256(payload).hexdigest()[:16]
+            if isinstance(reply, dict) and isinstance(reply.get('error'), str):
+                if reply['error'].split(':', 1)[0] in {'BUSY', 'INSTANCE_MISMATCH', 'CODE_MISMATCH', 'UNKNOWN_JOB', 'JOB_LOST', 'INSTANCE_CHANGED', 'CODE_BINDING_CHANGED', 'JOB_AUTH', 'JOB_CODE_CHANGED', 'DEADLINE_EXHAUSTED'}:
+                    code = 'GENOS_' + reply['error'].split(':', 1)[0]
+            raise RuntimeError(code)
+        return reply['data']
+
+"""Resume the existing batch and its budget before materializing any raw files."""
+import copy
+import hashlib
+import json
+import re
+import time
+
+
+class ReservedStart:
+    """Deliver the checked START reply once to the unchanged upload client."""
+    def __init__(self, remote, fields, reply):
+        self.remote, self.fields, self.reply = remote, fields, reply
+
+    def call(self, operation, **fields):
+        if operation == 'START' and self.reply is not None:
+            if fields != self.fields:
+                raise ValueError('RESUME_START_CHANGED')
+            reply, self.reply = self.reply, None
+            return reply
+        return self.remote.call(operation, **fields)
+
+
+def validate_saved(r, store, receipts):
+    state = store.value['client']
+    if (state.get('code_sha256') != r.EXPECTED
+            or state.get('deadline') != store.value['deadline']
+            or state.get('archives', {}).get('support') !=
+                {k: receipts['PIPELINE_SUPPORT.zip'][k] for k in ('sha256', 'bytes')}):
+        raise ValueError('RESUME_CLIENT_BINDING')
+    for key, expected in [('raw_blob', state['archives']['raw'])]:
+        blob = store.value.get(key, {})
+        if (any(blob.get(k) != expected[k] for k in ('sha256', 'bytes'))
+                or blob.get('path') != '_pipeline/blobs/' + expected['sha256'] + '.zip'):
+            raise ValueError('RESUME_RAW_CHECKPOINT_REQUIRED')
+    if state.get('status') == 'DOWNLOADED':
+        result, blob = state.get('result', {}), store.value.get('result_blob', {})
+        if (not result or any(blob.get(k) != result.get(k) for k in ('sha256', 'bytes'))
+                or blob.get('path') != '_pipeline/blobs/' + result['sha256'] + '.zip'):
+            raise ValueError('RESUME_RESULT_BINDING')
+    return state
+
+
+def install_resume(r):
+    if getattr(r.structure, '_resume_revision', None) == 'resume-20261027-r3':
+        return
+    original = r.structure
+
+    def structure(cfg, folders, variables, work, job_name):
+        receipts = r.input_receipts(folders['landing'])
+        oracle, binding, remote, identity = r.context(cfg, receipts, variables)
+        store = r.ManagedJob(folders['structured'], job_name, identity)
+        if store.value.get('phase') == 'STRUCTURED':
+            record = r.structured_record(store)
+            r.put_json(folders['structured'], 'jobs/'+job_name+'/structured.json', record, work)
+            return {k:v for k,v in record.items() if k != 'binding'}
+        if 'client' not in store.value:
+            # No durable client exists yet. Keep the original first-run contract.
+            print('FIRST_PREPARATION: 기존 방식으로 입력을 준비합니다.', flush=True)
+            return original(cfg, folders, variables, work, job_name)
+        state = validate_saved(r, store, receipts)
+        if time.time() >= store.value['deadline']:
+            raise ValueError('JOB_DEADLINE_EXHAUSTED')
+        job = work / 'job'
+        job.mkdir(parents=True, exist_ok=True)
+        r.t.write(job/'client.json', state)
+        wrapped, status = remote, 'DOWNLOADED'
+        if state['status'] != 'DOWNLOADED':
+            fields = {k:state[k] for k in ('job_id','job_token','instance','code_sha256')}
+            fields.update(archives=state['archives'], deadline=state['deadline'])
+            # Same job/capability, exact archives, original deadline. BUSY exits
+            # before any raw/support blob download or SQL preflight reservation.
+            reply = remote.call('START', **fields)
+            if (not isinstance(reply, dict)
+                    or any(reply.get(k) != fields[k] for k in
+                           ('job_id','instance','code_sha256','archives','deadline'))):
+                raise ValueError('RESUME_REMOTE_BINDING')
+            status = reply.get('status')
+            if status not in {'UPLOADING','RUNNING','COMPLETE'}:
+                if status not in {'FAILED','CANCELLED','INTERRUPTED','RELEASED'}:
+                    raise ValueError('RESUME_REMOTE_STATUS')
+                state.update(status=status, remote=reply)
+                store.value.update(client=state, phase=status)
+                store.save()
+                raise RuntimeError('PIPELINE_' + status + ': 기존 작업 상태 확인이 필요합니다.')
+            wrapped = ReservedStart(remote, fields, reply)
+        print('RESUME_REMOTE', status, 'JOB_NAME', job_name,
+              '개별 원문 재다운로드=0; 새 작업 ID 생성=0', flush=True)
+        from semantic_runtime import oracle_dp_io as dbio
+        bounded = r.BudgetClient(oracle, store)
+        oracle.schema_map.preflight(dbio.SQL(bounded, journal=work/'preflight.jsonl', binding=binding))
+        support_path = work/'PIPELINE_SUPPORT.zip'
+        if status == 'UPLOADING':
+            print('RESUME_ZIP_RESTORE: 저장된 입력 ZIP을 복원하고 미전송 부분부터 전송합니다.', flush=True)
+            store.get_blob(store.value['raw_blob'], job/'RAW_INPUT.zip')
+            support = receipts['PIPELINE_SUPPORT.zip']
+            r.legacy.download(folders['landing'], support['remote'], support_path,
+                              support['sha256'], support['bytes'], work)
+        elif status == 'DOWNLOADED':
+            store.get_blob(store.value['result_blob'], job/'result.zip')
+        # process reads client.json first. RUNNING/COMPLETE require no raw or
+        # support local files; DOWNLOADED needs only the verified result blob.
+        r.client.process(wrapped, work/'inputs', support_path, job,
+                         expected_code_sha256=r.EXPECTED,
+                         checkpoint=store.checkpoint_client, deadline=store.value['deadline'])
+        store.value['phase'] = 'STRUCTURED'
+        store.save()
+        record = r.structured_record(store)
+        r.put_json(folders['structured'], 'jobs/'+job_name+'/structured.json', record, work)
+        return {k:v for k,v in record.items() if k != 'binding'}
+
+    structure._resume_revision = 'resume-20261027-r3'
+    r.structure = structure
+
+
+def inspect_jobs(r, folders, variables, limit=20):
+    """Read only known Flow folders; HEALTH/STATUS, never START/CANCEL/ACK."""
+    remote = r.remote_client(variables)
+    health = remote.call('HEALTH')
+    if health.get('code_sha256') != r.EXPECTED:
+        raise ValueError('DEPLOYED_CODE_MISMATCH')
+    endpoint = hashlib.sha256(remote.url.encode()).hexdigest()
+    pattern = re.compile(r'_pipeline/jobs/([A-Za-z0-9_-]{1,80})/checkpoint-(\d{10})-([0-9a-f]{64})\.json')
+    latest = {}
+    for folder_id, folder in folders.items():
+        for index, path in enumerate(folder.list_paths_in_partition()):
+            if index >= 100000:
+                raise ValueError('INSPECTION_PATH_LIMIT')
+            m = pattern.fullmatch(path.lstrip('/'))
+            if not m:
+                continue
+            key, seq = (folder_id, m[1]), int(m[2])
+            if key not in latest or seq > latest[key][0]:
+                latest[key] = (seq, m[3], path, 1)
+            elif seq == latest[key][0]:
+                previous = latest[key]
+                latest[key] = (*previous[:3], previous[3]+1)
+    if len(latest) > limit:
+        raise ValueError('INSPECTION_JOB_LIMIT')
+    rows, responses = [], {}
+    for (folder_id, name), (_, sha, path, count) in sorted(latest.items()):
+        if count != 1:
+            raise ValueError('CONCURRENT_JOB_CHECKPOINT')
+        with folders[folder_id].get_download_stream(path) as stream:
+            raw = r.bounded_read(stream, 1024*1024)
+        if hashlib.sha256(raw).hexdigest() != sha:
+            raise ValueError('CHECKPOINT_HASH')
+        checkpoint = json.loads(raw)
+        binding, state = checkpoint.get('binding', {}), checkpoint.get('client')
+        row = {'folder_id':folder_id, 'job_name':name, 'checkpoint':path,
+               'local_phase':checkpoint.get('phase')}
+        if not state:
+            row['status'] = 'NO_CLIENT_CHECKPOINT'
+        elif (binding.get('service_url_sha256') != endpoint
+                or binding.get('service_code') != r.EXPECTED
+                or state.get('code_sha256') != r.EXPECTED):
+            row['status'] = 'BINDING_DIFFERS_NO_CALL'
+        elif state.get('instance') != health.get('instance'):
+            row['status'] = 'INSTANCE_DIFFERS_NO_CALL'
+        else:
+            row['job_id'] = state['job_id']
+            auth = {k:state[k] for k in ('job_id','job_token','instance','code_sha256')}
+            key = r.t.digest(auth)
+            if key not in responses:
+                try:
+                    reply = remote.call('STATUS', **auth)
+                    if any(reply.get(k) != auth[k] for k in ('job_id','instance','code_sha256')):
+                        raise ValueError('STATUS_BINDING')
+                    if reply.get('status') not in {'UPLOADING','RUNNING','COMPLETE','FAILED','CANCELLED','INTERRUPTED','RELEASED'}:
+                        raise ValueError('STATUS_CONTRACT')
+                    phase = reply.get('phase')
+                    responses[key] = {'status':reply['status'], 'phase':phase if phase in
+                        {'VERIFY_INPUTS','STRUCTURE','PREPARE','INDEX','QUERY','RETURN','RETURN_READY','PACKAGE'} else None}
+                except Exception as exc:
+                    # CheckedClient never prints server text or credentials.
+                    public = str(exc).split(':',1)[0]
+                    if not re.fullmatch(r'GENOS_[A-Z0-9_]+|GENOS_REPLY_[0-9a-f]{16}', public):
+                        public = 'STATUS_ERROR_' + type(exc).__name__
+                    responses[key] = {'status':'STATUS_UNCONFIRMED','error':public}
+            row.update(responses[key])
+        rows.append(row)
+        print('GENOS_JOB', json.dumps(row, ensure_ascii=False, sort_keys=True), flush=True)
+    print('JOB_INSPECTION_COMPLETE: HEALTH/STATUS만 조회했습니다. 자동 취소·ACK·삭제·배치 실행 없음.', flush=True)
+    print('STATUS_UNCONFIRMED/목록 없음은 기존 작업이 없다는 뜻이 아닙니다.', flush=True)
+    return rows
+
+import dataiku
+if dataiku.default_project_key() != 'LEGAL_RAG':
+    raise ValueError('LEGAL_RAG 프로젝트에서 실행하세요.')
+BASELINE = 'LANDING_ID = "ehA8dpVm"\nPACKAGE_NAME = \'DATAIKU_RECIPE_PACKAGE_20261027_R1.zip\'\nPACKAGE_SHA256 = \'23a316af80006c55565a223b5ff37ef08fa90ab39f215a9f5685df48bf4276c7\'\nPACKAGE_BYTES = 263760\n"""Inserted into each recipe and installer with pinned constants."""\nimport hashlib\nimport importlib.util\nimport os\nfrom pathlib import Path, PurePosixPath\nimport shutil\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\n\ndef verified_package():\n    if dataiku.default_project_key() != \'LEGAL_RAG\':\n        raise RuntimeError(\'LEGAL_RAG 프로젝트에서 실행하세요.\')\n    parent = dataiku.get_custom_variables().get(\'LEGAL_PIPELINE_SCRATCH\') or None\n    if parent:\n        parent = str(Path(parent).expanduser().resolve())\n        if not Path(parent).is_dir():\n            raise RuntimeError(\'LEGAL_PIPELINE_SCRATCH 디렉터리가 없습니다.\')\n    work = Path(tempfile.mkdtemp(prefix=\'legal-recipes-\', dir=parent))\n    os.chmod(work, 0o700)\n    if shutil.disk_usage(work).free < PACKAGE_BYTES + 512*1024*1024:\n        raise RuntimeError(\'LOCAL_SCRATCH_CAPACITY\')\n    archive = work / \'package.zip\'\n    folder = dataiku.Folder(LANDING_ID)\n    h, total = hashlib.sha256(), 0\n    with folder.get_download_stream(\'/\'+PACKAGE_NAME) as source, archive.open(\'wb\') as target:\n        for block in iter(lambda: source.read(1024*1024), b\'\'):\n            total += len(block)\n            if total > PACKAGE_BYTES:\n                raise RuntimeError(\'PACKAGE_SIZE\')\n            target.write(block)\n            h.update(block)\n    if total != PACKAGE_BYTES or h.hexdigest() != PACKAGE_SHA256:\n        raise RuntimeError(\'PACKAGE_HASH\')\n    with zipfile.ZipFile(archive) as z:\n        if len(z.namelist()) != len(set(z.namelist())):\n            raise RuntimeError(\'PACKAGE_DUPLICATE\')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if (str(p) != item.filename or p.is_absolute() or \'..\' in p.parts\n                    or \'\\\\\' in item.filename or \':\' in item.filename or item.is_dir()\n                    or stat.S_ISLNK(item.external_attr >> 16) or item.file_size > 8*1024*1024):\n                raise RuntimeError(\'PACKAGE_PATH\')\n        z.extractall(work/\'code\')\n    root = work/\'code\'\n    # A recipe runs in its own process. Install cells use no pipeline imports.\n    return work, root\n\n\ndef run_recipe(stage, cfg):\n    work, root = verified_package()\n    sys.path[:0] = [str(root), str(root/\'client\'), str(root/\'client/02_BACKEND\')]\n    try:\n        import recipes_runtime\n        recipes_runtime.execute(stage, cfg, work)\n    except BaseException:\n        print(\'실패 기록을 보존했습니다. WORK_DIR=\' + str(work), flush=True)\n        raise\n    else:\n        shutil.rmtree(work)  # Verified S3 originals/results/checkpoints remain.\n'
+NAMED_INPUT = '"""Explicit input names chosen for this field run; other S3 objects are retained."""\nSELECTED_INPUT_NAMES = (\n    \'RAW_INPUT.zip\', \'RAW_INPUT.zip.receipt.json\',\n    \'PIPELINE_SUPPORT.zip\', \'PIPELINE_SUPPORT.zip.receipt.json\',\n)\n\n\nclass SelectedInputFolder:\n    def __init__(self, folder):\n        self.folder = folder\n\n    def list_paths_in_partition(self):\n        found = {}\n        for path in self.folder.list_paths_in_partition():\n            name = path.lstrip(\'/\')\n            if name in SELECTED_INPUT_NAMES:\n                if name in found:\n                    raise ValueError(\'SELECTED_INPUT_DUPLICATE: \' + name)\n                found[name] = path\n        missing = sorted(set(SELECTED_INPUT_NAMES) - set(found))\n        if missing:\n            raise ValueError(\'SELECTED_INPUT_MISSING: \' + \', \'.join(missing))\n        return [found[name] for name in SELECTED_INPUT_NAMES]\n\n    def get_download_stream(self, path):\n        if path.lstrip(\'/\') not in SELECTED_INPUT_NAMES:\n            raise ValueError(\'UNSELECTED_INPUT_READ\')\n        return self.folder.get_download_stream(path)\n\n\ndef install_input_selection(runtime):\n    original = runtime.input_receipts\n    if getattr(original, \'_selection_revision\', None) == \'named-inputs-20261027-r2\':\n        return\n\n    def selected_receipts(folder):\n        # Keep the original receipt parser, archive name/size/hash checks and all\n        # downstream download/unpack validation. Narrow only the visible names.\n        result = original(SelectedInputFolder(folder))\n        for name in (\'RAW_INPUT.zip\', \'PIPELINE_SUPPORT.zip\'):\n            item = result[name]\n            print(\'INPUT_SELECTED\', name, \'bytes=\', item[\'bytes\'], \'sha256=\', item[\'sha256\'], flush=True)\n        return result\n\n    selected_receipts._selection_revision = \'named-inputs-20261027-r2\'\n    runtime.input_receipts = selected_receipts\n'
+RESUME_SOURCE = '"""Resume the existing batch and its budget before materializing any raw files."""\nimport copy\nimport hashlib\nimport json\nimport re\nimport time\n\n\nclass ReservedStart:\n    """Deliver the checked START reply once to the unchanged upload client."""\n    def __init__(self, remote, fields, reply):\n        self.remote, self.fields, self.reply = remote, fields, reply\n\n    def call(self, operation, **fields):\n        if operation == \'START\' and self.reply is not None:\n            if fields != self.fields:\n                raise ValueError(\'RESUME_START_CHANGED\')\n            reply, self.reply = self.reply, None\n            return reply\n        return self.remote.call(operation, **fields)\n\n\ndef validate_saved(r, store, receipts):\n    state = store.value[\'client\']\n    if (state.get(\'code_sha256\') != r.EXPECTED\n            or state.get(\'deadline\') != store.value[\'deadline\']\n            or state.get(\'archives\', {}).get(\'support\') !=\n                {k: receipts[\'PIPELINE_SUPPORT.zip\'][k] for k in (\'sha256\', \'bytes\')}):\n        raise ValueError(\'RESUME_CLIENT_BINDING\')\n    for key, expected in [(\'raw_blob\', state[\'archives\'][\'raw\'])]:\n        blob = store.value.get(key, {})\n        if (any(blob.get(k) != expected[k] for k in (\'sha256\', \'bytes\'))\n                or blob.get(\'path\') != \'_pipeline/blobs/\' + expected[\'sha256\'] + \'.zip\'):\n            raise ValueError(\'RESUME_RAW_CHECKPOINT_REQUIRED\')\n    if state.get(\'status\') == \'DOWNLOADED\':\n        result, blob = state.get(\'result\', {}), store.value.get(\'result_blob\', {})\n        if (not result or any(blob.get(k) != result.get(k) for k in (\'sha256\', \'bytes\'))\n                or blob.get(\'path\') != \'_pipeline/blobs/\' + result[\'sha256\'] + \'.zip\'):\n            raise ValueError(\'RESUME_RESULT_BINDING\')\n    return state\n\n\ndef install_resume(r):\n    if getattr(r.structure, \'_resume_revision\', None) == \'resume-20261027-r3\':\n        return\n    original = r.structure\n\n    def structure(cfg, folders, variables, work, job_name):\n        receipts = r.input_receipts(folders[\'landing\'])\n        oracle, binding, remote, identity = r.context(cfg, receipts, variables)\n        store = r.ManagedJob(folders[\'structured\'], job_name, identity)\n        if store.value.get(\'phase\') == \'STRUCTURED\':\n            record = r.structured_record(store)\n            r.put_json(folders[\'structured\'], \'jobs/\'+job_name+\'/structured.json\', record, work)\n            return {k:v for k,v in record.items() if k != \'binding\'}\n        if \'client\' not in store.value:\n            # No durable client exists yet. Keep the original first-run contract.\n            print(\'FIRST_PREPARATION: 기존 방식으로 입력을 준비합니다.\', flush=True)\n            return original(cfg, folders, variables, work, job_name)\n        state = validate_saved(r, store, receipts)\n        if time.time() >= store.value[\'deadline\']:\n            raise ValueError(\'JOB_DEADLINE_EXHAUSTED\')\n        job = work / \'job\'\n        job.mkdir(parents=True, exist_ok=True)\n        r.t.write(job/\'client.json\', state)\n        wrapped, status = remote, \'DOWNLOADED\'\n        if state[\'status\'] != \'DOWNLOADED\':\n            fields = {k:state[k] for k in (\'job_id\',\'job_token\',\'instance\',\'code_sha256\')}\n            fields.update(archives=state[\'archives\'], deadline=state[\'deadline\'])\n            # Same job/capability, exact archives, original deadline. BUSY exits\n            # before any raw/support blob download or SQL preflight reservation.\n            reply = remote.call(\'START\', **fields)\n            if (not isinstance(reply, dict)\n                    or any(reply.get(k) != fields[k] for k in\n                           (\'job_id\',\'instance\',\'code_sha256\',\'archives\',\'deadline\'))):\n                raise ValueError(\'RESUME_REMOTE_BINDING\')\n            status = reply.get(\'status\')\n            if status not in {\'UPLOADING\',\'RUNNING\',\'COMPLETE\'}:\n                if status not in {\'FAILED\',\'CANCELLED\',\'INTERRUPTED\',\'RELEASED\'}:\n                    raise ValueError(\'RESUME_REMOTE_STATUS\')\n                state.update(status=status, remote=reply)\n                store.value.update(client=state, phase=status)\n                store.save()\n                raise RuntimeError(\'PIPELINE_\' + status + \': 기존 작업 상태 확인이 필요합니다.\')\n            wrapped = ReservedStart(remote, fields, reply)\n        print(\'RESUME_REMOTE\', status, \'JOB_NAME\', job_name,\n              \'개별 원문 재다운로드=0; 새 작업 ID 생성=0\', flush=True)\n        from semantic_runtime import oracle_dp_io as dbio\n        bounded = r.BudgetClient(oracle, store)\n        oracle.schema_map.preflight(dbio.SQL(bounded, journal=work/\'preflight.jsonl\', binding=binding))\n        support_path = work/\'PIPELINE_SUPPORT.zip\'\n        if status == \'UPLOADING\':\n            print(\'RESUME_ZIP_RESTORE: 저장된 입력 ZIP을 복원하고 미전송 부분부터 전송합니다.\', flush=True)\n            store.get_blob(store.value[\'raw_blob\'], job/\'RAW_INPUT.zip\')\n            support = receipts[\'PIPELINE_SUPPORT.zip\']\n            r.legacy.download(folders[\'landing\'], support[\'remote\'], support_path,\n                              support[\'sha256\'], support[\'bytes\'], work)\n        elif status == \'DOWNLOADED\':\n            store.get_blob(store.value[\'result_blob\'], job/\'result.zip\')\n        # process reads client.json first. RUNNING/COMPLETE require no raw or\n        # support local files; DOWNLOADED needs only the verified result blob.\n        r.client.process(wrapped, work/\'inputs\', support_path, job,\n                         expected_code_sha256=r.EXPECTED,\n                         checkpoint=store.checkpoint_client, deadline=store.value[\'deadline\'])\n        store.value[\'phase\'] = \'STRUCTURED\'\n        store.save()\n        record = r.structured_record(store)\n        r.put_json(folders[\'structured\'], \'jobs/\'+job_name+\'/structured.json\', record, work)\n        return {k:v for k,v in record.items() if k != \'binding\'}\n\n    structure._resume_revision = \'resume-20261027-r3\'\n    r.structure = structure\n\n\ndef inspect_jobs(r, folders, variables, limit=20):\n    """Read only known Flow folders; HEALTH/STATUS, never START/CANCEL/ACK."""\n    remote = r.remote_client(variables)\n    health = remote.call(\'HEALTH\')\n    if health.get(\'code_sha256\') != r.EXPECTED:\n        raise ValueError(\'DEPLOYED_CODE_MISMATCH\')\n    endpoint = hashlib.sha256(remote.url.encode()).hexdigest()\n    pattern = re.compile(r\'_pipeline/jobs/([A-Za-z0-9_-]{1,80})/checkpoint-(\\d{10})-([0-9a-f]{64})\\.json\')\n    latest = {}\n    for folder_id, folder in folders.items():\n        for index, path in enumerate(folder.list_paths_in_partition()):\n            if index >= 100000:\n                raise ValueError(\'INSPECTION_PATH_LIMIT\')\n            m = pattern.fullmatch(path.lstrip(\'/\'))\n            if not m:\n                continue\n            key, seq = (folder_id, m[1]), int(m[2])\n            if key not in latest or seq > latest[key][0]:\n                latest[key] = (seq, m[3], path, 1)\n            elif seq == latest[key][0]:\n                previous = latest[key]\n                latest[key] = (*previous[:3], previous[3]+1)\n    if len(latest) > limit:\n        raise ValueError(\'INSPECTION_JOB_LIMIT\')\n    rows, responses = [], {}\n    for (folder_id, name), (_, sha, path, count) in sorted(latest.items()):\n        if count != 1:\n            raise ValueError(\'CONCURRENT_JOB_CHECKPOINT\')\n        with folders[folder_id].get_download_stream(path) as stream:\n            raw = r.bounded_read(stream, 1024*1024)\n        if hashlib.sha256(raw).hexdigest() != sha:\n            raise ValueError(\'CHECKPOINT_HASH\')\n        checkpoint = json.loads(raw)\n        binding, state = checkpoint.get(\'binding\', {}), checkpoint.get(\'client\')\n        row = {\'folder_id\':folder_id, \'job_name\':name, \'checkpoint\':path,\n               \'local_phase\':checkpoint.get(\'phase\')}\n        if not state:\n            row[\'status\'] = \'NO_CLIENT_CHECKPOINT\'\n        elif (binding.get(\'service_url_sha256\') != endpoint\n                or binding.get(\'service_code\') != r.EXPECTED\n                or state.get(\'code_sha256\') != r.EXPECTED):\n            row[\'status\'] = \'BINDING_DIFFERS_NO_CALL\'\n        elif state.get(\'instance\') != health.get(\'instance\'):\n            row[\'status\'] = \'INSTANCE_DIFFERS_NO_CALL\'\n        else:\n            row[\'job_id\'] = state[\'job_id\']\n            auth = {k:state[k] for k in (\'job_id\',\'job_token\',\'instance\',\'code_sha256\')}\n            key = r.t.digest(auth)\n            if key not in responses:\n                try:\n                    reply = remote.call(\'STATUS\', **auth)\n                    if any(reply.get(k) != auth[k] for k in (\'job_id\',\'instance\',\'code_sha256\')):\n                        raise ValueError(\'STATUS_BINDING\')\n                    if reply.get(\'status\') not in {\'UPLOADING\',\'RUNNING\',\'COMPLETE\',\'FAILED\',\'CANCELLED\',\'INTERRUPTED\',\'RELEASED\'}:\n                        raise ValueError(\'STATUS_CONTRACT\')\n                    phase = reply.get(\'phase\')\n                    responses[key] = {\'status\':reply[\'status\'], \'phase\':phase if phase in\n                        {\'VERIFY_INPUTS\',\'STRUCTURE\',\'PREPARE\',\'INDEX\',\'QUERY\',\'RETURN\',\'RETURN_READY\',\'PACKAGE\'} else None}\n                except Exception as exc:\n                    # CheckedClient never prints server text or credentials.\n                    public = str(exc).split(\':\',1)[0]\n                    if not re.fullmatch(r\'GENOS_[A-Z0-9_]+|GENOS_REPLY_[0-9a-f]{16}\', public):\n                        public = \'STATUS_ERROR_\' + type(exc).__name__\n                    responses[key] = {\'status\':\'STATUS_UNCONFIRMED\',\'error\':public}\n            row.update(responses[key])\n        rows.append(row)\n        print(\'GENOS_JOB\', json.dumps(row, ensure_ascii=False, sort_keys=True), flush=True)\n    print(\'JOB_INSPECTION_COMPLETE: HEALTH/STATUS만 조회했습니다. 자동 취소·ACK·삭제·배치 실행 없음.\', flush=True)\n    print(\'STATUS_UNCONFIRMED/목록 없음은 기존 작업이 없다는 뜻이 아닙니다.\', flush=True)\n    return rows\n'
+CFG = update(dataiku.api_client().get_project('LEGAL_RAG'), BASELINE, NAMED_INPUT,
+             RESUME_SOURCE, 'legal_recipe_resume_20261027_r3_backup', ACTION)
+VARIABLES = dataiku.get_custom_variables()
+def diagnostic_remote(variables):
+    for name in ('LEGAL_PIPELINE_URL','LEGAL_PIPELINE_TOKEN'):
+        if not isinstance(variables.get(name),str) or not variables[name].strip():
+            raise ValueError('PROJECT_VARIABLE_REQUIRED: '+name)
+    return CheckedClient(variables['LEGAL_PIPELINE_URL'],variables['LEGAL_PIPELINE_TOKEN'])
+DIAG = SimpleNamespace(EXPECTED='771afb12a8fcf8c71417151cc80c8f4a9141e23d621ae27ec58cba67a7a22c46',
+    remote_client=diagnostic_remote, bounded_read=bounded_read,
+    t=SimpleNamespace(digest=lambda value: hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()))
+FOLDERS = {CFG[role]:dataiku.Folder(CFG[role]) for role in ('landing','structured','load')}
+JOB_STATUS = inspect_jobs(DIAG, FOLDERS, VARIABLES)

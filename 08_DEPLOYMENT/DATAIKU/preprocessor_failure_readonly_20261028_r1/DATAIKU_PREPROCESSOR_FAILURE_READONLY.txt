@@ -1,0 +1,237 @@
+# LEGAL_RAG Python 노트북의 새 셀에 이 파일 전체를 붙여넣어 실행합니다.
+# Dataiku에 이미 저장된 실패 진단 ZIP만 조회합니다. GENOS 호출/재실행/설정 변경 없음.
+# 임시 ZIP은 로컬 디스크에 내려받아 해시 확인 후 읽고 삭제합니다. S3/Oracle 쓰기 없음.
+FOLDER_NAME = 'LEGAL_STRUCTURED_RESULT_R1'
+EXPECTED_HANDLE = ''  # 선택사항: 특정 실행만 확인하려면 logs 상위의 32자리 핸들 입력
+MAX_AUDIT_MB = 512
+
+import hashlib
+import json
+import re
+import shutil
+import tempfile
+import zipfile
+from pathlib import Path, PurePosixPath
+
+NS = '_pipeline/dataiku-owned-v1/'
+MIB = 1024 * 1024
+
+
+class InspectionError(Exception):
+    pass
+
+
+def bounded_read(stream, limit):
+    value = bytearray()
+    while len(value) <= limit:
+        block = stream.read(min(MIB, limit + 1 - len(value)))
+        if not block:
+            return bytes(value)
+        value.extend(block)
+    raise InspectionError('READ_SIZE_LIMIT')
+
+
+def latest_checkpoint(folder, job):
+    prefix = NS + '_pipeline/jobs/' + job + '/checkpoint-'
+    rows = []
+    for path in folder.list_paths_in_partition():
+        name = path.lstrip('/')
+        if not name.startswith(prefix):
+            continue
+        match = re.fullmatch(re.escape(prefix) + r'(\d{10})-([0-9a-f]{64})\.json', name)
+        if not match:
+            raise InspectionError('CHECKPOINT_NAME_INVALID')
+        rows.append((int(match[1]), match[2], name))
+    if not rows:
+        raise InspectionError('CHECKPOINT_NOT_FOUND')
+    seq, digest, name = max(rows)
+    if sum(n == seq for n, _, _ in rows) != 1:
+        raise InspectionError('CHECKPOINT_SEQUENCE_CONFLICT')
+    with folder.get_download_stream(name) as stream:
+        raw = bounded_read(stream, MIB)
+    if hashlib.sha256(raw).hexdigest() != digest:
+        raise InspectionError('CHECKPOINT_HASH_MISMATCH')
+    return seq, json.loads(raw)
+
+
+def redactor(variables, state):
+    secrets = [v for k, v in variables.items()
+               if re.search(r'TOKEN|PASSWORD|PASSWD|SECRET|COOKIE|API_KEY|LLM_KEY', k, re.I)
+               and isinstance(v, str) and v]
+    token = (state.get('compute') or {}).get('handle_token')
+    if isinstance(token, str) and token:
+        secrets.append(token)
+    def clean(value, limit=900):
+        text = str(value)
+        for secret in sorted(set(secrets), key=len, reverse=True):
+            text = text.replace(secret, '[REDACTED]')
+        text = re.sub(r'(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+', 'Bearer [REDACTED]', text)
+        text = re.sub(r'(?i)((?:token|password|api_key|secret)\s*[=:]\s*)[^\s,;]+',
+                      r'\1[REDACTED]', text)
+        text = re.sub(r'[\x00-\x1f\x7f]', ' ', text)
+        return text[:limit] + (' [省略]' if len(text) > limit else '')
+    return clean
+
+
+def inspect_archive(path, clean):
+    with zipfile.ZipFile(path) as archive:
+        names = archive.namelist()
+        if len(names) != len(set(names)):
+            raise InspectionError('AUDIT_DUPLICATE_MEMBER')
+        selected = [n for n in names if n.startswith('audit/structure/') and
+                    (n.endswith('/structure-errors.json') or
+                     re.search(r'/preprocessor/[0-9a-f]{32}/(?:response|receipt)\.json$', n))]
+        infos = {n: archive.getinfo(n) for n in selected}
+        if (len(selected) > 10000 or sum(i.file_size for i in infos.values()) > 32*MIB
+                or any(i.file_size > 2*MIB for i in infos.values())):
+            raise InspectionError('DIAGNOSTIC_MEMBER_SIZE_LIMIT')
+        def read_json(name):
+            p = PurePosixPath(name)
+            if p.is_absolute() or '..' in p.parts or '\\' in name:
+                raise InspectionError('AUDIT_MEMBER_PATH')
+            with archive.open(name) as stream:
+                return json.loads(bounded_read(stream, 2*MIB))
+        documents = {}
+        error_count = 0
+        for name in sorted(n for n in selected if n.endswith('/structure-errors.json')):
+            rows = read_json(name)
+            if not isinstance(rows, list):
+                raise InspectionError('STRUCTURE_ERRORS_FORMAT')
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise InspectionError('STRUCTURE_ERROR_ROW_FORMAT')
+                error_count += 1
+                label = str(row.get('path', row.get('document_id', '?'))).replace('\\', '/').rsplit('/', 1)[-1]
+                documents[name.split('/')[2]] = label
+                if error_count <= 100:
+                    print('문서 오류', error_count, clean(label), '|', clean(row.get('error', '')))
+        failed, successful, receipts_only = 0, 0, 0
+        for name in sorted(n for n in selected if n.endswith('/response.json')):
+            response = read_json(name)
+            ok = (isinstance(response, dict) and response.get('code') in (0, '0')
+                  and not isinstance(response.get('code'), bool))
+            if ok:
+                successful += 1
+                continue
+            failed += 1
+            receipt_name = name.rsplit('/', 1)[0] + '/receipt.json'
+            receipt = read_json(receipt_name) if receipt_name in infos else {}
+            if not isinstance(receipt, dict):
+                raise InspectionError('PARSER_RECEIPT_FORMAT')
+            if receipt.get('response_sha256'):
+                with archive.open(name) as stream:
+                    raw = bounded_read(stream, 2*MIB)
+                if hashlib.sha256(raw).hexdigest() != receipt['response_sha256']:
+                    raise InspectionError('PARSER_RESPONSE_HASH_MISMATCH')
+            if failed > 100:
+                continue
+            print('\n전처리기 실패', failed, clean(documents.get(name.split('/')[2], name.split('/')[2])))
+            print('  원본 위치:', clean(name))
+            parser = receipt.get('parser') or {}
+            request = receipt.get('request') or {}
+            if isinstance(parser, dict):
+                print('  shared_root:', clean(parser.get('shared_root', '(없음)')),
+                      '/ remote_root:', clean(parser.get('remote_root', '(없음)')))
+            if isinstance(request, dict):
+                print('  전달 파일 경로:', clean(request.get('file_path', '(없음)')))
+            print('  수신 응답 타입:', type(response).__name__)
+            if isinstance(response, dict):
+                print('  code:', clean(response.get('code', '(필드 없음)')))
+                shown = False
+                for key in ('message', 'msg', 'error', 'detail', 'reason', 'status', 'success'):
+                    if key in response:
+                        print(' ', key + ':', clean(response[key])); shown = True
+                data = response.get('data')
+                if isinstance(data, dict):
+                    for key in ('message', 'msg', 'error', 'detail', 'reason'):
+                        if key in data:
+                            print('  data.' + key + ':', clean(data[key])); shown = True
+                if not shown:
+                    print('  오류 설명 필드 없음. 성공 데이터/원문 내용은 출력하지 않았습니다.')
+        for name in sorted(n for n in selected if n.endswith('/receipt.json')):
+            if name.rsplit('/', 1)[0] + '/response.json' in infos:
+                continue
+            receipt = read_json(name)
+            receipts_only += 1
+            if receipts_only <= 100:
+                print('응답 없는 요청:', clean(name), '상태:', clean(receipt.get('status', '?')))
+        summary = {'structure_error_rows': error_count, 'failed_responses': failed,
+                   'success_code_responses': successful, 'receipts_without_response': receipts_only}
+        print('\n진단 집계:', json.dumps(summary, ensure_ascii=False))
+        print('표시 최대 각100건. 응답의 성공 코드만으로 문서 구조화 성공을 뜻하지 않습니다.')
+        return summary
+
+
+def inspect_saved_failure(dataiku):
+    if dataiku.default_project_key() != 'LEGAL_RAG':
+        raise InspectionError('LEGAL_RAG_PROJECT_REQUIRED')
+    variables = dataiku.get_custom_variables()
+    job = variables.get('LEGAL_RECIPE_JOB_NAME', 'recipes_20261027_r1')
+    if not isinstance(job, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', job):
+        raise InspectionError('JOB_NAME_INVALID')
+    known = dataiku.api_client().get_project('LEGAL_RAG').list_managed_folders()
+    ids = [f['id'] for f in known if f.get('name') == FOLDER_NAME]
+    if len(ids) != 1:
+        raise InspectionError('STRUCTURED_FOLDER_MISSING_OR_AMBIGUOUS')
+    folder = dataiku.Folder(ids[0], project_key='LEGAL_RAG')
+    seq, state = latest_checkpoint(folder, job)
+    handle = (state.get('compute') or {}).get('handle', '')
+    if not re.fullmatch(r'[0-9a-f]{32}', handle):
+        raise InspectionError('COMPUTE_HANDLE_INVALID')
+    if EXPECTED_HANDLE and handle != EXPECTED_HANDLE:
+        raise InspectionError('EXPECTED_HANDLE_MISMATCH')
+    print('保存 작업:', job, '/ 핸들:', handle, '/ 체크포인트:', seq, '/ 상태:', state.get('phase'))
+    if state.get('phase') not in {'FAILED', 'CANCELLED'}:
+        raise InspectionError('NOT_A_CONFIRMED_FAILED_OR_CANCELLED_ATTEMPT')
+    blob = state.get('audit_blob')
+    if not isinstance(blob, dict):
+        raise InspectionError('AUDIT_NOT_SAVED: 현재 체크포인트에 진단 ZIP이 없습니다. 자동 재실행하지 않습니다.')
+    digest, size = blob.get('sha256'), blob.get('bytes')
+    if (not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest)
+            or type(size) is not int or not 0 < size <= MAX_AUDIT_MB*MIB
+            or blob.get('path') != '_pipeline/blobs/' + digest + '.zip'):
+        raise InspectionError('AUDIT_BLOB_REFERENCE_OR_SIZE_INVALID')
+    audit = (state.get('last_observed') or {}).get('audit')
+    observed_handle = (state.get('last_observed') or {}).get('handle')
+    if (not isinstance(audit, dict) or audit.get('sha256') != digest or audit.get('bytes') != size
+            or observed_handle != handle):
+        raise InspectionError('AUDIT_ATTEMPT_BINDING_MISMATCH')
+    clean = redactor(variables, state)
+    parent = variables.get('LEGAL_PIPELINE_SCRATCH') or None
+    if parent and not Path(parent).is_dir():
+        raise InspectionError('LOCAL_SCRATCH_NOT_FOUND')
+    with tempfile.TemporaryDirectory(prefix='legal-audit-read-', dir=parent) as work:
+        if shutil.disk_usage(work).free < size + 128*MIB:
+            raise InspectionError('LOCAL_SCRATCH_CAPACITY')
+        path = Path(work) / 'audit.zip'
+        h, total = hashlib.sha256(), 0
+        print('저장된 진단 ZIP 조회:', size, 'bytes', flush=True)
+        with folder.get_download_stream(NS + blob['path']) as source, path.open('wb') as target:
+            while True:
+                block = source.read(MIB)
+                if not block:
+                    break
+                total += len(block)
+                if total > size:
+                    raise InspectionError('AUDIT_SIZE_MISMATCH')
+                h.update(block); target.write(block)
+        if total != size or h.hexdigest() != digest:
+            raise InspectionError('AUDIT_HASH_MISMATCH')
+        return inspect_archive(path, clean)
+
+
+def main():
+    import dataiku
+    try:
+        result = inspect_saved_failure(dataiku)
+        print('조회 완료: GENOS 호출0 / S3·Oracle 쓰기0 / 재시도0. 현장 원인 수정은 수행하지 않았습니다.')
+        return result
+    except InspectionError as exc:
+        print('진단 조회 중단:', str(exc))
+    except Exception as exc:
+        # SDK 예외의 URL/인증 정보나 원문 응답 전체를 노출하지 않습니다.
+        print('진단 조회 중단: SDK_OR_RECORD_ERROR /', type(exc).__name__)
+
+
+if __name__ == '__main__':
+    PREPROCESSOR_FAILURE_SUMMARY = main()

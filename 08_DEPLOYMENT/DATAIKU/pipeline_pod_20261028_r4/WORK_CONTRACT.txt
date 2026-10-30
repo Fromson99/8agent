@@ -1,0 +1,9 @@
+2026-10-28 Pod conversion/parser R4 implementation contract
+Input: Dataiku existing byte-upload raw/support archives. Same ephemeral compute worker owns conversion/parser calls; Dataiku owns persistent state/S3/SQL.
+Consumer: existing native structure/prepare/index/export and Dataiku existing result/audit collection. No new HTTP server or durable GENOS registry.
+Failure owner: local preflight checks dependencies/config; raw conversion validates actual PDF; parser validates Docling/source/pages; service owns cancellation/deadline/process-group and final audit; Dataiku owns retry. No new retries or budget reset. R3 RUN migration requires hash-verified zero review-call audit; nonzero/unknown review usage is blocked; existing R1/R2 no-model migration remains bounded.
+Immutable: original input bytes, original deadline, HTTP/SQL/model budgets, old packages/checkpoints, RAG MAIN, model/review policy. Native DOCX/HWPX route retained; generated sidecar does not replace authoritative original.
+Conversion scope: missing DOC/DOCX/HWP/HWPX/PPT/PPTX PDF; XLS/XLSX excluded as user previously instructed. Existing PDFs verified and reused. Other structured formats keep native route.
+Success: actual valid nonencrypted nonempty PDF and verified structure; partial outputs are audit only. Conversion None/invalid PDF, missing runtime, source mutation, wrong source/page set are failures. No empty-success fallback.
+Runtime: bundled official GENOS source aa610c3db24aaa02c65e953279f1a60d014babaf; matching fork wheel included as optional offline installation artifact. Site image must contain compatible dependencies/converter/layout/OCR/table resources. No automatic internet/model downloads.
+Verification: deterministic fixture adapter/unit/service/install tests; actual final worker stages with mock GENOS engine/review; existing transport regressions. No real model comparison/quality certification. Actual onsite image/revision/documents remain unverified.

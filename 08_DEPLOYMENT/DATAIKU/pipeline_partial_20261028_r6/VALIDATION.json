@@ -1,0 +1,49 @@
+{
+  "status": "LOCAL_SYNTHETIC_AND_MOCK_PASS",
+  "tests": 99,
+  "suites": {
+    "TEST.xml": 90,
+    "NATIVE_TEST.xml": 5,
+    "POD_TEST.xml": 4
+  },
+  "failures": 0,
+  "errors": 0,
+  "actual_model_calls": 0,
+  "code_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+  "archive_hashes": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R6.zip": {
+      "sha256": "fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d",
+      "bytes": 6622536
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R6.zip": {
+      "sha256": "e53cbc52092a7f8cf2626e3bee900005d5603a80c8b9ccbd8c0f3a836455e41d",
+      "bytes": 293170
+    }
+  },
+  "covered": [
+    "finished partial structure to verified successful subset; parent unchanged; repeat without reparse",
+    "actual HTTP PDF success plus failure reaches prepare/index/query export/result ZIP",
+    "whole success and all-failed/HTTP error cases",
+    "explicit same-Pod conversion/parsing path with mocked facade/converter",
+    "input/run-level/integrity/unfinished/cancel exit failures remain blocking",
+    "Dataiku return hash/coverage publication and exact generation IDs before SQL consumer",
+    "partial status, counts and exclusions in managed storage and SQL completion summary",
+    "R3/R4/R5 zero-review proof, original deadline, call and attempt limits",
+    "R1/R3/R4/R5 apply/repeat/commit/verify/rollback in actual isolated Git checkouts",
+    "Dataiku SDK install/repeat/rollback and unknown-recipe no mutation",
+    "R5 four-format probe, purpose/auth/config/cancel regression"
+  ],
+  "mock_boundaries": [
+    "HTTP GENOS parser and model on local fixture server",
+    "same-Pod parser facade and OS converter",
+    "Dataiku SDK and managed storage",
+    "SQL loader consumer spy; no onsite Oracle execution"
+  ],
+  "initial_test_failure": "TEST_INITIAL.xml/log: 41 pass, 2 test-fixture errors (missing SQL_PATH attribute; unfinished migration test); fixed fixture only, product code unchanged.",
+  "field_documents": "NOT_TESTED",
+  "field_model_connectivity": "NOT_TESTED",
+  "field_revision": "NOT_DEPLOYED",
+  "historical_1631_recovery": "NOT_ESTABLISHED",
+  "local_main_changed": false,
+  "root_git_commit_push": false
+}

@@ -1,0 +1,54 @@
+GENOS PDF 전처리기 연결 복원 — 2026-10-27 R2
+
+수정 내용
+기존 계산 R1의 worker --pdf-parser local 강제를 제거했습니다.
+GENOS 코드서빙 환경변수로 전처리기를 선택하고 주소/ID/공유경로를 읽습니다.
+설정 누락, 잘못된 파서 선택, 공유경로 불가, Docling 응답 모드 불일치를
+Dataiku 00 및 GENOS OPEN에서 확인합니다. 요청 중 설정 변경도 차단합니다.
+실제 HTTP 연결과 원격 공유 마운트는 00의 정적 설정 검사만으로 인증하지 않습니다.
+
+적용 순서
+1. 현재 Dataiku 02가 중지됐는지 확인합니다. 실패 이력/원문/체크포인트를 삭제하지 않습니다.
+2. DATAIKU_GENOS_PREPROCESSOR_20261027_R2.zip을 압축 해제합니다.
+3. GENOS legal_pipeline_serving의 기존 ~/DEV에 적용합니다. RAG 채팅 앱 checkout이 아닙니다.
+   전달 ZIP을 푼 폴더에서 GENOS_PREPROCESSOR_INSTALL_20261027_R2.txt 전체를 터미널에
+   붙여넣거나 bash GENOS_PREPROCESSOR_INSTALL_20261027_R2.txt로 실행합니다.
+   기존 R1 코드 해시를 검증하고 백업→적용→stage/commit→동일 checkout 검사→push합니다.
+   GENOS 화면에서 그 commit으로 새 리비전을 배포합니다. worker 1 / replica 1을 유지합니다.
+4. GENOS_ENVIRONMENT.txt에 따라 실제 코드서빙 환경변수를 입력합니다.
+   개발용 터미널과 실행 컨테이너의 경로/환경은 다를 수 있습니다.
+5. DATAIKU_COMPUTE_RECIPES_20261027_R2.zip을 기존 ehA8dpVm 관리 폴더에 올립니다.
+   이전 R1 ZIP과 원문 ZIP은 보존합니다.
+6. LEGAL_RAG Python 노트북 새 셀에 DATAIKU_PREPROCESSOR_INSTALL_20261027_R2.txt
+   전체를 붙여넣어 실행합니다. 00/02/03만 갱신하며 01과 SQL/Flow 연결은 유지합니다.
+7. 00 실행: CONNECTED_COMPUTE_CODE_MATCH 및 preprocessor.ready=true 확인.
+   PREPROCESSOR_NOT_READY이면 표시된 설정 문제를 해결합니다. 원문 전송은 시작하지 않습니다.
+8. 같은 LEGAL_RECIPE_JOB_NAME으로 02 실행. 사진의 기존 R1 FAILED/CANCELLED만
+   새 시도로 이행하며 이전 checkpoint hash/handle을 연결하고 총 시도 상한3·원래 기한·
+   사용한 HTTP/SQL 예산을 유지합니다. 이 과정은 자동으로 실행되지 않고 02 실행 때만 일어납니다.
+   새 이름을 지어 예산을 초기화하거나 기존 UNKNOWN/실행 중/결과 보유 상태를 실패로 바꾸지 않습니다.
+9. 02 STRUCTURED 뒤 03 실행. 03 COMPLETE가 실버 적재 완료입니다.
+
+상태 조회/취소/추가 재시도
+DATAIKU_PREPROCESSOR_CONTROL_20261027_R2.txt 기본 ACTION은 status입니다.
+확인된 FAILED/CANCELLED를 다시 시도할 때만 ACTION=retry 후 02 실행합니다.
+취소는 ACTION=cancel과 실제 하위 프로세스 종료 확인을 사용합니다.
+이번 작업의 이전 1,631문서 통과는 완성 결과 ZIP을 저장했다는 뜻이 아닙니다.
+R1은 실패 후 GENOS 임시 공간을 닫으므로 이번 재시도는 입력 묶음부터 다시 처리합니다.
+문서별 재개가 가능하다고 안내하지 않습니다. Dataiku가 받은 로그/원문/실패 이력은 남습니다.
+
+복원
+02를 중지한 뒤 ROLLBACK_GENOS.txt로 코드 복원, 검토/commit/push 및 이전 리비전 선택.
+Dataiku 설치 TXT의 ACTION=rollback은 이전 R1 레시피를 복원합니다.
+진행한 R2 시도의 상태/예산은 되돌리지 않습니다. 구 코드로 새 상태를 억지로 재개하지 않습니다.
+
+범위
+GENOS는 계산과 임시 전송 핸들만 담당하고 Dataiku가 작업/로그/결과/S3/Oracle을 관리합니다.
+실버 SIDDS.*_S, 기존 원문 선택, 용어집과 서빙 파일 1,136개는 R1과 동일합니다.
+공유 폴더에는 전처리기가 읽는 요청별 PDF 사본이 생깁니다. 기존 전처리기 계약의 입력 전달용이며
+GENOS 영속 작업 DB나 원문 전체 복원 저장소가 아닙니다. 시간 초과 요청은 서버 처리 여부가
+불명확할 수 있어 자동 재호출/요청 폴더 삭제를 하지 않습니다.
+취소 확인은 이 코드서빙의 worker 프로세스 종료입니다. 이미 접수한 별도 전처리기의
+원격 계산 종료까지 확인하는 API는 기존 계약에 없으므로 함께 취소됐다고 표시하지 않습니다.
+청크 전용 전처리기의 VLM 검토를 생략하는 변경은 포함하지 않습니다.
+로컬 검증 범위와 현장 미확인은 VALIDATION.json을 따릅니다.

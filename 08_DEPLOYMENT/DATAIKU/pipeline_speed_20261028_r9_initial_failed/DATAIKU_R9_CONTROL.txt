@@ -1,0 +1,79 @@
+# LEGAL_RAG Python 노트북. 기본값은 조회입니다.
+ACTION = "status" # status / cancel / retry
+LANDING_ID = 'ehA8dpVm'
+PACKAGE_NAME = 'DATAIKU_COMPUTE_RECIPES_20261028_R9.zip'
+PACKAGE_SHA256 = '86fc6d9d450c87ae64107bd73ab511883723b74fad57132fdea57a0076503305'
+PACKAGE_BYTES = 293886
+"""Inserted into each recipe and installer with pinned constants."""
+import hashlib
+import importlib.util
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import sys
+import tempfile
+import zipfile
+import dataiku
+
+
+def verified_package():
+    if dataiku.default_project_key() != 'LEGAL_RAG':
+        raise RuntimeError('LEGAL_RAG 프로젝트에서 실행하세요.')
+    parent = dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH') or None
+    if parent:
+        parent = str(Path(parent).expanduser().resolve())
+        if not Path(parent).is_dir():
+            raise RuntimeError('LEGAL_PIPELINE_SCRATCH 디렉터리가 없습니다.')
+    work = Path(tempfile.mkdtemp(prefix='legal-recipes-', dir=parent))
+    os.chmod(work, 0o700)
+    if shutil.disk_usage(work).free < PACKAGE_BYTES + 512*1024*1024:
+        raise RuntimeError('LOCAL_SCRATCH_CAPACITY')
+    archive = work / 'package.zip'
+    folder = dataiku.Folder(LANDING_ID)
+    h, total = hashlib.sha256(), 0
+    with folder.get_download_stream('/'+PACKAGE_NAME) as source, archive.open('wb') as target:
+        for block in iter(lambda: source.read(1024*1024), b''):
+            total += len(block)
+            if total > PACKAGE_BYTES:
+                raise RuntimeError('PACKAGE_SIZE')
+            target.write(block)
+            h.update(block)
+    if total != PACKAGE_BYTES or h.hexdigest() != PACKAGE_SHA256:
+        raise RuntimeError('PACKAGE_HASH')
+    with zipfile.ZipFile(archive) as z:
+        if len(z.namelist()) != len(set(z.namelist())):
+            raise RuntimeError('PACKAGE_DUPLICATE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if (str(p) != item.filename or p.is_absolute() or '..' in p.parts
+                    or '\\' in item.filename or ':' in item.filename or item.is_dir()
+                    or stat.S_ISLNK(item.external_attr >> 16) or item.file_size > 8*1024*1024):
+                raise RuntimeError('PACKAGE_PATH')
+        z.extractall(work/'code')
+    root = work/'code'
+    # A recipe runs in its own process. Install cells use no pipeline imports.
+    return work, root
+
+
+def run_recipe(stage, cfg):
+    work, root = verified_package()
+    sys.path[:0] = [str(root), str(root/'client'), str(root/'client/02_BACKEND')]
+    try:
+        import recipes_runtime
+        from named_inputs import install_input_selection
+        install_input_selection(recipes_runtime)
+        import controller
+        controller.execute(stage, cfg, work)
+    except BaseException:
+        print('실패 기록을 보존했습니다. WORK_DIR=' + str(work), flush=True)
+        raise
+    else:
+        shutil.rmtree(work)  # Verified S3 originals/results/checkpoints remain.
+
+work, root = verified_package()
+sys.path[:0]=[str(root),str(root/'client'),str(root/'client/02_BACKEND')]
+for name in ('control','controller','checkpoint_upgrade','recipes_runtime','updater'):
+    sys.modules.pop(name,None)
+import control
+control.run(ACTION,root,work)

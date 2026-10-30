@@ -1,0 +1,95 @@
+{
+  "baseline_code_sha256": "f88b1426f29bc16a862a1a67c72bff8a0d15b106a84aa2ca3dc9f80f4820c084",
+  "code_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+  "code_zip": {
+    "sha256": "98300282ea65642d41a605aa34abae4322e66bfde23c26a628a67927d583e7bb",
+    "bytes": 6623892
+  },
+  "critical_files": {
+    "02_BACKEND/semantic_runtime/unit_fulltext.py": "e8f23681cd8ca4cafea4965e1ec18991768a1bb9edc275b811a81e444314f7cf",
+    "06_TOOLS/pipeline.py": "3be0c6751fa7bacd458d0db9be8c0c8f8e88e1671ee2859eb796ac0388d6a8b3",
+    "worker.py": "369a87526964770b5d9f1eaca5e3f8cbea47c6e00d0132f33da88460f67ce99f"
+  },
+  "local_installer_checkouts": [
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko0/DEV",
+      "commit": "5d09ca37f4a6fe5e72c5f60515d0767aef163c71",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko1/DEV",
+      "commit": "0edf68776fba2642221a7bfe4f18edfde88e22be",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko2/DEV",
+      "commit": "15bc2f32f2e6cb4b157d5b24babc7124477d9215",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko3/DEV",
+      "commit": "52b3f4dd03a8020706cad85d7e20e1f1ee7c43b3",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko4/DEV",
+      "commit": "1e2b8f91e79774939605347cdb65e5324668fc9b",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko5/DEV",
+      "commit": "432f6302e9730c39a69b884db87ccc618841f6cf",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-lifecycle-repaired/test_genos_install_same_checko6/DEV",
+      "commit": "b51c38ec96f99e9fec14c993533ec7576d96d4bf",
+      "committed_pins_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+      "installed_checked_then_rolled_back": true
+    }
+  ],
+  "native_generations": [
+    {
+      "archive": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-native-repaired/test_actual_native_flow_withou0/compute/result.zip",
+      "sha256": "b5c08589fcf422c9499212cecce90d5c86c8c1660943ad7ff04a0d2615799654",
+      "fulltext_workers": 4,
+      "offline_e2e": "PASS"
+    },
+    {
+      "archive": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/speed-r9-native-repaired/test_actual_native_flow_withou1/compute/result.zip",
+      "sha256": "cc4e28b62808ad97de23cc8cddbef4a729d76af8273d52efa3625343230af7e7",
+      "fulltext_workers": 4,
+      "offline_e2e": "PASS"
+    }
+  ],
+  "field_checkout": "~/DEV legal_pipeline_serving; absolute path unconfirmed",
+  "field_commit": null,
+  "field_revision": null,
+  "field_generation": null,
+  "generation_policy": "ephemeral compute; Dataiku owns state/logs/results",
+  "root_commit_push": false,
+  "main_changed": false,
+  "onsite_deployed": false,
+  "local_python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "frozen_candidates": [
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_1181/balanced4/candidate.json",
+      "sha256": "fa53b0bc4df8d6e956da743a3627c92052c1cc43db1308aa8443a94bf95007d2",
+      "revision": "rev-001",
+      "revision_sha256": "2a11f8f4c58ed8005b34d44578b6854458dabab9d9978750b202e7a2bb095b08"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_1183/repaired/candidate.json",
+      "sha256": "07e6462881e068e94fc8a417929a7cb6d3b56e3c9f35caae37f87ae0abdb780d",
+      "revision": "rev-001",
+      "revision_sha256": "6471edd71869d1387e7c5b73466f6cec262a894ed9a9ad2ff1025142257dc324"
+    }
+  ]
+}

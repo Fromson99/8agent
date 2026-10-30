@@ -1,0 +1,11 @@
+R7 → R8 / 오류 분류: 조회행 내보내기의 지원되지 않은 binary scalar
+검출/보정 담당: oracle_query_publish._asset_rows 한 곳.
+허용 보정: source_request.response의 정확한 바이트를 base64로 표현하고 스키마에 encoding을 선언.
+불변: 원문 파일, response_sha256, 문서 선택, 나머지 컬럼, 권한, 데이터 generation.
+불명 BLOB/타입, 손상/해시 불일치, 남은 행 차이, prefix gap/conflict는 계속 실패.
+재시도: 모델/HTTP 자동 재호출 없음. R7→R8 확정 종료 이행은 Dataiku 소유, 최초 한도 유지.
+종료: 확인한 결과 DB/manifest만 기존 result.zip에 포함. 성공 전 03 적재/활성 포인터 변경 없음.
+성능 변경: prefix 순차 비교, bounded executemany, worker의 불필요한 별도 ZIP 분할 생성 생략.
+측정: 단계별 PHASE_RESULT(완료/실패/초). 전체 현장 개선율은 미측정.
+기존 R7 종료 작업의 중간 색인 복구와 단계별 Dataiku checkpoint/resume는 이번 구현에 없음.
+이전 R7·실패 사진/로그·초기 검사 실패·중단된 검사 기록을 보존한다.

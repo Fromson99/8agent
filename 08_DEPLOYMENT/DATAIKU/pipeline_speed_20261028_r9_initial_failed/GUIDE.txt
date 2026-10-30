@@ -1,0 +1,48 @@
+02 구조화·색인·반환 속도 수정 R9
+
+대상: 사용자가 확인한 GENOS CPU 4개 / 메모리 16GB의 legal_pipeline_serving.
+이 폴더는 로컬에서 검증하는 반입 자료이며 GENOS에 자동 배포되지 않습니다.
+최종 검사 결과는 VALIDATION.json, 실제 코드 결속은 RELEASE_BINDING.json입니다.
+
+변경
+- R8의 source_request 압축 응답 BLOB 오류 수정과 반환 작업 감소를 포함합니다.
+- 형태소 색인 작업자를 1개에서 4개로 바꿉니다. 한 번에 구조 단위128개만 읽으며,
+  작업은 하나씩 나눠 긴 단위가 특정 작업자에 몰리는 현상을 줄입니다.
+- 원래 PeCab1.0.8, 256자 분할, 검색 토큰·순서·원문·검증은 유지합니다.
+- 시험에서 느려진 추가 chunk 캐시는 넣지 않았습니다.
+- 6GiB 계산 프로세스그룹 제한, 원래 기한·사용량·총3시도는 유지합니다.
+- PDF/DOC 보류와 native 성공 문서 선택은 R7/R8과 같습니다.
+
+실행 순서
+1. 가능하면 설치 전에 함께 제공한 DATAIKU_02_시간진단.txt를 LEGAL_RAG의 새 Python
+   노트북에서 전체 한 셀로 실행합니다. 저장 로그만 읽으며 GENOS는 호출하지 않습니다.
+   02_TIMING_SUMMARY_BEGIN~END 결과로 현장 병목을 확인할 수 있습니다.
+2. 반입한 DATAIKU_SPEED_20261028_R9.zip을 새 폴더 speed_r9에 풉니다.
+   GENOS의 TRANSFER에서 푼 speed_r9 폴더로 이동한 뒤 GENOS_R9_INSTALL.txt를 실행합니다.
+   이 설치기는 기존 ~/DEV의 계산 서비스 checkout을 검증하고 원복 자료를 보관합니다.
+   RAG 채팅 서비스 checkout에는 적용하지 마세요.
+3. TXT가 안내하는 변경 확인·commit·checkout 검사·push를 수행하고,
+   그 커밋으로 legal_pipeline_serving의 새 리비전을 배포합니다.
+   기존 CPU4/메모리16 설정을 유지합니다. 모델/전처리 설정은 추가하지 않습니다.
+4. DATAIKU_COMPUTE_RECIPES_20261028_R9.zip을 기존 LEGAL_RAG/ehA8dpVm에 업로드합니다.
+   LEGAL_RAG의 새 Python 노트북에서 DATAIKU_R9_INSTALL.txt 전체를 한 셀로 실행합니다.
+5. 00 연결 확인 → 02 구조화·색인·반환 → 03 적재 순서로 실행합니다.
+   입력이 바뀌지 않았다면 기존 01 원문 snapshot을 재사용합니다.
+   같은 작업명·기한·사용량을 유지하며, 기존 기한이나 시도 예산이 소진됐으면
+   보존된 오류를 확인해야 합니다. 새 작업명으로 제한을 우회하지 않습니다.
+
+기존 실패에서 계속할 수 있는 범위
+- R7/R8의 확정 종료 상태와 동일 입력은 새 코드로 이행할 수 있습니다.
+- 원문·01 snapshot·이전 실패 이력은 보존합니다.
+- 과거 실패한 added 행 뒤나 완성된 중간 색인부터 재개하는 기능은 없습니다.
+  이번 02는 다시 계산합니다. GENOS를 안 건드렸어도 임시 파일 lease는 별도입니다.
+
+시간 해석
+이 반입본만으로 전체02가 1시간이라고 보장하지 않습니다. 동봉 측정은 로컬의
+동일 구조 단위 토큰 생성 비교이며, 현장 전체자료·반환·S3 저장 시간과 다릅니다.
+현장 완료 시간은 STRUCTURE/PREPARE/INDEX/RETURN 단계 로그와 02 결과 저장으로 확인합니다.
+
+원복
+GENOS는 ROLLBACK_GENOS.txt의 기존 checkout 원복 절차와 이전 서비스 리비전을 사용합니다.
+Dataiku는 DATAIKU_R9_CONTROL.txt의 상태/취소/원복 안내를 따릅니다.
+기존 원문·결과·체크포인트·이전 전달 ZIP을 삭제하지 않습니다.

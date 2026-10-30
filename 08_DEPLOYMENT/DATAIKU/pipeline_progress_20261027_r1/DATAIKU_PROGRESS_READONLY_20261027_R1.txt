@@ -1,0 +1,111 @@
+# 사진의 status를 실행한 같은 Dataiku LEGAL_RAG 노트북에서 새 셀에 전체 붙여넣기.
+# Dataiku에 이미 저장된 체크포인트/로그만 읽습니다. GENOS 호출/설치/취소/재시도 없음.
+# 다시 실행하면 직전 조회와 비교합니다. 처리율/남은 시간은 추정하지 않습니다.
+import re
+from collections import deque
+from datetime import datetime, timezone
+import dataiku
+
+
+def read_saved_progress():
+    if dataiku.default_project_key() != 'LEGAL_RAG':
+        raise RuntimeError('LEGAL_RAG 프로젝트에서 실행하세요.')
+    if 'control' not in globals():
+        raise RuntimeError('사진의 status를 실행한 같은 노트북에서 이 셀을 실행하세요.')
+    c = control.c
+    project = dataiku.api_client().get_project('LEGAL_RAG')
+    code = project.get_recipe('LEGAL_02_STRUCTURE_GENOS_R1').get_settings().get_code()
+    cfg = control.config(code, 'structure')
+    name = dataiku.get_custom_variables().get('LEGAL_RECIPE_JOB_NAME', 'recipes_20261027_r1')
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', name):
+        raise ValueError('JOB_NAME')
+    folder = c.Scope(dataiku.Folder(cfg['structured']))
+    latest = c.legacy_state(folder, name)  # 기존 SHA256/동일 순번 충돌 검사 재사용
+    if not latest:
+        print('저장된 작업 상태가 없습니다. 현재 GENOS 상태는 확인하지 않았습니다.')
+        return None
+    state = latest['value']
+    compute = state.get('compute') or {}
+    handle = compute.get('handle', '')
+    if not re.fullmatch(r'[0-9a-f]{32}', handle):
+        print('현재 계산 핸들이 없습니다. 저장 단계:', state.get('phase'))
+        return None
+    committed = state.get('log_offset', 0)
+    if type(committed) is not int or committed < 0:
+        raise ValueError('LOG_OFFSET')
+    prefix = 'attempts/' + handle + '/logs/'
+    chunks = []
+    for path in folder.list_paths_in_partition():
+        relative = path.lstrip('/')
+        match = re.fullmatch(re.escape(prefix) + r'(\d{16})\.log', relative)
+        if match and int(match[1]) < committed:
+            chunks.append((int(match[1]), relative))
+    chunks.sort()
+    if committed and not chunks:
+        raise ValueError('COMMITTED_LOG_NOT_FOUND')
+    # 처음 1개 + 마지막 4개만: 최대 5MiB. 원문 ZIP/결과 ZIP은 읽지 않음.
+    selected = sorted(set(chunks[:1] + chunks[-4:]))
+    phases = []
+    labels = {'STRUCTURE': '원문 구조화', 'PREPARE': '용어 연결·배포 데이터 준비',
+              'INDEX': '검색 색인 구성', 'RETURN': '반환 데이터 구성·압축'}
+    tail = deque(maxlen=20)
+    end = None
+    pending = b''
+    for offset, path in selected:
+        with folder.get_download_stream(path) as stream:
+            block = c.bounded_read(stream, c.t.CHUNK)
+        if not block or offset + len(block) > committed:
+            raise ValueError('LOG_CHUNK_RANGE')
+        size = len(block)
+        if end is not None and offset < end:
+            raise ValueError('LOG_CHUNK_OVERLAP')
+        if end != offset:
+            pending = b''
+            if offset:
+                # 앞 조각 없이 중간 문자열을 단계 시작으로 오인하지 않음.
+                block = block.split(b'\n', 1)[1] if b'\n' in block else b''
+        lines = (pending + block).split(b'\n')
+        pending = lines.pop()[-65536:]
+        for raw in lines:
+            line = raw.decode('utf-8', errors='replace').rstrip('\r')
+            match = re.fullmatch(r'PHASE (STRUCTURE|PREPARE|INDEX|RETURN)', line)
+            if match:
+                phases.append(match[1])
+            tail.append(line[:1500])
+        end = offset + size
+    if pending:
+        tail.append('[마지막 미완성 행] ' + pending.decode('utf-8', errors='replace')[:1500])
+    observed = state.get('last_observed') or {}
+    seq = int(latest['path'].split('checkpoint-')[-1].split('-')[0])
+    snapshot = {'job': name, 'handle': handle, 'sequence': seq, 'log_bytes': committed,
+                'checked_at': datetime.now(timezone.utc).isoformat()}
+    previous = globals().get('_legal_progress_previous')
+    print('조회 시각(UTC):', snapshot['checked_at'])
+    print('Dataiku 저장 단계:', state.get('phase'))
+    print('마지막 저장 GENOS 상태:', observed.get('state'), '/', observed.get('phase'))
+    print('※ 위 GENOS 상태의 관측 시각은 기존 코드에 없어 최신 여부를 확정할 수 없습니다.')
+    print('Dataiku 수신 로그:', format(committed, ','), 'bytes / 체크포인트 순번:', seq)
+    if previous and (previous['job'], previous['handle']) == (name, handle):
+        print('직전 조회 대비: 로그', committed - previous['log_bytes'],
+              'bytes, 체크포인트', seq - previous['sequence'], '회 변화')
+        print('※ 체크포인트 변화만으로 원문 처리 진전을 뜻하지는 않습니다.')
+    if phases:
+        print('읽은 로그에서 마지막으로 확인한 시작 단계:', labels[phases[-1]], '(' + phases[-1] + ')')
+        print('※ 단계 시작 기록이며 현재 진행률이나 해당 단계 완료를 뜻하지 않습니다.')
+    else:
+        print('읽은 로그에서 세부 단계 시작 기록을 찾지 못했습니다. 정지/실패로 단정할 수 없습니다.')
+    if len(chunks) > len(selected):
+        print('로그 중간 조각은 생략했습니다. 아래는 처음/마지막 조각에서 확인한 내용입니다.')
+    print('02 반환 결과 저장:', bool(state.get('result_blob')), '(03 실버 적재 완료와 별도)')
+    print('처리 건수/전체 건수/전체 진행률/남은 시간: 현행 기록으로 계산 불가')
+    print('단계 순서: 입력 준비 → STRUCTURE → PREPARE → INDEX → RETURN → 02 결과 저장 → 03 적재')
+    if tail:
+        print('수신 로그 마지막 부분:')
+        for line in tail:
+            print(line)
+    return snapshot
+
+
+_legal_progress_current = read_saved_progress()
+if _legal_progress_current is not None:
+    _legal_progress_previous = _legal_progress_current

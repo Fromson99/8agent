@@ -1,0 +1,14 @@
+기존 legal_pipeline_serving의 실행 리비전 환경 설정
+GENOS_PDF_PARSER=preprocessor
+GENOS_PREPROCESSOR_TRANSPORT=pod
+GENOS_PREPROCESSOR_RESPONSE_MODE=docling
+GENOS_STRUCTURE_CONFIG=<이 Pod에서 읽는 전용 parser YAML 절대경로>
+LLM_BACKEND=genos
+STRUCTURE_RECIPE_VLM=on
+
+GENOS_LLM_URL 또는 기존 GENOS_BASE_URL+GENOS_LLM_SERVING_ID, GENOS_LLM_MODEL/KEY 등 검수 모델 값은 현재 설정 유지.
+기존 GENOS_PREPROCESSOR_ID=187/URL/SHARED_ROOT/REMOTE_ROOT와 GENOS_PDF_CONVERTER_*는 R4 Pod 경로에서 사용하지 않습니다.
+기존 값은 롤백을 위해 보존해도 됩니다. 다른 서비스의 환경을 변경하지 마세요.
+코드스페이스 셸 export와 실제 코드서빙 환경 저장은 별도입니다. 리비전에도 동일하게 저장해야 합니다.
+YAML에는 이 환경의 GENOS layout, OCR/table 모델 연결과 필요한 로컬 리소스를 유지합니다. enrichment: [], output.format: docling 필요.
+R4 worker는 HF_HUB_OFFLINE/TRANSFORMERS_OFFLINE을 유지합니다. 누락 모델을 인터넷에서 자동 다운로드하지 않습니다.

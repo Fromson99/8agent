@@ -1,0 +1,84 @@
+{
+  "status": "LOCAL_DELIVERY_PASS_WITH_PREEXISTING_REGRESSION_FAILURE",
+  "release": "genos-pod-20261028-r4",
+  "code_sha256": "8789724175dbe2177eb52c535a6e6b2279af7a4687d7fb0ec24c28a241e52685",
+  "tests": [
+    {
+      "path": "CONTRACT_TEST.xml",
+      "tests": 36,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "8c6fadd3f9762f7078c0b6862b873daa3944dad5d899b83ed946c26a66643e91"
+    },
+    {
+      "path": "NATIVE_TEST.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "17a60a9454c5568f807a82b8388f3988867bface706e8e59ee66c0f2da62bc43"
+    },
+    {
+      "path": "REGRESSION_TEST.xml",
+      "tests": 37,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "c306efb2fd7e8f13b4731fba4ff3e59b64e20a3a85b7ef6fea0d73f65611a1f7"
+    },
+    {
+      "path": "REGRESSION_BASELINE.xml",
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "e2f89ae7866f500f874e687bb516f4c9622dc3c231a45e4c479e3f0b737284a8"
+    }
+  ],
+  "delivery_checks_passed": 40,
+  "related_regressions_passed": 36,
+  "preexisting_regression_failures": 1,
+  "preexisting_failure": {
+    "test": "test_chunks_to_template_vlm_correction_final_restructure_and_index",
+    "reason": "old mock Model lacks bind_recovery",
+    "baseline": "sealed R3 genos_preprocessor loaded in isolated process; identical failure"
+  },
+  "coverage": [
+    "final worker PDF -> same-Pod parser bridge -> existing mock GENOS review -> structure/prepare/index/result ZIP",
+    "final worker DOC -> actual upstream conversion chain with mock soffice -> PDF -> parse/index/return; derivative and origin hash retained",
+    "conversion None and wrong PDF page set fail before review/result publication",
+    "R3 zero-review migration requires saved audit hash and original deadline/charges/attempt limit; nonzero/missing/corrupt/exhausted rejected",
+    "actual service handler transport/auth/cancel/lease/deadline tree kill, Dataiku receipt/hash, old Flow SDK update/rollback",
+    "R1/R3 synthetic Git checkout exact install/repeat/commit/hash gate/rollback; unknown new file collision rejected",
+    "current local image missing GENOS fork produces not-ready before OPEN; config/placeholder/enrichment/mode failures"
+  ],
+  "fixtures": {
+    "upstream_parser_facade": "mock class at the same pinned module path; its code pin rebound for fixture only",
+    "soffice": "mock executable producing a valid synthetic PDF, real upstream backend chain and subprocess invocation",
+    "glossary": "synthetic policy and code pin rebound",
+    "GENOS_review": "local mock HTTP, actual original recipe consumer"
+  },
+  "real_model_calls": 0,
+  "mock_model_http_calls": 2,
+  "field_pdf_conversion_tested": false,
+  "field_model_tested": false,
+  "field_deployment": false,
+  "actual_git_commit_push": false,
+  "rag_main_changed": false,
+  "oracle_retested": false,
+  "generation": "per-job temporary, no RAG active pointer",
+  "service_files": 1276,
+  "baseline_files_unchanged": 1135,
+  "prior_failures_preserved": [
+    "NATIVE_TEST_INITIAL_FAILURE.log (extracted validator request_id binding fixed)",
+    "NATIVE_TEST_FIXTURE_FAILURE.log (test DOC filename fixture fixed)",
+    "CONTRACT_INITIAL_FAILURE.log (fixture service/client module precedence fixed)"
+  ],
+  "limits": [
+    "Pod requires matching parser dependency image, PDF conversion backend, configured YAML/internal models; source ZIP is not OS dependency installation",
+    "00 ready is a local import/config check, not real document/model success",
+    "R3 nonzero/unknown review usage and exhausted original budgets cannot automatically restart",
+    "uncollected audit may be lost after Pod loss or expired lease/deadline"
+  ]
+}

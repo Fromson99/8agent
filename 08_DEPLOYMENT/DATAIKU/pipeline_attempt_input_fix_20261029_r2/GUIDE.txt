@@ -1,0 +1,44 @@
+R10 추가 실행 허용용 노트북 입력 선택 수정 R2 — 2026-10-29
+
+이번 오류
+INPUT_NAME_AMBIGUOUS_OR_MISSING: RAW_INPUT.zip
+기존 02 레시피는 named_inputs.install_input_selection을 적용한 뒤 원문을 읽는다.
+이전 DATAIKU_ONE_ATTEMPT.txt에는 같은 연결이 누락됐다.
+따라서 원본과 브라우저의 (1) 복사본이 함께 있으면 허용 셀만 원문 모호성 오류로 중단할 수 있다.
+사진에서 멈춘 위치는 허용 기록 저장 및 GENOS HEALTH/OPEN/RUN 이전이다.
+원문 실제 삭제 여부를 사진만으로 단정하지 않으며, 지정 원문이 없으면 새 파일도 명확히 거절한다.
+
+이번에 할 일
+1. 이 ZIP을 PC에서 풀고 DATAIKU_ONE_ATTEMPT_R2.txt를 연다.
+2. LEGAL_RAG Python 노트북의 새 셀에 TXT 전체를 붙여넣고 실행한다.
+   추가 1회 허용을 진행하던 요청에 맞춰 ACTION과 CONFIRMATION은 이미 채워져 있다.
+   추가 계산은 자동으로 시작하지 않는다. 기존 R1 클라이언트 ZIP을 그대로 읽고 해시를 검증한다.
+3. 출력에서 다음을 확인한다.
+   additional_attempt_authorized: true
+   compute_started: false
+4. 00 연결 확인 → 02 구조화·색인·반환을 실행한다. 02 성공 후 03 적재다.
+   기존 원문/01은 그대로 재사용한다. 02는 처음부터 재계산한다.
+
+GENOS 재배포, Dataiku 레시피 재설치, 새로운 클라이언트 ZIP 업로드는 필요 없다.
+원문 ZIP과 receipt의 이름을 바꾸거나 복사본을 삭제하지 않는다.
+기존 Dataiku 설치가 읽는 DATAIKU_R10_RECOVERY_CLIENT_20261029_R1.zip은 그대로 필요하다.
+이 ZIP은 실행 TXT 교정본이며, 관리 폴더에 올리는 클라이언트 ZIP이 아니다.
+
+기존 셀에서 직접 수정할 경우
+마지막 one_attempt.run(ACTION, CONFIRMATION, REASON) 직전에 아래 3줄을 넣고 셀 전체를 실행한다.
+
+import recipes_runtime
+from named_inputs import install_input_selection
+install_input_selection(recipes_runtime)
+
+보존 조건
+입력/DB/서비스 결속, 원래 기한, SQL/HTTP 누적 사용량, 실패 이력, 추가 1회 제한은 그대로다.
+지정 원문/receipt 누락, 잘못된 receipt, 데이터 변경, 다른 GENOS 코드, 만료·횟수 초과는 거절한다.
+SELECTED_INPUT_MISSING 등이 나오면 전체 오류를 공유한다. 한도·기한·작업명을 초기화하지 않는다.
+
+로컬 검증
+실제 전달 TXT의 ZIP 해시 검증·압축 해제·모듈 로딩·원문 선택·receipt 해석을 실행했다.
+복사본이 공존하는 경우 이전 오류 재현, 수정 후 허용 기록 생성/중복 실행/02의 1회 소비를 확인했다.
+외부 DB/프로젝트 연결은 모의 경계이며 현장 GENOS/Dataiku에는 접속하지 않았다.
+초기 검사 보조 코드의 예외 타입·HEALTH 응답 형태 오류 2건은 보존하고 정정 재검사했다.
+검사 내역은 VALIDATION.json을 참조한다.

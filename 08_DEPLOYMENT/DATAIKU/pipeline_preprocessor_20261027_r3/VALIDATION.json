@@ -1,0 +1,68 @@
+{
+  "status": "LOCAL_PASS",
+  "release": "preprocessor-187-r3",
+  "code_sha256": "8be91b1939678d31f7e881417091d6a46b9e706704b316044f5ccb6af2752ee1",
+  "validation_root": "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/pipeline_preprocessor_20261027_r3",
+  "push_checkout": "onsite legal_pipeline_serving ~/DEV; temp Git checkout tests passed",
+  "tests": [
+    {
+      "path": "CONTRACT_TEST.xml",
+      "tests": 57,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "d69f7ada6a911276bff85187e6ef43951c34129a8c1741e69ccdf31f5c14d616"
+    },
+    {
+      "path": "NATIVE_TEST.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "cf0da0aa394f7d33678b1f08d9bbccbc28e0e7168b868e8bef6a6663c5854f8b"
+    }
+  ],
+  "total_passed": 61,
+  "coverage": [
+    "exact sealed Python worker -> mock 187-style complete chunks -> existing GENOS model HTTP review -> structure/prepare/index/result ZIP",
+    "exact sealed worker structured response and malformed chunks/HTTP500 failure",
+    "R1 and R2 installer apply/repeat/commit/hash gate/rollback and public DSS SDK updates",
+    "187 ID URL generation; auto/chunks/docling supported; external review backend/missing settings/config drift rejected",
+    "R1/R2 confirmed no-model failure migration preserving deadline, HTTP/SQL charges and attempt count",
+    "R3 post-RUN fresh retry rejected; final audit ZIP required before CLOSE; corrupt diagnostic rejected",
+    "model call ledger hash/count checked; corrupt ledger retained in failure diagnostics without claimed zero count"
+  ],
+  "real_model_calls": 0,
+  "mock_model_http_calls": 2,
+  "field_187_tested": false,
+  "field_model_tested": false,
+  "field_deployment": false,
+  "actual_git_commit_push": false,
+  "rag_main_changed": false,
+  "oracle_retested": false,
+  "service_unchanged_files": 1136,
+  "service_changed_files": [
+    "CODE_PINS.json",
+    "parser_config.py",
+    "service.py",
+    "worker.py",
+    "review_audit.py"
+  ],
+  "fixture_only_rebinding": "synthetic glossary configuration and its code pin; executable Python bytes exact",
+  "prior_failures_preserved": [
+    {
+      "path": "NATIVE_FIRST.xml",
+      "cause": "mock model fixture expected older schema; updated mock to existing corrections schema"
+    },
+    {
+      "path": "NATIVE_LEDGER_FAILURE.xml",
+      "cause": "new audit summarizer read ledger envelope as state; fixed to validate original state+sha256 and preserve corrupt diagnostic"
+    }
+  ],
+  "limits": [
+    "00 verifies local configuration, not real HTTP/shared mount",
+    "R3 new compute attempt after RUN is blocked to avoid resetting model budgets; same-handle polling and audit retransfer remain supported",
+    "unsent diagnostics can be lost on container loss or lease/deadline expiry",
+    "existing chunk validity/coordinate uncertainty and model review quality are not field-certified"
+  ]
+}

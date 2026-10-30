@@ -1,0 +1,32 @@
+2026-10-27 R3 — existing preprocessor 187 compatibility correction
+
+Input/consumer: Dataiku 02 -> legal_pipeline_serving worker -> unchanged
+genos_preprocessor/parse_adapter -> unchanged PDF structure/VLM -> prepare/index
+-> verified return ZIP -> Dataiku S3 -> unchanged 03 Oracle loader.
+User supplies parser ID 187 and existing shared mount; no server 187 code change.
+
+Remove delivery-only Docling restriction; default auto accepts existing complete
+indexed chunks and structured documents. Keep chunk order/page/source checks.
+Restore existing GENOS-only PDF review; no local parser or external model fallback.
+HEALTH checks local parser/review settings only, never claims remote success.
+
+Failure owners: parser handles HTTP/JSON/chunk integrity without automatic retry;
+existing recipe handles bounded model output repair and review budgets; Dataiku
+owns state/log transfer. Configuration/hash/input changes stop before compute.
+Never invent geometry, legal text, missing chunk indices, or model approvals.
+Keep original deadline, reserved HTTP/SQL and total compute attempts <=3.
+Only known R1/R2 failures (both forced VLM off) may migrate automatically to R3.
+After R3 RUN intent, retry must not reset model budgets: refuse a fresh compute
+attempt. Normal same-handle polling/input retransmission remains idempotent.
+Preserve terminal parser/model journals and call ledgers through an audit ZIP in
+Dataiku S3 before CLOSE. Successful return also carries review audit and observed
+reserved model-call count; it never reports model_calls=0 by assumption.
+Unexpected container loss may prevent unsent diagnostic recovery; do not retry
+as if no model call occurred. This is an explicit recovery limit, not success.
+
+Validation: exact final ZIP worker with synthetic PDF, mock parser+GENOS model
+HTTP, chunks and structure responses through actual structure/prepare/index;
+malformed chunk/HTTP failure, config drift, audit transfer/hash failure, retry
+refusal, R1/R2 checkpoint migration and source/installer rollback tests.
+No external/internal real model call, field deployment, MAIN change, or real
+Oracle retest. One heavy test at a time; <=4 GiB RSS target, stop at 2 GiB free RAM.

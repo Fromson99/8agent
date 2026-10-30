@@ -1,0 +1,12 @@
+{
+  "source_photo": "AB28B2CF-0769-41A6-AA53-71B92F085A07/1-사진-1.jpg",
+  "observed": ["RESUME_FIX_APPLIED", "job_name=recipes_20261027_r1", "local_phase=NEW", "status=STATUS_UNCONFIRMED", "error=GENOS_JOB_LOST"],
+  "recipe_update_reported_applied": true,
+  "current_job_remote_found": false,
+  "blocking_job_identified": false,
+  "busy_released": false,
+  "raw_loss_indicated": false,
+  "interpretation": "The current ID may never have been created because its START was rejected with BUSY. JOB_LOST alone does not prove a server restart or source loss.",
+  "next": "Inspect older project managed-folder checkpoints and explicitly known old notebook work directories without starting/releasing any job.",
+  "followup": "08_DEPLOYMENT/DATAIKU/pipeline_busy_discovery_20261027_r2/GUIDE.txt"
+}

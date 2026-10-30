@@ -1,0 +1,38 @@
+# Dataiku 노트북이 아니라 GENOS legal_pipeline_serving의 실제 실행 Pod 터미널에서 실행.
+# 코드스페이스가 별도 컨테이너라면 그 결과를 실행 Pod의 상태로 간주하지 않습니다.
+# 읽기 전용. 문서/모델 호출/설치/설정 변경 없음. 설정 내용과 키는 출력하지 않습니다.
+python3 - <<'PY'
+import importlib.metadata as md
+import importlib.util
+import json, os, shutil, sys
+from pathlib import Path
+
+result = {'python': sys.executable, 'cwd': str(Path.cwd()),
+          'GENOS_STRUCTURE_CONFIG': os.environ.get('GENOS_STRUCTURE_CONFIG') or None,
+          'binaries_on_path': {n: shutil.which(n) for n in ('soffice','libreoffice','rhwp')},
+          'config_candidates': [], 'packages': {}}
+bases = [Path('/app'), Path('/app/src'), Path('/opt/app'), Path.home()/'DEV', Path.cwd(),
+         *[Path(p) for p in sys.path if p]]
+seen = set()
+for base in bases:
+    for part in ('resource_dev','resource','genon/preprocessor/resource_dev','genon/preprocessor/resource'):
+        p = base/part/'parser_processor_config.yaml'
+        if p.is_file() and 'pod_vendor' not in p.resolve().parts and str(p.resolve()) not in seen:
+            seen.add(str(p.resolve())); result['config_candidates'].append(str(p.resolve()))
+value = result['GENOS_STRUCTURE_CONFIG']
+result['configured_file_exists'] = bool(value and Path(value).is_file())
+for name in ('genon-docling','docling-core','PyMuPDF','PyYAML','torch','transformers'):
+    try: result['packages'][name] = md.version(name)
+    except md.PackageNotFoundError: result['packages'][name] = 'MISSING'
+for root in bases:
+    helper = root/'pod_vendor/genon/preprocessor/converters/hwp_to_pdf/availability.py'
+    if helper.is_file():
+        spec = importlib.util.spec_from_file_location('pod_converter_check', helper)
+        m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+        result['converter_check'] = {'code_root': str(root),
+            'libreoffice': m.libreoffice_available(), 'rhwp': m.rhwp_available(),
+            'pdf_sdk': m.pdf_sdk_available()}
+        break
+print(json.dumps(result, ensure_ascii=False, indent=2))
+print('설정 후보는 제한된 설치 위치만 검사합니다. 미발견이 파일의 전체 부재를 뜻하지는 않습니다.')
+PY

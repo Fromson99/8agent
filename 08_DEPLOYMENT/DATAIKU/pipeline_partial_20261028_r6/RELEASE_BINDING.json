@@ -1,0 +1,75 @@
+{
+  "code_zip": {
+    "sha256": "fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d",
+    "bytes": 6622536
+  },
+  "code_manifest": "CODE_MANIFEST.json",
+  "code_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+  "important_file_sha256": {
+    "worker.py": "cefbbe91008ca29e950a3717023315c60566ed9cedb3a250d0c1a6fa5995408a",
+    "service.py": "beb701967be704c6f80f71c757b7404bb3cbfa618be2acf67e4ce17e0b9bda58",
+    "partial_pipeline.py": "1ef598d64eb6d104bcee06d161e607aa8f3510147391a515b9c5632a738826be",
+    "parser_config.py": "aef3dd699405f98add7480db9d58bce96bf5a0e16f70b4dbb618d365e84579c2",
+    "pipeline_coverage.py": "57fead65a2e78193ddcd919eb4d42f8af686b9199aeb9769738f91b1dcf4dafb",
+    "http_parser_config.py": "9a77ab3e2b9510616034a1a951cb60e6f854d872389645bfb2e4e2def6299f2a",
+    "pod_parser_config.py": "2cbe112fe4241255c495ff5b85a64ebfcab2c95e32d7088ce40531c43515b09e"
+  },
+  "verified_local_installer_checkouts": [
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-1/test_genos_install_same_checko0/DEV",
+      "commit": "5c9a60b79492b0f3dd3267da3643799320735533",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-1/test_genos_install_same_checko1/DEV",
+      "commit": "cbaf7d56cc017849ed7c40a1559e7a5f109f77a4",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-1/test_genos_install_same_checko2/DEV",
+      "commit": "d212d20daea332fb2417c9e4ffcf9ca1421fef13",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-1/test_genos_install_same_checko3/DEV",
+      "commit": "af75d0fc586e1edd2b933b98ce770946b6c9cd71",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-2/test_genos_install_same_checko0/DEV",
+      "commit": "1c31639b8f95d690fc107cb58579b8d5badd79a7",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-2/test_genos_install_same_checko1/DEV",
+      "commit": "edde16d7b39004df96f562bd497c6659815a537d",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-2/test_genos_install_same_checko2/DEV",
+      "commit": "7786f2ae6cc030293a0631ea84ff846bd324fed7",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    },
+    {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/partial-r6-tests/pytest-of-jin/pytest-2/test_genos_install_same_checko3/DEV",
+      "commit": "87f30e85472498328e3c664826b8dfcb3795372d",
+      "committed_pins_sha256": "31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548",
+      "installer_check_passed_then_rolled_back": true
+    }
+  ],
+  "field_push_checkout": "~/DEV (legal_pipeline_serving; actual absolute path unconfirmed)",
+  "field_commit": null,
+  "field_revision": null,
+  "field_generation": null,
+  "generation_policy": "Ephemeral per-compute generation returned to Dataiku; no persistent GENOS active generation.",
+  "native_test_code": "All HTTP worker product Python matches ZIP. Only synthetic glossary policy/pin rebound. Pod tests additionally mock and rebind upstream facade.",
+  "root_repository_commit_push": false,
+  "active_rag_main_changed": false
+}

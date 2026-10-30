@@ -1,0 +1,18 @@
+{
+  "source": "user supplied photo",
+  "photo_sha256": "a8eebc88de067c34179074e749d444e239d753068540a6af0058520ba5a13f5c",
+  "recipe_visible": "LEGAL_02_STRUCTURE_GENOS_R1_NP",
+  "error": "RuntimeError: GENOS_BUSY",
+  "displayed_activity_duration": "4m 15s",
+  "blocking_job_id": null,
+  "blocking_job_state": null,
+  "field_recovery_verified": false,
+  "interpretation_source": "sealed GENOS R2 service.py START rejects any prior status other than RELEASED",
+  "does_not_prove": [
+    "successful structure",
+    "Oracle load",
+    "prior job identity",
+    "HWP parser failure",
+    "GENOS processing duration"
+  ]
+}

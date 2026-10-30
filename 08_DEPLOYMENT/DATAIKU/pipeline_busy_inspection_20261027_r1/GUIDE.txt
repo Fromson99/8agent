@@ -1,0 +1,42 @@
+Dataiku 레시피02 GENOS_BUSY — 작업 상태 확인 / 20261027 R1
+
+사진에서 확인: LEGAL_02_STRUCTURE_GENOS_R1_NP 실행이 RuntimeError: GENOS_BUSY로 실패.
+봉인 GENOS R2의 START는 RELEASED가 아닌 이전 작업이 있으면 BUSY를 반환한다.
+FAILED·COMPLETE도 해제 전에는 새 START를 막는다. 사진만으로 해당 작업은 특정할 수 없다.
+4분15초는 Dataiku 활동의 표시 시간이며 GENOS 파싱 시간으로 해석하지 않는다.
+레시피02에는 DB 사전검사·S3 원문/지원 다운로드·체크포인트 보관도 포함된다.
+
+실행
+1. LEGAL_RAG 프로젝트의 Python 노트북을 연다.
+2. DATAIKU_GENOS_BUSY_CHECK_20261027_R1.txt 전체를 새 셀에 붙여 한 번 실행한다.
+   기존 노트북 함수 등록이나 prepare 실행, 추가 ZIP 업로드는 필요 없다.
+3. 출력의 job_name / status / phase / error_code와 마지막 blocking_job_ids를 확인한다.
+   프로젝트 변수 LEGAL_PIPELINE_URL / LEGAL_PIPELINE_TOKEN은 기존 설정을 사용한다.
+
+조회 범위
+기존 업로드 폴더 ehA8dpVm의 노트북 체크포인트와 Flow의
+LEGAL_STRUCTURED_RESULT_R1 / LEGAL_LGL_LOAD_RESULT_R1 체크포인트를 함께 읽는다.
+각 작업의 가장 높은 순번을 선택하고 SHA·동시 revision·프로젝트/폴더/코드/endpoint를 확인한다.
+현재 HEALTH 코드와 instance가 맞는 작업에만 STATUS를 보낸다.
+원문 ZIP·SUPPORT·DB를 읽거나 다시 처리하지 않는다. 체크포인트는 건당 최대1MiB.
+최대3폴더·폴더당20작업·목록10만항목, GENOS 41호출/120초 안에서 새 호출을 제한한다.
+HTTP는 요청당 최대15초·재시도0회다. Dataiku SDK의 목록/파일 읽기 시간은 이 HTTP 한도 밖이다.
+현재 봉인 worker의 STATE 조회 기능이며 전체 서버 작업 목록 API가 아니다.
+
+결과별 조치
+RUNNING / UPLOADING: 해당 작업이 처리 중인지 먼저 확인하고 새02 실행은 보류한다.
+FAILED / CANCELLED / INTERRUPTED: 해당 작업의 입력·실패 로그 보존 후 정확한 작업만 해제할 수 있다.
+COMPLETE: 결과를 회수하고 적재·검증 상태를 확인한 뒤 기존03/ACK 절차를 진행한다.
+RELEASED: 해당 작업은 이미 해제됨.
+STATUS_UNCONFIRMED + JOB_LOST: 그 ID 조회는 실패함. 전체 서버가 비었다는 뜻이 아니다.
+INSTANCE_CHANGED / SKIPPED_BINDING / CHECKPOINT_UNCONFIRMED: 해당 작업의 현재 상태 미확인.
+NO_CLIENT_STATE: 클라이언트 작업 ID가 체크포인트에 없음.
+blocking_job_ids가 비어 있어도 다른 폴더·세션의 미확인 작업이 남을 수 있다.
+
+이 TXT는 작업을 해제하지 않는다. START/UPLOAD/EXECUTE/ACK/CANCEL/DB/S3 쓰기가 없다.
+STATUS는 기존 서버 구현에 따라 유실 프로세스의 상태를 INTERRUPTED로 갱신할 수 있다.
+토큰과 URL, 서버의 임의 오류 본문은 출력하지 않으며 알려진 오류 코드만 표시한다.
+JOB_NAME을 바꾸거나 이전 실패 기록을 지우는 방식으로 BUSY를 우회하지 않는다.
+10월23일 해제 TXT는 당시 지정 작업용이므로 이번 사진만 보고 그대로 실행하지 않는다.
+
+검증 범위는 VALIDATION.json을 따른다. 실제 현장 진단 결과·BUSY 해제·구조화·적재는 미확인.

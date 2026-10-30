@@ -1,0 +1,72 @@
+R7 — 전처리기 없이 처리 가능한 문서만 계속 진행
+2026-10-28 / R6 정정본
+
+제가 “패스”를 잘못 해석해 R6에 전처리기 연결을 다시 넣었습니다.
+R6 가이드 3번의 설정은 하지 마세요. R6 대신 이번 R7 서버/client 한 쌍을 사용합니다.
+R7은 PDF 파싱·외부/POD PDF 변환을 호출하기 전에 건너뜁니다.
+
+1. 압축 해제 (unzip 불필요)
+전달 ZIP이 있는 GENOS 코드스페이스 터미널에서:
+  python3 -m zipfile -e DATAIKU_SKIP_PARSER_20261028_R7.zip skip_r7
+  cd skip_r7
+
+2. GENOS 코드 적용
+진행 중인 02가 있다면 Dataiku에서 취소하고 계산 종료를 확인합니다.
+기존 legal_pipeline_serving의 ~/DEV checkout을 사용합니다.
+  bash GENOS_R7_INSTALL.txt
+검사·백업·적용·commit·검증·push가 실행됩니다.
+그다음 GENOS 화면에서 해당 commit의 새 코드서빙 리비전을 배포합니다.
+R6를 아직 설치하지 않았어도 기존 R1/R2/R3/R4/R5 계산 checkout에 바로 적용할 수 있습니다.
+RAG 채팅 checkout에 적용하지 않습니다. worker 1 / replica 1을 유지합니다.
+
+3. 전처리기 설정 — 할 일 없음
+전처리기 주소, ID, 공유 경로, YAML, 변환기, PDF 검수 모델 설정이 필요 없습니다.
+R7의 전체 Flow는 “전처리기 사용 안 함 / PDF 파싱·변환 건너뜀”으로 고정됩니다.
+예전 LEGAL_PIPELINE_PARSER_MODE, GENOS_PREPROCESSOR_*, GENOS_STRUCTURE_CONFIG 값이 남아 있어도
+그 값으로 전처리기를 켜지 않습니다. 새 값을 입력할 필요가 없습니다.
+기존 R5 네 문서 변환·파싱 테스트도 R7에서는 차단합니다. 이번 작업에서는 실행하지 않습니다.
+Dataiku가 계산용 GENOS 서비스에 연결하는 기존 LEGAL_PIPELINE_URL/TOKEN은 그대로 필요합니다.
+
+4. Dataiku 적용·실행
+압축 안의 DATAIKU_COMPUTE_RECIPES_20261028_R7.zip을 LEGAL_RAG/ehA8dpVm에 그대로 업로드합니다.
+새 Python 노트북 커널에서 DATAIKU_R7_INSTALL.txt 전체를 한 셀로 실행합니다(ACTION='apply').
+기존 00 연결 검사 → 기존 02 구조화 → 기존 03 실버 적재 순서로 실행합니다.
+00의 preprocessor_enabled=false, pipeline_parser_mode=skip을 확인합니다.
+기존 01 원문 snapshot, URL/TOKEN, 작업 이름, SIDDS.*_S 매핑을 유지합니다.
+
+5. 처리 결과
+- PDF: 파싱을 시도하지 않고 BYPASSED_BY_USER로 보류합니다.
+- 구형 DOC: PDF 변환을 요청하지 않고 보류합니다.
+- DOCX·HWPX·XML·HTML 등: 기존 직접 읽기 경로로 처리합니다.
+- HWP: 기존 로컬 읽기 경로를 사용할 수 있으면 진행하고, 읽지 못하면 실패 사유를 남깁니다.
+- 직접 처리한 문서가 별도로 실패하면 해당 문서도 보류하고 성공 문서로 이어갑니다.
+직접 읽은 원문의 좌표/열람용 합성 PDF는 기존대로 만들 수 있습니다. 전처리기 호출은 없습니다.
+
+성공 문서만 검증 → PREPARE → INDEX → Dataiku 결과 저장 → 기존 03 실버 적재로 연결됩니다.
+일부 제외 시 STRUCTURED_WITH_OMISSIONS / COMPLETE_WITH_OMISSIONS로 표시합니다.
+coverage에 성공 selected_count, 전체 보류 omitted_count, 요청에 따른 건너뜀 bypassed_count,
+기타 실패 failed_count를 남깁니다. 과거 1,631/26건이 그대로 재현된다는 보장은 아닙니다.
+기존 원장의 FAILED/BLOCKED는 처리되지 않은 상태이며, 건너뛴 이유는 별도 항목으로 구분합니다.
+
+02 출력의 coverage_paths에서 문서명·사유 목록을 확인합니다:
+  structured 관리 폴더/_pipeline/dataiku-owned-v1/attempts/<handle>/result/excluded-documents.csv
+  같은 위치의 pipeline-coverage.json
+반환 result.zip의 audit/에도 같은 파일과 원래 문서별 로그가 있습니다.
+03 완료 JSON에도 같은 처리 범위를 기록합니다. 제외 문서는 이번 release의 적재 대상이 아닙니다.
+성공 문서 0건, 파일 변조, 취소, 입력 전체 오류, 색인/반환/SQL 검증 실패는 중단합니다.
+
+6. 이전 작업 이행·복원
+기존 작업명과 최초 기한·사용량·총3시도 한도는 유지합니다.
+R3~R6의 확인된 실패를 이행할 때 보관 audit와 검수 호출0 증거가 있어야 합니다.
+기한/예산 소진 또는 증거 없음은 새 작업명·체크포인트 삭제로 우회하지 않습니다.
+과거 실패 audit에는 source.sqlite가 없으므로 이전 1,631건 자산의 재사용을 보장하지 않습니다.
+조회/취소: 새 커널에서 DATAIKU_R7_CONTROL.txt, 기본 ACTION='status', 취소는 'cancel'.
+Flow 원복: DATAIKU_R7_INSTALL.txt의 ACTION='rollback'.
+GENOS 코드 원복: bash ROLLBACK_GENOS.txt → 복원 diff 검토/commit/push → 이전 리비전 선택.
+체크포인트·원문·결과는 삭제하지 않습니다.
+
+검증 범위
+VALIDATION.json: 최종 검사 수·코드 해시·검사 경계.
+RELEASE_BINDING.json: 실제 격리 Git checkout의 commit·파일 결속과 현장 미확인 항목.
+로컬 합성 DOCX/PDF/DOC로 실제 구조화→선택→색인→반환을 검증하고 전처리기/변환기/모델 HTTP 0을 확인합니다.
+현장 전체 문서·Oracle 적재·리비전 배포는 미실행입니다. RAG MAIN/활성 데이터는 변경하지 않습니다.

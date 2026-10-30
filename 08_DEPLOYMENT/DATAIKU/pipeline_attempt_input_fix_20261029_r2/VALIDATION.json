@@ -1,0 +1,41 @@
+{
+  "status": "LOCAL_NOTEBOOK_INPUT_SELECTION_FIX_PASS",
+  "unique_tests_passed": 12,
+  "runs": [
+    {
+      "file": "TEST_INITIAL.xml",
+      "tests": 12,
+      "failed": [
+        "08_DEPLOYMENT.DATAIKU.pipeline_attempt_input_fix_20261029_r2.test_fix::test_delivered_whole_notebook_uses_real_receipts_and_preserves_guardrails[invalid_receipt]",
+        "08_DEPLOYMENT.DATAIKU.pipeline_attempt_input_fix_20261029_r2.test_fix::test_delivered_whole_notebook_uses_real_receipts_and_preserves_guardrails[health_mismatch]"
+      ],
+      "sha256": "67c22d6a23cb9044f0c1880c44fd5c83d816a5ee097d87a34d95d19b525f87d9"
+    },
+    {
+      "file": "TEST_REPAIR.xml",
+      "tests": 3,
+      "failed": [],
+      "sha256": "bfbf93cc375e7c25876a9608cdf6f5507660b9e9952ddc6611dbcd40680b8f71"
+    }
+  ],
+  "initial_harness_errors_preserved": [
+    "expected ValueError instead of existing legacy RunError for invalid receipt",
+    "treated service.handle HEALTH result as an HTTP data envelope"
+  ],
+  "new_script_sha256": "696324ccc37ea5e9a83aa7cbe7cc9bc32ffb67013cf6c0a17909c101993446ff",
+  "client_zip_sha256": "34118187c25455bf1c476640529b12d873cc4c641148ac36387c19696f63862d",
+  "client_zip_changed": false,
+  "genos_code_changed": false,
+  "recipe_reinstall_required": false,
+  "actual_field_calls": 0,
+  "default_action": "authorize_one_attempt",
+  "compute_auto_started": false,
+  "extra_attempts": 1,
+  "deadline_extended": false,
+  "usage_reset": false,
+  "original_error_reproduced": true,
+  "whole_published_notebook_entry_exercised": true,
+  "external_db_context_mocked": true,
+  "real_receipt_parser_used": true,
+  "local_native_health_used": true
+}

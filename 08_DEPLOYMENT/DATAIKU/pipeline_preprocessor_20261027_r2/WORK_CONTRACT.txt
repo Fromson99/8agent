@@ -1,0 +1,17 @@
+기준: 발송한 Dataiku-owned R1 코드 868b23d7b0b4ac0d825a1a38644a582966118caad7796ca8b6e780df9f322dfa
+사용자 2026-10-27: PDF는 GENOS 전처리기를 사용. 두 연결을 수정하고 환경변수는 사용자가 입력.
+
+입력/소비자: Dataiku 00 HEALTH → 로컬 환경 검사, 02 OPEN/RUN → worker → 기존 구조화
+GENOS 전처리기 data.document → 원문 구조화 → prepare/index/export → Dataiku → 기존 03 SQL.
+실패 분류: 환경 누락/설정 불일치/공유경로 접근/전송/응답 계약/코드·상태 binding.
+복구 담당: 설정은 사용자, 계산·시도·원래 예산은 Dataiku. 자동 재시도/로컬 fallback 없음.
+불변: 원문/문서 선택/DB owner/증거/해시/이전 로그/기한/총3시도/취소·lease 계약.
+종료: 설정 오류는 입력 전송 전 중단. 원격 실패는 기존 실패 기록. 결과 없는 시도는 성공 아님.
+기존 실패 이행: 정확한 R1 code와 동일 input/database/url/protocol, 확인된 FAILED/CANCELLED,
+결과 없음만 허용. checkpoint append로 원래 기한/소비 예산을 보존하며 attempt를1 증가.
+검사: 환경 누락/URL 우선/경로 오류/secret 비노출, OPEN 차단, RUN 설정 변경,
+worker subprocess 환경 유지, 실제 패키지 PDF→모의 원격 Docling→구조화,
+실패 시 무fallback/잘못된 결과 미채택, 실패 checkpoint 이행/중복/예산/결과/UNKNOWN 거부,
+기존 취소/lease/중복/전송 검사와 실제 public SDK install/repeat/rollback,
+실제 임시 Git checkout install/commit/hash verify/rollback.
+로컬 MAIN/RAG generation과 현장 GENOS 배포는 별도. 실제 내부 전처리기/모델/공유마운트 미확인.

@@ -1,0 +1,29 @@
+{
+  "baseline_code_sha256": "f88b1426f29bc16a862a1a67c72bff8a0d15b106a84aa2ca3dc9f80f4820c084",
+  "code_sha256": "aa73eedbbee5f9f4e842c87e7f0fca2278c2dc56b936390871fbf268efea7c73",
+  "service_files": 1282,
+  "unchanged_baseline_files": 1278,
+  "changed_files": [
+    "02_BACKEND/semantic_runtime/unit_fulltext.py",
+    "06_TOOLS/pipeline.py",
+    "CODE_PINS.json",
+    "worker.py"
+  ],
+  "candidate_manifest": "02_BACKEND/lawrag/research/candidates/adr_1181/balanced4/candidate.json",
+  "candidate_manifest_sha256": "fa53b0bc4df8d6e956da743a3627c92052c1cc43db1308aa8443a94bf95007d2",
+  "adopted": [
+    "02_BACKEND/semantic_runtime/unit_fulltext.py",
+    "worker.py",
+    "06_TOOLS/pipeline.py"
+  ],
+  "files": {
+    "GENOS_DATAIKU_COMPUTE_20261028_R9.zip": {
+      "sha256": "98300282ea65642d41a605aa34abae4322e66bfde23c26a628a67927d583e7bb",
+      "bytes": 6623892
+    },
+    "DATAIKU_COMPUTE_RECIPES_20261028_R9.zip": {
+      "sha256": "13308a966af33ab417efbc0e34fa45cdce144eeba9dc525bdb56eda202ceff13",
+      "bytes": 293887
+    }
+  }
+}

@@ -1,0 +1,454 @@
+# GENOS legal_pipeline_serving 기존 Git checkout ~/DEV에 적용합니다.
+# RAG 채팅 코드서빙 checkout이 아닙니다. 배포 코드 적용이며 원격 job/로그 조회 없음.
+# 압축 해제한 전달 폴더(아래 ZIP이 있는 폴더)에서 이 TXT 전체를 터미널에 붙여넣습니다.
+set -e
+python3 - <<'PY_COPY'
+from pathlib import Path
+import hashlib, shutil
+name='GENOS_DATAIKU_COMPUTE_20261028_R6.zip'
+source=Path.cwd()/name
+if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest()!='fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d':
+    raise SystemExit('이번 ZIP이 있는 디렉터리에서 실행하세요. ZIP hash 불일치/미발견')
+destination=Path.home()/'DEV'/name
+if not (destination.parent/'.git').exists():raise SystemExit('기존 ~/DEV Git checkout이 없습니다')
+if source.resolve()!=destination.resolve():
+    if destination.exists() and hashlib.sha256(destination.read_bytes()).hexdigest()!='fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d':
+        raise SystemExit('기존 동명 ZIP 충돌')
+    shutil.copyfile(source,destination)
+PY_COPY
+cd "$HOME/DEV"
+python3 - <<'PY_INSTALL'
+"""Install the sealed pipeline R6 into cwd; preserve code pins and user files."""
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import zipfile
+
+ARCHIVE = 'GENOS_DATAIKU_COMPUTE_20261028_R6.zip'
+ARCHIVE_SHA = 'fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d'
+CODE_SHA = '31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548'
+STATE_DIR = '.dataiku-preprocessor-install-r6'
+
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def checked(root, name):
+    parts = PurePosixPath(name).parts
+    if not parts or name != '/'.join(parts) or any(p in ('.', '..', '.git') for p in parts) or name.startswith('/') or '\\' in name:
+        raise ValueError('UNSAFE_PATH: ' + name)
+    path = root
+    for part in parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError('SYMLINK: ' + str(path))
+    return path
+
+
+def current(path):
+    if path.exists() and not path.is_file():
+        raise ValueError('NOT_A_FILE: ' + str(path))
+    return sha(path) if path.exists() else None
+
+
+def atomic(path, stream, mode=0o644):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix='.pipeline-install-', suffix='.tmp', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as dst:
+            shutil.copyfileobj(stream, dst, 1024 * 1024)
+            dst.flush()
+            os.fsync(dst.fileno())
+            os.fchmod(dst.fileno(), mode)
+        os.replace(name, path)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def save(path, value):
+    from io import BytesIO
+    atomic(path, BytesIO((json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()), 0o600)
+
+
+def git(root, *args):
+    return subprocess.check_output(['git', '-C', str(root), *args], text=True).strip()
+
+
+def run(action):
+    root = Path.cwd().resolve()
+    if Path(git(root, 'rev-parse', '--show-toplevel')).resolve() != root:
+        raise ValueError('RUN_AT_GIT_ROOT: 기존 legal_pipeline_serving Git checkout ~/DEV 루트에서 실행하세요.')
+    if current(checked(root,'CODE_PINS.json')) not in ('868b23d7b0b4ac0d825a1a38644a582966118caad7796ca8b6e780df9f322dfa', '6903032227143a1b94fe0eec8a701592d819a2e08f061ce76453b42df687121c', '8be91b1939678d31f7e881417091d6a46b9e706704b316044f5ccb6af2752ee1', '8789724175dbe2177eb52c535a6e6b2279af7a4687d7fb0ec24c28a241e52685', '78811f3b4620c91057a995eaf567cf078c886c6090d3ea02061f3bef2ec5901c', CODE_SHA):
+        raise ValueError('PIPELINE_R6_CHECKOUT_REQUIRED: RAG 앱 checkout에 적용하지 마세요')
+    audit = checked(root, STATE_DIR)
+    audit.mkdir(exist_ok=True)
+    if action == 'apply' and not (audit/'plan.json').exists():
+        before_pins=json.loads((root/'CODE_PINS.json').read_text())
+        for new_name in ('parser_config.py','review_audit.py'):
+            if new_name not in before_pins['files'] and (root/new_name).exists():
+                raise ValueError('NEW_FILE_COLLISION: '+new_name)
+        for before_name,before_hash in before_pins['files'].items():
+            if current(checked(root,before_name))!=before_hash:
+                raise ValueError('EXISTING_CHECKOUT_EDIT: '+before_name)
+    lock = checked(audit, 'install.lock')
+    with lock.open('a') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ValueError('INSTALL_ALREADY_RUNNING') from None
+        try:
+            return execute(root, audit, action)
+        except BaseException as exc:
+            try:
+                save(checked(audit, 'status.json'), {'status': 'FAILED', 'action': action,
+                     'error_type': type(exc).__name__, 'error': str(exc), 'errno': getattr(exc, 'errno', None)})
+            except OSError as log_error:
+                print('STATUS_WRITE_FAILED', repr(log_error), file=sys.stderr)
+            raise
+
+
+def execute(root, audit, action):
+    archive = checked(root, ARCHIVE)
+    if current(archive) != ARCHIVE_SHA:
+        raise ValueError('ZIP_HASH_MISMATCH: 이번 compute ZIP을 같은 DEV에 두세요.')
+    prefix = ARCHIVE[:-4] + '/'
+    with zipfile.ZipFile(archive) as z:
+        infos = z.infolist()
+        if len({i.filename for i in infos}) != len(infos):
+            raise ValueError('ZIP_DUPLICATE')
+        pins_bytes = z.read(prefix + 'CODE_PINS.json')
+        if hashlib.sha256(pins_bytes).hexdigest() != CODE_SHA:
+            raise ValueError('CODE_PINS_HASH_MISMATCH')
+        expected = dict(json.loads(pins_bytes)['files'], **{'CODE_PINS.json': CODE_SHA})
+        if set(i.filename for i in infos) != {prefix + n for n in expected}:
+            raise ValueError('ZIP_FILE_SET_MISMATCH')
+        for name, digest in expected.items():
+            checked(root, name)
+            info = z.getinfo(prefix + name)
+            if stat.S_ISLNK(info.external_attr >> 16) or hashlib.sha256(z.read(info)).hexdigest() != digest:
+                raise ValueError('ZIP_MEMBER_HASH: ' + name)
+        if action == 'apply' and not (audit/'plan.json').exists():
+            before_files=json.loads((root/'CODE_PINS.json').read_text())['files']
+            for name in expected:
+                if name!='CODE_PINS.json' and name not in before_files and (root/name).exists():
+                    raise ValueError('NEW_FILE_COLLISION: '+name)
+        if action in ('stage', 'check'):
+            for name, digest in expected.items():
+                if current(checked(root, name)) != digest:
+                    raise ValueError('INSTALLED_CODE_DIFFERS: ' + name)
+            if action == 'stage':
+                staged = set(filter(None, git(root, 'diff', '--cached', '--name-only', '-z').split('\0')))
+                if staged - expected.keys():
+                    raise ValueError('OTHER_STAGED_FILES: 기존 staged 변경을 먼저 검토하세요.')
+                git(root, 'add', '--', *expected)
+                print('STAGED_CODE_FILES', len(expected), '— commit은 다음 단계입니다.')
+            else:
+                subprocess.run([sys.executable, str(root / 'VERIFY_PIPELINE_RELEASE.py'),
+                                '--code-root', str(root), '--require-committed'], check=True)
+            return
+        plan_path = checked(audit, 'plan.json')
+        if plan_path.exists():
+            plan = json.loads(plan_path.read_text())
+            if (plan['root'] != str(root) or plan['archive_sha256'] != ARCHIVE_SHA
+                    or {n: r['after'] for n, r in plan['files'].items()} != expected):
+                raise ValueError('INSTALL_PLAN_BINDING_CHANGED')
+        elif action == 'rollback':
+            raise ValueError('NO_INSTALL_PLAN')
+        else:
+            records = {}
+            for name, digest in expected.items():
+                path = checked(root, name)
+                before = current(path)
+                records[name] = {'before': before, 'after': digest,
+                                 'mode': stat.S_IMODE(path.stat().st_mode) if before else 0o644}
+                if before is not None and before != digest:
+                    backup = checked(audit, 'backup/' + name)
+                    if backup.exists() and current(backup) != before:
+                        raise ValueError('PREVIOUS_BACKUP_CONFLICT: ' + name)
+                    if not backup.exists():
+                        with path.open('rb') as src:
+                            atomic(backup, src, records[name]['mode'])
+                    if current(backup) != before:
+                        raise ValueError('BACKUP_HASH_MISMATCH: ' + name)
+            plan = {'root': str(root), 'archive_sha256': ARCHIVE_SHA,
+                    'code_sha256': CODE_SHA, 'files': records}
+            save(plan_path, plan)
+        # Validate the full operation before replacing any target file.
+        for name, item in plan['files'].items():
+            if current(checked(root, name)) not in (item['before'], item['after']):
+                raise ValueError('USER_EDIT_CONFLICT: ' + name)
+            if item['before'] is not None and item['before'] != item['after']:
+                if current(checked(audit, 'backup/' + name)) != item['before']:
+                    raise ValueError('BACKUP_HASH_MISMATCH: ' + name)
+        save(checked(audit, 'status.json'), {'status': 'INSTALLING' if action == 'apply' else 'ROLLING_BACK',
+                                          'action': action, 'root': str(root)})
+        for name, item in plan['files'].items():
+            path = checked(root, name)
+            desired = item['after'] if action == 'apply' else item['before']
+            now = current(path)
+            if now == desired:
+                continue
+            if now not in (item['before'], item['after']):
+                raise ValueError('USER_EDIT_CONFLICT: ' + name)
+            if desired is None:
+                path.unlink()
+            elif action == 'apply':
+                with z.open(prefix + name) as src:
+                    atomic(path, src, item['mode'])
+            else:
+                with checked(audit, 'backup/' + name).open('rb') as src:
+                    atomic(path, src, item['mode'])
+        for name, item in plan['files'].items():
+            desired = item['after'] if action == 'apply' else item['before']
+            if current(checked(root, name)) != desired:
+                raise ValueError('FINAL_HASH_MISMATCH: ' + name)
+        result = {'status': 'INSTALLED' if action == 'apply' else 'ROLLED_BACK',
+                  'root': str(root), 'files': len(expected), 'code_sha256': CODE_SHA,
+                  'archive_sha256': ARCHIVE_SHA, 'git_commit': 'NOT_PERFORMED',
+                  'git_push': False, 'genos_revision': 'NOT_VERIFIED', 'nfs_changed': False}
+        save(checked(audit, 'status.json'), result)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+
+run('apply')
+PY_INSTALL
+python3 - <<'PY_STAGE'
+"""Install the sealed pipeline R6 into cwd; preserve code pins and user files."""
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import zipfile
+
+ARCHIVE = 'GENOS_DATAIKU_COMPUTE_20261028_R6.zip'
+ARCHIVE_SHA = 'fbb6ca6c71fbe8517ad845426f3ee29d706fd396969c861740dd45650965ae1d'
+CODE_SHA = '31a3d3dd1b2be7b4618e40153bd08e4df8f12c768e57cb1458e856d985ddf548'
+STATE_DIR = '.dataiku-preprocessor-install-r6'
+
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def checked(root, name):
+    parts = PurePosixPath(name).parts
+    if not parts or name != '/'.join(parts) or any(p in ('.', '..', '.git') for p in parts) or name.startswith('/') or '\\' in name:
+        raise ValueError('UNSAFE_PATH: ' + name)
+    path = root
+    for part in parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError('SYMLINK: ' + str(path))
+    return path
+
+
+def current(path):
+    if path.exists() and not path.is_file():
+        raise ValueError('NOT_A_FILE: ' + str(path))
+    return sha(path) if path.exists() else None
+
+
+def atomic(path, stream, mode=0o644):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix='.pipeline-install-', suffix='.tmp', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as dst:
+            shutil.copyfileobj(stream, dst, 1024 * 1024)
+            dst.flush()
+            os.fsync(dst.fileno())
+            os.fchmod(dst.fileno(), mode)
+        os.replace(name, path)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def save(path, value):
+    from io import BytesIO
+    atomic(path, BytesIO((json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()), 0o600)
+
+
+def git(root, *args):
+    return subprocess.check_output(['git', '-C', str(root), *args], text=True).strip()
+
+
+def run(action):
+    root = Path.cwd().resolve()
+    if Path(git(root, 'rev-parse', '--show-toplevel')).resolve() != root:
+        raise ValueError('RUN_AT_GIT_ROOT: 기존 legal_pipeline_serving Git checkout ~/DEV 루트에서 실행하세요.')
+    if current(checked(root,'CODE_PINS.json')) not in ('868b23d7b0b4ac0d825a1a38644a582966118caad7796ca8b6e780df9f322dfa', '6903032227143a1b94fe0eec8a701592d819a2e08f061ce76453b42df687121c', '8be91b1939678d31f7e881417091d6a46b9e706704b316044f5ccb6af2752ee1', '8789724175dbe2177eb52c535a6e6b2279af7a4687d7fb0ec24c28a241e52685', '78811f3b4620c91057a995eaf567cf078c886c6090d3ea02061f3bef2ec5901c', CODE_SHA):
+        raise ValueError('PIPELINE_R6_CHECKOUT_REQUIRED: RAG 앱 checkout에 적용하지 마세요')
+    audit = checked(root, STATE_DIR)
+    audit.mkdir(exist_ok=True)
+    if action == 'apply' and not (audit/'plan.json').exists():
+        before_pins=json.loads((root/'CODE_PINS.json').read_text())
+        for new_name in ('parser_config.py','review_audit.py'):
+            if new_name not in before_pins['files'] and (root/new_name).exists():
+                raise ValueError('NEW_FILE_COLLISION: '+new_name)
+        for before_name,before_hash in before_pins['files'].items():
+            if current(checked(root,before_name))!=before_hash:
+                raise ValueError('EXISTING_CHECKOUT_EDIT: '+before_name)
+    lock = checked(audit, 'install.lock')
+    with lock.open('a') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ValueError('INSTALL_ALREADY_RUNNING') from None
+        try:
+            return execute(root, audit, action)
+        except BaseException as exc:
+            try:
+                save(checked(audit, 'status.json'), {'status': 'FAILED', 'action': action,
+                     'error_type': type(exc).__name__, 'error': str(exc), 'errno': getattr(exc, 'errno', None)})
+            except OSError as log_error:
+                print('STATUS_WRITE_FAILED', repr(log_error), file=sys.stderr)
+            raise
+
+
+def execute(root, audit, action):
+    archive = checked(root, ARCHIVE)
+    if current(archive) != ARCHIVE_SHA:
+        raise ValueError('ZIP_HASH_MISMATCH: 이번 compute ZIP을 같은 DEV에 두세요.')
+    prefix = ARCHIVE[:-4] + '/'
+    with zipfile.ZipFile(archive) as z:
+        infos = z.infolist()
+        if len({i.filename for i in infos}) != len(infos):
+            raise ValueError('ZIP_DUPLICATE')
+        pins_bytes = z.read(prefix + 'CODE_PINS.json')
+        if hashlib.sha256(pins_bytes).hexdigest() != CODE_SHA:
+            raise ValueError('CODE_PINS_HASH_MISMATCH')
+        expected = dict(json.loads(pins_bytes)['files'], **{'CODE_PINS.json': CODE_SHA})
+        if set(i.filename for i in infos) != {prefix + n for n in expected}:
+            raise ValueError('ZIP_FILE_SET_MISMATCH')
+        for name, digest in expected.items():
+            checked(root, name)
+            info = z.getinfo(prefix + name)
+            if stat.S_ISLNK(info.external_attr >> 16) or hashlib.sha256(z.read(info)).hexdigest() != digest:
+                raise ValueError('ZIP_MEMBER_HASH: ' + name)
+        if action == 'apply' and not (audit/'plan.json').exists():
+            before_files=json.loads((root/'CODE_PINS.json').read_text())['files']
+            for name in expected:
+                if name!='CODE_PINS.json' and name not in before_files and (root/name).exists():
+                    raise ValueError('NEW_FILE_COLLISION: '+name)
+        if action in ('stage', 'check'):
+            for name, digest in expected.items():
+                if current(checked(root, name)) != digest:
+                    raise ValueError('INSTALLED_CODE_DIFFERS: ' + name)
+            if action == 'stage':
+                staged = set(filter(None, git(root, 'diff', '--cached', '--name-only', '-z').split('\0')))
+                if staged - expected.keys():
+                    raise ValueError('OTHER_STAGED_FILES: 기존 staged 변경을 먼저 검토하세요.')
+                git(root, 'add', '--', *expected)
+                print('STAGED_CODE_FILES', len(expected), '— commit은 다음 단계입니다.')
+            else:
+                subprocess.run([sys.executable, str(root / 'VERIFY_PIPELINE_RELEASE.py'),
+                                '--code-root', str(root), '--require-committed'], check=True)
+            return
+        plan_path = checked(audit, 'plan.json')
+        if plan_path.exists():
+            plan = json.loads(plan_path.read_text())
+            if (plan['root'] != str(root) or plan['archive_sha256'] != ARCHIVE_SHA
+                    or {n: r['after'] for n, r in plan['files'].items()} != expected):
+                raise ValueError('INSTALL_PLAN_BINDING_CHANGED')
+        elif action == 'rollback':
+            raise ValueError('NO_INSTALL_PLAN')
+        else:
+            records = {}
+            for name, digest in expected.items():
+                path = checked(root, name)
+                before = current(path)
+                records[name] = {'before': before, 'after': digest,
+                                 'mode': stat.S_IMODE(path.stat().st_mode) if before else 0o644}
+                if before is not None and before != digest:
+                    backup = checked(audit, 'backup/' + name)
+                    if backup.exists() and current(backup) != before:
+                        raise ValueError('PREVIOUS_BACKUP_CONFLICT: ' + name)
+                    if not backup.exists():
+                        with path.open('rb') as src:
+                            atomic(backup, src, records[name]['mode'])
+                    if current(backup) != before:
+                        raise ValueError('BACKUP_HASH_MISMATCH: ' + name)
+            plan = {'root': str(root), 'archive_sha256': ARCHIVE_SHA,
+                    'code_sha256': CODE_SHA, 'files': records}
+            save(plan_path, plan)
+        # Validate the full operation before replacing any target file.
+        for name, item in plan['files'].items():
+            if current(checked(root, name)) not in (item['before'], item['after']):
+                raise ValueError('USER_EDIT_CONFLICT: ' + name)
+            if item['before'] is not None and item['before'] != item['after']:
+                if current(checked(audit, 'backup/' + name)) != item['before']:
+                    raise ValueError('BACKUP_HASH_MISMATCH: ' + name)
+        save(checked(audit, 'status.json'), {'status': 'INSTALLING' if action == 'apply' else 'ROLLING_BACK',
+                                          'action': action, 'root': str(root)})
+        for name, item in plan['files'].items():
+            path = checked(root, name)
+            desired = item['after'] if action == 'apply' else item['before']
+            now = current(path)
+            if now == desired:
+                continue
+            if now not in (item['before'], item['after']):
+                raise ValueError('USER_EDIT_CONFLICT: ' + name)
+            if desired is None:
+                path.unlink()
+            elif action == 'apply':
+                with z.open(prefix + name) as src:
+                    atomic(path, src, item['mode'])
+            else:
+                with checked(audit, 'backup/' + name).open('rb') as src:
+                    atomic(path, src, item['mode'])
+        for name, item in plan['files'].items():
+            desired = item['after'] if action == 'apply' else item['before']
+            if current(checked(root, name)) != desired:
+                raise ValueError('FINAL_HASH_MISMATCH: ' + name)
+        result = {'status': 'INSTALLED' if action == 'apply' else 'ROLLED_BACK',
+                  'root': str(root), 'files': len(expected), 'code_sha256': CODE_SHA,
+                  'archive_sha256': ARCHIVE_SHA, 'git_commit': 'NOT_PERFORMED',
+                  'git_push': False, 'genos_revision': 'NOT_VERIFIED', 'nfs_changed': False}
+        save(checked(audit, 'status.json'), result)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+
+run('stage')
+PY_STAGE
+git diff --cached --stat
+if ! git diff --cached --quiet; then
+  git commit -m "Continue verified successful documents with explicit omissions"
+fi
+python3 VERIFY_PIPELINE_RELEASE.py --code-root "$HOME/DEV" --require-committed
+git push
+# 여기까지는 Git 적용/전송입니다. GENOS 화면에서 위 commit으로 새 리비전을 배포합니다.
+# legal_pipeline_serving(761), 프로세스 worker 1 / replica 1. Python service(config,data) 진입점 유지.
+# 별도 S3 설정/자격/방화벽은 필요 없습니다. Dataiku URL/TOKEN 기존 변수 유지.
+# GENOS 리비전 환경: LEGAL_PIPELINE_PARSER_MODE=existing-http (기존 전체 Flow의 HTTP 전처리기)
+# 기존 GENOS_PREPROCESSOR_ID/URL, SHARED_ROOT/REMOTE_ROOT, GENOS_LLM_* 연결을 유지합니다.
+# 같은 Pod 파서를 쓸 때만 LEGAL_PIPELINE_PARSER_MODE=same-pod, 실제 GENOS_STRUCTURE_CONFIG 설정이 필요합니다.
+# 배포 뒤 LEGAL_RAG/ehA8dpVm에 DATAIKU_COMPUTE_RECIPES_20261028_R6.zip 업로드.
+# Dataiku 새 커널에서 DATAIKU_R6_INSTALL.txt 실행 후 00 → 기존 02 → 기존 03 순서.
+# 기존 작업명/기한/예산을 유지하며 GUIDE.txt의 이전 작업 이행 제한을 확인합니다.

@@ -1,0 +1,28 @@
+{
+  "evidence": "user screenshots, not direct onsite access",
+  "health": {
+    "status": "CONNECTED_CODE_MATCH",
+    "recipe_exit_code": 0,
+    "documents_sent": 0,
+    "oracle_written": false,
+    "source_attachment": "C21D605E-EA46-4461-AE0F-A24CA30514F8/1-사진-1.jpg"
+  },
+  "unpack": {
+    "status": "FAILED_INPUT_SELECTION",
+    "error": "INPUT_NAME_AMBIGUOUS_OR_MISSING: RAW_INPUT.zip",
+    "source_attachment": "269B7BDD-B4ED-469C-ADDE-8949649690B3/1-사진-1.jpg"
+  },
+  "listing": {
+    "canonical_and_copy_names_both_present": true,
+    "file_content_equivalence_verified": false,
+    "source_attachment": "DF826DC9-F318-4649-B532-B346A470985F/1-사진-1.jpg"
+  },
+  "move": {
+    "status": "FAILED",
+    "error": "NoSuchBucketException",
+    "http_status": 404,
+    "root_cause": "not determined: bucket existence, namespace, authorization or connector move configuration",
+    "source_attachment": "76E9FD3A-5BE3-4E5C-AA56-573DAB4C5234/1-사진-1.jpg"
+  },
+  "repair": "explicit canonical filename set; no move/copy/delete; field execution pending"
+}
