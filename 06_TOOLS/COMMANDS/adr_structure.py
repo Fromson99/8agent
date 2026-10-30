@@ -2228,6 +2228,40 @@ def _openrouter_scoped_benchmark_override(path: Path, manifest: dict, meta: dict
         return None, [f'Invalid scoped OpenRouter benchmark override: {exc}']
 
 
+def _qwen38_proxy_comparison(path: Path, manifest: dict, meta: dict):
+    """A scoped, user-authorized comparison never changes the default model."""
+    ref = manifest.get('llm_policy', {}).get('proxy_comparison')
+    if ref is None:
+        return set(), []
+    try:
+        target = (ROOT / ref['path']).resolve()
+        if (not target.is_relative_to((path / 'artifacts').resolve())
+                or _sha256(target) != ref.get('sha256')):
+            raise ValueError('comparison design location/hash mismatch')
+        design = json.loads(target.read_text('utf-8'))
+        auth = design.get('authorization', {})
+        models = design.get('models')
+        if (design.get('schema_version') != 'qwen38-proxy-comparison-v1'
+                or design.get('adr_id') != manifest.get('adr_id')
+                or design.get('experiment_id') != manifest.get('experiment_id')
+                or not isinstance(models, list) or not models or len(set(models)) != len(models)
+                or not set(models) <= GENOS_PROXY_MODELS
+                or design.get('proxy_policy') != GENOS_PROXY_POLICY
+                or design.get('fallback_allowed') is not False
+                or auth.get('source') != 'user_message' or not auth.get('text')
+                or not auth.get('scope') or not auth.get('session_id')
+                or auth.get('fallback_allowed') is not False
+                or design.get('main_wiring') != 'unchanged' or meta.get('main_wiring') != 'unchanged'
+                or manifest.get('in_sample') is not True or manifest.get('decision_eligible') is not False):
+            raise ValueError('invalid scoped proxy comparison authorization')
+        for call in manifest.get('llm_policy', {}).get('llm_calls', []):
+            if call.get('model') in models and call.get('class') != 'product':
+                raise ValueError('GENOS proxy comparison is product-only')
+        return set(models), []
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        return set(), [f'Invalid Qwen3.8 proxy comparison: {exc}']
+
+
 def validate_adr(path: Path, *, final: bool = False) -> list[str]:
     errors: list[str] = []
     match = ADR_DIR_RE.fullmatch(path.name)
@@ -2326,6 +2360,8 @@ def validate_adr(path: Path, *, final: bool = False) -> list[str]:
     policy = manifest.get("llm_policy", {})
     if policy.get("policy_version") == "qwen38-experiments-v1":
         qwen38 = "qwen/qwen3.8-27b"
+        scoped_proxy, proxy_errors = _qwen38_proxy_comparison(path, manifest, meta)
+        errors.extend(proxy_errors)
         if match and int(match.group(1)) < 583:
             transition = policy.get("transition_authorization", {})
             if not (int(match.group(1)) == 582
@@ -2341,7 +2377,7 @@ def validate_adr(path: Path, *, final: bool = False) -> list[str]:
                 or policy.get("offline_evaluator_allowed_models") != [qwen38]):
             errors.append("Qwen3.8 experiments require the exact approved model/provider without fallback")
         for call in policy.get("llm_calls", []):
-            if call.get("model") != qwen38:
+            if call.get("model") not in {qwen38, *scoped_proxy}:
                 errors.append("All new experiment roles must use " + qwen38)
             if call.get("class") not in {"product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
                 errors.append("Invalid Qwen3.8 experiment role class")
