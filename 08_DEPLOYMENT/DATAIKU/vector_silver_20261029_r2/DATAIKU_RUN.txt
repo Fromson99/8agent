@@ -1,0 +1,7 @@
+# DATAIKU_INSTALL.txt를 실행한 동일 노트북의 새 셀에서 실행합니다.
+# SQL 파일로 이미 생성했으면 check부터. schema는 같은 3테이블 생성·검사이며 기존 데이터 삭제 없음.
+ACTION = "check"  # "schema" / "check" / "build"
+from vector_silver.runtime import run
+VECTOR_RESULT = run(VECTOR_CFG, action=ACTION)
+print(VECTOR_RESULT)
+# build는 Flow LEGAL_04_VECTOR_SILVER_R3의 Run으로 실행해도 같습니다.

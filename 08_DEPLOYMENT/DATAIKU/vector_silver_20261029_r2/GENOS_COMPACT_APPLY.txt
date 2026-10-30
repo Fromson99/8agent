@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Run from the actual TRANSFER directory: bash ./GENOS_COMPACT_APPLY.txt check ~/DEV
+MODE="${1:?check 또는 apply}"
+TARGET="${2:?실제 Git checkout 경로}"
+LOG="./genos-vector-compact-$(date +%Y%m%d-%H%M%S).log"
+exec > >(tee -a "$LOG") 2>&1
+python3 - "$MODE" "$TARGET" <<'PY_COMPACT'
+import hashlib,pathlib,subprocess,sys,tempfile,zipfile
+archive=pathlib.Path('./GENOS_COMPACT_PATCH_20261029_R2.zip')
+assert hashlib.sha256(archive.read_bytes()).hexdigest()=='3cd88c9c0c7b854920cd9c6feaf14f1a21964b821036b7d7b7328a875b539e8a','PATCH_ZIP_HASH_MISMATCH'
+with tempfile.TemporaryDirectory(prefix='genos-compact-patch-') as tmp:
+ root=pathlib.Path(tmp)
+ with zipfile.ZipFile(archive) as z:
+  names=z.namelist();assert len(names)==len(set(names)) and sum(i.file_size for i in z.infolist())<1024*1024
+  for i in z.infolist():
+   p=pathlib.PurePosixPath(i.filename)
+   assert not p.is_absolute() and '..' not in p.parts and (i.external_attr>>16)&0o170000!=0o120000
+   target=root/i.filename;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(i.filename))
+ subprocess.run([sys.executable,str(root/'genos_apply.py'),sys.argv[1],str(pathlib.Path(sys.argv[2]).resolve())],check=True)
+PY_COMPACT

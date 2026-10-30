@@ -1,0 +1,1 @@
+COMMENT ON COLUMN SIDDS.LGL_VCTR_SET_S.PAYLOAD_JSON IS '논리명(미승인 후보): 벡터게시메타내용. manifest에 원문/조회 판본·문서 범위·모델·차원·분할 기준, status에 BUILDING/READY, lease에 현재 적재 잠금, active_revision에 활성 순번. 상세 실행 기록은 Dataiku에 저장. 타입: CLOB; NULL: False. 표준매핑 미확인.'

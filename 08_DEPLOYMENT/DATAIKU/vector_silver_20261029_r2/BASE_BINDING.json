@@ -1,0 +1,31 @@
+{
+  "schema_version": "semantic-runtime-active-v2",
+  "release_id": "accepted-answer-20261029-r1",
+  "generation": 117,
+  "manifest_path": "08_DEPLOYMENT/RELEASES/accepted-answer-20261029-r1/release.json",
+  "release_manifest_sha256": "924cd119ce1ab0b12d343eb5a7c91fbf2306d1f44497a86fdab9f2a67a4219b2",
+  "activated_at": "2026-10-29T03:55:43.385951+00:00",
+  "deployment_basis": "VALIDATED_ADR_PROMOTION",
+  "quality_certified": false,
+  "legacy_fallback": false,
+  "previous_active_sha256": "2b40ca4e5199089aae8df0be0c1bb06f1ad261c865696976c099cb686873e585",
+  "qualification": {
+    "source": {
+      "path": "04_EXPERIMENTS/ADR/ADR-1197-accepted-answer-release-receipt/실험/manifest.json",
+      "sha256": "f6a4b6061681c6713c930e46cfb7b036648733dfaa250d870aa0f8959e403403"
+    },
+    "readme": {
+      "path": "04_EXPERIMENTS/ADR/ADR-1197-accepted-answer-release-receipt/README.md",
+      "sha256": "9ff430ee30099a2deb3411a4784d08f3226add47ddc03cc2449f54a6c72c478b"
+    },
+    "arm": "verified",
+    "result": {
+      "path": "04_EXPERIMENTS/ADR/ADR-1197-accepted-answer-release-receipt/artifacts/run-001/result.json",
+      "sha256": "086cca4777537dc4e6f79fb617479f5e40eee94e176f32918b40186a64c8ba7d"
+    },
+    "rebase": {
+      "path": "04_EXPERIMENTS/ADR/ADR-1197-accepted-answer-release-receipt/artifacts/design/release-rebase.json",
+      "sha256": "9aa1e6eb8539e4665081908db12117a528acf6443c159e22a0103728be45102a"
+    }
+  }
+}

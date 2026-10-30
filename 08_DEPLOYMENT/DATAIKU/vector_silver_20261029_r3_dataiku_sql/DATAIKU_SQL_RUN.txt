@@ -1,0 +1,65 @@
+Dataiku SQL 노트북 전용 — 벡터 실버 R3 생성 SQL 정정
+
+사진의 ORA-06550 / PLS-00103 end-of-file은 SQL 문장 파싱 단계의 오류입니다.
+현재 SQL 노트북 실행 과정에서 PL/SQL 블록이 끝까지 전달되지 않은 것으로 보입니다.
+정확히 어떤 문자열이 DB로 전달됐는지는 현장 로그가 없어 확정하지 않습니다.
+이미 확인한 VECTOR 함수 지원과는 별개입니다. 권한 부족 판정도 아직 아닙니다.
+
+지금 화면에서 하는 방법
+1. 오른쪽 위 연결 AIDP(Oracle)를 그대로 사용합니다.
+2. 기존 Query의 BEGIN / EXECUTE IMMEDIATE / EXCEPTION / END / / 내용 전체를 지웁니다.
+3. 먼저 00_CHECK_EXISTING.sql 한 파일의 내용만 붙여넣고 Run을 누릅니다.
+   이미 있는 객체를 지우지 않습니다. 행이 없더라도 조회권한 부족 가능성은 남습니다.
+4. 아래 ①~④를 각각 따로 실행합니다.
+   '+ QUERY'로 새 Query를 만들거나, 이전 내용을 전부 지우고 다음 SQL 하나만 넣습니다.
+   이 TXT 전체를 SQL 칸에 붙여넣지 않습니다. 구분선 아래 SQL 한 문장씩만 복사합니다.
+   파일 끝에 / 또는 BEGIN/END를 덧붙이지 않습니다. 각 SQL에는 마지막 세미콜론도 생략했습니다.
+5. 네 생성 단계가 끝나면 05/06/07 확인 SQL도 각각 별도 Query로 실행합니다.
+
+중간 오류의 뜻
+- ORA-00955: 해당 이름의 객체가 이미 있습니다. 자동으로 성공 처리하거나 삭제하지 말고
+  00에서 종류를 보고 05/06/07 및 기존 Flow check로 구조를 확인합니다.
+- ORA-01031: 현재 계정의 SIDDS 생성 권한이 부족합니다. 이 SQL ZIP을 DB 담당자에게 전달합니다.
+- ORA-00942: 선행 테이블이 없거나 해당 테이블을 볼 권한이 없습니다.
+  특히 ITEM은 SET, ITEM 색인은 ITEM이 먼저 있어야 합니다. owner를 바꾸어 우회하지 않습니다.
+- 그 외 오류: 다음 단계로 넘어가지 않고 해당 문장과 Oracle 오류를 보존합니다.
+Oracle CREATE는 자동 커밋이므로 일부 성공 후 실패해도 앞선 객체가 남을 수 있습니다.
+
+① 01_CREATE_SET.sql — 게시 관리 테이블
+
+CREATE TABLE SIDDS.LGL_VCTR_SET_S (PUB_ID VARCHAR2(64 BYTE) PRIMARY KEY, PAYLOAD_JSON CLOB NOT NULL, CONSTRAINT LVM_SET_JSON CHECK(PAYLOAD_JSON IS JSON WITH UNIQUE KEYS))
+
+② 02_CREATE_ITEM.sql — 벡터 저장 테이블
+
+CREATE TABLE SIDDS.LGL_VCTR_ITEM_S (PUB_ID VARCHAR2(64 BYTE) NOT NULL, SEG_ID VARCHAR2(64 BYTE) NOT NULL, META_JSON CLOB NOT NULL, EMBEDDING VECTOR(*,FLOAT32) NOT NULL, CONSTRAINT LVM_ITEM_PK PRIMARY KEY(PUB_ID,SEG_ID), CONSTRAINT LVM_ITEM_FK FOREIGN KEY(PUB_ID) REFERENCES SIDDS.LGL_VCTR_SET_S(PUB_ID), CONSTRAINT LVM_ITEM_JSON CHECK(META_JSON IS JSON WITH UNIQUE KEYS))
+
+③ 03_CREATE_ITEM_INDEX.sql — 문서/원문 검색 색인
+
+CREATE INDEX SIDDS.LGL_VCTR_ITEM_IX_S ON SIDDS.LGL_VCTR_ITEM_S(PUB_ID,JSON_VALUE(META_JSON, '$.document_id' RETURNING VARCHAR2(512) ERROR ON ERROR),JSON_VALUE(META_JSON, '$.source_id' RETURNING VARCHAR2(512) ERROR ON ERROR))
+
+④ 04_CREATE_ACTIVE_INDEX.sql — 활성 게시본 중복 방지 색인
+
+CREATE UNIQUE INDEX SIDDS.LGL_VCTR_SET_ACT_IX_S ON SIDDS.LGL_VCTR_SET_S(CASE WHEN JSON_VALUE(PAYLOAD_JSON, '$.active_revision' RETURNING NUMBER ERROR ON ERROR NULL ON EMPTY) IS NOT NULL THEN JSON_VALUE(PAYLOAD_JSON, '$.manifest.query_id' RETURNING VARCHAR2(64) ERROR ON ERROR) END)
+
+생성 완료 확인
+- 05_CHECK_COLUMNS.sql: SET 2행 + ITEM 4행 = 6개 컬럼.
+- 06_CHECK_INDEXES.sql: 두 색인 모두 STATUS=VALID.
+  ITEM 색인은 NONUNIQUE, SET_ACT 색인은 UNIQUE.
+- 07_CHECK_CONSTRAINTS.sql: PK/FK/JSON CHECK 제약이 ENABLED/VALIDATED.
+- 원문 이관 완료 후 기존 DATAIKU_RUN.txt의 ACTION="check"로 전체 구조와 원문 결속 검사.
+  임베딩 적재는 이관 완료와 check 성공 뒤 실행합니다.
+
+테이블/컬럼 설명 등록
+comments 폴더의 COMMENT SQL 8개도 각각 별도 Query에서 실행합니다.
+기존 R3 SQL의 설명과 동일하며 데이터/원문을 변경하지 않습니다.
+
+이번에 바꾼 것
+기존 R3와 같은 CREATE/COMMENT 문장을 PL/SQL 포장 없이 파일별로 분리했습니다.
+테이블 이름·6컬럼·타입·PK/FK·색인·Flow/GENOS 코드에는 변경이 없습니다.
+기존 SQL Developer용 01_CREATE_VECTOR_SILVER.sql 전체를 Dataiku SQL Query에 다시 넣지 않습니다.
+이번 정정본이 Dataiku SQL 노트북 화면에서 사용할 생성 파일입니다.
+현장 노트북에서 실행 완료된 것으로 보고하는 것은 아닙니다.
+
+근거
+Dataiku SQL 노트북: https://doc.dataiku.com/dss/latest/notebooks/sql-notebook.html
+문장 분할 제한 참고: https://doc.dataiku.com/dss/latest/code-recipes/sql.html#multiple-statements-handling

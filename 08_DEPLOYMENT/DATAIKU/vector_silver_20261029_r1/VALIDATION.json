@@ -1,0 +1,40 @@
+{
+  "base_release": "accepted-answer-20261029-r1",
+  "files": 382,
+  "code_zip_sha256": "76071a4b910584955ae4d6611c309115069be620780f259df4572aff2e0a96a8",
+  "vector_tables": 3,
+  "vector_columns": 18,
+  "silver_tables": 11,
+  "silver_columns": 59,
+  "agent_tables": 1,
+  "agent_columns": 5,
+  "field_deployment": false,
+  "external_model_calls": 0,
+  "strict_success": true,
+  "tests": 17,
+  "failures": 0,
+  "errors": 0,
+  "verification": {
+    "oracle": "Actual local Oracle VECTOR and SQL; disposable schema removed",
+    "embedding": "Deterministic fixtures only; zero live model calls",
+    "dataiku_sdk": "15.2.0 public SDK with in-memory HTTP backend; literal installation cell executed",
+    "recipe_entrypoint": "Actual DataikuClient renderer and local Oracle; upstream source adapter and embedding mocked"
+  },
+  "delivery": {
+    "strict_success": true,
+    "literal_install_cell": true,
+    "real_public_sdk": true,
+    "recipe_compiled": true,
+    "run_cell_compiled": true,
+    "python_files_compiled": 376,
+    "field_dataiku": false,
+    "model_calls": 0
+  },
+  "prior_failures_preserved": "TEST_RESULTS_initial_failed.xml: 12 failures (schema length regex plus exception/SDK/base-generation test setup); corrected and retested",
+  "limitations": [
+    "No field SIDDS/Dataiku/ORDS/GENOS access",
+    "No production gold schema approval or execution",
+    "No whole-corpus timing/performance certification"
+  ],
+  "source_binding": "BASE_BINDING.json (MAIN117 selected by concurrent work; pinned on packaging; vector contract unchanged from MAIN116)"
+}

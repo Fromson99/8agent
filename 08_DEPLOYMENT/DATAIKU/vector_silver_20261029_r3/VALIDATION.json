@@ -1,0 +1,71 @@
+{
+  "strict_success": true,
+  "tests": 26,
+  "test_seconds": 8.505,
+  "native_local_oracle": true,
+  "native_tables": 2,
+  "native_columns": 6,
+  "vector_row_columns": 4,
+  "publication_columns": 2,
+  "silver_tables": 10,
+  "silver_columns": 47,
+  "agent_tables": 1,
+  "agent_columns": 5,
+  "actual_dataiku_jdbc": false,
+  "dataiku_public_sdk_mock_http": true,
+  "recipe_entry_with_native_oracle": true,
+  "genos_querysql_consumer_native_oracle": true,
+  "literal_install_cell": true,
+  "python_files_compiled": 376,
+  "base_release": "accepted-answer-20261029-r1",
+  "main_activation_changed": false,
+  "working_product_changed": false,
+  "actual_genos_deployment": false,
+  "external_or_internal_model_calls": 0,
+  "actual_repo_commit_push": false,
+  "mail_sent": false,
+  "code_zip_sha256": "bae9c8a74764396cea16ef6fc33d2576c1ea8c4139a8c427d2abdbf9533c4b4d",
+  "genos_patch_sha256": "e885b89a3c6ed4aa30f3553404c853ac525eed81904208e9471b30d1b748cae1",
+  "checks": [
+    "native VECTOR insert/cosine/ACL/root grouping",
+    "same schema create twice and strict metadata/index checks",
+    "batch size and full transaction rollback",
+    "failed partial build resume and no re-embedding READY data",
+    "lease ownership, active unique index, compare-and-swap A-B-A protection",
+    "separate Oracle session NOWAIT lock conflict",
+    "Dataiku entrypoint check/build/resume plus GENOS QuerySQL/Retriever",
+    "literal Dataiku installation/public SDK",
+    "literal GENOS patch from MAIN117 and previous R2; unrelated file protection and hash drift refusal"
+  ],
+  "preserved_initial_results": [
+    {
+      "file": "TEST_RESULTS_initial.xml",
+      "passed": 15,
+      "failed": 7,
+      "reason": "nullable JSON lease/revision required explicit NULL ON EMPTY"
+    },
+    {
+      "file": "TEST_RESULTS_second.xml",
+      "passed": 21,
+      "failed": 1,
+      "reason": "legacy projection parser rejected native Oracle JSON RETURNING syntax"
+    },
+    {
+      "file": "TEST_RESULTS_third.xml",
+      "passed": 24,
+      "failed": 0
+    },
+    {
+      "file": "TEST_RESULTS_index_check.xml",
+      "passed": 19,
+      "failed": 7,
+      "reason": "strict index checker needed Oracle canonical TYPE(LAX) normalization"
+    }
+  ],
+  "limits": [
+    "column count reduction is not a latency or storage reduction measurement",
+    "field deployment/embedding/ORDS untested",
+    "prior vector tables preserved, no automatic data migration",
+    "Gold naming/JSON/VECTOR registration and DBA creation unapproved"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "base_release": "accepted-answer-20261029-r1",
+  "files": 382,
+  "code_zip_sha256": "5a3c0abed0e0a7cdf0dfc8ef595bbd6744107bff83c4d578d61142f2f45989b3",
+  "vector_tables": 3,
+  "vector_columns": 14,
+  "silver_tables": 11,
+  "silver_columns": 55,
+  "agent_tables": 1,
+  "agent_columns": 5,
+  "field_deployment": false,
+  "external_model_calls": 0,
+  "strict_success": true,
+  "tests": 20,
+  "failures": 0,
+  "errors": 0,
+  "verification": [
+    "Actual local Oracle 14-column DDL, native vector storage/search and resumable writes",
+    "Old 18-column read compatibility; empty-only compaction and populated-table refusal",
+    "Public Dataiku SDK against fixture backend; literal notebook install execution",
+    "GENOS patch literal launcher against isolated Git checkout; all engine pins checked; unknown code changes rejected"
+  ],
+  "removed_columns": [
+    "PROFILE_JSON",
+    "EXPECTED_COUNT",
+    "ACTUAL_COUNT",
+    "INPUT_HASH"
+  ],
+  "preserved": [
+    "Manifest/model/source identity and existing JSON attributes",
+    "Source count versus actual row count verification; count retained in Dataiku",
+    "ACL/filter/root grouping, build lease, active revision CAS"
+  ],
+  "product_state": "Prepared delivery only; working product, selected MAIN117 and field GENOS unchanged"
+}

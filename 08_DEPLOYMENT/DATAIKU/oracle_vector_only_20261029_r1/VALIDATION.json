@@ -1,0 +1,48 @@
+{
+  "parent_zip_sha256": "bae9c8a74764396cea16ef6fc33d2576c1ea8c4139a8c427d2abdbf9533c4b4d",
+  "code_zip_sha256": "f1bf1d9e6522d3ad0f22a0721a5be6a768f21b0c5e2a46415dded8c8f7d73822",
+  "changed_python": [
+    "vector_silver/install.py",
+    "vector_silver/runtime.py"
+  ],
+  "base_backend_identical": true,
+  "field_applied": false,
+  "main_changed": false,
+  "model_calls": 0,
+  "tests": 22,
+  "failures": 0,
+  "errors": 0,
+  "validation_kind": "unit tests and public Dataiku SDK with mocked HTTP; literal install cell executed in clean process",
+  "field_dataiku_applied": false,
+  "field_oracle_executed": false,
+  "native_oracle_new_test": false,
+  "physical_tables_deleted": 0,
+  "mail_sent": false,
+  "selected_release_observed": "accepted-answer-20261029-r1",
+  "selected_vector_table_declaration": "TABLES={'release':'LGL_VCTR_PBLS_S','segment':'LGL_VCTR_SEG_S','active':'LGL_VCTR_ACT_S'}",
+  "unchanged_boundaries": [
+    "R3 six-column backend/publisher/schema bytes",
+    "working product",
+    "active release pointer",
+    "GENOS deployment"
+  ],
+  "initial_test_record": {
+    "file": "TEST_RESULTS_initial.xml",
+    "passed": 13,
+    "failed": 7,
+    "cause": "test HTTP Backend omitted SDK get_project; fixture fixed; product unchanged"
+  },
+  "checks": [
+    "no 00-03 recipe/load folder required",
+    "only specified Oracle source pin; complete/hash validation retained",
+    "external dataset binding and upstream producer rejection",
+    "same R4 recipe/result reuse",
+    "sealed R3 recipe backup before change",
+    "backup failure leaves recipe unchanged",
+    "repeat install read-only",
+    "partial failure/resume preserves time/budget/history",
+    "source/model/target mismatch blocked",
+    "literal sealed ZIP bootstrap/install",
+    "all archive hashes verified"
+  ]
+}

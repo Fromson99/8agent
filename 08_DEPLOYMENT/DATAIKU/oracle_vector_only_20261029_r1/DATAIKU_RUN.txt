@@ -1,0 +1,7 @@
+# 설치와 동일한 노트북의 다음 셀. 실제 DB 검사는 check, 임베딩/적재는 build.
+ACTION = "check"
+from vector_silver.runtime import run
+RESULT = run(VECTOR_CFG, action=ACTION)
+print(RESULT)
+# check 통과 뒤 Flow LEGAL_04_VECTOR_SILVER_R4만 Run 하거나 ACTION="build"로 실행.
+# 기존 source/embedding 설정을 그대로 사용하며 00~03 재실행은 필요 없습니다.

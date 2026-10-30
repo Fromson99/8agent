@@ -1,0 +1,18 @@
+# LEGAL_RAG Python notebook. Read-only; prints dataset bindings and recipe references.
+import dataiku, json
+project = dataiku.api_client().get_default_project()
+recipes = []
+for row in project.list_recipes():
+    settings = project.get_recipe(row['name']).get_settings()
+    recipes.append({'name': row['name'], 'inputs': settings.get_flat_input_refs(),
+                    'outputs': settings.get_flat_output_refs()})
+datasets = []
+for row in project.list_datasets():
+    raw = project.get_dataset(row['name']).get_settings().get_raw()
+    params = raw.get('params', {})
+    datasets.append({'name': row['name'], 'type': raw.get('type'), 'managed': raw.get('managed', False),
+                     **{k: params.get(k) for k in ('connection', 'schema', 'table', 'mode')}})
+report = {'project': project.project_key, 'datasets': datasets, 'recipes': recipes,
+          'folders': [{'id': f['id'], 'name': f['name']} for f in project.list_managed_folders()],
+          'scope': 'This project only; no data changes; external usages and schedules not certified unused.'}
+print(json.dumps(report, ensure_ascii=False, indent=2))

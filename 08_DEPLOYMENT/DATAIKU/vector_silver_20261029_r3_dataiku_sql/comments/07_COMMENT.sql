@@ -1,0 +1,1 @@
+COMMENT ON COLUMN SIDDS.LGL_VCTR_ITEM_S.META_JSON IS '논리명(미승인 후보): 벡터구역메타내용. document_id·source_id·unit_id·block_id·start/end·원문/블록/입력 해시. 원문 본문은 기존 테이블 참조. 문서/원문 ID 속성에 함수 색인 적용. 타입: CLOB; NULL: False. 표준매핑 미확인.'

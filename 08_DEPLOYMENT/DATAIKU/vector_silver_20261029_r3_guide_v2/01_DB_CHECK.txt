@@ -1,0 +1,25 @@
+# Dataiku LEGAL_RAG > Notebooks > New > Python의 첫 셀에 전체 붙여넣기.
+# Shift+Enter로 실행. Python 코드이며 bash/SQL Query 칸에 넣지 않습니다.
+# 읽기만 합니다. 테이블 생성/데이터 적재/임베딩 호출은 하지 않습니다.
+import dataiku
+
+connection_name = dataiku.get_custom_variables().get("LEGAL_ORACLE_CONNECTION", "AIDP")
+executor = dataiku.SQLExecutor2(connection=connection_name)
+print("Oracle 연결 이름:", connection_name)
+
+identity = executor.query_to_df("""
+SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS LOGIN_USER,
+       SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS CURRENT_SCHEMA,
+       SYS_CONTEXT('USERENV','DB_UNIQUE_NAME') AS DB_NAME
+FROM DUAL
+""")
+print(identity.to_string(index=False))
+
+vector_check = executor.query_to_df("""
+SELECT VECTOR_DIMENSION_COUNT(TO_VECTOR('[1,0]',2,FLOAT32)) AS DIMENSIONS,
+       VECTOR_DISTANCE(TO_VECTOR('[1,0]',2,FLOAT32),TO_VECTOR('[1,0]',2,FLOAT32),COSINE) AS DISTANCE
+FROM DUAL
+""")
+print(vector_check.to_string(index=False))
+print("마지막 표가 DIMENSIONS=2, DISTANCE=0이면 벡터 함수 사용 가능입니다.")
+print("테이블 생성 권한과 실제 임베딩 서비스 연결은 아직 검사하지 않았습니다.")

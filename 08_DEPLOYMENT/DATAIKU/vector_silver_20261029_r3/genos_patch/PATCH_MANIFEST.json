@@ -1,0 +1,27 @@
+{
+  "schema": "vector-compact-patch-v1",
+  "code": {
+    "02_BACKEND/semantic_runtime/initial_vector.py": {
+      "before": "e8de6f93d41ec1a239972f92e051a6e54dfa5444e1e93bfb1e3973656112a8f3",
+      "after": "8a54cb0b44b11a3b0678a5fc8e03634c68ccbe6bb4ff05c878cf109988fe7a69",
+      "compatible_before": [
+        "d058b7bc11501193e9605ca6d96b8f6eea8ff2466defc27f7af2793c94556d8c"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/vector_publish.py": {
+      "before": "8283a20ab9ddecc286f5ef26aa3eb51885365f3c69df4b83b9246cc90a56af7c",
+      "after": "3df639728e03fa8f27b0c6efca336c485134a2948425004e5a7cbd7138b28ac9",
+      "compatible_before": [
+        "e18ea1d79697859a50f737a192b99afb74b40c19a97c4caaca6bc265e8730e8c"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/oracle_silver_reads.py": {
+      "before": "62aba64261aa5e008dfffcc64d6903fcf80dd5077b3b4ca29fe56028530b58ed",
+      "after": "ee618360d6df075d4bfaff90dafa759302d2869096d9deb06bb974fdbb4fd7bf",
+      "compatible_before": []
+    }
+  },
+  "base_release": "accepted-answer-20261029-r1",
+  "oracle_schema_columns": 6,
+  "field_verified": false
+}
