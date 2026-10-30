@@ -1,0 +1,143 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>법령 특화 지식화 모듈 코드 읽기</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f8;color:#202e40;font-family:Inter,"Malgun Gothic","Noto Sans KR",Arial,sans-serif;line-height:1.75}a{color:#087f8c;text-decoration:none}a:hover{text-decoration:underline}.hero{background:#102d43;color:white;padding:50px max(32px,calc((100vw - 1250px)/2)) 38px}.eyebrow{font-size:12px;letter-spacing:.14em;color:#7ed8d5;font-weight:700}.hero h1{font-size:34px;margin:8px 0 12px;letter-spacing:-.035em;line-height:1.35}.hero p{max-width:850px;color:#c8d6df;margin:0}.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.badge{border:1px solid #496478;color:#dfeaf0;border-radius:30px;padding:3px 12px;font-size:12px}.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:32px;max-width:1314px;margin:32px auto;padding:0 32px}nav{position:sticky;top:24px;align-self:start;max-height:90vh;overflow:auto;font-size:13px}nav strong{display:block;margin-bottom:12px}nav a{display:block;color:#48576a;padding:6px 0}nav a.active{color:#087f8c;font-weight:700}main{min-width:0;background:#fff;padding:36px 42px;border:1px solid #e4e9ed;border-radius:14px}main>h1:first-child{display:none}h2{font-size:23px;line-height:1.45;color:#153b55;border-top:1px solid #e2e9ed;padding-top:28px;margin:35px 0 18px;scroll-margin-top:25px}h3{font-size:18px;color:#087f8c;margin-top:28px}p,li{font-size:14px}table{width:100%;border-collapse:collapse;font-size:12px;margin:20px 0;table-layout:auto}th{text-align:left;background:#eaf2f6;color:#153b55}th,td{padding:10px 12px;border:1px solid #dce5eb;vertical-align:top;overflow-wrap:anywhere}code{font-family:"Cascadia Code",Consolas,monospace;font-size:.9em;overflow-wrap:anywhere;background:#edf3f6;padding:2px 4px;border-radius:3px}pre{background:#132e41;color:#def3f1;border-radius:8px;padding:20px;overflow:auto;font-size:12px;line-height:1.6}pre code{background:none;padding:0;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere}blockquote{border-left:4px solid #00a89d;background:#eff9f8;margin:18px 0;padding:1px 16px}.toolbar{display:flex;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #e4e9ed;font-size:13px}.footer{max-width:1314px;margin:20px auto 50px;padding:0 32px;color:#6a7886;font-size:12px}@media(max-width:900px){.layout{display:block;padding:0 16px}nav{position:static;max-height:none;padding-bottom:25px}main{padding:24px 18px}.hero{padding:32px 22px}.hero h1{font-size:27px}}@media print{.hero{background:white;color:#153b55;padding:0 0 20px}.hero p{color:#333}.badges,nav,.toolbar,.footer{display:none}.layout{display:block;margin:0;padding:0}main{border:0;padding:0}body{background:white}h2,h3{break-after:avoid}tr{break-inside:avoid}pre{color:#111;background:#f5f7f8}}</style><body><header class="hero"><div class="eyebrow">LEGAL KNOWLEDGE BUILDER · API DESIGN v1</div><h1>법령 특화 지식화 모듈 코드 읽기</h1><p>현재 feature/legal_RAG 브랜치에서 볼 파일과 함수. 코드 사본 없이 실행 흐름을 따라 읽습니다.</p><div class="badges"><span class="badge">구조화 · 색인</span><span class="badge">Oracle 게시</span><span class="badge">벡터 준비</span><span class="badge">2026.10.30</span></div></header><div class="layout"><nav><strong>문서 목차</strong><a href="#section-1">1. 먼저 볼 다섯 곳</a><a href="#section-2">2. 호출 경로</a><a href="#section-3">3. Dataiku 입력과 작업 상태</a><a href="#section-4">4. GENOS의 실제 API</a><a href="#section-5">5. 구조화와 성공 문서 선택</a><a href="#section-6">6. 용어·탐색·본문 검색 자료 만들기</a><a href="#section-7">7. Oracle 적재</a><a href="#section-8">8. 벡터 생성과 게시</a><a href="#section-9">9. 기존 호출과 새 모듈의 연결 지점</a></nav><main><div class="toolbar"><a href="코드_읽기_가이드.docx">Word 문서</a><a href="openapi.yaml">OpenAPI</a><a href="API_명세서.html">API 명세</a><a href="코드_읽기_가이드.html">코드 읽기</a></div><h1>법령 특화 지식화 모듈 코드 읽기 가이드</h1>
+<p>기준 브랜치 <code>feature/legal_RAG</code> · 확인한 HEAD <code>7c17098fc2a96e76964483ae26551cebbbeaf511</code> · 2026-10-30</p>
+<p>모든 경로는 저장소 루트 기준이다. <strong>코드 사본은 제공하지 않는다.</strong> 현재 브랜치에서 아래 파일과 함수명을 검색하면 된다. 줄 번호는 이 기준 커밋에서의 탐색 보조이며 이후 변경 시 함수명이 우선한다.</p>
+<p>현재 파이프라인은 코드가 여러 전달 폴더에 나뉘어 있다. R10은 R7의 서비스·파서 정책과 R6의 controller 등을 재사용한다. 폴더 날짜가 오래됐다고 해당 파일을 폐기 코드로 판단하면 안 된다. 아래 'R10 동일'은 봉인 전달본과 파일 바이트가 같은 것을 확인했다는 의미이며 현장 배포 확인을 뜻하지 않는다.</p>
+<h2 id="section-1">1. 먼저 볼 다섯 곳</h2>
+<ol>
+<li><strong>전체 계산 순서:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_single_cpu_20261029_r10/worker.py</code> → <code>stage_commands</code> 45행, <code>compute</code> 88행.</li>
+<li><strong>Dataiku 작업과 단계 연결:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_partial_20261028_r6/controller.py</code> → <code>structure</code> 257행, <code>load</code> 350행, <code>execute</code> 405행. R10 동일.</li>
+<li><strong>실제 Oracle 적재:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/dataiku_run.py</code> → <code>load_oracle</code> 142행. R10 동일.</li>
+<li><strong>기존 Oracle 판본부터 벡터 실행:</strong> <code>08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/vector_silver/runtime.py</code> → <code>run</code>.</li>
+<li><strong>벡터 구간·게시 알고리즘:</strong> <code>08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/payload/02_BACKEND/semantic_runtime/vector_publish.py</code> → <code>segments</code>, <code>Publisher.build</code>, <code>Publisher.activate</code>.</li>
+</ol>
+<p>이 순서로 읽으면 '어떤 자료가 들어와서 어떤 함수가 실행되고 어디에 저장되는가'를 먼저 이해할 수 있다. 새 통합 runner는 이 다섯 경계 위에 얹는다.</p>
+<h2 id="section-2">2. 호출 경로</h2>
+<pre><code class="language-text">Dataiku 레시피
+  controller.execute(stage, cfg, work)
+    ├─ connection: 계산 코드·파서 설정 HEALTH 확인
+    ├─ unpack: 원문 ZIP 검증 및 S3 스냅샷
+    ├─ structure
+    │   ├─ 입력/대상/코드 binding, ManagedJob
+    │   ├─ HEALTH → OPEN → PUT → RUN → POLL/READ
+    │   │   └─ service.handle → run_compute → worker.compute
+    │   │       ├─ pipeline.py build-data-stages --stage structure
+    │   │       ├─ partial_pipeline.select
+    │   │       ├─ pipeline.py document-release prepare
+    │   │       ├─ pipeline.py document-release reindex
+    │   │       └─ worker.export_result
+    │   └─ 결과 ZIP·coverage 검증/S3 보존 → CLOSE
+    └─ load
+        └─ dataiku_run.load_oracle
+            ├─ 원문 transfer(run, verify)
+            ├─ 자산 publish / verify_assets
+            └─ 미리 계산한 query-data.db import_db
+
+별도 벡터 레시피
+  vector_silver.runtime.run(action='build')
+    ├─ 명시 query_release_id / Snapshot / source.integrity 확인
+    └─ vector_silver.publisher.Publisher.build
+        ├─ vector_publish.segments → 검증한 원문을 800/700 구간으로 분할
+        ├─ 기존 구간 확인 → 누락 구간만 Encoder.encode
+        ├─ insert_many → 행/차원/메타 재조회
+        └─ READY → query ID에 대한 벡터 게시본 CAS 선택
+</code></pre>
+<p>현재 <code>controller.execute</code>가 벡터까지 자동 호출하는 것은 아니다. 통합 모듈이 <code>load</code>의 query_release_id를 벡터 단계에 넘기는 부분을 새로 연결한다.</p>
+<h2 id="section-3">3. Dataiku 입력과 작업 상태</h2>
+<p><strong>파일:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_recipes_20261027_r1/recipes_runtime.py</code></p>
+<p>읽을 함수: <code>input_receipts</code>, <code>unpack_raw</code>, <code>context</code>, <code>CheckedClient.call</code>, <code>execute</code>.</p>
+<ul>
+<li>RAW_INPUT.zip/PIPELINE_SUPPORT.zip과 영수증을 선택하고 실제 해시를 확인하는 경계다.</li>
+<li><code>unpack_raw</code>는 승인된 경로의 원문을 Dataiku 관리 폴더에 보존한다.</li>
+<li><code>context</code>는 폴더/입력/DB 연결/계산 코드/서비스 주소를 작업 identity에 묶는다.</li>
+<li>R10에서 이 파일 단독의 옛 <code>structure/load</code>를 진입점으로 삼지 않는다. <code>controller.execute</code>가 해당 함수를 연결한다.</li>
+</ul>
+<p><strong>연결 변경 근거:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_stateless_20261027_r1/build.py</code> 44~58행 부근. 입력 선택 어댑터와 controller 호출이 전달 패키지에 어떻게 들어가는지 확인한다. 입력 선택 추가 보완은 <code>08_DEPLOYMENT/DATAIKU/pipeline_resume_20261027_r3/</code>와 후속 패키지 조립 기록을 함께 읽는다.</p>
+<p><strong>작업 기록:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_mapped_20261023_r1/src/managed_job.py</code> → <code>ManagedJob.__init__</code>, <code>save</code>, <code>put_blob</code>, <code>BudgetClient</code>. R10 동일. 체크포인트 hash/순서, 결과 ZIP의 내용 주소, 최초 기한과 예약 SQL 사용량을 읽는다.</p>
+<p><strong>상위 controller:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_partial_20261028_r6/controller.py</code>.</p>
+<ul>
+<li><code>open_store</code> 82행: 기존 기록·기한·대상 결속.</li>
+<li><code>transfer_inputs</code> 166행: raw/support를 1 MiB 조각으로 전송.</li>
+<li><code>collect_result</code> 189행: S3 조각 재사용, 전체 결과 ZIP 해시와 coverage 검증.</li>
+<li><code>structure</code> 257행: 계산 핸들 생성·상태 확인·결과 수신.</li>
+<li><code>load</code> 350행: 검증 결과만 적재하며 이전 구조화를 재실행하지 않음.</li>
+<li><code>apply_retry</code> 237행: 확인된 종료·기한·횟수·model_execution_possible 제한.</li>
+</ul>
+<h2 id="section-4">4. GENOS의 실제 API</h2>
+<p><strong>파일:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/service.py</code> — R10 동일.</p>
+<p>읽을 함수: <code>handle</code> 153행, <code>auth</code> 136행, <code>public</code> 127행, <code>run_compute</code> 62행, <code>resource_check</code> 51행, <code>stop_child</code> 38행.</p>
+<p><code>API_TYPE</code>은 HEALTH/OPEN/PUT/RUN/POLL/READ/CANCEL/CLOSE다. 메모리 HANDLES와 계산 수명의 임시 폴더를 사용한다. code_sha256·instance·handle·handle_token의 결속을 확인한다. RUN 중복이 새 계산을 만들지 않는 분기, CANCELLED가 프로세스 종료 확인 뒤 설정되는 분기를 읽는다.</p>
+<p><code>service(config, data)</code>의 code=0/data와 code=1/error envelope가 실제 응답이다. R1/R2의 START/UPLOAD/EXECUTE/STATUS/DOWNLOAD/ACK 방식과 혼동하지 않는다.</p>
+<p><strong>전송 무결성:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/src/transport.py</code> → <code>pack</code>, <code>unpack</code>, <code>relative</code>, <code>checked</code>. R10 동일. ZIP 내부 TRANSPORT.json, 파일별 해시·크기, 안전한 상대 경로, 심볼릭 링크 거절을 확인한다.</p>
+<h2 id="section-5">5. 구조화와 성공 문서 선택</h2>
+<p><strong>실행 순서:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_single_cpu_20261029_r10/worker.py</code>.</p>
+<ul>
+<li><code>stage_commands</code> 45행: STRUCTURE → PREPARE → INDEX → RETURN. fulltext worker=1.</li>
+<li><code>compute</code> 88행: 입력 ZIP/지원 설정/코드 pin 확인, 격리 workspace, 환경 설정과 단계 호출.</li>
+<li><code>export_result</code> 60행: offline_e2e/serving_verified/coverage 확인, query projection과 감사 파일을 result.zip에 포함.</li>
+</ul>
+<p><strong>고정 정책:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/parser_config.py</code> → POLICY, <code>environment</code>, <code>inspect</code>, <code>require</code>. PDF skip, VLM off, 전처리 비활성이 R10에 유지된다.</p>
+<p><strong>엔진 진입:</strong> <code>06_TOOLS/pipeline.py</code> → build-data-stages, document-release 분기; <code>06_TOOLS/COMMANDS/genos_data_stages.py</code> → <code>main</code>; <code>02_BACKEND/lawrag/pipeline/genos_stages.py</code> → <code>execute</code>, <code>structure</code>.</p>
+<p>주의: 작업 트리의 <code>genos_stages.py</code>는 R10과 다르다. <strong>R10의 skip 모드 추가는 <code>08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/build.py</code> 27행 이후의 패치</strong>를 함께 읽어야 한다. 현재 엔진 본문만 읽고 R10이 PDF를 처리한다고 설명하면 틀린다.</p>
+<p>실제 원문 구조 생성의 하위 호출은 genos_stages의 <code>build.ingest_files</code>, <code>build.source_jobs</code>다. <code>build</code>는 <code>lawrag.pipeline.genos_build</code>다. 파서/구조 로직을 더 확인할 때 <code>02_BACKEND/lawrag/pipeline/genos_build.py</code>와 <code>02_BACKEND/lawrag/pipeline/genos_doc.py</code>의 <code>prepare</code>를 이어 읽는다. 이번 프로필의 비활성 VLM 코드를 일반 호출 경로에 포함하지 않는다.</p>
+<p><strong>부분 성공 선택:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/partial_pipeline.py</code> → <code>select</code>, <code>verify_generation</code>, <code>export_paths</code>.</p>
+<p>일반 문서 실패와 무결성 실패를 구분하며 성공 문서 집합과 실제 generation의 document 집합을 대조한다. <code>pipeline_coverage.py</code>의 <code>validate</code>, <code>summary</code>, <code>read</code>에서 attempted/selected/omitted의 관계와 audit 파일 hash를 확인한다.</p>
+<h2 id="section-6">6. 용어·탐색·본문 검색 자료 만들기</h2>
+<p><strong>파일:</strong> <code>02_BACKEND/lawrag/pipeline/document_release.py</code> → <code>build</code> 273행, <code>reindex_prepared</code> 843행, <code>main</code> 899행.</p>
+<p>prepare는 검증된 구조 자료와 기존 용어집 기반을 준비하고, reindex는 준비된 입력으로 compact-v2 탐색 자료와 unit fulltext를 만든다. 새 법률 의미를 생성·승인하는 단계와 기존 지식을 재사용하는 색인 단계를 구분한다.</p>
+<p><strong>하위 엔진:</strong> <code>06_TOOLS/OFFLINE/genos_reindex_only.py</code> → <code>prepared</code>; <code>06_TOOLS/OFFLINE/genos_reindex_runner.py</code> → <code>fork_prepared</code>, <code>rebuild</code>.</p>
+<p><strong>Oracle 조회행 변환:</strong> <code>02_BACKEND/lawrag/pipeline/oracle_query_publish.py</code> → <code>source_records</code>, <code>asset_rows</code>, <code>describe</code>; <code>02_BACKEND/lawrag/pipeline/oracle_query_package.py</code> → <code>export</code>, <code>verify_db</code>, <code>import_db</code>.</p>
+<p>R10에는 바이너리/BLOB 반환·query DB 패키징 후속 수정이 들어 있다. 해당 두 파일의 작업 트리와 차이는 <code>08_DEPLOYMENT/DATAIKU/pipeline_export_20261028_r8/build.py</code> 40행 이후 및 R9/R10 build.py에서 추적한다. 새 실행 없이 기존 수정 내역만 확인한다.</p>
+<h2 id="section-7">7. Oracle 적재</h2>
+<p><strong>진입:</strong> <code>08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/dataiku_run.py</code> → <code>load_oracle</code> 142행. R10 동일.</p>
+<p>순서는 원문 transfer(run/verify) → 자산 publish → 실제 자산 재검증 → query-data.db 무결성 대조 → query.import_db다. 이 파일의 <code>process</code>, <code>run_dataiku</code>에는 옛 원격 프로토콜도 남아 있다. R10은 controller가 <code>load_oracle</code>만 재사용하는 경로를 기준으로 읽는다.</p>
+<p>하위 코드는 <code>02_BACKEND/lawrag/pipeline/oracle_migration.py</code>, <code>oracle_publish.py</code>, <code>oracle_query_package.py</code>에 있다. 물리명은 <code>00_SYSTEM/ORACLE/physical_mapping.yaml</code>, <code>02_BACKEND/semantic_runtime/physical_mapping.py</code>와 연결된다. DDL은 사전 준비이며 적재 함수가 테이블 생성·채널 전환을 자동 수행한다고 해석하지 않는다.</p>
+<h2 id="section-8">8. 벡터 생성과 게시</h2>
+<p><strong>Dataiku 실행:</strong> <code>08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/vector_silver/runtime.py</code> → <code>source_pin</code>, <code>Checkpoint.save</code>, <code>Checkpoint.sql</code>, <code>run</code>.</p>
+<p><code>LEGAL_VECTOR_QUERY_RELEASE</code>로 명시 판본을 선택하고 원문 manifest·권한·모델 endpoint hash를 확인한다. <code>action='check'</code>는 임베딩·벡터 적재를 하지 않지만 결과 폴더에 검사 기록을 쓴다. <code>schema</code>는 테이블 준비용 별도 기능이며 통합 실행 API에 노출하지 않는다.</p>
+<p><strong>구간 생성·재개·완료:</strong> <code>08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/payload/02_BACKEND/semantic_runtime/vector_publish.py</code>.</p>
+<ul>
+<li><code>segments</code>: 원문 블록을 직접 읽고 문서·단위·블록·start/end·hash와 묶음.</li>
+<li><code>Publisher.existing</code>: 이미 있는 행의 메타데이터·차원 대조.</li>
+<li><code>Publisher.build</code>: 16개 단위 임베딩, 누락 구간 적재, 전체 count 대조, READY.</li>
+<li><code>Publisher.activate</code>: query ID별 활성 벡터 게시본 CAS 전환.</li>
+</ul>
+<p><strong>실제 SQL 묶음:</strong> <code>08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r3/vector_silver/publisher.py</code> → <code>Publisher.insert_many</code>. Oracle-only payload와 동일. SQL 크기 상한과 commit/rollback, lease 조건을 읽는다.</p>
+<p><strong>모델 호출·2테이블 reader:</strong> <code>08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/payload/02_BACKEND/semantic_runtime/initial_vector.py</code> → <code>profile</code>, <code>Encoder.encode</code>, <code>Repository.read</code>, <code>Repository.active</code>.</p>
+<p>작업 트리의 <code>02_BACKEND/semantic_runtime/initial_vector.py</code>는 옛 PBLS/SEG/ACT 3테이블 코드다. 이번 명세는 SET/ITEM 2테이블 전달본을 기준으로 한다. 이 차이는 현재 브랜치에서도 확인할 수 있다.</p>
+<h2 id="section-9">9. 기존 호출과 새 모듈의 연결 지점</h2>
+<table>
+<thead>
+<tr>
+<th>새 모듈의 책임</th>
+<th>재사용할 기존 지점</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>입력/코드/대상 검증</td>
+<td>recipes_runtime/context, controller/health, physical_mapping/preflight</td>
+</tr>
+<tr>
+<td>구조화·색인</td>
+<td>controller.structure → worker.compute</td>
+</tr>
+<tr>
+<td>Oracle 원문·검색 게시</td>
+<td>controller.load → dataiku_run.load_oracle</td>
+</tr>
+<tr>
+<td>벡터 게시</td>
+<td>vector_silver.runtime.run → Publisher.build</td>
+</tr>
+<tr>
+<td>전체 결과</td>
+<td>load summary + vector result + coverage를 신규 mapper가 결합</td>
+</tr>
+<tr>
+<td>재개·취소</td>
+<td>기존 ManagedJob/controller 제약 보존, 적재·벡터 경계 제어 추가</td>
+</tr>
+</tbody>
+</table>
+<p>새 API의 경로·함수명은 <a href="%EB%B2%95%EB%A0%B9_%ED%8A%B9%ED%99%94_%EC%A7%80%EC%8B%9D%ED%99%94_%EB%AA%A8%EB%93%88_API_%EB%AA%85%EC%84%B8%EC%84%9C.md">API 명세서</a>에 있다. 위 파일들이 이미 그 REST API를 제공한다고 해석하지 않는다. 코드 위치와 함수 시작 줄은 <a href="SOURCE_MAP.json">SOURCE_MAP.json</a>에서도 확인할 수 있다.</p>
+</main></div><footer class="footer">신규 통합 API 설계 · 기존 내부 구현과 구분 · 예제는 합성 값 · 코드 사본 및 배포 변경 없음</footer></body></html>

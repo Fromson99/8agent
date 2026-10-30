@@ -1,0 +1,1517 @@
+{
+  "branch": "feature/legal_RAG",
+  "commit": "7c17098fc2a96e76964483ae26551cebbbeaf511",
+  "purpose": "Source locations only; no code copies included",
+  "files": [
+    {
+      "path": "00_SYSTEM/ORACLE/physical_mapping.yaml",
+      "sha256": "38383c091ebd9e6aa4c615f3d45aae4916f5b456065d6cc519536377afe34907",
+      "symbols": []
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_release.py",
+      "sha256": "c0e1559c6cc1feca457523fb720de068655f34854287c01d0e4c78da6c63ec95",
+      "symbols": [
+        {
+          "name": "verify_fulltext_binding",
+          "line": 27
+        },
+        {
+          "name": "rebind_fulltext",
+          "line": 48
+        },
+        {
+          "name": "_verify_navigation_audit",
+          "line": 114
+        },
+        {
+          "name": "_copy_reference_audit",
+          "line": 128
+        },
+        {
+          "name": "merge_sources",
+          "line": 171
+        },
+        {
+          "name": "selected_sources",
+          "line": 226
+        },
+        {
+          "name": "verified_structures",
+          "line": 249
+        },
+        {
+          "name": "build",
+          "line": 273
+        },
+        {
+          "name": "index_without_meaning_review",
+          "line": 472
+        },
+        {
+          "name": "verify_unreviewed_release",
+          "line": 574
+        },
+        {
+          "name": "verify_glossary",
+          "line": 619
+        },
+        {
+          "name": "verify_release",
+          "line": 639
+        },
+        {
+          "name": "publish_shared_generation",
+          "line": 674
+        },
+        {
+          "name": "_atomic",
+          "line": 744
+        },
+        {
+          "name": "change_pointer",
+          "line": 756
+        },
+        {
+          "name": "recorded_status",
+          "line": 808
+        },
+        {
+          "name": "reindex_prepared",
+          "line": 843
+        },
+        {
+          "name": "main",
+          "line": 899
+        },
+        {
+          "name": "index_progress",
+          "line": 300
+        },
+        {
+          "name": "copy",
+          "line": 72
+        },
+        {
+          "name": "stopped",
+          "line": 354
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "sha256": "366b7776a5155615d54960c47e5db4258499a92d695a011af19c169d51f0090a",
+      "symbols": [
+        {
+          "name": "route_summary",
+          "line": 35
+        },
+        {
+          "name": "atomic",
+          "line": 55
+        },
+        {
+          "name": "isolated",
+          "line": 66
+        },
+        {
+          "name": "inventory",
+          "line": 81
+        },
+        {
+          "name": "registered_ingest",
+          "line": 162
+        },
+        {
+          "name": "ingest_files",
+          "line": 218
+        },
+        {
+          "name": "_ingest_files",
+          "line": 238
+        },
+        {
+          "name": "source_jobs",
+          "line": 326
+        },
+        {
+          "name": "embeddings",
+          "line": 342
+        },
+        {
+          "name": "execute",
+          "line": 405
+        },
+        {
+          "name": "parser",
+          "line": 422
+        },
+        {
+          "name": "main",
+          "line": 439
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_doc.py",
+      "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203",
+      "symbols": [
+        {
+          "name": "prepare",
+          "line": 8
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_stages.py",
+      "sha256": "f6e292309d14fdeb1edfc0bece26fd07456e305221c46ba31c31dd4a493c7f60",
+      "symbols": [
+        {
+          "name": "offline_data_root",
+          "line": 24
+        },
+        {
+          "name": "plain_path",
+          "line": 35
+        },
+        {
+          "name": "files_hashes",
+          "line": 42
+        },
+        {
+          "name": "verify_structure",
+          "line": 52
+        },
+        {
+          "name": "parser_identity",
+          "line": 67
+        },
+        {
+          "name": "structure_key",
+          "line": 94
+        },
+        {
+          "name": "structure",
+          "line": 99
+        },
+        {
+          "name": "prepare_provider",
+          "line": 139
+        },
+        {
+          "name": "execute",
+          "line": 153
+        },
+        {
+          "name": "record",
+          "line": 192
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/oracle_migration.py",
+      "sha256": "28bebfeba61f8f4989e53ef0b42dc982d54478cfdb1893d80bc4740db61d45a6",
+      "symbols": [
+        {
+          "name": "signature",
+          "line": 25
+        },
+        {
+          "name": "source_binding",
+          "line": 30
+        },
+        {
+          "name": "source_open",
+          "line": 47
+        },
+        {
+          "name": "unchanged",
+          "line": 53
+        },
+        {
+          "name": "source_counts",
+          "line": 59
+        },
+        {
+          "name": "source_batch",
+          "line": 76
+        },
+        {
+          "name": "extend_chain",
+          "line": 91
+        },
+        {
+          "name": "transfer",
+          "line": 97
+        },
+        {
+          "name": "from_notebook",
+          "line": 192
+        },
+        {
+          "name": "status",
+          "line": 118
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/oracle_query_package.py",
+      "sha256": "24a35fc4024ff8a884159694b02f0d8297e6729322c193f59c005214e93c1ca1",
+      "symbols": [
+        {
+          "name": "event",
+          "line": 29
+        },
+        {
+          "name": "job",
+          "line": 37
+        },
+        {
+          "name": "resources",
+          "line": 50
+        },
+        {
+          "name": "bounded_json",
+          "line": 59
+        },
+        {
+          "name": "immutable_inputs",
+          "line": 65
+        },
+        {
+          "name": "offline_source",
+          "line": 85
+        },
+        {
+          "name": "query_manifest",
+          "line": 107
+        },
+        {
+          "name": "export",
+          "line": 120
+        },
+        {
+          "name": "_export",
+          "line": 131
+        },
+        {
+          "name": "adopt_r1",
+          "line": 228
+        },
+        {
+          "name": "row_stream",
+          "line": 252
+        },
+        {
+          "name": "verify_db",
+          "line": 264
+        },
+        {
+          "name": "_verify_db",
+          "line": 272
+        },
+        {
+          "name": "_PartsWriter",
+          "line": 297
+        },
+        {
+          "name": "split_db_direct",
+          "line": 339
+        },
+        {
+          "name": "split_db",
+          "line": 381
+        },
+        {
+          "name": "restore",
+          "line": 426
+        },
+        {
+          "name": "import_db",
+          "line": 473
+        },
+        {
+          "name": "__init__",
+          "line": 299
+        },
+        {
+          "name": "tell",
+          "line": 303
+        },
+        {
+          "name": "seek",
+          "line": 304
+        },
+        {
+          "name": "flush",
+          "line": 305
+        },
+        {
+          "name": "_finish",
+          "line": 307
+        },
+        {
+          "name": "write",
+          "line": 318
+        },
+        {
+          "name": "_write",
+          "line": 323
+        },
+        {
+          "name": "finish",
+          "line": 334
+        },
+        {
+          "name": "abort",
+          "line": 335
+        },
+        {
+          "name": "tick",
+          "line": 149
+        },
+        {
+          "name": "flush",
+          "line": 176
+        },
+        {
+          "name": "flush",
+          "line": 502
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/oracle_query_publish.py",
+      "sha256": "7bc91abe44fe90a6facbbf1f393ec0406795e8fa595dd660e5766d3dc27fbbeb",
+      "symbols": [
+        {
+          "name": "source_records",
+          "line": 28
+        },
+        {
+          "name": "projected_rows",
+          "line": 71
+        },
+        {
+          "name": "_name",
+          "line": 79
+        },
+        {
+          "name": "_kind",
+          "line": 85
+        },
+        {
+          "name": "_lookups",
+          "line": 90
+        },
+        {
+          "name": "asset_schema",
+          "line": 102
+        },
+        {
+          "name": "_column_shapes",
+          "line": 125
+        },
+        {
+          "name": "_json_shapes",
+          "line": 152
+        },
+        {
+          "name": "asset_metadata",
+          "line": 166
+        },
+        {
+          "name": "selection_proof",
+          "line": 183
+        },
+        {
+          "name": "asset_rows",
+          "line": 195
+        },
+        {
+          "name": "_asset_rows",
+          "line": 206
+        },
+        {
+          "name": "describe",
+          "line": 299
+        },
+        {
+          "name": "_verify_batch",
+          "line": 325
+        },
+        {
+          "name": "publish",
+          "line": 353
+        },
+        {
+          "name": "from_notebook",
+          "line": 443
+        },
+        {
+          "name": "schema",
+          "line": 458
+        },
+        {
+          "name": "schema_from_notebook",
+          "line": 572
+        },
+        {
+          "name": "main",
+          "line": 584
+        },
+        {
+          "name": "first",
+          "line": 91
+        },
+        {
+          "name": "columns",
+          "line": 489
+        },
+        {
+          "name": "posting",
+          "line": 282
+        },
+        {
+          "name": "inspect",
+          "line": 513
+        },
+        {
+          "name": "flush",
+          "line": 398
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/initial_vector.py",
+      "sha256": "e8de6f93d41ec1a239972f92e051a6e54dfa5444e1e93bfb1e3973656112a8f3",
+      "symbols": [
+        {
+          "name": "VectorError",
+          "line": 7
+        },
+        {
+          "name": "VectorUnavailable",
+          "line": 8
+        },
+        {
+          "name": "mode",
+          "line": 10
+        },
+        {
+          "name": "endpoint",
+          "line": 15
+        },
+        {
+          "name": "profile",
+          "line": 27
+        },
+        {
+          "name": "normalize",
+          "line": 36
+        },
+        {
+          "name": "vector_sql",
+          "line": 42
+        },
+        {
+          "name": "Encoder",
+          "line": 47
+        },
+        {
+          "name": "table",
+          "line": 76
+        },
+        {
+          "name": "ddl",
+          "line": 80
+        },
+        {
+          "name": "decode",
+          "line": 87
+        },
+        {
+          "name": "Repository",
+          "line": 91
+        },
+        {
+          "name": "Retriever",
+          "line": 123
+        },
+        {
+          "name": "__init__",
+          "line": 48
+        },
+        {
+          "name": "encode",
+          "line": 54
+        },
+        {
+          "name": "__init__",
+          "line": 92
+        },
+        {
+          "name": "active",
+          "line": 93
+        },
+        {
+          "name": "read",
+          "line": 96
+        },
+        {
+          "name": "search",
+          "line": 102
+        },
+        {
+          "name": "__init__",
+          "line": 124
+        },
+        {
+          "name": "search",
+          "line": 126
+        },
+        {
+          "name": "scope",
+          "line": 111
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/physical_mapping.py",
+      "sha256": "eb6d175549c3c2d7d485275fb2dc158acf992454ff7e36e278112285bb0a199a",
+      "symbols": [
+        {
+          "name": "MappingError",
+          "line": 32
+        },
+        {
+          "name": "identifier",
+          "line": 36
+        },
+        {
+          "name": "digest",
+          "line": 42
+        },
+        {
+          "name": "UniqueLoader",
+          "line": 46
+        },
+        {
+          "name": "unique",
+          "line": 50
+        },
+        {
+          "name": "exact",
+          "line": 63
+        },
+        {
+          "name": "Names",
+          "line": 69
+        },
+        {
+          "name": "names",
+          "line": 81
+        },
+        {
+          "name": "_freeze",
+          "line": 86
+        },
+        {
+          "name": "SchemaMap",
+          "line": 93
+        },
+        {
+          "name": "c",
+          "line": 73
+        },
+        {
+          "name": "select",
+          "line": 77
+        },
+        {
+          "name": "load",
+          "line": 102
+        },
+        {
+          "name": "names",
+          "line": 169
+        },
+        {
+          "name": "binding",
+          "line": 174
+        },
+        {
+          "name": "check_expression",
+          "line": 177
+        },
+        {
+          "name": "ddl",
+          "line": 184
+        },
+        {
+          "name": "preflight",
+          "line": 202
+        },
+        {
+          "name": "columns",
+          "line": 223
+        },
+        {
+          "name": "constraint",
+          "line": 225
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_data_stages.py",
+      "sha256": "4b0b5b2ee9ebc33255f8bab598f295cd8615bb3cbbac99f7366ea22a90b1a26b",
+      "symbols": [
+        {
+          "name": "main",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_reindex_only.py",
+      "sha256": "e0b59e7698ae38da22258e05fbed359af3624a2e1c399298a7e2ba72a2cf276f",
+      "symbols": [
+        {
+          "name": "prepared",
+          "line": 10
+        },
+        {
+          "name": "select_completed_glossary",
+          "line": 41
+        },
+        {
+          "name": "index_knowledge",
+          "line": 65
+        },
+        {
+          "name": "verify",
+          "line": 102
+        },
+        {
+          "name": "rebuild",
+          "line": 144
+        },
+        {
+          "name": "rebuild_serving",
+          "line": 190
+        },
+        {
+          "name": "publish_serving",
+          "line": 271
+        },
+        {
+          "name": "scoped",
+          "line": 72
+        },
+        {
+          "name": "IndexKnowledge",
+          "line": 91
+        },
+        {
+          "name": "check_pins",
+          "line": 211
+        },
+        {
+          "name": "__init__",
+          "line": 92
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_reindex_runner.py",
+      "sha256": "5cf52af85e8a160581591d96b1bbf94a3f0792cc7224fcec532c1b01eabc1136",
+      "symbols": [
+        {
+          "name": "process_identity",
+          "line": 17
+        },
+        {
+          "name": "old_records",
+          "line": 29
+        },
+        {
+          "name": "discover_active_builds",
+          "line": 35
+        },
+        {
+          "name": "stop_recorded",
+          "line": 56
+        },
+        {
+          "name": "check_idle",
+          "line": 82
+        },
+        {
+          "name": "fork_prepared",
+          "line": 107
+        },
+        {
+          "name": "verified_code_pins",
+          "line": 151
+        },
+        {
+          "name": "rebuild",
+          "line": 166
+        },
+        {
+          "name": "arguments",
+          "line": 177
+        },
+        {
+          "name": "main",
+          "line": 214
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "sha256": "716afab0e29728e194c8ea4552a222bc7bf8fd3d303c3cb318d0789d2d365638",
+      "symbols": []
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/payload/02_BACKEND/semantic_runtime/initial_vector.py",
+      "sha256": "8a54cb0b44b11a3b0678a5fc8e03634c68ccbe6bb4ff05c878cf109988fe7a69",
+      "symbols": [
+        {
+          "name": "VectorError",
+          "line": 7
+        },
+        {
+          "name": "VectorUnavailable",
+          "line": 8
+        },
+        {
+          "name": "mode",
+          "line": 10
+        },
+        {
+          "name": "endpoint",
+          "line": 15
+        },
+        {
+          "name": "profile",
+          "line": 27
+        },
+        {
+          "name": "normalize",
+          "line": 36
+        },
+        {
+          "name": "vector_sql",
+          "line": 42
+        },
+        {
+          "name": "Encoder",
+          "line": 47
+        },
+        {
+          "name": "table",
+          "line": 77
+        },
+        {
+          "name": "jvalue",
+          "line": 81
+        },
+        {
+          "name": "ddl",
+          "line": 92
+        },
+        {
+          "name": "decode",
+          "line": 99
+        },
+        {
+          "name": "Repository",
+          "line": 103
+        },
+        {
+          "name": "Retriever",
+          "line": 143
+        },
+        {
+          "name": "__init__",
+          "line": 48
+        },
+        {
+          "name": "encode",
+          "line": 54
+        },
+        {
+          "name": "__init__",
+          "line": 104
+        },
+        {
+          "name": "active",
+          "line": 106
+        },
+        {
+          "name": "read",
+          "line": 109
+        },
+        {
+          "name": "search",
+          "line": 122
+        },
+        {
+          "name": "__init__",
+          "line": 144
+        },
+        {
+          "name": "search",
+          "line": 146
+        },
+        {
+          "name": "scope",
+          "line": 131
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/payload/02_BACKEND/semantic_runtime/vector_publish.py",
+      "sha256": "3df639728e03fa8f27b0c6efca336c485134a2948425004e5a7cbd7138b28ac9",
+      "symbols": [
+        {
+          "name": "segments",
+          "line": 6
+        },
+        {
+          "name": "Publisher",
+          "line": 33
+        },
+        {
+          "name": "__init__",
+          "line": 34
+        },
+        {
+          "name": "execute",
+          "line": 38
+        },
+        {
+          "name": "existing",
+          "line": 40
+        },
+        {
+          "name": "insert_many",
+          "line": 50
+        },
+        {
+          "name": "activate",
+          "line": 54
+        },
+        {
+          "name": "build",
+          "line": 74
+        },
+        {
+          "name": "flush",
+          "line": 88
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/oracle_vector_only_20261029_r1/vector_silver/runtime.py",
+      "sha256": "c02204f36ccfb10bda88b738323e847e5f485aafa6527df3d5fe19cb7be4000b",
+      "symbols": [
+        {
+          "name": "read_json",
+          "line": 26
+        },
+        {
+          "name": "source_pin",
+          "line": 38
+        },
+        {
+          "name": "Checkpoint",
+          "line": 44
+        },
+        {
+          "name": "run",
+          "line": 61
+        },
+        {
+          "name": "__init__",
+          "line": 46
+        },
+        {
+          "name": "save",
+          "line": 50
+        },
+        {
+          "name": "sql",
+          "line": 56
+        },
+        {
+          "name": "BuildSQL",
+          "line": 74
+        },
+        {
+          "name": "query",
+          "line": 75
+        },
+        {
+          "name": "request",
+          "line": 77
+        },
+        {
+          "name": "bounded_encode",
+          "line": 143
+        },
+        {
+          "name": "progress",
+          "line": 151
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_export_20261028_r8/build.py",
+      "sha256": "93803d6201cff1e2fdbd2762bdec62e61cbf22568d837cae7e3357f26c804ab2",
+      "symbols": [
+        {
+          "name": "sha",
+          "line": 17
+        },
+        {
+          "name": "save",
+          "line": 18
+        },
+        {
+          "name": "edit",
+          "line": 19
+        },
+        {
+          "name": "writezip",
+          "line": 22
+        },
+        {
+          "name": "functions_from_work",
+          "line": 27
+        },
+        {
+          "name": "main",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/dataiku_run.py",
+      "sha256": "eec9080ddd280f41a358e5de03167ec6844dccc30d34d8e3a63d58ee6a6d8016",
+      "symbols": [
+        {
+          "name": "Client",
+          "line": 18
+        },
+        {
+          "name": "process",
+          "line": 44
+        },
+        {
+          "name": "load_oracle",
+          "line": 142
+        },
+        {
+          "name": "run_dataiku",
+          "line": 217
+        },
+        {
+          "name": "__init__",
+          "line": 19
+        },
+        {
+          "name": "call",
+          "line": 24
+        },
+        {
+          "name": "call",
+          "line": 75
+        },
+        {
+          "name": "remaining",
+          "line": 162
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_mapped_20261023_r1/src/managed_job.py",
+      "sha256": "10d3147a6b7b9deaa6ccc253cf0d4b52c5bb2bebbd219df2d45ce3c4817eef83",
+      "symbols": [
+        {
+          "name": "bounded_read",
+          "line": 15
+        },
+        {
+          "name": "ManagedJob",
+          "line": 26
+        },
+        {
+          "name": "BudgetClient",
+          "line": 104
+        },
+        {
+          "name": "__init__",
+          "line": 27
+        },
+        {
+          "name": "save",
+          "line": 48
+        },
+        {
+          "name": "put_blob",
+          "line": 58
+        },
+        {
+          "name": "get_blob",
+          "line": 73
+        },
+        {
+          "name": "checkpoint_client",
+          "line": 89
+        },
+        {
+          "name": "restore",
+          "line": 97
+        },
+        {
+          "name": "__init__",
+          "line": 106
+        },
+        {
+          "name": "request",
+          "line": 109
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_partial_20261028_r6/controller.py",
+      "sha256": "8a4f99a94e44ee7aef573fec1a532535a8b6cc4a4911dcab27eebba5b1cec047",
+      "symbols": [
+        {
+          "name": "Scope",
+          "line": 23
+        },
+        {
+          "name": "Wire",
+          "line": 32
+        },
+        {
+          "name": "remote",
+          "line": 38
+        },
+        {
+          "name": "health",
+          "line": 45
+        },
+        {
+          "name": "legacy_state",
+          "line": 64
+        },
+        {
+          "name": "open_store",
+          "line": 82
+        },
+        {
+          "name": "context",
+          "line": 101
+        },
+        {
+          "name": "budget_call",
+          "line": 108
+        },
+        {
+          "name": "auth",
+          "line": 122
+        },
+        {
+          "name": "save_chunk",
+          "line": 128
+        },
+        {
+          "name": "read_chunk",
+          "line": 138
+        },
+        {
+          "name": "drain_log",
+          "line": 148
+        },
+        {
+          "name": "cancelled",
+          "line": 159
+        },
+        {
+          "name": "transfer_inputs",
+          "line": 166
+        },
+        {
+          "name": "collect_result",
+          "line": 189
+        },
+        {
+          "name": "structure_status",
+          "line": 227
+        },
+        {
+          "name": "structured_record",
+          "line": 231
+        },
+        {
+          "name": "apply_retry",
+          "line": 237
+        },
+        {
+          "name": "structure",
+          "line": 257
+        },
+        {
+          "name": "load",
+          "line": 350
+        },
+        {
+          "name": "connection",
+          "line": 396
+        },
+        {
+          "name": "execute",
+          "line": 405
+        },
+        {
+          "name": "collect_audit",
+          "line": 411
+        },
+        {
+          "name": "__init__",
+          "line": 24
+        },
+        {
+          "name": "list_paths_in_partition",
+          "line": 25
+        },
+        {
+          "name": "get_download_stream",
+          "line": 28
+        },
+        {
+          "name": "upload_stream",
+          "line": 29
+        },
+        {
+          "name": "call",
+          "line": 33
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_recipes_20261027_r1/recipes_runtime.py",
+      "sha256": "2cec4530603b2cc4c3464e78f28d6fc1302b26120280afd4c745a42413f40f92",
+      "symbols": [
+        {
+          "name": "read_json",
+          "line": 28
+        },
+        {
+          "name": "object_hash",
+          "line": 33
+        },
+        {
+          "name": "put_file",
+          "line": 46
+        },
+        {
+          "name": "put_json",
+          "line": 61
+        },
+        {
+          "name": "input_receipts",
+          "line": 67
+        },
+        {
+          "name": "NoRedirect",
+          "line": 83
+        },
+        {
+          "name": "CheckedClient",
+          "line": 88
+        },
+        {
+          "name": "remote_client",
+          "line": 131
+        },
+        {
+          "name": "connection",
+          "line": 138
+        },
+        {
+          "name": "raw_manifest",
+          "line": 164
+        },
+        {
+          "name": "unpack_raw",
+          "line": 172
+        },
+        {
+          "name": "materialize",
+          "line": 193
+        },
+        {
+          "name": "context",
+          "line": 204
+        },
+        {
+          "name": "structured_record",
+          "line": 225
+        },
+        {
+          "name": "structure",
+          "line": 231
+        },
+        {
+          "name": "ReadOnlyFolder",
+          "line": 261
+        },
+        {
+          "name": "seed_load",
+          "line": 268
+        },
+        {
+          "name": "load",
+          "line": 281
+        },
+        {
+          "name": "execute",
+          "line": 336
+        },
+        {
+          "name": "redirect_request",
+          "line": 84
+        },
+        {
+          "name": "call",
+          "line": 90
+        },
+        {
+          "name": "__init__",
+          "line": 262
+        },
+        {
+          "name": "list_paths_in_partition",
+          "line": 263
+        },
+        {
+          "name": "get_download_stream",
+          "line": 264
+        },
+        {
+          "name": "upload_stream",
+          "line": 265
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_service_20261022_r3/src/transport.py",
+      "sha256": "a35caa4890028727208641e71515a218b0c8b93427e0ae4752f6a39f32e6d29d",
+      "symbols": [
+        {
+          "name": "sha",
+          "line": 18
+        },
+        {
+          "name": "digest",
+          "line": 26
+        },
+        {
+          "name": "read",
+          "line": 30
+        },
+        {
+          "name": "write",
+          "line": 37
+        },
+        {
+          "name": "lock",
+          "line": 50
+        },
+        {
+          "name": "relative",
+          "line": 61
+        },
+        {
+          "name": "checked",
+          "line": 69
+        },
+        {
+          "name": "files",
+          "line": 78
+        },
+        {
+          "name": "pack",
+          "line": 87
+        },
+        {
+          "name": "unpack",
+          "line": 123
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_single_cpu_20261029_r10/worker.py",
+      "sha256": "92c55b538943bbe6fa84e64cdd98d1725dbe2ead082735b3fcf85b41311d5537",
+      "symbols": [
+        {
+          "name": "phase_timing",
+          "line": 16
+        },
+        {
+          "name": "process_group_rss",
+          "line": 25
+        },
+        {
+          "name": "verify_code",
+          "line": 38
+        },
+        {
+          "name": "stage_commands",
+          "line": 45
+        },
+        {
+          "name": "export_result",
+          "line": 60
+        },
+        {
+          "name": "compute",
+          "line": 88
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/build.py",
+      "sha256": "ca388ee151aae6b35b9d8458f1d474a86f667b3b417105ae05a67d899c50ac71",
+      "symbols": [
+        {
+          "name": "main",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/parser_config.py",
+      "sha256": "8a64462e3a19c4df1b817855079fab314c946292dec61467dde2d68e6354a876",
+      "symbols": [
+        {
+          "name": "environment",
+          "line": 10
+        },
+        {
+          "name": "inspect",
+          "line": 16
+        },
+        {
+          "name": "require",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/partial_pipeline.py",
+      "sha256": "cd5e9c4d7adc08c107f087fd2a0ebbc8218c95946d72383c95139e3d216af74c",
+      "symbols": [
+        {
+          "name": "select",
+          "line": 10
+        },
+        {
+          "name": "verify_generation",
+          "line": 59
+        },
+        {
+          "name": "export_paths",
+          "line": 67
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_skip_parser_20261028_r7/service.py",
+      "sha256": "bd192a214c2e702702fa68db4a31af8a77b2c24d88851f60cf1868485c592e4c",
+      "symbols": [
+        {
+          "name": "digest_file",
+          "line": 34
+        },
+        {
+          "name": "stop_child",
+          "line": 38
+        },
+        {
+          "name": "resource_check",
+          "line": 51
+        },
+        {
+          "name": "run_compute",
+          "line": 62
+        },
+        {
+          "name": "reap",
+          "line": 112
+        },
+        {
+          "name": "public",
+          "line": 127
+        },
+        {
+          "name": "auth",
+          "line": 136
+        },
+        {
+          "name": "handle",
+          "line": 153
+        },
+        {
+          "name": "service",
+          "line": 279
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/pipeline_stateless_20261027_r1/build.py",
+      "sha256": "712e57d2ce7f9d65a56527fe1b2650b3e24633ce03aacc8972a650184d2fc330",
+      "symbols": [
+        {
+          "name": "sha",
+          "line": 14
+        },
+        {
+          "name": "writezip",
+          "line": 15
+        },
+        {
+          "name": "build",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r3/vector_silver/publisher.py",
+      "sha256": "8088b6f8cba4e1337b47f0b3c0aca06d959a323ee941003f7da6bdd6afb3144d",
+      "symbols": [
+        {
+          "name": "Publisher",
+          "line": 7
+        },
+        {
+          "name": "insert_many",
+          "line": 10
+        },
+        {
+          "name": "flush",
+          "line": 12
+        },
+        {
+          "name": "size",
+          "line": 30
+        }
+      ]
+    }
+  ]
+}

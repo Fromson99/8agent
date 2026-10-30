@@ -1,0 +1,12 @@
+{
+  "schema_version": "legal-knowledge-build-v1",
+  "job_name": "legal_build_demo_20261030",
+  "mode": "ORACLE_TO_VECTOR",
+  "profile": "legal-native-r10-vector2",
+  "input": {
+    "kind": "oracle_release",
+    "query_release_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "embedding_profile": "legal_embedding_registered_v1",
+  "coverage_policy": "allow_verified"
+}

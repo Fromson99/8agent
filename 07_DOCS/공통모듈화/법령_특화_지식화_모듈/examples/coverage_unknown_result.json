@@ -1,0 +1,60 @@
+{
+  "schema_version": "legal-knowledge-result-v1",
+  "build_id": "lkb_11111111111111111111111111111111",
+  "job_name": "legal_build_demo_20261030",
+  "mode": "ORACLE_TO_VECTOR",
+  "status": "SUCCEEDED_COVERAGE_UNKNOWN",
+  "releases": {
+    "dataset_version": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "source_release_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "query_release_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "vector_publication_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "coverage": {
+    "status": "UNKNOWN",
+    "attempted_count": null,
+    "selected_count": null,
+    "omitted_count": null,
+    "bypassed_count": null,
+    "failed_count": null
+  },
+  "vector": {
+    "status": "READY",
+    "count": 12,
+    "reused": 4,
+    "embedding_calls": 1,
+    "active_for_query": true
+  },
+  "validation": {
+    "source_manifest": "PASS",
+    "source_row_hashes": "PASS",
+    "oracle_readback": "PASS",
+    "vector_metadata_dimensions": "PASS",
+    "legal_semantics_certified": false
+  },
+  "publication": {
+    "query_channel_changed": false,
+    "vector_active_for_query": true,
+    "serving_verified": false
+  },
+  "artifacts": [
+    {
+      "kind": "LOAD_RECEIPT",
+      "folder_id": "EXAMPLE_LOAD",
+      "path": "_pipeline/dataiku-owned-v1/jobs/legal_build_demo_20261030/complete.json",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "bytes": 1024
+    }
+  ],
+  "warnings": [
+    "RAG_SERVING_NOT_VERIFIED",
+    "ORIGINAL_INPUT_COVERAGE_UNKNOWN"
+  ],
+  "binding": {
+    "compute_code_sha256": null,
+    "client_code_sha256": null,
+    "vector_code_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "mapping_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "embedding_profile_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}

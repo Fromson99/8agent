@@ -1,0 +1,24 @@
+{
+  "schema_version": "legal-knowledge-build-v1",
+  "job_name": "legal_build_demo_20261030",
+  "mode": "RAW_TO_VECTOR",
+  "profile": "legal-native-r10-vector2",
+  "input": {
+    "kind": "raw_archive",
+    "landing_folder_id": "EXAMPLE_LANDING",
+    "raw": {
+      "path": "RAW_INPUT.zip",
+      "receipt_path": "RAW_INPUT.zip.receipt.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bytes": 1048576
+    },
+    "support": {
+      "path": "PIPELINE_SUPPORT.zip",
+      "receipt_path": "PIPELINE_SUPPORT.zip.receipt.json",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "bytes": 262144
+    }
+  },
+  "embedding_profile": "legal_embedding_registered_v1",
+  "coverage_policy": "allow_verified"
+}

@@ -1,0 +1,909 @@
+openapi: 3.1.0
+info:
+  title: 법령 특화 지식화 모듈 API
+  version: 1.0.0-design
+  description: 신규 통합 어댑터 설계 계약. 기존 단계 엔진을 재사용하며 아직 배포된 REST API가 아니다. 모든 예제는 합성이다. 코드 사본은 포함하지 않는다.
+servers:
+- url: https://knowledge-api.example.invalid
+  description: 문서용 자리표시자. 실제 호출 주소가 아님.
+security:
+- bearerAuth: []
+tags:
+- name: KnowledgeBuild
+  description: Dataiku가 영속 작업을 관리하는 법령 지식 구축
+paths:
+  /v1/legal-knowledge/builds:
+    post:
+      operationId: createKnowledgeBuild
+      summary: 원문부터 벡터까지 또는 기존 Oracle 판본부터 벡터 구축 접수
+      tags:
+      - KnowledgeBuild
+      x-implementation-status: PROPOSED_ADAPTER_NOT_DEPLOYED
+      responses:
+        '202':
+          description: 정상 응답
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildStatus'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+              description: 상태 조회 경로
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          description: 수용 한도 초과
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildRequest'
+            example:
+              schema_version: legal-knowledge-build-v1
+              job_name: legal_build_demo_20261030
+              mode: RAW_TO_VECTOR
+              profile: legal-native-r10-vector2
+              input:
+                kind: raw_archive
+                landing_folder_id: EXAMPLE_LANDING
+                raw:
+                  path: RAW_INPUT.zip
+                  receipt_path: RAW_INPUT.zip.receipt.json
+                  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                  bytes: 1048576
+                support:
+                  path: PIPELINE_SUPPORT.zip
+                  receipt_path: PIPELINE_SUPPORT.zip.receipt.json
+                  sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+                  bytes: 262144
+              embedding_profile: legal_embedding_registered_v1
+              coverage_policy: allow_verified
+      parameters:
+      - &id002
+        name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9_.:-]{1,128}$
+        description: 동일 인증 범위·경로·키·본문은 같은 작업 또는 제어 결과를 반환. 다른 본문은 409.
+  /v1/legal-knowledge/builds/{build_id}:
+    parameters:
+    - &id001
+      name: build_id
+      in: path
+      required: true
+      schema: &id006
+        type: string
+        pattern: ^lkb_[0-9a-f]{32}$
+    get:
+      operationId: getKnowledgeBuild
+      summary: 작업 상태 조회
+      tags:
+      - KnowledgeBuild
+      x-implementation-status: PROPOSED_ADAPTER_NOT_DEPLOYED
+      responses:
+        '200':
+          description: 정상 응답
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildStatus'
+              example:
+                build_id: lkb_11111111111111111111111111111111
+                job_name: legal_build_demo_20261030
+                mode: RAW_TO_VECTOR
+                status: RUNNING
+                stage: STRUCTURE_INDEX
+                created_at: '2026-10-30T10:00:00+09:00'
+                updated_at: '2026-10-30T10:01:00+09:00'
+                progress:
+                  unit: stage
+                  completed: null
+                  total: null
+                  percent: null
+                result_url: null
+                error: null
+                artifacts: []
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          description: 수용 한도 초과
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/legal-knowledge/builds/{build_id}/result:
+    parameters:
+    - *id001
+    get:
+      operationId: getKnowledgeBuildResult
+      summary: 성공 결과 조회; 준비 전이나 실패 상태는 409
+      tags:
+      - KnowledgeBuild
+      x-implementation-status: PROPOSED_ADAPTER_NOT_DEPLOYED
+      responses:
+        '200':
+          description: 정상 응답
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildResult'
+              example:
+                schema_version: legal-knowledge-result-v1
+                build_id: lkb_11111111111111111111111111111111
+                job_name: legal_build_demo_20261030
+                mode: RAW_TO_VECTOR
+                status: SUCCEEDED
+                releases:
+                  dataset_version: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+                  source_release_id: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                  query_release_id: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                  vector_publication_id: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+                coverage:
+                  status: COMPLETE
+                  attempted_count: 3
+                  selected_count: 3
+                  omitted_count: 0
+                  bypassed_count: 0
+                  failed_count: 0
+                vector:
+                  status: READY
+                  count: 12
+                  reused: 4
+                  embedding_calls: 1
+                  active_for_query: true
+                validation:
+                  source_manifest: PASS
+                  source_row_hashes: PASS
+                  oracle_readback: PASS
+                  vector_metadata_dimensions: PASS
+                  legal_semantics_certified: false
+                publication:
+                  query_channel_changed: false
+                  vector_active_for_query: true
+                  serving_verified: false
+                artifacts:
+                - kind: LOAD_RECEIPT
+                  folder_id: EXAMPLE_LOAD
+                  path: _pipeline/dataiku-owned-v1/jobs/legal_build_demo_20261030/complete.json
+                  sha256: '1111111111111111111111111111111111111111111111111111111111111111'
+                  bytes: 1024
+                warnings:
+                - RAG_SERVING_NOT_VERIFIED
+                binding:
+                  compute_code_sha256: '2222222222222222222222222222222222222222222222222222222222222222'
+                  client_code_sha256: '2222222222222222222222222222222222222222222222222222222222222222'
+                  vector_code_sha256: '2222222222222222222222222222222222222222222222222222222222222222'
+                  mapping_sha256: '2222222222222222222222222222222222222222222222222222222222222222'
+                  embedding_profile_sha256: '2222222222222222222222222222222222222222222222222222222222222222'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          description: 수용 한도 초과
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/legal-knowledge/builds/{build_id}/resume:
+    parameters:
+    - *id001
+    post:
+      operationId: resumeKnowledgeBuild
+      summary: 동일 작업 재개; UNKNOWN은 조정 전 실행 거절
+      tags:
+      - KnowledgeBuild
+      x-implementation-status: PROPOSED_ADAPTER_NOT_DEPLOYED
+      responses:
+        '202':
+          description: 정상 응답
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildStatus'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          description: 수용 한도 초과
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlRequest'
+            example: &id003
+              reason: 기존 기한과 적재 영수증을 유지해 중단된 단계를 확인합니다.
+      parameters:
+      - *id002
+  /v1/legal-knowledge/builds/{build_id}/cancel:
+    parameters:
+    - *id001
+    post:
+      operationId: cancelKnowledgeBuild
+      summary: 취소 요청; 실제 중지 전에는 CANCEL_REQUESTED
+      tags:
+      - KnowledgeBuild
+      x-implementation-status: PROPOSED_ADAPTER_NOT_DEPLOYED
+      responses:
+        '202':
+          description: 정상 응답
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildStatus'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          description: 수용 한도 초과
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlRequest'
+            example: *id003
+      parameters:
+      - *id002
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ArchiveRef:
+      type: object
+      properties:
+        path:
+          type: string
+          minLength: 1
+          maxLength: 256
+        receipt_path:
+          type: string
+          minLength: 1
+          maxLength: 256
+        sha256: &id004
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        bytes:
+          type: integer
+          minimum: 1
+          maximum: 68719476736
+      required:
+      - path
+      - receipt_path
+      - sha256
+      - bytes
+      additionalProperties: false
+    RawInput:
+      type: object
+      properties:
+        kind:
+          const: raw_archive
+        landing_folder_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        raw:
+          $ref: '#/components/schemas/ArchiveRef'
+        support:
+          $ref: '#/components/schemas/ArchiveRef'
+      required:
+      - kind
+      - landing_folder_id
+      - raw
+      - support
+      additionalProperties: false
+    OracleInput:
+      type: object
+      properties:
+        kind:
+          const: oracle_release
+        query_release_id: *id004
+      required:
+      - kind
+      - query_release_id
+      additionalProperties: false
+    BuildRequest:
+      type: object
+      properties:
+        schema_version:
+          const: legal-knowledge-build-v1
+        job_name: &id005
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,80}$
+        mode:
+          type: string
+          enum:
+          - RAW_TO_VECTOR
+          - ORACLE_TO_VECTOR
+        profile:
+          const: legal-native-r10-vector2
+        input:
+          oneOf:
+          - $ref: '#/components/schemas/RawInput'
+          - $ref: '#/components/schemas/OracleInput'
+        embedding_profile: *id005
+        coverage_policy:
+          type: string
+          enum:
+          - allow_verified
+          - require_complete
+      required:
+      - schema_version
+      - job_name
+      - mode
+      - profile
+      - input
+      - embedding_profile
+      - coverage_policy
+      additionalProperties: false
+      allOf:
+      - if:
+          properties:
+            mode:
+              const: RAW_TO_VECTOR
+        then:
+          properties:
+            input:
+              $ref: '#/components/schemas/RawInput'
+      - if:
+          properties:
+            mode:
+              const: ORACLE_TO_VECTOR
+        then:
+          properties:
+            input:
+              $ref: '#/components/schemas/OracleInput'
+    ControlRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - reason
+      additionalProperties: false
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{0,95}$
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        build_id:
+          anyOf:
+          - *id006
+          - type: 'null'
+        stage:
+          anyOf:
+          - &id008
+            type: string
+            enum:
+            - CHECK
+            - SNAPSHOT
+            - STRUCTURE_INDEX
+            - LOAD_ORACLE
+            - BUILD_VECTOR
+            - FINALIZE
+          - type: 'null'
+        recovery:
+          type: string
+          enum:
+          - FIX_INPUT
+          - RECONCILE
+          - RESUME_SAME_BUILD
+          - INSPECT
+          - NONE
+        details_ref:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+      required:
+      - code
+      - message
+      - build_id
+      - stage
+      - recovery
+      - details_ref
+      additionalProperties: false
+    ArtifactRef:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+          - RAW_SNAPSHOT
+          - STRUCTURED_RESULT
+          - COVERAGE
+          - OMITTED_DOCUMENTS
+          - LOAD_RECEIPT
+          - VECTOR_STATE
+          - LOG
+          - AUDIT
+        folder_id:
+          type: string
+          minLength: 1
+        path:
+          type: string
+          minLength: 1
+        sha256:
+          anyOf:
+          - *id004
+          - type: 'null'
+        bytes:
+          anyOf:
+          - &id007
+            type: integer
+            minimum: 0
+          - type: 'null'
+      required:
+      - kind
+      - folder_id
+      - path
+      - sha256
+      - bytes
+      additionalProperties: false
+    Progress:
+      type: object
+      properties:
+        unit:
+          type: string
+          enum:
+          - documents
+          - segments
+          - stage
+        completed:
+          anyOf:
+          - *id007
+          - type: 'null'
+        total:
+          anyOf:
+          - *id007
+          - type: 'null'
+        percent:
+          anyOf:
+          - type: number
+            minimum: 0
+            maximum: 100
+          - type: 'null'
+      required:
+      - unit
+      - completed
+      - total
+      - percent
+      additionalProperties: false
+    BuildStatus:
+      type: object
+      properties:
+        build_id: *id006
+        job_name: *id005
+        mode:
+          type: string
+          enum:
+          - RAW_TO_VECTOR
+          - ORACLE_TO_VECTOR
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - RUNNING
+          - SUCCEEDED
+          - SUCCEEDED_WITH_OMISSIONS
+          - SUCCEEDED_COVERAGE_UNKNOWN
+          - FAILED
+          - UNKNOWN
+          - CANCEL_REQUESTED
+          - CANCELLED
+        stage: *id008
+        created_at: &id009
+          type: string
+          format: date-time
+        updated_at: *id009
+        progress:
+          $ref: '#/components/schemas/Progress'
+        result_url:
+          anyOf:
+          - type: string
+            format: uri-reference
+          - type: 'null'
+        error:
+          anyOf:
+          - $ref: '#/components/schemas/Error'
+          - type: 'null'
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactRef'
+      required:
+      - build_id
+      - job_name
+      - mode
+      - status
+      - stage
+      - created_at
+      - updated_at
+      - progress
+      - result_url
+      - error
+      - artifacts
+      additionalProperties: false
+    Coverage:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - COMPLETE
+          - PARTIAL
+          - UNKNOWN
+        attempted_count:
+          anyOf:
+          - *id007
+          - type: 'null'
+        selected_count:
+          anyOf:
+          - *id007
+          - type: 'null'
+        omitted_count:
+          anyOf:
+          - *id007
+          - type: 'null'
+        bypassed_count:
+          anyOf:
+          - *id007
+          - type: 'null'
+        failed_count:
+          anyOf:
+          - *id007
+          - type: 'null'
+      required:
+      - status
+      - attempted_count
+      - selected_count
+      - omitted_count
+      - bypassed_count
+      - failed_count
+      additionalProperties: false
+      allOf:
+      - if:
+          properties:
+            status:
+              enum:
+              - COMPLETE
+              - PARTIAL
+        then:
+          properties:
+            attempted_count: *id007
+            selected_count: *id007
+            omitted_count: *id007
+            bypassed_count: *id007
+            failed_count: *id007
+      - if:
+          properties:
+            status:
+              const: COMPLETE
+        then:
+          properties:
+            omitted_count:
+              const: 0
+            bypassed_count:
+              const: 0
+            failed_count:
+              const: 0
+      - if:
+          properties:
+            status:
+              const: PARTIAL
+        then:
+          properties:
+            omitted_count:
+              type: integer
+              minimum: 1
+      - if:
+          properties:
+            status:
+              const: UNKNOWN
+        then:
+          properties:
+            attempted_count:
+              type: 'null'
+            selected_count:
+              type: 'null'
+            omitted_count:
+              type: 'null'
+            bypassed_count:
+              type: 'null'
+            failed_count:
+              type: 'null'
+    Releases:
+      type: object
+      properties:
+        dataset_version: *id004
+        source_release_id: *id004
+        query_release_id: *id004
+        vector_publication_id: *id004
+      required:
+      - dataset_version
+      - source_release_id
+      - query_release_id
+      - vector_publication_id
+      additionalProperties: false
+    VectorResult:
+      type: object
+      properties:
+        status:
+          const: READY
+        count:
+          type: integer
+          minimum: 1
+        reused: *id007
+        embedding_calls: *id007
+        active_for_query:
+          type: boolean
+      required:
+      - status
+      - count
+      - reused
+      - embedding_calls
+      - active_for_query
+      additionalProperties: false
+    Validation:
+      type: object
+      properties:
+        source_manifest:
+          const: PASS
+        source_row_hashes:
+          const: PASS
+        oracle_readback:
+          const: PASS
+        vector_metadata_dimensions:
+          const: PASS
+        legal_semantics_certified:
+          const: false
+      required:
+      - source_manifest
+      - source_row_hashes
+      - oracle_readback
+      - vector_metadata_dimensions
+      - legal_semantics_certified
+      additionalProperties: false
+    Publication:
+      type: object
+      properties:
+        query_channel_changed:
+          const: false
+        vector_active_for_query:
+          type: boolean
+        serving_verified:
+          const: false
+      required:
+      - query_channel_changed
+      - vector_active_for_query
+      - serving_verified
+      additionalProperties: false
+    Binding:
+      type: object
+      properties:
+        compute_code_sha256:
+          anyOf:
+          - *id004
+          - type: 'null'
+        client_code_sha256:
+          anyOf:
+          - *id004
+          - type: 'null'
+        vector_code_sha256: *id004
+        mapping_sha256: *id004
+        embedding_profile_sha256: *id004
+      required:
+      - compute_code_sha256
+      - client_code_sha256
+      - vector_code_sha256
+      - mapping_sha256
+      - embedding_profile_sha256
+      additionalProperties: false
+    BuildResult:
+      type: object
+      properties:
+        schema_version:
+          const: legal-knowledge-result-v1
+        build_id: *id006
+        job_name: *id005
+        mode:
+          type: string
+          enum:
+          - RAW_TO_VECTOR
+          - ORACLE_TO_VECTOR
+        status:
+          type: string
+          enum:
+          - SUCCEEDED
+          - SUCCEEDED_WITH_OMISSIONS
+          - SUCCEEDED_COVERAGE_UNKNOWN
+        releases:
+          $ref: '#/components/schemas/Releases'
+        coverage:
+          $ref: '#/components/schemas/Coverage'
+        vector:
+          $ref: '#/components/schemas/VectorResult'
+        validation:
+          $ref: '#/components/schemas/Validation'
+        publication:
+          $ref: '#/components/schemas/Publication'
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactRef'
+        warnings:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        binding:
+          $ref: '#/components/schemas/Binding'
+      required:
+      - schema_version
+      - build_id
+      - job_name
+      - mode
+      - status
+      - releases
+      - coverage
+      - vector
+      - validation
+      - publication
+      - artifacts
+      - warnings
+      - binding
+      additionalProperties: false
+      allOf:
+      - if:
+          properties:
+            status:
+              const: SUCCEEDED
+        then:
+          properties:
+            coverage:
+              properties:
+                status:
+                  const: COMPLETE
+      - if:
+          properties:
+            status:
+              const: SUCCEEDED_WITH_OMISSIONS
+        then:
+          properties:
+            coverage:
+              properties:
+                status:
+                  const: PARTIAL
+      - if:
+          properties:
+            status:
+              const: SUCCEEDED_COVERAGE_UNKNOWN
+        then:
+          properties:
+            coverage:
+              properties:
+                status:
+                  const: UNKNOWN
+  responses:
+    ErrorResponse:
+      description: 오류; recovery와 기존 작업 상태를 확인
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: ORACLE_COMMIT_UNCONFIRMED
+            message: 적재 반영 여부를 기존 작업 기록과 DB 재조회로 확인해야 합니다.
+            build_id: lkb_11111111111111111111111111111111
+            stage: LOAD_ORACLE
+            recovery: RECONCILE
+            details_ref: managed:EXAMPLE_LOAD/audit/receipt.json
