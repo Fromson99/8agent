@@ -1,0 +1,14 @@
+테이블별 컬럼 정의 R18 — 2026-10-30
+
+최종 파일: 법률에이전트_B03_테이블별_컬럼정의_R18.xlsx
+사용자 정정: 벡터구간ID의 물리명은 VCTR_SCTN_ID이다.
+12_원문구간벡터 시트 B7과 14_참고_인덱스 시트의 PK/일반 인덱스 참조를 변경했다.
+13테이블60컬럼, 논리명/물리명/PK/NULL 허용 첫4열, 타입·길이·기본값·파티션은 R17과 동일하다.
+명세해시값은 DTLS_HASH_VALU를 유지한다. R17 원본은 보존했다.
+
+로컬 Oracle A8_GR12_CM1208.IDD_B03_LGL_VCTR_ITEM도 실제 이름 변경을 완료했다.
+활성 매핑은 mapping_local_vctr_current.json, 신청 매핑은 mapping_r18_registration.json이다.
+엔진의 VCTR_SEG_ID 논리키는 호환용으로 유지하고 SQL에서 새 물리명으로 매핑한다.
+신청 엑셀의 크기/타입과 로컬 DB에 보존한 기존 크기/타입은 구분한다.
+현장 Oracle 및 신청 시스템 입력은 수행하지 않았다.
+검증: VALIDATION.json / 실제 DB 변경: 09_ARTIFACTS/AUDITS/20261030-gold-vctr-sctn-rename

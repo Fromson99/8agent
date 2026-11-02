@@ -1,0 +1,52 @@
+{
+  "mode": "read_only",
+  "scope": "this notebook process",
+  "paths": [
+    {
+      "label": "SQLite fallback",
+      "path": "/var/tmp",
+      "free_GiB": 428.059,
+      "total_GiB": 1006.854,
+      "free_inodes": 62202457,
+      "device": 2096,
+      "directory": true,
+      "writable_searchable": true
+    },
+    {
+      "label": "SQLite fallback",
+      "path": "/usr/tmp",
+      "error": "FileNotFoundError"
+    },
+    {
+      "label": "SQLite fallback",
+      "path": "/tmp",
+      "free_GiB": 7.245,
+      "total_GiB": 7.683,
+      "free_inodes": 1025784,
+      "device": 72,
+      "directory": true,
+      "writable_searchable": true
+    },
+    {
+      "label": "cwd",
+      "path": "/home/jin/8-AGENT",
+      "free_GiB": 428.059,
+      "total_GiB": 1006.854,
+      "free_inodes": 62202457,
+      "device": 2096,
+      "directory": true,
+      "writable_searchable": true
+    }
+  ],
+  "scratch_lookup": "ModuleNotFoundError",
+  "last_error_type": null,
+  "sqlite_errorcode": null,
+  "sqlite_errorname": null,
+  "failed_assets": [],
+  "notes": [
+    "These are candidate paths, not proof of the exact SQLite temp directory.",
+    "Container/user quota may be smaller than the filesystem free space shown.",
+    "Failed SQLite statements can release temp files; current free space is not failure-time peak usage.",
+    "No files were deleted and the load was not restarted."
+  ]
+}

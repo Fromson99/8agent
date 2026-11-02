@@ -1,7 +1,7 @@
 import hashlib
 import json
 import threading
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012

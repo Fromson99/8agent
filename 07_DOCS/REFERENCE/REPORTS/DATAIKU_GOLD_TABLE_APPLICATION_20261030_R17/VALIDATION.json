@@ -1,0 +1,206 @@
+{
+  "status": "PASS",
+  "file": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R17/법률에이전트_B03_테이블별_컬럼정의_R17.xlsx",
+  "bytes": 39367,
+  "sha256": "5ef633c5bc29411d776ada7f2b09165d130e6aff23ea067ceb780524bb4b80e1",
+  "source_sha256": "aa16715c9b0d8b31d4cb93a93aab4668946dc78d37e0be039d96ecfcddc42ae1",
+  "table_column_sheets": 13,
+  "columns": 60,
+  "all_sheets": 16,
+  "first_four_columns": [
+    "논리명",
+    "물리명",
+    "PK",
+    "NULL 허용"
+  ],
+  "pk_null_consistent": true,
+  "column_values_equal_r16": true,
+  "index_partition_values_preserved": true,
+  "data_cells_merged": false,
+  "initial_sheet": "01_문서판본",
+  "native_excel_rendered": false,
+  "layout": {
+    "01_문서판본": {
+      "table": "IDD_B03_LGL_DOC_VER",
+      "data_range": "A5:H10",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "02_문서구조": {
+      "table": "IDD_B03_LGL_DOC_UNIT",
+      "data_range": "A5:H10",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "03_문서본문": {
+      "table": "IDD_B03_LGL_DOC_BLK",
+      "data_range": "A5:H13",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "04_원문게시": {
+      "table": "IDD_B03_LGL_SRC_POST",
+      "data_range": "A5:H9",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "05_조회게시": {
+      "table": "IDD_B03_LGL_SRCH_POST",
+      "data_range": "A5:H7",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "06_검색관계": {
+      "table": "IDD_B03_LGL_SRCH_ROW",
+      "data_range": "A5:H14",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "07_조회채널": {
+      "table": "IDD_B03_LGL_SRCH_CHNL",
+      "data_range": "A5:H8",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "08_온톨로지게시": {
+      "table": "IDD_B03_LGL_ONTL_POST",
+      "data_range": "A5:H10",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "09_온톨로지선택": {
+      "table": "IDD_B03_LGL_ONTL_HEAD",
+      "data_range": "A5:H8",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "10_원문지식연결": {
+      "table": "IDD_B03_LGL_ONTL_ANC",
+      "data_range": "A5:H10",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "11_벡터게시": {
+      "table": "IDD_B03_LGL_VCTR_POST",
+      "data_range": "A5:H7",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "12_원문구간벡터": {
+      "table": "IDD_B03_LGL_VCTR_ITEM",
+      "data_range": "A5:H11",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    },
+    "13_벡터게시선택": {
+      "table": "IDD_B03_LGL_VCTR_HEAD",
+      "data_range": "A5:H8",
+      "columns": [
+        "논리명",
+        "물리명",
+        "PK",
+        "NULL 허용",
+        "PK 순서",
+        "타입·길이",
+        "기본값",
+        "컬럼 정의"
+      ]
+    }
+  }
+}

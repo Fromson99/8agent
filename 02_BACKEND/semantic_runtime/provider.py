@@ -1,6 +1,6 @@
 import json
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import time
 import uuid
 from .contracts import sha, write

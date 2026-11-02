@@ -1,0 +1,32 @@
+2026-10-30 최신: MAIN125 oracle-scope-20261030-r1과 같은 엔진을 사용한다. Oracle 범위 포트 수정·Gold ON/DB 유지. 실제1241은 벡터100후보·온톨로지 확보 후 호스트 스왑 증가로 중단, 최종답변 미완료. 현재 사용·롤백은 README.txt 및 09_ARTIFACTS/AUDITS/20261030-oracle-fulltext-repair/gold-rollback.json을 따른다. 아래 MAIN124/MAIN120 설명은 이전 통합·실험 이력이다.
+
+2026-10-30 후속: Gold는 이제 MAIN124 정식 코드를 직접 사용한다. 임시 runtime_patches 실행0. 새 전용 프로세스에서 open_store를 먼저 연 뒤 같은 engine_root의 create_app과 store.gold_profile을 사용한다. 실제 모델 E2E는 이번 통합에서 재실행하지 않았다.
+
+골드 연결기 온톨로지 ON 사용 — 2026-10-30
+
+기본 설정: ontology_settings.json = {"schema_version":"gold-ontology-settings-v1","enabled":true}
+Gold 온톨로지 게시3건을 DB 모드로 읽는다. 이 파일은 활성 MAIN124 기본 프로필을 바꾸지 않는다.
+
+서비스 코드 연결
+with connect.open_store(documents=authenticated_document_ids) as (store, request, transport):
+    profile = store.gold_profile
+    # 모델/인증 설정은 기존 호스트의 검증된 값을 사용한다.
+    app = create_app(..., data_store=store, legal_agent_profile=profile, ...)
+
+실제 ADR1235 시험도 같은 store.gold_profile을 native API에 전달한다.
+이미 실행 중인 별도 프로세스는 자동 재시작하지 않았다. 새 전용 프로세스로 연결해야 한다.
+
+설정만 OFF로 되돌리기
+ontology_settings.json의 enabled를 false로 바꾸거나 같은 스키마의 별도 JSON을 --ontology-settings로 전달한다.
+프로필은 ontology_enabled=false / ontology_context.mode=A0로 바뀐다. 기존 게시3건은 삭제하지 않는다.
+
+연결기 코드까지 이전 상태로 복구하기
+현재 MAIN124 통합의 롤백은 09_ARTIFACTS/AUDITS/20261030-judgment-gold-main124/gold-rollback.json을 따른다.
+gold-before/connect.py와 binding.json을 함께 복구하고 이번 추가 engine_common.py를 기록된 해시와 대조한다.
+기존 runtime_patches는 삭제하지 않았다. 과거 ON 반영용 rollback만 단독 적용하면 현재 binding과 불일치하므로 사용하지 않는다.
+원래 MAIN120/MAIN123 릴리스와 Oracle 테이블·게시물은 보존했다.
+
+검증 범위
+health: 새 물리명13테이블/60컬럼, 설정 ON/DB. 자동 모델 호출 없음.
+기술검사: 원문 재결속/ID namespace40개 + 시험전송 실패분류/정책7개.
+실제 답변 성공 여부는 후속 ON_최종확인결과.txt의 실행 결과를 확인한다.

@@ -1,6 +1,6 @@
 """Durable comparison source return; never an accepted legal answer or experience."""
 import json
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from copy import deepcopy
 from ..contracts import digest
 from .errors import ContractError

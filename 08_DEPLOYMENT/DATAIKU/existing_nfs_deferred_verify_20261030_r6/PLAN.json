@@ -1,0 +1,23 @@
+{
+  "scope": "Separate staged Oracle load from explicit full verification; ordinary contract and entrypoint tests, no performance experiment",
+  "base_sha256": "f1284bd750d8a61b6354609842de71e999470ecef875a6769f7016abdbdc5866",
+  "actions": [
+    "load_only",
+    "verify",
+    "load"
+  ],
+  "states": [
+    "LOADED_UNVERIFIED",
+    "FULL_DATA_VERIFIED"
+  ],
+  "requirements": [
+    "Keep exact old target/generation and cumulative budgets",
+    "Reuse loaded source cursor, never completed verification as a durable truth",
+    "No new release manifest before complete remote verification",
+    "Keep immutable SQL conflict checks; no automatic write retries",
+    "Preserve legacy receipts; no active pointer switch",
+    "One source full scan per verify; verify cannot repair by insertion",
+    "R4 interrupted verify to load_only transition; corruption/missing/extra reject; write-ack loss explicit resume; package pinned notebook tests"
+  ],
+  "field_access": false
+}

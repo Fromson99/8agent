@@ -15,6 +15,8 @@ def settings():
 def repository(config=None):
     cfg=config or settings();db=cfg['database'];kind=db['kind']
     if kind=='sqlite-local':
+        from ..oracle_dp import enabled
+        if enabled():raise ContractError('DP=oracle requires an Oracle ontology database; SQLite fallback is forbidden')
         if os.environ.get('GENOS_BACKEND') or cfg.get('environment')!='local':raise ContractError('SQLite ontology is local-only')
         path=Path(db['path']).resolve()
         # Never create a missing database from the serving reader.
@@ -30,6 +32,8 @@ def repository(config=None):
 
 
 def _guarded_repository(repo,cfg):
+    from .wiki_contracts import scope_key
+    repo.workspace_scopes=frozenset(scope_key(s) for s in cfg.get('workspace_runtime_scopes',[]))
     if cfg.get('domain_profile'):
         def verify(refs):
             port=glossary_binding(cfg)
@@ -43,6 +47,8 @@ def _guarded_repository(repo,cfg):
 def source_reader(config,allowed_documents):
     allowed=frozenset(allowed_documents);src=config['source'];kind=src['kind']
     if kind=='sqlite-local':
+        from ..oracle_dp import enabled
+        if enabled():raise ContractError('DP=oracle requires Oracle ontology sources; SQLite fallback is forbidden')
         if config.get('environment')!='local':raise ContractError('local source reader is forbidden in GENOS')
         def read(anchor):
             if anchor['document_id'] not in allowed:raise ContractError('source outside operator scope')
@@ -121,11 +127,12 @@ def glossary_binding(config):
     return GlossaryBinding(reader,snapshot=config['domain_profile']['source_snapshot'])
 
 
-def domain_workflow(*,actor):
+def domain_workflow(*,actor,ports=None):
     from .domain_workflow import DomainWorkflow
     from .profile import digest
     from pathlib import Path
-    cfg=settings();base=workflow(actor=actor);selected=cfg['domain_profile']
+    cfg=settings();base=(ports or {}).get('workflow') or workflow(actor=actor);selected=cfg['domain_profile']
+    if actor not in cfg.get('operators',{}) or base.actor!=actor:raise ContractError('authoring port actor mismatch')
     binding=digest({name:__import__('hashlib').sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                     for name in ('domain_workflow.py','observations.py','accumulation.py','glossary_binding.py','authoring_model.py')})
     generate=None
@@ -133,6 +140,28 @@ def domain_workflow(*,actor):
         from .authoring_model import generate as generate_once
         def generate(prompt,context,schema):
             return generate_once(base.store,prompt,context,schema)
-    return DomainWorkflow(base.repo,base.store,actor=actor,source_reader=base.source_reader,generate=generate,
+    result=DomainWorkflow(base.repo,base.store,actor=actor,source_reader=base.source_reader,generate=generate,
         namespace=selected['namespace'],source_snapshot=selected['source_snapshot'],acl_ref=selected['acl_ref'],
-        document_ids=cfg['operators'][actor]['document_ids'],glossary=glossary_binding(cfg),producer_binding=binding)
+        document_ids=cfg['operators'][actor]['document_ids'],glossary=(ports or {}).get('glossary') or glossary_binding(cfg),producer_binding=binding)
+    result.can_publish_workspace=cfg['operators'][actor].get('workspace_publish') is True
+    return result
+
+
+def workspace_workflow(*,actor,ports=None):
+    """No profile/glossary is opened until the user selects compilation."""
+    from .wiki_workspace import Workspace
+    from ..contracts import digest
+    cfg=settings();base=(ports or {}).get('workflow') or workflow(actor=actor)
+    if actor not in cfg.get('operators',{}) or base.actor!=actor:raise ContractError('workspace operator mismatch')
+    selected=cfg.get('workspace') or cfg.get('domain_profile')
+    if not selected:raise ContractError('operator-managed workspace namespace/snapshot/ACL required')
+    names=('wiki_contracts.py','wiki_workspace.py','wiki_projection.py','wiki_index.py','wiki_repository.py','authoring_model.py')
+    binding=digest({name:__import__('hashlib').sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in names})
+    generate=None
+    if cfg.get('model',{}).get('kind')=='genos':
+        from .wiki_transport import generate as once
+        def generate(prompt,context,schema):return once(base.store,actor,prompt,context,schema)
+    return Workspace(base.repo,base.store,actor=actor,source_reader=base.source_reader,generate=generate,
+        namespace=selected['namespace'],source_snapshot=selected['source_snapshot'],acl_ref=selected['acl_ref'],
+        document_ids=cfg['operators'][actor]['document_ids'],producer_binding=binding,
+        can_publish=cfg['operators'][actor].get('workspace_publish') is True)

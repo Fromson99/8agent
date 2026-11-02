@@ -1,0 +1,29 @@
+{
+  "schema_version": "dataiku-embedding-smoke-handoff-v1",
+  "created_at": "2026-10-30T04:21:09.499313+00:00",
+  "adr": "ADR-1236",
+  "code_sha256": "e928f111c2aa65bb7895236bbaff15f7e1a69090409ebed0c48b4c9ab18a6e73",
+  "txt_identical": true,
+  "local_tests": {
+    "passed": 11,
+    "failed": 0,
+    "real_oracle": true,
+    "model": "deterministic synthetic vectors; fake Dataiku API",
+    "checks": [
+      "native 3-row INSERT/readback/9 cosine comparisons/rollback",
+      "late third INSERT unique-key failure rolls back all test rows",
+      "distance assertion failure rolls back all test rows",
+      "count/dimension/nonfinite/zero/boolean rejection",
+      "full cell fake Mesh + real Oracle",
+      "persistent duplicate-call guard",
+      "UNKNOWN response not retried",
+      "empty input stops before model call"
+    ]
+  },
+  "field_dataiku_model_tested": false,
+  "field_oracle_jdbc_tested": false,
+  "actual_model_calls": 0,
+  "persistent_business_data_changes": 0,
+  "main_changed": false,
+  "status": "PREPARED_FIELD_NOT_RUN"
+}

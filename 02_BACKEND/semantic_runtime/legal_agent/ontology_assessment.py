@@ -74,7 +74,8 @@ def project(session, investigation, sources, options):
     if not enabled(session.profile) or not investigation.get('ontology_context'):
         return {}
     if session.profile['candidate_navigation']['ontology_context'] == {'mode': 'DB'}:
-        from ..ontology_work.runtime import config as database_config
+        from ..ontology_work.runtime import config as database_config, recheck
+        recheck(session, investigation)
         settings = database_config(session.profile['candidate_navigation'], investigation, investigation['binding'])
     else:
         settings = context.configuration(session.profile['candidate_navigation']['ontology_context'])
@@ -109,8 +110,10 @@ def project(session, investigation, sources, options):
             original = originals.get(row['source_id'])
             if original and original['document_id'] != anchor['document_id']:
                 raise ContractError('ontology assessment source document changed')
+            # Current verified originals may use an equivalent, newer read receipt.
+            # Binding, own-block coverage and full anchor content hash stay mandatory.
             spans = [p for p in (original or {}).get('adopted_spans', [])
-                     if str(p['block_id']) in wanted and p['evidence_id'] in row['evidence_ids']]
+                     if str(p['block_id']) in wanted]
             expected = inventory.expected(session, anchor['document_id'], offer['block_ids'])
             if not inventory.covers(expected, spans):
                 pending.append({'anchor': deepcopy(anchor), 'reason': 'ASSESSMENT_ORIGINAL_NOT_PRESENTED'})
@@ -120,7 +123,7 @@ def project(session, investigation, sources, options):
                 raise ContractError('ontology assessment original content changed')
             offered = [o for o in options if o['source_id'] == row['source_id']
                     and o['document_id'] == anchor['document_id'] and str(o['block_id']) in wanted
-                    and o['evidence_id'] in row['evidence_ids']]
+                    and o['evidence_id'] in {p['evidence_id'] for p in spans}]
             refs = _refs(spans, offered)
             if not refs:
                 pending.append({'anchor': deepcopy(anchor), 'reason': 'ASSESSMENT_EVIDENCE_NOT_PRESENTED'})
@@ -162,7 +165,74 @@ def project(session, investigation, sources, options):
             'connection_scan': deepcopy(plan['scan'])})
         proofs.append({'plan_id': plan['id'], 'compiled_sha256': compiled['payload_sha256'],
                        'current_evidence_refs': [ref for f in fragments for ref in f['evidence_refs']]})
+    from ..ontology_work.runtime import assessment_references
     return {'ontology_bundles': cards, 'ontology_assessment': {
         'version': VERSION, 'snapshot_sha256': settings['snapshot_sha256'],
+        'workspace_publications': assessment_references(investigation, cards),
         'proofs': proofs, 'delivery_status': 'PREPARED_NOT_SENT',
         'automatic_adoption': False, 'evidence_sufficient': False}}
+
+
+def usage_schema(schema, payload):
+    """Optional for old clients; absence never means adoption."""
+    if not payload:
+        return schema
+    schema = deepcopy(schema)
+    from .completion_contracts import obj
+    schema['properties']['ontology_usage'] = {'type': 'array', 'items': obj({
+        'package_sha256': {'type': 'string'}, 'path_id': {'type': 'string'},
+        'node_ids': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1, 'uniqueItems': True},
+        'claim_id': {'type': 'string'}})}
+    return schema
+
+
+def usage_core(value, schema, payload):
+    """Only explicit model use with current path, node AND claim evidence."""
+    from .errors import ProposalError
+    value, schema = deepcopy(value), deepcopy(schema)
+    usage = value.pop('ontology_usage', None)
+    schema['properties'].pop('ontology_usage', None)
+    if usage is None:
+        return value, schema, None
+    if not isinstance(usage, list):
+        raise ProposalError('ontology usage must be an array')
+    paths = {(c['payload']['assembly_catalog']['package_sha256'], p['id']): p
+        for c in payload.get('ontology_bundles', []) if c.get('payload', {}).get('assembly_catalog')
+        for p in c['payload']['assembly_catalog']['paths']}
+    claims = {c['claim_id']: c for c in value.get('claims', [])}
+    seen = set()
+    for row in usage:
+        if not isinstance(row, dict) or set(row) != {'package_sha256', 'path_id', 'node_ids', 'claim_id'}:
+            raise ProposalError('ontology usage fields changed')
+        path = paths.get((row['package_sha256'], row['path_id']))
+        claim = claims.get(row['claim_id'])
+        if not path or not claim or not isinstance(row['node_ids'], list) or not row['node_ids']:
+            raise ProposalError('ontology usage references an unoffered path or claim')
+        nodes = {n['id']: n for n in path['nodes']}
+        if len(set(row['node_ids'])) != len(row['node_ids']) or set(row['node_ids']) - nodes.keys():
+            raise ProposalError('ontology usage references an unoffered node')
+        # bind_current supplied exact complete originals of this path. A mere
+        # matching document/package ID is insufficient for an adoption receipt.
+        if not set(path['source_refs']) <= set(claim.get('evidence_refs', [])):
+            raise ProposalError('ontology usage lacks the path original evidence in this claim')
+        key = digest(row)
+        if key in seen:
+            raise ProposalError('duplicate ontology usage')
+        seen.add(key)
+    return value, schema, usage
+
+
+def explanation(payload, *, decision_key, usage=None, received=False, enabled=False):
+    bundles = []
+    for card in payload.get('ontology_bundles', []):
+        catalog = card.get('payload', {}).get('assembly_catalog')
+        bundles.append({'bundle_id': card.get('bundle_id') or card.get('payload', {}).get('bundle_id'),
+            'status': card['status'], 'assembly': deepcopy(catalog),
+            'adoption': 'NOT_RECORDED' if usage is None else 'ADOPTED' if catalog and any(r['package_sha256']==catalog['package_sha256'] for r in usage) else 'NOT_USED',
+            'claim_uses': [r for r in usage or [] if catalog and r['package_sha256'] == catalog['package_sha256']]})
+    return {'status': 'RESPONSE_RECEIVED' if received and payload else 'PREPARED_NOT_SENT' if payload else 'NO_RESULTS' if enabled else 'OFF',
+        'input_hash': digest(payload), 'decision_key': decision_key,
+        'workspace_publications': deepcopy(payload.get('ontology_assessment', {}).get('workspace_publications', [])),
+        'adoption': 'NOT_RECORDED' if usage is None else 'RECORDED', 'bundles': bundles}
+
+PROMPT += '\nontology_usage는 이번 claims에 실제 사용한 assembly_catalog의 package_sha256/path_id/node_ids/claim_id 연결이다. 사용하지 않았다면 []로 둔다. 선택 경로의 source_refs를 해당 claim.evidence_refs에 모두 포함한다. 단순 조회나 원문 인용만으로 온톨로지 사용을 주장하지 않는다.'

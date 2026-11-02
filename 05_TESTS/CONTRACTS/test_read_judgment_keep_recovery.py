@@ -58,8 +58,8 @@ def test_delta_normalization_does_not_bypass_original_proof():
     inv,data,*_=setup();commit(inv,data,'1');ctx=rj.context(inv,data,'2');raw=proposal(ctx,op='KEEP')
     raw['read_review']['judgments'][0]['basis_refs']=['UNKNOWN']
     normalized,_=rj.normalize_review(raw,ctx)
-    from jsonschema import ValidationError
-    with pytest.raises(ValidationError):rj.record(inv,data,normalized,'2',ctx,{})
+    with pytest.raises(oc.OutputContractError) as rejected:rj.record(inv,data,normalized,'2',ctx,{})
+    assert 'READ_JUDGMENT_WRONG_ORIGINAL' in {i['code'] for i in rejected.value.issues}
     assert len(rj.state_for(inv,data)['history'])==1
 
 

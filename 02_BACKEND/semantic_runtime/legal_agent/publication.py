@@ -3,9 +3,9 @@ from contextlib import contextmanager
 import fcntl
 import json
 import os
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 import tempfile
-import sqlite3
+from .. import runtime_sqlite as sqlite3
 from ..contracts import digest
 from .errors import ContractError, PublicationConflict
 from .repository import WorkRepository, encoded
@@ -15,6 +15,12 @@ from .context import now
 @contextmanager
 def owner_lock(directory, *, blocking=False):
     directory = Path(directory)
+    from ..oracle_runtime_paths import virtual, records
+    if virtual(directory):
+        directory.mkdir(parents=True, exist_ok=True)
+        with records().lease(['owner', str(directory)], wait=30 if blocking else 0):
+            yield
+        return
     directory.mkdir(parents=True, exist_ok=True)
     with (directory/'owner.lock').open('a+b') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | (0 if blocking else fcntl.LOCK_NB))
@@ -25,6 +31,8 @@ def owner_lock(directory, *, blocking=False):
 
 
 def fsync_dir(path):
+    from ..oracle_runtime_paths import virtual
+    if virtual(path): return  # Oracle commit is the durability boundary.
     fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
     try:
         os.fsync(fd)
@@ -79,6 +87,18 @@ def export(repo, runs):
     runs = Path(runs)
     runs.mkdir(parents=True, exist_ok=True)
     destination = runs/publication['destination_key']
+    from ..oracle_runtime_paths import virtual, write_file
+    if virtual(destination):
+        try:
+            write_file(destination, encoded(value).encode()+b'\n', exclusive=True)
+        except FileExistsError:
+            if digest(json.loads(destination.read_text())) != publication['result_hash']:
+                raise PublicationConflict('existing Oracle result differs from prepared publication')
+        with repo.transaction():
+            repo.event('PUBLICATION_EXPORTED', {'result_hash': publication['result_hash']})
+            repo.db.execute("UPDATE publication SET status='PUBLISHED',published_at=? WHERE singleton=1", (now(),))
+            repo.db.execute("UPDATE run SET status='COMPLETED',phase='END' WHERE singleton=1")
+        return value
     fd, temporary = tempfile.mkstemp(prefix='.legal-publication-', dir=runs)
     try:
         with os.fdopen(fd, 'wb') as stream:

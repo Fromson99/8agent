@@ -7,8 +7,8 @@ nothing reads it back into serving.
 """
 from datetime import datetime, timezone
 import json
-from pathlib import Path
-import sqlite3
+from .oracle_runtime_paths import Path
+from . import runtime_sqlite as sqlite3
 
 SCHEMA = '''CREATE TABLE IF NOT EXISTS rejection(
   id INTEGER PRIMARY KEY, at TEXT NOT NULL, generation_id TEXT NOT NULL, index_sha256 TEXT NOT NULL,

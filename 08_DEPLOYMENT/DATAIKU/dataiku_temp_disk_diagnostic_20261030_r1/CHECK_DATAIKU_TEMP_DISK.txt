@@ -1,0 +1,64 @@
+# Dataiku: 오류가 난 노트북의 새 셀에 전체를 붙여 넣고 실행합니다.
+# 파일 생성/삭제, DB 접속/쓰기, 원문 재적재, 정렬 재실행을 하지 않습니다.
+# Restart 전이면 마지막 오류에서 실패한 자산 경로도 가져올 수 있습니다.
+import json
+import os
+import sys
+from pathlib import Path
+
+diag = {'mode': 'read_only', 'scope': 'this notebook process', 'paths': []}
+candidates = []
+for name in ('SQLITE_TMPDIR', 'TMPDIR', 'TEMP', 'TMP'):
+    value = os.environ.get(name)
+    if value:
+        candidates.append((name, value))
+candidates += [('SQLite fallback', p) for p in ('/var/tmp', '/usr/tmp', '/tmp')]
+candidates.append(('cwd', os.getcwd()))
+try:
+    import dataiku
+    scratch = dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH')
+    if scratch:
+        candidates.append(('LEGAL_PIPELINE_SCRATCH', scratch))
+except Exception as exc:
+    diag['scratch_lookup'] = type(exc).__name__
+
+last = getattr(sys, 'last_exc', None) or getattr(sys, 'last_value', None)
+diag['last_error_type'] = type(last).__name__ if last else None
+diag['sqlite_errorcode'] = getattr(last, 'sqlite_errorcode', None)
+diag['sqlite_errorname'] = getattr(last, 'sqlite_errorname', None)
+tb = getattr(last, '__traceback__', None) or getattr(sys, 'last_traceback', None)
+diag['failed_assets'] = []
+while tb is not None:
+    frame = tb.tb_frame
+    if Path(frame.f_code.co_filename).name == 'oracle_query_publish.py':
+        relative = frame.f_locals.get('relative')
+        if isinstance(relative, str) and relative not in diag['failed_assets']:
+            diag['failed_assets'].append(relative)
+        asset = frame.f_locals.get('path')
+        if isinstance(asset, (str, Path)):
+            candidates.append(('failed asset parent', str(Path(asset).parent)))
+    tb = tb.tb_next
+seen = set()
+for label, raw in candidates:
+    path = os.path.abspath(os.path.expanduser(raw))
+    if path in seen:
+        continue
+    seen.add(path)
+    item = {'label': label, 'path': path}
+    try:
+        v = os.statvfs(path)
+        item.update(free_GiB=round(v.f_bavail*v.f_frsize/1024**3, 3),
+                    total_GiB=round(v.f_blocks*v.f_frsize/1024**3, 3),
+                    free_inodes=v.f_favail, device=os.stat(path).st_dev,
+                    directory=os.path.isdir(path),
+                    writable_searchable=os.access(path, os.W_OK | os.X_OK))
+    except OSError as exc:
+        item['error'] = type(exc).__name__
+    diag['paths'].append(item)
+diag['notes'] = [
+    'These are candidate paths, not proof of the exact SQLite temp directory.',
+    'Container/user quota may be smaller than the filesystem free space shown.',
+    'Failed SQLite statements can release temp files; current free space is not failure-time peak usage.',
+    'No files were deleted and the load was not restarted.'
+]
+print(json.dumps(diag, ensure_ascii=False, indent=2))

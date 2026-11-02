@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
-import sqlite3
+from ..oracle_runtime_paths import Path
+from .. import runtime_sqlite as sqlite3
 import time
 import uuid
 from .corrected_memory import Conflict, MemoryError, digest, encoded
@@ -318,12 +318,16 @@ class ShortcutRepository:
         scope=self.scope(principal,session,create=True);sha=hashlib.sha256(data).hexdigest();ident=digest([scope,sha,sorted(documents)])
         relative=Path(scope.split(':')[1])/sha
         path=self.artifacts/relative;path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+        from ..oracle_runtime_paths import virtual, write_file
         try:
-            with path.open('xb') as f: f.write(data);f.flush();os.fsync(f.fileno())
-            path.chmod(0o600)
-            fd=os.open(path.parent,os.O_RDONLY)
-            try: os.fsync(fd)
-            finally: os.close(fd)
+            if virtual(path):
+                write_file(path, data, exclusive=True)
+            else:
+                with path.open('xb') as f: f.write(data);f.flush();os.fsync(f.fileno())
+                path.chmod(0o600)
+                fd=os.open(path.parent,os.O_RDONLY)
+                try: os.fsync(fd)
+                finally: os.close(fd)
         except FileExistsError:
             if path.read_bytes()!=data: raise MemoryError('artifact hash collision')
         self.db.execute('INSERT OR IGNORE INTO sw_artifact VALUES(?,?,?,?,?,?)',(ident,scope,sha,len(data),str(relative),encoded(sorted(documents))))

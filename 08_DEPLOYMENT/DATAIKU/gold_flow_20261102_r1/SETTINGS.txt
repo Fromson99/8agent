@@ -1,0 +1,44 @@
+Dataiku LEGAL_RAG / 프로젝트 변수 또는 실행 환경변수
+
+이미 설정돼 있으면 다시 넣을 필요 없습니다.
+
+필수 · 벡터 실행 시
+  LEGAL_EMBED_LLM_ID = openai:genos-embedding:embedding-kure-v1
+  LEGAL_EMBED_DIMENSIONS = 1024
+
+Dataiku 프로젝트 변수 JSON 예:
+{
+  "LEGAL_EMBED_LLM_ID": "openai:genos-embedding:embedding-kure-v1",
+  "LEGAL_EMBED_DIMENSIONS": 1024
+}
+
+1024와 "1024" 모두 허용합니다. OS 환경변수에는 문자열 1024를 넣습니다.
+
+NFS API 신규 수신이 필요한 경우만
+  LEGAL_PIPELINE_URL = 기존 GENOS NFS 전송 API HTTPS 주소
+  LEGAL_PIPELINE_TOKEN = 기존 접속 토큰
+
+실제 주소/토큰은 이전 Dataiku 설정을 재사용합니다. 메일에는 비밀값을 넣지 않았습니다.
+로컬 파일 또는 Dataiku 관리 폴더 보관본이 충분하면 API 호출과 자격 증명 요구를 생략합니다.
+
+선택 · 기존 노트북에서 OLD_JOB_DIR를 따로 지정했던 경우
+  LEGAL_GOLD_OLD_JOB_DIR = 그 OLD_JOB_DIR의 실제 절대 경로
+
+기본 경로:
+  <Python tempfile.gettempdir()>/legal-existing-nfs-20261029-r1/
+    financial-risk-success-20261005-schema-r2/oracle-import-r2
+
+기존 기본 경로에 full-state.json / flow-inputs.json이 있으면 먼저 사용합니다.
+새 수신이고 LEGAL_PIPELINE_SCRATCH가 설정돼 있으면 그 경로 아래 같은 하위 구조를 만듭니다.
+임의로 과거 경로를 추정해 입력하지 마세요. 기존 노트북에 출력된 경로를 사용합니다.
+
+고정 연결:
+  Project: LEGAL_RAG
+  Landing folder ID: ehA8dpVm
+  Oracle connection: AIDP / expected user: PIDD2APP
+  Tables: 기존 FRESH_1의 동일 *_1 17개
+
+실행 환경:
+  프로젝트 Python 코드 환경 상속. 기존 적재 노트북과 같은 라이브러리/로컬 파일 접근 필요.
+  NFS 수신 캐시/로그는 ehA8dpVm과 같은 S3 연결·버킷에 새 전용 관리 폴더로 보관.
+  Scenario는 설치 후 수동 Run. 자동 예약/다른 사용자에게 자동 알림 발송 없음.

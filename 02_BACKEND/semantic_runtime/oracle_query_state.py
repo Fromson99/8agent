@@ -14,6 +14,7 @@ from .oracle_dp_assets import clob_text
 from .oracle_dp_io import DPError, BudgetPause, SQL, digest, canonical
 from .oracle_query import QuerySQL, MAX_RESPONSE_BYTES
 from .oracle_query_catalog import STATE, pin, json_body
+from .physical_mapping import names
 
 
 class StateConflict(DPError):
@@ -27,7 +28,8 @@ class StateSQL(QuerySQL):
             return super().request(statement, binds, limit=limit)
         # Restrict this transport to our state table and transaction forms.
         # Query text is maintained code; no LLM/user SQL is accepted by the API.
-        if STATE not in statement or not statement.startswith(('DECLARE ', 'BEGIN ')):
+        table=names(self,'query_state',STATE).table
+        if table not in statement or not statement.startswith(('DECLARE ', 'BEGIN ')):
             raise DPError('STATE_SQL: only maintained state transactions are accepted')
         result = SQL.request(self, statement, binds, write=True, limit=limit)
         if time.monotonic() >= self.deadline:
@@ -48,9 +50,10 @@ class State:
 
     def read(self, key):
         binds = self._binds(key)
-        where = 'SCOPE_HASH=:scope AND STATE_KEY=:key'
-        rows = self.sql.query(f'SELECT REVISION,VALUE_SHA256,TO_CLOB(VALUE_JSON) AS VALUE,DBMS_LOB.GETLENGTH(VALUE_JSON) AS N '
-                              f'FROM {STATE} WHERE '+where, binds, limit=1)
+        n=names(self.sql,'query_state',STATE)
+        where = n.c('SCOPE_HASH')+'=:scope AND '+n.c('STATE_KEY')+'=:key'
+        rows = self.sql.query(f"SELECT {n.select('REVISION','VALUE_SHA256')},TO_CLOB({n.c('VALUE_JSON')}) AS VALUE,DBMS_LOB.GETLENGTH({n.c('VALUE_JSON')}) AS N "
+                              f'FROM {n.table} WHERE '+where, binds, limit=1)
         if not rows:
             return None
         row = rows[0]
@@ -60,7 +63,7 @@ class State:
         if not isinstance(body, str) or len(body.encode('utf-16-le'))//2 != row['N']:
             # Include revision/hash in every CLOB chunk lookup. A concurrent
             # commit cannot splice old metadata with a new object's body.
-            body = clob_text(self.sql, STATE, 'VALUE_JSON', where+' AND REVISION=:revision AND VALUE_SHA256=:hash',
+            body = clob_text(self.sql, n.table, n.c('VALUE_JSON'), where+' AND '+n.c('REVISION')+'=:revision AND '+n.c('VALUE_SHA256')+'=:hash',
                              [*binds,('revision',row['REVISION'],'NUMBER'),('hash',row['VALUE_SHA256'],'VARCHAR2')])
         if body is None:
             raise StateConflict('STATE_READ_CONFLICT: revision changed during read')
@@ -85,13 +88,14 @@ class State:
         if (current is None and expected_revision != 0) or (current is not None and current['revision'] != expected_revision):
             raise StateConflict('STATE_CONFLICT: retain current state and reload its revision')
         binds += [('revision', revision, 'NUMBER'), ('hash', sha, 'VARCHAR2'), ('body', body, 'CLOB')]
+        n=names(self.sql,'query_state',STATE)
         if current is None:
-            operation = (f'INSERT INTO {STATE}(SCOPE_HASH,STATE_KEY,REVISION,VALUE_SHA256,VALUE_JSON) '
+            operation = (f"INSERT INTO {n.table}({','.join(n.c(c) for c in ('SCOPE_HASH','STATE_KEY','REVISION','VALUE_SHA256','VALUE_JSON'))}) "
                          'VALUES(:scope,:key,:revision,:hash,:body);')
         else:
             binds += [('previous', expected_revision, 'NUMBER'), ('previous_hash', current['sha256'], 'VARCHAR2')]
-            operation = (f'UPDATE {STATE} SET REVISION=:revision,VALUE_SHA256=:hash,VALUE_JSON=:body '
-                         'WHERE SCOPE_HASH=:scope AND STATE_KEY=:key AND REVISION=:previous AND VALUE_SHA256=:previous_hash; '
+            operation = (f"UPDATE {n.table} SET {n.c('REVISION')}=:revision,{n.c('VALUE_SHA256')}=:hash,{n.c('VALUE_JSON')}=:body "
+                         f"WHERE {n.c('SCOPE_HASH')}=:scope AND {n.c('STATE_KEY')}=:key AND {n.c('REVISION')}=:previous AND {n.c('VALUE_SHA256')}=:previous_hash; "
                          "IF SQL%ROWCOUNT<>1 THEN RAISE_APPLICATION_ERROR(-20033,'STATE_CONFLICT'); END IF;")
         self.sql.request('BEGIN '+operation+' COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;', binds, write=True)
         if self.read(key) != target:

@@ -1,12 +1,12 @@
 """GENOS Oracle request factory. Only code/configuration survives a request.
 
-Source data stays in Oracle. Existing mutable conversation/workflow journals
-use an explicitly mounted external runtime; there is no local path fallback.
+Source data and mutable Agent records stay in Oracle. Runtime paths are logical
+identifiers; no NFS mount, serving-local journal, or data fallback is required.
 """
 from contextlib import contextmanager
 from contextvars import ContextVar
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
 import threading
 import time
@@ -39,10 +39,12 @@ def request_context():
     if existing is not None:
         yield existing
         return
-    slot={'app':None}
+    slot={'app':None,'agent_records':None}
     token=_REQUEST.set(slot)
     try:
-        yield slot
+        from .oracle_runtime_paths import using
+        with using(None):
+            yield slot
     finally:
         if slot['app'] is not None:
             slot['app'].state.pipeline.store.close()
@@ -50,7 +52,7 @@ def request_context():
 
 
 def environment_binding():
-    names=('GENOS_STATE_DIR','GENOS_JOURNAL_STORAGE','GENOS_RUNTIME_LIMIT_MIB','GENOS_RUNTIME_RESERVE_MIB','GENOS_RUNTIME_MIN_FREE_MIB','GENOS_RAG_INITIAL_SEARCH','GENOS_EMBED_URL','GENOS_BASE_URL','GENOS_EMBED_SERVING_ID','GENOS_EMBED_KEY','DP','DP_QUERY_RELEASE_ID','DP_QUERY_CHANNEL','GENOS_RUNTIME_DIR','GENOS_SHARED_LOG_DIR',
+    names=('GENOS_ORACLE_AGENT_NAMESPACE','GENOS_ORACLE_AGENT_MEMORY_MIB','GENOS_ORACLE_TABLE_MAPPING','GENOS_STATE_DIR','GENOS_JOURNAL_STORAGE','GENOS_RUNTIME_LIMIT_MIB','GENOS_RUNTIME_RESERVE_MIB','GENOS_RUNTIME_MIN_FREE_MIB','GENOS_RAG_INITIAL_SEARCH','GENOS_EMBED_URL','GENOS_BASE_URL','GENOS_EMBED_SERVING_ID','GENOS_EMBED_KEY','DP','DP_QUERY_RELEASE_ID','DP_QUERY_CHANNEL','GENOS_RUNTIME_DIR','GENOS_SHARED_LOG_DIR','GENOS_DETAIL_LOG_DIR','GENOS_SYSTEM_LOG_DIR',
            'ORACLE_ORDS_BASE_URL','LLMOPS_ORDS_BASE_URL','ORACLE_ORDS_SCHEMA',
            'ORACLE_ORDS_CLIENT_ID','ORACLE_ORDS_CLIENT_SECRET')
     return digest({name:os.environ.get(name,'') for name in names})
@@ -73,10 +75,9 @@ def external_path(value,name):
 
 
 def external_runtime():
-    runtime=external_path(os.environ.get('GENOS_RUNTIME_DIR','').strip(),'GENOS_RUNTIME_DIR')
-    shared=os.environ.get('GENOS_SHARED_LOG_DIR','').strip()
-    if shared: external_path(shared,'GENOS_SHARED_LOG_DIR')
-    return runtime
+    from .oracle_runtime_paths import DEFAULT_ROOT,roots
+    roots()  # Validate logical identifiers only; never inspect their mounts.
+    return Path(os.environ.get('GENOS_RUNTIME_DIR') or DEFAULT_ROOT).resolve()
 
 
 class Factory:
@@ -107,18 +108,42 @@ class Factory:
         self.profile=validate(host._investigation_profile(host._genos_v5_wait_profile(host._genos_v5_admission_profile(profile))))
         slots=self.profile['max_concurrent_requests_per_process']
         self.admission=threading.BoundedSemaphore(slots) if slots else None
-        self.binding={'mode':'oracle-query','data_provider':'oracle','source_storage':'oracle',
-                      'serving_data_cache':False,'state_storage':'external-nfs',
+        self.binding={'mode':'oracle-query','data_provider':'oracle','source_storage':'oracle','diagnostic_storage':'nfs',
+                      'serving_data_cache':False,'state_storage':'oracle','persistent_sqlite':False,
+                      'record_computation':'request-local-memory',
                       'query_channel':self.channel,'query_release_id':self.release_id,
                       'dp_environment_binding':self.environment,'service_entry_sha256':host._sha(Path(host.__file__))}
         self.recovery_started=False
         self.recovery_lock=threading.Lock()
+        self.agent_schema_verified=False
+        self.agent_schema_lock=threading.Lock()
+        from .oracle_runtime_paths import configure
+        configure(self.record_provider)
+
+    def record_provider(self):
+        from .oracle_agent_records import AgentRecords,RecordSQL
+        slot=_REQUEST.get()
+        if slot is not None and slot.get('agent_records') is not None:
+            return slot['agent_records']
+        sql=RecordSQL(self.client,binding=self.environment,deadline=time.monotonic()+self.profile['wall_seconds'],max_calls=10000)
+        records=AgentRecords(sql,namespace=os.environ.get('GENOS_ORACLE_AGENT_NAMESPACE','genos-rag'))
+        if slot is not None:slot['agent_records']=records
+        return records
 
     def request(self):
         if environment_binding()!=self.environment:
             raise DPError('QUERY_CONFIG_CHANGED: restart after changing Oracle connection/runtime selection')
-        external_runtime()  # A removed mount must never fall through to local disk.
-        sql=StateSQL(self.client,binding=self.environment,deadline=time.monotonic()+self.profile['wall_seconds'],max_calls=10000)
+        external_runtime()
+        records=self.record_provider()
+        from .oracle_runtime_paths import roots
+        for root in roots():
+            migration=records.state('a1:head:'+digest({'migration_root':root}))
+            if migration and migration['value'].get('status')!='COMPLETE':
+                raise DPError('AGENT_MIGRATION_INCOMPLETE: finish the stopped-writer import before serving')
+        with self.agent_schema_lock:
+            if not self.agent_schema_verified:
+                records.preflight();self.agent_schema_verified=True
+        sql=records.sql
         selected=select_release(sql,release_id=self.release_id,channel=self.channel)
         manifest=selected['manifest'];snapshot=Snapshot.open(sql,manifest['source_release_id'])
         if manifest['dataset_version']!=snapshot.dataset_version or manifest['source_manifest']!=snapshot.manifest:
@@ -135,6 +160,7 @@ class Factory:
         if slot is not None and slot['app'] is not None: return slot['app']
         from .app import create_app
         request=self.request();store=Store(request)
+        store.recovery_factory=lambda:Store(self.request())
         binding={**self.binding,'query_release_id':request.release_id,'query_pointer_revision':request.pointer_revision,
                  'generation_id':request.snapshot.generation_id,'dataset_version':request.snapshot.dataset_version}
         try:
@@ -162,9 +188,20 @@ class Factory:
                     app=self.application();pipeline=app.state.pipeline
                     from .legal_agent.publication import recover as recover_publication
                     from .legal_agent.source_bundle import validate_current
+                    def publication_guard(repo,value):
+                        if repo.VERSION==6:
+                            from .legal_agent.unified_publication import validate_current as validate_case
+                            return validate_case(repo,value,pipeline.store)
+                        return validate_current(repo,value,pipeline.store)
                     recover_publication(self.runtime/'legal-agent/runs',self.runtime/'runs',
-                        publication_guard=lambda repo,value:validate_current(repo,value,pipeline.store),
+                        publication_guard=publication_guard,
                         contracts=pipeline.contracts,release=app.state.oracle_binding)
+                    from .legal_agent.shortcut_store import selected_store
+                    if self.implementation=='legal-agent-unified-v6' and selected_store(self.runtime).is_file():
+                        from .legal_agent.shortcut_cases import ShortcutCases
+                        cases=ShortcutCases(selected_store(self.runtime),None,None)
+                        try:cases.recover_requests()
+                        finally:cases.close()
                     if self.implementation=='legal-agent-unified-v6' and (self.runtime/'case-memory/cases-v3.sqlite').is_file():
                         from .legal_agent.case_repository import CaseRepository
                         cases=CaseRepository(self.runtime/'case-memory/cases-v3.sqlite',None,None)
@@ -182,7 +219,7 @@ class Factory:
             from .oracle_query_index import Index
             from .oracle_query_fulltext import UnitIndex
             store.selection.require_latest();Index(store);UnitIndex(request)
-            return {'data_provider':'oracle','mode':'oracle-query','query_release_id':request.release_id,
+            return {'data_provider':'oracle','mode':'oracle-query','state_storage':'oracle','persistent_sqlite':False,'nfs_required':False,'query_release_id':request.release_id,
                     'query_pointer_revision':request.pointer_revision,'document_count':len(request.sources.allowed),
                     'serving_data_cache':False,'source_downloaded':False,'sql_calls':request.sql.calls}
         finally: store.close()

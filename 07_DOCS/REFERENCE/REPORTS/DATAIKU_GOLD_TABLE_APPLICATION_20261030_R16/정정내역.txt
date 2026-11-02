@@ -1,0 +1,10 @@
+명세 약어 정정 — 2026-10-30
+
+사용자 후속 정정: MNFST_HASH_VALU → DTLS_HASH_VALU. 논리명 명세해시값·정의·타입은 동일.
+B03 신청 엑셀 R16은 R15를 대체한다.
+적용: DOC_VER / DOC_UNIT / DOC_BLK / SRC_POST의 4개 컬럼. PK3개·일반 인덱스3개의 구성컬럼도 정정.
+신청 대상 매핑: 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r16_registration.json
+기존 사진·R15 발송본·mapping_r14_photos.json은 과거 근거로 보존.
+매핑 내부의 MNFST_HASH_VALU 키는 기존 엔진 논리키이며 실제 SQL 컬럼은 DTLS_HASH_VALU로 변환한다.
+현재 로컬 DB 및 ACTIVE_MAPPING.json→mapping_local_current.json은 이번에 변경하지 않았다.
+신청용 R14 크기와 실제 로컬 보존 크기는 다르므로 새 신청용 매핑을 현재 DB에 활성화하지 않는다.

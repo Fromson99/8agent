@@ -10,8 +10,8 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
-import sqlite3
+from .oracle_runtime_paths import Path
+from . import runtime_sqlite as sqlite3
 import unicodedata
 
 OPERATIONS = {'discover','list','traverse','read','definition','occurrences'}

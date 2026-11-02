@@ -1,9 +1,9 @@
 """Explicit AD boundary, validated SQL executor and faithful table rendering."""
 import json
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import time
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from .ad_store import Store, fingerprint, ident, table_exists, features
 from .ad_backend import Backend
 from .ad_jobs import enqueue, schedule_time, record_error, error_detail

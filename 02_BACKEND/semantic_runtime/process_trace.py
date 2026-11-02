@@ -267,6 +267,8 @@ def metric_sections(metrics):
 
 class ProcessTrace:
     def __init__(self, path, request_id):
+        from .detailed_log_storage import oracle_mode,require_nfs
+        if oracle_mode():require_nfs(path.parent)
         self.path, self.request_id = path, request_id
         self.lock = threading.RLock()
         self.seen = set()
@@ -274,9 +276,14 @@ class ProcessTrace:
         self.errors = ErrorSections()
         self.failed = False
         flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0)
-        fd = os.open(path, flags, 0o640)
-        os.fchmod(fd, 0o640)
-        self.stream = os.fdopen(fd, 'a', encoding='utf-8')
+        from .oracle_runtime_paths import virtual, write_file, Path
+        if virtual(path):
+            write_file(path,b'',exclusive=True)
+            self.stream=Path(path).open('a',encoding='utf-8')
+        else:
+            fd = os.open(path, flags, 0o640)
+            os.fchmod(fd, 0o640)
+            self.stream = os.fdopen(fd, 'a', encoding='utf-8')
         self.block('요청 전체 과정 / 시작', {
             'request_id': request_id, 'format': 'readable-process-trace-v1',
             '읽는 방법': '단계별 누적 기록. | 로 시작하는 줄은 입력·응답 데이터입니다. '
@@ -317,6 +324,8 @@ class ProcessTrace:
                        key=key, stamp=event.get('ts'))
 
     def attempt(self, data, kind, *, phase=None, stamp=None, run_id=''):
+        from .detailed_log_storage import expand_attempt
+        data=expand_attempt(data)
         ident = str(data.get('attempt_id'))
         def render(safe):
             metadata = {k: safe.get(k) for k in ('attempt_id', 'logical_call_id', 'attempt_no',

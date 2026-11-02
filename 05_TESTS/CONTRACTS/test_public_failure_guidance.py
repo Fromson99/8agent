@@ -45,7 +45,11 @@ def test_actual_v6_api_failure_preserves_status_code_and_no_extra_calls(unified,
     assert response.status_code == status
     body = response.json()
     assert body['answer_status'] == 'failed' and body.get('error_code') == marker
-    assert body['message'].startswith('현재 충분한 법률 검토를 하지 못했습니다.')
+    if marker == 'timeout':
+        assert body['message'].startswith('모델 응답을 확인하지 못해 처리를 중단했습니다.')
+        assert '자동으로 재전송하지 않습니다' in body['message']
+    else:
+        assert body['message'].startswith('현재 충분한 법률 검토를 하지 못했습니다.')
     assert 'private' not in response.text and 'answer' not in body
     assert len(calls) == 1 and transport.phases == []
     assert not list((runtime / 'runs').glob('*.json'))

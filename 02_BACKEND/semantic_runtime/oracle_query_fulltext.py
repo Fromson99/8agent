@@ -46,6 +46,7 @@ class UnitIndex:
         if self.manifest.get('schema_version')!='semantic-unit-fulltext-v1':
             raise DPError('QUERY_FTS_FORMAT: Oracle unit search requires the selected unit FTS publication')
         relative=path+'/units.sqlite'
+        self.asset=relative
         prefix='asset_'+digest(relative)[:12]+'.'
         self.kinds={name:prefix+name for name in ('unit','unit_fts_posting','unit_fts_length','unit_fts_stats')}
         if not set(self.kinds.values()) <= self.records.manifest['tables'].keys():
@@ -72,6 +73,48 @@ class UnitIndex:
             raise DPError('QUERY_CANCELLED: caller deadline/cancellation reached')
         if digest(self.records.manifest)!=self.request.release_id:
             raise DPError('QUERY_RELEASE_BINDING: request manifest changed')
+
+    def scope_keys(self, db, document_id, unit_ids):
+        """Resolve metadata scope in Oracle and verify each selected published row."""
+        self.check_unchanged()
+        if db is not self or document_id not in self.request.sources.allowed:
+            raise DPError('QUERY_SCOPE: fulltext unit scope exceeds request authorization')
+        if (not isinstance(document_id, str) or not document_id or
+                not isinstance(unit_ids, (list, tuple, set, frozenset)) or
+                any(not isinstance(u, str) or not u for u in unit_ids)):
+            raise DPError('QUERY_SCOPE: invalid fulltext unit scope')
+        selected = sorted(set(unit_ids))
+        if not selected:
+            return []
+        from .oracle_query_db import Connection
+        from .oracle_query_catalog import lookup_key
+        with Connection(self.request, self.asset) as relation:
+            relation.set_progress_handler(lambda: self.check_unchanged(), 1)
+            rows = list(relation.execute(
+                "SELECT key,source_id FROM unit WHERE document_id=? AND json_extract(json,'$.unit_id') IN (SELECT value FROM json_each(?))",
+                (document_id, json.dumps(selected))))
+        expected = {key: sid for key, sid in rows}
+        if len(expected) != len(rows):
+            raise DPError('QUERY_FTS_SCOPE: duplicate selected unit key')
+        verified = {}
+        keys = sorted(expected)
+        for at in range(0, len(keys), 100):
+            batch = keys[at:at+100]
+            values = self.records.page(self.kinds['unit'], document_id=document_id,
+                                       lookup_ids=[lookup_key(k) for k in batch], limit=100)['rows']
+            for value in values:
+                body = json.loads(value['json'])
+                key = value['key']
+                if (key not in batch or key in verified or value['document_id'] != document_id or
+                        body['key'] != key or body['document_id'] != document_id or
+                        body['unit_id'] not in selected or value['source_id'] != body['source_id'] or
+                        body['source_id'] != expected[key]):
+                    raise DPError('QUERY_FTS_SCOPE: selected unit differs from verified publication')
+                verified[key] = body['source_id']
+        if verified != expected:
+            raise DPError('QUERY_FTS_SCOPE: selected unit row missing')
+        self.check_unchanged()
+        return sorted(verified.items())
 
     def _matches(self,terms,allowed=None,unit_keys=None):
         self.check_unchanged()

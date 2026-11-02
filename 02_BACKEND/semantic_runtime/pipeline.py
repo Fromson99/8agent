@@ -139,7 +139,7 @@ class Pipeline:
             from .legal_agent.coordinator import run_case
             from .stage_runner import StageRunner
             StageRunner(self).verify_profile()
-            if use_llm:
+            if use_llm or (execution_context or {}).get('case_body',{}).get('review_action'):
                 options=dict(execution_context or {})
                 if 'runtime' not in options:
                     from lawrag.platform.workspace import load_layout
@@ -212,7 +212,9 @@ class Pipeline:
                                   'release':options.get('release'),
                                   'publication_status':'PENDING'}
                         try:
-                            schedule(session.work.path,self.store.path,self.contracts.root,
+                            source=getattr(self.store,'recovery_factory',None) if getattr(self.store,'is_oracle_query',False) else self.store.path
+                            if source is None:raise ValueError('Oracle publication requires its maintained source recovery factory')
+                            schedule(session.work.path,source,self.contracts.root,
                                      options['runtime']/'runs',result,options.get('release'))
                         except Full as exc:
                             raise AdmissionRejected('publication capacity reached') from exc

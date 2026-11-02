@@ -1,0 +1,22 @@
+{
+  "python": "3.11",
+  "contracts_passed": 17,
+  "zip_txt_identical": true,
+  "test_scope": "synthetic files and mock managed folders, complete process visibility simulated; real open-FD rejection tested",
+  "R2_field_result": {
+    "deleted_GiB": 0,
+    "free_GiB_before": 0.831,
+    "free_GiB_after": 0.831,
+    "errors": [
+      "SUPPORT_BACKUP_MISSING_OR_AMBIGUOUS",
+      "AUDIT_CURRENT_CHECKPOINT_REFERENCE_NOT_FOUND"
+    ]
+  },
+  "R3_changes": [
+    "support canonical/duplicate/nested candidates selected by full content",
+    "audit actual retained object proof replaces latest-checkpoint-reference requirement"
+  ],
+  "field_R3_executed": false,
+  "field_R3_reclaimed_bytes": null,
+  "source_checkpoints_remote_objects_unchanged": true
+}

@@ -1,0 +1,70 @@
+{
+  "unit_tests": 17,
+  "sdk": {
+    "sdk": "dataiku-api-client 15.2.0",
+    "boundary": "in-memory REST, no actual DSS",
+    "status": "PASS",
+    "counts": {
+      "managedfolders": 9,
+      "datasets": 17,
+      "recipes": 8,
+      "scenarios": 1,
+      "zones": 7,
+      "insights": 1
+    },
+    "checks": [
+      "delivered ZIP + complete install TXT entrypoint",
+      "install",
+      "reinstall idempotent",
+      "8 recipe scripts compile",
+      "17 external append outputs",
+      "scenario stage sequence stops on error",
+      "installation never starts load",
+      "7 colored zones",
+      "existing insight preserved"
+    ],
+    "rest_calls": 335
+  },
+  "native": {
+    "status": "PASS",
+    "checks": 7,
+    "actual_models": 0,
+    "synthetic_source_rows": 8,
+    "synthetic_search_rows": 112,
+    "synthetic_vector_rows": 3
+  },
+  "attachments": [
+    {
+      "name": "DATAIKU_GOLD_FLOW_20261102_R1.zip",
+      "bytes": 272393,
+      "sha256": "0f64a141f21d6cc49447ffde220c10e26ccad1c921f25cc8318a2aad6c9ff649"
+    },
+    {
+      "name": "DATAIKU_GOLD_FLOW_INSTALL_R1.txt",
+      "bytes": 4979,
+      "sha256": "0b0cf3bb73bfe90c8d32ca4539a414631b4c80012274267c13487af4cbd93944"
+    },
+    {
+      "name": "DATAIKU_GOLD_FLOW_MONITOR_R1.txt",
+      "bytes": 2835,
+      "sha256": "758ca2ed186eda16fbb69dd8431084c0c5f67c7ab7952e09a17c220f3955cd72"
+    },
+    {
+      "name": "GUIDE.txt",
+      "bytes": 10210,
+      "sha256": "210991571fa79d71317f4d60dba797d34708bf9c9e4fed4e0f052bd556c140fd"
+    },
+    {
+      "name": "SETTINGS.txt",
+      "bytes": 2026,
+      "sha256": "a0777c27176dbe8bd88287643fea60ecade4f255c0593099acc48941a77c55d2"
+    },
+    {
+      "name": "PREVIEW.png",
+      "bytes": 93118,
+      "sha256": "feaab0c75874ca8a87e09e9c61e49c552d852fa302efdf65fe227b1b74e3c03c"
+    }
+  ],
+  "field_deployed": false,
+  "engine_original_files_identical": 60
+}

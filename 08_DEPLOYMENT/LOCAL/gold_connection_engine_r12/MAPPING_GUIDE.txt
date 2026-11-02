@@ -1,17 +1,31 @@
+2026-10-30 MAIN125 Oracle 범위 수정: 엔진 선택은 README.txt의 현재 안내를 따른다. R18 물리 매핑과 DB 내용은 이번 통합에서 바꾸지 않았다.
+
 골드 컬럼 매핑 사용 안내 — 2026-10-30
 
-현재 로컬 적용: 실제 Oracle 컬럼9종/16위치를 사진의 이름으로 변경했다.
-기본 선택은 ACTIVE_MAPPING.json → mapping_local_current.json이다.
+신청 명칭 후속 정정: 벡터구간ID는 VCTR_SCTN_ID이며 실제 로컬 VCTR_ITEM 컬럼도 변경했다.
+이전 VCTR_SEG_ID 논리키는 엔진 호환용이며 SQL 물리명은 VCTR_SCTN_ID로 변환된다.
+최종 신청 엑셀은 DATAIKU_GOLD_TABLE_APPLICATION_20261030_R18의 R18이다.
+
+명세해시값 후속 정정: 사용자 지시에 따라 명세해시값은 DTLS_HASH_VALU이다.
+신청 대상은 mapping_r18_registration.json을 사용한다. 과거 사진 매핑의 MNFST_HASH_VALU보다 이 정정이 우선한다.
+후속 사용자 요청으로 실제 로컬 DB의 4개 명세 컬럼도 DTLS_HASH_VALU로 변경했다.
+기본 연결은 mapping_local_vctr_current.json을 사용하며, 신청용 매핑은 R14 크기를 적용한 대상 DB용이다.
+
+현재 로컬 적용: 사진 이름9종/16위치 변경 후 명세해시값1종/4위치와 벡터구간ID1종/1위치를 추가 변경했다.
+기본 선택은 ACTIVE_MAPPING.json → mapping_local_vctr_current.json이다.
 테이블13개는 등록된 B03 이름과 이미 일치한다. 데이터 타입·크기는 이름 변경 전 값을 보존했다.
-mapping_r14_photos.json은 사진의 이름+R14 크기 전체를 나타내는 등록 모델용 파일이며,
-현재 로컬의 이름만 바꾼 실제 크기까지 반영한 파일은 mapping_local_current.json이다.
+mapping_r18_registration.json은 사진+DTLS+벡터구간ID 정정 이름과 R14 크기를 적용한 등록 모델용 파일이며,
+현재 로컬의 보존한 실제 크기를 반영한 파일은 mapping_local_vctr_current.json이다.
+mapping_local_current.json은 DTLS 변경 전 이력으로 보존하며 현재 DB에서 사용하지 않는다.
 
 사진 6장의 고유 물리명38개를 13테이블·60컬럼에 반영했다.
 각 대상의 매핑은 JSON 한 파일이다. 별도 DB 매핑 테이블을 조회하지 않고,
 연결을 열 때 파일을 검증·고정한 뒤 SQL의 테이블/컬럼 이름에 적용한다.
 원문·검색·용어·벡터·온톨로지의 내부 논리 키와 JSON 내용·해시는 유지한다.
 
-사진 기준 주요 변경
+사진 및 사용자 후속 정정 기준 주요 변경
+VCTR_SEG_ID → VCTR_SCTN_ID
+MNFST_HASH_VALU → DTLS_HASH_VALU
 DOC_ID → RGLT_DOC_ID
 DOC_NAME → RGLT_DOC_NAME
 ADD_INFO_TEXT_OMIT_YN → ADDN_IFMN_UN_APPN_YN
@@ -21,7 +35,7 @@ CHAN_NO → CHAN_ORD
 SRC_UNIT_ID → BODY_UNIT_ID
 VCTR_META_CTNT → VCTR_DTLS_IFMN_CTNT
 EMBD_VCTR_VALU → EMBD_VCTR
-나머지29개 용어도 매핑 파일에 명시했다. 이름 변경은9종·전체 등록 용어는38종이다.
+나머지27개 용어도 매핑 파일에 명시했다. 이름 변경은11종·전체 등록 용어는38종이다.
 각 테이블에서 같은 문서ID/변경번호가 반복되는 위치까지 모두 적용한다.
 
 설정
@@ -40,22 +54,22 @@ ALL_TAB_COLUMNS에서 이름·타입·BYTE 길이·정밀도·NULL 허용 여부
 
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py health
 
-명시하려면 --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_current.json을 지정한다.
+명시하려면 --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_vctr_current.json을 지정한다.
 mapping_r12_local.json 및 --config config_b03.json은 변경 전 이름용이다. 현재 DB에서 사용하지 않는다.
 
-2. 사진의 이름과 R14 크기를 모두 적용해 별도로 생성한 DB에는 다음 파일을 지정한다.
+2. 사진+DTLS+벡터구간ID 정정 이름과 R14 크기를 적용해 별도로 생성한 DB에는 다음 파일을 지정한다.
 아래 GOLD_OWNER와 자격증명 경로는 해당 환경 값으로 바꾼다. 자격증명 파일 권한은0600이다.
 
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r14_photos.json --owner GOLD_OWNER --credentials /secure/gold-readonly.json health
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r18_registration.json --owner GOLD_OWNER --credentials /secure/gold-readonly.json health
 
 --channel 또는 --release-id로 그 DB의 검증된 검색 게시본을 지정할 수 있다.
 --documents에는 인증된 허용 문서 ID JSON 배열을 주며 기존21문서보다 좁힐 수만 있다.
-이 엔진 연결기는 여전히 MAIN120/rev036의 고정 Gold 게시 계약에 결속된다.
-현장 전체 문서·새 검색 게시 형식·현재 MAIN123 전체 서빙을 자동 대체하지 않는다.
+현재 엔진은 MAIN125 oracle-scope-20261030-r1이며 정식 선택 릴리스와 해시가 같아야 한다.
+데이터 어댑터는 rev036의 고정 Gold 게시 계약을 유지한다. 현장 전체 문서·새 게시 형식은 별도 검증 대상이다.
 
 3. 배포에서 파일 내용도 고정하려면 --mapping-sha256을 함께 지정한다.
-제공한 사진 매핑 SHA256:
-1dfa55a0da1be6b1ecffbda2016d43046457aa5446e9098c6ece93190973cc34
+등록용 R18 매핑 SHA256:
+e861adfcccc0b8aeb5edbc2ca299d6cb7d3c32d49f0625d08026a84d3be420f0
 owner/테이블명을 파일에서 수정했다면 수정한 파일의 SHA256을 사용한다.
 --config는 종전 연결기 호환용이며 --mapping과 동시에 사용할 수 없다.
 로컬 기본 실행은 ACTIVE_MAPPING.json의 파일 해시를 자동으로 검증한다.
@@ -63,7 +77,7 @@ owner/테이블명을 파일에서 수정했다면 수정한 파일의 SHA256을
 Python API
 현재 로컬은 connect.open_store(documents=authorized_ids)로 활성 매핑을 사용한다.
 별도 대상은 아래처럼 매핑·owner·접속·게시본을 명시한다.
-with connect.open_store(mapping=".../mapping_r14_photos.json", owner="GOLD_OWNER",
+with connect.open_store(mapping=".../mapping_r18_registration.json", owner="GOLD_OWNER",
                         credentials="/secure/gold-readonly.json", documents=authorized_ids,
                         release_id=verified_query_release) as (store, request, transport):
     # 기존 create_app의 data_store=store로 사용한다.
@@ -73,6 +87,9 @@ with connect.open_store(mapping=".../mapping_r14_photos.json", owner="GOLD_OWNER
     # ports.glossary_binding(): 같은 Gold 용어집의 저장 참조 복원/대조 포트 (사용 후 reader.close)
 
 온톨로지
+- 2026-10-30 사용자 위임으로 상법365/368/369조3묶음을 실제 게시했다. Gold 게시/활성/원문연결은3/3/12행이다.
+  작업/감사 owner는 A8_GONT_AGENT, 로컬 작업 JSON은 01_DATA/ONTOLOGY_WORK/gold-local-20261030이다.
+  기본 profile OFF는 유지하며, 실제 모델 최종답변은 이번 게시 확인에 포함하지 않았다.
 - 활성 또는 명시한 매핑을 사용하면 원문 도착 시 사용하는 ontology_work.runtime.repository에 Gold 조회 포트를 연결한다.
   연결 문맥이 종료되면 이전 factory를 복구한다. 기존과 동일하게 전용 새 프로세스에서 사용한다.
 - RAG 설정 candidate_navigation.ontology_enabled=true 및 ontology_context.mode=DB에서 조회한다.
@@ -85,7 +102,7 @@ with connect.open_store(mapping=".../mapping_r14_photos.json", owner="GOLD_OWNER
   작업/감사2테이블은 명시한 Agent owner의 기존 LGL_ONT_WORK_A/LGL_ONT_EVT_A를 사용한다.
   게시3테이블만 Gold 매핑을 사용하며, 게시·원문 연결·활성 선택·Agent 감사는 같은 트랜잭션이다.
   기존 운영 설정의 ontology_work.configuration.repository가 이 옵션을 자동으로 읽는 것은 아니다.
-- 이 작업에서 실제 법률 지식을 자동 승인하거나 현재 골드에 적재하지 않았다.
+- 매핑 구현 자체는 자동 승인하지 않는다. 위3건은 후속 사용자 위임을 기록한 별도 게시 절차로 적재했다.
 
 검증
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/test_mapping.py
@@ -94,3 +111,7 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_e
 합성 자료로 새 물리 이름·역순 컬럼·원문/검색/벡터·온톨로지 게시/조회·권한/CAS/롤백을 검증한다.
 실제 운영 데이터·현장 DB를 변경하거나 외부 모델을 호출하지 않는다.
 상세 결과: 09_ARTIFACTS/AUDITS/20261030-gold-column-mapping/변경과_검증결과.txt
+DTLS 실제 변경·소비자 확인·되돌림: 09_ARTIFACTS/AUDITS/20261030-gold-dtls-rename/변경과_검증결과.txt
+
+벡터구간ID 변경·검증·되돌림: 09_ARTIFACTS/AUDITS/20261030-gold-vctr-sctn-rename/변경과_검증결과.txt
+이전 mapping_local_dtls_current.json 및 mapping_r16_registration.json은 VCTR_SEG_ID 변경 전 기록이다. 현재 DB/신청에는 각각 새 로컬 매핑/R18을 사용한다.

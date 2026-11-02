@@ -32,6 +32,13 @@ class Connection(sqlite3.Connection):
 
 
 def connect(*args, **kwargs):
+    from ..oracle_runtime_paths import virtual
+    if args and virtual(args[0]):
+        from ..oracle_record_sqlite import connect as oracle_connect
+        db = oracle_connect(*args, **kwargs)
+        db.row_factory = row
+        register(db)
+        return db
     db = sqlite3.connect(*args, factory=Connection, **kwargs)
     db.row_factory = row
     register(db)
@@ -45,8 +52,12 @@ def register(db):
 def initialize(db):
     # Readers always understand both formats; disabling compact affects only
     # new writes. Existing records are never rewritten implicitly.
-    db.compact = enabled()
-    if db.compact:
+    requested = enabled()
+    # Oracle BODY already provides content addressing and compression. Factoring
+    # every string into SQLite blobs here creates extra durable row transactions.
+    # Keep the empty compatibility table and old-blob reader, but write plain TEXT.
+    db.compact = requested and not getattr(db, 'is_oracle_record', False)
+    if requested:
         if not db.execute('SELECT json_valid(?)', (MAGIC + b'x"}',)).fetchone()[0]:
             raise ContractError('SQLite does not support JSON BLOB journal references')
         db.execute('''CREATE TABLE IF NOT EXISTS journal_blob_v1(
@@ -65,7 +76,8 @@ def _hash(raw):
 def _put(db, raw, codec='zlib', packed=None):
     key = _hash(raw)
     # Do not decode compressed column data while reading the blob table.
-    sqlite3.Connection.execute(db, '''INSERT OR IGNORE INTO journal_blob_v1
+    execute = db.execute if getattr(db, 'is_oracle_record', False) else lambda *a: sqlite3.Connection.execute(db, *a)
+    execute('''INSERT OR IGNORE INTO journal_blob_v1
         VALUES(?,?,?,?)''', (key, len(raw), codec, zlib.compress(raw if packed is None else packed, 6)))
     return key
 

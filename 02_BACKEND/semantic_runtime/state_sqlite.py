@@ -5,10 +5,10 @@ BEGIN IMMEDIATE transactions serialize writes; no lock bypass is permitted.
 This policy does not certify a deployment's NFS locking or fsync behaviour.
 """
 from .legal_agent import journal_storage
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import os
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 
 
 NETWORK_FILESYSTEMS = {'nfs', 'nfs4', 'cifs', 'smb3'}
@@ -49,6 +49,10 @@ def journal_policy(path, requested=None):
 
 
 def configure(db, path, *, requested=None, borrowed=False):
+    if getattr(db, 'is_oracle_record', False):
+        db.execute('PRAGMA foreign_keys=ON')
+        db.execute('PRAGMA temp_store=MEMORY')
+        return 'MEMORY'
     mode = journal_policy(path, requested)
     current = db.execute('PRAGMA journal_mode').fetchone()[0].upper()
     if borrowed and not network_storage(path) and requested is None and not os.environ.get('GENOS_MEMORY_JOURNAL_MODE'):

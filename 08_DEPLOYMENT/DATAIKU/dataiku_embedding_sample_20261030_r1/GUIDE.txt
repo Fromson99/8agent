@@ -1,0 +1,85 @@
+Dataiku 임베딩 소량 시험 — 준비 확인 (2026-10-30)
+
+현재 제공 범위
+01_CHECK_READY.txt는 읽기 전용 확인 셀이다. 새 레시피/Flow를 설치하지 않는다.
+현장 Dataiku/Oracle 직접 접속은 이 작업 환경에 없으므로 실제 결과는 아직 미확인이다.
+승호님 코드에서 LLM Mesh와 기본 ID openai:genos-embedding:embedding-kure-v1을 확인했다.
+현재 LEGAL_RAG 프로젝트의 등록/사용 권한·실제 모델 버전은 미확인이다.
+실제 모델 호출/DB 쓰기는 포함하지 않는다.
+
+실행
+메일 첨부는 아래 3개다. 이번 준비 확인에는 이 세 파일을 사용한다.
+1. DATAIKU_EMBEDDING_CHECK_CODE_20261030_R1.zip: check_ready.py 실제 코드와 검증 기록.
+2. 01_CHECK_READY.txt: check_ready.py와 바이트가 같은 전체 실행 코드.
+3. GUIDE.txt: 이 안내.
+ZIP을 Dataiku 관리 폴더에 올리거나 기존 Flow를 설치할 필요는 없다.
+PC에서 실행 TXT를 열어 복사한다. TXT를 읽기 어려우면 ZIP을 PC의 원하는 폴더에 풀고,
+안의 check_ready.py를 텍스트 편집기로 열어 전체 복사한다. 두 코드의 내용은 같다.
+LEGAL_RAG 프로젝트 > Notebooks > Python에서 01_CHECK_READY.txt 전체를 한 셀에 붙여 실행한다.
+Python 코드 셀에서 Shift+Enter로 실행한다. SQL Query나 Bash 입력창에 붙이지 않는다.
+노트북 작업 디렉터리나 파일 경로 지정은 필요 없다. 실행 셀에 전체 코드가 들어간다.
+기본 연결은 프로젝트 LEGAL_ORACLE_CONNECTION, 없으면 AIDP. Oracle owner는 SIDDS.
+현장 연결 이름이 다를 때만 CONNECTION 값을 변경한다. 비밀키를 코드에 넣지 않는다.
+모든 SELECT는 기존 테이블/메타데이터 또는 DUAL만 조회한다.
+각 테이블 행수는 최대 3행 존재 확인이며 전체 COUNT나 이관 완료 판정이 아니다.
+원문은 최대 3건·건당 앞 800자를 sample 변수에 두고, 출력은 좌표와 길이만 남긴다.
+이 텍스트는 실제 전체 적재기의 제목+본문 분할 결과와 동일하지 않은 통신 시험 후보다.
+
+필요 테이블
+- 최소 모델 호출 시험: SIDDS.LGL_DOC_BLK_S에 BLK_TXT_CN 본문 1~3행.
+- 문서/판본/조문 대조: LGL_DOC_VER_S, LGL_DOC_UNIT_S의 대응 행.
+- Oracle 저장 시험: LGL_VCTR_SET_S(2컬럼), LGL_VCTR_ITEM_S(4컬럼).
+  벡터 테이블은 비어 있어도 되지만 실제 타입/제약/쓰기 권한은 다음 저장 단계에서 검사해야 한다.
+- 기존 정식 벡터 적재기 연결: LGL_SRC_PBLS_S, LGL_SRCH_PBLS_S,
+  LGL_SRCH_ROW_S와 원문 3테이블. 선택 판본이 COMPLETE이며 내용/범위 검증을 통과해야 한다.
+  다른 판본이 이관 중이어도 선택한 완료 판본으로 실행할 수 있다.
+  미완료 판본을 COMPLETE로 바꾸거나 시험 몇 행을 READY로 활성화하지 않는다.
+
+확인할 출력
+TABLE_READINESS: readable / row_sample_count / oracle_codes
+VECTOR_COLUMNS: ITEM의 EMBEDDING=VECTOR 등 현재 실제 컬럼
+VECTOR_FUNCTION_CHECK: DIMENSIONS=2, DISTANCE=0
+SOURCE_SAMPLES: 1~3건의 원문 좌표와 글자 수
+DATAIKU_EMBEDDING_MODELS: 프로젝트에서 사용 가능한 모델 ID/설명
+SEUNGHO_REFERENCE_MODEL_ID / REFERENCE_MODEL_VISIBLE: ELS_EMBED_LLM_ID 또는 승호님 기본 ID의 가시성.
+끝에 CHECK_FINISHED가 있어도 중간 FAILED가 있으면 해당 항목은 확인되지 않은 것이다.
+원문 1~3건, 모델 가시성 True, 벡터 함수 DIMENSIONS=2/DISTANCE=0을 각각 확인한다.
+확인 결과는 TABLE_READINESS / SOURCE_SAMPLES / DATAIKU_EMBEDDING_MODELS /
+REFERENCE_MODEL_VISIBLE 위주로 전달한다. 원문 본문·키·비밀번호를 보낼 필요는 없다.
+
+중단·오류
+이 코드는 읽기 전용이라 임베딩 생성이나 DB 쓰기를 재개할 작업은 없다.
+중단됐다면 노트북 커널을 재시작한 뒤 같은 셀 전체를 다시 실행할 수 있다.
+ORA-00942는 테이블 부재 또는 권한 문제일 수 있다. owner와 읽기 권한을 함께 확인한다.
+벡터 함수 오류는 DB 기능 지원/승인을, 모델 목록 실패는 DSS 권한/등록 방식을 확인한다.
+모델이 목록에 없을 때 다른 모델을 자동으로 선택하거나 전체 적재 Flow를 실행하지 않는다.
+
+후속 실제 시험
+사용할 모델 ID·불변 모델 버전과 입력 범위를 확정한 뒤, 표본 3건을 고정한다.
+Dataiku 모델 호출 → 3개 유한 숫자 배열/동일 차원/0이 아닌 norm 확인 →
+Oracle에 비활성 시험 데이터로 저장 → 재조회 차원/값 확인 → COSINE 검색을 확인한다.
+정식 게시본/활성 포인터를 바꾸지 않는 저장 경로를 확정해야 한다.
+모델 품질 평가, 전체 임베딩 적재, RAG 최종 답변 성공과는 다른 연결 시험이다.
+
+기존 경로 차이
+oracle_vector_only_20261029_r1의 정식 적재기는 GENOS 임베딩 HTTP Encoder를 사용한다.
+Dataiku LLM Mesh 모델 ID를 GENOS URL/모델 설정에 그대로 넣으면 연결되지 않는다.
+LLM Mesh 등록 모델이면 project.get_llm(id).new_embeddings() 경로를 사용하고,
+별도 API 서비스라면 그 서비스의 실제 계약을 확인해야 한다. 자동 서비스 선택은 하지 않는다.
+
+공식 API 근거
+https://developer.dataiku.com/latest/api-reference/python/projects.html
+https://developer.dataiku.com/latest/concepts-and-examples/llm-mesh.html#text-embedding
+
+승호님 코드 대조
+로컬 추적 ref infocz/fde/seungho/integration, commit 1fe63bf00a4ab91424edec9a2988c2204301b575.
+이번 검토에서 원격 fetch나 현장 실행은 하지 않았다.
+02-els-qa/dataiku/project_config/lib/python/els_dku/vdb.py:53,129-141
+  LLM_ID = openai:genos-embedding:embedding-kure-v1
+  project.get_llm(id) → new_embeddings() → add_text() → execute().get_embeddings()
+compute_ELS_QA_VDB_EMBED.py는 ELS_EMBED_LLM_ID가 있으면 그 값으로 기본 ID를 바꾼다.
+같은 vdb.py의 plan_document/reconcile은 ELS 문서/상품 기준 삭제·교체를 포함한다.
+호출 방식을 참고하며 ELS 적재/정리 함수를 법률 LGL 테이블에 그대로 실행하지 않는다.
+질문용 GENOS 임베딩과 Dataiku 적재 모델의 가중치/전처리 동일성은 별도 확인 대상이다.
+
+이 준비 셀은 로컬 문법/읽기 전용 구성 검사를 한다. 현장 SQL/DSS 실행 통과를 뜻하지 않는다.

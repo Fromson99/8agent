@@ -22,7 +22,7 @@ import sys
 import threading
 import time
 import uuid
-from pathlib import Path
+from semantic_runtime.oracle_runtime_paths import Path,runtime_directory
 from typing import Any
 from types import SimpleNamespace
 from contextvars import copy_context
@@ -458,7 +458,7 @@ def application():
     with obs.step(log, "generation.validate"):
         manifest = _json(generation / "manifest.json")
     runtime_value = os.environ.get("GENOS_RUNTIME_DIR", "").strip()
-    runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT / "90_RUNTIME/semantic")
+    runtime = runtime_directory(_ROOT/"90_RUNTIME/semantic")
     runtime.mkdir(parents=True, exist_ok=True)
     if binding.get("mode") == "local-release":
         # Import the verified release as its own package. The bootstrap logger
@@ -1109,7 +1109,7 @@ async def _service(config: dict, data: dict) -> dict[str, Any]:
     gateway = _ad_control()
     intercept, start_worker = gateway.intercept, gateway.start_worker
     runtime_value = os.environ.get('GENOS_RUNTIME_DIR','').strip()
-    ad_runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT/'90_RUNTIME/semantic')
+    ad_runtime = runtime_directory(_ROOT/'90_RUNTIME/semantic')
     if getattr(gateway, 'enabled', True) is False:
         # Only recognize explicit disabled commands; no session lookup, worker or AD report.
         ad_result = intercept(data if isinstance(data,dict) else {},ad_runtime,application)
@@ -1133,7 +1133,7 @@ async def _service(config: dict, data: dict) -> dict[str, Any]:
         # Resource preparation/status must respond without depending on NFS logs.
         shared_root = ""
     runtime_value = os.environ.get("GENOS_RUNTIME_DIR", "").strip()
-    runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT / "90_RUNTIME/semantic")
+    runtime = runtime_directory(_ROOT/"90_RUNTIME/semantic")
     capture = request_report.capture_events(request_id, detailed=True) if shared_root else nullcontext([])
     with capture as events, obs.context(request_id=request_id, api_type=api_type):
         report_context = request_report.DeferredReport(
@@ -1210,6 +1210,7 @@ async def service(config: dict, data: dict) -> dict[str, Any]:
     if control=='ping':
         return {'status':200,'body':{'status':'ok','data_provider':'oracle','app_loaded':_APP is not None}}
     try:
+        _oracle_factory()  # Configure Oracle record authority before optional report workers.
         if control not in ('warmup','warmup_status'):
             external_runtime()
         with request_context():
@@ -1238,7 +1239,7 @@ def _recover_ad_worker():
         if dp_enabled():
             from semantic_runtime.oracle_query_service import external_runtime
             external_runtime()
-        gateway.start_worker(Path(os.environ.get("GENOS_RUNTIME_DIR") or _ROOT / "90_RUNTIME/semantic"), application)
+        gateway.start_worker(runtime_directory(_ROOT/"90_RUNTIME/semantic"), application)
     except Exception as exc:
         _AD_WORKER_RECOVERY = {'state': 'FAILED', 'error_type': type(exc).__name__}
         obs.event(log, 'ad.worker.recovery.failed', level=logging.ERROR, exc_info=True,

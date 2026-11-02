@@ -1,0 +1,15 @@
+R8 증거·범위 / 2026-11-02
+현장1: R7 실제 COUNT 1786/1000/1068, 전부 float. R6 오류는 1만 행 초과가 아닌 strict type 조건으로 확인.
+현장2: ORA06550 col38137 이후 문장이 PL/에서 잘림. 기존 safe_message는 escaped newline을 풀지 않고
+SQL: 문자열에서 split해 PL/SQL: 뒤 ORA/PLS까지 제거. 동일형태 세 가지 입력으로 재현·수정 검증.
+정확한 현장 PL/SQL 세부 원인은 손실된 로그로 확정 불가. DB 오류 해결을 완료로 주장하지 않음.
+백업: 최대20행마다 SELECT + 전체 내용 재전송 검증을 하던 중복을 제거.
+최대200행/보수적 CLOB크기 제한의 키순서 페이지 읽기 + 로컬복원검사, 삭제직전 잠금/내용검증 유지.
+전송: 텍스트 hex·큰CLOB gzip/Oracle임시LOB복원, 원래 DML/commit/rollback 경계 유지.
+첫 큰CLOB(2320125 payload bytes) 비압축 hex 방식: SQL4748109bytes timeout.
+큰literal 방식: SQL4654219bytes timeout/connection close, 원본 실패 로그 두 개 보존.
+같은 실패 synthetic SQL SHA만 확인해 세션43/62815 KILL/DISCONNECT 요청. 오래 걸리던 정리 뒤
+관련 실패 두 scope의 표/락/세션 모두 없음 확인. 기존 사용자 데이터 변경0, 전역 DB 재시작0.
+최종 compressed adapter: 84 pytest 통과, native13조건 PASS; helper/transport SHA는 NATIVE_VALIDATION 참조.
+별도 성능 A/B나 실제 Dataiku 검증은 수행하지 않음, MAIN/원문 계약/R1ZIP/현장DB/모델 변경0.
+이번원문3표/세대/백업/재개/모델결과불명 보존. R7 모든 호환초기화단계 인계 및 새적재재삭제0 테스트.

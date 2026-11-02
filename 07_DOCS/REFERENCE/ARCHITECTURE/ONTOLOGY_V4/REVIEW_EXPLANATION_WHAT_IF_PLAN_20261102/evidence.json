@@ -1,0 +1,344 @@
+{
+  "schema_version": "implementation-plan-evidence-v1",
+  "captured_at": "2026-11-02T04:43:10.556108+00:00",
+  "scope": "read-only source and prior response review; no new product/model test",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "final-review-multiturn-20261102-r1",
+    "generation": 132,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/release.json",
+    "release_manifest_sha256": "36d27d102a43e5fbc12848a26775c679904dc9f522524a01bd3849033a1574f9",
+    "activated_at": "2026-11-02T04:21:09.054180+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "977ab2274eb3ca5b76e5b7e97efbb57102b92c7d5035b7b22c4ba7f6417b848b"
+  },
+  "active_pointer_sha256": "18d20f651871cdb26c55f096f7a2c963539c0c22a619b51f9bd86fa836dec631",
+  "report": {
+    "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/REVIEW_EXPLANATION_WHAT_IF_PLAN_20261102/README.md",
+    "sha256": "659e4a20c6b2a09afbf273db84102d4916589107bd6aa56556ae2a4c92724101"
+  },
+  "inspected_files": [
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "c10dc8192449a59549f420542eb6efcf79938246206c7f431e4305bd9423b90b",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/00_SYSTEM/PIPELINE.json",
+      "selected_sha256": "c10dc8192449a59549f420542eb6efcf79938246206c7f431e4305bd9423b90b",
+      "same_as_selected": true
+    },
+    {
+      "path": "00_SYSTEM/ONTOLOGY_PROFILES/domain-profile-v1.json",
+      "sha256": "eb3218e4177e224f5a9abed8731de2584cd5d32b44471858ee3ebfe5e3e37113",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/00_SYSTEM/ONTOLOGY_PROFILES/domain-profile-v1.json",
+      "selected_sha256": "eb3218e4177e224f5a9abed8731de2584cd5d32b44471858ee3ebfe5e3e37113",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/assembly_compiler.py",
+      "sha256": "50d2a1577c3269eef09495728514083f944a2112aa435fc2c38f329e042bf46a",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/ontology_work/assembly_compiler.py",
+      "selected_sha256": "50d2a1577c3269eef09495728514083f944a2112aa435fc2c38f329e042bf46a",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/assembly_ir.py",
+      "sha256": "0b6d23d8ae419fa74a97ad6d7335d79ceecebe5b94782a1480a23970cd3fbeea",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/ontology_work/assembly_ir.py",
+      "selected_sha256": "0b6d23d8ae419fa74a97ad6d7335d79ceecebe5b94782a1480a23970cd3fbeea",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/runtime.py",
+      "sha256": "9af5a03397151a1548d6b8bbeb097b73d0c0475bc1d77d035d66fc297b3f6a7a",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/ontology_work/runtime.py",
+      "selected_sha256": "9af5a03397151a1548d6b8bbeb097b73d0c0475bc1d77d035d66fc297b3f6a7a",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_assessment.py",
+      "sha256": "cc79cb90141e89656768e77bdb769a0e631e7050c32195d5f11c8b1d984ee3dd",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/ontology_assessment.py",
+      "selected_sha256": "cc79cb90141e89656768e77bdb769a0e631e7050c32195d5f11c8b1d984ee3dd",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_context.py",
+      "sha256": "92fe9802b9ddbd98b1e8cbeb74db6ede8b9ffcb5fa1e976ddf3d87a010b4cd3d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/ontology_context.py",
+      "selected_sha256": "92fe9802b9ddbd98b1e8cbeb74db6ede8b9ffcb5fa1e976ddf3d87a010b4cd3d",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_scenarios.py",
+      "sha256": "4e78d426be60119e111077269d16beaea697539717f1d80d0f4767b299c1ecd0",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/ontology_scenarios.py",
+      "selected_sha256": "4e78d426be60119e111077269d16beaea697539717f1d80d0f4767b299c1ecd0",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_scenario_runtime.py",
+      "sha256": "4b52c0189cc619eeec8ab741735caf4e51e80c8434e602d8458da358661280c8",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/ontology_scenario_runtime.py",
+      "selected_sha256": "4b52c0189cc619eeec8ab741735caf4e51e80c8434e602d8458da358661280c8",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "sha256": "4050ac432d620c3662d3d206337b928de5eb4c3a8613fbd34eb7585052b6605c",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "selected_sha256": "4050ac432d620c3662d3d206337b928de5eb4c3a8613fbd34eb7585052b6605c",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "sha256": "692d93432a527ce085cab98afe43eb0ffa3a87e70bd99874158925a4802e4240",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "selected_sha256": "692d93432a527ce085cab98afe43eb0ffa3a87e70bd99874158925a4802e4240",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/read_judgment_final.py",
+      "sha256": "e9d40ddf7eeeddc8eeb83a4532dd76bd61e203e832814c9aa16f443b71854aab",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/read_judgment_final.py",
+      "selected_sha256": "e9d40ddf7eeeddc8eeb83a4532dd76bd61e203e832814c9aa16f443b71854aab",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/need_continuity.py",
+      "sha256": "f95d31dbf96ba5fc3282bf90207edc152880e13479df21b4c693094bfcf51466",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/need_continuity.py",
+      "selected_sha256": "f95d31dbf96ba5fc3282bf90207edc152880e13479df21b4c693094bfcf51466",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "sha256": "84446f48dcf84e83672e71ef5db3595d7d66d1bc8c50a4a8c90c34a98f980ffb",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/output_contract.py",
+      "selected_sha256": "84446f48dcf84e83672e71ef5db3595d7d66d1bc8c50a4a8c90c34a98f980ffb",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "sha256": "e6f36cec2c4ebdd5f8f0eef4ee19051c247f3bcb5db7f538cd36e8e4e65b0359",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "selected_sha256": "e6f36cec2c4ebdd5f8f0eef4ee19051c247f3bcb5db7f538cd36e8e4e65b0359",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "8b8ea25425b6a39eab2e4f5c0ded18b9aa895020ef39bd6581aa74e43d647ad9",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "selected_sha256": "8b8ea25425b6a39eab2e4f5c0ded18b9aa895020ef39bd6581aa74e43d647ad9",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "sha256": "a642b4a4d900a2b7240d11549a9810b9e1cf74f76c2b70365833171bcc2d1999",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "selected_sha256": "a642b4a4d900a2b7240d11549a9810b9e1cf74f76c2b70365833171bcc2d1999",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "selected_sha256": "23bc5c2da03ccc668bdbdab7d24724898a71963d4e8a0f16d14bbe11491b6f46",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "sha256": "3770f84a0b9a782ae7eb6523b596c40ecf6dfc9495aefe1134d567549e8726d8",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "selected_sha256": "3770f84a0b9a782ae7eb6523b596c40ecf6dfc9495aefe1134d567549e8726d8",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "a8493a98144386b868a08fd944af550b5b6322f648b9d572e5c6d93e5619fb0b",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "selected_sha256": "a8493a98144386b868a08fd944af550b5b6322f648b9d572e5c6d93e5619fb0b",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "sha256": "8a43084f0b3ca49e27f7e6e07fa83a65f3682a6d36792a38eff3bc1e2fe54979",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "selected_sha256": "8a43084f0b3ca49e27f7e6e07fa83a65f3682a6d36792a38eff3bc1e2fe54979",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "selected_sha256": "4f0216c80cbcea8df591d399e614113a602b01d1abaf9905d377b3bc71ad1f8d",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/lawrag/legal_knowledge/application/planning.py",
+      "selected_sha256": "604529c07feba206f95726df733116f0fe74d6d472113a76feb164eb5ed960bb",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/lawrag/legal_knowledge/application/__init__.py",
+      "selected_sha256": "594fa87b7483aa717f25b22c3f5bf34d5b408d909c4b839fa347be152cd18aef",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/api/routers/rag.py",
+      "sha256": "4b9f660af01624242bd2ff32b5351fad289aa37bf60c9eb55218949577f03ec9",
+      "selected_path": null,
+      "selected_sha256": null,
+      "same_as_selected": null
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "19f1cae66ed90f16990a7c997bbf8a5662dcae6135900d6434271e74259c6f33",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "selected_sha256": "19f1cae66ed90f16990a7c997bbf8a5662dcae6135900d6434271e74259c6f33",
+      "same_as_selected": true
+    },
+    {
+      "path": "service.py",
+      "sha256": "17dd9030e38cb553ee243b315230d46b261c0938a20893a03578b65f75151cf5",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/service.py",
+      "selected_sha256": "17dd9030e38cb553ee243b315230d46b261c0938a20893a03578b65f75151cf5",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "sha256": "46e7fde2916a0e0130e7d4cbea17af738fdbc0056c47a39d8de8b63adc40e6b9",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/app.py",
+      "selected_sha256": "46e7fde2916a0e0130e7d4cbea17af738fdbc0056c47a39d8de8b63adc40e6b9",
+      "same_as_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "sha256": "4991b35b9648a8997921d7b4f62e8fa8b58c484729eee7938e5cd151ffe6a60b",
+      "selected_path": "08_DEPLOYMENT/RELEASES/final-review-multiturn-20261102-r1/code/02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "selected_sha256": "4991b35b9648a8997921d7b4f62e8fa8b58c484729eee7938e5cd151ffe6a60b",
+      "same_as_selected": true
+    }
+  ],
+  "prior_responses": [
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-1277-qwen-followup-derived-context/artifacts/live/review-followup/response.json.gz",
+      "compressed_sha256": "3f3bc100c7bb0c4c236f1f0ca9a3da7aac4c8da7430a2ecc3d2f9478250b9930",
+      "content_sha256": "743a0b8142627a166f019a1ea3b79205c91421d031bb8100ffecf2c6bbb77efd",
+      "http_status": 200,
+      "stop_reason": "ASSESSMENT_CONTRACT_UNRESOLVED",
+      "coverage": "INSUFFICIENT",
+      "answer_excerpt_for_display_diagnosis": "원문은 확보했으나 답변 검토를 완료하지 못했습니다. 확인한 원문을 제공합니다.\n\n**확인한 원문: 복구검증규정 · 제1조 일반 작업**\n\n> 제1조 일반 작업: 일반 작업은 서면 승인을 받은 뒤 시작하고, 종료 후 48시간 이내에 담당자에게 보고하여야 한다. 제2조의 긴급 복구 작업은 예외로 한다.\n\n**확인한 원문: 복구검증규정 · 제2조 긴급 복구**\n\n> 제2조 긴급 복구: 긴급 복구 작업은 사전 승인 없이 시작할 수 있다. 작업을 시작한 후 24시간 이내에 담당자에게 보고하여야 한다.\n\n확인 범위\n\n- 원문은 확보했지만 주장과 근거의 연결을 검증하지 못해 결론을 확정하지 않았습니다. 같은 대화에서 확인할 쟁점이나 추가 사건 사실을 알려주시면 기존 원문을 바탕으로 이어서 검토합니다. 추가 정보 없이 같은 요청을 반복해도 자동으로 다시 호출하지 않습니다.\n- 검토 미완료 필요: 복구검증규정 제1조(일반 작업)와 제2조(긴급 복구)의 원문을 확보하여 조문 구조와 승인·보고 기준을 확인해야 한다.\n- 검토 미완료 필요: 없음. 질문에서 요청한 조문 구조와 승인·보고 기준 원문을 모두 확보하였다.\n- 검토 미완료 필요: 질문에서 직접 요청한 복구검증규정 제1조 원문 확보\n- 검토 미완료 필요: 질문에서 직접 요청한 복구검증규정 제2조 원문 확보\n- 검토 미완료 필요: 모델이 선택한 원문 범위 전체 확인\n- 최종 검토 미완료 판단: 질문에서 요청한 제2조의 승인·보고 기준을 원문에서 확인하였다.\n- 최종 검토 미완료 판단: 질문에서 요청한 제1조의 승인·보고 기준과 예외 규정을 원문에서 확인하였다.\n- 질문 전체의 요구별 원문 충족 검토를 완료하지 못했습니다. 확인한 원문 범위만 제공합니다.",
+      "scope": "synthetic recovery rules, ontology OFF; existing stored result only"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-1277-qwen-followup-derived-context/artifacts/live/review-followup/follow-response.json.gz",
+      "compressed_sha256": "0986e29c59be147904441f9488d58f4962a87438ba57c9f89cde1c33295b25e8",
+      "content_sha256": "74f047a87043c6611555c27ecc99f6494bf92612c4698f3844f06ab7bd356222",
+      "http_status": 200,
+      "stop_reason": "NO_PROGRESS",
+      "coverage": "COVERED",
+      "answer_excerpt_for_display_diagnosis": null,
+      "scope": "synthetic recovery rules, ontology OFF; existing stored result only"
+    }
+  ],
+  "relative_link_checks": [
+    {
+      "target": "evidence.json",
+      "exists": true
+    },
+    {
+      "target": "../COMPILATION_AND_SCENARIOS.md",
+      "exists": true
+    },
+    {
+      "target": "../KNOWLEDGE_COMPILATION_DESIGN_20261029.md",
+      "exists": true
+    },
+    {
+      "target": "../DOMAIN_PROFILE_IMPLEMENTATION_PLAN_20261029.md",
+      "exists": true
+    },
+    {
+      "target": "../../../../../00_SYSTEM/ONTOLOGY_PROFILES/domain-profile-v1.json",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/ontology_work/assembly_compiler.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/ontology_assessment.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/lawrag/legal_knowledge/ontology/__init__.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/app.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../02_BACKEND/semantic_runtime/legal_agent/knowledge_bridge.py",
+      "exists": true
+    },
+    {
+      "target": "../../../../../09_ARTIFACTS/AUDITS/20261102-final-review-main132/수정과_멀티턴_실제검증_메인반영결과.txt",
+      "exists": true
+    },
+    {
+      "target": "../../../../../04_EXPERIMENTS/ADR/ADR-1277-qwen-followup-derived-context/README.md",
+      "exists": true
+    }
+  ],
+  "verification": {
+    "kind": "author consistency check",
+    "independent_review": false,
+    "product_modified": false,
+    "new_model_calls": 0,
+    "database_changes": 0,
+    "main_changed": false,
+    "all_local_links_resolve": true,
+    "source_hashes_unchanged": true,
+    "selected_pointer_unchanged": true,
+    "fenced_blocks_balanced": true,
+    "selected_same_count": 28,
+    "inspected_count": 29
+  },
+  "path_findings": [
+    {
+      "path": "02_BACKEND/lawrag/api/routers/rag.py",
+      "selected": false,
+      "disposition": "Excluded as implementation entry point; actual entry is semantic_runtime/app.py through service.py and Oracle Factory."
+    }
+  ]
+}

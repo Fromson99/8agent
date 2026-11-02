@@ -114,7 +114,7 @@ class UnifiedExecution(NativeExecution):
 
     def rebind(self,stage,payload):
         self.domain_choice=self.host.domain.select(stage,self.state,self.s)
-        self.record(stage,payload,origin={'payload_hash':digest(payload),'reason':'verified confirmed experience'})
+        self.record(stage,payload,origin={'payload_hash':digest(payload),'reason':'verified hypothetical baseline' if self.state.get('scenario_context') else 'verified confirmed experience'})
 
     def stage(self,stage,state,parts,utterance,format):
         self.domain_choice=self.host.domain.select(stage,state,self.s)

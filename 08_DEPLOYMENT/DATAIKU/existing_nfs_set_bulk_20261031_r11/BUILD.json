@@ -1,0 +1,25 @@
+{
+  "source_frozen_revision": "rev-002",
+  "files": {
+    "DATAIKU_EXISTING_NFS_CLIENT_20261031_R11.zip": {
+      "bytes": 328113,
+      "sha256": "dfc0c769fc1b20093fd3c5549a750ca6557ddcb65d4d0f1b380d75cb43b9f21c"
+    },
+    "DATAIKU_EXISTING_NFS_LOAD_ONLY_R11.txt": {
+      "bytes": 5820,
+      "sha256": "f3f1a071751cd6bf871ddaecbad556c5c499f43b1bccb79b4cb9999e3a7e5b22"
+    }
+  },
+  "members": 83,
+  "changed_from_r10": [
+    "PACKAGE_FILES.json",
+    "client/02_BACKEND/lawrag/pipeline/oracle_deferred_import.py",
+    "client/02_BACKEND/lawrag/pipeline/oracle_query_dataiku.py",
+    "client/02_BACKEND/lawrag/pipeline/oracle_transfer_progress.py",
+    "client/02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+    "client/CODE_PINS.json",
+    "existing_client.py"
+  ],
+  "preserved": 76,
+  "field_executed": false
+}

@@ -1,0 +1,279 @@
+{
+  "status": "PASS",
+  "correction": {
+    "old": "MNFST_HASH_VALU",
+    "new": "DTLS_HASH_VALU",
+    "basis": "User correction 2026-10-30; supersedes photograph name"
+  },
+  "xlsx": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R16/법률에이전트_B03_테이블신청_등록확정컬럼_R16.xlsx",
+  "sha256": "aa16715c9b0d8b31d4cb93a93aab4668946dc78d37e0be039d96ecfcddc42ae1",
+  "bytes": 87834,
+  "mapping": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r16_registration.json",
+  "mapping_sha256": "18f0b66d9eda433013374af3db0f79279bae1a7e3724544bf9687f5b205fc88c",
+  "affected_tables": [
+    "DOC_VER",
+    "DOC_UNIT",
+    "DOC_BLK",
+    "SRC_POST"
+  ],
+  "columns_changed": 4,
+  "pk_definitions_affected": 3,
+  "regular_indexes_affected": 3,
+  "tables": 13,
+  "column_rows": 60,
+  "unique_columns": 38,
+  "pk_constraints": 13,
+  "regular_indexes": 11,
+  "cells_renamed": 39,
+  "cell_changes": [
+    {
+      "sheet": "01_테이블",
+      "cell": "F2",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID"
+    },
+    {
+      "sheet": "01_테이블",
+      "cell": "F3",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "01_테이블",
+      "cell": "F4",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "02_컬럼",
+      "cell": "D2",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "02_컬럼",
+      "cell": "D7",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "02_컬럼",
+      "cell": "D12",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "02_컬럼",
+      "cell": "D21",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H2",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H3",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H4",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, UPPR_STRC_UNIT_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, UPPR_STRC_UNIT_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H5",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H6",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "03_인덱스",
+      "cell": "H8",
+      "before": "MNFST_HASH_VALU, BODY_POST_HASH_VALU",
+      "after": "DTLS_HASH_VALU, BODY_POST_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D2",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D4",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D7",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D11",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D14",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "04_인덱스컬럼",
+      "cell": "D19",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "05_PK",
+      "cell": "E2",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "05_PK",
+      "cell": "E4",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "05_PK",
+      "cell": "E7",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "07_등록용어38",
+      "cell": "A2",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T01_문서판본",
+      "cell": "B6",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID"
+    },
+    {
+      "sheet": "T01_문서판본",
+      "cell": "B10",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T01_문서판본",
+      "cell": "F18",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID"
+    },
+    {
+      "sheet": "T01_문서판본",
+      "cell": "C22",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T02_문서구조",
+      "cell": "B6",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "T02_문서구조",
+      "cell": "B10",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T02_문서구조",
+      "cell": "F18",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "T02_문서구조",
+      "cell": "F19",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, UPPR_STRC_UNIT_ID, STRC_UNIT_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, UPPR_STRC_UNIT_ID, STRC_UNIT_ID"
+    },
+    {
+      "sheet": "T02_문서구조",
+      "cell": "C23",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T03_원문본문",
+      "cell": "B6",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "T03_원문본문",
+      "cell": "B10",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T03_원문본문",
+      "cell": "F21",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "T03_원문본문",
+      "cell": "F22",
+      "before": "MNFST_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID, BODY_SLC_ID",
+      "after": "DTLS_HASH_VALU, RGLT_DOC_ID, STRC_UNIT_ID, BODY_SLC_ID"
+    },
+    {
+      "sheet": "T03_원문본문",
+      "cell": "C26",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T04_원문게시",
+      "cell": "B11",
+      "before": "MNFST_HASH_VALU",
+      "after": "DTLS_HASH_VALU"
+    },
+    {
+      "sheet": "T04_원문게시",
+      "cell": "F18",
+      "before": "MNFST_HASH_VALU, BODY_POST_HASH_VALU",
+      "after": "DTLS_HASH_VALU, BODY_POST_HASH_VALU"
+    }
+  ],
+  "protected_files_unchanged": {
+    "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R15/법률에이전트_B03_테이블신청_사진확정컬럼_R15.xlsx": "ebe6ad903a7449f83b912305acfaa6ea8f9a253a1c38173bb2ad062e017d51f6",
+    "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/ACTIVE_MAPPING.json": "cf91414e53ac958f1306127d687f602659d66ffd0ba18fbe9156d491c7788e0a",
+    "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_current.json": "5c188c1a8642a1f1aa9bfeabf0211acad75a9e982e013be0af521cefe55e2c43",
+    "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r14_photos.json": "1dfa55a0da1be6b1ecffbda2016d43046457aa5446e9098c6ece93190973cc34"
+  },
+  "checks": [
+    "serialized workbook exact rename comparison",
+    "mapping parser and DDL/projection name checks",
+    "PK/index reference checks",
+    "ZIP integrity"
+  ],
+  "database_changes": 0,
+  "active_mapping_changes": 0,
+  "native_excel_rendered": false
+}

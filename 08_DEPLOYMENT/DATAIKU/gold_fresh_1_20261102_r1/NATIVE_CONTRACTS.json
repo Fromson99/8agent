@@ -1,0 +1,39 @@
+{
+  "status": "PASS_NATIVE_ORACLE_CONTRACTS",
+  "field_database": false,
+  "models": 0,
+  "existing_data_mutated": false,
+  "created_schemas": [
+    "A8_G19_9B69077B2B",
+    "A8_G19_D7BA2FF2DB",
+    "A8_G19_9AB8C35EB8"
+  ],
+  "dropped_schemas": [
+    "A8_G19_9AB8C35EB8",
+    "A8_G19_D7BA2FF2DB",
+    "A8_G19_9B69077B2B"
+  ],
+  "checks": [
+    "17_tables_exact_columns_pk_and_indexes",
+    "17_insert_read_rollback_and_absence_checks",
+    "vector_float32_two_and_three_dimensions",
+    "set_insert_idempotent_null_empty_unicode_large_clob",
+    "independent_full_value_verification",
+    "conflicting_existing_row_rolls_back_new_rows",
+    "gold_char_flag_insert_and_readback",
+    "publication_timestamp_default",
+    "restricted_select_insert_account_all_17_preflight_and_rollback_probes",
+    "restricted_insert_and_full_readback_without_delete_or_lock_any_privilege",
+    "delete_permission_absent_but_new_table_load_succeeds"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "resource_guard": {
+    "non_oracle_user_segment_bytes": 9287499776,
+    "users_free_extent_bytes": 737869824,
+    "maximum_new_schema_quota_bytes": 67108864
+  },
+  "restricted_system_privileges": [
+    "CREATE SESSION"
+  ],
+  "database_calls": 317
+}

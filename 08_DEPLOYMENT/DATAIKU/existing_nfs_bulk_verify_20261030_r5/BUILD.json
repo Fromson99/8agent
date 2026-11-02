@@ -1,0 +1,29 @@
+{
+  "base_zip_sha256": "4bc4304037dfbc8ba61022d251cf5181cb4807275db38bacc65348e9b7aa994d",
+  "changed_files": [
+    "PACKAGE_FILES.json",
+    "client/02_BACKEND/lawrag/pipeline/oracle_full_package.py",
+    "client/02_BACKEND/lawrag/pipeline/oracle_migration.py",
+    "client/02_BACKEND/semantic_runtime/oracle_dp_io.py",
+    "client/02_BACKEND/semantic_runtime/oracle_dp_native_read.py",
+    "client/CODE_PINS.json",
+    "existing_client.py"
+  ],
+  "preserved_files": 72,
+  "checkpoint_directory": "oracle-import-r2",
+  "source_checks_retained": [
+    "readback",
+    "verify",
+    "final_source"
+  ],
+  "files": {
+    "DATAIKU_EXISTING_NFS_CLIENT_20261030_R5.zip": {
+      "sha256": "f1284bd750d8a61b6354609842de71e999470ecef875a6769f7016abdbdc5866",
+      "bytes": 311791
+    },
+    "DATAIKU_EXISTING_NFS_RUN_R5.txt": {
+      "sha256": "35b685476b0a912ef416ef5ff35dd9730e6edf5d4aed464a05f12ed73f29a954",
+      "bytes": 4973
+    }
+  }
+}

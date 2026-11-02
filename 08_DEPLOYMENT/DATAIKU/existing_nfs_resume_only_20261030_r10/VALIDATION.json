@@ -1,0 +1,38 @@
+{
+  "contracts": 60,
+  "delivered_txt_python": "3.10.20",
+  "whole_notebook_mock": 1,
+  "field_e2e": false,
+  "nfs_requests_during_strict_resume": 0,
+  "offline_source_calls_during_strict_resume": 0,
+  "describe_calls_during_strict_resume": 0,
+  "oracle_writer_unchanged_from_validated_r9": true,
+  "prior_failed_test_logs_preserved": [
+    "notebook-tests.log",
+    "notebook-tests-2.log",
+    "notebook-tests-3.log"
+  ],
+  "build": {
+    "base_sha256": "0afffaabcb542058e363c6ede78b9bf9bcb26e6ba7a47cca3998a3f974ed6943",
+    "members": 83,
+    "changed": [
+      "PACKAGE_FILES.json",
+      "client/02_BACKEND/lawrag/pipeline/oracle_deferred_import.py",
+      "client/02_BACKEND/lawrag/pipeline/oracle_transfer_progress.py",
+      "client/CODE_PINS.json",
+      "existing_client.py",
+      "strict_resume.py"
+    ],
+    "preserved": 77,
+    "files": {
+      "DATAIKU_EXISTING_NFS_CLIENT_20261030_R10.zip": {
+        "bytes": 327459,
+        "sha256": "b557acbd1eddf2efd59833be89b0cf5d8ad9966d49b8e4ad7eb1f01f97f7aaa9"
+      },
+      "DATAIKU_EXISTING_NFS_LOAD_ONLY_R10.txt": {
+        "bytes": 5493,
+        "sha256": "e49ddee10ff25c524e7061443291385ff5072c3d3f74923f39e822e62b80a8df"
+      }
+    }
+  }
+}

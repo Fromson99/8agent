@@ -1,0 +1,85 @@
+Gold 초기화·재적재 R8 — 오류 표시·백업 실행 수정 / 2026-11-02
+
+사용할 파일
+- DATAIKU_GOLD_SHAPE_20261102_R1.zip: 기존 원본 실행기. 이전과 바이트 동일.
+- DATAIKU_GOLD_RESTART_20261102_R8.zip: 이번 보완 실행기.
+- DATAIKU_GOLD_RESTART_R8.txt: Python 노트북에 붙일 전체 실행 코드.
+- ENVIRONMENT.txt: 기존 임베딩 환경변수 설정.
+- GUIDE.txt: 이 안내서.
+
+실행 순서
+1. 기존 R6/R7 실행 셀이 종료된 상태에서 진행합니다. 동시에 여러 셀을 실행하지 않습니다.
+2. Dataiku 프로젝트 LEGAL_RAG의 관리 폴더 ehA8dpVm에 R8 ZIP을 이름 그대로 업로드합니다.
+   R1 ZIP도 같은 폴더에 있어야 합니다. 이미 있으면 재업로드하지 않습니다.
+   ZIP을 풀지 않습니다. 정확히 같은 파일명은 폴더에 한 개씩만 둡니다.
+3. 같은 Dataiku Python/Jupyter 노트북 새 셀에 DATAIKU_GOLD_RESTART_R8.txt 전체를 붙입니다.
+   기존 OLD_JOB_DIR을 직접 설정했다면 같은 경로를 유지합니다. SQL 노트북용이 아닙니다.
+4. 기존 환경변수/프로젝트 변수는 그대로입니다.
+   LEGAL_EMBED_LLM_ID=openai:genos-embedding:embedding-kure-v1
+   LEGAL_EMBED_DIMENSIONS=1024
+5. 셀 한 번 실행으로 초기화 → 원문/검색 자료 적재 → 전수검증 → 임베딩·벡터 저장을 진행합니다.
+   state.json, reset-r6.json, reset-backups를 직접 삭제하거나 수정하지 않습니다.
+
+이번 수정
+- 오류 출력이 PL/SQL:의 SQL:을 원문 SQL 시작으로 잘못 인식해 뒤를 자르던 문제를 수정했습니다.
+  실제 줄바꿈 및 문자로 적힌 \n/#n을 처리하고 ORA/PLS 상세 코드를 보존합니다.
+  SQL 본문·비밀번호·토큰은 출력하지 않습니다.
+- 백업 때 20행마다 원문 전체를 DB에 재전송하던 중복 검증을 제거했습니다.
+  DB 읽기는 최대 200행이며 큰 CLOB이면 페이지 크기를 줄입니다. 원문은 자르지 않습니다.
+  로컬 백업 복원 검사와 삭제 트랜잭션 안의 PK/내용 일치 확인은 유지합니다.
+- 백업 중에는 실제 백업 완료 행 수, 경과 시간, 관측 평균에 따른 예상 잔여 시간을 표시합니다.
+  이전 WRITE_UNCONFIRMED 기록을 현재 백업이 멈췄다는 뜻으로 표시하지 않습니다.
+- JDBC에 보낼 텍스트는 UTF-8의 16진수로 인코딩합니다. 큰 CLOB은 gzip으로 전송 후
+  Oracle 임시 LOB에서 무손실 복원하고 기존 SQL을 실행합니다. 저장 내용·PK·컬럼은 동일합니다.
+  작은 문자에는 UTL_I18N, 큰 CLOB에는 UTL_COMPRESS/DBMS_LOB의 기본 함수를 사용합니다.
+  R1 ZIP은 유지하며 R8 자식 프로세스에서 별도 전송 어댑터를 명시적으로 적용합니다.
+- 임의 1만 행/전체 백업 512MiB 제한은 다시 넣지 않았습니다.
+
+앞 사진의 숫자
+실제 DB COUNT: DOC_VER 1,786 + DOC_UNIT 1,000 + DOC_BLK 1,068 = 3,854행.
+이전 완료 기록과 일치하는 현재 세대 데이터입니다. 누가 어느 실행에서 넣었는지는 사진만으로 확정하지 않습니다.
+835,713은 전체 원문 예정 행 수, 60,971,724는 검색 자료 예정 행 수입니다.
+R7 사진의 returned_type=float로 이전 R6의 1만 행 오류가 숫자 형식 검사였음을 확인했습니다.
+현재 ORA-06550의 뒤 오류는 이전 출력 코드가 잘라 기록했으므로 과거 로그만으로 복원할 수 없습니다.
+이번 수정으로 현장 DB 오류의 정확한 상세를 다음 발생 시 확인할 수 있습니다.
+
+초기화 범위
+SIDDS.LGL_G19_DOC_VER_S / LGL_G19_DOC_UNIT_S / LGL_G19_DOC_BLK_S에서
+기존 작업과 결속된 이번 MNFST_HASH_VALU 세대의 데이터만 백업 후 정리합니다.
+다른 세대·다른 테이블·Agent 기록은 대상이 아닙니다. DROP/TRUNCATE/DDL은 실행하지 않습니다.
+테이블 구조·PK·인덱스는 유지합니다. 백업 뒤 변경된 행이나 게시/검색/벡터 이력이 있으면
+대상을 넓혀 삭제하지 않고 상세 오류를 표시합니다.
+
+중단·재실행
+R7의 BACKING_UP/PREPARED/DELETING/DB_CLEARED/STATE_RESET 기록을 확인해 같은 초기화 ID로 이어갑니다.
+R6는 이전 지원 범위인 삭제 전 BACKING_UP 상태를 이어받습니다.
+이전 제어 기록을 reset-backups/<ID>/control-<이전코드해시>-before-r8.json에 보존합니다.
+백업 도중 실패한 파일은 남기고 새 완전 백업을 만듭니다.
+일부 묶음 삭제 뒤 중단되면 보관 백업을 확인하고 이미 삭제된 PK는 건너뜁니다.
+새 적재 상태가 설치된 뒤 재실행하면 초기화를 반복하지 않아 새로 적재한 행을 다시 지우지 않습니다.
+여러 묶음 삭제 전체가 한 트랜잭션은 아닙니다. 자동 원복 기능은 포함하지 않습니다.
+
+확인할 출력
+RESET_SCOPE: 이번 세대의 실제 DB 행 수
+RESET_BACKUP: 백업 행 수·경과·남은 시간
+RESET_DELETE_CONFIRMED: 내용 확인 후 삭제가 완료된 묶음
+RESET_COMPLETE: 초기화 완료, 새 적재 시작
+RESET_ALREADY_DONE: 초기화를 반복하지 않고 새 적재 이어감
+최종 VECTORS_STORED_VERIFIED_NOT_ACTIVATED: 개발계 벡터 저장까지 완료.
+서비스 검색 전환 및 벡터 검색 전용 인덱스 DDL은 별도입니다.
+오류 시 단계·테이블·묶음 행 수·ORA/PLS 상세와 로그 위치를 함께 표시합니다.
+전체 로그는 노트북 작업 폴더의 gold-progress-logs, 오류 별도 파일은 같은 이름의 .errors.jsonl입니다.
+
+검증 범위
+로컬 검사 84개 통과. 로컬 Oracle23.26 합성 데이터 13조건 통과:
+특수문자·긴 한글·추가 유니코드·빈 CLOB/NULL·여러 MB CLOB의 저장/읽기/검증/삭제,
+405행 페이지, CLOB 크기에 따른 페이지 분할, 변경값 거절, 다른 세대 보존, 중단/재개 포함.
+R8 보완 중 큰 비압축 SQL 전달 시험은 시간초과했으며 실패 기록을 보존하고
+최종 큰 CLOB 압축 전송 방식으로 위 조건을 통과했습니다. 실패한 합성 표와 세션은 정리했습니다.
+실제 삼성 Dataiku/Oracle의 전체 실행, 정확한 ORA-06550 내부 원인, 현장 속도 개선율은 미확인입니다.
+DB 저장공간 조치 자체를 이 코드로 해결하는 것은 아닙니다.
+
+공식 참고
+Oracle ORA-06550: https://docs.oracle.com/en/error-help/db/ora-06550/index.html
+Oracle gzip 호환: https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/UTL_COMPRESS.html
+Dataiku SQL API: https://developer.dataiku.com/latest/concepts-and-examples/sql.html

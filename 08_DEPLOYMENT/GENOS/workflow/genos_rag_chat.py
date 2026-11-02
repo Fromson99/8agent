@@ -384,7 +384,7 @@ def _request_body(question, data):
         "ad_session_id": str(data.get('chatId') or data.get('chat_id') or data.get('sessionId') or data.get('session_id') or ''),
         "ad_channel": _ad_channel(data),
     }
-    for key in ("team_id", "scope", "document_ids", "use_llm"):
+    for key in ("team_id", "scope", "document_ids", "use_llm", "review_action"):
         if key in data:
             request_body[key] = data[key]
     # A workflow revision can bind a team independently of chat payloads.
@@ -394,6 +394,8 @@ def _request_body(question, data):
         if not re.fullmatch(r"[A-Za-z0-9_-]+_team", team_id):
             raise ValueError("TEAM_ID에 risk_team 같은 실제 팀 폴더명을 설정해 주세요.")
         request_body["team_id"] = team_id
+    if 'review_action' in request_body and (request_body['session_id']=='sess-anonymous' or not request_body.get('team_id')):
+        raise ValueError('검토 행동에는 기존 대화 세션과 팀이 필요합니다.')
     if data.get('memory') is True or os.environ.get("GENOS_MEMORY_ENABLED", "0").strip().lower() in {"1", "true", "on"}:
         import hashlib
         if not re.fullmatch(r"[A-Za-z0-9_-]+_team", str(request_body.get('team_id', ''))):
@@ -1880,7 +1882,9 @@ def _completion_answer_status(body, answered):
 DISPLAY_POLICY_REVISION = 'public-display-v6-workflow'
 REVIEW_INCOMPLETE_MESSAGE = (
     '현재 충분한 법률 검토를 하지 못했습니다. '
-    '답변에 필요한 원문 조사·검토가 완료되지 않았습니다.'
+    '답변에 필요한 원문 조사·검토가 완료되지 않았습니다. '
+    '질문이 잘못되었다는 뜻은 아닙니다. 추가로 알려줄 사건 사실이나 확인할 쟁점이 있다면 '
+    '같은 대화에서 이어서 적어 주세요. 같은 요청의 반복 전송으로는 해결되지 않습니다.'
 )
 _TIMEOUT_TYPES = frozenset({'TimeoutError', 'TimeoutException', 'ReadTimeout',
     'ConnectTimeout', 'WriteTimeout', 'PoolTimeout', 'ServerTimeoutError'})
@@ -1945,12 +1949,28 @@ def public_failure(request_id=None, *, body=None, status=None, exc=None):
         'limit': '검토 가능한 처리 한도에 도달했습니다. 법률 쟁점을 나누어 질문해 주세요.',
     }.get(marker, '잠시 후 다시 요청해 주세요.')
     message = REVIEW_INCOMPLETE_MESSAGE if reason == 'review_incomplete' else (
+        '모델 응답을 확인하지 못해 처리를 중단했습니다. 이미 받은 기록은 보존하며, '
+        '같은 요청을 자동으로 재전송하지 않습니다. 시간이 지난 뒤 새 검토를 요청할 수 있습니다. (' + str(marker) + ')'
+        if reason == 'timeout' or marker == '504' else
         '현재 충분한 법률 검토를 하지 못했습니다. ' + guidance + ' ('
         + ('처리 오류' if marker == 'internal' else marker) + ')')
     result = {'request_id': ident, 'answer_status': 'failed', 'message': message,
               'failure_reason': reason, 'display_policy_revision': DISPLAY_POLICY_REVISION}
     if marker is not None:
         result['error_code'] = marker
+    stage = getattr(exc, 'stage', None) or (body or {}).get('failure_stage')
+    stage = stage if stage in ('INTENT','PLAN','RECALL','READ','SELECT','ASSESS','COMPOSE') else 'NOT_RECORDED'
+    result['failure_stage'] = stage
+    if reason in ('timeout','review_incomplete','budget') or marker == '504':
+        notice = {'schema_version':'review-explanation-v1',
+            'outcome':'EXECUTION_UNKNOWN' if reason == 'timeout' or marker == '504' else 'REVIEW_INCOMPLETE',
+            'stage':stage, 'completed':[], 'acquisition':'NOT_RECORDED',
+            'reason':'저장된 자료 확보 상태는 이 오류 응답만으로 확정하지 않습니다.',
+            'impact':'최종 검토 결과를 확정하지 못했습니다.',
+            'next_action':'CHECK_SAVED_REQUEST', 'actor':'SYSTEM', 'automatic_retry':False,
+            'semantic_quality_certified':False}
+        notice['content_sha256']=_workflow_display_digest(notice)
+        result['review_explanation']=notice
     return result
 
 
@@ -2065,7 +2085,9 @@ def render_error(body, *, question='', exc=None):
     """A terminal failure is visible without exposing diagnostic content."""
     safe = public_failure(body.get('request_id') if isinstance(body, dict) else None,
                           body=body, exc=exc)
-    return safe['message'] + '\n\n조회 번호: ' + safe['request_id']
+    stage = safe.get('failure_stage','NOT_RECORDED')
+    detail = '\n\n중단 단계: '+stage+' · 해당 단계의 최종 결과는 확정되지 않았습니다.' if stage != 'NOT_RECORDED' else ''
+    return safe['message'] + detail + '\n\n조회 번호: ' + safe['request_id']
 
 
 def render(body, *, flow=None):
@@ -2081,9 +2103,13 @@ def render(body, *, flow=None):
     if not answer:
         return REVIEW_INCOMPLETE_MESSAGE
     text = answer
+    if (body.get('assembly',{}).get('term_agent') or {}).get('scenario_context'):
+        text = '**가정 분기의 검토 결과입니다. 실제 사건과 승인 규칙은 변경하지 않았습니다.**\n\n' + text
     graph = _judgment_graph_html(flow or _judgment_flow(body))
     if graph: text += '\n\n'+graph
     if source_text: text += '\n\n'+source_text
+    review = _review_explanation_text(body)
+    if review: text += '\n\n' + review
     judgments = _judgment_html(body)
     if judgments: text += '\n\n' + judgments
     return text
@@ -2431,3 +2457,53 @@ async def run(data):
         _log_event('workflow.entry.failed', level='ERROR', request_id=safe['request_id'],
                    error_type=type(exc).__name__, traceback=traceback.format_exc())
         return {'text':render_error(safe),'answer_status':'failed','request_id':safe['request_id']}
+
+
+def _review_explanation_text(body):
+    """Plain markdown projection of the server-bound public review contract."""
+    agent = (body.get('assembly') or {}).get('term_agent') or {}
+    view = agent.get('review_explanation')
+    if not isinstance(view, dict) or view.get('schema_version') != 'review-explanation-v1':
+        return ''
+    if _workflow_display_digest({k:v for k,v in view.items() if k != 'content_sha256'}) != view.get('content_sha256'):
+        return ''
+    from html import escape
+    def safe(value):
+        text=escape(str(value)).replace('|', '&#124;').replace('\n', ' ')
+        return re.sub(r'([\\`*_\[\]()#!~])', r'\\\1', text)
+    lines = ['**검토 상태: '+safe(view['outcome'])+'**', '', '| 대상 | 자료 확보 | 최종 검토 | 이유·영향 |', '|---|---|---|---|']
+    for item in view['items']:
+        target = ' / '.join(t.get('coordinate') or t['id'] for t in item.get('targets', [])) or item['id']
+        lines.append('| '+ ' | '.join(safe(x) for x in (target,item['acquisition'],item['review'],item['reason']+' '+item['impact']))+' |')
+    for check in view.get('failed_checks', []):
+        lines.append('- 검토 실패: '+safe(check['reason'])+' '+safe(check['impact']))
+    lines += ['', '다음 행동:']
+    for number, action in enumerate(view['actions'], 1):
+        lines.append(str(number)+'. '+safe(action['label'])+' — '+safe(action.get('actor','USER'))+
+            (' · '+safe(action['fact_name']) if action['enabled'] and action.get('fact_name') else '' if action['enabled'] else ' · '+safe(action['unavailable_reason'])))
+    ontology = view['ontology']
+    lines += ['', '온톨로지: '+safe(ontology['status'])+' · 채택 연결: '+safe(ontology['adoption'])]
+    for bundle in ontology.get('bundles', []):
+        adoption={'ADOPTED':'최종 주장에 채택 연결 확인','NOT_USED':'최종 주장에 미사용','NOT_RECORDED':'최종 주장 채택 미확인'}.get(bundle.get('adoption'),'채택 미확인')
+        lines.append('- '+safe(bundle.get('bundle_id') or '지식 묶음')+': '+adoption)
+        for use in bundle.get('claim_uses', []):
+            lines.append('  - 주장 '+safe(use['claim_id'])+' ← 경로 '+safe(use['path_id'])+' · 요소 '+safe(', '.join(use['node_ids'])))
+        catalog = bundle.get('assembly') or {}
+        for source in catalog.get('source_bindings', []):
+            anchor=source['anchor']
+            lines.append('- 원문: '+safe(anchor.get('label') or anchor['document_id'])+' · 판본 '+safe(anchor['version']))
+        for path in catalog.get('paths', []):
+            lines.append('- '+safe(path['title'])+' · 목적 '+safe(path['purpose'])+' · 판본 '+safe(catalog['revision'])+' · '+safe(path['status']))
+            for node in path['nodes']:
+                lines.append('  - '+safe(node['kind'])+': '+safe(node['text']))
+            for edge in path['edges']:
+                lines.append('  - 관계: '+safe(edge['from'])+' → '+safe(edge['to'])+' · '+safe(edge['type']))
+    scenario = agent.get('scenario_comparison')
+    if scenario:
+        lines += ['', '**가정 비교 — 실제 사건·승인 규칙 유지 / 최종 결론 미확정**', '', '| 항목 | 기준 | 가정 |', '|---|---|---|']
+        for key,value in scenario['changes'].items():
+            lines.append('| '+safe(key)+' 입력 변경 | 기준 입력 유지 | '+safe(value.get('value'))+' '+safe(value.get('unit',''))+' |')
+        for row in scenario['comparisons']:
+            lines.append('| '+safe(row['node_id'])+' | '+safe(row['before']['status'])+' | '+safe(row['after']['status'])+' |')
+        lines.extend('- '+safe(row.get('reason') or row.get('state')) for row in scenario['unresolved'])
+    return '\n'.join(lines)

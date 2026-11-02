@@ -1,8 +1,8 @@
 """A native response may publish only an accepted, still-current case commit."""
 from . import journal_storage
 import json
-from pathlib import Path
-import sqlite3
+from ..oracle_runtime_paths import Path
+from .. import runtime_sqlite as sqlite3
 from ..contracts import digest, sha
 from .errors import ContractError
 from .investigation_contracts import claim_evidence
@@ -80,6 +80,25 @@ def validate_saved(repo,result):
         selection=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['SELECT'],)).fetchone()[0])
         originals={x['source_id']:x for x in selection.get('selected_originals',read['originals'])}
         assessment=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['ASSESS'],)).fetchone()[0])
+        from .assessment_links import verify_saved as verify_links
+        verify_links(assessment)
+        from .review_explanation import bind_case
+        expected_explanation = bind_case(assessment['review_explanation'],case,state) if assessment.get('review_explanation') else None
+        if meta.get('scenario_context') != state.get('scenario_context'):
+            raise ContractError('published hypothetical scenario context changed')
+        if state.get('scenario_context'):
+            from .scenario_review import verify_saved as verify_scenario
+            verify_scenario(assessment,state['scenario_context'],state['facts'])
+        if meta.get('scenario_comparison'):
+            from .scenario_branch import compare
+            scenario=meta['scenario_comparison']
+            if not expected_explanation or scenario != compare(expected_explanation,state,scenario['changes'],
+                    kind=scenario['kind'],operation_id=scenario['operation_id'],bindings=scenario.get('fact_bindings')):
+                raise ContractError('published scenario comparison changed')
+        if meta.get('review_explanation') != expected_explanation:
+            raise ContractError('published review explanation differs from current route')
+        from ..ontology_work.runtime import assert_assessment
+        assert_assessment(assessment,principal['document_ids'])
         if assessment.get('completion_contract'):
             from .completion_contracts import verify_composition, verify_span_claim
             composition=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['COMPOSE'],)).fetchone()[0])

@@ -1,54 +1,74 @@
-별도 R12 골드 연결 폴더 — 기존 MAIN120 엔진
+Gold 연결기 — 로컬 MAIN125 Oracle 범위 포트 수정 / 2026-10-30
 
-2026-10-30 실제 Oracle 이름 변경 완료: A8_GR12_CM1208의 컬럼9종/16위치를 사진의 물리명으로 변경했다. 테이블13개는 등록된 B03 명칭과 이미 같아 유지했다. 기본 실행은 ACTIVE_MAPPING.json → mapping_local_current.json을 사용한다. 데이터 타입·크기는 보존했다. 원문21문서/벡터16,085개 및 모든 테이블 행 수·객체 ID·제약조건·권한·게시명세 해시는 변경 전후 동일하다. 새 이름의 기본 연결기로 원문·용어집·벡터 검색100후보와 온톨로지 EMPTY 조회를 확인했다. 아래 '현재 로컬 구명칭' 설명은 이름 변경 전 기록이다.
-실제 변경·검증·되돌림: 09_ARTIFACTS/AUDITS/20261030-gold-physical-rename/변경과_검증결과.txt
+현재 실행
+- 엔진: oracle-scope-20261030-r1 / MAIN125, 정식 선택 코드489파일.
+- 정본: 01_DATA/ACTIVE/local/ACTIVE_RELEASE.json → release.json.
+- binding.json이 선택 release ID·manifest hash·489파일과 일치해야 실행한다.
+  MAIN을 바꿨다면 Gold 포트 호환성을 검증하고 binding을 함께 갱신한다.
+  불일치 시 조회 전에 거절하며 다른 엔진으로 자동 우회하지 않는다.
+- 같은 원문 새evidence ID 재결속과 새claim ID 충돌 수정을 정식 코드에 포함했다.
+  runtime_patches/와 runtime_patch_binding.json은 과거 이력이며 현재 실행하지 않는다.
+- 데이터 포트는 기존 rev036의 해시 고정 Oracle 어댑터를 재사용한다.
+  maintained engine_common.py가 선택된 MAIN으로 import를 연결한다.
+  과거 MAIN120 snapshot과 연구 어댑터 파일은 수정하지 않았다.
 
-2026-10-30 사진 컬럼명 반영: --mapping으로 13테이블·60컬럼의 물리명을 한 JSON에서 지정한다. mapping_r14_photos.json은 사진의38개 용어, mapping_r12_local.json은 현재 로컬 구명칭에 해당한다. 원문/검색/벡터/온톨로지 조회와 게시 포트에 매핑을 적용했다. 실제 DB 명세가 다르면 조회 전에 거절한다. 사용 방법과 적용 범위는 같은 폴더 MAPPING_GUIDE.txt 참조. 기본 MAIN과 현장 DB는 자동 교체하지 않는다.
+현재 데이터·물리명
+- A8_GR12_CM1208 / B03 13테이블60컬럼, CM21문서.
+- ACTIVE_MAPPING.json → mapping_local_vctr_current.json.
+- 벡터구간ID VCTR_SCTN_ID, 명세해시값 DTLS_HASH_VALU.
+- 내부 VCTR_SEG_ID/MNFST 논리키는 호환을 위해 유지한다.
+- 신청용 R18: mapping_r18_registration.json. 현재 로컬 보존 타입과 구분한다.
+- 검색 게시물은 binding.json의 기존 query_release_id로 고정한다.
+- 이 통합은 DB 내용·기존 게시물·MAIN 기본 데이터 generation을 바꾸지 않았다.
 
-2026-10-30 온톨로지 설명 정정: 현재 골드의 ONTL_POST/HEAD/ANC 물리 테이블3개는 존재하며 각각0행이다. 기존 온톨로지 조회 코드의 구테이블/컬럼명과 R12 매핑·적재·설정 연결이 남아 있다. 검색 게시 명세의 ontology 종류0을 물리 테이블 부재로 해석하지 않는다.
-정정 상세: 09_ARTIFACTS/AUDITS/20261030-gold-e2e-revalidation/온톨로지_물리테이블_확인과_정정.txt
-
-2026-10-30 후속 실제검증: ADR1232의009는 SQL3,992회로 최종평가에 도달했으나 마지막 모델공백응답/기한종료로504·답변0이었다. UNKNOWN1로007은미실행. 실제벡터 임베딩1→Oracle100후보→3원문→최종입력 연결을 확인했다. 승인온톨로지는 이골드게시물에서제외·설정OFF로미연결이다. MAIN123의별도모의native6검사통과와실제골드E2E를구분한다.
-후속 상세: 09_ARTIFACTS/AUDITS/20261030-gold-e2e-revalidation/실제재검증_온톨로지_벡터_E2E결과.txt
-아래 실제7·9기록은 선행ADR1214의결과다.
-
-이 폴더는 기존 제품 파일을 수정하지 않고, 검증용으로 고정한 MAIN120의 Oracle Store를 새 골드 게시물에 연결한다.
-현재 활성 MAIN 선택과 독립적이다. 전체 추론 성공 여부는 ADR1214의 실제 시험 결과를 확인한다.
-데이터 준비/원문 조회 성공은 법률 답변 품질 통과를 의미하지 않는다.
-실제 7번은 연결 오류, 9번은 SQL 한도로 중단되어 최종 답변0이다.
-후속 보완본은 저장된 9번 응답을 추가 외부 호출 없이 재생하여 SQL4,812회로 기존 중단 지점 이후까지 진행했다.
-새 실제 모델로 최종 답변을 완성한 검증은 아직 없다. 새 채널 cm-r12-engine은 별도 실험용이며 기본 연결은 게시물 ID를 고정한다.
-
-기본값
-- Oracle: A8_GR12_CM1208, B03 / 13개 테이블·60개 컬럼
-- 문서: CM 필수 21문서. 전체 보유 문서 이관이 아니다.
-- 게시물: binding.json의 query_release_id. 기존 cm-r12 채널을 변경하지 않는다.
-- 엔진: binding.json의 MAIN120 487파일을 실행 전에 해시 대조한다.
-- 자격증명: ~/.local/state/8-agent/gold-r12-1208/readonly-connection.json
-  비밀번호는 이 폴더나 결과 파일에 복사하지 않는다. 파일 권한은 0600이어야 한다.
+온톨로지
+ontology_settings.json enabled=true, store.gold_profile은 ON/DB다.
+상법365/368/369조3게시·원문12앵커·9경로가 기존 Gold에 있다.
+기본 MAIN 프로필은 OFF를 유지하며 Gold 요청에만 store.gold_profile을 사용한다.
+사용법은 ONTOLOGY_ON_GUIDE.txt, 물리 매핑은 MAPPING_GUIDE.txt를 따른다.
 
 저장소 루트에서 실행
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py health
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py terms 세입자
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py source 3521c3aaa5a735fd 0
 
-설정은 명령 앞의 --config, --credentials, --documents, --release-id 또는 --channel로 전달한다.
---documents 파일은 문서 ID 문자열의 JSON 배열이며 기본 21문서보다 좁힐 수만 있다.
-사용자 입력의 문서 목록은 인증 권한이 아니다. 서비스 연결 시 호스트가 인증한 범위와 교집합을 전달해야 한다.
-다른 게시물·소유자는 같은 R12 구조와 원문/판본/컴파일/벡터 결속을 충족해야 한다.
+API 연결
+먼저 새 전용 프로세스에서 connect.open_store(...)를 연다. semantic_runtime을 먼저 import하지 않는다.
+with connect.open_store(documents=authenticated_document_ids) as (store, request, transport):
+    from semantic_runtime.app import create_app
+    # create_app(..., data_store=store, legal_agent_profile=store.gold_profile, ...)
+    # contracts_root도 binding.json의 engine_root로 지정한다.
+    # 모델/사용자 인증은 기존 호스트의 검증된 값을 사용한다.
 
-기존 엔진에 연결
-connect.open_store(...) 문맥 안에서 반환되는 store를 기존 create_app의 data_store로 전달한다.
-모델 정책·사용자 인증·외부 전송 권한은 호출 호스트가 제공한다. 이 명령은 실제 모델을 자동 호출하지 않는다.
-원문/검색/용어/조문/벡터 자료는 Oracle만 읽는다. 별도 로컬 파일로 corpus를 우회하지 않는다.
-문서 메타 8MiB·원문 16MiB 한도 내에서, 완전한 원문/게시 해시 검증을 통과한 값만 같은 요청 안에서 재사용한다.
-권한·판본 결속이 바뀌면 거절한다. 새 요청은 다시 검증하며 실패·부분 조회는 재사용하지 않는다.
-벡터는 기존 BGE-M3 16,085개를 검증해 재사용하며, 질문 벡터는 같은 로컬 모델로 계산한다.
+--documents는 호스트가 인증한 범위를 제공하며 기본21문서의 부분집합만 가능하다.
+사용자 입력 문서 목록 자체가 권한을 부여하지 않는다. 하나의 프로세스에서 다른 엔진과 혼용하지 않는다.
+명시 --mapping/--mapping-sha256/--owner/--credentials/--release-id 또는 --channel도 기존 계약을 지켜야 한다.
+기본 자격증명은 ~/.local/state/8-agent/gold-r12-1208/readonly-connection.json이며 권한0600을 요구한다.
+비밀번호를 코드나 결과 파일에 복제하지 않는다.
 
-반드시 별도 새 프로세스에서 실행한다. 연결부는 그 프로세스의 데이터 포트를 설치하고 문맥 종료 시 복구한다.
-기존 엔진과 같은 프로세스에서 동시에 서비스하거나, 이 예제를 인증 없는 공개 API로 띄우지 않는다.
-Oracle/CPU 모델/설계 manifest가 있는 이 작업 공간용 연결기다. GENOS/ORDS/NFS 현장 배포와 B05 실DB는 미검증이다.
+검증 결과와 한계
+ADR1240 관련114검사 통과/기존8 MAIN124동일·새0. 선택서비스68조건×3설정=204/HEALTH3·모의HTTP3 통과.
+실제 Gold 원문·용어·저장벡터3행/native100후보 SQL73, 온톨로지3게시12앵커9경로 SQL157 통과.
+SQLite/Oracle scope_keys 포트로 범위 조회를 연결했다. 실제 Oracle 좁은 범위4원문·빈범위0SQL·권한밖거절 확인.
+ADR1241 실제 재검증은 호스트 스왑 증가128MiB 초과로4번째 모델 요청 중 중단했다. 정상응답3/진행중결과미확인1·최종답변0.
+새임베딩1/벡터100후보/온톨로지369묶음ACQUIRED·원문7대조는 확인했으나 최종입력·답변까지의 전체 E2E는 미완료다.
+이번 모델은 문서전체 범위를 골라 좁은 범위 수정함수를 재호출하지 않았다. 해당 수정의 직접 검증은 기술계약과 실제 Oracle 구성요소다.
+감독 UNKNOWN은 최종·보완으로 진행하지 않도록 구현되어 있으나 이번 자원감시 종료는 감독 UNKNOWN의 실모델검증이 아니다.
+반복 문서페이지 조회 지연은 남는다. 종류 제한 SQL 후보는 속도 이득이 없어 미채택했고 기존 연결기3파일을 유지했다.
+필요원문 없는 RESOLVED 반복제출은 NEED_TARGET_INCOMPLETE 등으로 계속 거절한다.
+법률 의미·벡터품질·온톨로지 인과효과·현장 Oracle/GENOS 미인증. DB내용·DDL 변경0.
 
-증거
-04_EXPERIMENTS/ADR/ADR-1214-gold-main120-engine-implementation/artifacts/run-001
-09_ARTIFACTS/AUDITS/20261029-gold-connected-glossary
+롤백·이력
+직전 MAIN124 정식 릴리스와 이전 Gold binding을 보존했다.
+09_ARTIFACTS/AUDITS/20261030-oracle-fulltext-repair/gold-rollback.json
+09_ARTIFACTS/AUDITS/20261030-oracle-fulltext-repair/gold-before/binding.json
+MAIN124로 공식 롤백할 때 Gold binding도 함께 복구한다. 이번에는 connect.py/engine_common.py/physical_mapping.py를 바꾸지 않았다.
+ACTIVE_MAPPING과 ontology_settings, 기존 runtime_patches를 보존했다. runtime_patches는 현재 실행하지 않는다.
+기존 호스트 프로세스를 자동 재시작하지 않았다. 새 전용 프로세스에서 선택 엔진을 읽는다.
+현장 GENOS 배포·Git commit/push·메일 없음.
+
+상세 근거
+09_ARTIFACTS/AUDITS/20261030-oracle-fulltext-repair/수정과_실제재검증_결과.txt
+04_EXPERIMENTS/ADR/ADR-1240-oracle-fulltext-scope-repair/README.md
+04_EXPERIMENTS/ADR/ADR-1241-main125-gold-live-revalidation/README.md
+이전 MAIN124 통합과 실제 실패는 ADR1238·1239, Gold ON 실패는 ADR1233·1235에 보존했다.

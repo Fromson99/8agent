@@ -1,0 +1,77 @@
+{
+  "status": "STATIC_DOCUMENT_CHECKS_PASSED",
+  "checks": [
+    {
+      "name": "gold_contract",
+      "passed": true,
+      "detail": "활성 매핑 정의 확인; DB 조회 아님"
+    },
+    {
+      "name": "new_tables",
+      "passed": true,
+      "detail": "세션/실행/사건/판본기록/연결/호출/본문; 기존 상태 별도"
+    },
+    {
+      "name": "journal_v6_coverage",
+      "passed": true,
+      "detail": "v6 SQL CREATE TABLE 31개 추출"
+    },
+    {
+      "name": "all_source_columns_preserved",
+      "passed": true,
+      "detail": "정적 컬럼 대응 누락 없음; 실제 데이터 이관 검증 아님"
+    },
+    {
+      "name": "mapped_targets_exist",
+      "passed": true,
+      "detail": "목표 역할 참조 대조"
+    },
+    {
+      "name": "schema_names",
+      "passed": true,
+      "detail": "30바이트 이하 후보명; 표준사전 승인 아님"
+    },
+    {
+      "name": "index_columns",
+      "passed": true,
+      "detail": "PK/인덱스의 미정의 컬럼 없음"
+    },
+    {
+      "name": "no_gold_ddl",
+      "passed": true,
+      "detail": "DDL 초안은 신규 Agent CREATE만"
+    },
+    {
+      "name": "xlsx_tables",
+      "passed": true,
+      "detail": "JSON/Excel 컬럼 수 동일"
+    },
+    {
+      "name": "xlsx_mapping",
+      "passed": true,
+      "detail": "전체 컬럼 대응 시트 행수 동일"
+    },
+    {
+      "name": "source_unchanged_during_build",
+      "passed": true,
+      "detail": "생성기가 입력 소스에 쓰지 않음"
+    }
+  ],
+  "counts": {
+    "new_tables": 7,
+    "new_columns": 85,
+    "existing_tables": 141,
+    "existing_columns": 832,
+    "change_map_files": 34
+  },
+  "not_performed": [
+    "Oracle DDL execution",
+    "DB changes",
+    "runtime implementation",
+    "migration",
+    "live model",
+    "performance benchmark",
+    "GENOS deployment",
+    "independent review"
+  ]
+}

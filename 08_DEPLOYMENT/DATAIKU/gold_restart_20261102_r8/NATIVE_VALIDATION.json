@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "checks": [
+    "backup reader preserves long Unicode and empty CLOB with exact source counts",
+    "delete only exact backed-up PK, preserve other generation and other row",
+    "commit response-loss retry is a no-op for absent backed-up row",
+    "changed content rejected and existing rows preserved",
+    "empty CLOB comparison and deletion succeeds",
+    "publication guard stops deletion",
+    "mixed batch conflict causes no partial delete",
+    "multirow batch with long Unicode CLOB verified",
+    "keyset backup pagination includes all 45 rows once and keeps other generation",
+    "UTF8_HEX insert readback verify delete preserves quotes slash newlines and supplementary Unicode",
+    "200-row keyset pages cover 405 rows exactly",
+    "multi-megabyte Unicode CLOB survives insert readback verification and delete without truncation",
+    "byte-bound pages preserve whole large rows while limiting combined payload"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "loopback_only": true,
+  "existing_user_data_mutated": false,
+  "real_model_calls": 0,
+  "helper_sha256": "cf1b9843e1fd080f6cc35702d6ebc2a674ad4042c5cf990fdd9a4fea18241d85",
+  "transport_sha256": "afd5fe2cdf84ac99d3cdbdb111d0340675906b1c373f8efb93eac3539f74a40c",
+  "created_and_removed_fixture_tables": [
+    "A8_RST_155B64E231",
+    "A8_RST_155B64E231_G"
+  ]
+}

@@ -13,6 +13,7 @@ from .output_contract import OutputContractError, issue
 
 VERSION = 'request-requirement-coverage-v1'
 FIELD = 'requirement_review'
+LINK_RULE = 'PRESERVE_UNLINKED_MATERIAL_GAPS_BY_REFERENCE_V2'
 PROMPT = '''requirement_context는 초기 쟁점 목록과 별개로 사용자 질문 전체를 보존한 검토 대상이다. 이 ASSESS 응답의 requirement_review에서 질문이 실제로 요구한 주체·대상·조건·절차·예외를 의미별로 나누고, 각 요구를 현재 원문과 대조한다. request_parts의 R번호는 문장/문단 위치이며 법률 쟁점의 정답 목록이 아니다. 한 문장에 여러 요구가 있으면 여러 행으로 나눈다. 초기 issues에 빠진 요구도 생략하지 말고 가장 관련된 기존 issue_refs에 연결한다. 단순 관련 규정이나 모든 예외를 새 필수 요구로 만들지 않는다.
 모든 request_parts와 issues를 적어도 한 번 연결한다. SATISFIED는 실제 claims의 claim_refs와 같은 현재 evidence_options의 basis_refs가 필요하다. 읽었다는 사실이나 제목·위임 위치만으로 구체 내용까지 충족했다고 하지 않는다. EXCLUDED는 요청 밖이라는 의견과 원문 basis_refs 또는 사용자가 직접 범위를 한정한 현재 발언 scope_quote가 필요하며 이유만으로 제외하지 않는다. 요청 문구를 인용했다는 사실만으로 제외가 맞다는 뜻은 아니다.
 필요한 원문이나 사실을 확인하지 못했다면 UNRESOLVED로 쓰고 같은 응답 gaps의 material=true 항목에 gap_indices로 연결한다(배열의 첫 항목은1). 새로 필요한 본문·위임·예외도 기존 gaps에 기록한다. gap.kind와 suggested_action은 기존 원문 조사/실제 사실 구분을 따른다. 알려진 위치만 missing_target에 쓰고 모르면 빈 문자열과 구체적인 부족 이유를 쓴다. 이미 확보한 claims는 유지한다. 같은 요구의 일부만 충족되면 충족 부분과 미해결 부분을 따로 쓴다. 의미상 불확실성만으로 불필요한 조사나 사용자 사실 질문을 만들지 않는다.'''
@@ -100,7 +101,11 @@ def validate_review(value, ctx, options):
             if not valid:fail('REQUIREMENT_MATERIAL_GAP',path,{'allowed_gap_indices':list(range(1,len(gaps)+1)),'rule':'same-issue material gaps; do not drop unmet requirements'})
             seen_gaps.update(row['gap_indices'])
     missing=[i for i,g in enumerate(gaps,1) if g['material'] and i not in seen_gaps]
-    if missing:fail('REQUIREMENT_GAP_COVERAGE','/'+FIELD,{'unreviewed_material_gap_indices':missing})
+    if missing:fail('REQUIREMENT_GAP_COVERAGE','/'+FIELD,{
+        'unreviewed_material_gap_indices':missing,
+        'gaps':[{'gap_index':i,'issue_id':gaps[i-1]['issue_id'],'kind':gaps[i-1]['kind'],
+                 'reason_path':'/gaps/'+str(i-1)+'/reason'} for i in missing],
+        'rule':'Preserve each material gap and explicitly link an UNRESOLVED request row; do not erase the gap or infer fulfillment.'})
     if errors:raise OutputContractError('Requirement coverage must bind actual claims, exclusions and material gaps',errors,category='REQUIREMENT_REVIEW_INVALID')
 
 def retain(result, value, ctx, options, *, reconciliation=None):
@@ -148,15 +153,20 @@ def reconcile_material_gaps(value, ctx, options):
         if not gap['material'] or index in linked:continue
         matches=[r for r in rows if gap['issue_id'] in r['issue_refs']]
         requests={tuple(r['request_refs']) for r in matches}
-        if len(requests)!=1 or len(rows)>=64 or not gap['reason'].strip() or len(gap['reason'])>500:
+        if len(requests)!=1 or len(rows)>=64 or not gap['reason'].strip():
             validate_review(value,ctx,options)  # Existing repair, no guessed mapping.
         row={'request_refs':list(next(iter(requests))),'issue_refs':[gap['issue_id']],
-            'requirement':gap['reason'],'reason':gap['reason'],'status':'UNRESOLVED',
+            # These are explicit references, not a shortened/summarized reason.
+            # The full model-authored reason stays exclusively in gaps[index-1].
+            'requirement':'미확인 사항 gap '+str(index),
+            'reason':'gap '+str(index)+'의 전체 사유와 미확인 상태를 유지합니다.', 'status':'UNRESOLVED',
             'basis_refs':[],'claim_refs':[],'gap_indices':[index],'scope_quote':''}
         rows.append(row);added.append(index)
     validate_review(result,ctx,options)
-    receipt={'rule':'PRESERVE_UNLINKED_MATERIAL_GAPS','original_proposal':deepcopy(value),
+    receipt={'rule':LINK_RULE,'original_proposal':deepcopy(value),
         'original_hash':digest(value),'reconciled_hash':digest(result),'gap_indices':added,
+        'gap_references':[{'gap_index':i,'path':'/gaps/'+str(i-1),
+                           'gap_hash':digest(value['gaps'][i-1])} for i in added],
         'claims_unchanged':result.get('claims')==value.get('claims'),
         'gaps_unchanged':result.get('gaps')==value.get('gaps'),'semantic_completeness_certified':False}
     return result,receipt

@@ -19,6 +19,28 @@ def validate_scope(value, *, persisted=False, path='/source_targets/coordinate_s
         raise OutputContractError(message,[row])
 
 
+def target_coordinate(row, *, path='/source_targets/coordinate'):
+    """Parse one exact locator; a matching display scope adds no new meaning."""
+    from .output_contract import OutputContractError,issue
+    text=row['coordinate'].strip()
+    if ':' in text:
+        prefix,coordinate=text.split(':',1)
+        if prefix not in COORDINATE_SCOPES or prefix!=row['coordinate_scope']:
+            item=issue('SOURCE_TARGET_SCOPE_CONFLICT',path,
+                related=[path.rsplit('/',1)[0]+'/coordinate_scope'],
+                expected={'matching_scope':row['coordinate_scope']})
+            item.update(received=text,message='Coordinate prefix must equal coordinate_scope; choose the intended scope explicitly.')
+            raise OutputContractError('source target coordinate prefix conflicts with coordinate_scope',[item])
+        text=coordinate.strip()
+    occurrences=find_coordinates(text)
+    if len(occurrences)!=1 or occurrences[0].start!=0 or occurrences[0].end!=len(text):
+        item=issue('SOURCE_TARGET_COORDINATE_INVALID',path,
+            expected='one complete legal coordinate; matching scope prefix optional; ranges use structure selection')
+        item.update(received=row['coordinate'],message='Use one exact coordinate such as 제1조, with coordinate_scope in its separate field.')
+        raise OutputContractError('source_targets.coordinate requires one complete legal coordinate; ranges need ordinary structure selection',[item])
+    return occurrences[0].coordinate.canonical_surface()
+
+
 PROMPT='''origin_heading이 있는 목표는 서버가 질문과 직접 맞는 저장 표제에서 찾은 원문이다. 다른 원문이나 이유만으로 제외할 수 없으며 먼저 해당 원문을 확인한다. 원문 확보 뒤 실제 적용 여부는 판단하며 무관하면 답변에서 제외할 수 있다. source_targets에는 이번에 반드시 확보할 원문의 document_ref(허용된 문서 D번호), coordinate(정확한 조·항·호), coordinate_scope, issue_id, reason을 쓴다. 위치가 불명확하면 []이며 조문번호를 추측하지 않는다. coordinate_scope는 body(본문), addendum(부칙), annex(별표), form(서식), repeated(반복 범위), appendix(기존 부록) 중 선택한다. 조·항·호·목은 범위 값이 아니다. 기존 목표는 SOURCE_GOAL의 goal_id만 선택한다. 서버가 문서와 좌표를 현재 도구 번호에 연결하며 이미 확정된 목표는 모델 선택 전에 조회·READ를 집행한다. source_goal_context의 미확보 목표는 다른 문서를 읽거나 FINISH한다고 사라지지 않는다. 불필요함을 실제 원문으로 확인한 경우에만 source_goal_exclusions에 goal_id, reason, basis_refs를 쓴다. 원문 확보는 법률적 충분성이나 판단 완료가 아니다.'''
 PROMPT += '\n기존 선언한 필요를 위한 목표이면 source_targets.need_refs에 answer_progress_context.declared_needs 또는 read_judgments.needs의 ID를 연결한다. 새 필요여서 아직 ID가 없으면 생략할 수 있으며, 목표 자체에도 지속 ID가 부여된다. 필요한 참조는 각각 선택한다. 같은 문장에 참조됐다는 이유로 서버가 나머지 조문을 선택하지 않는다.'
 
@@ -65,9 +87,7 @@ def validate(value,inv,data,actions):
         validate_scope(row.get('coordinate_scope'),path='/source_targets/'+str(index)+'/coordinate_scope')
         did=target_document(row,offered)['document_id']
         if did not in inv.s.scope:raise ContractError('source target document unauthorized')
-        occurrences=find_coordinates(row['coordinate'].strip())
-        if len(occurrences)!=1 or occurrences[0].start!=0 or occurrences[0].end!=len(row['coordinate'].strip()):
-            raise ProposalError('source_targets.coordinate requires one complete legal coordinate; ranges need ordinary structure selection')
+        target_coordinate(row,path='/source_targets/'+str(index)+'/coordinate')
         refs=row.get('need_refs',[])
         if len(refs)!=len(set(refs)) or any(n not in needs or row['issue_id'] not in needs[n]['issue_refs'] for n in refs):
             raise ProposalError('source target need_refs must bind known needs of the same issue')
@@ -88,7 +108,7 @@ def record(value,inv,data,actions,st):
     if signature in receipts:return
     goals=deepcopy(st.get('source_goals',[]));offered={r['lookup_target']:r for r in options(data,actions)}
     for row in value.get('source_targets',[]):
-        doc=target_document(row,offered);coordinate=find_coordinates(row['coordinate'].strip())[0].coordinate.canonical_surface()
+        doc=target_document(row,offered);coordinate=target_coordinate(row)
         ident=digest([row['issue_id'],doc['document_id'],coordinate,row['coordinate_scope']])
         for existing in goals:
             if existing['identity']==ident:existing.pop('origin_reference_bundle',None)

@@ -3,8 +3,8 @@ from contextlib import closing
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
-from pathlib import Path
-import sqlite3
+from .oracle_runtime_paths import Path
+from . import runtime_sqlite as sqlite3
 
 from .contracts import digest, sha
 from .navigation_loop import TOOLS

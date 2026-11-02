@@ -1,0 +1,25 @@
+{
+  "schema_version": "dataiku-embedding-readiness-validation-v1",
+  "syntax": "PASS",
+  "no_embedding_or_write_calls": "PASS",
+  "local_checks_only": true,
+  "actual_dataiku_run": false,
+  "actual_oracle_run": false,
+  "embedding_calls": 0,
+  "db_writes": 0,
+  "files": {
+    "01_CHECK_READY.txt": "1e6fe08f2d220ca8c98d3ed99d74858162eb1fa5447731290720f6cefd1ed309",
+    "check_ready.py": "1e6fe08f2d220ca8c98d3ed99d74858162eb1fa5447731290720f6cefd1ed309",
+    "GUIDE.txt": "3c26202e557f3f4547b6f50627acd600d62fa4641f044e6da4ad6bfe5120eba5"
+  },
+  "upstream_review": {
+    "commit": "1fe63bf00a4ab91424edec9a2988c2204301b575",
+    "fetched_this_turn": false,
+    "executed": false,
+    "files": {
+      "02-els-qa/dataiku/project_config/recipes/compute_ELS_QA_VDB_EMBED.py": "67a68cbf8d51daf3d71054a633f803e234fadf784f0b9f1091125b0b88adee8d",
+      "02-els-qa/dataiku/project_config/lib/python/els_dku/vdb.py": "3be98089190f0afd58d93cd66290929a8e0c769f3aba4c1e9128fdd062e62b43"
+    }
+  },
+  "execution_txt_equals_python": true
+}

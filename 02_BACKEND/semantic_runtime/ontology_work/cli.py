@@ -5,8 +5,9 @@ from .repository import ddl
 
 def main(argv=None):
     from .domain_cli import ACTIONS,run
+    from .wiki_cli import ACTIONS as WIKI_ACTIONS, run as wiki_run
     p=argparse.ArgumentParser(description='온톨로지 생성·검토·게시')
-    p.add_argument('action',choices=['ddl','status','enqueue','generate','draft','preview','approve','reject','publish','withdraw']+ACTIONS)
+    p.add_argument('action',choices=['ddl','status','enqueue','generate','draft','preview','approve','reject','publish','withdraw']+ACTIONS+WIKI_ACTIONS)
     p.add_argument('--input',type=Path);p.add_argument('--proposal',type=Path);p.add_argument('--bundle')
     p.add_argument('--revision',type=int);p.add_argument('--work-hash');p.add_argument('--expected-sequence',type=int)
     p.add_argument('--reason');p.add_argument('--owner',default='SIDDA');p.add_argument('--dialect',choices=['sqlite','oracle'],default='oracle')
@@ -14,7 +15,10 @@ def main(argv=None):
     p.add_argument('--approve',action='store_true');p.add_argument('--prefix');p.add_argument('--journal')
     p.add_argument('--rollback',action='store_true')
     p.add_argument('--after',type=int,default=0)
+    p.add_argument('--query');p.add_argument('--kind',choices=['ENTRY','STATEMENT','VIEW'],default='ENTRY');p.add_argument('--cursor',type=Path)
     a=p.parse_args(argv)
+    if a.action in WIKI_ACTIONS:
+        print(json.dumps(wiki_run(a),ensure_ascii=False,indent=2));return 0
     if a.action in ACTIONS:
         print(json.dumps(run(a),ensure_ascii=False,indent=2));return 0
     if a.action=='ddl':print(';\n\n'.join(ddl(a.owner if a.dialect=='oracle' else '',a.dialect))+';');return 0

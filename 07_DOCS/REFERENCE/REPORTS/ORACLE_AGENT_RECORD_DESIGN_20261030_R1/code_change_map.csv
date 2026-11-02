@@ -1,0 +1,35 @@
+﻿파일,함수·경계,책임,변경내용
+service.py,_genos_v5_admission_profile / application,설정·진입점,"Agent 저장 모드 명시; 현재 무제한 동시성은 별도 운영 결정, 자동 변경하지 않음"
+02_BACKEND/semantic_runtime/oracle_query_service.py,Factory.application / start_recovery,서빙,외부 runtime 필수 대신 AgentStore 주입; NFS 검사 제거는 모든 활성 소비자 전환 후
+02_BACKEND/semantic_runtime/app.py,create_app / source / source-candidates,API,저장소 factory 주입; 경로 glob 대신 권한 있는 run 조회·원문 재검증
+02_BACKEND/semantic_runtime/legal_agent_adapter.py,run/session ingress,세션 생성,파일 경로 기반 journal 생성·resume를 저장소 식별자로 바꿈
+02_BACKEND/semantic_runtime/legal_agent/repository.py,WorkRepository,실행 원장,typed 저장 포트; SQLite PRAGMA/trigger/rowid/함수 직접 의존을 분리
+02_BACKEND/semantic_runtime/legal_agent/unified_repository.py,UnifiedRepository,v6,기존 판단·근거 계약을 같은 포트 위에서 보존
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,Memory,대화,session/goal/node/head/route/request를 Oracle transaction에 연결
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,CaseRepository.owner / recover_requests,대화·재개,파일 lock→DB lease/fence; outbox·참조·요청 복구 보존
+02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py,open_cases / execute,v3/v4 분기,실제 capture·runtime feature·source-mode에 맞는 Oracle adapter 선택
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,ShortcutRepository,v4,sw_* 저장·현재 head·큐·공통/개인 ACL 보존; artifact 파일 저장도 전환
+02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py,ShortcutCases,v4 대화,intake/investigation/branch·case와 원장 원자적 연결
+02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py,recall projection,v4 조회,카드/term 페이지 조회와 현재 권한·판본 검증
+02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py,procedure records,재사용,실행 기록을 새 판단 없이 재사용하는 조건·영수증 유지
+02_BACKEND/semantic_runtime/legal_agent/publication.py,prepare / export / recover,발행,no-clobber JSON 파일을 동일 결과 해시/상태/영수증 DB transaction으로
+02_BACKEND/semantic_runtime/legal_agent/unified_publication.py,validate_saved / validate_current,발행 검증,"case_db path→논리 case store ID, 원 legacy binding 보존"
+02_BACKEND/semantic_runtime/legal_agent/deferred_publication.py,schedule / recover,지연 발행,"메모리 큐는 알림만; durable outbox는 Oracle, 시작 시 pending 조회"
+02_BACKEND/semantic_runtime/legal_agent/completion_budget.py,request/run budget linkage,예산,재개 후 최초 마감·누적 예산·parent child 원자적 차감
+02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py,register / reserve,부모자식,journal path→run ref. 부모·자식 예산 및 호출 예약 동일 transaction
+02_BACKEND/workflow/repository.py,Repository / execution_lock,대사 workflow,상태/도구/call/trigger 효과를 명시 transaction으로
+02_BACKEND/semantic_runtime/workflow_bridge.py,Services / evidence loading,대사 연결,부모·자식 원장 조회와 publication window를 DB에서 조회
+02_BACKEND/semantic_runtime/workflow_rag.py,child journal readers,자식 결과,원장 파일 재개방 제거; 권한·binding 교차검증 유지
+02_BACKEND/semantic_runtime/request_journals.py,paths / children / scope,공통 탐색,논리 실행 목록·부모자식 참조로 전환
+02_BACKEND/semantic_runtime/progress.py,poll_journal,진행 표시,seq 이후 페이지 읽기; 표시만 실패해도 원기록 성공으로 조작하지 않음
+02_BACKEND/semantic_runtime/request_report.py,raw/report file writers,진단,Oracle 원기록 참조형 보고서·다운로드; 서빙 파일 저장 필수 경로 제거
+02_BACKEND/semantic_runtime/session_identity.py,session ownership lookup,인증,세션 소유 확인을 Oracle에서; scope hash가 auth를 대신하지 않음
+02_BACKEND/semantic_runtime/legal_agent/source_handoff.py,journal binding,원문 인계,경로 대신 논리 참조로 인계·영수증 검증
+02_BACKEND/semantic_runtime/legal_agent/successful_answer.py,capture / recover,성공 답변,저널 glob→발행 완료 run 조회; 실패를 지식 후보로 승격하지 않음
+02_BACKEND/semantic_runtime/ontology_work/domain_cli.py,export-journal,온톨로지 입력,Oracle events_after 포트 사용; 정규화/누적/승인 로직 유지
+02_BACKEND/semantic_runtime/ontology_work/observations.py,export_journal,이력 수집,"전체 원장 ACL, 순번, 원 payload hash 유지; 파일 DB API 분리"
+02_BACKEND/semantic_runtime/oracle_query_state.py,StateSQL / State.put,CAS,legacy 단건 commit API를 반복 호출하지 않음. 새 operation transaction에 기존 state 행 포함
+02_BACKEND/semantic_runtime/legal_agent/storage_admission.py,admission / checkpoint,용량,NFS 순회/파일 lease 대체; 저장 예산·미수신/실패 기록 여유 유지
+02_BACKEND/semantic_runtime/task_policy.py,checkpoint/proposal,실행 지원,정의·검토·checkpoint의 활성 사용 여부 확인 후 동일 저장 포트
+02_BACKEND/semantic_runtime/relation_issues.py,rejection storage,오류 기록,거절 이력 지속 저장·조회 연결
+02_BACKEND/semantic_runtime/ad_store.py,AD operations,조건부 API,AD를 제공하는 배포이면 동등 전환 필수; 비활성이라는 이유로 자료 삭제 금지

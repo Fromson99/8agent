@@ -1,0 +1,29 @@
+{
+  "base_zip": "08_DEPLOYMENT/DATAIKU/existing_nfs_continuous_20261030_r4/DATAIKU_EXISTING_NFS_CLIENT_20261030_R4.zip",
+  "base_zip_sha256": "4bc4304037dfbc8ba61022d251cf5181cb4807275db38bacc65348e9b7aa994d",
+  "baseline": "sealed R4; same model-free synthetic Oracle fixtures",
+  "candidate": "isolated R5 delivery source under candidate; no product registry/runtime import",
+  "changes": [
+    "bounded Dataiku native full-CLOB reads with length/type/key/content validation and original-piece fallback",
+    "verify-only batch up to100 rows / existing256KiB byte bound; writes20 unchanged",
+    "observed current-table throughput/ETA logging",
+    "exact R4/R2/R3 checkpoint lineage compatibility with prior-receipt backups"
+  ],
+  "preserved": [
+    "full source(run) readback / verify / final_source / assets/query checks",
+    "source and target identity; original state/counters/deadlines; pending-write reconciliation",
+    "mapping and exact body comparison; unknown-write behavior",
+    "original sealed packages and MAIN/GENOS files"
+  ],
+  "acceptance": [
+    "same ordered rows/content and all current corruption cases rejected",
+    "native fixture SQL fewer than R4 for long CLOBs / row batch size reduces shallow verify queries",
+    "Oracle actual Unicode supplementary/empty/null/long content/metadata/mapping tests",
+    "full shipped notebook migration resume from paused R4, no double writes and identity mismatch rejected",
+    "driver truncation never accepted; fallback journaled and bounded",
+    "no automatic reuse of old verify cursor without target change guard"
+  ],
+  "field_execution": "not available; no field timing/speed guarantee",
+  "model_calls": 0,
+  "mail": 0
+}

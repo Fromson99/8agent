@@ -1,0 +1,5133 @@
+{
+  "snapshot": {
+    "captured_at": "2026-10-30T06:55:08.484185+00:00",
+    "active_release": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "judgment-gold-20261030-r1",
+      "generation": 124,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/judgment-gold-20261030-r1/release.json",
+      "release_manifest_sha256": "2afd68511bf9435fdca1172b8aae24990c0350bee1d45493be63c9b920babe7e",
+      "activated_at": "2026-10-30T05:43:18.314449+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "6a1d93eab0dbf2e74f5365e7667527596dffaeb4b4940886b88c8b5a120ec6c3",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-1238-judgment-recovery-gold-main/실험/manifest.json",
+          "sha256": "4ea565cbc8a859030b1591bb7d027431fd60599a4aa79f1b242ed612cd8a4a96"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-1238-judgment-recovery-gold-main/README.md",
+          "sha256": "fdbb68b6662e83101c3f8faf8aae8ca14c6990abd8ed101718052fbb9c1fe0db"
+        },
+        "arm": "integrated",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-1238-judgment-recovery-gold-main/artifacts/run-001/result.json",
+          "sha256": "9f5e6098c9b40a006631acd06b12fcae6af73c8f5077fba7fed922568d26250d"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-1238-judgment-recovery-gold-main/artifacts/design/release-rebase.json",
+          "sha256": "9ed6dfc6afbf9548a9fd1083173ef05c4bef074b43ce25c6aeb5b4f98843ac54"
+        }
+      }
+    },
+    "code_root": "08_DEPLOYMENT/RELEASES/judgment-gold-20261030-r1/code",
+    "shortcut_features": {
+      "capture": true,
+      "compile": true,
+      "hint": true,
+      "procedure": true,
+      "judgment": true,
+      "core_evidence_route": true,
+      "bounded_recall": true
+    },
+    "workflows_enabled": true,
+    "gold_mapping": {
+      "schema_version": "gold-active-physical-map-v1",
+      "mapping_file": "mapping_local_vctr_current.json",
+      "sha256": "a3e88baf063b293b8ccd2eb68bf5ffb966eefc05de5b59c1a855dd054855a3af",
+      "migration_receipt": "09_ARTIFACTS/AUDITS/20261030-gold-vctr-sctn-rename/database-verified.json"
+    },
+    "gold_tables": 13,
+    "gold_columns": 60,
+    "sources": [
+      {
+        "path": "00_SYSTEM/ORACLE/physical_mapping.yaml",
+        "sha256": "38383c091ebd9e6aa4c615f3d45aae4916f5b456065d6cc519536377afe34907",
+        "bytes": 86066,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "00_SYSTEM/PIPELINE.json",
+        "sha256": "9329b3b571f83c9e95d595cef5c807e48bcf7b0c40d263a3f0e49f51c14fc5af",
+        "bytes": 78263,
+        "selected_exists": true,
+        "selected_equal": false
+      },
+      {
+        "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+        "sha256": "953ff8209d9714ae8dd368f25a9309e381d76b561c62391fbcfbb6b85c157e5f",
+        "bytes": 1421,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/action_memory_store.py",
+        "sha256": "ce2d2e6f1e048e8dbe544b9efd48356a446023dc4b08928075e8991cb29ce0bb",
+        "bytes": 22622,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/ad_store.py",
+        "sha256": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897",
+        "bytes": 12098,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/app.py",
+        "sha256": "12d5ca4e85041bf1d439d0343f2ffb089d345aaaaf1cb2e3d59deac090002f2f",
+        "bytes": 40124,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/learning_store.py",
+        "sha256": "15a03fb3c64f57eff6715e6fb3465c7e1a97ae724c2b9809fc8f39fa6be06b72",
+        "bytes": 8769,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+        "sha256": "744ec3f6221a3204ef0cd90be398ceb96f1fc2445d0a6e353970a8d96a7ca091",
+        "bytes": 21481,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+        "sha256": "630d7febd4ac802e3f07f305e46244887bdc74a5c2feebb8d2da4efe37405f89",
+        "bytes": 4994,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+        "sha256": "0ee0eae1f99ce394292ee39519c9e6b56539548001671100573e57b6183239c2",
+        "bytes": 57151,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/deferred_publication.py",
+        "sha256": "4f1c80a34e67abca63de41f903eae139279063f7ab8410e723c4f3d80c2661ff",
+        "bytes": 2459,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+        "sha256": "e5c977812e79665a2ecb2e64df0ea40380391590d62890b911ae547d313b26a9",
+        "bytes": 16301,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/journal_storage.py",
+        "sha256": "2e069a6869b1596cd818ddf225b5dd30a58e3e692774017e4bba80b7a1984337",
+        "bytes": 6444,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+        "sha256": "43a2cb11796a3d4c8511084e7257c9ee48070115ea293310b9e202827aeaaaa5",
+        "bytes": 5479,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/publication.py",
+        "sha256": "df0d46d7a4274da9a8fcda6a195321c4621980ed0aa1ad69a8ca1dddd74c14f8",
+        "bytes": 8827,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+        "sha256": "68ff7c910c58718f6f88d4a0a9d8393298dfff13f978eff1d91a423d078cb185",
+        "bytes": 26889,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+        "sha256": "81239d1e6a843a0f36dbb278fada23304485af18dcdcdc78947064268f7b692a",
+        "bytes": 14634,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+        "sha256": "f3cca54c60591a6525093961bb68da49b1b17ea9e992868ff11c075fa44f808d",
+        "bytes": 49393,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/source_handoff.py",
+        "sha256": "04601fad991e06c23679281cabee0bc4ae08a23773a3ec816f726abac532313d",
+        "bytes": 10182,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/storage_admission.py",
+        "sha256": "3b64020f1023ead0157c21374862665a4c12f9c2f86db2fc807278a0ed752347",
+        "bytes": 5285,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/successful_answer.py",
+        "sha256": "f9cb8d34d71f63f67749c05571897e8394b88730fb319f55cca4594e5cfdfb63",
+        "bytes": 11099,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+        "sha256": "35ca99ab41d2b07171ba12c5001d1e89501e552d336e8e2716cbf528a637484e",
+        "bytes": 13092,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unified_repository.py",
+        "sha256": "53a6cfc10f7fc05e061b61925a72a3f52549b586751891cd5816647ecbbdbaef",
+        "bytes": 238,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+        "sha256": "e03340308eb6b6b634e103ffc4bfdc746fe5518c83c7d8253ed095b664d51bbb",
+        "bytes": 17009,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py",
+        "sha256": "ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45",
+        "bytes": 12735,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py",
+        "sha256": "07451a5fa0e68ae00f89579e3db55fec53964a157e8aebdba711760198446826",
+        "bytes": 15277,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+        "sha256": "8d9e94e4b96ecdbdfcecda9ed56d609f5b5dccabd4e58fea194105f44c8486d5",
+        "bytes": 17266,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/ontology_work/domain_cli.py",
+        "sha256": "53e9e8dfbd3cba906b03713f0b355868363ae6c01d768b837e6e5da632f1240b",
+        "bytes": 4183,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/ontology_work/observations.py",
+        "sha256": "510da7d002b2ab11eca7bfbd882dacbce26e8d8f82f9b9787c8b1e9877412af6",
+        "bytes": 15092,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/oracle_query_service.py",
+        "sha256": "6431fc9d9e8248d76ad5ac40590edfbabf9187e07745f06f50597895353bbf42",
+        "bytes": 10056,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/oracle_query_state.py",
+        "sha256": "9c331a269337276bfe99dad48cca0b1385b7cf2e1dd6824e6d221dfc455537ff",
+        "bytes": 6464,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/progress.py",
+        "sha256": "638c9e39b99a812ed72cf3a0050a0b4383bdf3cfb0018f01450a3cd8eea11ac0",
+        "bytes": 53378,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+        "sha256": "dac43c4bfe88ea929f361725cfbcb67d154fc371ccc4addeb473d1a8bc5af0bc",
+        "bytes": 18226,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/relation_issues.py",
+        "sha256": "5493d0180ebb2b2095917d02496ba0fc78aaac21819bc8a6ea662a2e7c2e2915",
+        "bytes": 2415,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/request_journals.py",
+        "sha256": "e75b2e9948503551e1eec9a59805a212a980c475638f7f980ed96f5e8101e3da",
+        "bytes": 3717,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/request_report.py",
+        "sha256": "cf8532c61c1195a9d91a2d337679082ceb2b9dcff917054c5094d3ebce7cf7de",
+        "bytes": 69477,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/session_identity.py",
+        "sha256": "c4b8266437637d69cee3ba42e755f23c0bbb607f9f8dc5dde60f72b6d3560462",
+        "bytes": 4004,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/task_policy.py",
+        "sha256": "4bf282d856c284c371d24fc6f88f873717bf348a94d05d25439caa11967d4557",
+        "bytes": 7226,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/workflow_bridge.py",
+        "sha256": "dc56afd74433a4475c85ec56375c5eaf6374c9ca19a38861e481ad64fb6307d7",
+        "bytes": 31916,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/workflow_rag.py",
+        "sha256": "565db75d7d29e5b3b99c5417ee43b65a9de8ca1b0ec6df0097fcb7fa7013926d",
+        "bytes": 15002,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "02_BACKEND/workflow/repository.py",
+        "sha256": "83162bc8741546b9d01f160af923571d94071dd6f9680d70db2dba643c07fd9f",
+        "bytes": 7300,
+        "selected_exists": true,
+        "selected_equal": true
+      },
+      {
+        "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V3/SOURCE_ANCHORED_STORAGE.md",
+        "sha256": "372643561ee2f54c6a472d8ddfa70213d75c75c175fe9aa8031a6ca0ca6ba5bd",
+        "bytes": 6574,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/CONTROLLED_KNOWLEDGE.md",
+        "sha256": "167ce2c777d363f1321330ccbae12d4518bf9da5539c04ac9005ad3a7444e6cb",
+        "bytes": 27259,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MULTITURN_LEGAL_AGENT.md",
+        "sha256": "d7f81608088f7b5e60dcd58a0fc4cbf91a8a304dfb8545b2d45cecd2b11937d7",
+        "bytes": 20007,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/ACTIVE_MAPPING.json",
+        "sha256": "c2d6ed32ef14ec1d02844923c5b949f54adac9dd3e5b18d6c3f85a67d19a1c98",
+        "bytes": 287,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_vctr_current.json",
+        "sha256": "a3e88baf063b293b8ccd2eb68bf5ffb966eefc05de5b59c1a855dd054855a3af",
+        "bytes": 13750,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "08_DEPLOYMENT/RELEASES/judgment-gold-20261030-r1/release.json",
+        "sha256": "2afd68511bf9435fdca1172b8aae24990c0350bee1d45493be63c9b920babe7e",
+        "bytes": 93476,
+        "selected_exists": false,
+        "selected_equal": null
+      },
+      {
+        "path": "service.py",
+        "sha256": "1f99ddd761ad0505a8d588d3189bad6eb6f4ec9663411207e342daaddc288585",
+        "bytes": 64350,
+        "selected_exists": true,
+        "selected_equal": true
+      }
+    ]
+  },
+  "tables": [
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "run",
+      "line": 8,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "run_id",
+          "definition": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "name": "query_id",
+          "definition": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL CHECK(length(binding_hash)=64)"
+        },
+        {
+          "name": "binding_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(binding_json))"
+        },
+        {
+          "name": "request_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(request_json))"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('RUNNING','COMMIT_READY','COMPLETED','INTERRUPTED','FAILED'))"
+        },
+        {
+          "name": "phase",
+          "definition": "TEXT NOT NULL CHECK(phase IN ('INVESTIGATE','SELECT','ASSEMBLE','ANSWER','REVIEW','PUBLISH','END'))"
+        },
+        {
+          "name": "state_revision",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(state_revision>=0)"
+        },
+        {
+          "name": "evidence_revision",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(evidence_revision>=0)"
+        },
+        {
+          "name": "cycle",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(cycle>=0)"
+        },
+        {
+          "name": "next_event_seq",
+          "definition": "INTEGER NOT NULL DEFAULT 1 CHECK(next_event_seq>=1)"
+        },
+        {
+          "name": "gate",
+          "definition": "TEXT CHECK(gate IN ('READY','BOUNDED','CLARIFY'))"
+        },
+        {
+          "name": "owner_boot_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "started_at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "deadline_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE run (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n run_id TEXT NOT NULL UNIQUE,\n query_id TEXT NOT NULL UNIQUE,\n binding_hash TEXT NOT NULL CHECK(length(binding_hash)=64),\n binding_json TEXT NOT NULL CHECK(json_valid(binding_json)),\n request_json TEXT NOT NULL CHECK(json_valid(request_json)),\n status TEXT NOT NULL CHECK(status IN ('RUNNING','COMMIT_READY','COMPLETED','INTERRUPTED','FAILED')),\n phase TEXT NOT NULL CHECK(phase IN ('INVESTIGATE','SELECT','ASSEMBLE','ANSWER','REVIEW','PUBLISH','END')),\n state_revision INTEGER NOT NULL DEFAULT 0 CHECK(state_revision>=0),\n evidence_revision INTEGER NOT NULL DEFAULT 0 CHECK(evidence_revision>=0),\n cycle INTEGER NOT NULL DEFAULT 0 CHECK(cycle>=0),\n next_event_seq INTEGER NOT NULL DEFAULT 1 CHECK(next_event_seq>=1),\n gate TEXT CHECK(gate IN ('READY','BOUNDED','CLARIFY')),\n owner_boot_id TEXT NOT NULL,\n started_at TEXT NOT NULL,\n deadline_at TEXT NOT NULL\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "event",
+      "line": 27,
+      "columns": [
+        {
+          "name": "seq",
+          "definition": "INTEGER PRIMARY KEY CHECK(seq>=1)"
+        },
+        {
+          "name": "event_id",
+          "definition": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "state_before",
+          "definition": "INTEGER NOT NULL CHECK(state_before>=0)"
+        },
+        {
+          "name": "state_after",
+          "definition": "INTEGER NOT NULL CHECK(state_after>=state_before)"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(payload_json))"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL CHECK(length(payload_hash)=64)"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE event (\n seq INTEGER PRIMARY KEY CHECK(seq>=1),\n event_id TEXT NOT NULL UNIQUE,\n kind TEXT NOT NULL,\n state_before INTEGER NOT NULL CHECK(state_before>=0),\n state_after INTEGER NOT NULL CHECK(state_after>=state_before),\n payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),\n payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64),\n created_at TEXT NOT NULL\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "entity_version",
+      "line": 38,
+      "columns": [
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL CHECK(kind IN ('intent','fact','issue','assessment','finding','claim','challenge','review','relation','relation_set','relation_assessment','source_selection','source_bundle','question_plan','obligation_review','case_stage'))"
+        },
+        {
+          "name": "entity_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "version",
+          "definition": "INTEGER NOT NULL CHECK(version>=1)"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(payload_json))"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL CHECK(length(payload_hash)=64)"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE entity_version (\n kind TEXT NOT NULL CHECK(kind IN ('intent','fact','issue','assessment','finding','claim','challenge','review','relation','relation_set','relation_assessment','source_selection','source_bundle','question_plan','obligation_review','case_stage')),\n entity_id TEXT NOT NULL,\n version INTEGER NOT NULL CHECK(version>=1),\n payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),\n payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64),\n created_seq INTEGER NOT NULL REFERENCES event(seq),\n PRIMARY KEY(kind,entity_id,version)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "entity_head",
+      "line": 48,
+      "columns": [
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "version",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "validity",
+          "definition": "TEXT NOT NULL CHECK(validity IN ('CURRENT','STALE','CONTESTED','RETRACTED'))"
+        }
+      ],
+      "definition": "CREATE TABLE entity_head (\n kind TEXT NOT NULL,\n entity_id TEXT NOT NULL,\n version INTEGER NOT NULL,\n validity TEXT NOT NULL CHECK(validity IN ('CURRENT','STALE','CONTESTED','RETRACTED')),\n PRIMARY KEY(kind,entity_id),\n FOREIGN KEY(kind,entity_id,version) REFERENCES entity_version(kind,entity_id,version)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "dependency",
+      "line": 57,
+      "columns": [
+        {
+          "name": "dependent_kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "dependent_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "dependent_version",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "prerequisite_kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "prerequisite_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "prerequisite_version",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE dependency (\n dependent_kind TEXT NOT NULL,\n dependent_id TEXT NOT NULL,\n dependent_version INTEGER NOT NULL,\n prerequisite_kind TEXT NOT NULL,\n prerequisite_id TEXT NOT NULL,\n prerequisite_version INTEGER NOT NULL,\n PRIMARY KEY(dependent_kind,dependent_id,dependent_version,prerequisite_kind,prerequisite_id,prerequisite_version),\n FOREIGN KEY(dependent_kind,dependent_id,dependent_version) REFERENCES entity_version(kind,entity_id,version),\n FOREIGN KEY(prerequisite_kind,prerequisite_id,prerequisite_version) REFERENCES entity_version(kind,entity_id,version),\n CHECK(NOT(dependent_kind=prerequisite_kind AND dependent_id=prerequisite_id AND dependent_version=prerequisite_version))\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "evidence_unit",
+      "line": 71,
+      "columns": [
+        {
+          "name": "evidence_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "source_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "document_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "unit_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "generation_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "source_artifact_hash",
+          "definition": "TEXT NOT NULL CHECK(length(source_artifact_hash)=64)"
+        },
+        {
+          "name": "text_hash",
+          "definition": "TEXT NOT NULL CHECK(length(text_hash)=64)"
+        },
+        {
+          "name": "role",
+          "definition": "TEXT NOT NULL CHECK(role IN ('normative','interpretive','reference'))"
+        },
+        {
+          "name": "temporal_status",
+          "definition": "TEXT NOT NULL CHECK(temporal_status IN ('verified','unknown'))"
+        },
+        {
+          "name": "metadata_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(metadata_json))"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE evidence_unit (\n evidence_id TEXT PRIMARY KEY,\n source_id TEXT NOT NULL,\n document_id TEXT NOT NULL,\n unit_id TEXT,\n generation_id TEXT NOT NULL,\n source_artifact_hash TEXT NOT NULL CHECK(length(source_artifact_hash)=64),\n text_hash TEXT NOT NULL CHECK(length(text_hash)=64),\n role TEXT NOT NULL CHECK(role IN ('normative','interpretive','reference')),\n temporal_status TEXT NOT NULL CHECK(temporal_status IN ('verified','unknown')),\n metadata_json TEXT NOT NULL CHECK(json_valid(metadata_json)),\n created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "evidence_span",
+      "line": 85,
+      "columns": [
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL REFERENCES evidence_unit(evidence_id)"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL CHECK(ordinal>=0)"
+        },
+        {
+          "name": "block_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "start_cp",
+          "definition": "INTEGER NOT NULL CHECK(start_cp>=0)"
+        },
+        {
+          "name": "end_cp",
+          "definition": "INTEGER NOT NULL CHECK(end_cp>start_cp)"
+        },
+        {
+          "name": "text",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "block_hash",
+          "definition": "TEXT NOT NULL CHECK(length(block_hash)=64)"
+        },
+        {
+          "name": "span_hash",
+          "definition": "TEXT NOT NULL CHECK(length(span_hash)=64)"
+        }
+      ],
+      "definition": "CREATE TABLE evidence_span (\n evidence_id TEXT NOT NULL REFERENCES evidence_unit(evidence_id),\n ordinal INTEGER NOT NULL CHECK(ordinal>=0),\n block_id TEXT NOT NULL,\n start_cp INTEGER NOT NULL CHECK(start_cp>=0),\n end_cp INTEGER NOT NULL CHECK(end_cp>start_cp),\n text TEXT NOT NULL,\n block_hash TEXT NOT NULL CHECK(length(block_hash)=64),\n span_hash TEXT NOT NULL CHECK(length(span_hash)=64),\n PRIMARY KEY(evidence_id,ordinal)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "observation",
+      "line": 97,
+      "columns": [
+        {
+          "name": "observation_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "tool",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request_key",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(request_json))"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(result_json))"
+        },
+        {
+          "name": "result_hash",
+          "definition": "TEXT NOT NULL CHECK(length(result_hash)=64)"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('OK','NOT_FOUND','UNRESOLVED','DENIED','ERROR','TRUNCATED','EMPTY','PARTIAL','REUSED'))"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE observation (\n observation_id TEXT PRIMARY KEY,\n tool TEXT NOT NULL,\n request_key TEXT NOT NULL,\n request_json TEXT NOT NULL CHECK(json_valid(request_json)),\n result_json TEXT NOT NULL CHECK(json_valid(result_json)),\n result_hash TEXT NOT NULL CHECK(length(result_hash)=64),\n status TEXT NOT NULL CHECK(status IN ('OK','NOT_FOUND','UNRESOLVED','DENIED','ERROR','TRUNCATED','EMPTY','PARTIAL','REUSED')),\n created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "observation_evidence",
+      "line": 108,
+      "columns": [
+        {
+          "name": "observation_id",
+          "definition": "TEXT NOT NULL REFERENCES observation(observation_id)"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL REFERENCES evidence_unit(evidence_id)"
+        }
+      ],
+      "definition": "CREATE TABLE observation_evidence (\n observation_id TEXT NOT NULL REFERENCES observation(observation_id),\n evidence_id TEXT NOT NULL REFERENCES evidence_unit(evidence_id),\n PRIMARY KEY(observation_id,evidence_id)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "evidence_dependency",
+      "line": 114,
+      "columns": [
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "version",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL REFERENCES evidence_unit(evidence_id)"
+        }
+      ],
+      "definition": "CREATE TABLE evidence_dependency (\n kind TEXT NOT NULL,\n entity_id TEXT NOT NULL,\n version INTEGER NOT NULL,\n evidence_id TEXT NOT NULL REFERENCES evidence_unit(evidence_id),\n PRIMARY KEY(kind,entity_id,version,evidence_id),\n FOREIGN KEY(kind,entity_id,version) REFERENCES entity_version(kind,entity_id,version)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "frontier",
+      "line": 123,
+      "columns": [
+        {
+          "name": "item_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "issue_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "operation_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(operation_json))"
+        },
+        {
+          "name": "dedupe_key",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('PENDING','RUNNING','DONE','EXHAUSTED','BLOCKED'))"
+        },
+        {
+          "name": "priority",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "last_observation_id",
+          "definition": "TEXT REFERENCES observation(observation_id)"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE frontier (\n item_id TEXT PRIMARY KEY,\n issue_id TEXT,\n operation_json TEXT NOT NULL CHECK(json_valid(operation_json)),\n dedupe_key TEXT NOT NULL,\n status TEXT NOT NULL CHECK(status IN ('PENDING','RUNNING','DONE','EXHAUSTED','BLOCKED')),\n priority INTEGER NOT NULL,\n reason TEXT NOT NULL,\n last_observation_id TEXT REFERENCES observation(observation_id),\n created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "model_view",
+      "line": 136,
+      "columns": [
+        {
+          "name": "view_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "phase",
+          "definition": "TEXT NOT NULL CHECK(phase IN ('investigate','review','compose','repair','rebuttal','select_sources'))"
+        },
+        {
+          "name": "base_state_revision",
+          "definition": "INTEGER NOT NULL CHECK(base_state_revision>=0)"
+        },
+        {
+          "name": "evidence_revision",
+          "definition": "INTEGER NOT NULL CHECK(evidence_revision>=0)"
+        },
+        {
+          "name": "body_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(body_json))"
+        },
+        {
+          "name": "body_hash",
+          "definition": "TEXT NOT NULL CHECK(length(body_hash)=64)"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE model_view (\n view_id TEXT PRIMARY KEY,\n phase TEXT NOT NULL CHECK(phase IN ('investigate','review','compose','repair','rebuttal','select_sources')),\n base_state_revision INTEGER NOT NULL CHECK(base_state_revision>=0),\n evidence_revision INTEGER NOT NULL CHECK(evidence_revision>=0),\n body_json TEXT NOT NULL CHECK(json_valid(body_json)),\n body_hash TEXT NOT NULL CHECK(length(body_hash)=64),\n created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "presentation",
+      "line": 146,
+      "columns": [
+        {
+          "name": "view_id",
+          "definition": "TEXT NOT NULL REFERENCES model_view(view_id)"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL REFERENCES evidence_unit(evidence_id)"
+        },
+        {
+          "name": "delivered_text_hash",
+          "definition": "TEXT NOT NULL CHECK(length(delivered_text_hash)=64)"
+        }
+      ],
+      "definition": "CREATE TABLE presentation (\n view_id TEXT NOT NULL REFERENCES model_view(view_id),\n evidence_id TEXT NOT NULL REFERENCES evidence_unit(evidence_id),\n delivered_text_hash TEXT NOT NULL CHECK(length(delivered_text_hash)=64),\n PRIMARY KEY(view_id,evidence_id)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "model_attempt",
+      "line": 153,
+      "columns": [
+        {
+          "name": "attempt_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "logical_call_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "attempt_no",
+          "definition": "INTEGER NOT NULL CHECK(attempt_no>=1)"
+        },
+        {
+          "name": "view_id",
+          "definition": "TEXT NOT NULL REFERENCES model_view(view_id)"
+        },
+        {
+          "name": "request_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(request_json))"
+        },
+        {
+          "name": "request_hash",
+          "definition": "TEXT NOT NULL CHECK(length(request_hash)=64)"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('PREPARED','SENT','SUCCEEDED','FAILED','UNKNOWN','IGNORED_LATE'))"
+        },
+        {
+          "name": "response_json",
+          "definition": "TEXT CHECK(response_json IS NULL OR json_valid(response_json))"
+        },
+        {
+          "name": "response_hash",
+          "definition": "TEXT CHECK(response_hash IS NULL OR length(response_hash)=64)"
+        },
+        {
+          "name": "receipt_json",
+          "definition": "TEXT CHECK(receipt_json IS NULL OR json_valid(receipt_json))"
+        },
+        {
+          "name": "input_tokens",
+          "definition": "INTEGER CHECK(input_tokens IS NULL OR input_tokens>=0)"
+        },
+        {
+          "name": "output_tokens",
+          "definition": "INTEGER CHECK(output_tokens IS NULL OR output_tokens>=0)"
+        },
+        {
+          "name": "cost_usd",
+          "definition": "REAL CHECK(cost_usd IS NULL OR cost_usd>=0)"
+        },
+        {
+          "name": "started_at",
+          "definition": "TEXT"
+        },
+        {
+          "name": "finished_at",
+          "definition": "TEXT"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE model_attempt (\n attempt_id TEXT PRIMARY KEY,\n logical_call_id TEXT NOT NULL,\n attempt_no INTEGER NOT NULL CHECK(attempt_no>=1),\n view_id TEXT NOT NULL REFERENCES model_view(view_id),\n request_json TEXT NOT NULL CHECK(json_valid(request_json)),\n request_hash TEXT NOT NULL CHECK(length(request_hash)=64),\n status TEXT NOT NULL CHECK(status IN ('PREPARED','SENT','SUCCEEDED','FAILED','UNKNOWN','IGNORED_LATE')),\n response_json TEXT CHECK(response_json IS NULL OR json_valid(response_json)),\n response_hash TEXT CHECK(response_hash IS NULL OR length(response_hash)=64),\n receipt_json TEXT CHECK(receipt_json IS NULL OR json_valid(receipt_json)),\n input_tokens INTEGER CHECK(input_tokens IS NULL OR input_tokens>=0),\n output_tokens INTEGER CHECK(output_tokens IS NULL OR output_tokens>=0),\n cost_usd REAL CHECK(cost_usd IS NULL OR cost_usd>=0),\n started_at TEXT,\n finished_at TEXT,\n created_seq INTEGER NOT NULL REFERENCES event(seq),\n UNIQUE(logical_call_id,attempt_no)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "budget",
+      "line": 173,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "model_limit",
+          "definition": "INTEGER NOT NULL CHECK(model_limit>0)"
+        },
+        {
+          "name": "model_reserved",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(model_reserved>=0 AND model_reserved<=model_limit)"
+        },
+        {
+          "name": "finalization_reserve",
+          "definition": "INTEGER NOT NULL CHECK(finalization_reserve>=0 AND finalization_reserve<=model_limit)"
+        },
+        {
+          "name": "tool_limit",
+          "definition": "INTEGER NOT NULL CHECK(tool_limit>0)"
+        },
+        {
+          "name": "tool_used",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(tool_used>=0 AND tool_used<=tool_limit)"
+        }
+      ],
+      "definition": "CREATE TABLE budget (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n model_limit INTEGER NOT NULL CHECK(model_limit>0),\n model_reserved INTEGER NOT NULL DEFAULT 0 CHECK(model_reserved>=0 AND model_reserved<=model_limit),\n finalization_reserve INTEGER NOT NULL CHECK(finalization_reserve>=0 AND finalization_reserve<=model_limit),\n tool_limit INTEGER NOT NULL CHECK(tool_limit>0),\n tool_used INTEGER NOT NULL DEFAULT 0 CHECK(tool_used>=0 AND tool_used<=tool_limit)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "stage_artifact",
+      "line": 182,
+      "columns": [
+        {
+          "name": "artifact_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "stage",
+          "definition": "TEXT NOT NULL CHECK(stage IN ('retrieve','select','assemble','answer'))"
+        },
+        {
+          "name": "artifact_revision",
+          "definition": "INTEGER NOT NULL CHECK(artifact_revision>=1)"
+        },
+        {
+          "name": "evidence_revision",
+          "definition": "INTEGER NOT NULL CHECK(evidence_revision>=0)"
+        },
+        {
+          "name": "dependency_hash",
+          "definition": "TEXT NOT NULL CHECK(length(dependency_hash)=64)"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(payload_json))"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL CHECK(length(payload_hash)=64)"
+        },
+        {
+          "name": "valid",
+          "definition": "INTEGER NOT NULL CHECK(valid IN (0,1))"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE stage_artifact (\n artifact_id TEXT PRIMARY KEY,\n stage TEXT NOT NULL CHECK(stage IN ('retrieve','select','assemble','answer')),\n artifact_revision INTEGER NOT NULL CHECK(artifact_revision>=1),\n evidence_revision INTEGER NOT NULL CHECK(evidence_revision>=0),\n dependency_hash TEXT NOT NULL CHECK(length(dependency_hash)=64),\n payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),\n payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64),\n valid INTEGER NOT NULL CHECK(valid IN (0,1)),\n created_seq INTEGER NOT NULL REFERENCES event(seq),\n UNIQUE(stage,artifact_revision)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "publication",
+      "line": 196,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(result_json))"
+        },
+        {
+          "name": "result_hash",
+          "definition": "TEXT NOT NULL CHECK(length(result_hash)=64)"
+        },
+        {
+          "name": "destination_key",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('PENDING','PUBLISHED'))"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        },
+        {
+          "name": "published_at",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE publication (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n result_json TEXT NOT NULL CHECK(json_valid(result_json)),\n result_hash TEXT NOT NULL CHECK(length(result_hash)=64),\n destination_key TEXT NOT NULL,\n status TEXT NOT NULL CHECK(status IN ('PENDING','PUBLISHED')),\n created_seq INTEGER NOT NULL REFERENCES event(seq),\n published_at TEXT\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "navigation_handle",
+      "line": 206,
+      "columns": [
+        {
+          "name": "handle",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "identity_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(identity_json))"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE navigation_handle (\n handle TEXT PRIMARY KEY, kind TEXT NOT NULL,\n identity_json TEXT NOT NULL CHECK(json_valid(identity_json)), binding_hash TEXT NOT NULL\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "navigation_cursor",
+      "line": 211,
+      "columns": [
+        {
+          "name": "cursor",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "operation_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "position_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(position_json))"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE navigation_cursor (\n cursor TEXT PRIMARY KEY, operation_hash TEXT NOT NULL,\n position_json TEXT NOT NULL CHECK(json_valid(position_json)), binding_hash TEXT NOT NULL\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "action_receipt",
+      "line": 258,
+      "columns": [
+        {
+          "name": "action_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "args_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(result_json))"
+        }
+      ],
+      "definition": "CREATE TABLE action_receipt (action_id TEXT PRIMARY KEY, args_hash TEXT NOT NULL, result_json TEXT NOT NULL CHECK(json_valid(result_json)))"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "candidate_route",
+      "line": 259,
+      "columns": [
+        {
+          "name": "candidate",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "route",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE candidate_route (candidate TEXT NOT NULL, route TEXT NOT NULL, PRIMARY KEY(candidate,route))"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "read_coverage",
+      "line": 260,
+      "columns": [
+        {
+          "name": "target_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL REFERENCES evidence_unit(evidence_id)"
+        }
+      ],
+      "definition": "CREATE TABLE read_coverage (target_hash TEXT NOT NULL, evidence_id TEXT NOT NULL REFERENCES evidence_unit(evidence_id), PRIMARY KEY(target_hash,evidence_id))"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "action_context",
+      "line": 264,
+      "columns": [
+        {
+          "name": "action_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "proposal_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "proposed_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "actor",
+          "definition": "TEXT NOT NULL CHECK(actor IN ('MODEL','SYSTEM_POLICY','REVIEWER'))"
+        },
+        {
+          "name": "parent_action_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "trigger_reference_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "policy_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "input_view_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE action_context (\n action_id TEXT PRIMARY KEY, proposal_hash TEXT NOT NULL, proposed_json TEXT NOT NULL,\n actor TEXT NOT NULL CHECK(actor IN ('MODEL','SYSTEM_POLICY','REVIEWER')),\n parent_action_id TEXT, trigger_reference_id TEXT, policy_hash TEXT,\n input_view_id TEXT, status TEXT NOT NULL, result_json TEXT,\n created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "system_task",
+      "line": 271,
+      "columns": [
+        {
+          "name": "task_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "parent_action_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "operation_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "depth",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE system_task (\n task_id TEXT PRIMARY KEY, parent_action_id TEXT NOT NULL, evidence_id TEXT,\n operation_json TEXT NOT NULL, depth INTEGER NOT NULL, status TEXT NOT NULL,\n result_json TEXT, created_seq INTEGER NOT NULL REFERENCES event(seq)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "item_presentation",
+      "line": 276,
+      "columns": [
+        {
+          "name": "view_id",
+          "definition": "TEXT NOT NULL REFERENCES model_view(view_id)"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "item_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "content_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE item_presentation (\n view_id TEXT NOT NULL REFERENCES model_view(view_id), kind TEXT NOT NULL,\n item_id TEXT NOT NULL, content_hash TEXT NOT NULL,\n PRIMARY KEY(view_id,kind,item_id)\n)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "auto_visit",
+      "line": 281,
+      "columns": [
+        {
+          "name": "extent_hash",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "action_id",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE auto_visit (extent_hash TEXT PRIMARY KEY, action_id TEXT NOT NULL)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "evidence_origin",
+      "line": 282,
+      "columns": [
+        {
+          "name": "evidence_id",
+          "definition": "TEXT PRIMARY KEY REFERENCES evidence_unit(evidence_id)"
+        },
+        {
+          "name": "action_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "automatic_depth",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE evidence_origin (evidence_id TEXT PRIMARY KEY REFERENCES evidence_unit(evidence_id),\n action_id TEXT NOT NULL, automatic_depth INTEGER NOT NULL)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "auto_budget",
+      "line": 284,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "reads",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "chars",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE auto_budget (singleton INTEGER PRIMARY KEY CHECK(singleton=1), reads INTEGER NOT NULL, chars INTEGER NOT NULL)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "relation_scan",
+      "line": 289,
+      "columns": [
+        {
+          "name": "anchor",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "family",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "next_cursor",
+          "definition": "TEXT"
+        },
+        {
+          "name": "action_id",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE relation_scan (anchor TEXT NOT NULL,family TEXT NOT NULL,status TEXT NOT NULL,\n next_cursor TEXT,action_id TEXT NOT NULL,PRIMARY KEY(anchor,family))"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "case_commit",
+      "line": 294,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "case_db",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "session_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "question_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "route_id",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "principal_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE case_commit(singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n case_db TEXT NOT NULL,session_id TEXT NOT NULL,question_id TEXT,revision INTEGER,\n route_id INTEGER,principal_json TEXT NOT NULL,payload_hash TEXT NOT NULL)"
+    },
+    {
+      "group": "journal-v6",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "scope": "CURRENT_V6",
+      "table": "domain_choice",
+      "line": 297,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "stage",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "offer_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "choice_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "created_seq",
+          "definition": "INTEGER NOT NULL REFERENCES event(seq)"
+        }
+      ],
+      "definition": "CREATE TABLE domain_choice(id TEXT PRIMARY KEY,stage TEXT NOT NULL,\n offer_json TEXT NOT NULL,choice_json TEXT NOT NULL,created_seq INTEGER NOT NULL REFERENCES event(seq))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "session",
+      "line": 117,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "owner",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "team",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS session(id TEXT PRIMARY KEY,owner TEXT NOT NULL,team TEXT NOT NULL)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "goal",
+      "line": 118,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "state",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "pending",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS goal(id TEXT PRIMARY KEY,session TEXT NOT NULL,ordinal INTEGER NOT NULL,state TEXT NOT NULL,revision INTEGER NOT NULL,status TEXT NOT NULL,pending TEXT,UNIQUE(session,ordinal))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "event",
+      "line": 119,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY"
+        },
+        {
+          "name": "goal",
+          "definition": "TEXT"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "utterance",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "command",
+          "definition": "TEXT"
+        },
+        {
+          "name": "before_state",
+          "definition": "TEXT"
+        },
+        {
+          "name": "after_state",
+          "definition": "TEXT"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY,goal TEXT,request TEXT NOT NULL,utterance TEXT NOT NULL,command TEXT,before_state TEXT,after_state TEXT,kind TEXT NOT NULL)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "node",
+      "line": 120,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY"
+        },
+        {
+          "name": "goal",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "stage",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "parent",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "supersedes",
+          "definition": "INTEGER"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS node(id INTEGER PRIMARY KEY,goal TEXT NOT NULL,stage TEXT NOT NULL,revision INTEGER NOT NULL,payload TEXT NOT NULL,hash TEXT NOT NULL,parent INTEGER,supersedes INTEGER)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "head",
+      "line": 121,
+      "columns": [
+        {
+          "name": "goal",
+          "definition": "TEXT"
+        },
+        {
+          "name": "stage",
+          "definition": "TEXT"
+        },
+        {
+          "name": "node",
+          "definition": "INTEGER"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS head(goal TEXT,stage TEXT,node INTEGER,PRIMARY KEY(goal,stage))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "stage_progress",
+      "line": 122,
+      "columns": [
+        {
+          "name": "goal",
+          "definition": "TEXT"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS stage_progress(goal TEXT,input_hash TEXT,payload TEXT NOT NULL,hash TEXT NOT NULL,\n            PRIMARY KEY(goal,input_hash))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "stage_progress_evidence",
+      "line": 124,
+      "columns": [
+        {
+          "name": "goal",
+          "definition": "TEXT"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "read_state",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS stage_progress_evidence(goal TEXT,input_hash TEXT,evidence_id TEXT,payload TEXT NOT NULL,\n            hash TEXT NOT NULL,read_state TEXT NOT NULL,PRIMARY KEY(goal,input_hash,evidence_id))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "route",
+      "line": 126,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY"
+        },
+        {
+          "name": "goal",
+          "definition": "TEXT"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS route(id INTEGER PRIMARY KEY,goal TEXT,revision INTEGER,status TEXT,payload TEXT,hash TEXT)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "request",
+      "line": 128,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT"
+        },
+        {
+          "name": "response",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS request(id TEXT PRIMARY KEY,session TEXT,input_hash TEXT,status TEXT,response TEXT)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "knowledge",
+      "line": 129,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "owner",
+          "definition": "TEXT"
+        },
+        {
+          "name": "team",
+          "definition": "TEXT"
+        },
+        {
+          "name": "bundle",
+          "definition": "TEXT"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS knowledge(id TEXT PRIMARY KEY,owner TEXT,team TEXT,bundle TEXT,revision INTEGER,status TEXT,payload TEXT,hash TEXT,UNIQUE(bundle,revision))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "ontology_node",
+      "line": 131,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "knowledge",
+          "definition": "TEXT"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ontology_node(id TEXT PRIMARY KEY,knowledge TEXT,kind TEXT,payload TEXT)"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "ontology_edge",
+      "line": 132,
+      "columns": [
+        {
+          "name": "knowledge",
+          "definition": "TEXT"
+        },
+        {
+          "name": "source",
+          "definition": "TEXT"
+        },
+        {
+          "name": "relation",
+          "definition": "TEXT"
+        },
+        {
+          "name": "target",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ontology_edge(knowledge TEXT,source TEXT,relation TEXT,target TEXT,PRIMARY KEY(knowledge,source,relation,target))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "wiki",
+      "line": 133,
+      "columns": [
+        {
+          "name": "owner",
+          "definition": "TEXT"
+        },
+        {
+          "name": "team",
+          "definition": "TEXT"
+        },
+        {
+          "name": "intent",
+          "definition": "TEXT"
+        },
+        {
+          "name": "knowledge",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS wiki(owner TEXT,team TEXT,intent TEXT,knowledge TEXT,PRIMARY KEY(owner,team,intent))"
+    },
+    {
+      "group": "case-base",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "wiki_event",
+      "line": 134,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY"
+        },
+        {
+          "name": "owner",
+          "definition": "TEXT"
+        },
+        {
+          "name": "team",
+          "definition": "TEXT"
+        },
+        {
+          "name": "intent",
+          "definition": "TEXT"
+        },
+        {
+          "name": "old_knowledge",
+          "definition": "TEXT"
+        },
+        {
+          "name": "new_knowledge",
+          "definition": "TEXT"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS wiki_event(id INTEGER PRIMARY KEY,owner TEXT,team TEXT,intent TEXT,old_knowledge TEXT,new_knowledge TEXT,request TEXT)"
+    },
+    {
+      "group": "case-v3",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "judgment_ref",
+      "line": 23,
+      "columns": [
+        {
+          "name": "node",
+          "definition": "INTEGER PRIMARY KEY REFERENCES node(id)"
+        },
+        {
+          "name": "ref",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS judgment_ref(node INTEGER PRIMARY KEY REFERENCES node(id),ref TEXT NOT NULL)"
+    },
+    {
+      "group": "case-v3",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "outbox",
+      "line": 24,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "aggregate_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL DEFAULT 'PENDING'"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY,kind TEXT NOT NULL,aggregate_id TEXT NOT NULL,\n          revision INTEGER NOT NULL,payload TEXT NOT NULL,hash TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'PENDING')"
+    },
+    {
+      "group": "case-v3",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "import_receipt",
+      "line": 26,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS import_receipt(id TEXT PRIMARY KEY,payload TEXT NOT NULL)"
+    },
+    {
+      "group": "case-v3",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "experience_dependency",
+      "line": 27,
+      "columns": [
+        {
+          "name": "question_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "experience_id",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS experience_dependency(question_id TEXT NOT NULL,experience_id TEXT NOT NULL,\n          PRIMARY KEY(question_id,experience_id))"
+    },
+    {
+      "group": "case-v3",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "scope": "CURRENT_V3_V4_BASE",
+      "table": "session_export",
+      "line": 29,
+      "columns": [
+        {
+          "name": "session_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "public_only",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS session_export(session_id TEXT PRIMARY KEY,public_only INTEGER NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_compile_seen",
+      "line": 23,
+      "columns": [
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "ref",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_compile_seen(investigation TEXT NOT NULL, revision INTEGER NOT NULL, ref TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(investigation,revision,ref))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_compiled_record",
+      "line": 24,
+      "columns": [
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "ref",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_compiled_record(investigation TEXT NOT NULL, ref TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(investigation,ref))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_compile_cursor",
+      "line": 25,
+      "columns": [
+        {
+          "name": "investigation",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "offset",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_compile_cursor(investigation TEXT PRIMARY KEY, revision INTEGER NOT NULL, offset INTEGER NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_source_version",
+      "line": 26,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_source_version(id TEXT NOT NULL, hash TEXT NOT NULL, revision TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(id,hash))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_unit_relation",
+      "line": 27,
+      "columns": [
+        {
+          "name": "source",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "target",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "target_revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_unit_relation(source TEXT NOT NULL, revision INTEGER NOT NULL, target TEXT NOT NULL, target_revision INTEGER NOT NULL, kind TEXT NOT NULL, reason TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_migration_identity",
+      "line": 28,
+      "columns": [
+        {
+          "name": "source_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "legacy_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "state_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_migration_identity(source_id TEXT NOT NULL, legacy_id TEXT NOT NULL, investigation TEXT NOT NULL, state_hash TEXT NOT NULL, PRIMARY KEY(source_id,legacy_id))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_scope",
+      "line": 29,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "tenant",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "owner",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "team",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "ephemeral_session",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_scope(id TEXT PRIMARY KEY, tenant TEXT NOT NULL, owner TEXT NOT NULL, team TEXT NOT NULL, ephemeral_session TEXT, UNIQUE(tenant,owner,team,ephemeral_session))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_intake",
+      "line": 30,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL REFERENCES sw_scope(id)"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "event",
+          "definition": "TEXT"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "response",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_intake(id TEXT PRIMARY KEY, scope TEXT NOT NULL REFERENCES sw_scope(id), session TEXT NOT NULL, request TEXT NOT NULL, input_hash TEXT NOT NULL, event TEXT, investigation TEXT, status TEXT NOT NULL, response TEXT, UNIQUE(scope,session,request))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_event",
+      "line": 31,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL REFERENCES sw_scope(id)"
+        },
+        {
+          "name": "aggregate_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "seq",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT"
+        },
+        {
+          "name": "run",
+          "definition": "TEXT"
+        },
+        {
+          "name": "recorded_at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "occurred_at",
+          "definition": "TEXT"
+        },
+        {
+          "name": "causation",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_event(id TEXT PRIMARY KEY, scope TEXT NOT NULL REFERENCES sw_scope(id), aggregate_id TEXT NOT NULL, seq INTEGER NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL, session TEXT, request TEXT, run TEXT, recorded_at TEXT NOT NULL, occurred_at TEXT, causation TEXT, UNIQUE(aggregate_id,seq))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_investigation",
+      "line": 33,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL REFERENCES sw_scope(id)"
+        },
+        {
+          "name": "title",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "documents",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "public_only",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_investigation(id TEXT PRIMARY KEY, scope TEXT NOT NULL REFERENCES sw_scope(id), title TEXT NOT NULL, revision INTEGER NOT NULL, documents TEXT NOT NULL, public_only INTEGER NOT NULL, status TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_session_link",
+      "line": 34,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL REFERENCES sw_investigation(id)"
+        },
+        {
+          "name": "event",
+          "definition": "TEXT NOT NULL REFERENCES sw_event(id)"
+        },
+        {
+          "name": "detached",
+          "definition": "TEXT REFERENCES sw_event(id)"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_session_link(id TEXT PRIMARY KEY, scope TEXT NOT NULL, session TEXT NOT NULL, investigation TEXT NOT NULL REFERENCES sw_investigation(id), event TEXT NOT NULL REFERENCES sw_event(id), detached TEXT REFERENCES sw_event(id))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_branch",
+      "line": 35,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL REFERENCES sw_investigation(id)"
+        },
+        {
+          "name": "parent",
+          "definition": "TEXT REFERENCES sw_branch(id)"
+        },
+        {
+          "name": "question",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_branch(id TEXT PRIMARY KEY, investigation TEXT NOT NULL REFERENCES sw_investigation(id), parent TEXT REFERENCES sw_branch(id), question TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_issue",
+      "line": 36,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL REFERENCES sw_investigation(id)"
+        },
+        {
+          "name": "branch",
+          "definition": "TEXT NOT NULL REFERENCES sw_branch(id)"
+        },
+        {
+          "name": "question",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "constraints_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_issue(id TEXT PRIMARY KEY, investigation TEXT NOT NULL REFERENCES sw_investigation(id), branch TEXT NOT NULL REFERENCES sw_branch(id), question TEXT NOT NULL, constraints_json TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_assignment",
+      "line": 37,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "event",
+          "definition": "TEXT NOT NULL REFERENCES sw_event(id)"
+        },
+        {
+          "name": "issue",
+          "definition": "TEXT NOT NULL REFERENCES sw_issue(id)"
+        },
+        {
+          "name": "start",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "stop",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "role",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_assignment(id TEXT PRIMARY KEY, event TEXT NOT NULL REFERENCES sw_event(id), issue TEXT NOT NULL REFERENCES sw_issue(id), start INTEGER NOT NULL, stop INTEGER NOT NULL, role TEXT NOT NULL, reason TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_fact",
+      "line": 38,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL REFERENCES sw_investigation(id)"
+        },
+        {
+          "name": "subject",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "predicate",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "value",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "valid_time",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "event",
+          "definition": "TEXT NOT NULL REFERENCES sw_event(id)"
+        },
+        {
+          "name": "supersedes",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_fact(id TEXT NOT NULL, revision INTEGER NOT NULL, investigation TEXT NOT NULL REFERENCES sw_investigation(id), subject TEXT NOT NULL, predicate TEXT NOT NULL, value TEXT NOT NULL, valid_time TEXT NOT NULL, event TEXT NOT NULL REFERENCES sw_event(id), supersedes INTEGER, status TEXT NOT NULL, PRIMARY KEY(id,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_fact_head",
+      "line": 39,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_fact_head(id TEXT PRIMARY KEY, revision INTEGER NOT NULL, FOREIGN KEY(id,revision) REFERENCES sw_fact(id,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_relation",
+      "line": 40,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "source",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "target",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "event",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_relation(id TEXT NOT NULL, revision INTEGER NOT NULL, scope TEXT NOT NULL, source TEXT NOT NULL, target TEXT NOT NULL, kind TEXT NOT NULL, reason TEXT NOT NULL, event TEXT NOT NULL, status TEXT NOT NULL, PRIMARY KEY(id,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_artifact",
+      "line": 41,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL REFERENCES sw_scope(id)"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "bytes",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "relative_path",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "documents",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_artifact(id TEXT PRIMARY KEY, scope TEXT NOT NULL REFERENCES sw_scope(id), hash TEXT NOT NULL, bytes INTEGER NOT NULL, relative_path TEXT NOT NULL, documents TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_trace",
+      "line": 42,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL REFERENCES sw_investigation(id)"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "artifact",
+          "definition": "TEXT NOT NULL REFERENCES sw_artifact(id)"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_trace(id TEXT PRIMARY KEY, investigation TEXT NOT NULL REFERENCES sw_investigation(id), kind TEXT NOT NULL, artifact TEXT NOT NULL REFERENCES sw_artifact(id), payload TEXT NOT NULL, hash TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_unit",
+      "line": 43,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL REFERENCES sw_scope(id)"
+        },
+        {
+          "name": "head",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_unit(id TEXT PRIMARY KEY, scope TEXT NOT NULL REFERENCES sw_scope(id), head INTEGER NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_knowledge",
+      "line": 44,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL REFERENCES sw_unit(id)"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "build",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "completeness",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_knowledge(unit TEXT NOT NULL REFERENCES sw_unit(id), revision INTEGER NOT NULL, build TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL, completeness TEXT NOT NULL, PRIMARY KEY(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_lifecycle",
+      "line": 45,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_lifecycle(unit TEXT NOT NULL, revision INTEGER NOT NULL, status TEXT NOT NULL, PRIMARY KEY(unit,revision), FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_member",
+      "line": 46,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "ref",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_member(unit TEXT NOT NULL, revision INTEGER NOT NULL, ref TEXT NOT NULL, payload TEXT NOT NULL, FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_claim",
+      "line": 47,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_claim(unit TEXT NOT NULL, revision INTEGER NOT NULL, id TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(unit,revision,id), FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_procedure",
+      "line": 48,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_procedure(unit TEXT NOT NULL, revision INTEGER NOT NULL, id TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(unit,revision,id), FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_dependency",
+      "line": 49,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "ref",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "version",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "role",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_dependency(unit TEXT NOT NULL, revision INTEGER NOT NULL, ref TEXT NOT NULL, version TEXT NOT NULL, hash TEXT NOT NULL, role TEXT NOT NULL, FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_source",
+      "line": 51,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revoked",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_source(id TEXT PRIMARY KEY, scope TEXT NOT NULL, revision TEXT NOT NULL, hash TEXT NOT NULL, payload TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_verification",
+      "line": 52,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "target_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "policy",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "verifier",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "evidence",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "expires",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_verification(id TEXT PRIMARY KEY, scope TEXT NOT NULL, unit TEXT NOT NULL, revision INTEGER NOT NULL, target_hash TEXT NOT NULL, kind TEXT NOT NULL, result TEXT NOT NULL, policy TEXT NOT NULL, verifier TEXT NOT NULL, evidence TEXT NOT NULL, expires REAL NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(unit,revision) REFERENCES sw_knowledge(unit,revision))"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_reuse",
+      "line": 53,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_reuse(id TEXT PRIMARY KEY, scope TEXT NOT NULL, request TEXT NOT NULL, unit TEXT NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_queue",
+      "line": 54,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "consumer",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "aggregate_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "dedup",
+          "definition": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "attempts",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "lease",
+          "definition": "TEXT"
+        },
+        {
+          "name": "lease_until",
+          "definition": "REAL"
+        },
+        {
+          "name": "next_attempt",
+          "definition": "REAL NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "error",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, scope TEXT NOT NULL, consumer TEXT NOT NULL, aggregate_id TEXT NOT NULL, revision INTEGER NOT NULL, dedup TEXT NOT NULL UNIQUE, status TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, lease TEXT, lease_until REAL, next_attempt REAL NOT NULL DEFAULT 0, error TEXT)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_cursor",
+      "line": 56,
+      "columns": [
+        {
+          "name": "consumer",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "watermark",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_cursor(consumer TEXT PRIMARY KEY, watermark INTEGER NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_build",
+      "line": 57,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_build(id TEXT PRIMARY KEY, scope TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL, status TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_import",
+      "line": 58,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_import(id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-v4",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "scope": "CURRENT_CAPTURE_CONFIG_TRUE",
+      "table": "sw_legacy",
+      "line": 59,
+      "columns": [
+        {
+          "name": "source",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "original_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_legacy(source TEXT NOT NULL, kind TEXT NOT NULL, original_id TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(source,kind,original_id))"
+    },
+    {
+      "group": "shortcut-recall",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py",
+      "scope": "CURRENT_RECALL_CONFIG_TRUE",
+      "table": "sw_recall_card",
+      "line": 19,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "authority_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "policy",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "public_only",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "binding",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "documents",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_recall_card(\n unit TEXT PRIMARY KEY, revision INTEGER NOT NULL, authority_hash TEXT NOT NULL,\n policy TEXT NOT NULL, scope TEXT NOT NULL, public_only INTEGER NOT NULL,\n binding TEXT NOT NULL, documents TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)"
+    },
+    {
+      "group": "shortcut-recall",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py",
+      "scope": "CURRENT_RECALL_CONFIG_TRUE",
+      "table": "sw_recall_term",
+      "line": 24,
+      "columns": [
+        {
+          "name": "term",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL REFERENCES sw_recall_card(unit) ON DELETE CASCADE"
+        },
+        {
+          "name": "weight",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_recall_term(\n term TEXT NOT NULL, unit TEXT NOT NULL REFERENCES sw_recall_card(unit) ON DELETE CASCADE,\n weight INTEGER NOT NULL, PRIMARY KEY(term,unit))"
+    },
+    {
+      "group": "procedure",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+      "scope": "CURRENT_V4_CONDITIONAL",
+      "table": "sw_procedure_step",
+      "line": 22,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "phase",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "question",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "binding",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "output_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "output_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_procedure_step(\n            id INTEGER PRIMARY KEY AUTOINCREMENT, scope TEXT NOT NULL,\n            phase TEXT NOT NULL, question TEXT NOT NULL, binding TEXT NOT NULL,\n            input_hash TEXT NOT NULL, input_json TEXT NOT NULL, output_json TEXT NOT NULL,\n            output_hash TEXT NOT NULL, request TEXT NOT NULL)"
+    },
+    {
+      "group": "procedure",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+      "scope": "CURRENT_V4_CONDITIONAL",
+      "table": "sw_procedure_activation",
+      "line": 27,
+      "columns": [
+        {
+          "name": "step",
+          "definition": "INTEGER PRIMARY KEY REFERENCES sw_procedure_step(id)"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_procedure_activation(\n            step INTEGER PRIMARY KEY REFERENCES sw_procedure_step(id), request TEXT NOT NULL)"
+    },
+    {
+      "group": "procedure",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+      "scope": "CURRENT_V4_CONDITIONAL",
+      "table": "sw_procedure_event",
+      "line": 29,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "phase",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS sw_procedure_event(\n            id INTEGER PRIMARY KEY AUTOINCREMENT, request TEXT NOT NULL,\n            scope TEXT NOT NULL, phase TEXT NOT NULL, payload TEXT NOT NULL)"
+    },
+    {
+      "group": "workflow",
+      "source": "02_BACKEND/workflow/repository.py",
+      "scope": "CURRENT_WORKFLOW_CONFIG_TRUE",
+      "table": "workflow_state",
+      "line": 30,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "request_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "checkpoint_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT"
+        },
+        {
+          "name": "checkpoint_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_hash",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS workflow_state(\n                singleton INTEGER PRIMARY KEY CHECK(singleton=1), request_json TEXT NOT NULL,\n                request_hash TEXT NOT NULL, binding_hash TEXT NOT NULL, revision INTEGER NOT NULL,\n                status TEXT NOT NULL, checkpoint_json TEXT NOT NULL, result_json TEXT,\n                checkpoint_hash TEXT NOT NULL, result_hash TEXT)"
+    },
+    {
+      "group": "workflow",
+      "source": "02_BACKEND/workflow/repository.py",
+      "scope": "CURRENT_WORKFLOW_CONFIG_TRUE",
+      "table": "workflow_call",
+      "line": 35,
+      "columns": [
+        {
+          "name": "call_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "result_json",
+          "definition": "TEXT"
+        },
+        {
+          "name": "error_json",
+          "definition": "TEXT"
+        },
+        {
+          "name": "result_hash",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS workflow_call(\n                call_id TEXT PRIMARY KEY, kind TEXT NOT NULL, input_json TEXT NOT NULL,\n                status TEXT NOT NULL, result_json TEXT, error_json TEXT, result_hash TEXT)"
+    },
+    {
+      "group": "workflow",
+      "source": "02_BACKEND/workflow/repository.py",
+      "scope": "CURRENT_WORKFLOW_CONFIG_TRUE",
+      "table": "workflow_active_tool",
+      "line": 38,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "call_id",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS workflow_active_tool(singleton INTEGER PRIMARY KEY CHECK(singleton=1), call_id TEXT)"
+    },
+    {
+      "group": "workflow-bridge",
+      "source": "02_BACKEND/semantic_runtime/workflow_bridge.py",
+      "scope": "CURRENT_WORKFLOW_CONFIG_TRUE",
+      "table": "workflow_publication_window",
+      "line": 266,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "deadline_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS workflow_publication_window(singleton INTEGER PRIMARY KEY CHECK(singleton=1),deadline_at TEXT NOT NULL)"
+    },
+    {
+      "group": "workflow-child",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py",
+      "scope": "CURRENT_WORKFLOW_CONFIG_TRUE",
+      "table": "workflow_child_run",
+      "line": 57,
+      "columns": [
+        {
+          "name": "call_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "run_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "journal",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS workflow_child_run(\n        call_id TEXT NOT NULL,run_id TEXT PRIMARY KEY,journal TEXT NOT NULL,binding_hash TEXT NOT NULL)"
+    },
+    {
+      "group": "completion-budget",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "completion_request_budget",
+      "line": 20,
+      "columns": [
+        {
+          "name": "request_key",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "deadline_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS completion_request_budget(\n        request_key TEXT PRIMARY KEY,input_hash TEXT NOT NULL,binding_hash TEXT NOT NULL,deadline_at TEXT NOT NULL)"
+    },
+    {
+      "group": "completion-budget",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "completion_request_run",
+      "line": 22,
+      "columns": [
+        {
+          "name": "request_key",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "run_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "journal",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS completion_request_run(\n        request_key TEXT NOT NULL,run_id TEXT NOT NULL,journal TEXT NOT NULL,\n        PRIMARY KEY(request_key,run_id))"
+    },
+    {
+      "group": "source-handoff",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/source_handoff.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "source_handoff_export",
+      "line": 86,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS source_handoff_export(singleton INTEGER PRIMARY KEY CHECK(singleton=1),payload_json TEXT NOT NULL,payload_hash TEXT NOT NULL)"
+    },
+    {
+      "group": "content-storage",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/journal_storage.py",
+      "scope": "CURRENT_COMPACT_CONDITIONAL",
+      "table": "journal_blob_v1",
+      "line": 52,
+      "columns": [
+        {
+          "name": "hash",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "size",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "codec",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "data",
+          "definition": "BLOB NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS journal_blob_v1(\n            hash TEXT PRIMARY KEY, size INTEGER NOT NULL, codec TEXT NOT NULL,\n            data BLOB NOT NULL)"
+    },
+    {
+      "group": "task-policy",
+      "source": "02_BACKEND/semantic_runtime/task_policy.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "definition",
+      "line": 66,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "version",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS definition(id TEXT, version INTEGER, hash TEXT, payload TEXT,\n                                              PRIMARY KEY(id,version))"
+    },
+    {
+      "group": "task-policy",
+      "source": "02_BACKEND/semantic_runtime/task_policy.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "review",
+      "line": 68,
+      "columns": [
+        {
+          "name": "hash",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "definition_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS review(hash TEXT PRIMARY KEY, definition_hash TEXT, payload TEXT)"
+    },
+    {
+      "group": "task-policy",
+      "source": "02_BACKEND/semantic_runtime/task_policy.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "checkpoint",
+      "line": 69,
+      "columns": [
+        {
+          "name": "run_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "seq",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS checkpoint(run_id TEXT, seq INTEGER, hash TEXT, payload TEXT,\n                                              PRIMARY KEY(run_id,seq))"
+    },
+    {
+      "group": "task-policy",
+      "source": "02_BACKEND/semantic_runtime/task_policy.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "proposal",
+      "line": 71,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "run_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS proposal(id TEXT PRIMARY KEY, run_id TEXT, payload TEXT)"
+    },
+    {
+      "group": "relation-issues",
+      "source": "02_BACKEND/semantic_runtime/relation_issues.py",
+      "scope": "CURRENT_CONDITIONAL",
+      "table": "rejection",
+      "line": 13,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "INTEGER PRIMARY KEY"
+        },
+        {
+          "name": "at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "generation_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "index_sha256",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "relation_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "relation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "question",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "quote",
+          "definition": "TEXT"
+        },
+        {
+          "name": "run_id",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS rejection(\n  id INTEGER PRIMARY KEY, at TEXT NOT NULL, generation_id TEXT NOT NULL, index_sha256 TEXT NOT NULL,\n  relation_id TEXT NOT NULL, kind TEXT NOT NULL, relation TEXT NOT NULL,\n  question TEXT NOT NULL, reason TEXT NOT NULL, quote TEXT, run_id TEXT)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_schema",
+      "line": 27,
+      "columns": [
+        {
+          "name": "version",
+          "definition": "INTEGER PRIMARY KEY CHECK(version=1)"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_schema(version INTEGER PRIMARY KEY CHECK(version=1))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_session",
+      "line": 29,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "channel",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "chat",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "enabled",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN(0,1))"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "active_view",
+          "definition": "TEXT"
+        },
+        {
+          "name": "last_operation",
+          "definition": "TEXT"
+        },
+        {
+          "name": "last_job",
+          "definition": "TEXT"
+        },
+        {
+          "name": "pending_action",
+          "definition": "TEXT"
+        },
+        {
+          "name": "pending_field",
+          "definition": "TEXT"
+        },
+        {
+          "name": "updated_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_session(\n id TEXT PRIMARY KEY, workspace TEXT NOT NULL, channel TEXT NOT NULL, chat TEXT NOT NULL,\n enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN(0,1)), revision INTEGER NOT NULL DEFAULT 0,\n active_view TEXT, last_operation TEXT, last_job TEXT, pending_action TEXT, pending_field TEXT,\n updated_at REAL NOT NULL, UNIQUE(workspace,channel,chat))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_view",
+      "line": 34,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "position",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(position>=0)"
+        },
+        {
+          "name": "total",
+          "definition": "INTEGER NOT NULL CHECK(total>=0)"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_view(\n id TEXT PRIMARY KEY, session TEXT NOT NULL REFERENCES ad_session(id), kind TEXT NOT NULL,\n position INTEGER NOT NULL DEFAULT 0 CHECK(position>=0), total INTEGER NOT NULL CHECK(total>=0),\n created_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_view_row",
+      "line": 39,
+      "columns": [
+        {
+          "name": "view",
+          "definition": "TEXT NOT NULL REFERENCES ad_view(id)"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL CHECK(ordinal>0)"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "title",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_view_row(\n view TEXT NOT NULL REFERENCES ad_view(id), ordinal INTEGER NOT NULL CHECK(ordinal>0),\n kind TEXT NOT NULL, entity TEXT NOT NULL, revision INTEGER NOT NULL, title TEXT NOT NULL,\n status TEXT NOT NULL, PRIMARY KEY(view,ordinal))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_selection",
+      "line": 44,
+      "columns": [
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_selection(\n session TEXT NOT NULL REFERENCES ad_session(id), ordinal INTEGER NOT NULL,\n kind TEXT NOT NULL, entity TEXT NOT NULL, revision INTEGER NOT NULL,\n PRIMARY KEY(session,ordinal))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_operation",
+      "line": 48,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "request",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "action",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN('RUNNING','SUCCEEDED','FAILED'))"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "finished_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "response",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_operation(\n id TEXT PRIMARY KEY, session TEXT NOT NULL REFERENCES ad_session(id), request TEXT NOT NULL,\n input_hash TEXT NOT NULL, action TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN('RUNNING','SUCCEEDED','FAILED')),\n created_at REAL NOT NULL, finished_at REAL, response TEXT,\n UNIQUE(session,request))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_change",
+      "line": 54,
+      "columns": [
+        {
+          "name": "operation",
+          "definition": "TEXT NOT NULL REFERENCES ad_operation(id)"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "before_revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "after_revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "action",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "field",
+          "definition": "TEXT"
+        },
+        {
+          "name": "before_value",
+          "definition": "TEXT"
+        },
+        {
+          "name": "after_value",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_change(\n operation TEXT NOT NULL REFERENCES ad_operation(id), ordinal INTEGER NOT NULL,\n kind TEXT NOT NULL, entity TEXT NOT NULL, before_revision INTEGER NOT NULL,\n after_revision INTEGER NOT NULL, action TEXT NOT NULL, field TEXT, before_value TEXT, after_value TEXT,\n PRIMARY KEY(operation,ordinal))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_object",
+      "line": 60,
+      "columns": [
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "entity",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "review",
+          "definition": "TEXT NOT NULL DEFAULT 'PENDING' CHECK(review IN('PENDING','APPROVED','REJECTED'))"
+        },
+        {
+          "name": "reviewed_revision",
+          "definition": "INTEGER"
+        },
+        {
+          "name": "trashed",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(trashed IN(0,1))"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "changed_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_object(\n kind TEXT NOT NULL, entity TEXT NOT NULL, workspace TEXT NOT NULL,\n review TEXT NOT NULL DEFAULT 'PENDING' CHECK(review IN('PENDING','APPROVED','REJECTED')),\n reviewed_revision INTEGER, trashed INTEGER NOT NULL DEFAULT 0 CHECK(trashed IN(0,1)),\n revision INTEGER NOT NULL DEFAULT 0, changed_at REAL NOT NULL,\n PRIMARY KEY(kind,entity))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_feature",
+      "line": 67,
+      "columns": [
+        {
+          "name": "workspace",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "shortcut",
+          "definition": "INTEGER NOT NULL DEFAULT 1 CHECK(shortcut IN(0,1))"
+        },
+        {
+          "name": "wiki",
+          "definition": "INTEGER NOT NULL DEFAULT 1 CHECK(wiki IN(0,1))"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "changed_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_feature(\n workspace TEXT PRIMARY KEY, shortcut INTEGER NOT NULL DEFAULT 1 CHECK(shortcut IN(0,1)),\n wiki INTEGER NOT NULL DEFAULT 1 CHECK(wiki IN(0,1)), revision INTEGER NOT NULL DEFAULT 0,\n changed_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_schedule",
+      "line": 71,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "due_at",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "timezone",
+          "definition": "TEXT NOT NULL DEFAULT 'Asia/Seoul'"
+        },
+        {
+          "name": "repeat_seconds",
+          "definition": "INTEGER NOT NULL DEFAULT 0 CHECK(repeat_seconds IN(0,86400))"
+        },
+        {
+          "name": "enabled",
+          "definition": "INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN(0,1))"
+        },
+        {
+          "name": "last_due_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_schedule(\n id TEXT PRIMARY KEY, workspace TEXT NOT NULL, session TEXT NOT NULL REFERENCES ad_session(id),\n due_at REAL NOT NULL, timezone TEXT NOT NULL DEFAULT 'Asia/Seoul',\n repeat_seconds INTEGER NOT NULL DEFAULT 0 CHECK(repeat_seconds IN(0,86400)),\n enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN(0,1)), last_due_at REAL,\n created_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_job",
+      "line": 78,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "schedule",
+          "definition": "TEXT REFERENCES ad_schedule(id)"
+        },
+        {
+          "name": "scheduled_for",
+          "definition": "REAL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN('QUEUED','RUNNING','PAUSED','CANCELLED','SUCCEEDED','FAILED','PARTIAL'))"
+        },
+        {
+          "name": "desired",
+          "definition": "TEXT NOT NULL DEFAULT 'RUN' CHECK(desired IN('RUN','PAUSE','CANCEL'))"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "started_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "finished_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "heartbeat",
+          "definition": "REAL"
+        },
+        {
+          "name": "lease",
+          "definition": "TEXT"
+        },
+        {
+          "name": "lease_until",
+          "definition": "REAL"
+        },
+        {
+          "name": "completed",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "failed",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "total",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_job(\n id TEXT PRIMARY KEY, workspace TEXT NOT NULL, session TEXT NOT NULL REFERENCES ad_session(id),\n schedule TEXT REFERENCES ad_schedule(id), scheduled_for REAL,\n status TEXT NOT NULL CHECK(status IN('QUEUED','RUNNING','PAUSED','CANCELLED','SUCCEEDED','FAILED','PARTIAL')),\n desired TEXT NOT NULL DEFAULT 'RUN' CHECK(desired IN('RUN','PAUSE','CANCEL')),\n created_at REAL NOT NULL, started_at REAL, finished_at REAL, heartbeat REAL,\n lease TEXT, lease_until REAL, completed INTEGER NOT NULL DEFAULT 0,\n failed INTEGER NOT NULL DEFAULT 0, total INTEGER NOT NULL DEFAULT 0,\n UNIQUE(schedule,scheduled_for))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_job_item",
+      "line": 90,
+      "columns": [
+        {
+          "name": "job",
+          "definition": "TEXT NOT NULL REFERENCES ad_job(id)"
+        },
+        {
+          "name": "queue_id",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "scope",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "investigation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN('PENDING','RUNNING','DONE','FAILED'))"
+        },
+        {
+          "name": "attempts",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "started_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "finished_at",
+          "definition": "REAL"
+        },
+        {
+          "name": "detail",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_job_item(\n job TEXT NOT NULL REFERENCES ad_job(id), queue_id INTEGER NOT NULL, scope TEXT NOT NULL,\n investigation TEXT NOT NULL, revision INTEGER NOT NULL,\n status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN('PENDING','RUNNING','DONE','FAILED')), attempts INTEGER NOT NULL DEFAULT 0,\n started_at REAL, finished_at REAL, detail TEXT,\n PRIMARY KEY(job,queue_id))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_error",
+      "line": 97,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT REFERENCES ad_session(id)"
+        },
+        {
+          "name": "job",
+          "definition": "TEXT REFERENCES ad_job(id)"
+        },
+        {
+          "name": "operation",
+          "definition": "TEXT REFERENCES ad_operation(id)"
+        },
+        {
+          "name": "stage",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "error_type",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "message",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "detail",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "retryable",
+          "definition": "INTEGER NOT NULL CHECK(retryable IN(0,1))"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_error(\n id TEXT PRIMARY KEY, session TEXT REFERENCES ad_session(id), job TEXT REFERENCES ad_job(id),\n operation TEXT REFERENCES ad_operation(id), stage TEXT NOT NULL, error_type TEXT NOT NULL,\n message TEXT NOT NULL, detail TEXT NOT NULL, retryable INTEGER NOT NULL CHECK(retryable IN(0,1)),\n created_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_exclusion",
+      "line": 104,
+      "columns": [
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "unit",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "signature",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "active",
+          "definition": "INTEGER NOT NULL CHECK(active IN(0,1))"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_exclusion(\n workspace TEXT NOT NULL, unit TEXT NOT NULL, signature TEXT NOT NULL,\n active INTEGER NOT NULL CHECK(active IN(0,1)), PRIMARY KEY(workspace,unit))"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_wiki_index",
+      "line": 108,
+      "columns": [
+        {
+          "name": "unit",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "workspace",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "topic",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "question",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_wiki_index(\n unit TEXT PRIMARY KEY, workspace TEXT NOT NULL, revision INTEGER NOT NULL,\n topic TEXT NOT NULL, question TEXT NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_worker",
+      "line": 112,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "pid",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "heartbeat",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN('POLLING','FAILED'))"
+        },
+        {
+          "name": "error",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_worker(id TEXT PRIMARY KEY, pid INTEGER NOT NULL, heartbeat REAL NOT NULL, status TEXT NOT NULL CHECK(status IN('POLLING','FAILED')), error TEXT)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_detail",
+      "line": 113,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "entity",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "content",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "position",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_detail(\n id TEXT PRIMARY KEY, session TEXT NOT NULL REFERENCES ad_session(id),\n entity TEXT NOT NULL, content TEXT NOT NULL, position INTEGER NOT NULL DEFAULT 0,\n created_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_language_turn",
+      "line": 118,
+      "columns": [
+        {
+          "name": "operation",
+          "definition": "TEXT PRIMARY KEY REFERENCES ad_operation(id)"
+        },
+        {
+          "name": "session",
+          "definition": "TEXT NOT NULL REFERENCES ad_session(id)"
+        },
+        {
+          "name": "context_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "input",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "model_output",
+          "definition": "TEXT"
+        },
+        {
+          "name": "plan",
+          "definition": "TEXT"
+        },
+        {
+          "name": "receipt",
+          "definition": "TEXT"
+        },
+        {
+          "name": "lease_until",
+          "definition": "REAL NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_language_turn(\n operation TEXT PRIMARY KEY REFERENCES ad_operation(id), session TEXT NOT NULL REFERENCES ad_session(id),\n context_hash TEXT NOT NULL, input TEXT NOT NULL, model_output TEXT, plan TEXT, receipt TEXT,\n lease_until REAL NOT NULL, created_at REAL NOT NULL)"
+    },
+    {
+      "group": "ad",
+      "source": "02_BACKEND/semantic_runtime/ad_store.py",
+      "scope": "CONDITIONAL_FEATURE_AND_FIELD_USAGE",
+      "table": "ad_language_call",
+      "line": 123,
+      "columns": [
+        {
+          "name": "operation",
+          "definition": "TEXT NOT NULL REFERENCES ad_language_turn(operation)"
+        },
+        {
+          "name": "sequence",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "input",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "model_output",
+          "definition": "TEXT"
+        },
+        {
+          "name": "plan",
+          "definition": "TEXT"
+        },
+        {
+          "name": "receipt",
+          "definition": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "definition": "REAL NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS ad_language_call(\n operation TEXT NOT NULL REFERENCES ad_language_turn(operation), sequence INTEGER NOT NULL,\n input TEXT NOT NULL, model_output TEXT, plan TEXT, receipt TEXT, created_at REAL NOT NULL,\n PRIMARY KEY(operation,sequence))"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "episode",
+      "line": 36,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "revision_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "state",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "error",
+          "definition": "TEXT"
+        },
+        {
+          "name": "updated_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS episode(id TEXT PRIMARY KEY,revision_hash TEXT NOT NULL,payload_json TEXT NOT NULL,\n                state TEXT NOT NULL,error TEXT,updated_at TEXT NOT NULL)"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "concept",
+      "line": 38,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "label",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "definition",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS concept(id TEXT PRIMARY KEY,kind TEXT NOT NULL,label TEXT NOT NULL,definition TEXT NOT NULL)"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "observation",
+      "line": 39,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "episode_id",
+          "definition": "TEXT NOT NULL REFERENCES episode(id)"
+        },
+        {
+          "name": "purpose_id",
+          "definition": "TEXT NOT NULL REFERENCES concept(id)"
+        },
+        {
+          "name": "class_id",
+          "definition": "TEXT NOT NULL REFERENCES concept(id)"
+        },
+        {
+          "name": "predicate",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "data_key",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "source_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "document_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "origin_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "proof_json",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "proof_hash",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS observation(id TEXT PRIMARY KEY,episode_id TEXT NOT NULL REFERENCES episode(id),\n                purpose_id TEXT NOT NULL REFERENCES concept(id),class_id TEXT NOT NULL REFERENCES concept(id),predicate TEXT NOT NULL,\n                data_key TEXT NOT NULL,source_id TEXT NOT NULL,document_id TEXT NOT NULL,origin_hash TEXT NOT NULL,\n                status TEXT NOT NULL,proof_json TEXT NOT NULL,proof_hash TEXT NOT NULL)"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "event",
+      "line": 44,
+      "columns": [
+        {
+          "name": "seq",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS event(seq INTEGER PRIMARY KEY AUTOINCREMENT,at TEXT NOT NULL,kind TEXT NOT NULL,payload_json TEXT NOT NULL)"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "intake_cursor",
+      "line": 45,
+      "columns": [
+        {
+          "name": "path",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "signature",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS intake_cursor(path TEXT PRIMARY KEY,signature TEXT NOT NULL)"
+    },
+    {
+      "group": "action-memory",
+      "source": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "abstraction_state",
+      "line": 46,
+      "columns": [
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL CHECK(kind IN ('concept','observation'))"
+        },
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL CHECK(status IN ('DISPUTED','RETRACTED'))"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reviewer",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "updated_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS abstraction_state(\n                kind TEXT NOT NULL CHECK(kind IN ('concept','observation')),\n                id TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN ('DISPUTED','RETRACTED')),\n                reason TEXT NOT NULL,reviewer TEXT NOT NULL,updated_at TEXT NOT NULL,\n                PRIMARY KEY(kind,id))"
+    },
+    {
+      "group": "learning",
+      "source": "02_BACKEND/semantic_runtime/learning_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "candidate",
+      "line": 21,
+      "columns": [
+        {
+          "name": "id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS candidate(id TEXT PRIMARY KEY, kind TEXT NOT NULL, payload TEXT NOT NULL)"
+    },
+    {
+      "group": "learning",
+      "source": "02_BACKEND/semantic_runtime/learning_store.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "review_event",
+      "line": 22,
+      "columns": [
+        {
+          "name": "seq",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "id",
+          "definition": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "name": "candidate_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE IF NOT EXISTS review_event(\n            seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE,\n            candidate_id TEXT NOT NULL, status TEXT NOT NULL, payload TEXT NOT NULL)"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "meta",
+      "line": 17,
+      "columns": [
+        {
+          "name": "key",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "value_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(value_json))"
+        }
+      ],
+      "definition": "CREATE TABLE meta(key TEXT PRIMARY KEY,value_json TEXT NOT NULL CHECK(json_valid(value_json)))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "case_record",
+      "line": 18,
+      "columns": [
+        {
+          "name": "case_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "reference_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "binding_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "source_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(source_json))"
+        },
+        {
+          "name": "parse_kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT"
+        },
+        {
+          "name": "state",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "candidate_set_sha256",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "observation_id",
+          "definition": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "updated_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE case_record(\n  case_id TEXT PRIMARY KEY,reference_id TEXT NOT NULL,binding_hash TEXT NOT NULL,\n  source_json TEXT NOT NULL CHECK(json_valid(source_json)),parse_kind TEXT NOT NULL,reason TEXT,\n  state TEXT NOT NULL,candidate_set_sha256 TEXT NOT NULL,observation_id TEXT,\n  created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "candidate_record",
+      "line": 23,
+      "columns": [
+        {
+          "name": "case_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "candidate_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "ordinal",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "target_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(target_json))"
+        },
+        {
+          "name": "basis",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE candidate_record(\n  case_id TEXT NOT NULL,candidate_id TEXT NOT NULL,ordinal INTEGER NOT NULL,target_json TEXT NOT NULL CHECK(json_valid(target_json)),\n  basis TEXT NOT NULL,PRIMARY KEY(case_id,candidate_id),UNIQUE(case_id,ordinal),\n  FOREIGN KEY(case_id) REFERENCES case_record(case_id))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "evidence_record",
+      "line": 27,
+      "columns": [
+        {
+          "name": "case_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "evidence_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(json))"
+        }
+      ],
+      "definition": "CREATE TABLE evidence_record(\n  case_id TEXT NOT NULL,evidence_id TEXT NOT NULL,json TEXT NOT NULL CHECK(json_valid(json)),\n  PRIMARY KEY(case_id,evidence_id),FOREIGN KEY(case_id) REFERENCES case_record(case_id))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "model_view",
+      "line": 30,
+      "columns": [
+        {
+          "name": "view_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "case_ids_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(case_ids_json))"
+        },
+        {
+          "name": "body_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(body_json))"
+        },
+        {
+          "name": "body_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "candidate_set_sha256",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "state_revision",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE model_view(\n  view_id TEXT PRIMARY KEY,case_ids_json TEXT NOT NULL CHECK(json_valid(case_ids_json)),body_json TEXT NOT NULL CHECK(json_valid(body_json)),\n  body_hash TEXT NOT NULL,candidate_set_sha256 TEXT NOT NULL,state_revision INTEGER NOT NULL,created_at TEXT NOT NULL)"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "model_attempt",
+      "line": 33,
+      "columns": [
+        {
+          "name": "attempt_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "logical_call_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "attempt_no",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "view_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "request_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(request_json))"
+        },
+        {
+          "name": "request_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "response_json",
+          "definition": "TEXT CHECK(response_json IS NULL OR json_valid(response_json))"
+        },
+        {
+          "name": "response_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "receipt_json",
+          "definition": "TEXT CHECK(receipt_json IS NULL OR json_valid(receipt_json))"
+        },
+        {
+          "name": "started_at",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "finished_at",
+          "definition": "TEXT"
+        }
+      ],
+      "definition": "CREATE TABLE model_attempt(\n  attempt_id TEXT PRIMARY KEY,logical_call_id TEXT NOT NULL,attempt_no INTEGER NOT NULL,view_id TEXT NOT NULL,\n  request_json TEXT NOT NULL CHECK(json_valid(request_json)),request_hash TEXT NOT NULL,status TEXT NOT NULL,\n  response_json TEXT CHECK(response_json IS NULL OR json_valid(response_json)),response_hash TEXT,\n  receipt_json TEXT CHECK(receipt_json IS NULL OR json_valid(receipt_json)),started_at TEXT NOT NULL,finished_at TEXT,\n  FOREIGN KEY(view_id) REFERENCES model_view(view_id))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "observation",
+      "line": 39,
+      "columns": [
+        {
+          "name": "observation_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "case_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "view_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "selected_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(selected_json))"
+        },
+        {
+          "name": "evidence_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(evidence_json))"
+        },
+        {
+          "name": "explanation",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "abstain_reason",
+          "definition": "TEXT"
+        },
+        {
+          "name": "resolution_state",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "output_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "validator_status",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE observation(\n  observation_id TEXT PRIMARY KEY,case_id TEXT NOT NULL,view_id TEXT NOT NULL,selected_json TEXT NOT NULL CHECK(json_valid(selected_json)),\n  evidence_json TEXT NOT NULL CHECK(json_valid(evidence_json)),explanation TEXT NOT NULL,abstain_reason TEXT,\n  resolution_state TEXT NOT NULL,output_hash TEXT NOT NULL,validator_status TEXT NOT NULL,created_at TEXT NOT NULL,\n  FOREIGN KEY(case_id) REFERENCES case_record(case_id),FOREIGN KEY(view_id) REFERENCES model_view(view_id))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "review",
+      "line": 44,
+      "columns": [
+        {
+          "name": "review_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "case_id",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "observation_hash",
+          "definition": "TEXT"
+        },
+        {
+          "name": "decision",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reviewer",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reason",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "reviewed_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE review(\n  review_id TEXT PRIMARY KEY,case_id TEXT NOT NULL,observation_hash TEXT,decision TEXT NOT NULL,\n  reviewer TEXT NOT NULL,reason TEXT NOT NULL,reviewed_at TEXT NOT NULL,\n  FOREIGN KEY(case_id) REFERENCES case_record(case_id))"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "event",
+      "line": 48,
+      "columns": [
+        {
+          "name": "seq",
+          "definition": "INTEGER PRIMARY KEY AUTOINCREMENT"
+        },
+        {
+          "name": "event_id",
+          "definition": "TEXT UNIQUE NOT NULL"
+        },
+        {
+          "name": "kind",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "payload_json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(payload_json))"
+        },
+        {
+          "name": "payload_hash",
+          "definition": "TEXT NOT NULL"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE event(\n  seq INTEGER PRIMARY KEY AUTOINCREMENT,event_id TEXT UNIQUE NOT NULL,kind TEXT NOT NULL,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),\n  payload_hash TEXT NOT NULL,created_at TEXT NOT NULL)"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "budget",
+      "line": 51,
+      "columns": [
+        {
+          "name": "singleton",
+          "definition": "INTEGER PRIMARY KEY CHECK(singleton=1)"
+        },
+        {
+          "name": "model_limit",
+          "definition": "INTEGER NOT NULL"
+        },
+        {
+          "name": "model_reserved",
+          "definition": "INTEGER NOT NULL DEFAULT 0"
+        }
+      ],
+      "definition": "CREATE TABLE budget(singleton INTEGER PRIMARY KEY CHECK(singleton=1),model_limit INTEGER NOT NULL,model_reserved INTEGER NOT NULL DEFAULT 0)"
+    },
+    {
+      "group": "reference-resolution",
+      "source": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "scope": "LEGACY_OR_BATCH_INVENTORY",
+      "table": "apply_receipt",
+      "line": 52,
+      "columns": [
+        {
+          "name": "receipt_id",
+          "definition": "TEXT PRIMARY KEY"
+        },
+        {
+          "name": "json",
+          "definition": "TEXT NOT NULL CHECK(json_valid(json))"
+        },
+        {
+          "name": "created_at",
+          "definition": "TEXT NOT NULL"
+        }
+      ],
+      "definition": "CREATE TABLE apply_receipt(receipt_id TEXT PRIMARY KEY,json TEXT NOT NULL CHECK(json_valid(json)),created_at TEXT NOT NULL)"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+Dataiku S3 원문 ZIP → 구조화 → 개발 실버 LGL 적재
+DATAIKU_PIPELINE_LAYERS_20261027_R1
+
+이번 수정
+사용자 확인(2026-10-27): 개발계에서 GENOS가 조회할 원문·구조화·검색 데이터는
+실버 SIDDS / 테이블 접미사 _S. 온톨로지·숏컷·에이전트 기록은 SIDDA / _A.
+기존 AIDP는 Dataiku 연결 이름이다. silver_layer라는 연결로 바꾸지 않는다.
+이전 SIDDA의 무접미사 테이블은 삭제/변경/복사하지 않고 새 대상에 새 적재한다.
+기존 원문/용어집 ZIP과 receipt를 재사용한다. 처리 GENOS R2 코드는 동일하다.
+
+실제 테이블
+SIDDS.LGL_DOC_VER_S     문서 판본
+SIDDS.LGL_DOC_UNIT_S    구조 단위
+SIDDS.LGL_DOC_BLK_S     원문 본문
+SIDDS.LGL_FILE_PART_S   재현·복구용 자산 조각
+SIDDS.LGL_SRC_PBLS_S    원문 게시 정보
+SIDDS.LGL_SRCH_ROW_S    검색·관계·구조 조회행
+SIDDS.LGL_SRCH_PBLS_S   조회 게시 정보
+SIDDS.LGL_SRCH_CHNL_S   조회 채널(검사만, 자동 활성화하지 않음)
+SIDDA.LGL_EXEC_ST_A     에이전트 실행 상태(검사만, 이번 원문 배치가 쓰지 않음)
+명시 참조/정의/용어 색인은 원문 조회 데이터이며 SIDDS에 들어간다.
+LLM이 제안·검토하는 온톨로지 및 숏컷 자료는 SIDDA 대상이다. 이 원문 적재기는
+온톨로지·숏컷을 적재하지 않는다. LGL_EXEC_ST_A가 온톨로지/숏컷 전용 테이블은 아니다.
+S3 온톨로지 작업 JSON 보관과 검토·승인·적재 절차는 유지한다.
+
+1. 파일 준비
+전달 ZIP을 PC에서 풀면 SQL, 실행 TXT, 새 클라이언트 ZIP이 나온다.
+Dataiku S3 관리 폴더 최상위에 아래 5개를 둔다.
+  DATAIKU_PIPELINE_CLIENT_20261027_R1.zip  <- 이번 새 클라이언트
+  RAW_INPUT.zip
+  RAW_INPUT.zip.receipt.json
+  PIPELINE_SUPPORT.zip
+  PIPELINE_SUPPORT.zip.receipt.json
+옛 클라이언트/실패 기록을 지울 필요는 없다. 새 실행기는 정확한 새 이름만 읽는다.
+S3 dataset 탐색 화면만 만들었다면 같은 원문 경로에 Managed Folder를 연결한다.
+SQL과 실행 TXT 자체는 원문 폴더에 반드시 올릴 필요가 없다.
+
+2. SQL 테이블 준비
+LEGAL_RAG → SQL 노트북 → 기존 연결 AIDP.
+00_CHECK_TARGET.sql의 SELECT를 각 Query에서 실행해 실제 owner/기존 객체를 확인한다.
+01_CREATE_TABLES.sql의 존재하지 않는 객체만 번호순으로 각 Query에서 실행한다.
+SIDDS 8개 + SIDDA 1개 테이블이며 인덱스와 제약도 같은 접미사를 따른다.
+이미 존재하는 객체는 재생성하지 않고 후속 check로 구조를 비교한다.
+02_COMMENTS.sql의 각 문장을 실행해 테이블/컬럼 설명을 등록한다.
+Oracle DDL은 자동 커밋이다. 도중 실패하면 00 조회부터 다시 확인해 남은 것만 수행한다.
+ORA-01031/ORA-00942는 실제 owner 생성/조회/적재 권한을 확인한다. SIDDA로 대신
+만들거나 코드의 SIDDS를 바꾸어 우회하지 않는다. 관리자 실행이 필요한 경우 이 SQL을 전달한다.
+계정 생성·임의 권한 확대 SQL은 이 전달본에 포함하지 않았다.
+
+3. Python 노트북 설정
+기존 작업이 실행 중이면 종료/상태를 먼저 확인하고 동시에 새 배치를 시작하지 않는다.
+새 Python 노트북(또는 이전 코드가 없는 새 커널)에
+DATAIKU_PIPELINE_RUN_20261027_R1.txt 전체를 붙인다.
+상단 FOLDER_NAME="SET_S3_MANAGED_FOLDER_ID"를 실제 관리 폴더 ID로 바꾼다.
+S3 버킷 경로 또는 Dataiku Dataset 이름이 아니다.
+ID를 모르면 별도 셀에서 다음을 실행한다.
+
+  import dataiku
+  for f in dataiku.api_client().get_project("LEGAL_RAG").list_managed_folders():
+      print(f["id"], f["name"])
+
+WORK_DIR="./legal_pipeline_layers_20261027_r1", JOB_NAME="layers_20261027_r1"은
+새 물리 대상용 실행의 기본값이다. 같은 실행 재개 때는 폴더 ID·작업명·경로를 유지한다.
+옛 실행의 input-binding/체크포인트를 이 새 실행으로 복사하거나 hash를 고치지 않는다.
+이전 BUSY 작업 해제는 새 이름으로 우회할 수 없다. 기존 실행기의 pipeline_jobs()와
+실패 보존/해제 절차로 처리한다. 이번 파일은 자동 취소/ACK를 하지 않는다.
+
+코드 환경: dataiku, pandas, PyYAML 6.x. 기존 실행기와 같은 환경을 사용한다.
+실행 TXT 셀을 실행하면 RUNNER_READY가 나오며 함수를 등록한다. 배치는 자동 시작하지 않는다.
+
+4. ZIP 준비와 압축 해제
+다음 새 셀:
+  PIPELINE_RESULT = run(action="prepare")
+
+S3 스트림으로 ZIP을 임시 작업 디스크에 내려받아 해시·크기를 검증하고 안전하게 푼다.
+S3 원본은 유지하며 S3에 압축을 푼 파일 전체를 다시 쓰지 않는다.
+디스크 여유/중단/중복 검사는 기존 실행기를 따른다. 파일 전체를 메모리에 읽지 않는다.
+READY 및 oracle_written=false가 나오면 준비 완료다. 이 단계는 DB 적재를 하지 않는다.
+
+5. 실제 DB 구조 검사
+다음 새 셀:
+  PIPELINE_RESULT = run(action="check")
+
+SIDDS.*_S와 SIDDA.LGL_EXEC_ST_A의 실제 9테이블/46컬럼/PK/FK/CHECK/4인덱스를 검사한다.
+이 검사가 READY여야 적재한다. 옛 SIDDA 무접미사 테이블이 있어도 통과 근거로 쓰지 않는다.
+읽기 검사만으로 실제 INSERT 권한·GENOS 조회 권한이 검증된 것은 아니다.
+
+6. 구조화·적재 실행
+기존 프로젝트 변수의 실제 값을 사용한다(토큰은 출력하거나 공유하지 않는다).
+  LEGAL_PIPELINE_URL   배포된 구조화 파이프라인 HTTPS 주소
+  LEGAL_PIPELINE_TOKEN 해당 인증 토큰
+  LEGAL_ORACLE_CONNECTION AIDP
+
+다음 새 셀:
+  PIPELINE_RESULT = run(action="run")
+
+Dataiku → 기존 GENOS 구조화 처리부 → Dataiku 반환 파일 보존 → SIDDS 적재·재조회 검증.
+이번 작업은 이미 저장한 ZIP의 구조화다. 법제처 수집은 별도의
+Dataiku 배치 → API 중계서버 → 법제처 경로이며 GENOS를 수집 주체로 쓰지 않는다.
+정상 완료: status=COMPLETE, oracle_written=true.
+LOAD_VERIFIED_ACK_PENDING이면 DB 검증 후 처리부 정리 응답이 불확실하므로 같은 실행을 재개한다.
+오류 시 표시된 단계·코드와 기존 진단/체크포인트를 보존하고 자동 반복하지 않는다.
+03_CHECK_LOADED.sql은 전체 행 수 참고용이다. 해당 실행의 해시/건수 검증 receipt가 완료 근거다.
+
+7. 재개와 범위
+같은 새 전달본·폴더 ID·입력 ZIP·JOB_NAME·WORK_DIR로 같은 run을 실행한다.
+DB 커밋 후 응답 유실·임시 작업 폴더 유실에도 기존 체크포인트/기한/예산을 보존한다.
+대상·입력·코드 변경은 다른 실행 정체성이므로 기존 완료/실패 기록을 덮어쓰지 않는다.
+실버 접근을 전제로 테이블 배치를 수정한 것이다. GENOS 조회 서비스의 기존 DB 매핑·
+채널 활성화·워크플로우 리비전을 이 패키지가 자동 전환하지 않는다.
+SIDDA 온톨로지/숏컷의 GENOS 접근 경로는 별도 소비자 연결 확인이 필요하다.
+현장 반입·SQL 실행·배치 성공은 현장 결과로 확인한다. 로컬 검증과 구분한다.

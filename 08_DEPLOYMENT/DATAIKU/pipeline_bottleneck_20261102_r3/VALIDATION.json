@@ -1,0 +1,22 @@
+{
+  "local_tests_passed": 42,
+  "local_tests_failed": 0,
+  "native_oracle_calls": 0,
+  "live_model_calls": 0,
+  "field_status": "PENDING",
+  "main_changed": false,
+  "r2_preserved": true,
+  "initial_failures": [
+    {
+      "passed": 27,
+      "failed": 2,
+      "reason": "launcher ZIP tests before initial build"
+    },
+    {
+      "passed": 41,
+      "failed": 1,
+      "reason": "source mutation within same stat timestamp not detected; added SQLite header and data_version checks"
+    }
+  ],
+  "tests": "real installed projector equality for tables/views/FTS; original DOC mapping; no repeated source records; mutation rejection; same rollback SQL and timed real JDBC wrapper; mocked Dataiku worker/launcher; complete batch display"
+}

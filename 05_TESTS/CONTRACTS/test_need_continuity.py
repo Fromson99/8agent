@@ -40,6 +40,8 @@ def fixture(*, target=False, complete=True):
             'needs':[{'id':n['id'],'status':'RESOLVED','material':True,'reason':'현재 근거로 필요 충족',
                 'basis_refs':refs,'claim_refs':['C1'],'gap_indices':[],
                 'target_refs':n.get('target_refs',[]),'scope_quote':''} for n in ctx['needs']], 'conflicts':[]}}
+    from scope_review_fixture import scope_rows
+    scope_rows(value,ctx,value[final.FIELD])
     return inv,data,ctx,opts,value
 
 
@@ -118,12 +120,18 @@ def test_partial_child_originals_cannot_close_selected_target():
     inv,data,ctx,opts,value=fixture(target=True,complete=False)
     assert not ctx['need_continuity']['targets'][0]['available_complete']
     with pytest.raises(ProposalError) as error:final.validate_review(value,ctx,opts)
-    assert 'NEED_TARGET_INCOMPLETE' in {r['code'] for r in error.value.issues}
+    assert 'SCOPE_ACQUISITION_INCOMPLETE' in {r['code'] for r in error.value.issues}
 
 
 @pytest.mark.parametrize('basis',['scope','source'])
 def test_explicit_exclusion_is_not_fake_acquisition(basis):
     inv,data,ctx,opts,value=fixture(target=True,complete=False)
+    value['claims']=[]
+    from need_continuity_fixture import change_review
+    for judgment,head in zip(value[final.FIELD]['judgments'],ctx['judgments']):
+        judgment.update(disposition='NOT_USED',claim_refs=[],change_review=change_review(head))
+    for scope in value[final.FIELD]['scope_reviews']:
+        for group in scope['groups']:group.update(disposition='EXCLUDE',claim_refs=[])
     for row in value[final.FIELD]['needs']:
         row.update(status='NOT_NEEDED',claim_refs=[],basis_refs=[] if basis=='scope' else [opts[0]['id']],
             scope_quote=inv.question if basis=='scope' else '')
@@ -185,20 +193,22 @@ def test_acl_and_range_state_tampering_are_hard_failures():
     with pytest.raises(ContractError,match='structure hash'):final.context(inv.p,inv.question,ISSUES,opts,inv.s.scope)
 
 
-def test_model_target_links_existing_need_without_auto_selecting_sibling(monkeypatch):
+@pytest.mark.parametrize('coordinate',['제2조','body:제2조'])
+def test_model_target_links_existing_need_without_auto_selecting_sibling(monkeypatch,coordinate):
     from semantic_runtime.legal_agent import source_goal_control as sg, reference_bundles
     inv,data,ctx,opts,value=fixture()
     data['presentation_id']='p2';data['laws']=[{'document_id':'d','name':'모의규정'}]
     inv.policy['reference_bundle_review']=True
     actions={'T1':{'action':'SEARCH_STRUCTURE','identity':{'document_id':'d'}}}
     need_id=ctx['needs'][0]['id']
-    proposal={'source_targets':[{'document_ref':'d','coordinate':'제2조','coordinate_scope':'body',
+    proposal={'source_targets':[{'document_ref':'d','coordinate':coordinate,'coordinate_scope':'body',
         'issue_id':'Q1','reason':'앞서 선언한 필요 확인','need_refs':[need_id]}],'source_goal_exclusions':[]}
     monkeypatch.setattr(sg,'refresh',lambda *args:None)
     monkeypatch.setattr(reference_bundles,'expand',lambda *args:pytest.fail('automatic reference selection forbidden'))
     st=su.state_for(inv,data)
     sg.record(proposal,inv,data,actions,st)
     assert len(st['source_goals'])==1 and st['source_goals'][0]['need_refs']==[need_id]
+    assert st['source_goals'][0]['coordinate']=='제2조'
     ctx2=final.context(inv.p,inv.question,ISSUES,opts,inv.s.scope)
     assert ctx2['needs'][0]['target_refs']==[ctx2['need_continuity']['targets'][0]['id']]
     proposal['source_targets'][0]['need_refs']=['unknown']
@@ -232,6 +242,8 @@ def test_selected_range_requires_each_child_original_at_final_review(complete):
         'needs':[{'id':ctx['needs'][0]['id'],'status':'RESOLVED','material':True,
             'reason':'선택 범위 전체 설명','basis_refs':refs,'claim_refs':['C1'],
             'gap_indices':[],'target_refs':[target['id']],'scope_quote':''}],'conflicts':[]}}
+    from scope_review_fixture import scope_rows
+    scope_rows(value,ctx,value[final.FIELD])
     if complete:final.validate_review(value,ctx,opts)
     else:
         with pytest.raises(ProposalError):final.validate_review(value,ctx,opts)
@@ -241,13 +253,14 @@ def test_same_issue_claim_cannot_resolve_target_using_uncited_child():
     inv,data,ctx,opts,value=fixture(target=True)
     other={**opts[0],'id':'Eother','block_id':'other'}
     opts.append(other)
+    ctx['need_continuity']['scope_input_hash']=digest([ctx['need_continuity']['targets'],opts])
     # Keep a valid claim/judgment, but remove the target original from that claim.
     value['claims'][0]['evidence_refs']=['Eother']
     ctx['judgments'][0]['available_evidence_refs'].append('Eother')
     value[final.FIELD]['judgments'][0]['basis_refs']=[opts[0]['id'],'Eother']
     for row in value[final.FIELD]['needs']:row['basis_refs']=[opts[0]['id'],'Eother']
     with pytest.raises(ProposalError) as error:final.validate_review(value,ctx,opts)
-    assert 'NEED_TARGET_INCOMPLETE' in {r['code'] for r in error.value.issues}
+    assert {'NEED_CLAIM_LINK','SCOPE_CLAIM_EVIDENCE','SCOPE_USE_UNSUPPORTED_RANGE'} & {r['code'] for r in error.value.issues}
 
 
 def test_range_issue_binding_survives_resume_and_cannot_be_reassigned():
@@ -268,6 +281,8 @@ def test_range_issue_binding_survives_resume_and_cannot_be_reassigned():
         final.FIELD:{'judgments':[],'needs':[{'id':ctx['needs'][0]['id'],'status':'OPEN',
             'material':True,'reason':'선택 범위 미확보','basis_refs':[],'claim_refs':[],
             'target_refs':[],'gap_indices':[1],'scope_quote':''}],'conflicts':[]}}
+    from scope_review_fixture import scope_rows
+    scope_rows(value,ctx,value[final.FIELD])
     final.validate_review(value,ctx,[])
     inv.p['structure_need_bindings'][selected['hash']][0]['issue_refs']=['Q2']
     with pytest.raises(ContractError,match='issue binding hash'):

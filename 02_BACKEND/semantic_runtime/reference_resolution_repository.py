@@ -1,8 +1,8 @@
 """Append-only review journal for reference-resolution observations and approvals."""
 from contextlib import contextmanager
 import json
-from pathlib import Path
-import sqlite3
+from .oracle_runtime_paths import Path
+from . import runtime_sqlite as sqlite3
 import time
 import uuid
 
@@ -108,6 +108,9 @@ class ReferenceResolutionRepository:
         return revision
 
     def event(self, kind, payload, **_):
+        if getattr(self.db,'is_oracle_record',False):
+            from .detailed_log_storage import event_record
+            payload=event_record(payload,owner=str(self.path),ident=[kind,digest(payload)])
         self.db.execute('INSERT INTO event(event_id,kind,payload_json,payload_hash,created_at) VALUES (?,?,?,?,?)',
                         (uuid.uuid4().hex, kind, encoded(payload), digest(payload), now()))
 
@@ -187,9 +190,13 @@ class ReferenceResolutionRepository:
                 raise BudgetExhausted('reference-resolution model attempt limit')
             ident = 'M' + uuid.uuid4().hex
             self.db.execute('UPDATE budget SET model_reserved=model_reserved+1 WHERE singleton=1')
+            saved_request=request
+            if getattr(self.db,'is_oracle_record',False):
+                from .detailed_log_storage import request_record
+                saved_request=request_record(request,owner=str(self.path),ident=ident)
             self.db.execute('''INSERT INTO model_attempt(attempt_id,logical_call_id,attempt_no,view_id,request_json,
                 request_hash,status,started_at) VALUES (?,?,?,?,?,?,'PREPARED',?)''',
-                (ident, logical_call_id, attempt_no, view['view_id'], encoded(request), digest(request), now()))
+                (ident, logical_call_id, attempt_no, view['view_id'], encoded(saved_request), digest(request), now()))
             self.event('ATTEMPT_RESERVED', {'attempt_id': ident, 'phase': phase})
         return ident
 
@@ -209,10 +216,15 @@ class ReferenceResolutionRepository:
                     + ','.join('?' for _ in case_ids) + ') ORDER BY case_id', case_ids).fetchall()
                 if any(row['state'] != 'MODEL_PENDING' for row in current):
                     status = 'IGNORED_LATE'
+            saved_response=response;saved_receipt=receipt
+            if getattr(self.db,'is_oracle_record',False):
+                from .detailed_log_storage import response_record
+                saved_response,raw_ref=response_record(response,owner=str(self.path),ident=ident)
+                saved_receipt={**receipt,'diagnostic_response':raw_ref,'response_storage':'structured-response-v1'}
             updated = self.db.execute('''UPDATE model_attempt SET status=?,response_json=?,response_hash=?,receipt_json=?,finished_at=?
                 WHERE attempt_id=? AND status='SENT' ''',
-                (status, encoded(response) if response is not None else None,
-                 digest(response) if response is not None else None, encoded(receipt), now(), ident)).rowcount
+                (status, encoded(saved_response) if saved_response is not None else None,
+                 digest(saved_response) if saved_response is not None else None, encoded(saved_receipt), now(), ident)).rowcount
             if updated != 1:
                 raise ContractError('reference attempt was not sent')
             self.event('ATTEMPT_FINISHED', {'attempt_id': ident, 'status': status})

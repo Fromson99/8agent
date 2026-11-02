@@ -367,15 +367,24 @@ class DecisionJournal:
                     [issue('CORRECTION_BUDGET_EXHAUSTED', repairable=False)], repairable=False)
             if correction_budget is not None:
                 correction_budget.reserve_in_transaction(self.key,attempt)
-            self._put('RESERVED', attempt)
+            self._put('RESERVED', attempt, **({'previous_failure_signature': prior['failure_signature']}
+                if prior and prior.get('failure_signature') else {}))
         return None
 
     def reject(self, attempt, error, value=None, *, can_retry=None, correction_budget=None):
         with self.transaction():
             if correction_budget is not None:
                 correction_budget.finish_in_transaction(self.key,attempt,error=error,value=value,can_retry=can_retry)
+            prior = self.state()
+            failure = diagnostics(error)
+            signature = digest({'binding': self.binding, 'category': failure.get('category'),
+                'issues': sorted(({'code': row.get('code'), 'path': row.get('path'),
+                    'expected_constraint': row.get('expected_constraint')} for row in failure.get('issues', [])),
+                    key=lambda row: digest(row))})
             self._put('REJECTED', attempt, repairable=repairable(error) and can_retry is not False,
-                      failure=diagnostics(error), proposal=deepcopy(value),
+                      failure=failure, proposal=deepcopy(value),
+                      failure_signature=signature,
+                      repeated_failure=bool(prior and prior.get('previous_failure_signature', prior.get('failure_signature')) == signature),
                       proposal_hash=digest(value), error=str(error))
 
     def accept(self, attempt, value, *, correction_budget=None):

@@ -452,7 +452,16 @@ def choose_read(inv, data, actions, phase):
             decision.update(targets=list(dict.fromkeys(r['target'] for r in selected)),issue_refs=list(dict.fromkeys(r['issue_id'] for r in selected)),
                 reason='; '.join(r['missing_need'] for r in selected),evidence_sufficient=False,sufficiency_reason='선택한 조사 후 원문으로 판단한다.')
             if 'exploration' in branch['properties']:
-                decision['exploration']=[{**r,'request_quote':issue_map[r['issue_id']].get('request_quote',request),'source_quote':''} for r in selected]
+                fields=branch['properties']['exploration']['items']['properties']
+                decision['exploration']=[]
+                for row in selected:
+                    provenance={**row,'request_quote':issue_map[row['issue_id']].get('request_quote',request),'source_quote':''}
+                    if 'source_ref' not in fields:
+                        # v6/v7 require an exact quote instead of the v8 handle.
+                        # The handle was selected by the model and validated above.
+                        reference=provenance.pop('source_ref')
+                        if row['relation']=='DEPENDENCY':provenance['source_quote']=current[reference]['text']
+                    decision['exploration'].append(provenance)
             if 'queries' in value:decision['queries']=list(value['queries'])
             if 'structure_filter' in value:decision['structure_filter']=deepcopy(value['structure_filter'])
         inv.validate(decision,data,actions)

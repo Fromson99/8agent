@@ -7,13 +7,13 @@ FIELDS = {'question','memory','session_id','request_id','user_id','team_id',
           'expected_revision','document_ids','use_llm','public_question','memory_authorization','scope',
           'query_kind','experience_id','question_id','after','limit',
           'investigation_id','investigation_revision','branch_id','unit_id','revision','event_id','artifact_id',
-          'operation','arguments','ad_session_id','ad_channel'}
+          'operation','arguments','ad_session_id','ad_channel','review_action'}
 
 
 def validate_session(body, *, require_memory=True):
     from .corrected_memory import MemoryError
     if set(body)-FIELDS:raise MemoryError('unsupported memory request fields')
-    if (require_memory and body.get('memory') is not True) or body.get('use_llm',True) is not True:raise MemoryError('memory requires a model request')
+    if (require_memory and body.get('memory') is not True) or (body.get('use_llm',True) is not True and 'review_action' not in body):raise MemoryError('memory requires a model request')
     for field in ('team_id','session_id','request_id'):
         value=body.get(field)
         if not isinstance(value,str) or not value.strip() or len(value)>256 or value in ('anonymous','sess-anonymous'):

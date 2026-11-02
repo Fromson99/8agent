@@ -3,7 +3,7 @@
 Identity is resolved by the host before calling this factory. Client user IDs
 are consistency checks and never become access grants.
 """
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .corrected_memory import Memory, MemoryError
 from .memory_rag import NativeRag
 

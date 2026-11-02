@@ -7,7 +7,7 @@ artifact if the process exits before this worker finishes.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 import queue
 import threading
 
@@ -33,7 +33,7 @@ def _publish(job):
         try:
             if repo.run()['status'] != 'RUNNING':
                 return
-            store = Store(generation, verify=False)
+            store = generation() if callable(generation) else Store(generation, verify=False)
             repo.publication_guard = lambda value: validate_current(repo, value, store)
             with obs.step(log, 'publication.prepare'):
                 prepare(repo, result, release, Contracts(contracts_root))
@@ -66,5 +66,5 @@ def schedule(journal, generation, contracts_root, runs, result, release):
             _THREAD = threading.Thread(target=_worker, daemon=True,
                                        name='genos-publication')
             _THREAD.start()
-        _QUEUE.put_nowait((Path(journal), Path(generation), Path(contracts_root),
+        _QUEUE.put_nowait((Path(journal), generation if callable(generation) else Path(generation), Path(contracts_root),
                            Path(runs), result, release))

@@ -1,0 +1,6 @@
+{
+  "status": "PRESERVED_INITIAL_FAILURE_FIXED_BEFORE_DELIVERY",
+  "initial_reader_check": "Oracle native fetch returned empty CLOB as None; comparison with original empty string failed before any tested reset deletion",
+  "correction": "Read a separate DBMS_LOB.GETLENGTH=0 and IS NOT NULL flag and restore empty CLOB as empty string before backup validation",
+  "followup": "NATIVE_VALIDATION.json contains the subsequent nine passing native conditions and exact final reset helper hash"
+}

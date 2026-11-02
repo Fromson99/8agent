@@ -17,7 +17,11 @@ def actor():
 def render(*,simulation=False):
     import streamlit as st
     st.header('시나리오 검증' if simulation else '온톨로지 관리')
-    if not simulation and st.radio('작업 방식',['기존 시나리오','도메인 프로필·판단 축적'],horizontal=True)=='도메인 프로필·판단 축적':
+    mode=st.radio('작업 방식',['자유 작업공간','기존 시나리오','도메인 프로필·판단 축적'],horizontal=True) if not simulation else '기존 시나리오'
+    if mode=='자유 작업공간':
+        from .wiki_ui import render as render_workspace
+        render_workspace();return
+    if mode=='도메인 프로필·판단 축적':
         from .domain_ui import render as render_domain
         render_domain();return
     st.caption('원문과 판단 → 시나리오 생성 → 검토 승인 → DB 게시 → RAG 경로 선택')

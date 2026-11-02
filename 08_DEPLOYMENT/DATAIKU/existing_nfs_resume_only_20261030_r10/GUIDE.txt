@@ -1,0 +1,80 @@
+NFS Oracle 이관 R10 — 사진의 오류 이후 재개 전용
+
+대상과 첨부
+Dataiku LEGAL_RAG / Oracle 연결 AIDP / 기존 수신 자료와 기존 이관 작업입니다.
+DATAIKU_EXISTING_NFS_CLIENT_20261030_R10.zip: 실제 실행 코드
+DATAIKU_EXISTING_NFS_LOAD_ONLY_R10.txt: 전체 실행 코드
+GUIDE.txt: 이 안내
+R9 실행 TXT 대신 이번 R10을 사용합니다. 원문이나 NFS 자료를 새로 올리지 않습니다.
+
+바로 실행하는 순서
+1. 기존 셀이 오류로 끝나 Idle인지 확인합니다. 아직 동작 중인 셀과 중복 실행하지 않습니다.
+2. LEGAL_RAG의 기존 반입 관리 폴더 ehA8dpVm에 R10 ZIP을 압축 그대로 업로드합니다.
+3. 기존 오류 노트북에서 Kernel > Restart 합니다.
+   로컬 수신 자료가 남은 같은 Dataiku 실행 환경을 사용합니다.
+   LEGAL_PIPELINE_SCRATCH 설정과 기존 자료/재개 폴더는 바꾸거나 지우지 않습니다.
+4. 새 셀에 DATAIKU_EXISTING_NFS_LOAD_ONLY_R10.txt 전체를 붙여 실행합니다.
+   기본값 ACTION='load_only', RESUME_ONLY=True, QUERY_WRITE_ROWS=500을 사용합니다.
+   별도 터미널 명령이나 기존 00/01/02/03 레시피 재실행은 필요하지 않습니다.
+
+이번 수정의 핵심
+R9은 수신 함수에 들어가 기존 파일을 대조하고 원문 행의 명세를 다시 계산했습니다.
+이미 있는 파일은 재다운로드하지 않았지만, 오류 지점만 재개하는 동작은 아니었습니다.
+R10의 RESUME_ONLY=True는 다음을 수행합니다.
+- NFS 정보 요청/파일 수신 함수를 호출하지 않습니다.
+- 기존 full-manifest.json의 수신 명세와 로컬 파일이 있어야 진행합니다.
+- 완료 원문 기록의 행수/체인과 저장된 준비 명세의 해시가 정확히 일치할 때
+  원문 전체 행 명세 재계산과 9개 파일 전체 describe 준비 계산을 생략합니다.
+- R8/R9의 정확한 코드 해시로 만든 완료 준비 명세만 호환 인정합니다.
+- 사진의 search_selection → contracts.sha 오류가 났던 게시 명세 확정 단계로 이어갑니다.
+  R9의 Python 호환 수정, 최대500행 요청, 기존 ID/커서 의미는 유지합니다.
+
+재개 시 처음 볼 메시지
+RESUME_LOCAL_INPUTS_FOUND: NFS 요청 없이 기존 로컬 수신 자료 사용
+RESUME_LOCAL_FILE_HASH_CHECK: 로컬 입력 파일 해시 확인
+RESUME_QUERY_MANIFEST: 저장된 준비 명세에서 실패 단계 재개
+RESUME_SOURCE_DESCRIPTOR_REUSED: 원문 행 전체 재계산 생략
+PROJECTION_PREPARATION_REUSED: 완료된 로컬 준비 계산 재사용
+이후 원문 적재 커서 확인 → 남은 Oracle 파일조각 적재 → 남은 검색행 적재로 진행합니다.
+
+다시 읽는 것과 다시 가져오는 것
+기존 로컬 파일의 해시/크기/세대·대상 결속 확인은 남습니다.
+실행 코드 ZIP 약0.33MB는 관리 폴더에서 읽습니다. 이것은 NFS 데이터 재수신이 아닙니다.
+Oracle에 넣을 검색행을 만들 때 기존 로컬 SQLite를 실제로 읽고 정렬합니다.
+따라서 적재 단계에서 SOURCE_ROWS/TABLE_SCAN/파일순서1/9가 다시 보일 수 있습니다.
+이때 '용도=Oracle적재용 데이터 읽기'가 표시됩니다.
+준비 명세를 계산하는 describe의 반복과 구분해야 합니다.
+이미 검색행을 일부 적재했다면 기존 커서 앞부분은 재생성해 건너뛰고,
+ACK된 묶음은 다시 INSERT 요청하지 않습니다. 중간 SQL 문장의 메모리를 복구하는 것은 아닙니다.
+500행/JSON누적4MiB 목표와 파일 경계로 실제 요청당 행수는 달라질 수 있습니다.
+원문3종 쓰기 묶음은 기존20행이며, 검색행만 최대500행입니다.
+
+재개 자료가 없거나 바뀐 경우
+RESUME_LOCAL_DATA_MISSING / RESUME_SNAPSHOT_BINDING:
+  같은 로컬 수신 파일 또는 세대 기록이 없거나 다릅니다.
+RESUME_IMPORT_RECEIPT_REQUIRED / RESUME_PREPARATION_REQUIRED:
+  이전 작업 기록 또는 완료 준비 명세가 없습니다.
+RESUME_PREPARATION_BINDING_CHANGED / RESUME_COMPLETED_SOURCE_RECEIPT_REQUIRED:
+  저장 명세와 완료 원문 기록/입력/코드/대상이 맞지 않습니다.
+이때 자동 다운로드·처음부터 계산·새 작업 생성 없이 중단합니다.
+RESUME_ONLY를 False로 바꾸거나 재개 기록을 삭제하지 말고 오류 마지막 줄을 확인합니다.
+기존 full-state.json이 있으면 그 로컬 기록을 사용하며, 없을 때만 기존 관리 폴더의
+작은 JSON/JSONL 재개 기록 보관본을 복구할 수 있습니다. 데이터 전체를 받는 절차는 없습니다.
+
+완료와 중단 후 재실행
+QUERY_LOADED의 rows_this_run/requests_this_run/last_request_rows가 이번 실제 쓰기입니다.
+legacy_frames는 기존20행 기준의 재개 번호이며 실제 요청 수와 다릅니다.
+LOADED_UNVERIFIED = 적재 완료, Oracle 전수 재조회 검증은 보류입니다.
+나중에 별도 전수검증할 때만 같은 TXT의 ACTION을 'verify'로 바꿉니다.
+상태만 확인할 때는 ACTION='status'입니다. RESUME_ONLY=True는 계속 유지합니다.
+응답 유실 오류는 실행 종료 후 같은 R10 load_only를 명시 재실행합니다.
+실행 중 중복으로 돌리거나 작업/대상/입력/기한/예산을 새로 만들지 않습니다.
+원래7일 기한·누적 SQL 예산을 유지하며 새6시간 실행 상한은 없습니다.
+
+검증 범위
+로컬 계약60개와 실제 Python3.10에서 전체 전달TXT를 실행한 모의 연동1개 통과입니다.
+R8 해시의 완료 명세를 가진 후기 오류를 만든 뒤 NFS 요청/offline_source/describe를
+강제로 금지하고 적재 재개·응답 유실·별도검증·변조 거절·원래 기한 보존을 확인했습니다.
+R9의 500행 실제 로컬 Oracle 검사는 이전 검증이며 이번에 새로 수행한 것으로 세지 않습니다.
+현장 Dataiku의 현재 마지막 로그/전체 적재 완료/실제 속도는 아직 확인하지 못했습니다.
+R10은 기존 데이터를 옮기거나 삭제하지 않으며 MAIN/GENOS 서버를 바꾸는 패치가 아닙니다.

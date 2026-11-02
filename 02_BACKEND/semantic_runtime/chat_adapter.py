@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 from contextlib import nullcontext
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path,runtime_directory
 import time
 import uuid
 from . import progress
@@ -86,7 +86,7 @@ async def chat(data,*,trusted_platform=False,on_progress=None,on_answer=None):
     if question.strip()=='[AD모드 시작]' and not ad_allowed:
         return {'code':0,'data':{**result,'answer_status':'failed','text':view.render_error({'request_id':ident,'_gateway_status':403})}}
     started=time.perf_counter();events=[]
-    runtime=Path(os.environ.get('GENOS_RUNTIME_DIR') or Path(__file__).resolve().parents[2]/'90_RUNTIME/semantic')
+    runtime=runtime_directory(Path(__file__).resolve().parents[2]/'90_RUNTIME/semantic')
     try:
         if ad_allowed:
             probe=await call_service({'API_TYPE':'AD_PROBE','question':question,'request_id':ident,

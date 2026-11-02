@@ -1,0 +1,811 @@
+{
+  "version": "gold-shape-development-20261102-r1",
+  "registration_sha256": "e861adfcccc0b8aeb5edbc2ca299d6cb7d3c32d49f0625d08026a84d3be420f0",
+  "agent_ddl_sha256": {
+    "01_CREATE_LGL_AGT_RUN_A.sql": "c7be17a8536152069c347396682e78654ab606ddcbe3732d3146a4eb42fbe6c5",
+    "02_CREATE_LGL_AGT_REC_A.sql": "ee2b919ee35cfc11a4f3526a31b47e281fb831c0dc1b7ed2971e3cddad469651",
+    "03_CREATE_LGL_AGT_BODY_A.sql": "03fa809c0b21ebb5dee012777872434b553dd570dbe8670529f95aa1adab3495",
+    "optional/90_CREATE_STATE_ONLY_IF_MISSING.sql": "a9fc4d36c933e5fd909f55f711014ba816bc0ba2d1096d8e70a4808ee045f651"
+  },
+  "tables": {
+    "DOC_VER": {
+      "name": "LGL_G19_DOC_VER_S",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_NAME": {
+          "name": "RGLT_DOC_NAME",
+          "type": "VARCHAR2(2250 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "DOC_ADDN_IFMN_CTNT": {
+          "name": "DOC_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "indexes": [],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "DOC_UNIT": {
+      "name": "LGL_G19_DOC_UNIT_S",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "UPPR_STRC_UNIT_ID": {
+          "name": "UPPR_STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "STRC_UNIT_ADDN_IFMN_CTNT": {
+          "name": "STRC_UNIT_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "STRC_UNIT_ID"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "UPPR_STRC_UNIT_ID",
+          "STRC_UNIT_ID"
+        ]
+      ],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "DOC_BLK": {
+      "name": "LGL_G19_DOC_BLK_S",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "BODY_SLC_ID": {
+          "name": "BODY_SLC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_CTNT": {
+          "name": "BODY_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_SLC_ADDN_IFMN_CTNT": {
+          "name": "BODY_SLC_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        },
+        "ADD_INFO_TEXT_OMIT_YN": {
+          "name": "ADDN_IFMN_UN_APPN_YN",
+          "type": "CHAR(1 BYTE)",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "BODY_SLC_ID"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "STRC_UNIT_ID",
+          "BODY_SLC_ID"
+        ]
+      ],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "SRC_POST": {
+      "name": "LGL_G19_SRC_POST_S",
+      "columns": {
+        "DOC_POST_HASH_VALU": {
+          "name": "BODY_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_POST_IFMN_CTNT": {
+          "name": "BODY_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        },
+        "RGSN_AITM": {
+          "name": "RGSN_AITM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": "SYSTIMESTAMP"
+        }
+      },
+      "primary_key": [
+        "DOC_POST_HASH_VALU"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_POST_HASH_VALU"
+        ]
+      ],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "SRCH_POST": {
+      "name": "LGL_G19_SRCH_POST_S",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_POST_IFMN_CTNT": {
+          "name": "RFRN_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "indexes": [],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "SRCH_ROW": {
+      "name": "LGL_G19_SRCH_ROW_S",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_DTA_TYPE_VALU": {
+          "name": "RFRN_DTA_TYPE_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_DTA_ID": {
+          "name": "RFRN_DTA_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "RFRN_DTA_IDNF_CTNT": {
+          "name": "RFRN_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BLNG_DTA_IDNF_CTNT": {
+          "name": "BLNG_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "TAGT_DTA_IDNF_CTNT": {
+          "name": "TAGT_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "SRCH_DATA_HASH_VALU": {
+          "name": "SRCH_DATA_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SRCH_DATA_CTNT": {
+          "name": "SRCH_DATA_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU",
+        "RFRN_DTA_TYPE_VALU",
+        "RFRN_DTA_ID"
+      ],
+      "indexes": [
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "RFRN_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "BLNG_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "TAGT_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "DOC_ID"
+        ]
+      ],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "SRCH_CHNL": {
+      "name": "LGL_G19_SRCH_CHNL_S",
+      "columns": {
+        "RFRN_CHNL_NAME": {
+          "name": "RFRN_CHNL_NAME",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_ORD",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_CHNL_NAME"
+      ],
+      "indexes": [],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "ONTL_POST": {
+      "name": "LGL_G19_ONTL_POST_A",
+      "columns": {
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CNCP_GROP_ID": {
+          "name": "CNCP_GROP_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "WORK_VER_NO": {
+          "name": "WORK_VER_NO",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        },
+        "POST_CTNT_HASH_VALU": {
+          "name": "POST_CTNT_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "POST_KNWL_CTNT": {
+          "name": "POST_KNWL_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "ONTL_POST_ID"
+      ],
+      "indexes": [
+        [
+          "CNCP_GROP_ID",
+          "WORK_VER_NO"
+        ]
+      ],
+      "owner": "SIDDA",
+      "group": "GOLD_R19"
+    },
+    "ONTL_HEAD": {
+      "name": "LGL_G19_ONTL_HEAD_A",
+      "columns": {
+        "CNCP_GROP_ID": {
+          "name": "CNCP_GROP_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_ORD",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "CNCP_GROP_ID"
+      ],
+      "indexes": [
+        [
+          "ONTL_POST_ID",
+          "CNCP_GROP_ID"
+        ]
+      ],
+      "owner": "SIDDA",
+      "group": "GOLD_R19"
+    },
+    "ONTL_ANC": {
+      "name": "LGL_G19_ONTL_ANC_A",
+      "columns": {
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_LCT_HASH_VALU": {
+          "name": "DOC_LCT_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "ONTL_POST_ID",
+        "DOC_LCT_HASH_VALU"
+      ],
+      "indexes": [
+        [
+          "DOC_LCT_HASH_VALU",
+          "ONTL_POST_ID"
+        ]
+      ],
+      "owner": "SIDDA",
+      "group": "GOLD_R19"
+    },
+    "VCTR_POST": {
+      "name": "LGL_G19_VCTR_POST_S",
+      "columns": {
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_POST_IFMN_CTNT": {
+          "name": "VCTR_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "VCTR_POST_ID"
+      ],
+      "indexes": [],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "VCTR_ITEM": {
+      "name": "LGL_G19_VCTR_ITEM_S",
+      "columns": {
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_SEG_ID": {
+          "name": "VCTR_SCTN_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SRC_UNIT_ID": {
+          "name": "BODY_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_META_CTNT": {
+          "name": "VCTR_DTLS_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        },
+        "EMBD_VCTR_VALU": {
+          "name": "EMBD_VCTR",
+          "type": "VECTOR(*,FLOAT32)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "VCTR_POST_ID",
+        "VCTR_SEG_ID"
+      ],
+      "indexes": [
+        [
+          "VCTR_POST_ID",
+          "DOC_ID",
+          "SRC_UNIT_ID",
+          "VCTR_SEG_ID"
+        ]
+      ],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "VCTR_HEAD": {
+      "name": "LGL_G19_VCTR_HEAD_S",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_ORD",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "indexes": [],
+      "owner": "SIDDS",
+      "group": "GOLD_R19"
+    },
+    "AGT_RUN": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_RUN_A",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RUN_KEY_HASH_VAL": {
+          "name": "RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SESS_KEY_HASH_VAL": {
+          "name": "SESS_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "REQ_KEY_HASH_VAL": {
+          "name": "REQ_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "PRNT_RUN_KEY_HASH_VAL": {
+          "name": "PRNT_RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "ST_CD": {
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRT_DTTM": {
+          "name": "STRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": null
+        },
+        "CHG_DTTM": {
+          "name": "CHG_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ],
+      "indexes": [],
+      "index_sql": [
+        "CREATE INDEX SIDDA.LGL_AR01_I1_A ON SIDDA.LGL_AGT_RUN_A (SCOPE_HASH_VAL, SESS_KEY_HASH_VAL, STRT_DTTM, RUN_KEY_HASH_VAL)",
+        "CREATE INDEX SIDDA.LGL_AR01_I2_A ON SIDDA.LGL_AGT_RUN_A (SCOPE_HASH_VAL, REQ_KEY_HASH_VAL, RUN_KEY_HASH_VAL)",
+        "CREATE INDEX SIDDA.LGL_AR01_I3_A ON SIDDA.LGL_AGT_RUN_A (SCOPE_HASH_VAL, PRNT_RUN_KEY_HASH_VAL, RUN_KEY_HASH_VAL)",
+        "CREATE INDEX SIDDA.LGL_AR01_I4_A ON SIDDA.LGL_AGT_RUN_A (SCOPE_HASH_VAL, ST_CD, CHG_DTTM, RUN_KEY_HASH_VAL)"
+      ],
+      "group": "AGENT",
+      "create_sql": "CREATE TABLE SIDDA.LGL_AGT_RUN_A (\n  SCOPE_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  RUN_KEY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  SESS_KEY_HASH_VAL VARCHAR2(64 BYTE),\n  REQ_KEY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  PRNT_RUN_KEY_HASH_VAL VARCHAR2(64 BYTE),\n  ST_CD VARCHAR2(32 BYTE) NOT NULL,\n  STRT_DTTM TIMESTAMP(6) WITH TIME ZONE NOT NULL,\n  CHG_DTTM TIMESTAMP(6) WITH TIME ZONE NOT NULL,\n  BODY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  CONSTRAINT LGL_AR01_PK_A PRIMARY KEY (SCOPE_HASH_VAL, RUN_KEY_HASH_VAL)\n)"
+    },
+    "AGT_REC": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_REC_A",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "OWNER_KEY_HASH_VAL": {
+          "name": "OWNER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_KIND_CD": {
+          "name": "REC_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_KEY_HASH_VAL": {
+          "name": "REC_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_REV_NO": {
+          "name": "REC_REV_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "ORD_SEQ_NO": {
+          "name": "ORD_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "LOOKUP_HASH_VAL": {
+          "name": "LOOKUP_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_KEY_HASH_VAL",
+        "REC_REV_NO"
+      ],
+      "indexes": [],
+      "index_sql": [
+        "CREATE INDEX SIDDA.LGL_AR02_I1_A ON SIDDA.LGL_AGT_REC_A (SCOPE_HASH_VAL, OWNER_KEY_HASH_VAL, REC_KIND_CD, REC_REV_NO, ORD_SEQ_NO, REC_KEY_HASH_VAL)",
+        "CREATE INDEX SIDDA.LGL_AR02_I2_A ON SIDDA.LGL_AGT_REC_A (SCOPE_HASH_VAL, OWNER_KEY_HASH_VAL, REC_KIND_CD, REC_REV_NO, LOOKUP_HASH_VAL, ORD_SEQ_NO)",
+        "CREATE INDEX SIDDA.LGL_AR02_I3_A ON SIDDA.LGL_AGT_REC_A (SCOPE_HASH_VAL, REC_KIND_CD, REC_REV_NO, LOOKUP_HASH_VAL, REC_KEY_HASH_VAL, OWNER_KEY_HASH_VAL)"
+      ],
+      "group": "AGENT",
+      "create_sql": "CREATE TABLE SIDDA.LGL_AGT_REC_A (\n  SCOPE_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  OWNER_KEY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  REC_KIND_CD VARCHAR2(64 BYTE) NOT NULL,\n  REC_KEY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  REC_REV_NO NUMBER(18) NOT NULL,\n  ORD_SEQ_NO NUMBER(18) NOT NULL,\n  LOOKUP_HASH_VAL VARCHAR2(64 BYTE),\n  BODY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  CONSTRAINT LGL_AR02_PK_A PRIMARY KEY (SCOPE_HASH_VAL, OWNER_KEY_HASH_VAL, REC_KIND_CD, REC_KEY_HASH_VAL, REC_REV_NO)\n)"
+    },
+    "AGT_BODY": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_BODY_A",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "PART_SEQ_NO": {
+          "name": "PART_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "PART_JSON_CN": {
+          "name": "PART_JSON_CN",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "BODY_HASH_VAL",
+        "PART_SEQ_NO"
+      ],
+      "indexes": [],
+      "index_sql": [],
+      "group": "AGENT",
+      "create_sql": "CREATE TABLE SIDDA.LGL_AGT_BODY_A (\n  SCOPE_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  BODY_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  PART_SEQ_NO NUMBER(18) NOT NULL,\n  PART_JSON_CN CLOB NOT NULL,\n  CONSTRAINT LGL_AR03_PK_A PRIMARY KEY (SCOPE_HASH_VAL, BODY_HASH_VAL, PART_SEQ_NO)\n)"
+    },
+    "EXEC_ST": {
+      "owner": "SIDDA",
+      "name": "LGL_EXEC_ST_A",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ST_KEY_ID": {
+          "name": "ST_KEY_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CHG_SEQ_NO": {
+          "name": "CHG_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "ST_HASH_VAL": {
+          "name": "ST_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ST_JSON_CN": {
+          "name": "ST_JSON_CN",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "ST_KEY_ID"
+      ],
+      "indexes": [],
+      "index_sql": [],
+      "group": "AGENT",
+      "create_sql": "CREATE TABLE SIDDA.LGL_EXEC_ST_A (\n  SCOPE_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  ST_KEY_ID VARCHAR2(128 BYTE) NOT NULL,\n  CHG_SEQ_NO NUMBER(18) NOT NULL,\n  ST_HASH_VAL VARCHAR2(64 BYTE) NOT NULL,\n  ST_JSON_CN CLOB NOT NULL,\n  CONSTRAINT LGL_EXEC_ST_PK_A PRIMARY KEY (SCOPE_HASH_VAL,ST_KEY_ID),\n  CONSTRAINT LGL_EXEC_ST_RCK_A CHECK (CHG_SEQ_NO>=1),\n  CONSTRAINT LGL_EXEC_ST_JCK_A CHECK (ST_JSON_CN IS JSON)\n)"
+    }
+  }
+}

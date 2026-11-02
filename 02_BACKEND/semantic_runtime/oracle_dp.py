@@ -52,7 +52,10 @@ def client_from_environment():
         options['base_url']=os.environ['ORACLE_ORDS_BASE_URL'].strip()
     try:
         client=ORDSClient(**options)
-        if os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
+        physical_mode=os.environ.get('GENOS_ORACLE_TABLE_MAPPING','mapped').strip().lower()
+        if physical_mode not in ('mapped','legacy'):
+            raise DPError('DP_CONFIG: GENOS_ORACLE_TABLE_MAPPING must be mapped or legacy')
+        if (enabled() and physical_mode=='mapped') or os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
             from .physical_mapping import SchemaMap
             client.schema_map=SchemaMap.load(Path(__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/physical_mapping.yaml')
         return client

@@ -8,8 +8,8 @@ from datetime import date, datetime, timezone, timedelta
 import hashlib
 import importlib.util
 import json
-from pathlib import Path
-import sqlite3
+from .oracle_runtime_paths import Path
+from . import runtime_sqlite as sqlite3
 import sys
 import time
 from types import SimpleNamespace
@@ -127,7 +127,7 @@ class Services:
     def context(self, request, binding, run_id, journal):
         deadline_at = None
         if journal.is_file():
-            import sqlite3
+            from . import runtime_sqlite as sqlite3
             with sqlite3.connect('file:'+str(journal)+'?mode=ro', uri=True) as db:
                 deadline_at = db.execute('SELECT deadline_at FROM run WHERE singleton=1').fetchone()[0]
         query = {'id':'workflow-query:'+run_id, 'question':request['question'] or '선택 내규 전체의 근거 외규 조사',

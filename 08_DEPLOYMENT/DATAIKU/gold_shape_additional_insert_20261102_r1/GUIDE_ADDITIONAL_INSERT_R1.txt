@@ -1,0 +1,51 @@
+Gold 형태 R1 — 초기 적재 뒤 추가 INSERT 실행 안내
+
+첨부
+1. DATAIKU_GOLD_SHAPE_20261102_R1.zip
+2. DATAIKU_GOLD_ADDITIONAL_INSERT_R1.txt
+3. DATAIKU_GOLD_VERIFY_AFTER_LOAD_R1.txt
+4. GUIDE_ADDITIONAL_INSERT_R1.txt
+
+실행 위치와 준비
+Dataiku LEGAL_RAG 프로젝트에서 기존 R1을 실행한 Python/Jupyter 노트북의 새 셀을 사용합니다.
+SQL 노트북에 붙이지 않습니다. AIDP 연결과 기존 R11 원본/준비 명세를 사용합니다.
+ZIP은 앞서 보낸 R1과 바이트까지 같습니다. 이미 LEGAL_RAG 관리 폴더 ehA8dpVm에 올렸다면 다시 올릴 필요 없습니다.
+아직 없다면 첨부 ZIP을 이름 그대로 ehA8dpVm에 올립니다. 동일 이름 ZIP이 여러 경로에 있으면 중단합니다.
+
+1. 추가 INSERT
+앞선 ACTION='start' 셀에서 INITIAL_SOURCE_LOADED가 나왔고 기존 실행이 종료됐는지 확인합니다.
+DATAIKU_GOLD_ADDITIONAL_INSERT_R1.txt 전체를 새 Python 셀에 붙여 실행합니다.
+ACTION='load'가 이미 설정되어 있으므로 바꿀 필요 없습니다.
+
+대상: 신규 Gold 형태 LGL_G19_* 개발계 표입니다. 과거 실패한 LGL_SRCH_ROW_S로 되돌아가지 않습니다.
+원문3표에서 이미 성공 확인된 분량 이후를 이어 넣고, 이어서 준비 명세의 전체 검색 자료를 적재합니다.
+동일한 코드·원본·대상 DB 객체·기존 R1 재개 기록을 확인하며, 17표 INSERT/ROLLBACK 관문도 다시 수행합니다.
+오류가 나면 후속 적재를 중단합니다. 기존 완료분을 삭제하거나 처음부터 다시 쓰지 않습니다.
+LOADED_UNVERIFIED가 나오면 추가 적재가 끝났고 전수검증은 아직 남은 상태입니다.
+
+2. 적재 후 검증
+LOADED_UNVERIFIED를 확인한 뒤 DATAIKU_GOLD_VERIFY_AFTER_LOAD_R1.txt 전체를 다음 새 셀에서 실행합니다.
+ACTION='verify_publish'가 이미 설정되어 있습니다.
+전체 원문·검색 내용과 행수를 검증하고 별도 시험 게시 정보를 기록합니다.
+SOURCE_QUERY_VERIFIED가 원문/검색 적재·검증 완료 표시입니다. 임베딩·서비스 전환 완료 표시는 아닙니다.
+두 셀을 결과 확인 없이 한꺼번에 큐에 넣지 않습니다.
+
+중단과 재개
+추가 적재가 중단되면 같은 ADDITIONAL_INSERT TXT를 다시 실행해 동일 작업의 기록을 사용합니다.
+결과가 불명확한 마지막 묶음은 DB 내용으로 먼저 확인합니다. 확인되지 않거나 충돌하면 중단합니다.
+RETRY_MISSING_BATCH=False를 유지하고 state.json이나 기존 원본을 삭제하지 않습니다.
+검증 중단은 VERIFY_AFTER_LOAD TXT로 이어갑니다.
+원래 기한 종료·대상/코드/원본 해시 변경·용량 부족은 재실행만으로 해결되지 않습니다.
+초기 실행에서 OLD_JOB_DIR을 직접 지정했다면 추가/검증 TXT에도 같은 절대 경로를 넣습니다.
+기본 경로는 <현재 임시 폴더>/legal-existing-nfs-20261029-r1/financial-risk-success-20261005-schema-r2/oracle-import-r2 입니다.
+
+출력과 시간
+화면은 최근 상태 최대18줄로 갱신됩니다. 실패 시 현재 화면을 캡처합니다.
+전체 검색 자료는 기존 준비 명세의 약6천만 행이므로 추가 INSERT와 전수검증은 장시간이 걸릴 수 있습니다.
+새 데이터가 계속 들어오는 증분 수집 코드가 아니라, 같은 고정 원본의 남은 분량을 이어 넣는 코드입니다.
+임베딩 API 호출이나 과거 Agent 실행 기록 전량 이관은 실행하지 않습니다.
+
+발송 전 확인
+기존 검증된 R1 ZIP은 변경하지 않았습니다. 두 TXT는 실행 ACTION 값만 다릅니다.
+Python 문법, ZIP 전체 파일 해시, 기존 ZIP과의 바이트 일치, 중첩 ZIP/JavaScript 부재를 확인했습니다.
+삼성 현장 DB에 이번 추가 INSERT를 직접 실행한 것은 아닙니다.

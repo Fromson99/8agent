@@ -1,6 +1,6 @@
 """An explicit store-generation pointer; no latest-directory selection."""
 import json
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .corrected_memory import MemoryError,digest
 
 
@@ -22,6 +22,11 @@ from contextlib import contextmanager
 def store_owner(runtime, *, exclusive=False):
     import fcntl
     base=selected_store(runtime).parent;base.mkdir(parents=True,exist_ok=True,mode=0o700)
+    from ..oracle_runtime_paths import virtual, records
+    if virtual(base):
+        with records().shared_lease(['store-generation', str(base)], exclusive=exclusive):
+            yield
+        return
     with (base/'.store-owner').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH)
         try:yield

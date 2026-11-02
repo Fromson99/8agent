@@ -145,7 +145,7 @@ class ScopeTransport(FocusedTransport):
         super().__init__(); self.mode = mode; self.version = version; self.navigation = []
     def send_once(self, *, body, ticket):
         view = expand_cards(json.loads(body['messages'][1]['content'])['view'])
-        phase = view.get('source_stage', view['phase'])
+        phase = view.get('source_stage') or view['phase']
         if phase.startswith('source-law-navigation-'):
             self.navigation.append(deepcopy(view))
             if not view['sources'] and (self.mode == 'repeat' or self.mode == 'repair' and len(self.navigation) == 1):
@@ -179,7 +179,8 @@ class ScopeTransport(FocusedTransport):
                         norm.pop('source_quote')
                         norm['source_ref'] = next(o['id'] for o in view['evidence_options']
                             if o['id'] in norm['evidence_refs'] and '승인 후 보고한다.' in o['text'])
-            if self.version == cc.V8:out.pop('disposition')
+            # Minimal ASSESS wire derives disposition for every completion version.
+            out.pop('disposition')
             return wire(out)
         return super().send_once(body=body, ticket=ticket)
 
@@ -220,18 +221,25 @@ def test_actual_api_normal_repair_and_failure(tmp_path, tree, monkeypatch, versi
             with sqlite3.connect(paths[0]) as db:
                 saved = json.loads(db.execute("SELECT payload_json FROM event WHERE kind='RUN_FAILED'").fetchone()[0])
             calls = len(transport.phases)
+            first_diagnostic = deepcopy(observed[-1])
             assert api.post('/v1/rag/ask', json=body).status_code != 200
             assert len(transport.phases) == calls
     if mode == 'repeat':
         assert response.status_code == 422
         assert len(transport.navigation) == 2 and observed
-        detail = observed[-1]
-        assert detail['output_contract']['category'] == 'OUTPUT_SHAPE_INVALID'
+        detail = first_diagnostic
+        assert detail['output_contract']['category'] == 'INVESTIGATION_INCOMPLETE'
         assert detail['output_contract']['repairable'] is False
         assert all(not r['repairable'] for r in detail['output_contract']['issues'])
         assert detail['investigation']['stop_reason'] == 'MODEL_DECISION_UNRESOLVED'
         assert detail['investigation']['resume_available'] is False
-        assert len([r for r in detail['investigation']['blockers'] if r['code']=='MODEL_DECISION_REJECTED']) == 2
+        # The public stop is generic; both exact validation failures remain durable.
+        with sqlite3.connect(paths[0]) as db:
+            rejected=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE'")
+                      if json.loads(v).get('status')=='REJECTED']
+        assert len(rejected)==2
+        assert all(r['failure']['category']=='OUTPUT_SHAPE_INVALID' for r in rejected)
+        assert rejected[-1]['repairable'] is False
         assert not any(p.startswith('memory-assess') for p in transport.phases)
         with sqlite3.connect(paths[0]) as db:
             assert saved == json.loads(db.execute("SELECT payload_json FROM event WHERE kind='RUN_FAILED'").fetchone()[0])

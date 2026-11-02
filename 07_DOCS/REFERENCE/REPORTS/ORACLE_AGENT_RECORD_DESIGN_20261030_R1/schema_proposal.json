@@ -1,0 +1,1036 @@
+{
+  "status": "DESIGN_ONLY",
+  "new_table_count": 7,
+  "new_column_count": 85,
+  "reused_table_count": 1,
+  "reused_column_count": 5,
+  "gold_ddl_changes": 0,
+  "owner": "__AGENT_OWNER__",
+  "owner_note": "개발계 SIDDA는 기존 지정값. 실제 대상·권한·물리명 등록은 미확인",
+  "tables": [
+    {
+      "key": "session",
+      "name": "LGL_AGT_SESS_A",
+      "title": "에이전트대화정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "대화 식별·소유 주체와 목록 조회",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "대화키해시값",
+          "name": "SESS_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "원 세션 ID와 주체를 결속한 버전 있는 키",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "사용자키해시값",
+          "name": "USER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "인증된 원 사용자 식별값의 키; 원문은 본문에 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "팀키해시값",
+          "name": "TEAM_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "인증된 원 팀 식별값의 키",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경순번",
+          "name": "CHG_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "대화 메타데이터 CAS 순번",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성일시",
+          "name": "CRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "DB 또는 검증된 원기록의 시각; 이관 원시 시각 문자열은 본문에도 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경일시",
+          "name": "CHG_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "현재 투영의 마지막 커밋 시각",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "SESS_KEY_HASH_VAL"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "USER_KEY_HASH_VAL",
+          "TEAM_KEY_HASH_VAL",
+          "CHG_DTTM",
+          "SESS_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "run",
+      "name": "LGL_AGT_RUN_A",
+      "title": "에이전트실행정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "실행·요청·부모 실행·복구 대상의 작은 현재 투영",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "실행키해시값",
+          "name": "RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "기존 run ID를 namespace와 결속; 원 ID 보존",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "대화키해시값",
+          "name": "SESS_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "대화 없는 내부 workflow는 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "요청키해시값",
+          "name": "REQ_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "주체·세션·request ID 결속; 같은 요청의 복수 과거 run을 허용",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "부모실행키해시값",
+          "name": "PRNT_RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "부모 workflow 실행; 없으면 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "실행종류코드",
+          "name": "RUN_KIND_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "NATIVE/WORKFLOW 등 등록된 저장 종류",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "상태코드",
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "기존 RUNNING/COMMIT_READY/COMPLETED/INTERRUPTED/FAILED 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "단계코드",
+          "name": "PHASE_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "현재 단계; 기록 종류의 명시 계약으로 검증",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경순번",
+          "name": "CHG_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "실행 투영 CAS 순번",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "실행결속해시값",
+          "name": "BIND_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "원래 코드·입력·원문·권한 binding hash",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "요청본문해시값",
+          "name": "REQ_BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "정확한 요청과 원 식별자·원 schema·binding 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "결과본문해시값",
+          "name": "RSLT_BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "확정 발행 응답; 미완료이면 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "시작일시",
+          "name": "STRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "최초 실행 시작",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "마감일시",
+          "name": "DLN_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "최초 deadline 유지; 재개 시 연장 금지",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "종료일시",
+          "name": "END_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": true,
+          "description": "미종료이면 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경일시",
+          "name": "CHG_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "현재 투영의 마지막 커밋 시각",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "SESS_KEY_HASH_VAL",
+          "STRT_DTTM",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "REQ_KEY_HASH_VAL",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "ST_CD",
+          "CHG_DTTM",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "PRNT_RUN_KEY_HASH_VAL",
+          "RUN_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "event",
+      "name": "LGL_AGT_EVT_A",
+      "title": "에이전트사건이력",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "원기록·정정·트랜잭션 영수증을 순서대로 추가",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "소유객체키해시값",
+          "name": "OWNER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "run/session/goal/store namespace를 포함한 소유키",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "사건순번",
+          "name": "EVT_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "소유 객체별 증가 순번; legacy 순번은 본문에도 보존",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "사건키해시값",
+          "name": "EVT_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "멱등 사건/operation ID의 결속키",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "사건종류코드",
+          "name": "EVT_KIND_CD",
+          "type": "VARCHAR2(96 BYTE)",
+          "nullable": false,
+          "description": "원래 event kind 또는 제안 영수증 종류",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경전순번",
+          "name": "PREV_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "원래 상태 before; 없는 기록은 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경후순번",
+          "name": "NEXT_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "원래 상태 after; 없는 기록은 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성일시",
+          "name": "CRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "DB 또는 검증된 원기록의 시각; 이관 원시 시각 문자열은 본문에도 보존",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "EVT_SEQ_NO"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "OWNER_KEY_HASH_VAL",
+          "EVT_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "OWNER_KEY_HASH_VAL",
+          "EVT_KIND_CD",
+          "EVT_SEQ_NO"
+        ]
+      ]
+    },
+    {
+      "key": "record",
+      "name": "LGL_AGT_REC_A",
+      "title": "에이전트판본기록",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "판단·근거·view·작업 상태의 타입 있는 불변 판본",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "소유객체키해시값",
+          "name": "OWNER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "같은 영역의 run/session/goal/store별 소유키",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록종류코드",
+          "name": "REC_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "고정 registry의 ENTITY/EVIDENCE/SPAN/VIEW/GOAL/OUTBOX 등",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록키해시값",
+          "name": "REC_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "원 PK tuple과 종류의 해시; 원 PK tuple을 본문에서 대조",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록판본순번",
+          "name": "REC_REV_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "불변 기록 판본. 수정은 새 판본+현재 head CAS",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "상태코드",
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": true,
+          "description": "현재 해당 판본의 원 상태; 상태 없는 종류는 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "정렬순번",
+          "name": "ORD_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "질문 ordinal/span ordinal/우선순위 등 종류별 의미 고정",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "참조키해시값",
+          "name": "LOOKUP_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "등록된 종류별 입력 hash/term/anchor 등 조회키; 임의 JSON path 아님",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성사건키해시값",
+          "name": "CRT_EVT_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "판본을 만든 불변 사건; legacy 누락을 창작하지 않음",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성일시",
+          "name": "CRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "DB 또는 검증된 원기록의 시각; 이관 원시 시각 문자열은 본문에도 보존",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_KEY_HASH_VAL",
+        "REC_REV_NO"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "OWNER_KEY_HASH_VAL",
+          "REC_KIND_CD",
+          "ST_CD",
+          "ORD_SEQ_NO"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "REC_KIND_CD",
+          "LOOKUP_HASH_VAL",
+          "REC_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "edge",
+      "name": "LGL_AGT_REF_A",
+      "title": "에이전트기록연결정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "근거·전달·의존·정정·부모자식·본문 구성 참조",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "연결키해시값",
+          "name": "REF_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "종류·양끝점·순번 등 원 PK 전체 결속",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "연결종류코드",
+          "name": "REF_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "DEPENDENCY/PRESENTATION/CHILD_RUN/SPAN_OF 등 registry",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출발소유키해시값",
+          "name": "FROM_OWNER_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "출발 객체의 소유키",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출발종류코드",
+          "name": "FROM_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "출발 기록 종류",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출발키해시값",
+          "name": "FROM_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "출발 객체키",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출발판본순번",
+          "name": "FROM_REV_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "출발 판본",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "도착소유키해시값",
+          "name": "TO_OWNER_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "도착 객체의 소유키; cross-run도 명시",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "도착종류코드",
+          "name": "TO_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "도착 기록 종류",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "도착키해시값",
+          "name": "TO_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "도착 객체키",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "도착판본순번",
+          "name": "TO_REV_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "도착 판본",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "순번",
+          "name": "ORD_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "출현·전달·구간 순서. 없으면 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성일시",
+          "name": "CRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "DB 또는 검증된 원기록의 시각; 이관 원시 시각 문자열은 본문에도 보존",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "REF_KEY_HASH_VAL"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "FROM_OWNER_HASH_VAL",
+          "FROM_KIND_CD",
+          "FROM_KEY_HASH_VAL",
+          "FROM_REV_NO",
+          "REF_KIND_CD"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "TO_OWNER_HASH_VAL",
+          "TO_KIND_CD",
+          "TO_KEY_HASH_VAL",
+          "TO_REV_NO",
+          "REF_KIND_CD"
+        ]
+      ]
+    },
+    {
+      "key": "call",
+      "name": "LGL_AGT_CALL_A",
+      "title": "에이전트호출정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "모델·상태 변경 도구의 준비/전송/수신/불명 상태",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "실행키해시값",
+          "name": "RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "호출 소유 실행",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "호출키해시값",
+          "name": "CALL_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "기존 attempt/call ID 결속",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "논리호출키해시값",
+          "name": "LGC_CALL_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "같은 논리 요청의 시도 묶음",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "시도순번",
+          "name": "TRY_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "최초 및 허용 보완 시도 순번",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "호출종류코드",
+          "name": "CALL_KIND_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "MODEL/TOOL/WORKFLOW. 종류별 상태 계약",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "상태코드",
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "PREPARED/SENT/SUCCEEDED/FAILED/UNKNOWN/IGNORED_LATE 등 원 계약",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "입력화면키해시값",
+          "name": "VIEW_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "정확히 전달한 model_view/presentation 결속",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "입력본문해시값",
+          "name": "IN_BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "원래 모델/도구 요청 바이트",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출력본문해시값",
+          "name": "OUT_BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "미수신은 NULL; 부분/실패 출력도 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "영수증본문해시값",
+          "name": "RCPT_BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "원래 전송·사용량·provider/시각/분류/원 hash",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "입력토큰수",
+          "name": "IN_TKN_CNT",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "미보고는 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "출력토큰수",
+          "name": "OUT_TKN_CNT",
+          "type": "NUMBER(18)",
+          "nullable": true,
+          "description": "미보고는 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "보고비용금액",
+          "name": "COST_AMT",
+          "type": "NUMBER(30,12)",
+          "nullable": true,
+          "description": "보고 비용의 조회용 투영; 원 단위·정밀도·표기는 영수증 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "시작일시",
+          "name": "STRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": true,
+          "description": "전송 전 원 계약의 시각",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "종료일시",
+          "name": "END_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": true,
+          "description": "미종료/미보고는 NULL",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "RUN_KEY_HASH_VAL",
+        "CALL_KEY_HASH_VAL"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "RUN_KEY_HASH_VAL",
+          "LGC_CALL_HASH_VAL",
+          "TRY_SEQ_NO"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "ST_CD",
+          "RUN_KEY_HASH_VAL",
+          "CALL_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "body",
+      "name": "LGL_AGT_BODY_A",
+      "title": "에이전트본문조각정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "정확한 원기록 바이트를 무손실 분할·압축 보관",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "전체 복원 바이트 SHA256",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "조각순번",
+          "name": "PART_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "0부터 시작하는 고정 분할 순번",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "전체조각수",
+          "name": "PART_CNT",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "본문 조각 수; 모든 행에서 동일",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "전체원본바이트수",
+          "name": "TOT_BYTE_CNT",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "전체 복원 크기; 모든 행에서 동일",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "조각원본바이트수",
+          "name": "ORG_BYTE_CNT",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "현재 조각의 압축 전 크기",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "조각원본해시값",
+          "name": "PART_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "현재 조각의 복원 바이트 SHA256",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "저장문자해시값",
+          "name": "STOR_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "실제 CLOB ASCII 바이트 SHA256",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "압축방식코드",
+          "name": "CODEC_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "RAW_BASE64/ZLIB_BASE64. 원래 bytes를 exact 복원",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문조각내용",
+          "name": "PART_CN",
+          "type": "CLOB",
+          "nullable": false,
+          "description": "ASCII base64. CLOB 전송 가능 경로를 재사용; native BLOB 필수 아님",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "생성일시",
+          "name": "CRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "DB 또는 검증된 원기록의 시각; 이관 원시 시각 문자열은 본문에도 보존",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "BODY_HASH_VAL",
+        "PART_SEQ_NO"
+      ],
+      "indexes": []
+    }
+  ],
+  "existing_state": {
+    "key": "state",
+    "name": "LGL_EXEC_ST_A",
+    "title": "기존에이전트실행상태정보",
+    "layer": "Agent",
+    "status": "EXISTING_MAPPING_NO_DDL_CHANGE",
+    "responsibility": "요청 멱등·누적 예산·현재 head·소유권 토큰의 작은 CAS 객체",
+    "columns": [
+      {
+        "logical": "범위해시값",
+        "name": "SCOPE_HASH_VAL",
+        "type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "description": "새 agent:v1 namespace는 legacy scope와 구분",
+        "pk": true,
+        "default": null
+      },
+      {
+        "logical": "상태키ID",
+        "name": "ST_KEY_ID",
+        "type": "VARCHAR2(128 BYTE)",
+        "nullable": false,
+        "description": "a1:req/head/lease/budget/cursor:<64hex> 등의 제한된 키",
+        "pk": true,
+        "default": null
+      },
+      {
+        "logical": "변경순번",
+        "name": "CHG_SEQ_NO",
+        "type": "NUMBER(18)",
+        "nullable": false,
+        "description": "원래 CAS 계약",
+        "pk": false,
+        "default": null
+      },
+      {
+        "logical": "상태해시값",
+        "name": "ST_HASH_VAL",
+        "type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "description": "원래 scope/key/revision/value hash 계약 유지",
+        "pk": false,
+        "default": null
+      },
+      {
+        "logical": "상태JSON내용",
+        "name": "ST_JSON_CN",
+        "type": "CLOB",
+        "nullable": false,
+        "description": "작은 현재 포인터·소유권·예산. 큰 이력 본문 금지",
+        "pk": false,
+        "default": null
+      }
+    ],
+    "pk": [
+      "SCOPE_HASH_VAL",
+      "ST_KEY_ID"
+    ],
+    "indexes": []
+  },
+  "caveat": "기존 의미 계약을 보존하기 위한 축소 제안; 절대 최소 표 수 증명 또는 Oracle 구현 완료가 아님"
+}

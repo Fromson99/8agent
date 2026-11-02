@@ -120,7 +120,7 @@ def test_request_ontology_preserves_column_order_and_uses_query_budget():
         calls.append((sql, binds, limit))
         # A bounded JSON row preserves positional columns without depending on
         # response-object key order; no package read is allowed by this ACL.
-        return [{'ROWS_JSON': json.dumps([['publication', 'private']])}]
+        return [{'ROWS_JSON': json.dumps([['publication', 'private', 'cb-legacy']])}]
     repo = GoldMapping(value()).request_ontology_repository(SimpleNamespace(sql=SimpleNamespace(query=query)))
     anchor = {'document_id': 'public', 'version': 'v1', 'unit_id': 'u1'}
     assert repo.lookup(anchor, {'public'}) == []
@@ -140,7 +140,7 @@ def test_request_ontology_keeps_existing_anchor_bound_in_one_call(count):
     def query(sql, binds, limit):
         calls.append(sql)
         assert limit == 1 and 'FETCH FIRST 1025 ROWS ONLY' in sql
-        return [{'ROWS_JSON': json.dumps([['p', 'private']] * count)}]
+        return [{'ROWS_JSON': json.dumps([['p', 'private', 'cb-legacy']] * count)}]
     repo = GoldMapping(value()).request_ontology_repository(SimpleNamespace(sql=SimpleNamespace(query=query)))
     anchor = {'document_id': 'public', 'version': 'v1', 'unit_id': 'u1'}
     if count == 1025:
@@ -149,6 +149,28 @@ def test_request_ontology_keeps_existing_anchor_bound_in_one_call(count):
     else:
         assert repo.lookup(anchor, {'public'}) == []
     assert len(calls) == 1
+
+
+def test_workspace_scope_and_current_authority_use_mapped_read_only_port():
+    from types import SimpleNamespace
+    from semantic_runtime.ontology_work.wiki_contracts import scope_key
+    scope = scope_key({'namespace': 'test-team', 'acl_ref': 'test-acl', 'source_snapshot': 'test-source'})
+    bid = 'cb-kb-ws-' + scope + '-' + '1' * 32
+    ref = {'bundle_id': bid, 'publication_id': 'p', 'package_sha256': 'a' * 64}
+    calls = []
+    def query(sql, binds, limit):
+        calls.append(sql)
+        assert 'IDD_B03_LGL_ONTL_' in sql
+        if 'JSON_ARRAYAGG' in sql:
+            return [{'ROWS_JSON': json.dumps([['public']])}]
+        return [{'PKG_HASH_VAL': 'a' * 64}]
+    repo = GoldMapping(value()).request_ontology_repository(SimpleNamespace(sql=SimpleNamespace(query=query)))
+    assert repo.current_publications([ref], {'public'}) == {'p': False} and not calls
+    repo.workspace_scopes = {scope}
+    assert repo.current_publications([ref], {'public'}) == {'p': True} and len(calls) == 2
+    assert repo.current_publications([ref], {'another-document'}) == {'p': False}
+    with pytest.raises(MappingError, match='READ_ONLY'):
+        with repo.session(True): pass
 
 
 def test_active_mapping_selects_only_hash_pinned_local_file(tmp_path):

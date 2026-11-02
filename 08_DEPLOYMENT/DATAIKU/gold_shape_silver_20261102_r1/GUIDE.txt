@@ -1,0 +1,105 @@
+Gold 형태 개발계 생성·INSERT 확인·적재 R1 — 2026-11-02
+
+실행 위치
+Dataiku LEGAL_RAG 프로젝트에서 기존 R11을 실행했던 Python/Jupyter 노트북.
+AIDP SQL 노트북에 붙이는 코드가 아닙니다. AIDP 접속 계정은 사진에서 확인한 PIDD2APP으로 검사합니다.
+기존 적재 프로세스가 종료된 상태에서 새 셀을 사용합니다. 별도 Python 프로세스로 실행해 기존 커널의 모듈과 섞이지 않습니다.
+
+첨부파일
+1. DATAIKU_GOLD_SHAPE_20261102_R1.zip — 실제 코드, Gold 계약, 생성 SQL 및 매핑.
+2. DATAIKU_GOLD_SHAPE_RUN_R1.txt — 완전한 실행 셀.
+3. GUIDE.txt — 이 안내.
+4. DBA_INQUIRY.txt — 실버10표 적재 오류 문의문. 실행용이 아닙니다.
+5. EXISTING_MIGRATION.txt — 기존 Gold/Agent 이관 코드 확인과 이번 재사용 범위.
+
+실행 순서
+1. ZIP을 이름 그대로 LEGAL_RAG 관리 폴더 ehA8dpVm에 업로드합니다. ZIP 안에 다시 ZIP을 넣지 않습니다.
+2. RUN_R1.txt 전체를 새 Python 셀에 붙여 실행합니다. 첫 실행 ACTION='start'를 유지합니다.
+3. 자동 순서: 현재 AIDP 연결 확인 → native VECTOR 지원 확인 → 대상 생성/기존 구조 검사 →
+   17개 테이블 INSERT·행 존재 확인·ROLLBACK·시험행 부재 확인 → 기존 원본/준비 명세 해시 확인 →
+   실제 원문3표 각각 최대 약1,000행의 초기 적재.
+4. INSERT_GATE_PASS가17표에 대해 출력되어야 실제 원문 적재를 시작합니다.
+   오류나 STOPPED가 있으면 이후 적재 단계는 자동으로 실행되지 않습니다. 현재 화면만 캡처합니다.
+5. INITIAL_SOURCE_LOADED이면 초기 실제 적재가 끝난 상태입니다. 전체 적재 완료가 아닙니다.
+   같은 실행 TXT의 ACTION을 'load'로 바꾸어 실행하면 나머지 원문과 검색 자료를 이어서 적재합니다.
+6. LOADED_UNVERIFIED가 나온 뒤 ACTION='verify_publish'로 실행합니다.
+   원문/검색 전체 내용과 행수를 확인한 뒤 원문·검색 게시 정보와 별도 시험 채널을 기록합니다.
+7. SOURCE_QUERY_VERIFIED가 원문·검색 적재/검증의 종료 표시입니다. 임베딩 완료나 서비스 전환 완료는 아닙니다.
+
+각 단계는 해당 단계의 결과를 확인하고 순서대로 실행합니다. 첫 실행부터 세 단계를 무조건 큐에 넣지 않습니다.
+출력 화면은 최근 상태18줄을 갱신합니다. 상세 데이터나 수천 줄의 SQL을 출력하지 않습니다.
+
+생성할 개발계 배치
+확정 Gold R19 13표60컬럼의 이름·타입/길이·NULL·기본값·PK·일반 인덱스를 사용합니다.
+환경별 owner/테이블명만 아래와 같이 배치합니다. 기존 Silver 전달본의 컬럼 형식으로 되돌리지 않습니다.
+
+SIDDS 실버10표
+LGL_G19_DOC_VER_S / LGL_G19_DOC_UNIT_S / LGL_G19_DOC_BLK_S / LGL_G19_SRC_POST_S
+LGL_G19_SRCH_POST_S / LGL_G19_SRCH_ROW_S / LGL_G19_SRCH_CHNL_S
+LGL_G19_VCTR_POST_S / LGL_G19_VCTR_ITEM_S / LGL_G19_VCTR_HEAD_S
+
+SIDDA 승인 온톨로지3표 — 개발계의 기존 배치 원칙에 따라 에이전트 영역, 구조는 Gold와 동일
+LGL_G19_ONTL_POST_A / LGL_G19_ONTL_HEAD_A / LGL_G19_ONTL_ANC_A
+
+SIDDA 실행 기록4표 — Gold 지식13표와 별도의 기존 Agent 계약
+LGL_AGT_RUN_A / LGL_AGT_REC_A / LGL_AGT_BODY_A / LGL_EXEC_ST_A
+기존 표가 있으면 컬럼/타입/PK를 검사해 재사용하고, 없을 때 생성합니다. 구조가 다르면 중단합니다.
+
+Gold13표는 신규 LGL_G19_* 대상입니다. 기존 LGL_DOC_*_S/LGL_SRCH_*_S/파일조각과 실패/재개 기록은 유지합니다.
+이 패키지에는 기존표 삭제나 용량 회수 작업이 없습니다. 따라서 기존 공간 부족이 해소되지 않으면 새표 생성/INSERT도
+실패할 수 있으며, 그때는 해당 표와 ORA 코드를 확인하고 담당자의 공간 조치를 먼저 받아야 합니다.
+생성 DDL은 자동 COMMIT되는 작업이라, 중간 오류가 나면 앞서 생성된 표는 남을 수 있습니다.
+재실행 시 같은 구조의 기존 표를 확인하며 이어갑니다. 스키마 불일치를 자동 ALTER/DROP하지 않습니다.
+
+INSERT 시험의 범위
+각 표에 고유 시험 키로 작은 행을 넣고 같은 요청에서 확인 후 ROLLBACK합니다. 별도 조회로 시험행 부재도 확인합니다.
+벡터표는 FLOAT32와 서로 다른 차원2/3의 INSERT로 가변 차원 계약을 확인합니다. 모델/임베딩 API를 호출하지 않습니다.
+기존 활성 trigger가 있는 대상은 예상하지 못한 부작용을 피하기 위해 중단합니다.
+시험행은 남기지 않지만 시험 INSERT가 세그먼트 공간을 할당할 수는 있습니다.
+작은 INSERT 성공은 수천만 행을 모두 넣을 여유 공간이 확보됐다는 뜻이 아닙니다.
+
+입력과 재개
+OLD_JOB_DIR 기본값은 기존 사진/영수증에서 확인한 다음 위치입니다:
+<현재 임시 폴더>/legal-existing-nfs-20261029-r1/financial-risk-success-20261005-schema-r2/oracle-import-r2
+full-state.json, 완료된 원문 영수증, projection-descriptor-r7.json과 기존 generation 파일이 필요합니다.
+경로가 달라졌다면 OLD_JOB_DIR에 실제 oracle-import-r2 폴더의 절대 경로를 입력합니다.
+이 패키지는 원본을 새로 다운로드하거나60백만 행의 준비 명세를 자동 재생성하지 않습니다.
+준비 자료가 없거나 해시가 다르면 오류를 내고 중단합니다. 원본 식별자를 자르거나 바꾸어 맞추지 않습니다.
+
+새 재개 기록은 기존 작업 폴더와 같은 부모의 gold-shape-<계약해시12자리>/state.json입니다.
+DB 정체성·계약·코드·원본 해시·대상 객체 ID에 묶고, 기존 R11의 적재 커서를 새 Gold 대상의 완료로 재사용하지 않습니다.
+성공 응답을 받은 묶음만 진행시킵니다. 결과 불명 묶음은 같은 입력의 DB 내용을 먼저 확인합니다.
+정확하게 이미 반영됐으면 재삽입 없이 진행하고, 미확인/상이하면 중단합니다.
+RETRY_MISSING_BATCH 기본 False를 유지합니다. 이 옵션은 진행 중인 writer가 없고 결과 불명 묶음을 확인한 뒤의
+명시적 동일 데이터 재시도에만 사용합니다. 충돌 데이터 덮어쓰기나 자동 반복 재시도는 하지 않습니다.
+중단/용량 오류 때 원본과 영수증을 삭제하지 않습니다. 원래7일 기한과 재개 바인딩도 임의로 초기화하지 않습니다.
+
+검증과 남은 범위
+- 기존 ADR1208 Gold 원문/검색 매핑 함수를 그대로 재사용합니다. 기존 이관 코드가 없다는 전제가 아닙니다.
+  상세 코드 위치·기존 실제 시험 범위·Dataiku용 변경점은 EXISTING_MIGRATION.txt에 정리했습니다.
+- 원문3표와 검색 자료는 기존 R11의 고정된 원본/검색 투영 의미를 유지하고 Gold 컬럼으로 적재합니다.
+- 문자열은 Gold BYTE 길이를 검사합니다. 초과하면 해당 표·컬럼에서 중단하며 원문/ID를 절단하지 않습니다.
+- 매 묶음은 키·모든 값·CLOB 동일성 검사 후 COMMIT합니다. 별도 verify_publish에서 전체 검증 후 게시합니다.
+- 원문 파일조각 표는 Gold13표에 해당하지 않으므로 이 신규 적재에 복제하지 않습니다.
+- 승인 온톨로지/벡터 표는 생성과 INSERT 시험까지 포함합니다. 승인된 입력이 별도로 제공되지 않았고
+  실제 임베딩을 실행하지 않으므로 업무 데이터가 적재됐다고 표시하지 않습니다.
+- 에이전트3표는 실행 기록의 저장 대상입니다. 기존 공용 실행 기록을 임의로 복사하거나 삭제하지 않습니다.
+- 시험 채널은 g19_<검색게시해시24자리>입니다. 기존 GENOS/Dataiku 서비스 조회 매핑·활성 채널은 전환하지 않습니다.
+  현장 RAG 소비자 연결 및 임베딩/승인 온톨로지의 실제 적재는 별도 후속 검증이 필요합니다.
+
+시간과 용량
+초기 실행은 구조/INSERT 확인과 원문 소량만 진행합니다. 신규 모델 호출0입니다.
+전체 검색 자료는 기존 준비 명세의 약6천만 행을 유지합니다. Gold 형식 변경만으로 행 수나 공간이 줄어들지는 않습니다.
+소량 INSERT 성공으로 전체 소요 시간을 확정하지 않습니다. 현재 request_s/batch_rows와 단계 진행으로 측정합니다.
+전체 load와 verify_publish는 각각 장시간이 걸릴 수 있습니다. 원문/검색 검증을 빼서 완료로 표시하지 않습니다.
+
+발송 전 검증
+합성 계약 검사와 격리된 로컬 Oracle23.26에서17표 생성·정확 구조 검사·INSERT/ROLLBACK,
+NULL/빈CLOB/한글/긴CLOB·중복 재실행·충돌 시 전체 묶음 rollback·Gold CHAR 표시·게시 시각 기본값을 확인했습니다.
+로컬 시험용으로 생성한2개 임시 스키마는 검사 후 제거했고, 기존 SIDDS/SIDDA/Gold 데이터는 변경하지 않았습니다.
+현장 AIDP의 DDL 권한·공간·전체 데이터 길이·Dataiku JDBC·전량 적재·GENOS 연결은 아직 미검증입니다.
+
+공식 근거
+https://developer.dataiku.com/latest/concepts-and-examples/sql.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/JSON_TABLE.html
+https://docs.oracle.com/en/database/oracle/oracle-database/26/vecse/constructors-converters-descriptors-and-arithmetic-operators.html

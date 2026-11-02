@@ -1,0 +1,23 @@
+# 정리 셀이 끝난 뒤, 같은 노트북의 새 셀에서 실행하세요.
+# 기존 결과만 출력합니다. 재검색/추가 삭제는 하지 않습니다.
+from collections import Counter
+r = globals().get('CLEANUP_RESULT')
+if not isinstance(r, dict) or 'inventories' not in r:
+    raise RuntimeError('완료 결과가 없습니다. 정리 셀이 끝났는지, 같은 커널인지 확인하세요. 정리 셀을 다시 실행하지 마세요.')
+print('삭제 파일 수:', r.get('deleted_archive_count'))
+print('보존 사유별 건수:', dict(Counter(a.get('reason', '') for a in r.get('actions', []) if a.get('result') == 'PRESERVED')))
+for inv in r['inventories']:
+    print('여유 GiB:', inv['root'], inv.get('free_GiB_before'), '→', inv.get('free_GiB_after'))
+    if inv['root'] != '/tmp':
+        continue
+    print('큰 폴더 TOP 5 (GiB):')
+    for x in inv.get('largest_directories', [])[:5]:
+        print(x['allocated_GiB'], x['name'])
+    print('큰 파일 TOP 6 (GiB, 정리 전 목록):')
+    for x in inv.get('largest_files', [])[:6]:
+        print(x['allocated_GiB'], x['path'])
+opened = r.get('open_deleted_files', [])
+print('열린 삭제 파일:', len(opened), '(원래 결과 최대 20개)')
+for x in opened[:2]:
+    print(round(x['allocated_bytes'] / 1024**3, 3), 'GiB', 'PID', x['pid'], x['path'])
+print('프로세스 조회 오류:', len(r.get('process_visibility_errors', [])))

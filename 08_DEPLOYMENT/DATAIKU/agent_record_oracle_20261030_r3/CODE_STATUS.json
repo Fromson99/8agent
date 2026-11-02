@@ -1,0 +1,54 @@
+{
+  "selected_main": 128,
+  "release_id": "oracle-structured-20261030-r1",
+  "release_manifest": {
+    "path": "08_DEPLOYMENT/RELEASES/oracle-structured-20261030-r1/release.json",
+    "sha256": "c34d4555d68ec57156efef28f951bea7c152a44318bd228380aeba58d3b89bd6"
+  },
+  "working_frozen_selected_exact": true,
+  "serving_files": 495,
+  "default": "NFS/SQLite",
+  "DP=oracle": {
+    "source_storage": "oracle",
+    "structured_state_storage": "oracle",
+    "diagnostic_storage": "nfs",
+    "persistent_sqlite": false,
+    "core_requires_nfs": false,
+    "detailed_log_requires_nfs": true,
+    "raw_transport_body_in_new_oracle_rows": false,
+    "structured_payload_format": "Existing SQLROW/JSON body, memory-only SQLite execution"
+  },
+  "new_ddl": 0,
+  "new_tables_required_from_original_r2": 0,
+  "existing_agent_tables": 4,
+  "existing_user_columns": 26,
+  "technical_tests_passed": 173,
+  "same_existing_failures": 14,
+  "new_failures": 0,
+  "capacity": {
+    "sidda_used_bytes": 29294592,
+    "sidda_quota_bytes": 314572800,
+    "sidda_used_percent": 9.312,
+    "disk_used_percent": 52.534,
+    "maximum_allowed_percent": 90,
+    "within_limit": true,
+    "field_nfs_capacity_measured": false
+  },
+  "oracle_nfs_api": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1244-oracle-structured-nfs-diagnostics-main/artifacts/checks-qualified-api.json",
+    "sha256": "3a99cb4ce9455f9821832fe17a573d30e86faa46d3b13187ad2ee4d6d6899aa2"
+  },
+  "root_entry": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1244-oracle-structured-nfs-diagnostics-main/artifacts/checks-root-entry-api-002.json",
+    "sha256": "5d0a880b6962d4fd8caf2b8be455dba0fb7f75d88c5add90d593e6f468db537d"
+  },
+  "default_main_entry": {
+    "path": "09_ARTIFACTS/AUDITS/20261030-oracle-structured-nfs-diagnostics-main/main-entry.json",
+    "sha256": "2abdaef78c2e909f8d747c483e2dea416c71d736b6211137e509f606b882039b"
+  },
+  "actual_nfs_history_migrated": false,
+  "field_deployed": false,
+  "field_nfs_verified": false,
+  "external_model_calls": 0,
+  "performance_certified": false
+}

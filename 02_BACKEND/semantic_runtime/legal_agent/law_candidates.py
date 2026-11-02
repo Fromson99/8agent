@@ -341,7 +341,6 @@ def structured_discovery(s, queries, terms, *, route_queries=None, query_origin=
 
 def fulltext_scope_keys(session, document_id, unit_id=None):
     """Resolve selected metadata scope to indexed units before lexical ranking."""
-    import json
     from .structure_query import document_tree
     if document_id not in session.scope:raise ContractError('fulltext document outside request scope')
     tree=document_tree(session.matcher,document_id)
@@ -356,8 +355,7 @@ def fulltext_scope_keys(session, document_id, unit_id=None):
             units.add(uid);todo.extend(tree['children'].get(uid,[]))
     if qs.active(session):units={uid for uid in units if qs.direct(session,document_id,uid)}
     idx,db=index(session);idx.check_unchanged()
-    rows=db.execute("SELECT key,source_id FROM unit WHERE document_id=? AND json_extract(json,'$.unit_id') IN (SELECT value FROM json_each(?))",
-                    (document_id,json.dumps(sorted(units)))).fetchall()
+    rows=idx.scope_keys(db, document_id, units)
     permitted=allowed(session)
     return frozenset(key for key,sid in rows if sid in permitted)
 

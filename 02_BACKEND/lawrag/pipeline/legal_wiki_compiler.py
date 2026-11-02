@@ -2,7 +2,7 @@ from semantic_runtime.legal_agent.shortcut_store import selected_store
 """Incremental issue compiler; injected transport, no external model fallback."""
 import json
 import os
-from pathlib import Path
+from semantic_runtime.oracle_runtime_paths import Path
 import time
 from semantic_runtime.legal_agent.corrected_memory import MemoryError, Conflict, digest, encoded
 from semantic_runtime.legal_agent.shortcut_repository import uid
@@ -273,8 +273,12 @@ def rebuild(repo, principal, directory):
     # Recheck after rendering before pointer publication; failed build keeps old pointer.
     with repo.transaction():
         for value in values: repo.current(value['unit_id'],value['revision'],principal)
-        temp=directory/(build+'.tmp');temp.write_text(encoded({'build':build,'hash':digest(data)}))
-        os.replace(temp,directory/'CURRENT.json')
+        from semantic_runtime.oracle_runtime_paths import virtual
+        if virtual(directory):
+            (directory/'CURRENT.json').write_text(encoded({'build':build,'hash':digest(data)}))
+        else:
+            temp=directory/(build+'.tmp');temp.write_text(encoded({'build':build,'hash':digest(data)}))
+            os.replace(temp,directory/'CURRENT.json')
         repo.db.execute("UPDATE sw_queue SET status='DONE',error=NULL WHERE consumer='projection' AND scope=? AND id<=? AND status='PENDING'",(repo.scope(principal),watermark))
         pending=repo.db.execute("SELECT MIN(id) FROM sw_queue WHERE consumer='projection' AND status<>'DONE'").fetchone()[0]
         cursor=(pending-1) if pending is not None else repo.db.execute("SELECT COALESCE(MAX(id),0) FROM sw_queue WHERE consumer='projection'").fetchone()[0]

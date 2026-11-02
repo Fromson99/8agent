@@ -1,0 +1,17 @@
+{
+  "schema_version": "gold-runtime-patches-v1",
+  "modules": {
+    "semantic_runtime.legal_agent.ontology_assessment": {
+      "base_path": "02_BACKEND/semantic_runtime/legal_agent/ontology_assessment.py",
+      "base_sha256": "8bcafd311fa9dafab2a7e68bf37210058a86edff1f4bd06645347b350759ed51",
+      "patch_file": "runtime_patches/ontology_assessment.py",
+      "patch_sha256": "f60df4f234e769fd964236a7ce3bd39a02c77835a64e592b10da07ca5d020ecd"
+    },
+    "semantic_runtime.legal_agent.navigation_input": {
+      "base_path": "02_BACKEND/semantic_runtime/legal_agent/navigation_input.py",
+      "base_sha256": "71a576f089f393fd734894c3329713b18377b8cb5a786f93b7053bb6a2e1456a",
+      "patch_file": "runtime_patches/navigation_input.py",
+      "patch_sha256": "d5fecbbe8465c25a68e76ffa2e090ca2388dc96ed86eaa7b58a91fd08a816de4"
+    }
+  }
+}

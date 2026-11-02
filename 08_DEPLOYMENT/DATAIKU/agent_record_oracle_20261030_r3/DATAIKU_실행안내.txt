@@ -1,0 +1,41 @@
+Dataiku SQL 노트북 — 신규 Agent 기록 3표21컬럼
+
+1. 기존 Oracle 연결로 SQL notebook을 엽니다. Dataiku Flow의 데이터셋 생성이 아니라
+   Oracle SIDDA의 영구 테이블을 생성하는 SQL입니다.
+2. 00_CHECK_CONNECTION.sql, 00_CHECK_EXISTING.sql을 각각 별도 Query에서 실행합니다.
+   이미 있는 표·기록은 지우지 않습니다. 조회 결과가 비어도 해당 계정의 권한을 확인합니다.
+3. 01~03의 CREATE TABLE 세 파일을 각각 한 Query에서 실행합니다.
+4. 04~10의 CREATE INDEX 일곱 파일도 각각 별도 Query에서 실행합니다.
+   각 파일에는 한 문장만 있고 BEGIN/END, /, SQL*Plus 명령, 끝 세미콜론은 없습니다.
+   이 안내문 전체나 파일 여러 개를 한 Query에 붙이지 않습니다.
+5. 11~15 확인 SQL도 한 파일씩 실행합니다.
+   RUN9 + REC8 + BODY4 = 신규21개 사용자 컬럼, 기존 STATE5 포함26개입니다.
+   PK3와 조회 인덱스7을 확인합니다. 시간대 인덱스2개는 Oracle 내부 UTC 표현식과
+   SYS_NC 숨김컬럼으로 표시될 수 있습니다. CLOB 내부 인덱스도 자동 생성됩니다.
+
+기존 상태 표
+  SIDDA.LGL_EXEC_ST_A는 기존 표를 재사용합니다. 기본 실행 순서에는 CREATE가 없습니다.
+  실제 부재를 계정/권한과 함께 확인한 경우에만 optional/90_CREATE_STATE_ONLY_IF_MISSING.sql을
+  한 번 실행합니다. 이미 있는 표를 DROP/ALTER해 맞추지 않습니다.
+
+중간 오류
+  ORA-00955: 같은 이름의 객체가 존재합니다. 삭제하거나 무조건 성공 처리하지 말고
+  확인 SQL로 표/컬럼/PK/인덱스를 대조한 후 미생성 문장만 이어서 실행합니다.
+  ORA-01031: 연결 계정에 SIDDA 생성 권한이 부족합니다. 기존 SIDDA owner/담당 계정으로 생성합니다.
+  ORA-00942: 선행 표 또는 조회권한을 확인합니다. owner를 임의로 바꾸어 우회하지 않습니다.
+  Oracle DDL은 문장별 자동 커밋입니다. 후속 실패가 앞선 CREATE를 되돌리지 않습니다.
+
+이번 SQL에는 Gold 수정, DROP/TRUNCATE, quota 변경, 임의 계정 GRANT가 없습니다.
+실제 코드서빙 ORDS 계정에는 기존 STATE 및 새 Agent 표의 필요한 조회/쓰기 권한이 필요합니다.
+ORDS alias와 데이터 owner SIDDA는 별개이며 기존 인증값을 그대로 사용합니다.
+
+설정 계약
+  DP 미설정 또는 DP=nfs: 기존 NFS 경로.
+  DP=oracle: 지식·구조화 기록은 Oracle, 상세 로그는 NFS로 분리하는 메인 코드와 함께 반입해야 합니다.
+  DP_QUERY_CHANNEL=main 또는 DP_QUERY_RELEASE_ID 중 한 가지로 게시된 조회 버전을 선택합니다.
+  기존 GENOS_RUNTIME_DIR/STATE_DIR은 Oracle 논리 식별자, GENOS_SHARED_LOG_DIR은 실제 NFS 상세 로그 경로입니다.
+  실제 코드 검증·메인 선택 결과는 이 패키지의 최종 CODE_STATUS.json을 확인합니다.
+  표를 만들었다는 사실만으로 기존 NFS 이력 이관이나 현장 코드 반입이 완료되지는 않습니다.
+
+Dataiku 공식 설명: https://doc.dataiku.com/dss/latest/notebooks/sql-notebook.html
+SQL notebook은 DDL을 지원하며 Query별 셀을 분리해 관리할 수 있습니다.

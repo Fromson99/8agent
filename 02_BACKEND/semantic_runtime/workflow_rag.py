@@ -1,7 +1,7 @@
 """Full Pipeline question/answer calls and verified return packages for workflows."""
 from .legal_agent import journal_storage
 import json
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from .contracts import digest
 from .legal_agent.errors import ContractError, LegalAgentError
 from .legal_agent.corrected_memory import MemoryError, Conflict
@@ -14,7 +14,7 @@ def verify_returns(port):
     db=port.session.repo.db
     table=db.execute("SELECT 1 FROM sqlite_master WHERE name='workflow_child_run'").fetchone()
     if not table:return
-    import sqlite3
+    from . import runtime_sqlite as sqlite3
     for call_id, raw, result_hash in db.execute("SELECT call_id,result_json,result_hash FROM workflow_call WHERE kind='rag' AND status='COMPLETE'"):
         result=json.loads(raw)
         if digest(result)!=result_hash:raise ContractError('workflow child result hash changed')

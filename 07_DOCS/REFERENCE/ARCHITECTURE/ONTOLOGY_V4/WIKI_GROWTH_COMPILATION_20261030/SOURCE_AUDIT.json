@@ -1,0 +1,1396 @@
+{
+  "status": "READ_ONLY_CODE_AUDIT_NOT_RUNTIME_TEST",
+  "date": "2026-10-30",
+  "timezone": "Asia/Seoul",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "oracle-safe-records-20261030-r1",
+    "generation": 129,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/oracle-safe-records-20261030-r1/release.json",
+    "release_manifest_sha256": "0e326247a7151e31f21ab69db2bbbd5ea73d3e2ba3fb60aacdb3edc3b5c048fa",
+    "activated_at": "2026-10-30T11:52:10.772578+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "9fe131362e7799e218e51b3cb95d8dc2cefd9a22e6833c867943e4a6eb1f3f9c",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1248-oracle-safe-records-main/실험/manifest.json",
+        "sha256": "b8bfaf6c03064f78822db720e65005423ac1cd030cf4368d58fe102ccc6f0e6f"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1248-oracle-safe-records-main/README.md",
+        "sha256": "b56c1e7d429dd04989ce622a968986f5f9837dd88c41a0178f903406b96a3126"
+      },
+      "arm": "selected",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1248-oracle-safe-records-main/artifacts/run-001/result.json",
+        "sha256": "3df6cc52f78098d29b62d47aa406bab9d5475277fabe822811545b45c6066030"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-1246-oracle-record-storage-safety/artifacts/design/release-rebase.json",
+        "sha256": "756dfd9721103830a312dd76427ba669abce42335ba75c735dfc65f1702e37e4"
+      }
+    }
+  },
+  "active_file_sha256": "9dfb49b9c6c6944d7688448fb32990fb4363710041097c70fd6ff6cbfd5fb75a",
+  "actual_release_manifest_sha256": "0e326247a7151e31f21ab69db2bbbd5ea73d3e2ba3fb60aacdb3edc3b5c048fa",
+  "release_file_count": 495,
+  "files": [
+    {
+      "path": "00_SYSTEM/ONTOLOGY_PROFILES/business-profile-v1.json",
+      "bytes": 1647,
+      "working_sha256": "7f422d35dc12cbc10724eafe7b16d4384980301a5dcf1fef74b89f8547cc08eb",
+      "release_manifest_sha256": "7f422d35dc12cbc10724eafe7b16d4384980301a5dcf1fef74b89f8547cc08eb",
+      "selected_copy_sha256": "7f422d35dc12cbc10724eafe7b16d4384980301a5dcf1fef74b89f8547cc08eb",
+      "scope": "SELECTED"
+    },
+    {
+      "path": "00_SYSTEM/ONTOLOGY_PROFILES/domain-profile-v1.json",
+      "bytes": 11439,
+      "working_sha256": "eb3218e4177e224f5a9abed8731de2584cd5d32b44471858ee3ebfe5e3e37113",
+      "release_manifest_sha256": "eb3218e4177e224f5a9abed8731de2584cd5d32b44471858ee3ebfe5e3e37113",
+      "selected_copy_sha256": "eb3218e4177e224f5a9abed8731de2584cd5d32b44471858ee3ebfe5e3e37113",
+      "scope": "SELECTED"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/ontology-business-profile-v1.schema.json",
+      "bytes": 4753,
+      "working_sha256": "0e9aa7084fa0a453d84a393513b5717d28cae451e3e8d256e3ff0242bf8b7a45",
+      "release_manifest_sha256": "0e9aa7084fa0a453d84a393513b5717d28cae451e3e8d256e3ff0242bf8b7a45",
+      "selected_copy_sha256": "0e9aa7084fa0a453d84a393513b5717d28cae451e3e8d256e3ff0242bf8b7a45",
+      "scope": "SELECTED"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/ontology-domain-profile-v1.schema.json",
+      "bytes": 9748,
+      "working_sha256": "2ec678ddeae21008534ae532d9da90cba839bce7f79f4b4cb1424ef6f6b43339",
+      "release_manifest_sha256": "2ec678ddeae21008534ae532d9da90cba839bce7f79f4b4cb1424ef6f6b43339",
+      "selected_copy_sha256": "2ec678ddeae21008534ae532d9da90cba839bce7f79f4b4cb1424ef6f6b43339",
+      "scope": "SELECTED"
+    },
+    {
+      "path": "01_DATA/GOLDEN/risk_cm/README.md",
+      "bytes": 8708,
+      "working_sha256": "f7d307bc8d2e682bb864b20bd6be9aea7e1b39f94b16811a8b3eb2eb1f66f03e",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/action_memory.py",
+      "bytes": 18194,
+      "working_sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "release_manifest_sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "selected_copy_sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "_generate_child",
+          "line": 24
+        },
+        {
+          "symbol": "bounded_generate",
+          "line": 31
+        },
+        {
+          "symbol": "window",
+          "line": 48
+        },
+        {
+          "symbol": "atomic_json",
+          "line": 55
+        },
+        {
+          "symbol": "emit",
+          "line": 61
+        },
+        {
+          "symbol": "PublicModel",
+          "line": 66
+        },
+        {
+          "symbol": "negative_feedback",
+          "line": 94
+        },
+        {
+          "symbol": "build",
+          "line": 109
+        },
+        {
+          "symbol": "main",
+          "line": 201
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py",
+      "bytes": 13082,
+      "working_sha256": "7a361800bc8832f4a65c4884ba8221f2b9007bf62e87b8556c38c552e5a33fa8",
+      "release_manifest_sha256": "7a361800bc8832f4a65c4884ba8221f2b9007bf62e87b8556c38c552e5a33fa8",
+      "selected_copy_sha256": "7a361800bc8832f4a65c4884ba8221f2b9007bf62e87b8556c38c552e5a33fa8",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "key",
+          "line": 20
+        },
+        {
+          "symbol": "inline",
+          "line": 24
+        },
+        {
+          "symbol": "private_directory",
+          "line": 28
+        },
+        {
+          "symbol": "write",
+          "line": 33
+        },
+        {
+          "symbol": "locked",
+          "line": 63
+        },
+        {
+          "symbol": "projection",
+          "line": 78
+        },
+        {
+          "symbol": "export_wiki",
+          "line": 94
+        },
+        {
+          "symbol": "check_wiki",
+          "line": 199
+        },
+        {
+          "symbol": "operate",
+          "line": 214
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "bytes": 26577,
+      "working_sha256": "f85b5e6fc344d33fcddc228695b72630ffc6a7fc796da800f64fc3b65aa5b760",
+      "release_manifest_sha256": "f85b5e6fc344d33fcddc228695b72630ffc6a7fc796da800f64fc3b65aa5b760",
+      "selected_copy_sha256": "f85b5e6fc344d33fcddc228695b72630ffc6a7fc796da800f64fc3b65aa5b760",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "admit",
+          "line": 47
+        },
+        {
+          "symbol": "_check_inputs",
+          "line": 118
+        },
+        {
+          "symbol": "compile_snapshots",
+          "line": 132
+        },
+        {
+          "symbol": "_finish_page",
+          "line": 226
+        },
+        {
+          "symbol": "run_batch",
+          "line": 238
+        },
+        {
+          "symbol": "rebuild",
+          "line": 255
+        },
+        {
+          "symbol": "verify_sources",
+          "line": 289
+        },
+        {
+          "symbol": "build_with_pipeline",
+          "line": 307
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_assessment.py",
+      "bytes": 11562,
+      "working_sha256": "f60df4f234e769fd964236a7ce3bd39a02c77835a64e592b10da07ca5d020ecd",
+      "release_manifest_sha256": "f60df4f234e769fd964236a7ce3bd39a02c77835a64e592b10da07ca5d020ecd",
+      "selected_copy_sha256": "f60df4f234e769fd964236a7ce3bd39a02c77835a64e592b10da07ca5d020ecd",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "enabled",
+          "line": 18
+        },
+        {
+          "symbol": "ready",
+          "line": 25
+        },
+        {
+          "symbol": "_check_state",
+          "line": 36
+        },
+        {
+          "symbol": "_refs",
+          "line": 42
+        },
+        {
+          "symbol": "project",
+          "line": 67
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_compiler.py",
+      "bytes": 14034,
+      "working_sha256": "8809e19500e658791c36e39bdcc67728c09bd6a425a58a4ffe65b24d8bdc9274",
+      "release_manifest_sha256": "8809e19500e658791c36e39bdcc67728c09bd6a425a58a4ffe65b24d8bdc9274",
+      "selected_copy_sha256": "8809e19500e658791c36e39bdcc67728c09bd6a425a58a4ffe65b24d8bdc9274",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "_bounded_json",
+          "line": 35
+        },
+        {
+          "symbol": "_validator",
+          "line": 65
+        },
+        {
+          "symbol": "content_hash",
+          "line": 74
+        },
+        {
+          "symbol": "anchor_key",
+          "line": 81
+        },
+        {
+          "symbol": "_timestamp",
+          "line": 89
+        },
+        {
+          "symbol": "validate_bundle",
+          "line": 105
+        },
+        {
+          "symbol": "_rows",
+          "line": 139
+        },
+        {
+          "symbol": "_sections",
+          "line": 149
+        },
+        {
+          "symbol": "_encoded",
+          "line": 178
+        },
+        {
+          "symbol": "_render",
+          "line": 182
+        },
+        {
+          "symbol": "compile_bundle",
+          "line": 220
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_context.py",
+      "bytes": 28087,
+      "working_sha256": "b7ed67906266c16f03deb8f61ca4828940cbc2e623c73b5e5d5c66e14c409b2d",
+      "release_manifest_sha256": "b7ed67906266c16f03deb8f61ca4828940cbc2e623c73b5e5d5c66e14c409b2d",
+      "selected_copy_sha256": "b7ed67906266c16f03deb8f61ca4828940cbc2e623c73b5e5d5c66e14c409b2d",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "configuration",
+          "line": 26
+        },
+        {
+          "symbol": "enabled",
+          "line": 74
+        },
+        {
+          "symbol": "config",
+          "line": 78
+        },
+        {
+          "symbol": "resolve",
+          "line": 96
+        },
+        {
+          "symbol": "arrived",
+          "line": 124
+        },
+        {
+          "symbol": "_link_covered",
+          "line": 137
+        },
+        {
+          "symbol": "_remaining",
+          "line": 160
+        },
+        {
+          "symbol": "_interrupted",
+          "line": 225
+        },
+        {
+          "symbol": "acquire",
+          "line": 241
+        },
+        {
+          "symbol": "_delivery_pages",
+          "line": 348
+        },
+        {
+          "symbol": "attach",
+          "line": 385
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_input.py",
+      "bytes": 968,
+      "working_sha256": "cb778ce982103aed548aa5fc8256740e17d41b5351793a837e1ad6bd0bb9194d",
+      "release_manifest_sha256": "cb778ce982103aed548aa5fc8256740e17d41b5351793a837e1ad6bd0bb9194d",
+      "selected_copy_sha256": "cb778ce982103aed548aa5fc8256740e17d41b5351793a837e1ad6bd0bb9194d",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "payload",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_io.py",
+      "bytes": 2545,
+      "working_sha256": "c9cecc961fdcbb773d3735e4caf57841bfb5fc9ed94107bf03d48b9a6e08e21e",
+      "release_manifest_sha256": "c9cecc961fdcbb773d3735e4caf57841bfb5fc9ed94107bf03d48b9a6e08e21e",
+      "selected_copy_sha256": "c9cecc961fdcbb773d3735e4caf57841bfb5fc9ed94107bf03d48b9a6e08e21e",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "evidence",
+          "line": 11
+        },
+        {
+          "symbol": "delivery_events",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_scenario_runtime.py",
+      "bytes": 4916,
+      "working_sha256": "4b52c0189cc619eeec8ab741735caf4e51e80c8434e602d8458da358661280c8",
+      "release_manifest_sha256": "4b52c0189cc619eeec8ab741735caf4e51e80c8434e602d8458da358661280c8",
+      "selected_copy_sha256": "4b52c0189cc619eeec8ab741735caf4e51e80c8434e602d8458da358661280c8",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "catalog_from",
+          "line": 9
+        },
+        {
+          "symbol": "can_reselect",
+          "line": 23
+        },
+        {
+          "symbol": "ordinary_after_reentry",
+          "line": 28
+        },
+        {
+          "symbol": "search_choice",
+          "line": 33
+        },
+        {
+          "symbol": "assess",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/ontology_scenarios.py",
+      "bytes": 14195,
+      "working_sha256": "4e78d426be60119e111077269d16beaea697539717f1d80d0f4767b299c1ecd0",
+      "release_manifest_sha256": "4e78d426be60119e111077269d16beaea697539717f1d80d0f4767b299c1ecd0",
+      "selected_copy_sha256": "4e78d426be60119e111077269d16beaea697539717f1d80d0f4767b299c1ecd0",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "_bounded",
+          "line": 21
+        },
+        {
+          "symbol": "_exact_keys",
+          "line": 26
+        },
+        {
+          "symbol": "_index",
+          "line": 29
+        },
+        {
+          "symbol": "compile_package",
+          "line": 37
+        },
+        {
+          "symbol": "verify_package",
+          "line": 91
+        },
+        {
+          "symbol": "bind_current",
+          "line": 101
+        },
+        {
+          "symbol": "selection_schema",
+          "line": 120
+        },
+        {
+          "symbol": "selection_input",
+          "line": 125
+        },
+        {
+          "symbol": "validate_choice",
+          "line": 128
+        },
+        {
+          "symbol": "materialize_choice",
+          "line": 137
+        },
+        {
+          "symbol": "verify_selected_text",
+          "line": 160
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/read_judgment.py",
+      "bytes": 32964,
+      "working_sha256": "be5963a83614495b5b9997d39d4d13b66e69ebb25a476984f7d9f4225d3bf47f",
+      "release_manifest_sha256": "be5963a83614495b5b9997d39d4d13b66e69ebb25a476984f7d9f4225d3bf47f",
+      "selected_copy_sha256": "be5963a83614495b5b9997d39d4d13b66e69ebb25a476984f7d9f4225d3bf47f",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "enabled",
+          "line": 30
+        },
+        {
+          "symbol": "seal",
+          "line": 34
+        },
+        {
+          "symbol": "key_for",
+          "line": 38
+        },
+        {
+          "symbol": "request_key",
+          "line": 42
+        },
+        {
+          "symbol": "checked",
+          "line": 46
+        },
+        {
+          "symbol": "state_for",
+          "line": 52
+        },
+        {
+          "symbol": "strings",
+          "line": 56
+        },
+        {
+          "symbol": "originals",
+          "line": 65
+        },
+        {
+          "symbol": "context",
+          "line": 91
+        },
+        {
+          "symbol": "review_schema",
+          "line": 112
+        },
+        {
+          "symbol": "attach",
+          "line": 130
+        },
+        {
+          "symbol": "wire_review_schema",
+          "line": 166
+        },
+        {
+          "symbol": "new_review_schema",
+          "line": 190
+        },
+        {
+          "symbol": "review_diagnostics",
+          "line": 219
+        },
+        {
+          "symbol": "normalize_review",
+          "line": 265
+        },
+        {
+          "symbol": "correction_scope",
+          "line": 314
+        },
+        {
+          "symbol": "validate_review",
+          "line": 323
+        },
+        {
+          "symbol": "record",
+          "line": 397
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/__init__.py",
+      "bytes": 81,
+      "working_sha256": "8ced638c86a81ee53372f31273ce7107c26679be1d0c49e0bc502dea866e7264",
+      "release_manifest_sha256": "8ced638c86a81ee53372f31273ce7107c26679be1d0c49e0bc502dea866e7264",
+      "selected_copy_sha256": "8ced638c86a81ee53372f31273ce7107c26679be1d0c49e0bc502dea866e7264",
+      "scope": "SELECTED",
+      "definitions": []
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/accumulation.py",
+      "bytes": 12951,
+      "working_sha256": "4a04559f89277cd02fb88712f014da839ec57a4eecbf3b143a0c65ec52efca19",
+      "release_manifest_sha256": "4a04559f89277cd02fb88712f014da839ec57a4eecbf3b143a0c65ec52efca19",
+      "selected_copy_sha256": "4a04559f89277cd02fb88712f014da839ec57a4eecbf3b143a0c65ec52efca19",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "check_basis_references",
+          "line": 35
+        },
+        {
+          "symbol": "reference_contract",
+          "line": 61
+        },
+        {
+          "symbol": "accumulation_schema",
+          "line": 72
+        },
+        {
+          "symbol": "check_graph_references",
+          "line": 108
+        },
+        {
+          "symbol": "observation_rows",
+          "line": 133
+        },
+        {
+          "symbol": "validate_proposal",
+          "line": 148
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/assembly_compiler.py",
+      "bytes": 7514,
+      "working_sha256": "50d2a1577c3269eef09495728514083f944a2112aa435fc2c38f329e042bf46a",
+      "release_manifest_sha256": "50d2a1577c3269eef09495728514083f944a2112aa435fc2c38f329e042bf46a",
+      "selected_copy_sha256": "50d2a1577c3269eef09495728514083f944a2112aa435fc2c38f329e042bf46a",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "compile_package",
+          "line": 12
+        },
+        {
+          "symbol": "verify_package",
+          "line": 78
+        },
+        {
+          "symbol": "bind_current",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/assembly_ir.py",
+      "bytes": 4659,
+      "working_sha256": "0b6d23d8ae419fa74a97ad6d7335d79ceecebe5b94782a1480a23970cd3fbeea",
+      "release_manifest_sha256": "0b6d23d8ae419fa74a97ad6d7335d79ceecebe5b94782a1480a23970cd3fbeea",
+      "selected_copy_sha256": "0b6d23d8ae419fa74a97ad6d7335d79ceecebe5b94782a1480a23970cd3fbeea",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "validate_originals",
+          "line": 12
+        },
+        {
+          "symbol": "check_basis",
+          "line": 17
+        },
+        {
+          "symbol": "validate_graph",
+          "line": 24
+        },
+        {
+          "symbol": "diff",
+          "line": 77
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/authoring_model.py",
+      "bytes": 3917,
+      "working_sha256": "f54fb50fb2cc38b3c0b1971edfae79591acf10c4e718c3853e7b3530fcbd0137",
+      "release_manifest_sha256": "f54fb50fb2cc38b3c0b1971edfae79591acf10c4e718c3853e7b3530fcbd0137",
+      "selected_copy_sha256": "f54fb50fb2cc38b3c0b1971edfae79591acf10c4e718c3853e7b3530fcbd0137",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "AuthoringFailure",
+          "line": 7
+        },
+        {
+          "symbol": "generate",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/authoring_semantics.py",
+      "bytes": 9763,
+      "working_sha256": "4169db29f225ede400048a59e3a7a491f71720b4d61965baeda612db4d9e72a0",
+      "release_manifest_sha256": "4169db29f225ede400048a59e3a7a491f71720b4d61965baeda612db4d9e72a0",
+      "selected_copy_sha256": "4169db29f225ede400048a59e3a7a491f71720b4d61965baeda612db4d9e72a0",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "source_schema",
+          "line": 37
+        },
+        {
+          "symbol": "validate_source",
+          "line": 45
+        },
+        {
+          "symbol": "request_schema",
+          "line": 64
+        },
+        {
+          "symbol": "restore",
+          "line": 85
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/capture.py",
+      "bytes": 3787,
+      "working_sha256": "72e79adb4c8f75a181ab0b6e0f30234bb91f1ce80139fdbbc776932907b6dd1a",
+      "release_manifest_sha256": "72e79adb4c8f75a181ab0b6e0f30234bb91f1ce80139fdbbc776932907b6dd1a",
+      "selected_copy_sha256": "72e79adb4c8f75a181ab0b6e0f30234bb91f1ce80139fdbbc776932907b6dd1a",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "capture",
+          "line": 12
+        },
+        {
+          "symbol": "record_if_enabled",
+          "line": 49
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/cli.py",
+      "bytes": 2328,
+      "working_sha256": "c913f5ee6d4a074b8b0719b5693dd149069ede1f4ff10377b84b3f39e3fee2ba",
+      "release_manifest_sha256": "c913f5ee6d4a074b8b0719b5693dd149069ede1f4ff10377b84b3f39e3fee2ba",
+      "selected_copy_sha256": "c913f5ee6d4a074b8b0719b5693dd149069ede1f4ff10377b84b3f39e3fee2ba",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "main",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/configuration.py",
+      "bytes": 8822,
+      "working_sha256": "d56832adbb1f227d6a896c0cf52777858fa078a10a8750962f9a94f2e9a745c9",
+      "release_manifest_sha256": "d56832adbb1f227d6a896c0cf52777858fa078a10a8750962f9a94f2e9a745c9",
+      "selected_copy_sha256": "d56832adbb1f227d6a896c0cf52777858fa078a10a8750962f9a94f2e9a745c9",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "settings",
+          "line": 8
+        },
+        {
+          "symbol": "repository",
+          "line": 15
+        },
+        {
+          "symbol": "_guarded_repository",
+          "line": 34
+        },
+        {
+          "symbol": "source_reader",
+          "line": 45
+        },
+        {
+          "symbol": "workflow",
+          "line": 74
+        },
+        {
+          "symbol": "glossary_binding",
+          "line": 115
+        },
+        {
+          "symbol": "domain_workflow",
+          "line": 128
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/domain_cli.py",
+      "bytes": 4198,
+      "working_sha256": "0d9ec902bd76b8137e2638e5a55a9e54bdd8763b6555c4b37c79537b8bf7118f",
+      "release_manifest_sha256": "0d9ec902bd76b8137e2638e5a55a9e54bdd8763b6555c4b37c79537b8bf7118f",
+      "selected_copy_sha256": "0d9ec902bd76b8137e2638e5a55a9e54bdd8763b6555c4b37c79537b8bf7118f",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "read",
+          "line": 15
+        },
+        {
+          "symbol": "run",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/domain_ui.py",
+      "bytes": 6701,
+      "working_sha256": "bb164e53961b435c224398743e0ca9a9ac0aaead299d0433fb682bcf76ab7f5b",
+      "release_manifest_sha256": "bb164e53961b435c224398743e0ca9a9ac0aaead299d0433fb682bcf76ab7f5b",
+      "selected_copy_sha256": "bb164e53961b435c224398743e0ca9a9ac0aaead299d0433fb682bcf76ab7f5b",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "render",
+          "line": 8
+        },
+        {
+          "symbol": "_render",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/domain_workflow.py",
+      "bytes": 24672,
+      "working_sha256": "fd88a24c12d940f25c850c34ebc96d9aab1c96a67477c88da584e21ae4ab1969",
+      "release_manifest_sha256": "fd88a24c12d940f25c850c34ebc96d9aab1c96a67477c88da584e21ae4ab1969",
+      "selected_copy_sha256": "fd88a24c12d940f25c850c34ebc96d9aab1c96a67477c88da584e21ae4ab1969",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "SaveUnconfirmed",
+          "line": 19
+        },
+        {
+          "symbol": "DomainWorkflow",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/glossary_binding.py",
+      "bytes": 3132,
+      "working_sha256": "9607a9bb130099b2553bb4944e5fdde1ba3b7cce574b1bb233662cf9a22c533f",
+      "release_manifest_sha256": "9607a9bb130099b2553bb4944e5fdde1ba3b7cce574b1bb233662cf9a22c533f",
+      "selected_copy_sha256": "9607a9bb130099b2553bb4944e5fdde1ba3b7cce574b1bb233662cf9a22c533f",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "GlossaryBinding",
+          "line": 8
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/observations.py",
+      "bytes": 15092,
+      "working_sha256": "510da7d002b2ab11eca7bfbd882dacbce26e8d8f82f9b9787c8b1e9877412af6",
+      "release_manifest_sha256": "510da7d002b2ab11eca7bfbd882dacbce26e8d8f82f9b9787c8b1e9877412af6",
+      "selected_copy_sha256": "510da7d002b2ab11eca7bfbd882dacbce26e8d8f82f9b9787c8b1e9877412af6",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "lookup_queries",
+          "line": 13
+        },
+        {
+          "symbol": "raw_index",
+          "line": 25
+        },
+        {
+          "symbol": "envelope",
+          "line": 48
+        },
+        {
+          "symbol": "check_envelope",
+          "line": 67
+        },
+        {
+          "symbol": "check_locator",
+          "line": 73
+        },
+        {
+          "symbol": "validate_observations",
+          "line": 83
+        },
+        {
+          "symbol": "normalized",
+          "line": 139
+        },
+        {
+          "symbol": "export_journal",
+          "line": 150
+        },
+        {
+          "symbol": "normalization_schema",
+          "line": 187
+        },
+        {
+          "symbol": "restore_normalization",
+          "line": 228
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/profile.py",
+      "bytes": 7850,
+      "working_sha256": "80e67914bcae357b91307529e56a38e4875d286d0a4b681dbb6d0f3894197da5",
+      "release_manifest_sha256": "80e67914bcae357b91307529e56a38e4875d286d0a4b681dbb6d0f3894197da5",
+      "selected_copy_sha256": "80e67914bcae357b91307529e56a38e4875d286d0a4b681dbb6d0f3894197da5",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "validate",
+          "line": 26
+        },
+        {
+          "symbol": "index",
+          "line": 34
+        },
+        {
+          "symbol": "compile_profile",
+          "line": 41
+        },
+        {
+          "symbol": "verify_profile",
+          "line": 122
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/profile_schema.py",
+      "bytes": 4463,
+      "working_sha256": "dabc0ab8b670e707713b0fc18d8bed0a001f8ef5d94c5d31f6865fb3d1f937db",
+      "release_manifest_sha256": "dabc0ab8b670e707713b0fc18d8bed0a001f8ef5d94c5d31f6865fb3d1f937db",
+      "selected_copy_sha256": "dabc0ab8b670e707713b0fc18d8bed0a001f8ef5d94c5d31f6865fb3d1f937db",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "slot_schema",
+          "line": 20
+        },
+        {
+          "symbol": "node_schema",
+          "line": 30
+        },
+        {
+          "symbol": "observation_schema",
+          "line": 51
+        },
+        {
+          "symbol": "graph_schema",
+          "line": 64
+        },
+        {
+          "symbol": "accumulation_schema",
+          "line": 73
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/publication.py",
+      "bytes": 2246,
+      "working_sha256": "ed6a0c9037d338791247756dab7a5347a50578481ba56e851af4f08688e932e2",
+      "release_manifest_sha256": "ed6a0c9037d338791247756dab7a5347a50578481ba56e851af4f08688e932e2",
+      "selected_copy_sha256": "ed6a0c9037d338791247756dab7a5347a50578481ba56e851af4f08688e932e2",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "publication_context",
+          "line": 8
+        },
+        {
+          "symbol": "verify_consumer",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/recorded_fields.py",
+      "bytes": 5123,
+      "working_sha256": "44e4f5ea9738f0dbecd288ec70c732a6209c47b8083a22c55f58e07f5f9fed8c",
+      "release_manifest_sha256": "44e4f5ea9738f0dbecd288ec70c732a6209c47b8083a22c55f58e07f5f9fed8c",
+      "selected_copy_sha256": "44e4f5ea9738f0dbecd288ec70c732a6209c47b8083a22c55f58e07f5f9fed8c",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "request_schema",
+          "line": 19
+        },
+        {
+          "symbol": "restore",
+          "line": 36
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/repository.py",
+      "bytes": 18518,
+      "working_sha256": "17bf000fd2533be44355cb9e1add12492886f938fd6b7d0130f9e4f867dbb5e6",
+      "release_manifest_sha256": "17bf000fd2533be44355cb9e1add12492886f938fd6b7d0130f9e4f867dbb5e6",
+      "selected_copy_sha256": "17bf000fd2533be44355cb9e1add12492886f938fd6b7d0130f9e4f867dbb5e6",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "ident",
+          "line": 21
+        },
+        {
+          "symbol": "ddl",
+          "line": 25
+        },
+        {
+          "symbol": "value",
+          "line": 45
+        },
+        {
+          "symbol": "Repository",
+          "line": 46
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/runtime.py",
+      "bytes": 3842,
+      "working_sha256": "8b47c9a69d6dd85274bbded6b00effb38aed40b7f72ad24267d27bb771c98115",
+      "release_manifest_sha256": "8b47c9a69d6dd85274bbded6b00effb38aed40b7f72ad24267d27bb771c98115",
+      "selected_copy_sha256": "8b47c9a69d6dd85274bbded6b00effb38aed40b7f72ad24267d27bb771c98115",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "config",
+          "line": 13
+        },
+        {
+          "symbol": "acquire",
+          "line": 28
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/schema.py",
+      "bytes": 5250,
+      "working_sha256": "ff3f25a592e34f3b19b44a2b732880fa96bbe0986059680e9aa3816cba554444",
+      "release_manifest_sha256": "ff3f25a592e34f3b19b44a2b732880fa96bbe0986059680e9aa3816cba554444",
+      "selected_copy_sha256": "ff3f25a592e34f3b19b44a2b732880fa96bbe0986059680e9aa3816cba554444",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "now",
+          "line": 11
+        },
+        {
+          "symbol": "obj",
+          "line": 12
+        },
+        {
+          "symbol": "text",
+          "line": 13
+        },
+        {
+          "symbol": "arr",
+          "line": 14
+        },
+        {
+          "symbol": "validate_input",
+          "line": 23
+        },
+        {
+          "symbol": "recipe_for",
+          "line": 49
+        },
+        {
+          "symbol": "published",
+          "line": 59
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/store.py",
+      "bytes": 2088,
+      "working_sha256": "f8e86dd00b5696e10651188c771a2d9457105b614349596e21b14c0b0c4e85d5",
+      "release_manifest_sha256": "f8e86dd00b5696e10651188c771a2d9457105b614349596e21b14c0b0c4e85d5",
+      "selected_copy_sha256": "f8e86dd00b5696e10651188c771a2d9457105b614349596e21b14c0b0c4e85d5",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "encode",
+          "line": 12
+        },
+        {
+          "symbol": "path_for",
+          "line": 13
+        },
+        {
+          "symbol": "LocalFolderStore",
+          "line": 17
+        },
+        {
+          "symbol": "DataikuFolderStore",
+          "line": 32
+        },
+        {
+          "symbol": "decode",
+          "line": 45
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/ui.py",
+      "bytes": 6646,
+      "working_sha256": "1a39042b7dff3f8bd978e6f10a366b8160b30fa9de5869d802adf084a91427d6",
+      "release_manifest_sha256": "1a39042b7dff3f8bd978e6f10a366b8160b30fa9de5869d802adf084a91427d6",
+      "selected_copy_sha256": "1a39042b7dff3f8bd978e6f10a366b8160b30fa9de5869d802adf084a91427d6",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "actor",
+          "line": 7
+        },
+        {
+          "symbol": "render",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ontology_work/workflow.py",
+      "bytes": 5923,
+      "working_sha256": "3b8d5bda74b4fb99f6db779bbfbe5e88f9565cb11be37412489f59cb8d6153e7",
+      "release_manifest_sha256": "3b8d5bda74b4fb99f6db779bbfbe5e88f9565cb11be37412489f59cb8d6153e7",
+      "selected_copy_sha256": "3b8d5bda74b4fb99f6db779bbfbe5e88f9565cb11be37412489f59cb8d6153e7",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "Workflow",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_agent_records.py",
+      "bytes": 27967,
+      "working_sha256": "c5e1d32d986e08ccdf19f55a2a013757cf28f572495fa91afe73f5ef67eab7ca",
+      "release_manifest_sha256": "c5e1d32d986e08ccdf19f55a2a013757cf28f572495fa91afe73f5ef67eab7ca",
+      "selected_copy_sha256": "c5e1d32d986e08ccdf19f55a2a013757cf28f572495fa91afe73f5ef67eab7ca",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "sha",
+          "line": 34
+        },
+        {
+          "symbol": "pin",
+          "line": 38
+        },
+        {
+          "symbol": "RecordSQL",
+          "line": 44
+        },
+        {
+          "symbol": "AgentRecords",
+          "line": 54
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_record_sqlite.py",
+      "bytes": 21762,
+      "working_sha256": "b42bf8acd3fb815e4f84c093099069607bbecf5b7e969aea85d0d32003f66a21",
+      "release_manifest_sha256": "b42bf8acd3fb815e4f84c093099069607bbecf5b7e969aea85d0d32003f66a21",
+      "selected_copy_sha256": "b42bf8acd3fb815e4f84c093099069607bbecf5b7e969aea85d0d32003f66a21",
+      "scope": "SELECTED",
+      "definitions": [
+        {
+          "symbol": "encode",
+          "line": 23
+        },
+        {
+          "symbol": "decode",
+          "line": 32
+        },
+        {
+          "symbol": "quoted",
+          "line": 42
+        },
+        {
+          "symbol": "synchronized",
+          "line": 48
+        },
+        {
+          "symbol": "Cursor",
+          "line": 56
+        },
+        {
+          "symbol": "Connection",
+          "line": 108
+        },
+        {
+          "symbol": "connect",
+          "line": 403
+        }
+      ]
+    },
+    {
+      "path": "03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_dashboard.py",
+      "bytes": 21514,
+      "working_sha256": "0ead865482ba00d0f49cf69dd6683b6271b074c0f4ce1ac393bc7661deb96f44",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY",
+      "definitions": [
+        {
+          "symbol": "html",
+          "line": 55
+        },
+        {
+          "symbol": "failure",
+          "line": 59
+        },
+        {
+          "symbol": "backend",
+          "line": 66
+        },
+        {
+          "symbol": "select_table_row",
+          "line": 84
+        },
+        {
+          "symbol": "record_list",
+          "line": 92
+        },
+        {
+          "symbol": "judgment_table",
+          "line": 112
+        },
+        {
+          "symbol": "navigate",
+          "line": 126
+        },
+        {
+          "symbol": "role",
+          "line": 134
+        },
+        {
+          "symbol": "open_review",
+          "line": 138
+        },
+        {
+          "symbol": "collected",
+          "line": 143
+        },
+        {
+          "symbol": "generate_draft",
+          "line": 184
+        },
+        {
+          "symbol": "decide",
+          "line": 232
+        },
+        {
+          "symbol": "evidence",
+          "line": 244
+        },
+        {
+          "symbol": "review",
+          "line": 270
+        },
+        {
+          "symbol": "render",
+          "line": 322
+        },
+        {
+          "symbol": "main",
+          "line": 372
+        }
+      ]
+    },
+    {
+      "path": "03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_dashboard_model.py",
+      "bytes": 9338,
+      "working_sha256": "f24290287d364b664717dfd783a5d2ca78f767a5dc813d43142aae7685b1cc5d",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY",
+      "definitions": [
+        {
+          "symbol": "binding",
+          "line": 14
+        },
+        {
+          "symbol": "project",
+          "line": 18
+        },
+        {
+          "symbol": "component_diff",
+          "line": 52
+        },
+        {
+          "symbol": "scenario",
+          "line": 64
+        },
+        {
+          "symbol": "Dashboard",
+          "line": 77
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/ingest_agent_events.py",
+      "bytes": 1509,
+      "working_sha256": "419c3476c78f05a46ed2ac9f0e50c99ae9d8c7af3bcec7d50a35d7a053c6fcd7",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY",
+      "definitions": [
+        {
+          "symbol": "ingest",
+          "line": 6
+        },
+        {
+          "symbol": "main",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/ACTIVE_MAPPING.json",
+      "bytes": 287,
+      "working_sha256": "c2d6ed32ef14ec1d02844923c5b949f54adac9dd3e5b18d6c3f85a67d19a1c98",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY"
+    },
+    {
+      "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py",
+      "bytes": 11215,
+      "working_sha256": "aa9831a79814541ac17e43f885361750fe7053fbb2030adb0720e03b6238b5f2",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY",
+      "definitions": [
+        {
+          "symbol": "read",
+          "line": 10
+        },
+        {
+          "symbol": "sha",
+          "line": 11
+        },
+        {
+          "symbol": "load_mapping",
+          "line": 14
+        },
+        {
+          "symbol": "active_mapping",
+          "line": 20
+        },
+        {
+          "symbol": "load_profile",
+          "line": 32
+        },
+        {
+          "symbol": "engine_binding",
+          "line": 43
+        },
+        {
+          "symbol": "load_runtime",
+          "line": 66
+        },
+        {
+          "symbol": "open_mapped_engine",
+          "line": 83
+        },
+        {
+          "symbol": "open_store",
+          "line": 104
+        },
+        {
+          "symbol": "main",
+          "line": 159
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/ontology_settings.json",
+      "bytes": 71,
+      "working_sha256": "5142777cefb29ce30f509e199d0fdf54d62d6458cfb2d624bd19fc8139d817f9",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY"
+    },
+    {
+      "path": "08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/physical_mapping.py",
+      "bytes": 17002,
+      "working_sha256": "cecaa380587d410cf3110604e03deb1c1c345aa80a55e7239e09149867b429f5",
+      "release_manifest_sha256": null,
+      "selected_copy_sha256": null,
+      "scope": "WORKSPACE_ONLY",
+      "definitions": [
+        {
+          "symbol": "MappingError",
+          "line": 16
+        },
+        {
+          "symbol": "identifier",
+          "line": 42
+        },
+        {
+          "symbol": "_pairs",
+          "line": 48
+        },
+        {
+          "symbol": "_freeze",
+          "line": 57
+        },
+        {
+          "symbol": "_exact",
+          "line": 65
+        },
+        {
+          "symbol": "GoldMapping",
+          "line": 70
+        }
+      ]
+    }
+  ]
+}

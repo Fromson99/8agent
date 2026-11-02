@@ -120,9 +120,9 @@ class RelationsRepository(ToolsRepository):
         if minimal_input_projection is not None:
             from . import compact_model_input as minimal
             binding = stored.get('minimal_input_binding')
-            if (self.VERSION != 6 or wire_projection is None or minimal_input_projection != minimal.VERSION
+            if (self.VERSION != 6 or wire_projection is None or minimal_input_projection not in minimal.SUPPORTED_VERSIONS
                     or not isinstance(binding, dict) or set(binding) not in ({'version', 'selection_refs'}, {'version','selection_refs','stable_references'}, {'version','selection_refs','stable_references','document_names'})
-                    or binding['version'] != minimal.VERSION or not isinstance(binding['selection_refs'], list)
+                    or binding['version'] != minimal_input_projection or not isinstance(binding['selection_refs'], list)
                     or any(not isinstance(r, str) for r in binding['selection_refs'])
                     or not minimal.applies({'candidate_navigation': {'minimal_input': True}}, stored)):
                 raise ContractError('unsupported minimal input binding')

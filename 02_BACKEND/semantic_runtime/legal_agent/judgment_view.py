@@ -125,7 +125,7 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                         'judgment':head['finding'],'reason':head['reason'],'judgment_id':head['id'],
                         'judgment_version':head['version']})
                     row['decisions'].append(labels[head['use']]+' · '+head['finding']+' · 이유: '+head['reason'])
-                row.setdefault('limitations',[]).extend('미확인: '+n['text']+' · '+n['reason']
+                row.setdefault('limitations',[]).extend('조사 당시 필요(현재 검토 상태와 별도): '+n['text']+' · '+n['reason']
                     for _,n in sorted(ledger['needs'].items()) if n['status']=='OPEN')
                 row['limitations'].extend('판단 충돌: '+c['reason']
                     for _,c in sorted(ledger['conflicts'].items()) if c['status']=='OPEN')

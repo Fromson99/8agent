@@ -280,7 +280,7 @@ class ModelGateway:
         from . import compact_model_input as minimal
         if minimal.applies(self.profile, view):
             view = minimal.project(view, schema)
-            numbered_instructions = minimal.INSTRUCTIONS
+            numbered_instructions = minimal.instructions(view)
         user = {'view': view}
         if not self.compact:
             user['output_schema'] = schema
@@ -372,9 +372,10 @@ class ModelGateway:
             from . import compact_model_input as minimal
             if minimal.applies(self.profile, view):
                 if view.get('minimal_input_binding') != minimal.bind(view, self.protocol.schema(schema_name), stable=self.profile.get('candidate_navigation',{}).get('stable_navigation_references',False),
-                    document_names=view.get('minimal_input_binding',{}).get('document_names'))['minimal_input_binding']:
+                    document_names=view.get('minimal_input_binding',{}).get('document_names'),
+                    version=view.get('minimal_input_binding',{}).get('version'))['minimal_input_binding']:
                     raise ContractError('minimal input schema binding differs from canonical view')
-                numbered_args['minimal_input_projection'] = minimal.VERSION
+                numbered_args['minimal_input_projection'] = view['minimal_input_binding']['version']
             with latency.span('model.attempt_reserve',phase=phase):
                 ident = self.repo.reserve_attempt(view, request, logical, attempt, phase, **numbered_args)
                 self.repo.attempt_sent(ident)
@@ -481,13 +482,6 @@ class ModelGateway:
                     exc.generation_failure = 'OUTPUT_LENGTH_LIMIT'
                 self.repo.finish_attempt(ident, 'FAILED', getattr(exc, 'response', None),
                                          {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
-                if routing:
-                    budget=self.repo.budget()
-                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
-                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
-                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
-                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
-                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='proposal', error_code=exc.code,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
@@ -498,13 +492,6 @@ class ModelGateway:
                 raise
             except Exception as exc:
                 self.repo.finish_attempt(ident, 'UNKNOWN', None, {'model': self.transport.binding['model'], 'usage': None, 'error': type(exc).__name__})
-                if routing:
-                    budget=self.repo.budget()
-                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
-                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
-                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
-                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
-                    retry_delay=0.0
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='adapter', error_type=type(exc).__name__,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
@@ -528,13 +515,8 @@ class ModelGateway:
             try:
                 validate_response_model(self.transport.binding, body)
             except ContractError:
-                if routing:
-                    budget=self.repo.budget()
-                    limit=budget['model_limit']-(budget['finalization_reserve'] if phase=='investigate' else 0)
-                    retry_scheduled=(not exc.unknown and response.get('status_code')==429 and response.get('acceptance')=='KNOWN_REJECTED'
-                        and not (projection and projection.emitted) and budget['model_reserved']<limit and self.context.remaining()>1)
-                    retry_scheduled=retry_scheduled and provider_routing.switch(self.repo,routing,self.transport.routing_hash,self.context.binding_hash,ident,response)
-                    retry_delay=0.0
+                # A completed response with the wrong binding is not a known
+                # transport rejection. Preserve its cause; never switch providers.
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='model_mismatch', actual_model=receipt['model'])
                 raise

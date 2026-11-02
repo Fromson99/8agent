@@ -244,7 +244,7 @@ class OpenRouterProxyClient:
             self._write(out/'error.json',{'error':type(exc).__name__,'seconds':time.monotonic()-start,'transport_diagnostics':getattr(exc,'diagnostics',{})})
             raise ExperimentTransportError('OpenRouter transport failed: '+type(exc).__name__,
                 retryable=isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout)),
-                unknown=not isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))) from None
+                unknown=not isinstance(exc,(httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout))) from exc
         try:raw=response.json()
         except ValueError:
             self._write(out/'error.json',{'http_status':response.status_code,'error':'Non-JSON response'})

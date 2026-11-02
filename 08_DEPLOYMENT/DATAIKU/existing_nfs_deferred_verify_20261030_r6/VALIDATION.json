@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "test_count": 20,
+  "contract_tests": 16,
+  "delivered_notebook_tests": 4,
+  "exact_package_members": 80,
+  "changed_or_added_files": 6,
+  "preserved_files": 74,
+  "transition_versions": [
+    "R2",
+    "R3",
+    "R4",
+    "R5"
+  ],
+  "checks": [
+    "old full source cursors skip full body read in load_only",
+    "pending write and asset/query ACK loss stop then explicit resume",
+    "no new serving releases until complete verification",
+    "missing/changed source, asset, query and extra query rejected without auto repair",
+    "one source verification per verify",
+    "same full and managed deadlines/cumulative budgets",
+    "old immutable receipts retained",
+    "repeated load no duplicate data",
+    "local Oracle staged part idempotency/conflict/rollback and query publication validation"
+  ],
+  "field_dataiku_oracle_run": false,
+  "new_model_calls": 0,
+  "main_change": false,
+  "email_sent": false,
+  "limitations": [
+    "field JDBC and timing untested",
+    "verification cursor not persisted; interrupted verify restarts full scan",
+    "existing COMPLETE publications are not withdrawn",
+    "no full RAG answer validation"
+  ],
+  "initial_test_failure": "four test cases hit an old SQL double missing CLOB piece handling after corrupt VALUE used a stale length N; corrected synthetic N to match corrupt body; initial logs preserved; product unchanged",
+  "logs": {
+    "contract-tests.log": "901097394d5e815f80d0cfaf99b9d2e97d0331c200c2724eb09e4d839c1d1f88",
+    "notebook-tests.log": "c26ff92651fbbc7a778066b18b120ad2a75b227a80bd19cc9ae59453852e77a8",
+    "native-r2-latest.log": "3fe1646ae48a67d0381dc85bb886a1d49a80c839170238557486602de7738f7e",
+    "native-r3-latest.log": "f49aceb8bfff50ea5c08db9ca045fd451f25b469dd91d98c93762521061885d5",
+    "native-r4-latest.log": "705d1f72427790a85d0343a8471db22bc89e5166799dc140dca723c5449823ee",
+    "native-r5-latest.log": "21e36cc3807bb9fe7ded980e97cf03892bdd24929d41653ccbcd61a7bd9ec269"
+  },
+  "files": {
+    "DATAIKU_EXISTING_NFS_CLIENT_20261030_R6.zip": {
+      "sha256": "cd8834876f3dcc81cbafd3a322cb909a26957378167da902d26f809b2e24fed3",
+      "bytes": 315579
+    },
+    "DATAIKU_EXISTING_NFS_RUN_R6.txt": {
+      "sha256": "08d0e15b6f2aab99ecfbb38f11aab89e0a96abf2a38355fce7264811740105ca",
+      "bytes": 5129
+    },
+    "GUIDE.txt": {
+      "sha256": "e50c498b7b013307b9d4be52a6fba74fb24ac9f03ce29149428349a4905b96d3",
+      "bytes": 6664
+    }
+  }
+}

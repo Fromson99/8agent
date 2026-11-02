@@ -48,6 +48,7 @@ def require(repo, investigation, *, goal=None):
 def record(cases,result,principal,envelope,work):
     """Called in the same case transaction as core route finalization."""
     if result.get('status')!='READY' or not result.get('goal_id'):return None
+    if (cases.route(result['goal_id']) or {}).get('payload',{}).get('state',{}).get('scenario_context'):return None
     answer=envelope.get('answer') or {}
     if not str(answer.get('text','')).strip() or not answer.get('claims'):return None
     publication=work.db.execute('SELECT status,result_hash FROM publication WHERE singleton=1').fetchone()
@@ -127,8 +128,8 @@ def backfill(repo, runtime):
     Only existing case journals with a matching durable exported answer qualify.
     Current ACL/source guards remain mandatory in the downstream wiki consumer.
     """
-    import sqlite3
-    from pathlib import Path
+    from .. import runtime_sqlite as sqlite3
+    from ..oracle_runtime_paths import Path
     from types import SimpleNamespace
     from .shortcut_cases import ShortcutCases
     runtime=Path(runtime).resolve();report={'verified':0,'skipped':0,'errors':[]}

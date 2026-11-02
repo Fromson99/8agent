@@ -1,7 +1,7 @@
 """v6 compatibility adapter backed by the new v4 database generation."""
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 import json
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .case_repository import CaseRepository
 from .shortcut_repository import ShortcutRepository
 from .corrected_memory import Conflict, MemoryError, digest, encoded
@@ -23,8 +23,24 @@ class ShortcutCases(CaseRepository):
         self.active_case=received.get('investigation') or body.get('investigation_id')
         if self.active_case:
             self.shortcut.investigation(self.active_case,principal,body['session_id'])
-        lock_body={**body,'session_id':self.active_case or body['session_id']}
-        with super().owner(lock_body,principal): yield
+        # Keep the session lock after intake becomes linked to an investigation.
+        # A retry must not switch lock identity while the first request runs.
+        with ExitStack() as stack:
+            stack.enter_context(super().owner(body,principal))
+            self._case_owner_stack=stack
+            self._case_owner_ids={body['session_id']}
+            try:
+                if self.active_case:self._own_investigation(self.active_case,principal)
+                yield
+            finally:
+                del self._case_owner_stack,self._case_owner_ids
+
+    def _own_investigation(self,ident,principal):
+        # Hold case ownership through publication, including a newly connected
+        # case and cases reached from a different session. Acquisition is nonblocking.
+        if ident not in self._case_owner_ids:
+            self._case_owner_stack.enter_context(super().owner({'session_id':ident},principal))
+            self._case_owner_ids.add(ident)
 
     def execute(self,body,principal):
         if not getattr(self,'owner_held',False):
@@ -40,9 +56,11 @@ class ShortcutCases(CaseRepository):
             if len(links)==1:target=links[0]
         if target:
             case=self.shortcut.investigation(target,principal,body['session_id'])
+            self._own_investigation(target,principal)
             expected=body.get('investigation_revision')
             if expected is not None and case['revision']!=expected and row['status']!='COMPLETED': raise Conflict('stale investigation revision')
         case=self.shortcut.connect(self.intake_id,principal,investigation_id=target)
+        self._own_investigation(case['id'],principal)
         self.active_case=case['id'];self.original_session=body['session_id']
         from .wiki_execution import WikiExecution
         self.executor.execution_class=WikiExecution
@@ -61,7 +79,7 @@ class ShortcutCases(CaseRepository):
         self.db.execute("UPDATE sw_intake SET status='RUNNING' WHERE id=? AND status<>'COMPLETED'",(self.intake_id,))
         try:
             result=super().execute(translated,principal)
-            if result.get('state'):self.sync_facts(result['goal_id'],result['state']['facts'])
+            if result.get('state') and not result['state'].get('scenario_context'):self.sync_facts(result['goal_id'],result['state']['facts'])
             result={**result,'investigation_id':self.active_case,'investigation_revision':self.shortcut.investigation(self.active_case,principal,body['session_id'])['revision'],
                     'intake_id':self.intake_id,'original_session_id':body['session_id']}
             self.db.execute("UPDATE sw_intake SET status='COMPLETED',response=? WHERE id=?",(self.stored(result),self.intake_id))
@@ -78,6 +96,8 @@ class ShortcutCases(CaseRepository):
         return digest([principal['user_id'],principal['team_id'],getattr(self,'original_session',None) or body['session_id'],body['request_id']])
 
     def _execute(self,body,principal):
+        if 'review_action' in body:
+            return super()._execute(body,principal)
         context=self.context(body['session_id'],principal,body['question'])
         direct=self.direct_request(context)
         if direct is not None:return direct
@@ -110,6 +130,7 @@ class ShortcutCases(CaseRepository):
                                 (event,old['scope'],self.original_session))
                 self.db.execute('UPDATE sw_intake SET investigation=NULL WHERE id=?',(self.intake_id,))
                 new=self.shortcut.connect(self.intake_id,principal,title=command.get('task') or body['question'])
+                self._own_investigation(new['id'],principal)
                 self.active_case=new['id'];self.internal_session=new['id'];self.executor.active_case=self.active_case
                 body={**body,'session_id':new['id']}
                 self.identity(new['id'],principal)

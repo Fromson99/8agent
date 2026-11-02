@@ -85,15 +85,35 @@ class NavigationReferences:
                 if k=='enum' and key=='document_ref':out[k]=[self.document_forward.get(x,x) for x in v]
                 elif k=='properties':out[k]={(self.forward.get(name,name) if key in ('new_reviews','revisions','claim_evidence_refs') else name):walk(child,name) for name,child in v.items()}
                 elif k=='enum' and key not in TEXT_FIELDS:out[k]=[self.forward.get(x,x) if isinstance(x,str) else deepcopy(x) for x in v]
-                elif k=='const' and key not in TEXT_FIELDS and isinstance(v,str):out[k]=self.forward.get(v,v)
+                # Constants are data, including whole server-owned arrays. Map
+                # their identifiers exactly like the view; keep quoted text intact.
+                elif k=='const':out[k]=self._map(v,self.forward,key)
                 else:out[k]=walk(v,key)
             return out
         return walk(schema)
     def decode(self,value,wire_schema,schema_name=None):
         from .output_contract import validate_shape
         validate_shape(value,wire_schema,reference_space='wire')
-        return self._map(value,self.reverse)
-    def restore(self,value):return self._map(value,self.reverse)
+        return self.restore(value)
+    def restore(self,value):
+        result=self._map(value,self.reverse)
+        # New claims are declared by this response, not selected from the input's
+        # ontology component/reference namespace. Preserve declarations and their
+        # references; canonical validation still rejects undeclared/duplicate IDs.
+        if isinstance(value,dict) and isinstance(value.get('claims'),list) and any(
+                isinstance(c,dict) and 'claim_id' in c for c in value['claims']):
+            def local(raw,out):
+                if isinstance(raw,list) and isinstance(out,list):
+                    for a,b in zip(raw,out):local(a,b)
+                elif isinstance(raw,dict) and isinstance(out,dict):
+                    for key,item in raw.items():
+                        if key in ('claim_id','claim_refs','claim_ids'):
+                            out[key]=deepcopy(item)
+                        elif key=='claim_evidence_refs' and isinstance(item,dict):
+                            out[key]={k:self._map(v,self.reverse) for k,v in item.items()}
+                        elif key in out:local(item,out[key])
+            local(value,result)
+        return result
     def receipt(self,view):return {'schema_version':'navigation-handles-v2' if self.stable else 'navigation-handles-v1','view_hash':digest(view),'mapping':dict(self.forward)}
 
 

@@ -1,0 +1,372 @@
+{
+  "status": "DESIGN_ONLY",
+  "new_table_count": 3,
+  "new_column_count": 21,
+  "reused_table_count": 1,
+  "reused_column_count": 5,
+  "gold_ddl_changes": 0,
+  "owner": "__AGENT_OWNER__",
+  "owner_note": "개발계 SIDDA는 기존 지정값. 실제 대상·권한·물리명 등록은 미확인",
+  "tables": [
+    {
+      "key": "run",
+      "name": "LGL_AGT_RUN_A",
+      "title": "에이전트실행정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "실행 목록·요청 멱등 연결·복구 후보를 찾는 작은 색인. 상세는 공통 기록/기존 상태 표",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "실행키해시값",
+          "name": "RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "버전 있는 namespace+원 run ID의 해시. 원 ID는 본문 보존",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "대화키해시값",
+          "name": "SESS_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "인증 주체와 원 세션 ID 결속; 비대화 실행 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "요청키해시값",
+          "name": "REQ_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "주체·세션·원 request ID 결속. 멱등 소유권은 기존 상태 표",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "부모실행키해시값",
+          "name": "PRNT_RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "부모 실행; 없는 경우 NULL",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "상태코드",
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "nullable": false,
+          "description": "원 상태를 보존하는 복구 조회용 투영. 최종 상태는 transaction에서 결속",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "시작일시",
+          "name": "STRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "최초 실행 시작; 원 시각 문자열도 상세에 보존",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "변경일시",
+          "name": "CHG_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "nullable": false,
+          "description": "실행 상태 마지막 변경; DB 시각 사용",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "SESS_KEY_HASH_VAL",
+          "STRT_DTTM",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "REQ_KEY_HASH_VAL",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "PRNT_RUN_KEY_HASH_VAL",
+          "RUN_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "ST_CD",
+          "CHG_DTTM",
+          "RUN_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "record",
+      "name": "LGL_AGT_REC_A",
+      "title": "에이전트공통기록정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "대화·사건·판단·근거·호출·연결·색인을 종류별 계약으로 통합. 본문은 별도",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "소유객체키해시값",
+          "name": "OWNER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "실행/세션/사건/승인된 공간 등 종류를 포함한 안정 소유키",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록종류코드",
+          "name": "REC_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "명시 registry의 종류; 임의 종류를 묵인하지 않음",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록키해시값",
+          "name": "REC_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "종류·원 저장소 ID·원 PK tuple 결속. 원 PK값은 상세 보존",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "기록판본순번",
+          "name": "REC_REV_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "1 이상은 불변 보존판본, 0은 재생성 가능한 현재/검색 투영. 원 판본과 별도",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "정렬순번",
+          "name": "ORD_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "사건 seq·질문 ordinal·span 순서·우선순위 등 종류별 한 가지 의미; 비정렬은 0",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "조회키해시값",
+          "name": "LOOKUP_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": true,
+          "description": "등록된 상태/원문/용어/관계 끝점의 조회키. 복수 조회는 IX 종류 행으로 추가",
+          "pk": false,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "복원한 정확 원시 바이트 SHA256; 같은 영역의 본문 조각 참조",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_KEY_HASH_VAL",
+        "REC_REV_NO"
+      ],
+      "indexes": [
+        [
+          "SCOPE_HASH_VAL",
+          "OWNER_KEY_HASH_VAL",
+          "REC_KIND_CD",
+          "REC_REV_NO",
+          "ORD_SEQ_NO",
+          "REC_KEY_HASH_VAL"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "OWNER_KEY_HASH_VAL",
+          "REC_KIND_CD",
+          "REC_REV_NO",
+          "LOOKUP_HASH_VAL",
+          "ORD_SEQ_NO"
+        ],
+        [
+          "SCOPE_HASH_VAL",
+          "REC_KIND_CD",
+          "REC_REV_NO",
+          "LOOKUP_HASH_VAL",
+          "REC_KEY_HASH_VAL",
+          "OWNER_KEY_HASH_VAL"
+        ]
+      ]
+    },
+    {
+      "key": "body",
+      "name": "LGL_AGT_BODY_A",
+      "title": "에이전트본문조각정보",
+      "layer": "Agent",
+      "status": "PROPOSED_NOT_REGISTERED_NOT_CREATED",
+      "responsibility": "큰 입출력·원기록을 정확 바이트로 분할 보관. codec/hash/크기/개수는 조각 JSON에 보존",
+      "columns": [
+        {
+          "logical": "접근영역해시값",
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "안정적인 인증 namespace의 해시. 문서 판본과 분리하며 해시 자체는 접근권한이 아님",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "본문해시값",
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "nullable": false,
+          "description": "전체 복원 바이트 SHA256. 같은 권한 영역 안에서만 중복 공유",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "조각순번",
+          "name": "PART_SEQ_NO",
+          "type": "NUMBER(18)",
+          "nullable": false,
+          "description": "0=완성 manifest, 1..N=데이터. manifest는 모든 조각 대조 뒤 마지막에 추가",
+          "pk": true,
+          "default": null
+        },
+        {
+          "logical": "조각JSON내용",
+          "name": "PART_JSON_CN",
+          "type": "CLOB",
+          "nullable": false,
+          "description": "ASCII JSON: codec·원/저장 hash·크기·base64. 0번에는 전체 조각수/크기/hash/format",
+          "pk": false,
+          "default": null
+        }
+      ],
+      "pk": [
+        "SCOPE_HASH_VAL",
+        "BODY_HASH_VAL",
+        "PART_SEQ_NO"
+      ],
+      "indexes": []
+    }
+  ],
+  "existing_state": {
+    "key": "state",
+    "name": "LGL_EXEC_ST_A",
+    "title": "기존에이전트실행상태정보",
+    "layer": "Agent",
+    "status": "EXISTING_MAPPING_NO_DDL_CHANGE",
+    "responsibility": "요청 멱등·누적 예산·현재 head·소유권 토큰의 작은 CAS 객체",
+    "columns": [
+      {
+        "logical": "범위해시값",
+        "name": "SCOPE_HASH_VAL",
+        "type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "description": "새 agent:v1 namespace는 legacy scope와 구분",
+        "pk": true,
+        "default": null
+      },
+      {
+        "logical": "상태키ID",
+        "name": "ST_KEY_ID",
+        "type": "VARCHAR2(128 BYTE)",
+        "nullable": false,
+        "description": "a1:req/head/lease/budget/cursor:<64hex> 등의 제한된 키",
+        "pk": true,
+        "default": null
+      },
+      {
+        "logical": "변경순번",
+        "name": "CHG_SEQ_NO",
+        "type": "NUMBER(18)",
+        "nullable": false,
+        "description": "원래 CAS 계약",
+        "pk": false,
+        "default": null
+      },
+      {
+        "logical": "상태해시값",
+        "name": "ST_HASH_VAL",
+        "type": "VARCHAR2(64 BYTE)",
+        "nullable": false,
+        "description": "원래 scope/key/revision/value hash 계약 유지",
+        "pk": false,
+        "default": null
+      },
+      {
+        "logical": "상태JSON내용",
+        "name": "ST_JSON_CN",
+        "type": "CLOB",
+        "nullable": false,
+        "description": "작은 현재 포인터·소유권·예산. 큰 이력 본문 금지",
+        "pk": false,
+        "default": null
+      }
+    ],
+    "pk": [
+      "SCOPE_HASH_VAL",
+      "ST_KEY_ID"
+    ],
+    "indexes": []
+  },
+  "caveat": "기존 의미 계약을 보존하기 위한 축소 제안; 절대 최소 표 수 증명 또는 Oracle 구현 완료가 아님",
+  "revision": "R2",
+  "replaces_design": "../ORACLE_AGENT_RECORD_DESIGN_20261030_R1",
+  "all_agent_columns_including_reused": 26,
+  "role_mapping": {
+    "session": "record",
+    "run": "run",
+    "event": "record",
+    "record": "record",
+    "edge": "record",
+    "call": "record",
+    "body": "body",
+    "state": "state"
+  }
+}

@@ -1,0 +1,31 @@
+Dataiku Python recipe orchestration — 2026-10-27 R1
+
+Scope: existing LEGAL_RAG / ehA8dpVm uploads -> durable S3 raw files -> existing
+GENOS R2 structuring worker -> durable S3 result -> SIDDS.*_S append/verify.
+The existing worker, native parsing/indexing pipeline and Oracle loaders are reused.
+No worker deployment, model call, production DB access or query-channel activation.
+SIDDA.*_A ontology/shortcut consumers are not implemented by this raw ingest task.
+
+Reference: infocz/fde/seungho/integration
+  fetched 7a37b90d4c5eee3b337b241c1202d852571aeb0c
+  02-els-qa/dataiku/build_project.py; compute_ELS_QA_LOAD.py
+  Result-before-load Flow pattern and separate load receipt are reused conceptually.
+  Earlier c507cd450d90671858603e97f8849c8df3a7bc8d had remote code-serving preprocess.
+  Latest reference uses a parser plugin/local preprocessing. That parser and ELS
+  wire format are NOT our worker. User's existing GENOS API_TYPE protocol is kept.
+
+Failure ownership: HTTP client makes one attempt, no retry loop. DNS/TLS/status/
+envelope/hash errors are distinct. HEALTH sends no documents and starts no job.
+S3 raw/result records are hash-verified before publication. Existing conflicting
+objects are retained and rejected. Temporary disk never substitutes for S3 success.
+Structuring owns worker upload/poll/download; loader owns SQL reconciliation and ACK.
+Load receives the original worker capability/deadline and SQL reservation count.
+Restart preserves load state. Only successful DB readback + durable receipt permits
+ACK. ACK response loss stays pending; it does not start another structuring job.
+One active build per recipe/job is required; managed folders have no distributed CAS.
+
+Checks: recipe installation/idempotency, physical S3 locations, input/hash/traversal,
+raw readback failure, worker code mismatch, no write/START in connection test,
+stage ownership, returned bundle tamper, SQL committed-response-loss reconciliation,
+ACK response loss, local scratch loss, preserved deadline and budget, no duplication.
+Onsite Dataiku/GENOS connectivity remains untested until user runs recipe 00.

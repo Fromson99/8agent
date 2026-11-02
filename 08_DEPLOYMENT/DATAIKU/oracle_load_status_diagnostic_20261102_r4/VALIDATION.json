@@ -1,0 +1,35 @@
+{
+  "status": "STATIC_AND_SYNTHETIC_PASS",
+  "synthetic_checks_passed": 7,
+  "live_database_execution": false,
+  "database_calls_in_diagnostic": 0,
+  "max_output_lines": 18,
+  "r11_reference_sha256": "dfc0c769fc1b20093fd3c5549a750ca6557ddcb65d4d0f1b380d75cb43b9f21c",
+  "zip_members": [
+    "check_load_status.py"
+  ],
+  "script_txt_identical": true,
+  "files": [
+    {
+      "filename": "ORACLE_LOAD_STATUS_20261102_R4.zip",
+      "bytes": 2499,
+      "sha256": "cdf1d1bb20e41612ec608da22be32fdf5885721899f797f276931543e3ce5ebf"
+    },
+    {
+      "filename": "04_CHECK_LOAD_STATUS.txt",
+      "bytes": 5484,
+      "sha256": "7147a868facf937a0aed74360d9ee76ae2c40d868173b54960b3514e0534a7cd"
+    },
+    {
+      "filename": "GUIDE_R4.txt",
+      "bytes": 4577,
+      "sha256": "7087f941ba8810e9dc5d657d2a7c2b0be9df16556fe0fe754bf073259b718ae3"
+    }
+  ],
+  "limitations": [
+    "Saved receipts are not current database state",
+    "Current INSERT ability not tested",
+    "Gold R19 migration not implemented by this diagnostic",
+    "Multiple receipt files are not an atomic snapshot"
+  ]
+}

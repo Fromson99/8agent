@@ -1,0 +1,110 @@
+Dataiku 레시피 → 기존 GENOS 구조화 → 개발 실버 적재 / 20261027 R1
+
+어디에 저장되는가
+1. 업로드 ZIP: 기존 LEGAL_PIPELINE_WORKSPACE / ehA8dpVm에 그대로 보존.
+2. 압축 해제 원문: 같은 OBS_DP_PUBLIC S3 연결의 LEGAL_RAW_SOURCE_R1.
+   경로: /LEGAL_RAG/legal_pipeline_recipes_20261027_r1/raw/
+         snapshots/<RAW_INPUT.zip SHA-256>/files/01_DATA/RAW/...
+   파일명·원래 디렉터리·바이트를 보존한다. INPUT_MAPPING도 같은 스냅샷에 보존한다.
+   모든 파일의 S3 재조회 해시 확인 후 manifest.json을 저장한다.
+3. GENOS 반환 구조화 결과: LEGAL_STRUCTURED_RESULT_R1.
+   경로: /LEGAL_RAG/legal_pipeline_recipes_20261027_r1/structured/
+   _pipeline/blobs/<SHA-256>.zip에 원문 구조·색인·조회행 결과 묶음,
+   jobs/<JOB_NAME>/structured.json에 완료 정보가 있다.
+4. 적재 결과와 재개 기록: LEGAL_LGL_LOAD_RESULT_R1.
+   경로: /LEGAL_RAG/legal_pipeline_recipes_20261027_r1/load/
+5. 조회할 문서·조항·본문·검색행·게시 정보: AIDP 연결의 SIDDS.*_S.
+   온톨로지·숏컷·에이전트 자료 SIDDA.*_A는 별도 소비자 경로다.
+
+버킷 이름은 화면을 전사해서 코드에 넣지 않는다. 기존 ehA8dpVm의 S3 설정을 읽어
+같은 연결·버킷을 사용한다. 위 경로는 신규 레시피 설치 후의 예정 경로다.
+현재 업로드 상태만으로 이 경로에 원문이 이미 풀려 있다고 보지 않는다.
+예전 노트북 prepare는 Dataiku 작업 디스크에만 풀었다. 이번 레시피01은 S3에도 저장한다.
+실제 S3 주소는 Dataiku 폴더 Settings/Details 또는 다음 코드로 확인할 수 있다.
+  info = dataiku.Folder(FLOW_IDS['raw']).get_info()
+  print(info.get('accessInfo', {}).get('bucket'), info.get('accessInfo', {}).get('root'))
+
+Flow
+  기존 ZIP 폴더 ── LEGAL_00_CHECK_GENOS_R1 ── 연결 확인 기록(S3)
+  기존 ZIP 폴더 ── LEGAL_01_UNZIP_RAW_R1 ── 원문 파일(S3)
+  원문 + 지원 ZIP + 연결확인 노드 ── LEGAL_02_STRUCTURE_GENOS_R1 ── 구조화 결과(S3)
+  구조화 결과 ── LEGAL_03_LOAD_SILVER_R1 ── SIDDS의 7개 적재 표 + 적재기록(S3)
+
+레시피02가 기존 legal_pipeline_serving에 API_TYPE 프로토콜로 요청한다.
+HEALTH → START → UPLOAD(1MiB 조각) → EXECUTE → STATUS → DOWNLOAD 순서다.
+GENOS가 기존 구조화·색인 엔진을 실행한다. Dataiku는 전송·보관·DB 적재를 담당한다.
+GENOS 작업 파일은 일시 보관이며 최종 원문 보관소가 아니다.
+레시피03은 저장된 결과만 적재한다. DB 재조회 검증과 S3 적재 receipt 저장 후 ACK한다.
+따라서 적재 실패 때 구조화를 다시 실행할 필요 없이 레시피03만 재실행한다.
+기존 worker R2는 native-no-models 경로다. 이 패키지는 VLM/OCR 또는 다른 모델 호출을
+추가하지 않는다. 해당 파서로 처리할 수 없는 입력은 기존 worker 오류로 남는다.
+
+설치: 새 프로젝트를 만들거나 기존 프로젝트 ZIP을 덮어쓰지 않는다.
+1. 기존 ehA8dpVm 폴더 최상위에 DATAIKU_RECIPE_PACKAGE_20261027_R1.zip 업로드.
+   이 ZIP은 풀지 않고 올린다. 기존 RAW_INPUT 및 PIPELINE_SUPPORT ZIP/receipt를 유지한다.
+   RAW_INPUT.zip 또는 RAW_INPUT (1).zip 중 하나,
+   RAW_INPUT.zip.receipt.json 또는 RAW_INPUT.zip.receipt (1).json 중 하나를 읽는다.
+   PIPELINE_SUPPORT도 같은 규칙이다. 양쪽 이름이 모두 있으면 임의 선택하지 않고 멈춘다.
+   예전 DATAIKU_PIPELINE_CLIENT ZIP은 이 새 레시피 패키지 안에 포함되어 있다.
+2. LEGAL_RAG의 새 Python 노트북에서 DATAIKU_RECIPE_INSTALL_20261027_R1.txt 전체 실행.
+   설치 셀만 노트북에서 실행한다. 실제 데이터 처리는 생성된 네 Python 레시피에서 실행한다.
+   프로젝트 변수 LEGAL_PIPELINE_URL, LEGAL_PIPELINE_TOKEN은 이미 설정한 값을 사용한다.
+   인증키나 URL을 실행 TXT·레시피 코드에 복사하지 않는다.
+   Python 3.10 이상 / dataiku, pandas, PyYAML 6.x가 있는 기존 코드 환경을 프로젝트 기본값으로 둔다.
+   필요시 LEGAL_PIPELINE_SCRATCH에 충분한 여유가 있는 Dataiku 로컬 임시 디렉터리를 지정한다.
+   이는 S3 주소가 아니다. 성공한 임시 파일은 정리하며 실패한 임시 디렉터리는 기록 후 보존한다.
+3. FLOW_INSTALLED 확인 후 Flow 새로고침. 기존 객체는 유지하며 새 폴더4개/레시피4개와
+   SIDDS 외부 테이블 참조 Dataset7개를 만든다. 동일 설정으로 재실행하면 재사용한다.
+   같은 이름의 다른 설정이 있으면 덮어쓰지 않고 충돌을 표시한다.
+   생성 권한·S3 쓰기 권한은 현장 계정에 필요하다.
+
+현장 연결 확인
+4. LEGAL_00_CHECK_GENOS_R1을 선택해 Run.
+   HEALTH 1회만 보낸다. 원문 전송·GENOS 작업 시작·Oracle 적재는 없다.
+   정상: status=CONNECTED_CODE_MATCH. 실제 연결을 증명하는 것은 현장 이 결과다.
+   연결만 먼저 확인하려면 별도 DATAIKU_GENOS_CONNECTION_CHECK_20261027_R1.txt를
+   새 노트북 셀에서 실행해도 된다. 같은 패키지가 ehA8dpVm에 있어야 한다.
+   사진의 /serving/code/detail/761/은 관리 화면 주소다. 코드에서 호출 URL을 추정하지 않는다.
+   프로젝트 변수에는 실제 API 호출 주소를 사용한다.
+   GENOS_HTTP_401/403: 인증·허용 IP·권한 / 404: 실제 호출 경로 확인.
+   GENOS_DNS/NETWORK/TIMEOUT: Dataiku 실행 환경→GENOS 네트워크·프록시 확인.
+   GENOS_TLS_CERTIFICATE: 현장 신뢰 CA 설정 확인. TLS 검증을 끄지 않는다.
+   GENOS_NOT_JSON/GENOS_REPLY: 관리 HTML/다른 API인지 또는 서비스 응답 계약 확인.
+   DEPLOYED_CODE_MISMATCH: 요청은 도달했지만 준비한 client와 배포 worker 코드가 다름.
+   관측/기대 코드 hash로 적용된 revision을 확인한다. hash 검사 삭제로 우회하지 않는다.
+   연결 성공만으로 실제 문서 구조화·DB 적재 완료로 보지 않는다.
+
+원문부터 한 단계씩 실행
+5. LEGAL_01_UNZIP_RAW_R1 Run → RAW_SAVED → LEGAL_RAW_SOURCE_R1에서 원문 파일 확인.
+6. 이전에 전달한 SIDDS/_S·SIDDA/_A SQL로 대상 테이블이 준비되었는지 확인.
+   같은 SQL4개를 이 ZIP에도 포함했다. 설치기가 DB 테이블을 자동 생성하지 않는다.
+7. LEGAL_02_STRUCTURE_GENOS_R1 Run → STRUCTURED.
+   먼저 실제 DB 구조를 읽기 검사한다. 전체 자료가 GENOS에 전송되며 작업은 순차 실행한다.
+   결과의 SHA/크기·코드 결속 확인, S3 반환 파일/재개 기록 보관까지 해야 완료다.
+8. LEGAL_03_LOAD_SILVER_R1 Run → COMPLETE, oracle_written=true.
+   입력 해시·대상 스키마·모든 적재 결과 재조회 검증을 유지한다.
+   SIDDS.LGL_DOC_VER_S / DOC_UNIT_S / DOC_BLK_S / FILE_PART_S /
+   SRC_PBLS_S / SRCH_PBLS_S / SRCH_ROW_S가 실제 쓰기 대상이다(LGL_ 접두사 공통).
+   SIDDS.LGL_SRCH_CHNL_S 및 SIDDA.LGL_EXEC_ST_A는 검사 대상이며 자동 활성화/이행하지 않는다.
+
+재실행
+같은 입력·LEGAL_RECIPE_JOB_NAME(기본 recipes_20261027_r1)·폴더를 유지한다.
+데이터가 달라진 새 작업만 명시적으로 새 JOB_NAME을 쓴다. 실패를 새 이름으로 우회하지 않는다.
+기존 노트북 실행/다른 레시피 실행과 동시에 돌리지 않는다. 자동 시나리오·업로드 트리거는
+이번 설치가 켜지 않는다. 작업별 하나의 실행만 허용하는 운영 구성을 유지한다.
+로드 단계의 원래 기한·SQL 예산·GENOS 작업 capability를 S3에서 복원한다.
+LOAD_VERIFIED_ACK_PENDING은 DB 검증 후 worker 정리 응답이 불확실한 상태다.
+같은 레시피03을 재개하고 원래 기록을 삭제하지 않는다.
+Structured/Load 폴더에는 worker 작업 토큰이 들어 있으므로 원문 배치 담당자에게만 접근을 준다.
+
+참고한 코드와 한계
+승호님 최신 integration 7a37b90d4c5eee3b337b241c1202d852571aeb0c의 Flow와 별도 적재 방식을 참고했다.
+그 최신 ELS 전처리는 파서 플러그인/로컬 경로로 바뀌어 있다. 이전 c507cd450d90671858603e97f8849c8df3a7bc8d의
+코드서빙 호출도 확인했지만, ELS /preprocess 요청을 우리 API_TYPE 프로토콜로 바꾸어 쓰지 않는다.
+사진의 기존 legal_pipeline_serving을 재사용하며 새 GENOS 배포는 하지 않는다.
+로컬 SDK/네트워크 어댑터 검사와 실제 현장 연결·처리는 구분한다.
+GENOS RAG 조회 매핑/채널 전환·온톨로지/숏컷 적재·법제처 수집 배치는 이번 레시피 범위와 별도다.
+
+SDK 근거:
+https://developer.dataiku.com/latest/api-reference/python/recipes.html
+https://developer.dataiku.com/latest/api-reference/python/managed-folders.html

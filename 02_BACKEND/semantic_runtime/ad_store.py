@@ -1,9 +1,9 @@
 """SQL administration state, separate from legal conversations. No Redis or model."""
 from contextlib import contextmanager
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import hashlib
 import json
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import time
 import uuid
 

@@ -17,7 +17,7 @@ from test_main50_request_repair import GAP
 from test_unattempted_gap_finish import Journal
 
 
-def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
+def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None, *, exercise=None):
     from api_fixture_integrated import instrument,decode,to_wire
     instrument(monkeypatch)
     route = "connection"
@@ -100,7 +100,7 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
 
         def send_once(self, *, body, ticket):
             view = decode(json.loads(body['messages'][1]['content'])['view'])
-            phase = view.get('source_stage', view['phase'])
+            phase = view.get('source_stage') or view['phase']
             self.calls.append(phase)
             self.views.append(deepcopy(view))
             if phase=='source-law-navigation-supervisor-read-choice':
@@ -228,6 +228,10 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
                         review['needs']=[]
                     if rejected_need and (coverage_fault=='rejected_need_twice' or coverage_fault=='rejected_need_first' and not phase.endswith('-repair')):
                         review['needs']=[r for r in review['needs'] if r['id']!=pending_id]
+                    from scope_review_fixture import scope_rows
+                    scope_rows(value,ctx,review)
+                    if coverage_fault in ('scope_first','scope_twice') and (coverage_fault=='scope_twice' or not phase.endswith('-repair')):
+                        review['scope_reviews']=[]
                     value['read_judgment_review']=review
                     if mode=='final_failed' or mode=='final_repair' and not self.omitted_final:
                         self.omitted_final=True
@@ -396,17 +400,27 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
     app.state.pipeline.term_agent.unit_fulltext = index
     with TestClient(app) as api:
         request = {'question': question, 'session_id': route, 'request_id': 'r1'}
+        if exercise is not None:
+            return exercise(api, transport, request, tmp_path / '90_RUNTIME/semantic')
         from semantic_runtime.legal_agent.answer_stream import capture
         tokens=[]
         with capture('r1',tokens.append):response = api.post('/v1/rag/ask', json=request)
-        if mode=='partial_twice' or coverage_fault in ('twice','change_twice','need_twice','rejected_need_twice'):
-            assert response.status_code==422
+        if mode=='partial_twice' or coverage_fault in ('twice','change_twice','need_twice','rejected_need_twice','scope_twice'):
+            assert response.status_code==200,response.text
+            result=response.json();outcome=result['assembly']['term_agent']['accepted_outcome']
+            assert not result['answer']['claims']
+            assert outcome['disposition']=='LIMITED_ANSWER' and outcome['answer_coverage']!='COVERED'
+            assert outcome['stop_reason']=='ASSESSMENT_CONTRACT_UNRESOLVED'
+            assert target_text in result['answer']['text'] and result['answer']['unresolved']
+            count=len(transport.calls);again=api.post('/v1/rag/ask',json=request)
+            assert again.status_code==200 and again.json()['answer']==result['answer']
+            assert len(transport.calls)==count
             assert not tokens
             assert len([p for p in transport.calls if p.startswith('memory-assess')])==2
             assert not any(p.startswith('memory-compose') for p in transport.calls)
             from semantic_runtime.legal_agent import read_judgment as rj
-            journal=next(tmp_path.glob('90_RUNTIME/semantic/legal-agent/runs/*/*/journal.sqlite'))
-            with sqlite3.connect(journal) as db:
+            journal=next(tmp_path.glob('90_RUNTIME/semantic/legal-agent/runs/*/'+result['run_id']+'/journal.sqlite'))
+            with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
                 events=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='READ_JUDGMENT_RECORDED'")]
                 assert sum(len(e['changes']) for e in events)>=(1 if rejected_need else 3)
             app.state.pipeline.store.close()
@@ -449,7 +463,7 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
         if rejected_need:
             assert rejected_text in result['answer']['text']
             assert stages['SELECT']['stop_reason']=='MODEL_DECISION_UNRESOLVED'
-            with sqlite3.connect(journal) as db:
+            with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
                 failures=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE'")]
                 observed=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='NEED_DECLARATION_OBSERVED'")]
                 selected=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='READ_CHOICE_SELECTED'")]
@@ -460,7 +474,7 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
             assert {x['proposal_hash'] for x in failures}<={x['proposal_hash'] for x in observed}
             assert not ({x['proposal_hash'] for x in failures}&{digest(x['choice']) for x in selected})
         if mode in ('independent_after_failure','independent_conflict_after_failure'):
-            with sqlite3.connect(journal) as db:
+            with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
                 recoveries=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='INDEPENDENT_READ_RECOVERY'")]
                 assert len(recoveries)==1 and recoveries[0]['judgments_adopted'] is False
                 heads=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='READ_JUDGMENT_RECORDED'")]
@@ -471,10 +485,10 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
         assert len(transport.calls) == calls
     if mode=='goal_control':
         assert transport.calls.count('source-law-navigation-supervisor-read-choice')<=2
-        with sqlite3.connect(journal) as db:
+        with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             goal_rows=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='SOURCE_GOAL_RESULT'")]
         assert len([x for x in goal_rows if x['status']=='ACQUIRED'])>=2
-        with sqlite3.connect(journal) as db:
+        with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             bundles=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='SOURCE_REFERENCE_BUNDLE_BOUND'")]
         assert not bundles, 'server must not expand unselected sibling references'
         assert any('제3조 별도 기준' in str(v.get('evidence_options',[])) for v in transport.views if v.get('source_stage',v['phase']).startswith('memory-assess'))
@@ -488,17 +502,17 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
     # neither rejected action nor its opinion is committed.
     if mode not in ('page_handoff','goal_control','route_recovery'):assert transport.choices == expected
     elif mode=='page_handoff':
-        with sqlite3.connect(journal) as db:
+        with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             moves=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='READ_CANDIDATE_PAGE_SELECTED'")]
         assert any(x.get('actor')=='supervisor' for x in moves)
         assert all(not x['originals_acquired'] and not x['judgments_completed'] for x in moves)
         assert len(transport.calls)<=40
-    assert len([p for p in transport.calls if p.startswith('memory-assess')]) == (2 if mode=='partial_repair' or coverage_fault in ('first','change_first','need_first','rejected_need_first') else 1)
+    assert len([p for p in transport.calls if p.startswith('memory-assess')]) == (2 if mode=='partial_repair' or coverage_fault in ('first','change_first','need_first','rejected_need_first','scope_first') else 1)
     if mode not in ('page_handoff','goal_control','route_recovery'):assert len(transport.calls) == (6 if mode=='off' else 8) + (mode in ('navigation_repair','independent_after_failure','independent_conflict_after_failure','final_repair','partial_repair')) + (coverage_fault=='first')
     assert not any('judgment' in p for p in transport.calls), 'review must share existing calls'
     app.state.pipeline.store.close()
 
-    with sqlite3.connect(journal) as db:
+    with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
         reviews=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='REQUIREMENT_COVERAGE_REVIEWED'")]
         assessments=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='ASSESSMENT_VALIDATED'")]
     assert len(reviews)==1 and reviews[0]['separate_model_call'] is False
@@ -508,7 +522,7 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None):
         assert any(r['status']=='UNRESOLVED' for r in a['requirement_review']['rows'])
         assert '별도 수량 기준' in result['answer']['text']
     if mode=='route_recovery':
-        with sqlite3.connect(journal) as db:
+        with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             recovered=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='SUPERVISOR_INDEPENDENT_ROUTE_RECOVERED'")]
             rejected=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='SUPERVISOR_DIRECTIVE_REJECTED'")]
         assert len(recovered)==len(rejected)==1

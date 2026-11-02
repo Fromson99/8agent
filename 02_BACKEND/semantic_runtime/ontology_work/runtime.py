@@ -10,6 +10,56 @@ from ..legal_agent.errors import ContractError
 from .configuration import repository
 MAX_BUNDLES=8
 
+
+def workspace_references(state):
+    from .wiki_repository import workspace_bundle
+    return [{'bundle_id': bid, 'publication_id': row['publication_id'],
+             'package_sha256': digest(row['context'])}
+            for bid, row in sorted(state.get('ontology_database', {}).get('contexts', {}).items())
+            if workspace_bundle(bid)]
+
+
+def recheck(session, state):
+    refs=workspace_references(state)
+    if not refs:return []
+    try:
+        provider=getattr(session,'ontology_repository',None) or repository()
+        current=provider.current_publications(refs,set(session.scope))
+    except Exception as exc:
+        current={};reason='PUBLICATION_CHECK_UNAVAILABLE:'+type(exc).__name__
+    else:reason='PUBLICATION_WITHDRAWN_OR_ACCESS_CHANGED'
+    unavailable=[]
+    for ref in refs:
+        if current.get(ref['publication_id']) is not True:
+            unavailable.append(ref['bundle_id'])
+            state.setdefault('workspace_publication_checks',{})[ref['bundle_id']]={'status':'WITHHELD','reason':reason}
+            for plan in state.get('ontology_context',{}).get('plans',{}).values():
+                if plan['bundle_id']==ref['bundle_id']:
+                    plan['status']='NEEDS_REVIEW'
+                    plan['workspace_withheld_reason']=reason
+    return unavailable
+
+
+def assessment_references(state, cards):
+    used={c.get('payload',{}).get('assembly_catalog',{}).get('bundle_id') for c in cards}
+    # Some v1 catalogs expose package hash rather than bundle ID.
+    used.update(c.get('payload',{}).get('bundle_id') for c in cards if c.get('payload',{}).get('assembly_catalog'))
+    used.update(c.get('bundle_id') for c in cards if c.get('payload',{}).get('assembly_catalog'))
+    plans={p['id']:p['bundle_id'] for p in state.get('ontology_context',{}).get('plans',{}).values()}
+    used.update(plans.get(c.get('plan_id')) for c in cards if c.get('payload',{}).get('assembly_catalog'))
+    return [ref for ref in workspace_references(state) if ref['bundle_id'] in used]
+
+
+def assert_assessment(assessment, allowed_documents, provider=None):
+    refs=assessment.get('assessment_basis',{}).get('workspace_publications',[])
+    if not refs:return
+    try:
+        current=(provider or repository()).current_publications(refs,set(allowed_documents))
+    except Exception as exc:
+        raise ContractError('WORKSPACE_PUBLICATION_CHECK_UNAVAILABLE: candidate answer not confirmed') from exc
+    if any(current.get(ref['publication_id']) is not True for ref in refs):
+        raise ContractError('WORKSPACE_PUBLICATION_REVOKED: preserve originals; reassess before publishing')
+
 def config(policy,state,binding):
     from ..legal_agent.ontology_context import configuration
     db=state.get('ontology_database',{})
@@ -65,4 +115,5 @@ def acquire(inv,primary,primary_records):
             state['lookups'][key].update(status='UNAVAILABLE',error_type=type(exc).__name__)
             inv.s.repo.event('ONTOLOGY_DATABASE_UNAVAILABLE',{'anchor':anchor,'error_type':type(exc).__name__,'retry':False,'fallback':'ordinary-rag'})
         inv.save()
+    recheck(inv.s,inv.p)
     return config(inv.policy,inv.p,inv.p['binding'])

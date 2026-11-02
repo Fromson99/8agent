@@ -1,0 +1,59 @@
+# Dataiku LEGAL_RAG / 기존 _1 적재 Python 노트북의 새 셀에서 실행.
+# 먼저 첨부 ZIP 원본을 관리 폴더 ehA8dpVm에 업로드합니다.
+OLD_JOB_DIR = ''  # 기존 적재에서 지정했다면 같은 값.
+STATE_DIR = ''  # 여러 작업이 맞으면 오류 안내에 따라 기존 gold-shape-* 폴더 지정.
+PACKAGE_DIR = ''  # 기존 실행 package 경로. 보통 자동 결속되므로 빈 값.
+__MODE_SETTINGS__
+
+import hashlib
+import io
+import json
+from pathlib import Path, PurePosixPath
+import sys
+import tempfile
+import zipfile
+
+def _g19_diag_bootstrap():
+    import dataiku
+    folder = dataiku.Folder('ehA8dpVm')
+    name = '__ZIP_NAME__'
+    paths = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == name]
+    if len(paths) != 1: raise ValueError('관리 폴더 ehA8dpVm에 '+name+'을 정확히 한 개 업로드하세요.')
+    with folder.get_download_stream(paths[0]) as stream: raw = stream.read(1024**2+1)
+    if len(raw)>1024**2 or hashlib.sha256(raw).hexdigest()!='__ZIP_SHA256__': raise ValueError('DIAGNOSTIC_ZIP_HASH')
+    target = Path(tempfile.gettempdir())/'g19-bottleneck-observer-__ZIP_PREFIX__'
+    target.mkdir(exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names = z.namelist()
+        manifest = json.loads(z.read('MANIFEST.json'))
+        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'MANIFEST.json'}: raise ValueError('DIAGNOSTIC_ZIP_CONTENTS')
+        if sum(i.file_size for i in z.infolist())>512*1024: raise ValueError('DIAGNOSTIC_ZIP_SIZE')
+        for item in z.infolist():
+            relative=PurePosixPath(item.filename)
+            if relative.is_absolute() or '..' in relative.parts or item.is_dir() or (item.external_attr>>16)&0o170000==0o120000:
+                raise ValueError('DIAGNOSTIC_ZIP_PATH')
+            path=(target/item.filename).resolve()
+            if target.resolve() not in path.parents: raise ValueError('DIAGNOSTIC_ZIP_ESCAPE')
+            content=z.read(item)
+            if item.filename!='MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]: raise ValueError('DIAGNOSTIC_CODE_HASH')
+            if path.exists():
+                if path.read_bytes()!=content: raise ValueError('DIAGNOSTIC_EXTRACTED_CHANGED')
+            else:
+                with path.open('xb') as stream: stream.write(content)
+    # Only diagnostic modules are refreshed; never touch notebook's loader imports.
+    for key in list(sys.modules):
+        if key.startswith('g19diag_'): del sys.modules[key]
+    sys.path.insert(0,str(target))
+    import g19diag_notebook
+    return g19diag_notebook
+
+try:
+    _g19_observer = _g19_diag_bootstrap()
+    __RUN_CALL__
+    def SHOW_DIAG_PAGE(name='요약'):
+        _g19_observer.show(name)  # display only; does not rerun SQLite/Oracle/INSERT
+except Exception as _g19_exc:
+    import html
+    from IPython.display import HTML, clear_output, display
+    clear_output(wait=True)
+    display(HTML('<div style="padding:16px;border:1px solid #b9c8d6;color:#243a50"><b>병목 진단 준비 중단</b><br>'+html.escape(type(_g19_exc).__name__+': '+str(_g19_exc)[:200])+'<br>ZIP 업로드와 기존 실행 경로를 확인하세요. 자동 재시도하지 않습니다.</div>'))

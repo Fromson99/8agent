@@ -1,7 +1,7 @@
 """GENOS transport adapter for AD. Invoked before legal request logging/routing."""
 import os
 import uuid
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from .ad_mode import handle
 from .ad_store import Store
 from .ad_backend import Backend

@@ -1,6 +1,7 @@
 """Synthetic state/transport/API tests. No live model or answer-quality evaluation."""
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 import sqlite3
 import uuid
@@ -22,7 +23,7 @@ from semantic_runtime.legal_agent.publication import prepare, export, recover, o
 from lawrag.pipeline.term_generation import build_generation
 from test_document_release import source
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.environ.get('LOOP_TEST_CODE_ROOT',Path(__file__).resolve().parents[2])).resolve()
 BINDING = {'provider': 'fixture', 'model': 'synthetic-contract', 'adapter_version': 'fixture-v1',
            'endpoint_identity': 'no-network', 'trust_zone': 'internal', 'max_input_bytes': 500000}
 PROFILE = {**DEFAULT_PROFILE, 'model_binding': BINDING}
@@ -108,13 +109,16 @@ def test_server_question_ids_preserve_unicode_and_whitespace():
     assert all(text[p['start_cp']:p['end_cp']] == p['text'] for p in pieces)
 
 
-def test_trailing_parenthetical_context_stays_with_the_question():
+def test_trailing_parenthetical_context_preserves_exact_question_coordinates():
     question = '어디에 해당하는가?\n(업무 문맥: 신규상장 의무보유)'
     pieces = question_pieces(question)
-    assert pieces == [{'id': 'Q1', 'text': question, 'start_cp': 0, 'end_cp': len(question)}]
+    # Punctuation coordinates are structural; context is retained as its own piece.
+    assert ''.join(p['text'] for p in pieces) == question
+    assert pieces[-1]['text'] == '(업무 문맥: 신규상장 의무보유)'
+    assert all(question[p['start_cp']:p['end_cp']] == p['text'] for p in pieces)
 
 
-def test_initial_source_trigger_aliases_matching_unassessed_question_issue(work):
+def test_distinct_question_and_source_issues_share_evidence_without_implicit_merge(work):
     seed(work)
     question_issue = {**issue('질문 쟁점', evidence_ids=['E1']), 'origin': 'question'}
     source_issue = issue('원문에서 발견한 조건', evidence_ids=['E1'])
@@ -122,10 +126,12 @@ def test_initial_source_trigger_aliases_matching_unassessed_question_issue(work)
         {'op': 'create_issue', 'temp_id': 'tmp:q', 'issue': question_issue},
         {'op': 'create_issue', 'temp_id': 'tmp:s', 'issue': source_issue},
         evidence_ids=['E1'])
-    assert result['tmp:q'] == result['tmp:s']
+    # Sharing an original does not establish semantic equivalence of two issues.
+    assert result['tmp:q'] != result['tmp:s']
     heads = work.heads('issue', current=True)
-    assert len(heads) == 1
-    assert heads[0]['payload']['origin'] == 'question'
+    assert len(heads) == 2
+    assert {h['payload']['origin'] for h in heads} == {'question','source_trigger'}
+    assert all(h['payload']['evidence_ids'] == ['E1'] for h in heads)
 
 
 def test_many_question_segments_remain_reviewable_without_losing_text():
@@ -370,7 +376,8 @@ def test_http_research_retraction_revision_publication_and_feedback(tmp_path, ge
         assert db.execute('SELECT count(*) FROM evidence_unit').fetchone()[0] == 2
         assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
     saved = json.loads((tmp_path/'90_RUNTIME/semantic/runs'/(value['run_id']+'.json')).read_text())
-    assert saved == value
+    assert saved == {k:v for k,v in value.items() if k!='execution_stats'}
+    assert value['execution_stats']['llm_calls'] > 0
 
 
 def test_long_read_cursor_scope_and_undisclosed_evidence(tmp_path, generation):
@@ -409,7 +416,12 @@ def test_model_schema_errors_are_502_not_request_422(tmp_path, generation):
     with TestClient(app) as client:
         response = client.post('/v1/rag/ask', json={'question': '승인', 'document_ids': ['d']})
         assert response.status_code == 502, response.text
-        assert response.json()['code'] == 'MODEL_PROPOSAL_INVALID'
+        assert response.json()['answer_status'] == 'failed'
+        assert response.json()['failure_reason'] == 'technical'
+    journal=next((tmp_path/'90_RUNTIME/semantic/legal-agent/runs').glob('*/*/journal.sqlite'))
+    with sqlite3.connect(journal) as db:
+        failure=json.loads(db.execute("SELECT payload_json FROM event WHERE kind='RUN_FAILED'").fetchone()[0])
+        assert failure['code'] == 'MODEL_PROPOSAL_INVALID'
     assert not list((tmp_path/'90_RUNTIME/semantic/runs').glob('*.json'))
 
 
@@ -418,7 +430,7 @@ def test_schema_registry_and_generated_model_protocol_match():
     contracts = Contracts(ROOT)
     assert contracts.schemas['urn:8-agent:legal-agent-v1'] == SCHEMA
     assert contracts.pipeline['profiles']['document-navigation-rag-v1']['nodes'][0]['parameters']['term_agent']['implementation'] == 'document-navigation-v1'
-    assert contracts.pipeline['profiles']['legal-rag']['nodes'][0]['parameters']['term_agent']['implementation'] == 'legal-agent-tools-v5'
+    assert contracts.pipeline['profiles']['legal-rag']['nodes'][0]['parameters']['term_agent']['implementation'] == 'legal-agent-unified-v6'
 
 
 def test_owner_lock_recovery_does_not_interrupt_live_request(work, tmp_path):

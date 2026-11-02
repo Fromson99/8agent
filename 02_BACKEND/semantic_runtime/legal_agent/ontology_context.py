@@ -80,7 +80,8 @@ def config(inv):
         return {'mode': 'A0'}
     value = inv.policy.get('ontology_context', {'mode': 'A0'})
     if value == {'mode': 'DB'}:
-        from ..ontology_work.runtime import config as database_config
+        from ..ontology_work.runtime import config as database_config, recheck
+        recheck(inv.s, inv.p)
         return database_config(inv.policy, inv.p, inv.p['binding'])
     # Detect any mutation before reusing validation; the cache is owned by this
     # investigation only and holds no original data or authority grants.

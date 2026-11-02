@@ -264,6 +264,8 @@ class DomainWorkflow(Workflow):
 
     def save_accumulation(self, *, bundle_id, expected_revision, profile_id, profile_work_hash,
                           observation_ids, originals, proposal, model_receipt=None, matching_receipt=None):
+        if bundle_id.startswith('cb-kb-ws-') and not getattr(self, 'workspace_projection_binding', None):
+            raise ContractError('workspace bundles require selected-statement projection')
         if not re.fullmatch(r'cb-kb-[A-Za-z0-9_-]{1,77}', bundle_id):
             raise ContractError('knowledge bundle ID required (cb-kb-...)')
         profile = self.selected_profile(profile_id, profile_work_hash); self._originals(originals)
@@ -347,6 +349,11 @@ class DomainWorkflow(Workflow):
 
     def preview(self, bid):
         d = self.load(bid)
+        if bid.startswith('cb-kb-ws-'):
+            from .wiki_projection import check_selection, workspace_for
+            if 'workspace_projection' not in d:
+                raise ContractError('workspace projection lineage missing')
+            check_selection(workspace_for(self), d['workspace_projection'])
         profile = self.selected_profile(d['profile_id'], d['profile_work_hash'])
         self._originals(d['originals'])
         for ref in d['glossary_refs']:
@@ -354,7 +361,18 @@ class DomainWorkflow(Workflow):
                 raise ContractError('knowledge glossary drift')
         return compiler.compile_package(d['proposal']['graph'], profile, d['originals'], bundle_id=bid,
             revision=d['revision'], approval_ref=d['approval'] if d['status'] == 'APPROVED' else None,
-            glossary_refs=d['glossary_refs'])
+            glossary_refs=d['glossary_refs'], evaluation_spec=d.get('evaluation_spec'))
+
+    def save_evaluation_spec(self, bid, revision, work_hash, spec):
+        """Create a new draft; requires ordinary review and publication again."""
+        d = self.load(bid)
+        if (d['revision'], d['work_hash']) != (revision, work_hash) or d['kind'] == 'PROFILE':
+            raise ContractError('exact knowledge revision required')
+        from .evaluation_plan import compile_plan
+        compile_plan(spec, self.preview(bid))
+        document = self.store.get(work_hash)
+        document['evaluation_spec'] = deepcopy(spec)
+        return self._save(bid, document, revision)
 
     def review(self, bid, revision, work_hash, approve, reason):
         d = self.load(bid)
@@ -377,6 +395,8 @@ class DomainWorkflow(Workflow):
     def verify_publication(self, pid):
         from .publication import verify_consumer
         row = self.repo.publication(pid, self.document_ids)
+        if row['bundle_id'].startswith('cb-kb-ws-'):
+            self.load(row['bundle_id'], row['revision'])
         package = row['context']['assembly_package']
         self._originals(package['originals'])
         for ref in package['glossary_refs']:
@@ -389,6 +409,8 @@ class DomainWorkflow(Workflow):
     def activate_publication(self, pid, expected_sequence, receipt, *, rollback=False):
         from .publication import verify_consumer
         row = self.repo.publication(pid, self.document_ids); package = row['context']['assembly_package']
+        if row['bundle_id'].startswith('cb-kb-ws-'):
+            self.load(row['bundle_id'], row['revision'])
         self._originals(package['originals'])
         for ref in package['glossary_refs']:
             if ref != self.glossary.restore(ref['source'], ref['node_id']):
@@ -396,5 +418,8 @@ class DomainWorkflow(Workflow):
         binding = verify_consumer(row['context'])
         if receipt['publication_id'] != pid or receipt['binding'] != binding:
             raise ContractError('activation receipt changed')
+        if row['bundle_id'].startswith('cb-kb-ws-'):
+            from .wiki_projection import activate
+            return activate(self, row, expected_sequence, receipt, binding, rollback=rollback)
         return self.repo.activate_staged(row['bundle_id'], pid, expected_sequence, receipt['receipt_id'], binding,
                                         self.actor, rollback=rollback)

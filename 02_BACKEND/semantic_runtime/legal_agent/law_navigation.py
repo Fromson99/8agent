@@ -2326,6 +2326,8 @@ class Investigation:
         return value
 
     def request_decision(self, data, actions, phase):
+        from .investigation_supervisor import require_known_outcome
+        require_known_outcome(self)
         from . import source_goal_control as source_goals
         required=source_goals.preselect(self,data,actions)
         if required is not None:return required

@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "file": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R18/법률에이전트_B03_테이블별_컬럼정의_R18.xlsx",
+  "sha256": "ca216084dbfdffda1a9dc692d7c1612755b5500a482d5b9e185dc902de72f09d",
+  "source_sha256": "5ef633c5bc29411d776ada7f2b09165d130e6aff23ea067ceb780524bb4b80e1",
+  "table_sheets": 13,
+  "columns": 60,
+  "mapping_names_match": true,
+  "other_cell_values_and_styles_unchanged": true,
+  "native_excel_rendered": false,
+  "changes": [
+    {
+      "sheet": "12_원문구간벡터",
+      "cell": "B7",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "14_참고_인덱스",
+      "cell": "H23",
+      "before": "VCTR_POST_ID, VCTR_SEG_ID",
+      "after": "VCTR_POST_ID, VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "14_참고_인덱스",
+      "cell": "H24",
+      "before": "VCTR_POST_ID, RGLT_DOC_ID, BODY_UNIT_ID, VCTR_SEG_ID",
+      "after": "VCTR_POST_ID, RGLT_DOC_ID, BODY_UNIT_ID, VCTR_SCTN_ID"
+    }
+  ]
+}

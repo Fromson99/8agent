@@ -1,0 +1,22 @@
+{
+  "status": "LOCAL_SYNTHETIC_CONTRACTS_PASS_FIELD_UNTESTED",
+  "tests_passed": 22,
+  "native_oracle_calls": 0,
+  "actual_embedding_calls": 0,
+  "python_310_syntax": true,
+  "zip_no_nested_archive_or_javascript": true,
+  "preview_fixture_panel_bounds": {
+    "x": 8,
+    "y": 8,
+    "width": 974,
+    "height": 338.484375
+  },
+  "actual_field_speedup_measured": false,
+  "original_loader_files_modified": false,
+  "probe_sql_internal_commit_removed": true,
+  "notes": [
+    "INSERT/verify/rollback validated with actual Contract.batch SQL and simulated Dataiku boundary, not native Oracle.",
+    "Original stage profiler preserves calls/return/exception and separates nested exclusive/inclusive time.",
+    "V$SQL permissions, native DB timing receipt and actual model/driver performance remain field checks."
+  ]
+}

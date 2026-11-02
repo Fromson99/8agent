@@ -117,7 +117,20 @@ def complete_page_transition(inv,st,data,payload):
     pages.move(inv,payload,pending['choice'],expected_state=pending['before'],actor='supervisor')
     st['page_pending']=None;save(inv,st)
 
+def require_known_outcome(inv):
+    # Run before primary selection too: a restored pending supervisor must not
+    # spend another model call merely to arrive back at its execution gate.
+    for state in inv.p.get('investigation_supervisor',{}).values():
+        if state.get('binding')!=inv.p['binding'] or state.get('state_hash')!=seal(state):
+            raise ContractError('supervisor state binding/hash mismatch')
+        if state.get('pending'):
+            failure=state.get('failure',{})
+            error=TransportError(failure.get('reason','Unknown prior supervisor outcome'),unknown=True)
+            error.code=failure.get('code',error.code);error.http_status=failure.get('http_status',error.http_status)
+            raise error
+
 def gate(inv,data,actions,payload,value,decision,action_schema,expand,key,*,prepare_page=None):
+    require_known_outcome(inv)
     st=record(inv,data,value,key);why=trigger(st,value)
     old=st['receipts'][key]
     if 'resolved' in old:
@@ -192,7 +205,14 @@ def gate(inv,data,actions,payload,value,decision,action_schema,expand,key,*,prep
                 'remaining_scope':result['remaining_scope'],'cancelled':decision if revised!=decision else None,'accepted':revised})
             authorize(inv,data,revised,st);return revised
         except (ProposalError,ValidationError,TransportError,BudgetExhausted) as exc:
-            st['pending']=None;st['failure']={'type':type(exc).__name__,'reason':str(exc)}
+            st['failure']={'type':type(exc).__name__,'reason':str(exc)}
+            if isinstance(exc,TransportError) and exc.unknown:
+                st['failure'].update(unknown=True,code=exc.code,http_status=exc.http_status)
+                save(inv,st)
+                inv.s.repo.event('SUPERVISOR_UNKNOWN_STOP',{'reason':str(exc),'code':exc.code,
+                    'originals_preserved':True,'legal_sufficiency_approved':False})
+                raise
+            st['pending']=None
             stop(inv,st,'SUPERVISOR_UNRESOLVED:'+type(exc).__name__)
 
 def recover_changed_route(inv,data,actions,state,receipt,key,result,proposed,revised):

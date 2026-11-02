@@ -14,10 +14,10 @@ from datetime import datetime, timezone
 import json
 import logging
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
 import queue
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import tempfile
 import threading
 import time
@@ -521,10 +521,14 @@ class _LiveLog(logging.Handler):
 
     def _heartbeat_loop(self) -> None:
         while not self.stop_event.wait(1):
-            if self.process_trace:
-                self.process_trace.service_events(list(self.captured_events))
-            self.poll_journal()
-            self.heartbeat()
+            from .oracle_query_state import StateConflict
+            try:
+                if self.process_trace:
+                    self.process_trace.service_events(list(self.captured_events))
+                self.poll_journal()
+                self.heartbeat()
+            except StateConflict:
+                continue  # The next read pulse retries; no model or write retry.
 
     def write_detail(self, label: str, value: Any, *, stamp: str | None = None) -> None:
         """Append one substantive block, keeping secret redaction."""
@@ -567,11 +571,13 @@ class _LiveLog(logging.Handler):
         self.writer.handle(record)
 
     def poll_journal(self, *, drain=False) -> None:
+        from .oracle_query_state import StateConflict
         with self.poll_lock:
             if self.runtime is None or self.run_id is None:
                 return
             from .request_journals import paths, children
-            found = paths(self.runtime, self.run_id)
+            try:found = paths(self.runtime, self.run_id)
+            except StateConflict:return
             if len(found) != 1:
                 return
             def read(path, run_id):
@@ -584,10 +590,12 @@ class _LiveLog(logging.Handler):
             try:
                 for child in children(found[0], self.run_id):
                     read(child['path'], child['run_id'])
+            except StateConflict:return
             except (OSError, sqlite3.Error, ValueError, TypeError, KeyError) as exc:
                 self.write_detail('TRACE READER ERROR', {'error_type': type(exc).__name__, 'detail': str(exc)})
 
     def _poll_journal(self, *, path=None, run_id=None) -> None:
+        from .oracle_query_state import StateConflict
         run_id = run_id or self.run_id
         def raw_model_block(data, phase, presented):
             # This is received output, never a request prompt or an inferred
@@ -677,10 +685,14 @@ class _LiveLog(logging.Handler):
                 flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND
                 if hasattr(os, 'O_NOFOLLOW'):
                     flags |= os.O_NOFOLLOW
-                fd = os.open(target, flags, 0o640)
-                with os.fdopen(fd, 'a', encoding='utf-8') as stream:
-                    os.fchmod(stream.fileno(), 0o640)
-                    stream.write(json.dumps(safe, ensure_ascii=False, default=str) + '\n')
+                from .oracle_runtime_paths import virtual, write_file
+                if virtual(target):
+                    write_file(target,(json.dumps(safe,ensure_ascii=False,default=str)+'\n').encode(),append=True)
+                else:
+                    fd = os.open(target, flags, 0o640)
+                    with os.fdopen(fd, 'a', encoding='utf-8') as stream:
+                        os.fchmod(stream.fileno(), 0o640)
+                        stream.write(json.dumps(safe, ensure_ascii=False, default=str) + '\n')
             except (OSError, TypeError, AttributeError):
                 lines.append('raw_sidecar_status=UNAVAILABLE; received content remains in this block and journal')
             return '\n'.join(lines)
@@ -793,6 +805,7 @@ class _LiveLog(logging.Handler):
             self.journal_cursors[run_id] = last_seq, process_last_seq
             if run_id == self.run_id:
                 self.last_seq, self.process_last_seq = last_seq, process_last_seq
+        except StateConflict:return
         except (OSError, sqlite3.Error, ValueError, TypeError, KeyError) as exc:
             if isinstance(exc, sqlite3.OperationalError) and any(
                     item in str(exc).lower() for item in ("locked", "no such table")):
@@ -902,9 +915,14 @@ def live_log(root: Path, request_id: str, runtime: Path | None = None, *,
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
-    fd = os.open(path, flags, 0o640)
-    os.fchmod(fd, 0o640)
-    stream = os.fdopen(fd, "w", encoding="utf-8", buffering=8192)
+    from .oracle_runtime_paths import virtual, write_file
+    if virtual(path):
+        write_file(path,b'',exclusive=True)
+        stream=Path(path).open("a",encoding="utf-8")
+    else:
+        fd = os.open(path, flags, 0o640)
+        os.fchmod(fd, 0o640)
+        stream = os.fdopen(fd, "w", encoding="utf-8", buffering=8192)
     handler = _LiveLog(request_id, stream, runtime)
     handler.log_path = path
     try:
@@ -1006,6 +1024,9 @@ def _decode_json_columns(row: dict[str, Any]) -> dict[str, Any]:
                 del row[key]
             except ValueError:
                 pass
+    if 'attempt_id' in row:
+        from .detailed_log_storage import expand_attempt
+        return expand_attempt(row)
     return row
 
 
@@ -1106,6 +1127,10 @@ def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
         "journal": journal,
         "result": result,
     })
+    from .oracle_runtime_paths import virtual, write_file
+    if virtual(target):
+        write_file(target,(json.dumps(report,ensure_ascii=False,indent=2,default=str)+"\n").encode(),exclusive=True)
+        return target
     fd, temporary = tempfile.mkstemp(prefix=".request-report-", dir=directory)
     try:
         os.fchmod(fd, 0o640)
@@ -1261,6 +1286,10 @@ def write_readable_report(report_path: Path) -> Path:
     """Write a same-name TXT sidecar without altering the authoritative JSON."""
     report = json.loads(report_path.read_text(encoding="utf-8"))
     target = report_path.with_suffix(".txt")
+    from .oracle_runtime_paths import virtual, write_file
+    if virtual(target):
+        write_file(target,format_readable_report(report).encode(),exclusive=True)
+        return target
     fd, temporary = tempfile.mkstemp(prefix=".request-trace-", dir=report_path.parent)
     try:
         os.fchmod(fd, 0o640)

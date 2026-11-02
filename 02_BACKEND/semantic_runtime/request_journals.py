@@ -1,8 +1,8 @@
 """Read-only discovery of a request journal and its registered workflow children."""
 import json
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 
 from .contracts import digest
 

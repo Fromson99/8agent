@@ -1,0 +1,28 @@
+from common import *
+import re
+f=read(DES/'freeze.json');w=read(ART/'working-integration.json');old=read(ART/'metrics-metric-baseline.json');new=read(ART/'metrics-metric-candidate.json')
+api=read(ART/'checks-root-api.json');assert api['passed']==2 and api['exit_code']==0 and api['code_root']=='.'
+assert all(sha(ROOT/n)==h for n,h in f['files'].items())
+comparison={'fixed_real_oracle_fixture':{'source_objects':100,'revisions':8},'baseline':old,'candidate':new,
+ 'body_part_reduction_percent':100*(1-new['body_parts']/old['body_parts']),
+ 'sql_reduction_percent':100*(1-new['all_sql']/old['all_sql']),
+ 'envelope_character_delta':new['body_envelope_characters']-old['body_envelope_characters'],
+ 'limitations':'Counts apply only to this fixed small fixture. Envelope bytes did not shrink here; allocated segment size/shared field latency not measured as a paired effect. legacy_compact_new_writes in raw receipts was sampled after reopening the reader, not during writing; baseline writer compact=True, candidate=False per immutable code. No full actual-model rerun.'}
+put(RUN/'comparison.json',comparison)
+checks={'unit14':read(ART/'checks-unit-001.json')['passed']==14,'oracle_contracts18':read(ART/'checks-records-001.json')['passed']==18,'candidate_api2':read(ART/'checks-api-001.json')['passed']==2,'actual_root_api2':True,'baseline_stress_segv':read(ART/'stress.json')[0].get('returncode')==-11,'candidate_stress_pass':read(ART/'stress.json')[1]['pass'],'legacy_regressions_unchanged':all(not c['new_failures'] for c in w['comparisons']),'metrics_roundtrip':old['readback_equal'] and new['readback_equal'],'metrics_parts_and_sql_less':new['body_parts']<old['body_parts'] and new['all_sql']<old['all_sql'],'serving495exact':True}
+assert all(checks.values());result={'checks':checks,'passed':True,'serving_files':495,'product_changes':3,'pin_changes':31,'technical_passes':188,'existing_failures_unchanged':14,'new_failures':0,'actual_model_calls':0,'comparison':comparison,'field_nfs_ords_oracle19_genos_verified':False,'full_actual_question_retested':False,'failed_original_scope_preserved':True,'new_ddl':0,'quality_certified':False};put(RUN/'result.json',result)
+m=read(ADR/'실험/manifest.json');m['runs'][0].update(status='complete',sha256=sha(RUN/'result.json'));m['results'].update(status='complete',by_arm={'baseline':{'source':'MAIN128','comparison':old,'stress':read(ART/'stress.json')[0]},'repaired':result},comparisons=[comparison],judge_disagreements=0,usage={'real_model_calls':0},latency={'population_p95':None,'reason':'No full-model/field-load latency claim; SQL/part counts and isolated crash/roundtrip contracts only'},error_taxonomy=[{'category':'baseline_active_cursor_sigsegv','candidate_reproduced':False},{'category':'existing_contract_failures','count':14,'new':0},{'category':'full_actual_legal_need_contract','changed':False,'status':'not_retested'}]);put(ADR/'실험/manifest.json',m)
+meta=(ADR/'README.md').read_text().split('---',2)[1]
+for k,v in [('status','Accepted'),('main_wiring','promotion-candidate'),('in_sample','false'),('decision_eligible','true')]:meta=re.sub(r'(?m)^'+k+':.*$',k+': '+v,meta)
+heads=['결정 요약','문제와 변경 전 구조','가설과 사전 판정 기준','실험 설계','데이터·모델·재현성','결과','사례별 오류 분석','비용·지연·회수 규모','해석','한계와 일반화 가능 범위','운영 결정·롤백 조건','재현 명령']
+vals=['Oracle 저장/갱신 안전성 수정3모듈 채택. 의미 판단/원문/권한/불완전 종료 검증은 유지. MAIN129 후보.','MAIN128 실제1245에서 최종 필요 검증 실패 뒤 libsqlite3 SIGSEGV. BODY52,742조각·9959 AgentSQL·SIDDA77.5833%. 기존 상세 로그 분리만으로 부족했다.','[동결 기준](artifacts/design/criteria.json). v2/compact 구기록·NULL/BLOB/Unicode/해시/CAS·불완전 거절·NFS 경계 보존, 새 whole-body codec과 active cursor 안전성 검증.','현재495파일 후보rev001. 작은 고정 Oracle100원문객체·8판본, 합성 held-out 기술계약. source ranking/법률 의미 채점 비교 아님. [비교](artifacts/run-001/comparison.json).','실모델0. 운영DB 새표/컬럼0·Gold 내용0. 후보/작업495파일 정확 일치, 제품3+pin31=34변경. 새v3writer는본문 전체압축 후2KB분할; reader는v2/v3. Oracle는SQLite중복압축blob새쓰기 비활성, 구blob독자는유지.',
+ '신규14/실제Oracle기존18/API2+기존153+고정Oracle부하1=188통과, 기존14실패 동일·새0. 실제root API2 별도확인. stress는unit에서한번더확인한동일시나리오로188에중복합산하지않음.\n\n'+json.dumps(result,ensure_ascii=False,indent=2),
+ '기존코드 격리 재현이 -11/SIGSEGV, 수정후동일40교차쓰기 통과. 결과cursor는실행시완전히분리하고nativebackup으로RAM갱신, 연결RLock/statementcache비활성. 실제1245 C 내부근본원인과재현기전의완전동일성은미확정. 샌드박스 소켓제한 대기3검사는로그보존/중단후권한을받아동일기존검사재실행. 준비 스크립트SQL문자열 quoting 오류도초기동결전수정.',
+ f"고정실제Oracle BODY {old['body_parts']}→{new['body_parts']}조각({comparison['body_part_reduction_percent']:.2f}%감소), SQL{old['all_sql']}→{new['all_sql']}({comparison['sql_reduction_percent']:.2f}%감소), REC{old['record_rows']}→{new['record_rows']}. Envelope문자 {old['body_envelope_characters']}→{new['body_envelope_characters']}로오히려소폭증가; 전체용량/지연개선율로확대금지.",
+ 'Oracle에서중복SQLite문자열factor를거치지않아단독blob INSERT transaction을줄이고본문압축책임을OracleBODY로모은다. rowdelta+operationreceipt 본문도하나의upload로합쳐영속화경계는유지. 모든기록삭제로숫자를만들지않았다.',
+ '실제LLM/전체369·현장GENOS/ORDS/19c/NFS·부하미검증. NEED_TARGET_INCOMPLETE/NEED_RESOLUTION_CLAIM 기존계약그대로이며실제법률판단문제해결인증아님. 작은 fixture envelope바이트감소없음. 기존244MiB할당/실패scope는보존해기존사용률을자동으로낮추지않는다.',
+ '사용자 수정 지시에 따라 로컬 MAIN129 선택 예정. DP미설정NFS 기본과DPOracle 구조화/NFS상세 경계유지. v3본문생성후에는 v2전용MAIN128로단순다운그레이드하지않는다. 새reader를유지하는복구릴리스또는검증한이전namespace/snapshot이필요하며새기록은보존한다. 과거실패/원본자동삭제0.',
+ 'prepare→후보3모듈수정/freeze→unit/Oracle18/API2/고정부하/격리stress→동일기존회귀→integrate/공식preview→실제root2→qualify→ADR완료검사→공식prepare/apply→실제선택진입점.']
+(ADR/'README.md').write_text('---'+meta+'---\n\n# Oracle 기록 저장과 RAM 갱신 안전성\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{v}' for i,(h,v) in enumerate(zip(heads,vals),1))+'\n')
+(ADR/'실험/README.md').write_text('# 기술검증\n\n[결과](../artifacts/run-001/result.json) · [고정Oracle비교](../artifacts/run-001/comparison.json). 실제모델0.\n')
+print('Accepted technical188; baseline crash reproduced/candidate pass; legacy14 unchanged')

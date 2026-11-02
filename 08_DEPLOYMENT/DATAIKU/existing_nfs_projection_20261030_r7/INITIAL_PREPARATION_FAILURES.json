@@ -1,0 +1,7 @@
+{
+  "phase": "test harness preparation",
+  "failure": "Relative repository path used while command cwd was the new handoff directory; test_notebook.py was not created and pytest exited 4.",
+  "correction": "Resolve harness sources relative to Path.cwd().parent; delivered notebook test then passed.",
+  "product_execution_at_failure": false,
+  "python311_smoke_setup_failure": "Standalone Python3.11 lacked PyYAML; import stopped before projection. Reused installed pure Python PyYAML through PYTHONPATH; real Python3.11/SQLite equivalence smoke then passed. No field package dependency was removed."
+}

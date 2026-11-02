@@ -128,7 +128,21 @@ class SourceReader:
 
     def _rows(self, kind, did, predicate='', binds=(), *, limit=MAX_PAGE, order=''):
         where, base = self._where(did)
-        rows = read_rows(self.sql, kind, where + predicate, [*base, *binds],
+        where+=predicate
+        mapping=getattr(self.sql.client,'schema_map',None)
+        if mapping is not None:
+            from .physical_mapping import CONTRACT_COLUMNS
+            from sqlglot import Dialect
+            from sqlglot.tokens import TokenType as T
+            n=mapping.names(kind)
+            def physical(expression):
+                tokens=Dialect.get_or_raise('oracle').tokenize(expression)
+                for i,t in reversed(list(enumerate(tokens))):
+                    if t.text in CONTRACT_COLUMNS[kind].split() and t.token_type in (T.VAR,T.IDENTIFIER) and (not i or tokens[i-1].token_type!=T.COLON):
+                        expression=expression[:t.start]+n.c(t.text)+expression[t.end+1:]
+                return expression
+            where,order=physical(where),physical(order)
+        rows = read_rows(self.sql, kind, where, [*base, *binds],
                          limit=_page_size(limit), order=order)
         for row in rows:
             if row['DATASET_VERSION'] != self.snapshot.dataset_version or row['DOCUMENT_ID'] != did:

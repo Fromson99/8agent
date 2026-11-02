@@ -8,7 +8,8 @@ from collections import OrderedDict
 
 from .navigation_input import expand_cards
 
-VERSION = 'compact-model-input-v1'
+VERSION = 'compact-model-input-v2'
+SUPPORTED_VERSIONS = ('compact-model-input-v1', VERSION)
 INSTRUCTIONS = ('documents는 D번호와 실제 문서명의 대응표다. 같은 D번호는 같은 문서다. '
     'tool_options는 행동별 목록이다. columns/rows 또는 table_columns/table_rows의 열과 행을 같은 순서로 읽는다. '
     '원문은 sources의 text 또는 evidence_options의 text다. text_ref는 sources.text_id 본문의 start 이상 end 미만 정확한 문자 범위다. '
@@ -39,6 +40,11 @@ def enabled(profile):
     return profile.get('candidate_navigation', {}).get('minimal_input', False)
 
 
+def instructions(projected):
+    from . import assessment_input
+    return INSTRUCTIONS + ('\n' + assessment_input.INSTRUCTIONS if assessment_input.META in projected else '')
+
+
 def applies(profile, view):
     stage = view.get('source_stage', '')
     return enabled(profile) and ('-read-choice' in stage or stage in (
@@ -59,8 +65,12 @@ def _enum_strings(schema):
     return values
 
 
-def bind(data, schema, *, stable=False, document_names=None):
-    binding = {'version': VERSION, 'selection_refs': sorted(_enum_strings(schema)),
+def bind(data, schema, *, stable=False, document_names=None, version=None):
+    version = version or VERSION
+    if version not in SUPPORTED_VERSIONS:
+        from .errors import ContractError
+        raise ContractError('unsupported minimal input version')
+    binding = {'version': version, 'selection_refs': sorted(_enum_strings(schema)),
         **({'stable_references':True} if stable else {})}
     if stable and document_names is not None:
         from .stable_references import documents
@@ -215,7 +225,13 @@ def project(wire_view, schema=None):
         result['documents']=[{'id':r['id'],'name':r['name']} for r in registry['documents']]
     elif names:
         result['documents'] = [{'id': short, 'name': name} for name, short in names.items()]
-    return _pack(result)
+    from . import assessment_input
+    version = view.get('minimal_input_binding', {}).get('version', VERSION)
+    if version not in SUPPORTED_VERSIONS:
+        from .errors import ContractError
+        raise ContractError('unsupported minimal input version')
+    packed = _pack(result)
+    return assessment_input.project(packed, stage=view.get('source_stage')) if version == VERSION else packed
 
 
 def _table(rows):

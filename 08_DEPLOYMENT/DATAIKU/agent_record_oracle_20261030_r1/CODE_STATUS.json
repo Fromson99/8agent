@@ -1,0 +1,47 @@
+{
+  "selected_main": 126,
+  "release_id": "oracle-records-20261030-r1",
+  "release_manifest": {
+    "path": "08_DEPLOYMENT/RELEASES/oracle-records-20261030-r1/release.json",
+    "sha256": "057d788151679e960e187fa96399f560b116a1daabc0e986137b160107e2be73"
+  },
+  "serving_files": 494,
+  "working_and_selected_identical": true,
+  "default": "NFS/SQLite",
+  "DP=oracle": {
+    "source_storage": "oracle",
+    "state_storage": "oracle",
+    "persistent_sqlite": false,
+    "record_sql_execution": "request-local-memory-only SQLite",
+    "nfs_required": false,
+    "fallback_to_files": false
+  },
+  "new_tables": 3,
+  "new_user_columns": 21,
+  "existing_state_tables": 1,
+  "existing_state_user_columns": 5,
+  "gold_ddl_changes": 0,
+  "technical_tests_passed": 167,
+  "same_existing_failures": 14,
+  "new_failures": 0,
+  "actual_root_oracle_service": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1242-oracle-agent-records-main/artifacts/checks-root-entry-api-002.json",
+    "sha256": "483724dcf9ab2bfd2b7c56f32f05cd735206a39dfd8c6f5b0fd1bf5a45b88e13"
+  },
+  "actual_selected_default_entry": {
+    "path": "09_ARTIFACTS/AUDITS/20261030-oracle-agent-records-main/main-entry.json",
+    "sha256": "732dbc12390ef49a818cfff1da63e5f3f88a86275de30018630e792080b9a772"
+  },
+  "actual_nfs_history_migrated": false,
+  "field_genos_deployed": false,
+  "external_model_calls": 0,
+  "oracle19_ords_field_verified": false,
+  "performance_certified": false,
+  "sql_files": 18,
+  "new_table_files": [
+    "02_CREATE_LGL_AGT_REC_A.sql",
+    "03_CREATE_LGL_AGT_BODY_A.sql",
+    "01_CREATE_LGL_AGT_RUN_A.sql"
+  ],
+  "guide": "ORACLE_메인_사용법.txt"
+}

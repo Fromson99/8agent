@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import fcntl
 import json
 import os
-from pathlib import Path
+from semantic_runtime.oracle_runtime_paths import Path
 import uuid
 
 from lawrag.core.action_memory import Memory, digest, encoded
@@ -31,6 +31,7 @@ def private_directory(path):
 
 
 def write(path, text, *, immutable=False):
+    path=Path(path)
     private_directory(path.parent)
     if path.exists():
         old = path.read_text(encoding='utf-8')
@@ -38,6 +39,13 @@ def write(path, text, *, immutable=False):
             return False
         if immutable:
             raise ValueError('immutable wiki source changed: ' + str(path))
+    from semantic_runtime.oracle_runtime_paths import virtual,write_file
+    if virtual(path):
+        try:write_file(path,text.encode('utf-8'),exclusive=immutable)
+        except FileExistsError:
+            if path.read_text(encoding='utf-8')!=text:raise ValueError('immutable wiki source changed: '+str(path))
+            return False
+        return True
     tmp = path.with_name('.' + path.name + '.' + uuid.uuid4().hex)
     try:
         with tmp.open('x', encoding='utf-8') as stream:
@@ -55,6 +63,10 @@ def write(path, text, *, immutable=False):
 def locked(memory_directory):
     """Use the nightly builder's lock for DB changes and projection together."""
     private_directory(memory_directory)
+    from semantic_runtime.oracle_runtime_paths import virtual,records
+    if virtual(memory_directory):
+        with records().lease(['wiki-build',str(memory_directory)]):yield
+        return
     with (memory_directory / 'build.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         try:

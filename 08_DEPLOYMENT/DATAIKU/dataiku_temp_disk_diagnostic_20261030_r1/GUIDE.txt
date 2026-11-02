@@ -1,0 +1,19 @@
+첨부 구성/실행 위치
+- DATAIKU_TEMP_DISK_DIAGNOSTIC_20261030_R1.zip: 동일 진단 Python 코드와 해시 명세
+- CHECK_DATAIKU_TEMP_DISK.txt: 노트북에 붙여 넣을 전체 실행 코드
+- GUIDE.txt: 실행 및 결과 확인 안내
+별도 Managed Folder 업로드나 기존 R6B 설치는 필요 없습니다.
+오류가 난 노트북의 이전 셀이 종료/Idle인 상태에서 새 셀에 TXT 전체를 붙여 넣고 실행합니다.
+진단 전에 Kernel Restart를 하지 않으면 마지막 실패 자산 정보를 더 확인할 수 있습니다.
+ZIP은 동일 코드 보관용이며, 이번 실행에는 TXT를 사용합니다. Bash 실행용이 아닙니다.
+출력 JSON의 paths/failed_assets/sqlite_errorcode를 공유하면 됩니다. 이 진단은 공간 확보나 재적재를 수행하지 않습니다.
+
+Dataiku 임시 디스크 읽기 전용 진단
+오류가 발생한 같은 LEGAL_RAG Python 노트북의 새 셀에 CHECK_DATAIKU_TEMP_DISK.txt 전체를 붙여 넣고 실행하세요.
+Restart 전이면 sys.last_value/last_exc에서 실패한 색인 파일 위치를 추가로 확인할 수 있습니다.
+paths의 path/free_GiB/total_GiB/free_inodes와 failed_assets, sqlite_errorcode 출력이 확인 대상입니다.
+이 셀은 파일 생성/삭제, Oracle 연결, 적재/정렬 재실행을 하지 않습니다.
+같은 device 값이면 같은 파일시스템에 속합니다. 여유 공간이 많아도 컨테이너/계정 quota는 별도일 수 있습니다.
+실패 뒤 SQLite 임시 파일이 정리되어 현재 여유 공간이 회복됐을 수도 있습니다.
+SQLITE_TMPDIR/TMPDIR 미지정 시 /var/tmp, /usr/tmp, /tmp 등을 SQLite가 후보로 사용합니다. 코드가 /tmp에 있다는 사실만으로 실제 정렬 임시 경로를 확정하지 않습니다.
+현장 진단 결과 전 임시 폴더 전체 삭제나 temp_store=MEMORY 전환, 적재 반복 실행은 하지 않습니다. 기존 원문과 S3/scratch 영수증은 보존하세요.

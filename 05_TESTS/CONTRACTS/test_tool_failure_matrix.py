@@ -190,8 +190,15 @@ def test_f01_registry_matches_all_37_design_choices():
     from pathlib import Path
     root=Path(__file__).resolve().parents[2]
     design=json.loads((root/'07_DOCS/REFERENCE/REPORTS/TOOL_FAILURE_RECOVERY_DESIGN_20261014/POLICY_DESIGN.json').read_text())
-    assert set(policy.REGISTRY)=={(c['surface'],c['name']) for c in design['choices']}
-    assert len(policy.REGISTRY)==37
+    historical={(c['surface'],c['name']) for c in design['choices']}
+    # The immutable 2026-10-14 design predates definition/term paging and
+    # structure retry. Require every original choice and the exact additions.
+    added={('navigation',name) for name in ('NEXT_DEFINITIONS','NEXT_TERM_MATCHES','RETRY_LAW_STRUCTURE')}
+    from semantic_runtime.legal_agent.law_navigation import INVESTIGATIVE_ACTIONS
+    assert len(historical)==37 and not historical & added
+    assert added <= {('navigation',name) for name in INVESTIGATIVE_ACTIONS}
+    assert set(policy.REGISTRY)==historical | added
+    assert len(policy.REGISTRY)==40
     assert not policy.assess_availability('navigation','invented',binding='b').offered
 
 

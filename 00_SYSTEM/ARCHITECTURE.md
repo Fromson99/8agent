@@ -1,5 +1,9 @@
 # MAIN — 원문과 용어 기반 탐색
 
+<!-- MAIN132_CURRENT_20261102 -->
+**2026-11-02 현재 로컬 선택 MAIN132:** `final-review-multiturn-20261102-r1`, 서빙504파일. MAIN131 누적 기능을 유지하고 유일한 근거 연결 누락 결속·검토미완료 원문응답·후속 사실 재판단 안내를 반영했다. root와Gold는 같은 MAIN132이며 기존 원문·설정·Oracle layout4/상세NFS 경계 보존. 실제 Qwen 오류주입 첫턴7+후속4로 동일사건/원문 유지·재조회0을 확인했다. 사용자 지시 전환이며 법률품질/Oracle E2E/GENOS/NFS 인증은 별도다. [수정·사용·검증·원복](../09_ARTIFACTS/AUDITS/20261102-final-review-main132/수정과_멀티턴_실제검증_메인반영결과.txt). 아래 번호는 과거 기록이다.
+<!-- /MAIN132_CURRENT_20261102 -->
+
 <!-- ONTOLOGY_WORKFLOW_MAIN111 -->
 **2026-10-28 온톨로지 운영 연결:** [생성·기존 화면 승인·DB 게시·RAG 사용](../07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/WORKFLOW_CONNECTED_20261028.md). 로컬 MAIN111에 코드·필수 스키마만 반영하며 기본 OFF와 기존 데이터를 유지한다. 개발계 SIDDA 온톨로지5테이블 설계·Dataiku 작업JSON 스트림·원문 도착 조회가 연결된다. 실제 S3/Flow/GENOS/SIDDA 권한은 현장 확인과 구분한다.
 <!-- /ONTOLOGY_WORKFLOW_MAIN111 -->
@@ -75,6 +79,8 @@ Oracle의 RDB 테이블에 그래프 형태로 표현되어 있으며, GENOS 에
 <a id="dataiku-data-layers"></a>
 
 ### Dataiku 데이터 레이어 — 사용자 확인 2026-10-22
+
+**개발계 적재 구조 최신 정정 — 사용자 확인 2026-11-02:** 운영계 SQL 데이터의 최종 목적지는 Gold이므로 개발계부터 [확정 Gold R19의 13테이블·60컬럼](../07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R19/골드테이블_R19_반영사항과_사용안내.txt)에 맞춰 적재한다. 신청용 계약은 `08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_r18_registration.json`이며, 로컬의 이전 타입·길이를 보존한 `mapping_local_vctr_current.json`을 운영 기준으로 대체 사용하지 않는다. 개발 환경의 스키마·물리명 배치와 Gold의 테이블별 행 단위·컬럼·타입/길이·PK·인덱스·게시/선택 계약을 구분한다. 개발에서 다른 구조로 저장한 뒤 운영에서 다시 구조를 변환하는 방식을 목표로 삼지 않는다. 원문/검색, 승인 온톨로지, 벡터3표의 writer·검증·reader를 같은 계약에 연결해야 하며, 실행 기록·승인 전 작업·파일 보관 책임은 Gold 지식과 구분한다. 현재 R11의 `dev_silver`9표·46컬럼 및 R12의 벡터2표 경로는 이 요구에 대한 변경 대상이다. 기존 적재분과 실패/재개 기록은 보존하고 내용·판본·대상 계약을 확인해 이행한다. **이번 기록은 요구사항 정정이며 적재기 수정·현장 생성/재적재·운영 전환 완료를 의미하지 않는다.** 아래 10월27일 설명은 기존 개발 배치 이력이다.
 
 **개발계 물리 배치 정정 — 사용자 확인 2026-10-27:** 실버는 `SIDDS` 스키마·테이블 접미사 `_S`, 에이전트는 `SIDDA`·`_A`다. 개발계 GENOS가 Dataiku의 실버만 직접 조회할 수 있으므로 원문·구조화·검색·게시 데이터는 `SIDDS.*_S`에 두고, 온톨로지·숏컷·에이전트 기록은 `SIDDA.*_A`에 둔다. 아래 10월22일 골드 저장 책임은 운영 설계 이력이며 개발계 배치에는 이 정정이 우선한다. S3의 온톨로지 작업 JSON과 검토·승인·적재 절차는 유지한다. Dataiku 연결 `AIDP`와 Oracle owner는 다른 값이다. [개발계 LGL 적재 전달본](../08_DEPLOYMENT/DATAIKU/pipeline_layers_20261027_r1/GUIDE.txt)은 원문 등 8테이블을 SIDDS에, 실행 상태 1테이블을 SIDDA에 매핑한다. 온톨로지·숏컷 자체의 Oracle 적재와 SIDDA 소비자 접근은 이 원문 적재기의 구현 범위가 아니며 GENOS 조회 전환도 별도다.
 

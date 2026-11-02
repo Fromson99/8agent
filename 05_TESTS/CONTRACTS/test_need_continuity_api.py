@@ -10,7 +10,7 @@ def test_native_need_handoff_repair_limits_saved_reply_and_duplicate(tmp_path,te
     root=Path(__file__).resolve().parents[2]
     # Reuse only the compact-wire fixture decoder and synthetic coverage builder.
     monkeypatch.syspath_prepend(str(root/'06_TOOLS/EXPERIMENTS/adr_1188'))
-    monkeypatch.setenv('WORKFLOW_TEST_CODE_ROOT',os.environ.get('NEED_CONTINUITY_CONTRACT_ROOT',str(root)))
+    monkeypatch.setenv('WORKFLOW_TEST_CODE_ROOT',os.environ.get('NEED_CONTINUITY_CONTRACT_ROOT',os.environ.get('WORKFLOW_TEST_CODE_ROOT',str(root))))
     monkeypatch.setenv('GENOS_AUTO_WARMUP','0')
     monkeypatch.setenv('AD_WORKER_ENABLED','0')
     from need_continuity_fixture import run_api

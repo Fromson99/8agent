@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 import fcntl
 import os
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 import shutil
 import time
 import uuid
@@ -42,6 +42,8 @@ def settings():
 
 
 def used_bytes(root):
+    from ..oracle_runtime_paths import virtual, records
+    if virtual(root): return records().allocated_bytes()
     total = 0
     for parent, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d != '.storage-admission' and not (Path(parent)/d).is_symlink()]
@@ -83,6 +85,27 @@ def check(root, limit, reserve, min_free, active=0):
 
 @contextmanager
 def admission(root):
+    from ..oracle_runtime_paths import virtual, records
+    if virtual(root):
+        if ACTIVE.get() is not None:
+            yield
+            return
+        store=records();limit,reserve,min_free=settings()
+        from ..oracle_agent_records import STATE,UTC_SECONDS
+        key='a1:reserve:'+uuid.uuid4().hex
+        with store.lease(['storage-admission',store.scope],wait=30):
+            active=store._query(f'SELECT COUNT(*) AS N FROM {STATE} WHERE SCOPE_HASH_VAL=:scope '
+                f"AND ST_KEY_ID LIKE 'a1:reserve:%' AND JSON_VALUE(ST_JSON_CN,'$.token') IS NOT NULL "
+                f"AND JSON_VALUE(ST_JSON_CN,'$.expires' RETURNING NUMBER)>{UTC_SECONDS}",limit=1)[0]['N']
+            if store.allocated_bytes()+(active+1)*reserve>limit:
+                raise StorageCapacity('STORAGE_CAPACITY: Oracle 기록 저장 예산에 도달했습니다. 기존 기록은 보존됩니다.')
+            lease=store.lease(['storage-reservation',key],key=key,ephemeral=True,track=False)
+            lease.__enter__()
+        token=ACTIVE.set({'oracle':True,'store':store,'limit':limit,'checked':time.monotonic()})
+        try:yield
+        finally:
+            ACTIVE.reset(token);lease.__exit__(None,None,None)
+        return
     if ACTIVE.get() is not None or not (enabled() or os.environ.get('GENOS_RUNTIME_DIR') or os.environ.get('GENOS_RUNTIME_LIMIT_MIB')):
         yield
         return
@@ -128,6 +151,11 @@ def admission(root):
 def checkpoint():
     slot = ACTIVE.get()
     if slot is None or time.monotonic() - slot['checked'] < 5:
+        return
+    if slot.get('oracle'):
+        if slot['store'].allocated_bytes()>=slot['limit']:
+            raise StorageCapacity('STORAGE_CAPACITY: Oracle 저장 예산으로 추가 실행을 중단합니다. 기록은 보존됩니다.')
+        slot['checked']=time.monotonic()
         return
     # Do not prevent persisting an answer already received or a failure. Check
     # before dispatching another model/tool action, not inside the final write.

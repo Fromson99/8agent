@@ -160,6 +160,21 @@ class UnitFulltextIndex:
                               factory=_SearchConnection)
         return db
 
+    def scope_keys(self, db, document_id, unit_ids):
+        """Return source-bound keys for the caller's already resolved unit scope."""
+        self.check_unchanged()
+        if (not isinstance(document_id, str) or not document_id or
+                not isinstance(unit_ids, (list, tuple, set, frozenset)) or
+                any(not isinstance(u, str) or not u for u in unit_ids)):
+            raise ValueError('invalid fulltext unit scope')
+        selected = sorted(set(unit_ids))
+        if not selected:
+            return []
+        rows = db.execute("SELECT key,source_id FROM unit WHERE document_id=? AND json_extract(json,'$.unit_id') IN (SELECT value FROM json_each(?))",
+                          (document_id, json.dumps(selected))).fetchall()
+        self.check_unchanged()
+        return rows
+
     def cache_namespace(self):
         self.check_unchanged()
         return (str(self.path.resolve()), self._signature, self.manifest['generation_id'],

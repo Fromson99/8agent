@@ -55,7 +55,7 @@ def reject_legacy(runtime, body):
 Inspect only selected state metadata, never original documents or indexes.
 Immutable old events are left for the previous revision or explicit migration.
 """
-    from pathlib import Path
+    from .oracle_runtime_paths import Path
     from .state_sqlite import readonly
     from .legal_agent.shortcut_store import selected_store
     team, session, _ = selectors(body)

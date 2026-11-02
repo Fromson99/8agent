@@ -1,0 +1,22 @@
+{
+  "contract_tests_passed": 43,
+  "whole_delivered_notebook_passed": 1,
+  "whole_notebook_runtime": "Python3.10.20, native dependencies, mocked Dataiku/Oracle/NFS",
+  "actual_local_Oracle_test_passed": 1,
+  "unique_tests_total": 45,
+  "actual_Oracle_scope": "Same Dataiku render-generated PL/SQL, 500 rows in one write request, full values500 verified, duplicate idempotency,499 new rows rolled back on last-row conflict, commit ACK loss and explicit resume",
+  "actual_Oracle_test_scope_removed": true,
+  "field_error": "hashlib.file_digest missing in search_selection.Selection -> contracts.sha",
+  "Python310_reproduction": "Sealed R8 contracts.sha reproduces AttributeError; R9 preflight/file SHA succeeds without file_digest",
+  "sha_helpers": "contracts.py/full_glossary.py 1MiB streaming SHA256; empty/binary/Unicode contents identical; no remaining file_digest calls in packaged Python code",
+  "write_size": {"default":500,"allowed_min":20,"allowed_max":500,"parameter":"QUERY_WRITE_ROWS"},
+  "resume": "Legacy20-row frames unchanged; aggregate up to500 in a physical request, acknowledge last included frame only after success; size/file boundaries and lost ACK replay tested",
+  "descriptor_cache": "Exact sealed R8 executor accepted only with identical source/files/other component hashes and valid checksum; no other executor is newly accepted",
+  "publisher_projection_source_migration_modules_unchanged": true,
+  "same_query_release_id_as_R8": true,
+  "requests_reduction_not_runtime_claim": "Small9300000-row case:465000 ->18600 write requests; real bytes/file boundaries can require more requests",
+  "field_Dataiku_success_speed": "UNVERIFIED",
+  "MAIN_GENOS_original_Oracle_data_modified": false,
+  "models_called": 0,
+  "original_deadline_budget_unchanged": true
+}

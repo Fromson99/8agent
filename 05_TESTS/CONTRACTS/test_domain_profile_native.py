@@ -3,6 +3,7 @@ from copy import deepcopy
 import ast
 import inspect
 import json
+import os
 from pathlib import Path
 import sqlite3
 import pytest
@@ -14,7 +15,7 @@ from test_domain_profile_workflow import env, add_observation, proposal, save, a
 def test_native_assembly_delivery_claim_answer_and_duplicate(env, tmp_path, term_glossary, monkeypatch, mode):
     root=Path(__file__).resolve().parents[2]
     monkeypatch.syspath_prepend(str(root/'06_TOOLS/EXPERIMENTS/adr_1188'))
-    monkeypatch.setenv('WORKFLOW_TEST_CODE_ROOT',str(root))
+    monkeypatch.setenv('WORKFLOW_TEST_CODE_ROOT',os.environ.get('WORKFLOW_TEST_CODE_ROOT',str(root)))
     monkeypatch.setenv('GENOS_AUTO_WARMUP','0');monkeypatch.setenv('AD_WORKER_ENABLED','0')
     from semantic_runtime import app as app_module
     from semantic_runtime.ontology_work import runtime

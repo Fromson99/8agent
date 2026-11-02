@@ -1,7 +1,7 @@
 """One Pipeline/coordinator entry for questions, corrections and confirmed experience."""
 import json
 from .investigation_contracts import claim_evidence
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .case_repository import CaseRepository
 from .knowledge_repository import KnowledgeRepository
 from .domain_control import DomainCatalogue
@@ -113,6 +113,15 @@ def result_port(pipeline,session,cases,result):
         view=build(parts,case,state=state,run_id=session.context.run_id,
                    allowed_documents=set(state['document_ids']) & set(session.sources.scope),
                    executed=result.get('executed',[]))
+    display_meta={}
+    explanation=parts.get('ASSESS',{}).get('payload',{}).get('review_explanation')
+    if explanation:
+        from .review_explanation import bind_case
+        display_meta['review_explanation']=bind_case(explanation,case,route['payload']['state'] if route else None)
+    if route and route['payload']['state'].get('scenario_context'):
+        display_meta['scenario_context']=route['payload']['state']['scenario_context']
+    if result.get('scenario_comparison'):
+        display_meta['scenario_comparison']=result['scenario_comparison']
     routing=result.get('request_routing') or getattr(cases,'request_routing',None)
     if routing is not None:meta['request_routing']=routing
     return {'request':session.context.request,'query':query,
@@ -121,7 +130,7 @@ def result_port(pipeline,session,cases,result):
                      'method':'term-agent','term_agent':meta},
         'assembly':{'context':contexts,'unresolved':raw.get('limitations',[]),
                     'data_status':pipeline.store.manifest['data_status'],
-                    'term_agent':{**meta,**({'judgment_view':view} if view else {})}},
+                    'term_agent':{**meta,**display_meta,**({'judgment_view':view} if view else {})}},
         'answer':{'schema_version':'term-runtime-v1','id':'answer:'+session.context.run_id,
             'scope':session.work.binding['scope'],'query_id':query['id'],'generation_id':query['generation_id'],
             'source_store_sha256':session.work.binding['store_sha256'],'text':raw['text'],
@@ -235,6 +244,7 @@ def procedure_replayable(cases,result):
     reproduce the same partial answer instead of investigating again."""
     gid=result.get('goal_id')
     assessment=cases.parts(gid).get('ASSESS',{}).get('payload',{}) if gid else {}
+    if assessment.get('assessment_basis',{}).get('scenario_context_hash'):return False
     if 'answer_coverage' not in assessment:return True  # pre-control routes keep their contract
     return assessment.get('answer_coverage')=='COVERED' and not assessment.get('stop_reason')
 
@@ -243,7 +253,7 @@ def project(cases,result,principal,runtime):
     # Legal wiki reads the authority even if materializing files fails.
     from .core_evidence_route import enabled
     if result['status']=='STORED' or (enabled(cases) and result.get('goal_id')):
-        import sqlite3
+        from .. import runtime_sqlite as sqlite3
         try:KnowledgeRepository(cases).rebuild(principal,Path(runtime)/'case-memory'/'wikis')
         except (OSError,ValueError,sqlite3.Error):
             from .. import observability as obs

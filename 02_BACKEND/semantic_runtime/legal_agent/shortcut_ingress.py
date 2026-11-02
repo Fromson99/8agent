@@ -40,7 +40,7 @@ def capture(pipeline, question, documents, use_llm, scope, options, team_id, lea
     repo=ShortcutRepository(selected_store(options['runtime']))
     try:
         intake=repo.intake(body,principal)
-        noncase=not use_llm
+        noncase=not use_llm and 'review_action' not in body
         if noncase and intake['status']=='COMPLETED' and intake['response']:
             saved=json.loads(intake['response'])
             if (saved.get('generation')==pipeline.store.manifest['store_sha256'] and

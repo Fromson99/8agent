@@ -9,7 +9,7 @@ from .assembly_ir import validate_graph
 VERSION = 'ontology-assembly-package-v1'
 
 
-def compile_package(graph, profile, originals, *, bundle_id, revision, approval_ref=None, glossary_refs=()):
+def compile_package(graph, profile, originals, *, bundle_id, revision, approval_ref=None, glossary_refs=(), evaluation_spec=None):
     validate_graph(graph, profile, originals)
     nodes = index(graph['nodes']); kinds = index(profile['effective']['node_types'], 'kind')
     purposes = index(profile['effective']['purposes']); relations = index(profile['effective']['relations'])
@@ -72,6 +72,9 @@ def compile_package(graph, profile, originals, *, bundle_id, revision, approval_
             'profile_hash': profile['profile_hash'], 'graph': deepcopy(graph),
             'originals': deepcopy(originals), 'glossary_refs': deepcopy(list(glossary_refs)),
             'paths': paths, 'numeric_execution': False, 'runtime_compilation': False}
+    if evaluation_spec is not None:
+        from .evaluation_plan import compile_plan
+        body['evaluation_plan'] = compile_plan(evaluation_spec, body)
     return {**body, 'package_sha256': digest(body)}
 
 
@@ -94,7 +97,8 @@ def verify_package(package, *, approved=False, recompile=False):
     if recompile:
         expected = compile_package(package['graph'], compiled_profile, package['originals'],
             bundle_id=package['bundle_id'], revision=package['revision'], approval_ref=package['approval_ref'],
-            glossary_refs=package['glossary_refs'])
+            glossary_refs=package['glossary_refs'],
+            evaluation_spec=package.get('evaluation_plan', {}).get('spec'))
         if expected != package:
             raise ContractError('assembly compiled result differs')
     return package
@@ -125,4 +129,7 @@ def bind_current(package, fragments):
     return {'version': VERSION, 'bundle_id': package['bundle_id'], 'revision': package['revision'],
             'profile_hash': package['profile_hash'], 'package_sha256': package['package_sha256'],
             'paths': ready, 'withheld': withheld, 'unresolved': deepcopy(package['graph']['unresolved']),
+            'source_bindings': [{'id':s['id'], 'anchor':deepcopy(s['anchor']), 'source_refs':available[s['id']]}
+                                for s in package['originals'] if s['id'] in available],
+            **({'evaluation_plan': deepcopy(package['evaluation_plan'])} if package.get('evaluation_plan') and not withheld else {}),
             'runtime_compilation': False, 'automatic_adoption': False}

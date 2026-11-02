@@ -168,7 +168,7 @@ def test_legacy_partial_judgment_is_preserved_without_promoting_coverage():
     assert not cc.compose(a, cc.default_plan(a))['claims']
 
 
-def test_invalid_assessment_is_not_turned_into_a_source_answer(tmp_path, tree):
+def test_invalid_assessment_stays_rejected_while_verified_sources_are_delivered(tmp_path, tree):
     gen, idx = tree; transport = EmptyAssessment('repaired'); transport.invalid = True
     profile = {**settings(), 'max_model_attempts': 40, 'max_read_chars': 10000,
         'candidate_navigation': {'mode': 'law-first-v1', 'investigation_control': True,
@@ -181,8 +181,14 @@ def test_invalid_assessment_is_not_turned_into_a_source_answer(tmp_path, tree):
     with TestClient(app) as api:
         response = api.post('/v1/rag/ask', json={'question': '모의승인규정 제1조 승인 기준은?',
             'session_id': 'invalid', 'request_id': 'r1'})
-    assert response.status_code == 422
+    assert response.status_code == 200,response.text
+    result=response.json();outcome=result['assembly']['term_agent']['accepted_outcome']
+    assert not result['answer']['claims'] and result['answer']['unresolved']
+    assert outcome['disposition']=='LIMITED_ANSWER' and outcome['answer_coverage']!='COVERED'
+    assert outcome['stop_reason']=='ASSESSMENT_CONTRACT_UNRESOLVED'
     assert [p for p in transport.phases if p.startswith('memory-assess')] == ['memory-assess', 'memory-assess-repair']
     for journal in (tmp_path/'runtime/legal-agent/runs').glob('*/*/journal.sqlite'):
         with sqlite3.connect(journal) as db:
-            assert db.execute("SELECT count(*) FROM event WHERE kind='ASSESSMENT_SOURCE_EXCERPT_REPLY'").fetchone()[0] == 0
+            assert db.execute("SELECT count(*) FROM event WHERE kind='ASSESSMENT_SOURCE_EXCERPT_REPLY'").fetchone()[0] == 1
+            assert db.execute("SELECT count(*) FROM event WHERE kind='COMPLETION_ASSESSMENT_REJECTED'").fetchone()[0] == 2
+            assert db.execute("SELECT count(*) FROM event WHERE kind='ASSESSMENT_REVIEW_STOPPED'").fetchone()[0] == 1

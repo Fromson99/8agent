@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "created_at": "2026-10-30T04:51:46.331584+00:00",
+  "table_count": 13,
+  "column_count": 60,
+  "primary_key_indexes": 13,
+  "additional_indexes": 11,
+  "all_table_columns_match_latest_canonical": true,
+  "registration_mapping_matches": true,
+  "active_mapping_physical_names_match": true,
+  "index_columns_and_order_match": true,
+  "combined_and_individual_sheets_match": true,
+  "source_files_unchanged": true,
+  "layout_and_styles_preserved": true,
+  "native_excel_rendered": false,
+  "changes": [
+    {
+      "sheet": "00_전체_한시트",
+      "cell": "B465",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "00_전체_한시트",
+      "cell": "B478",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "00_전체_한시트",
+      "cell": "B491",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "12_원문구간벡터",
+      "cell": "B9",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "12_원문구간벡터",
+      "cell": "B22",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    },
+    {
+      "sheet": "12_원문구간벡터",
+      "cell": "B35",
+      "before": "VCTR_SEG_ID",
+      "after": "VCTR_SCTN_ID"
+    }
+  ],
+  "sources": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R18/법률에이전트_B03_컬럼_PK_인덱스_통합_R18.xlsx",
+      "sha256": "00ca3481dee0e97e360674f75e88494538fefe5b9402a52f2844b41f8ed01d4e"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R18/법률에이전트_B03_테이블별_컬럼정의_R18.xlsx",
+      "sha256": "ca216084dbfdffda1a9dc692d7c1612755b5500a482d5b9e185dc902de72f09d"
+    }
+  ],
+  "attachments": [
+    {
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R19/법률에이전트_B03_골드테이블_최종통합_R19.xlsx",
+      "filename": "법률에이전트_B03_골드테이블_최종통합_R19.xlsx",
+      "bytes": 70137,
+      "sha256": "2c805c6bfdf8217d7b63c1ba3d147ba1d066b21f10fe7a81fb2d482e12981bc2"
+    },
+    {
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261030_R19/골드테이블_R19_반영사항과_사용안내.txt",
+      "filename": "골드테이블_R19_반영사항과_사용안내.txt",
+      "bytes": 2862,
+      "sha256": "73cf1748978023790c4a98dbff0259b896b5eb0e8a35d6cb7b124eaba0fd456f"
+    }
+  ]
+}

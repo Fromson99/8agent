@@ -1,6 +1,6 @@
 """Opt-in double-harness adapter, retaining document/search/index compatibility."""
 from contextlib import contextmanager
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from types import SimpleNamespace
 import threading
 import time

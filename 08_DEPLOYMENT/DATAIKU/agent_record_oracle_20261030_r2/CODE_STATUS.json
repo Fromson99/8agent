@@ -1,0 +1,50 @@
+{
+  "selected_main": 127,
+  "release_id": "oracle-default-20261030-r1",
+  "release_manifest": {
+    "path": "08_DEPLOYMENT/RELEASES/oracle-default-20261030-r1/release.json",
+    "sha256": "489e225bc85aa2aa2eb65d67f7c7657f7db6637b0d6fb7f86882f1f4e2c3ed41"
+  },
+  "working_frozen_selected_exact": true,
+  "serving_files": 494,
+  "default": "NFS/SQLite",
+  "DP=oracle": {
+    "source_storage": "oracle",
+    "state_storage": "oracle",
+    "persistent_sqlite": false,
+    "nfs_required": false,
+    "record_sql_execution": "request-local-memory-only SQLite",
+    "GENOS_RUNTIME_DIR_required": false,
+    "default_logical_runtime": "/__oracle_agent__/runtime",
+    "fallback_to_files": false
+  },
+  "new_tables": 3,
+  "new_user_columns": 21,
+  "existing_state_columns": 5,
+  "total_agent_tables": 4,
+  "total_agent_user_columns": 26,
+  "gold_ddl_changes": 0,
+  "ddl_identical_to_r1": true,
+  "current_follow_up_tests_passed": 16,
+  "current_new_failures": 0,
+  "parent_implementation_tests_passed": 167,
+  "parent_existing_failures_not_fixed": 14,
+  "parent_result": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1242-oracle-agent-records-main/artifacts/run-001/result.json",
+    "sha256": "8dfa4f28334933da4a2346afcce435c1eade0d7611ad8e426f66c96ba1bc7f4b"
+  },
+  "actual_root_bare_oracle_service": {
+    "path": "04_EXPERIMENTS/ADR/ADR-1243-oracle-default-runtime-main/artifacts/checks-root-entry-api-002.json",
+    "sha256": "5ecc22fca6cceaf103506e166cde91eee4361e676dfd4740017cadf529df4769"
+  },
+  "actual_selected_default_entry": {
+    "path": "09_ARTIFACTS/AUDITS/20261030-oracle-default-runtime-main/main-entry.json",
+    "sha256": "6b1e7397930a7491b32600f1610edee7c99d71ab276121edeee1eb328198d278"
+  },
+  "external_model_calls": 0,
+  "actual_nfs_history_migrated": false,
+  "genos_field_deployed": false,
+  "oracle19_ords_field_verified": false,
+  "performance_certified": false,
+  "guide": "ORACLE_메인_사용법.txt"
+}

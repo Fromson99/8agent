@@ -37,7 +37,7 @@ class Glossary:
                 'canonical_approval': False, 'labels': [{'text': '가상 용어', 'kind': 'LABEL'}]}
 
     def lookup(self, label, **kwargs):
-        return {'concepts': [self.card('dictionary', 'term1')], 'total': 1, 'next_offset': None}
+        return {'concepts': [{**self.card('dictionary', 'term1'), 'match': 'EXACT_SURFACE'}], 'total': 1, 'next_offset': None}
 
     def inspect(self, cid):
         return {'definitions': [], 'relations': [], 'status': 'UNREVIEWED'}

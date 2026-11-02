@@ -1,0 +1,32 @@
+# Dataiku LEGAL_RAG 별도 조회용 Python 노트북에서 전체를 한 번 실행하세요.
+# 적재 중인 커널은 중단/재시작하지 않습니다. ZIP은 ehA8dpVm에 압축 그대로 업로드합니다.
+# 출력: 요약15줄 + 상세9줄(제목 포함). DB SQL, 적재/재개, 파일 쓰기 없음.
+SHOW_DETAIL = True  # False이면 요약15줄만 표시
+DIAG_JOB_DIR = None  # 기본값 유지: 기존 LEGAL_PIPELINE_SCRATCH 경로에서 자동 조회
+
+def _run_quick_diagnosis():
+    import hashlib
+    import io
+    import zipfile
+    import dataiku
+    name = 'DATAIKU_NFS_QUICK_DIAG_20261031_R1.zip'
+    expected = '55c1e0e6f7e43200b9880e20133e3d5b1791fe1f205a88452bee825939de3cf5'
+    expected_bytes = 4572
+    folder = dataiku.Folder('ehA8dpVm')
+    with folder.get_download_stream('/' + name) as stream:
+        raw = stream.read(expected_bytes + 1)
+    if len(raw) != expected_bytes or hashlib.sha256(raw).hexdigest() != expected:
+        raise ValueError('DIAG_ZIP_HASH')
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        if archive.namelist() != ['quick_diagnosis.py']:
+            raise ValueError('DIAG_ZIP_MEMBERS')
+        code = archive.read('quick_diagnosis.py')
+    namespace = {'__name__': 'quick_diagnosis_handoff'}
+    exec(compile(code, 'quick_diagnosis.py', 'exec'), namespace)
+    namespace['main'](job_dir=DIAG_JOB_DIR, detail=SHOW_DETAIL)
+
+try:
+    _run_quick_diagnosis()
+except Exception as _diag_error:
+    print('[빠른 진단 R1] 실행 준비 실패:', type(_diag_error).__name__)
+    print('ZIP을 ehA8dpVm에 압축 그대로 올렸는지 확인하세요. 기존 적재는 건드리지 않았습니다.')

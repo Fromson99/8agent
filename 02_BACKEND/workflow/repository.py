@@ -2,8 +2,8 @@
 from contextlib import contextmanager
 import fcntl
 import json
-from pathlib import Path
-import sqlite3
+from semantic_runtime.oracle_runtime_paths import Path
+from semantic_runtime import runtime_sqlite as sqlite3
 from .contracts import WorkflowError, digest, encoded
 
 
@@ -11,6 +11,14 @@ from .contracts import WorkflowError, digest, encoded
 def execution_lock(root, run_id):
     path = Path(root)/run_id
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
+    from semantic_runtime.oracle_runtime_paths import virtual, records
+    if virtual(path):
+        try:
+            with records().lease(['workflow-execution', str(path)]):
+                yield path
+        except BlockingIOError as exc:
+            raise WorkflowError('WORKFLOW_BUSY', '같은 실행을 처리 중입니다.', 409) from exc
+        return
     with (path/'execution.lock').open('a') as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)

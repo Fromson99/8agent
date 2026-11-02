@@ -1,0 +1,56 @@
+Oracle 용량 추가 확인 R2 — 2026-11-02
+
+이번에 실행할 파일
+02_CHECK_VISIBLE_FREE_SPACE.txt
+
+이전 R1은 보존하세요. 이번 R2는 USER_FREE_SPACE를 이용한 추가 조회 1개입니다.
+앞서 막힌 DBA_TS_QUOTAS 조회를 반복하지 않아도 됩니다.
+R1 전체 진단 결과나 SIDDS의 Quota를 대체하는 쿼리는 아닙니다.
+
+첨부 3개
+1. ORACLE_CAPACITY_CHECK_20261102_R2.zip
+   원본 SQL: 02_CHECK_VISIBLE_FREE_SPACE.sql 한 개.
+2. 02_CHECK_VISIBLE_FREE_SPACE.txt
+   ZIP 안 SQL과 바이트가 같은 전체 실행문.
+3. GUIDE_R2.txt
+   이 실행 안내.
+
+환경과 실행 위치
+- Dataiku LEGAL_RAG 프로젝트.
+- 앞서 Q1/Q2를 실행한 동일 AIDP 연결의 SQL 노트북.
+- 대상 테이블: SIDDS.LGL_SRCH_ROW_S.
+- Python/Jupyter 셀용이 아닙니다. SQL 노트북에서 실행합니다.
+- 관리 폴더 업로드, 서버 작업 디렉터리, ZIP 자동 실행은 필요 없습니다.
+- ZIP은 SQL 원본 보관용입니다. 기존 연결을 사용하므로 새 계정/토큰 설정도 없습니다.
+
+실행 순서
+1. 02_CHECK_VISIBLE_FREE_SPACE.txt를 엽니다.
+2. SELECT부터 마지막 세미콜론까지 SQL 셀 하나에 붙여 넣고 실행합니다.
+   주석까지 포함한 파일 전체를 복사해도 실행문은 SELECT 1개입니다.
+3. 결과 0~1행 또는 오류 코드를 캡처합니다.
+4. 기존 적재/임베딩 셀이나 Run All, 커널 재시작은 필요 없습니다.
+
+결과 해석
+- TABLESPACE_NAME: 대상 테이블 본체가 저장된 테이블스페이스.
+- VISIBLE_FREE_GIB: 현재 계정에서 보이는 미할당 extent 여유 합계(GiB).
+- MAX_FREE_EXTENT_MIB: 현재 계정에서 보이는 가장 큰 미할당 extent 크기(MiB).
+- 1GiB=1024^3바이트, 1MiB=1024^2바이트. 값은 소수3자리 반올림입니다.
+- 숫자가 나와도 SIDDS에 허용된 Quota, 자동 확장 한도, 물리 디스크 여유,
+  다음 적재의 성공이나 사용자가 독점 사용할 수 있는 용량을 증명하지 않습니다.
+- 0행이면 현재 계정에서 해당 정보가 보이지 않거나 여유 extent가 없을 수 있어
+  구별할 수 없습니다. '용량0 확정' 또는 '무제한'으로 결론 내리지 않습니다.
+- ORA-00942/ORA-01031 등 오류가 나면 현재 연결의 조회 가능 범위를 확인해야 합니다.
+  오류를 용량 수치로 해석하지 말고 코드만 남겨 주세요.
+- 오프라인 파일 등으로 정보가 제한될 수 있어, 실제 ORA-01653 원인은
+  필요시 DBA의 전체 용량/파일 상태 확인과 함께 판단합니다.
+
+중단/재실행
+읽기 전용 SQL이므로 진단에 재개 지점은 없습니다.
+대기 시간이 길면 해당 SQL을 취소하고 대기/오류 사실을 기록합니다.
+필요할 때 이 SELECT만 다시 조회할 수 있습니다.
+기존 적재 데이터와 체크포인트를 변경하는 명령은 포함하지 않습니다.
+
+검증 범위
+로컬에서 Oracle 문법 기준 정적 파싱, SELECT 1개, 관리 정보만 조회하는 구성을
+점검했습니다. 현장 Oracle 접속·실제 실행·권한·여유 공간은 아직 확인하지 않았습니다.
+출처: https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/USER_FREE_SPACE.html

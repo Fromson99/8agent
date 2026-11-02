@@ -1,0 +1,22 @@
+test_actual_open_file_guard (test_large_cleanup.Contracts.test_actual_open_file_guard) ... ok
+test_audit_hash_filename_does_not_replace_content_verification (test_large_cleanup.Contracts.test_audit_hash_filename_does_not_replace_content_verification) ... ok
+test_audit_verifies_actual_backup (test_large_cleanup.Contracts.test_audit_verifies_actual_backup) ... ok
+test_audit_without_current_reference_but_identical_backup_deleted (test_large_cleanup.Contracts.test_audit_without_current_reference_but_identical_backup_deleted) ... ok
+test_checkpoint_untouched_and_not_used_as_backup_proof (test_large_cleanup.Contracts.test_checkpoint_untouched_and_not_used_as_backup_proof) ... ok
+test_corrupted_backup_preserves_local (test_large_cleanup.Contracts.test_corrupted_backup_preserves_local) ... ok
+test_duplicate_names_match_actual_bytes (test_large_cleanup.Contracts.test_duplicate_names_match_actual_bytes) ... ok
+test_link_and_recent_file_refused (test_large_cleanup.Contracts.test_link_and_recent_file_refused) ... ok
+test_local_changed_during_backup_check_preserved (test_large_cleanup.Contracts.test_local_changed_during_backup_check_preserved) ... ok
+test_locator_ignores_generation_and_detects_ambiguity (test_large_cleanup.Contracts.test_locator_ignores_generation_and_detects_ambiguity) ... ok
+test_matching_retained_object_only_zip_deleted (test_large_cleanup.Contracts.test_matching_retained_object_only_zip_deleted) ... ok
+test_missing_remote_preserves_local (test_large_cleanup.Contracts.test_missing_remote_preserves_local) ... ok
+test_nested_and_numbered_name_supported (test_large_cleanup.Contracts.test_nested_and_numbered_name_supported) ... ok
+test_read_failure_preserves_local (test_large_cleanup.Contracts.test_read_failure_preserves_local) ... ok
+test_recipe_configuration_parsed_without_execution (test_large_cleanup.Contracts.test_recipe_configuration_parsed_without_execution) ... ok
+test_truncated_backup_preserves_local (test_large_cleanup.Contracts.test_truncated_backup_preserves_local) ... ok
+test_unknown_process_visibility_blocks_mutation (test_large_cleanup.Contracts.test_unknown_process_visibility_blocks_mutation) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.010s
+
+OK

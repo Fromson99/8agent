@@ -5,7 +5,7 @@ model/evidence records. This store accepts their refs, never rewrites them.
 """
 import json
 from contextlib import contextmanager
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .corrected_memory import Memory, MemoryError, Conflict, STAGES, digest, encoded
 from .publication import owner_lock
 
@@ -113,6 +113,7 @@ class CaseRepository(Memory):
         return super().execute(body,principal)
 
     def resolve(self,context):
+        if getattr(self,'_review_command',None) is not None:return dict(self._review_command)
         if self.resume_goal:
             from .corrected_memory import COMMAND
             g=next(g for g in context['goals'] if g['id']==self.resume_goal)
@@ -194,6 +195,10 @@ class CaseRepository(Memory):
         return None
 
     def _execute(self,body,principal):
+        if 'review_action' in body:
+            if self.resume_goal:return Memory._execute(self,body,principal)
+            from .review_actions import execute
+            return execute(self,body,principal)
         direct=self.direct_request(self.context(body['session_id'],principal,body['question']))
         if direct is not None:return direct
         return super()._execute(body,principal)
@@ -306,6 +311,8 @@ class CaseRepository(Memory):
                 raise Conflict('cached response is historical; current case changed')
             if not set(g['state']['document_ids'])<=set(principal['document_ids']):raise MemoryError('case scope denied')
             self.executor.verify(self.parts(gid)['READ']['payload'])
+            from ..ontology_work.runtime import assert_assessment
+            assert_assessment(self.parts(gid)['ASSESS']['payload'], principal['document_ids'])
         return result
 
     def recover_requests(self):

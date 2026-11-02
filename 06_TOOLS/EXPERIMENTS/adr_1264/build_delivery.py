@@ -1,0 +1,112 @@
+from pathlib import Path
+import ast,hashlib,json,zipfile
+root=Path('/home/jin/8-AGENT'); d=root/'08_DEPLOYMENT/DATAIKU/existing_nfs_queued_kure_20261031_r12';d.mkdir(exist_ok=True)
+s=root/'02_BACKEND/lawrag/research/candidates/adr_1264/queued/revisions/rev-004/snapshot/08_DEPLOYMENT/DATAIKU/existing_nfs_resume_only_20261030_r10/candidate'
+pins=json.loads((s/'PACKAGE_FILES.json').read_text())
+zpath=d/'DATAIKU_EXISTING_NFS_QUEUED_KURE_20261031_R12.zip'
+with zipfile.ZipFile(zpath,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+ for rel in sorted([*pins,'PACKAGE_FILES.json']):
+  raw=(s/rel).read_bytes()
+  if rel in pins:assert hashlib.sha256(raw).hexdigest()==pins[rel]
+  assert Path(rel).suffix.lower() not in ('.zip','.js','.jsx','.mjs','.cjs')
+  if rel.endswith('.py'):ast.parse(raw,feature_version=(3,10))
+  zi=zipfile.ZipInfo(rel,date_time=(2026,10,31,0,0,0));zi.compress_type=zipfile.ZIP_DEFLATED;zi.external_attr=0o100644<<16;z.writestr(zi,raw)
+sha=hashlib.sha256(zpath.read_bytes()).hexdigest();size=zpath.stat().st_size
+script='''# R12 후속 셀: 실행 중인 R11 바로 아래 새 셀에 전체 붙여넣고 Shift+Enter 한 번.
+# 같은 노트북/커널에서 대기시킵니다. R11을 중단하거나 Kernel Restart하지 않습니다.
+# ZIP은 LEGAL_RAG의 ehA8dpVm 관리 폴더에 원래 이름으로 업로드합니다.
+# 앞 셀 성공 확인 -> 원문/검색 전수 묶음 검증 -> KURE 임베딩/벡터 저장.
+# 화면 최근 14줄만 유지. 전체 진단은 별도 로컬 파일. UNKNOWN 자동 재호출 없음.
+import collections
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import signal
+import stat
+import subprocess
+import sys
+import tempfile
+import zipfile
+
+PACKAGE_NAME = 'ZIPNAME'
+PACKAGE_SHA256 = 'ZIPHASH'
+PACKAGE_BYTES = ZIPSIZE
+
+def _run_r12_after_r11():
+    previous = globals().get('NFS_RESULT')
+    if not isinstance(previous, dict) or previous.get('status') not in ('LOADED_UNVERIFIED', 'FULL_DATA_VERIFIED'):
+        raise RuntimeError('R11 성공 결과가 없습니다. 후속 작업은 시작하지 않았습니다.')
+    expected = {k:previous.get(k) for k in ('status', 'source_release_id', 'query_release_id')}
+    if not all(isinstance(expected[k], str) and len(expected[k]) == 64 for k in ('source_release_id', 'query_release_id')):
+        raise RuntimeError('R11 원문/검색 판본 확인 실패. 후속 작업은 시작하지 않았습니다.')
+    import dataiku
+    if dataiku.default_project_key() != 'LEGAL_RAG':raise RuntimeError('LEGAL_RAG 프로젝트에서 실행하세요.')
+    parent = dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH') or None
+    if parent:parent = str(Path(parent).expanduser().resolve())
+    work = Path(tempfile.mkdtemp(prefix='legal-queue-r12-', dir=parent));os.chmod(work, 0o700)
+    archive = work/'package.zip';h=hashlib.sha256();total=0
+    with dataiku.Folder('ehA8dpVm').get_download_stream('/'+PACKAGE_NAME) as src, archive.open('wb') as dst:
+        for raw in iter(lambda:src.read(1024*1024), b''):
+            total+=len(raw)
+            if total>PACKAGE_BYTES:raise RuntimeError('R12_PACKAGE_SIZE')
+            h.update(raw);dst.write(raw)
+    if total!=PACKAGE_BYTES or h.hexdigest()!=PACKAGE_SHA256:raise RuntimeError('R12_PACKAGE_HASH')
+    code=work/'code'
+    with zipfile.ZipFile(archive) as z:
+        if len(z.namelist())!=len(set(z.namelist())):raise RuntimeError('R12_PACKAGE_DUPLICATE')
+        for item in z.infolist():
+            p=PurePosixPath(item.filename)
+            if (str(p)!=item.filename or p.is_absolute() or '..' in p.parts or chr(92) in item.filename
+                or ':' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16) or item.file_size>8*1024*1024):
+                raise RuntimeError('R12_PACKAGE_PATH')
+        z.extractall(code)
+    pins=json.loads((code/'PACKAGE_FILES.json').read_text())
+    for rel, digest in pins.items():
+        if hashlib.sha256((code/rel).read_bytes()).hexdigest()!=digest:raise RuntimeError('R12_CODE_PIN')
+    request=work/'queue-input.json';request.write_text(json.dumps(expected));os.chmod(request, 0o600)
+    env=os.environ.copy();env['PYTHONUNBUFFERED']='1'
+    # Carry the current DSS Python environment into a fresh interpreter; no R11 reload.
+    env['PYTHONPATH']=os.pathsep.join([p for p in sys.path if p]+([env['PYTHONPATH']] if env.get('PYTHONPATH') else []))
+    recent=collections.deque(maxlen=14)
+    def show(line):
+        recent.append(line)
+        try:
+            from IPython import get_ipython
+            from IPython.display import clear_output
+            notebook=get_ipython() is not None
+        except ImportError:notebook=False
+        if notebook:
+            clear_output(wait=True)
+            print('\n'.join(recent), flush=True)
+        else:print(line, flush=True)
+    logpath=work/'full.log'
+    with logpath.open('w', encoding='utf-8') as log:
+        os.chmod(logpath, 0o600)
+        show('QP12 전체 진단 파일: '+str(logpath))
+        child=subprocess.Popen([sys.executable, '-u', str(code/'queued_followup.py'), str(request)],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', env=env)
+        try:
+            for line in child.stdout:
+                log.write(line);log.flush()
+                if line.startswith('QP12 '):show(line.rstrip()[:1000])
+            rc=child.wait()
+        except KeyboardInterrupt:
+            child.send_signal(signal.SIGINT)
+            show('QP12 중단 신호 전달. 진행 상태/응답 캐시를 보존합니다. 결과불명 임베딩은 재호출하지 않습니다.')
+            raise
+        finally:child.stdout.close()
+    if rc:
+        show('QP12 중단 기록: '+str(work/'failure.txt'))
+        raise RuntimeError('R12_STOPPED: 위 QP12 사유를 캡처하세요. 자동 재시도하지 않습니다.')
+    show('QP12 완료: 전수검증 + KURE 벡터 저장. 서비스 검색 연결은 별도 확인입니다.')
+    return {'status':'VERIFIED_AND_VECTOR_READY', 'diagnostic_directory':str(work)}
+
+NFS_FOLLOWUP_RESULT = _run_r12_after_r11()
+'''.replace('ZIPNAME',zpath.name).replace('ZIPHASH',sha).replace('ZIPSIZE',str(size))
+# Preserve the Python newline escape inside the generated cell.
+script=script.replace("print('\n'.join(recent)","print('\\n'.join(recent)")
+ast.parse(script,feature_version=(3,10))
+(d/'DATAIKU_QUEUE_AFTER_R11_R12.txt').write_text(script)
+(d/'BUILD.json').write_text(json.dumps({'revision':'rev-004','zip_sha256':sha,'zip_bytes':size,'members':len(pins)+1,'model_calls':0,'field_executed':False},indent=2)+'\n')
+print(d);print(sha,size)

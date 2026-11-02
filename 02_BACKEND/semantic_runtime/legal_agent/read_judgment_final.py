@@ -59,6 +59,9 @@ def independent_research(execution, error, value, schema, *, content_impl, optio
     from . import requirement_coverage
     if requirement_coverage.FIELD in core_schema.get('properties',{}):
         core_value,core_schema=requirement_coverage.core(core_value,core_schema)
+    from . import assessment_links
+    if assessment_links.FIELD in core_schema.get('properties',{}):
+        core_value,core_schema=assessment_links.core(core_value,core_schema)
     try:
         if 'disposition' not in core_value:
             from .completion_execution import assessment_projection
@@ -310,7 +313,8 @@ def retain(result, value, ctx, investigation, options):
         'prior_needs': deepcopy(ctx['needs']), 'prior_conflicts': deepcopy(ctx['conflicts'])}
     if ctx.get('need_continuity'):
         receipt['need_continuity']={**deepcopy(ctx['need_continuity']),
-            'resolution_links':need_continuity.resolution_links(value[FIELD])}
+            'resolution_links':need_continuity.resolution_links(value[FIELD]),
+            'scope_reviews':deepcopy(value[FIELD].get('scope_reviews', []))}
     receipt['receipt_hash'] = digest(receipt)
     result[FIELD] = receipt
     state = rj.checked(investigation.get('read_judgments', {}).get(ctx['request_key'], {}))
@@ -362,10 +366,21 @@ def limitations(result):
                 result['limitation_items'].append({'id': 'L-'+row['id'], 'kind': 'READ_JUDGMENT_UNRESOLVED',
                     'issue_id': None, 'text': '판단 보류: ' + row['reason']})
     elif receipt.get('status') == 'INCOMPLETE':
-        for row in receipt.get('prior_needs', []):
+        # A missing final review cannot silently dispose of either side of a
+        # conflict, or turn an unreviewed source opinion into an adopted claim.
+        from .review_explanation import need_items
+        for item in need_items(result):
             material_open = True
-            result['limitation_items'].append({'id':'L-'+row['id'], 'kind':'READ_JUDGMENT_UNRESOLVED',
-                'issue_id':None, 'text':'검토 미완료 필요: '+row.get('text',row.get('reason',''))})
+            result['limitation_items'].append({'id': 'L-'+item['id'], 'kind': 'READ_JUDGMENT_UNRESOLVED',
+                'issue_id': None, 'text': '검토 항목 '+item['id']+' — '+item['reason']})
+        for field, label in (
+                             ('prior_conflicts', '검토 미완료 판단 충돌: '),
+                             ('prior_judgments', '최종 검토 미완료 판단: ')):
+            for row in receipt.get(field, []):
+                material_open = True
+                result['limitation_items'].append({'id':'L-'+row['id'], 'kind':'READ_JUDGMENT_UNRESOLVED',
+                    'issue_id':None, 'text':label+row.get('text',row.get('reason',''))})
+    result['limitation_items'] = list({r['id']:r for r in result['limitation_items']}.values())
     result['limitations'] = list(dict.fromkeys(r['text'] for r in result['limitation_items']))
     if material_open:result['disposition'] = 'LIMITED_ANSWER'
     return material_open

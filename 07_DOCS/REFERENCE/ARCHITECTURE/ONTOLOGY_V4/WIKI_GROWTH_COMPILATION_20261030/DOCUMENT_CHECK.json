@@ -1,0 +1,93 @@
+{
+  "status": "DOCUMENT_CHECK_ONLY_NOT_PRODUCT_OR_LEGAL_TEST",
+  "checked_at": "2026-10-30T21:34:11.436968+09:00",
+  "checks": [
+    {
+      "name": "active_pointer_unchanged",
+      "passed": true
+    },
+    {
+      "name": "release_manifest_unchanged",
+      "passed": true
+    },
+    {
+      "name": "audited_sources_unchanged",
+      "passed": true,
+      "file_count": 49,
+      "changed": []
+    },
+    {
+      "name": "scoped_selected_sources_match",
+      "passed": true,
+      "count": 41,
+      "mismatches": []
+    },
+    {
+      "name": "design_local_links_resolve",
+      "passed": true,
+      "checked": 33,
+      "missing": []
+    },
+    {
+      "name": "index_links_new_design",
+      "passed": true
+    },
+    {
+      "name": "examples_explicitly_synthetic",
+      "passed": true
+    },
+    {
+      "name": "layout_preserves_statement_references",
+      "passed": true
+    },
+    {
+      "name": "example_source_coordinates_match",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "name": "example_navigation_not_executable",
+      "passed": true
+    },
+    {
+      "name": "no_example_publication_claim",
+      "passed": true
+    },
+    {
+      "name": "new_document_whitespace",
+      "passed": true,
+      "files": []
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/WIKI_GROWTH_COMPILATION_20261030/README.md",
+      "sha256": "a1977fe87b10566f8ab8beb6e9d6eda7356cf88a5b8f0e6e579fb0f0b9a284a7",
+      "bytes": 45948
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/WIKI_GROWTH_COMPILATION_20261030/SOURCE_AUDIT.json",
+      "sha256": "4b6298e2a4d2a0cc467e10345b04661fa6708bafb00c6e06031b89d46fc721ac",
+      "bytes": 39925
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4/WIKI_GROWTH_COMPILATION_20261030/CONTRACT_EXAMPLES.json",
+      "sha256": "f423d4b0ce9ca260092da63b1c880cfc83766d5136a7cafcb4cfcbf5c198d076",
+      "bytes": 12001
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/ONTOLOGY_V4.md",
+      "sha256": "f1a64487ea3acd563553b5923ff05129cd17991c620ec0e20b46cf981e45acc5",
+      "bytes": 20796
+    }
+  ],
+  "not_performed": [
+    "product implementation",
+    "model calls",
+    "quality experiments",
+    "database mutations",
+    "MAIN selection changes",
+    "GENOS deployment",
+    "independent reviewer verification"
+  ]
+}

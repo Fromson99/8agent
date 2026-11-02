@@ -4,12 +4,13 @@ Work records are not knowledge. A confirmed, current, complete route alone can
 enter the ontology. Personal experience approval is not shared legal approval.
 """
 from contextlib import contextmanager
+from copy import deepcopy
 import hashlib
 import json
 import os
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 import re
-import sqlite3
+from .. import runtime_sqlite as sqlite3
 from . import journal_storage
 import uuid
 from jsonschema import validate, ValidationError
@@ -236,10 +237,17 @@ class Memory:
                 previous=self.parts(g['id'])
                 compose=previous.get('COMPOSE',{}).get('payload',{})
                 select=previous.get('SELECT',{}).get('payload',{})
+                assessment=previous.get('ASSESS',{}).get('payload',{})
                 g['previous_response']={'text':str(compose.get('text',''))[:2000],
                     'limitations':compose.get('limitations',[])[:6],
                     'investigation_status':select.get('status'),
-                    'pending_stage':g.get('pending'),'context_only':True}
+                    'pending_stage':g.get('pending'),'context_only':True,
+                    'review_status':assessment.get('model_proposal',{}).get('review_status'),
+                    'stop_reason':assessment.get('stop_reason'),
+                    'answer_coverage':assessment.get('answer_coverage'),
+                    'legal_conclusion_confirmed':bool(assessment.get('claims')),
+                    'missing_fact_questions':[r['text'] for r in assessment.get('limitation_items',[])
+                                              if r.get('kind')=='MISSING_FACT']}
 
         links={r['intent']:r['knowledge'] for r in self.db.execute('SELECT intent,knowledge FROM wiki WHERE owner=? AND team=?',(principal['user_id'],principal['team_id']))}
         return {'utterance':utterance,'goals':[{**g,'events':self.events(g['id'])} for g in goals],
@@ -357,6 +365,8 @@ class Memory:
         self.executor.verify(k['payload']['parts']['READ']['payload'])
         return k
     def finalize(self,g,principal):
+        if g['state'].get('scenario_context'):
+            raise MemoryError('hypothetical scenarios cannot become confirmed actual-case knowledge')
         route=self.route(g['id'])
         if g['status']!='READY' or not route or route['revision']!=g['revision']:raise Conflict('cannot confirm pending or stale route')
         parts=self.parts(g['id']);self.executor.verify(parts['READ']['payload'])
@@ -441,6 +451,7 @@ class Memory:
                 return {'status':'REMAPPED','goal_id':g['id'],'knowledge_id':k['id'],'revision':g['revision'],'answer':None}
             # A corrected association must also recompute the dependent judgment.
             c={**c,'action':'REUSE','stage':'ASSESS'}
+        scenario_seed=getattr(self,'_scenario_seed',None)
         state=dict(g['state']) if g else {'task':body['question'],'source_category':'ALL','document_ids':body.get('document_ids') or list(principal['document_ids']),'facts':[],'queries':[]}
         if g and c['document_scope_mode']=='AUTHORIZED' and c['method_id']=='RESEARCH_REPLAN':
             state['document_ids']=body.get('document_ids') or list(principal['document_ids'])
@@ -456,11 +467,16 @@ class Memory:
             try:state=self.executor.scope_state(state,c,body['question'])
             except UnresolvedScope as exc:
                 return {'status':'CLARIFY','answer':None,'reason':str(exc),'scope_preserved':True}
+        if scenario_seed:
+            state=deepcopy(scenario_seed['state'])
         changed=[f for f in (*FIELDS,'search_scope') if g and state.get(f)!=g['state'].get(f)]
         start=0 if not g else STAGES.index(c['stage']) if c['stage']!='NONE' else 6
         effects={'task':0,'source_category':1,'document_ids':1,'queries':1,'facts':5,'search_scope':1}
         if changed:start=min([start]+[effects[f] for f in changed])
         previous=self.parts(g['id']) if g else {}
+        if scenario_seed:
+            if g:raise MemoryError('scenario seed cannot overwrite an existing case')
+            previous=deepcopy(scenario_seed['parts']);start=STAGES.index('ASSESS')
         if g and g['status']!='READY':start=min(start,STAGES.index(g['pending'] or 'INTENT'))
         if previous and previous.get('READ',{}).get('payload',{}).get('binding')!=self.executor.binding:start=min(start,1)
         reuse=None
@@ -513,9 +529,9 @@ class Memory:
             with self.executor.open(state,principal,body) as execution:
                 execution.history_records=history_projection(self.events(gid))
                 if hasattr(execution,'bind_previous'):execution.bind_previous(parts)
-                if reuse:
+                if reuse or scenario_seed:
                     parent=None
-                    for stage in STAGES[:-1]:
+                    for stage in (STAGES[:start] if scenario_seed else STAGES[:-1]):
                         payload=parts[stage]['payload']
                         if hasattr(execution,'rebind'):execution.rebind(stage,payload)
                         with self.transaction():
@@ -594,7 +610,7 @@ class Memory:
                         execution.save_selection_progress=save_selection_progress
                         execution.save_selection_evidence=save_selection_evidence
                     try:
-                        payload=execution.stage(stage,state,parts,body['question'],c['format'])
+                        payload=execution.stage(stage,state,parts,getattr(self,'_review_question',body['question']),c['format'])
                     except Reenter as recovery:
                         kind=recovery.payload.get('reentry_kind','SEARCH_REENTRY')
                         execution.reentry_counters[kind]=execution.reentry_counters.get(kind,0)+1

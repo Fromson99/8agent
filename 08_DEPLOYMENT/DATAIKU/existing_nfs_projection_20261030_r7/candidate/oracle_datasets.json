@@ -1,0 +1,325 @@
+[
+  {
+    "name": "LEGAL_OUT_LGL_DOC_VER_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_DOC_VER_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "DATA_VER_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DOC_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "DOC_NM",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        },
+        {
+          "name": "SRC_DATA_HASH_VAL",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DOC_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_DOC_UNIT_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_DOC_UNIT_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "DATA_VER_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DOC_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "UNIT_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "PRNT_UNIT_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "UNIT_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_DOC_BLK_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_DOC_BLK_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "DATA_VER_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DOC_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "BLK_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "UNIT_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "BLK_TXT_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        },
+        {
+          "name": "SRC_DATA_HASH_VAL",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "BLK_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        },
+        {
+          "name": "JSON_TXT_OMIT_YN",
+          "type": "bigint",
+          "originalType": "NUMBER"
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_SRCH_ROW_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_SRCH_ROW_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "SRCH_PBLS_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "ROW_KIND_CD",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "ROW_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DOC_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "SRCH_KEY_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "OWNR_REF_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "TGT_REF_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 512
+        },
+        {
+          "name": "ROW_HASH_VAL",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "ROW_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_SRC_PBLS_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_SRC_PBLS_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "SRC_PBLS_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "DATA_VER_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "PBLS_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        },
+        {
+          "name": "REG_DTM",
+          "type": "string",
+          "originalType": "TIMESTAMP",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_SRCH_PBLS_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_SRCH_PBLS_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "SRCH_PBLS_ID",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "MNFST_JSON_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  },
+  {
+    "name": "LEGAL_OUT_LGL_FILE_PART_S",
+    "params": {
+      "connection": "AIDP",
+      "schema": "SIDDS",
+      "table": "LGL_FILE_PART_S",
+      "mode": "table",
+      "noDropOnSchemaMismatch": true
+    },
+    "schema": {
+      "columns": [
+        {
+          "name": "FILE_HASH_VAL",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "PART_SEQ_NO",
+          "type": "bigint",
+          "originalType": "NUMBER"
+        },
+        {
+          "name": "ORG_BYTE_CNT",
+          "type": "bigint",
+          "originalType": "NUMBER"
+        },
+        {
+          "name": "PART_HASH_VAL",
+          "type": "string",
+          "originalType": "VARCHAR2",
+          "maxLength": 64
+        },
+        {
+          "name": "PART_B64_CN",
+          "type": "string",
+          "originalType": "CLOB",
+          "maxLength": 2147483647
+        }
+      ]
+    }
+  }
+]

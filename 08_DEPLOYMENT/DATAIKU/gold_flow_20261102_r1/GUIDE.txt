@@ -1,0 +1,143 @@
+Dataiku Gold _1 Flow · R1 / 2026-11-02
+
+지금 실행 중인 노트북을 유지하면서 보기 좋은 Flow와 현황판을 추가하는 전달본입니다.
+설치는 DB 적재를 실행하지 않습니다. 현재 노트북과 새 Scenario를 동시에 돌리지 마세요.
+
+1. 첨부파일과 설치
+
+대상: 개발계 Dataiku / 프로젝트 LEGAL_RAG / Oracle 연결 AIDP / 앱 사용자 PIDD2APP
+대상 표: 기존 FRESH_1 실행본과 같은 SIDDS/SIDDA의 17개 *_1 테이블
+
+  DATAIKU_GOLD_FLOW_20261102_R1.zip  : Flow와 기존 적재 엔진 전체 코드
+  DATAIKU_GOLD_FLOW_INSTALL_R1.txt  : 전체 설치 Python 셀
+  DATAIKU_GOLD_FLOW_MONITOR_R1.txt  : 현재 노트북 적재를 읽기 전용으로 관찰하는 Python 셀
+  GUIDE.txt                       : 이 안내
+  SETTINGS.txt                    : 필요한 설정, 현재 NFS 데이터 경로
+  PREVIEW.png                     : 현황판 모양. 실제 처리 실적이 없는 미리보기
+
+① LEGAL_RAG의 관리 폴더 ehA8dpVm에 이번 ZIP을 압축 해제하지 않고 이름 그대로 업로드합니다.
+② 같은 프로젝트에서 새 Python 노트북을 열고 INSTALL_R1.txt 전체를 한 셀에 붙여 실행합니다.
+③ FLOW_INSTALLED가 출력되면 Flow 화면을 새로고침합니다.
+   Gold _1 구역 7개 / 레시피 8개 / 실제 Oracle 연결 데이터셋 17개 / 결과 폴더 8개가 추가됩니다.
+   기존 Flow, 원래 이름의 테이블, 현재 노트북, MAIN/서비스 연결은 그대로입니다.
+
+현재 노트북에서 별도 OLD_JOB_DIR를 지정했다면 SETTINGS의 LEGAL_GOLD_OLD_JOB_DIR에
+반드시 그 동일 경로를 넣으세요. 기존 상태 파일을 복사·삭제·초기화할 필요가 없습니다.
+설치 셀을 다시 실행하면 같은 코드와 설정인지 확인해 재사용합니다.
+
+2. 지금 돌고 있는 적재를 예쁘게 보기
+
+설치 후 별도 새 노트북에서 MONITOR_R1.txt 전체를 실행합니다.
+15초마다 현재 진행 상태를 읽어 카드와 진행률을 표시하고 Dataiku Insight를 갱신합니다.
+원래 적재 노트북은 계속 실행해 두면 됩니다. 관찰 셀은 DB INSERT/DELETE/COUNT/임베딩을 호출하지 않습니다.
+노트북 Stop 버튼은 이 관찰만 종료합니다. 한 번만 표시하려면 TXT의 REFRESH_SECONDS=0으로 바꿉니다.
+관찰 화면의 경과 시간은 관찰을 시작한 시점 기준입니다. 앞선 작업의 전체 소요 시간으로 보지 마세요.
+이전 노트북 로그에만 있는 오류 원문은 그 노트북에서 확인하며, 관찰 화면은 저장된 오류 코드를 표시합니다.
+
+3. 앞으로는 Scenario의 Run 한 번으로
+
+현재 노트북 작업이 종료된 뒤:
+  Scenarios → G19F1_RUN_ALL · NFS부터 벡터까지 → Run
+
+다음 레시피를 순서대로 별도 Job으로 실행합니다. 예약 실행은 설치 시 꺼져 있습니다.
+
+  G19F1_00_NFS      NFS 데이터 준비
+  G19F1_01_PREPARE  적재 자료 준비
+  G19F1_02_TABLES   _1 표·PK·인덱스 준비
+  G19F1_03_SOURCE   원문 문서·구조·본문 적재
+  G19F1_04_SEARCH   검색 자료 적재
+  G19F1_05_VERIFY   원문·검색 전체 내용 검증 및 개발용 게시 기록
+  G19F1_06_VECTOR   등록 임베딩 모델 → 벡터 저장·검증
+  G19F1_07_RESULT   17개 테이블 현재 행 수 확인
+
+Flow에서 개별 레시피를 실행할 수도 있습니다. 준비/원문/검색/검증의 선행 단계가 필요합니다.
+01~06은 저장된 준비·배치·검증 체크포인트를 재사용합니다. 재사용은 그 순간 DB 전체를 다시
+검증했다는 의미가 아닙니다. 07에서 실제 DB 행 수를 별도로 확인합니다.
+완료된 벡터는 로컬 응답 캐시로 재검증하므로 같은 입력을 모델에 다시 보내지 않습니다.
+기존 노트북이 같은 작업을 실행 중이면 Flow는 EXISTING_LOAD_RUNNING을 표시하고 멈춥니다.
+
+4. NFS 데이터는 어떻게 가져오는가
+
+이번 대상은 이미 만들어진 다음 GENOS NFS 세대입니다.
+  /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+
+00_NFS의 선택 순서:
+  A. Dataiku 로컬의 수신 파일이 모두 있고 검증되면 LOCAL_REUSED → 다운로드 생략
+  B. 로컬 파일이 없거나 일부 없어졌지만 Dataiku 관리 폴더에 이전 수신 조각이 있으면
+     DATAIKU_CACHE_RESTORED → 보관본에서 복원, 해당 조각의 NFS 재다운로드 생략
+  C. 필요한 조각이 Dataiku에도 없으면 기존 GENOS NFS 읽기 API로 수신
+     EXISTING_NFS_INFO / EXISTING_NFS_READ만 사용하고, 파일·조각 해시를 확인합니다.
+     원본 NFS 자료를 삭제하거나 다시 파싱하지 않습니다.
+
+이전 LEGAL_STRUCTURED_RESULT_R1 폴더가 있으면 그 수신 캐시도 찾아 씁니다.
+새로 받은 조각은 G19F1_00_NFS_RESULT 폴더에도 보관합니다. 파일 개수/받은 바이트/경과를 로그에 남깁니다.
+잘못된 해시나 다른 세대가 있으면 덮어쓰지 않고 충돌 위치를 출력합니다.
+이 기능은 외부 새 법령 수집이나 NFS 세대 재생성 기능이 아닙니다.
+
+API 주소와 토큰은 기존 LEGAL_PIPELINE_URL / LEGAL_PIPELINE_TOKEN을 그대로 사용합니다.
+로컬 또는 보관본만으로 충분한 경우 API 자격 증명을 요구하지 않습니다.
+NFS 서비스가 없는 환경에 서비스 자체를 자동 배포하지는 않습니다. 연결 설정이 없을 때는
+NFS_CONNECTION_REQUIRED와 필요한 변수 이름이 표시됩니다. 비밀값을 화면/메일에 넣지 마세요.
+
+01_PREPARE는 기존 완료된 원문·검색 준비 명세가 있으면 재사용합니다.
+처음 가져온 데이터라 준비 명세가 없으면 동일 R11 소스의 원문/검색 투영을 한 번 계산하고 저장합니다.
+이 단계의 준비 완료는 DB 적재 완료를 의미하지 않습니다.
+
+5. 어디서 확인하는가
+
+전체 단계: Flow의 Gold _1 구역 / Scenario의 단계별 Job 이력
+현황판: Dashboards 메뉴의 Insights → Gold _1 · 데이터 적재 현황
+  필요하면 Insight의 Add to dashboard 버튼으로 팀 대시보드에 고정합니다.
+  현황은 약 15초마다 저장됩니다. 열린 Insight는 새로고침하여 표시된 갱신 시각을 확인하세요.
+  실시간 화면에서도 각 단계의 처리 행 수·전체 행 수·경과·현재 단계 예상 잔여를 분리합니다.
+  다음 단계와 임베딩 시간을 포함한 전체 ETA를 임의로 표시하지 않습니다.
+
+DB 실제 값: G19F1_DB_DOC_VER / DOC_UNIT / DOC_BLK / SRCH_ROW 등 데이터셋의 Explore
+  이들은 실제 *_1 Oracle 표의 외부 연결입니다. Dataiku writer로 표를 덮어쓰지 않습니다.
+  VCTR_ITEM Explore에는 메타데이터 컬럼을 표시하며 native VECTOR 값 자체는 제외합니다.
+  벡터 차원·내용 검증은 기존 적재 엔진에서 수행합니다.
+
+영구 로그: 각 단계 결과 관리 폴더
+  latest.json              최근 실행의 상태와 처리량
+  runs/<실행ID>.json        실행별 상태
+  runs/<실행ID>/log-*.txt   순서대로 이어 읽는 전체 Job 출력 조각
+  status.html              저장된 현황판
+  07 결과 폴더의 db-counts.json  마지막 DB 실조회 결과
+  notebook-observation.json     선택적으로 실행한 기존 노트북 관찰 결과
+
+Oracle의 Agent 4표는 향후 Agent 실행 기록 대상이며, 이 Flow의 작업 로그는 Dataiku Job과
+결과 관리 폴더에 보관합니다. 승인된 온톨로지 입력이 없으면 온톨로지 3표는 0행입니다.
+서비스 활성 포인터를 전환하지 않아 VCTR_HEAD도 0행일 수 있습니다.
+표가 만들어졌다는 이유로 모든 표에 실제 업무 데이터가 있다고 표시하지 않습니다.
+
+6. 중단·재개
+
+실패하면 다음 단계는 실행하지 않습니다. 실패한 Job 로그와 결과 폴더의 오류를 확인하세요.
+원인 해소 후 같은 Scenario를 다시 실행하면 기존 준비/배치/응답 기록을 이용합니다.
+state.json, flow-inputs.json, vectors의 응답 캐시를 삭제하거나 다른 작업 것으로 바꾸지 마세요.
+DB 쓰기 결과 미확인 또는 모델 응답 미확인은 기존 엔진의 확인 절차를 유지합니다.
+미확인 모델 요청을 자동으로 다시 보내지 않습니다.
+
+실행 노트북과 Flow 레시피는 같은 Dataiku 서버의 로컬 작업 폴더를 볼 수 있어야 합니다.
+컨테이너·다른 실행 노드에서는 동일 파일 경로를 공유하는 LEGAL_GOLD_OLD_JOB_DIR가 필요합니다.
+NFS 원본 캐시 복원과 DB 적재 체크포인트 복원은 다릅니다. 서버를 잃어 DB에 데이터만 남은 경우
+새 상태로 임의 덮어쓰기/처음부터 INSERT하지 않고 원래 체크포인트를 복구해야 합니다.
+
+7. 검증 범위
+
+로컬 단위/계약 검사 17개 통과. 실제 Dataiku SDK 15.2.0와 모의 REST로 ZIP+설치 TXT 진입점,
+재설치, 8개 레시피, 17개 외부 DB 연결, 7개 구역, Scenario 순서를 확인했습니다.
+작은 합성 데이터의 신규 준비/재사용(원문 8행, 검색 112행)을 실제 파일로 확인했습니다.
+별도 로컬 Oracle 시험 스키마에서 표 준비→원문→검색→검증→합성 벡터 3행→DB 확인→재개 통과.
+임베딩 API는 합성 응답 1회이며 실제 모델 호출은 0회입니다. 시험 스키마 2개는 정리했습니다.
+기존 FRESH_1 엔진 60파일은 원 전달본과 동일합니다.
+데스크톱/모바일 현황판 표시도 확인했습니다. PREVIEW는 실제 현장 결과가 아닙니다.
+
+삼성 Dataiku 서버의 실제 설치, S3 권한, NFS API 연결, 현장 Oracle 전체 데이터,
+등록된 임베딩 모델 및 전체 실행 시간은 이 환경에서 직접 검증하지 못했습니다.
+이번 설치로 현재 실행 중인 노트북 코드가 바뀌지 않습니다.
+
+공식 API 참고:
+https://developer.dataiku.com/latest/concepts-and-examples/flow.html
+https://developer.dataiku.com/latest/api-reference/python/scenarios-inside.html
+https://developer.dataiku.com/latest/concepts-and-examples/static-insights.html

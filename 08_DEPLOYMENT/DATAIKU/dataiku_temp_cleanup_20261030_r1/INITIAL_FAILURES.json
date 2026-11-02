@@ -1,0 +1,9 @@
+{
+  "phase": "initial local contract run, 2026-10-30",
+  "tests": 13,
+  "failures": 3,
+  "errors": 2,
+  "cause": "Real WSL /proc contains two same-user PermissionError processes; global fail-closed guard prevented test deletions before their intended assertions.",
+  "resolution": "Keep production visibility guard. Isolate mutation contracts with explicitly simulated full process visibility, retain actual open-FD test and add actual incomplete-visibility preservation test. Prioritize a directly observed open file before the visibility error.",
+  "remote_deletions": 0
+}

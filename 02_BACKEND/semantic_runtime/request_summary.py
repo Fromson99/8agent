@@ -7,7 +7,7 @@ import fcntl
 import hashlib
 import json
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
 import tempfile
 import time
@@ -39,6 +39,8 @@ def team_name(request):
 def report_directory(root, team='unassigned', started_at=None, *, component='legal_agent'):
     root = Path(root)
     if not root.is_absolute(): raise ValueError('GENOS_SHARED_LOG_DIR must be an absolute path')
+    from .detailed_log_storage import oracle_mode,require_nfs
+    if oracle_mode():require_nfs(root)
     if team != 'unassigned' and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}_team', team):
         raise ValueError('invalid report team')
     started_at = started_at or datetime.now(timezone.utc)
@@ -78,6 +80,11 @@ def make_row(request, result, events, *, request_id, started_at, directory, log_
 @contextmanager
 def atomic_file(target, mode='w', **kwargs):
     """Readers see a complete old or new snapshot; never a partially written file."""
+    from .oracle_runtime_paths import virtual
+    if virtual(target):
+        with Path(target).open(mode, **kwargs) as stream:
+            yield stream
+        return
     fd, temporary = tempfile.mkstemp(prefix='.qa-', dir=target.parent)
     try:
         os.fchmod(fd, 0o640)
@@ -98,6 +105,12 @@ def write_row(directory, record_id, row):
     rows.mkdir(parents=True, exist_ok=True, mode=0o750)
     target = rows / (record_id + '.row')
     encoded = json.dumps(row, ensure_ascii=False, sort_keys=True)
+    from .oracle_runtime_paths import virtual, write_file
+    if virtual(target):
+        try: write_file(target, encoded.encode(), exclusive=True)
+        except FileExistsError:
+            if target.read_text()!=encoded: raise ValueError('summary record conflict')
+        return target
     if target.exists():
         if target.read_text() != encoded: raise ValueError('summary record already has different content')
     else:
@@ -116,6 +129,10 @@ def write_row(directory, record_id, row):
 
 @contextmanager
 def summary_lock(directory):
+    from .oracle_runtime_paths import virtual, records
+    if virtual(directory):
+        with records().lease(['summary',str(directory)],wait=10): yield
+        return
     flags = os.O_CREAT | os.O_RDWR | getattr(os, 'O_NOFOLLOW', 0)
     fd = os.open(directory / '.qa.lock', flags, 0o640)
     os.fchmod(fd, 0o640)

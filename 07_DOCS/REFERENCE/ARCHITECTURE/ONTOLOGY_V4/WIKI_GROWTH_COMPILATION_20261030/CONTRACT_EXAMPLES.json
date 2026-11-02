@@ -1,0 +1,360 @@
+{
+  "status": "DESIGN_ONLY_SYNTHETIC_EXAMPLES_NOT_CURRENT_API_PAYLOADS",
+  "all_examples_synthetic": true,
+  "implemented": false,
+  "legal_truth_evaluation": false,
+  "notes": [
+    "실제 법률·사용자 기록·DB 행·컴파일 산출물·승인 영수증이 아니다.",
+    "해시는 이 예시 내부의 정합성을 확인할 뿐 제품 계약 통과를 뜻하지 않는다.",
+    "profile이 없는 자유 저장과 컴파일에 필요한 엄격한 입력을 구분한다."
+  ],
+  "source": {
+    "id": "example-source-001",
+    "version": "example-rev-1",
+    "text": "담당자는 검토하고 결과를 기록해야 한다. 긴급처리는 별도 절차를 따른다.",
+    "body_sha256": "f0c13b76ce1eae78f774f249522118dd5e1c53b1e8dd8c4dbbeffd5fd51f2635"
+  },
+  "raw_event": {
+    "id": "example-event-001",
+    "revision": 1,
+    "synthetic": true,
+    "recorded_text": "일반 절차와 긴급처리의 관계는 아직 확인하지 못했다.",
+    "recorded_reason": null,
+    "recorded_purpose": null
+  },
+  "statements": [
+    {
+      "contract": "knowledge-statement-v1",
+      "statement_id": "example-statement-001",
+      "revision": 1,
+      "namespace": "synthetic-example-only",
+      "acl_ref": "fictional-review-team",
+      "text": "담당자는 검토하고 결과를 기록해야 한다.",
+      "origin_refs": [
+        {
+          "kind": "synthetic_raw_event",
+          "id": "example-event-001",
+          "revision": 1
+        }
+      ],
+      "source_basis": [
+        {
+          "source_id": "example-source-001",
+          "version": "example-rev-1",
+          "body_sha256": "f0c13b76ce1eae78f774f249522118dd5e1c53b1e8dd8c4dbbeffd5fd51f2635",
+          "quote": "담당자는 검토하고 결과를 기록해야 한다.",
+          "start": 0,
+          "end": 22,
+          "coordinate_convention": "EXAMPLE_ONLY_UNICODE_CODEPOINT_END_EXCLUSIVE"
+        }
+      ],
+      "epistemic_status": "DRAFT_UNVERIFIED",
+      "qualifications": [],
+      "semantic_revision_hash": "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed"
+    },
+    {
+      "contract": "knowledge-statement-v1",
+      "statement_id": "example-statement-002",
+      "revision": 1,
+      "namespace": "synthetic-example-only",
+      "acl_ref": "fictional-review-team",
+      "text": "긴급처리는 별도 절차를 따른다.",
+      "origin_refs": [
+        {
+          "kind": "synthetic_raw_event",
+          "id": "example-event-001",
+          "revision": 1
+        }
+      ],
+      "source_basis": [
+        {
+          "source_id": "example-source-001",
+          "version": "example-rev-1",
+          "body_sha256": "f0c13b76ce1eae78f774f249522118dd5e1c53b1e8dd8c4dbbeffd5fd51f2635",
+          "quote": "긴급처리는 별도 절차를 따른다.",
+          "start": 23,
+          "end": 40,
+          "coordinate_convention": "EXAMPLE_ONLY_UNICODE_CODEPOINT_END_EXCLUSIVE"
+        }
+      ],
+      "epistemic_status": "DRAFT_UNVERIFIED",
+      "qualifications": [],
+      "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+    }
+  ],
+  "entry_before": {
+    "contract": "knowledge-entry-v1",
+    "entry_id": "example-entry-001",
+    "revision": 1,
+    "namespace": "synthetic-example-only",
+    "acl_ref": "fictional-review-team",
+    "title": "검토하면서 발견한 내용",
+    "body_sections": [
+      {
+        "kind": "free_note",
+        "text": "일반 절차와 긴급처리의 관계를 더 확인해야 한다."
+      }
+    ],
+    "statement_refs": [
+      {
+        "statement_id": "example-statement-001",
+        "revision": 1,
+        "semantic_revision_hash": "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed"
+      },
+      {
+        "statement_id": "example-statement-002",
+        "revision": 1,
+        "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      }
+    ],
+    "navigation_links": [],
+    "origin_refs": [
+      {
+        "kind": "synthetic_raw_event",
+        "id": "example-event-001",
+        "revision": 1
+      }
+    ],
+    "open_items": [
+      {
+        "id": "example-open-001",
+        "text": "긴급처리의 별도 절차 원문과 일반 절차와의 관계가 아직 확인되지 않았다.",
+        "affected_statement_ids": [
+          "example-statement-001",
+          "example-statement-002"
+        ],
+        "status": "OPEN"
+      }
+    ]
+  },
+  "entry_after_layout_edit": {
+    "contract": "knowledge-entry-v1",
+    "entry_id": "example-entry-001",
+    "revision": 2,
+    "namespace": "synthetic-example-only",
+    "acl_ref": "fictional-review-team",
+    "title": "검토·결과 기록과 긴급처리",
+    "body_sections": [
+      {
+        "kind": "free_note",
+        "text": "일반 절차와 긴급처리의 관계를 더 확인해야 한다."
+      }
+    ],
+    "statement_refs": [
+      {
+        "statement_id": "example-statement-001",
+        "revision": 1,
+        "semantic_revision_hash": "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed"
+      },
+      {
+        "statement_id": "example-statement-002",
+        "revision": 1,
+        "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      }
+    ],
+    "navigation_links": [
+      {
+        "label": "긴급처리를 따로 살펴보기",
+        "target_id": "example-entry-002",
+        "navigation_only": true
+      }
+    ],
+    "origin_refs": [
+      {
+        "kind": "synthetic_raw_event",
+        "id": "example-event-001",
+        "revision": 1
+      }
+    ],
+    "open_items": [
+      {
+        "id": "example-open-001",
+        "text": "긴급처리의 별도 절차 원문과 일반 절차와의 관계가 아직 확인되지 않았다.",
+        "affected_statement_ids": [
+          "example-statement-001",
+          "example-statement-002"
+        ],
+        "status": "OPEN"
+      }
+    ]
+  },
+  "related_entry": {
+    "contract": "knowledge-entry-v1",
+    "entry_id": "example-entry-002",
+    "revision": 1,
+    "namespace": "synthetic-example-only",
+    "acl_ref": "fictional-review-team",
+    "title": "긴급처리의 별도 절차",
+    "body_sections": [
+      {
+        "kind": "free_note",
+        "text": "별도 절차의 실제 원문을 추가로 확보할 항목."
+      }
+    ],
+    "statement_refs": [
+      {
+        "statement_id": "example-statement-002",
+        "revision": 1,
+        "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      }
+    ],
+    "navigation_links": [
+      {
+        "label": "일반 절차와 함께 보기",
+        "target_id": "example-entry-001",
+        "navigation_only": true
+      }
+    ],
+    "origin_refs": [
+      {
+        "kind": "synthetic_raw_event",
+        "id": "example-event-001",
+        "revision": 1
+      }
+    ],
+    "open_items": [
+      {
+        "id": "example-open-002",
+        "text": "별도 절차 미확보",
+        "status": "OPEN"
+      }
+    ]
+  },
+  "change_set_outline": {
+    "contract": "knowledge-change-set-v1",
+    "change_id": "example-change-001",
+    "expected_revisions": [
+      {
+        "entry_id": "example-entry-001",
+        "revision": 1,
+        "object_hash": "a2ad2e6ced5f39c4d31ebde6af7298a5ae5db486042bde597bdc98f403c092d3"
+      }
+    ],
+    "operations": [
+      {
+        "op": "REVISE_ENTRY",
+        "entry_id": "example-entry-001",
+        "fields": {
+          "title": "검토·결과 기록과 긴급처리"
+        }
+      },
+      {
+        "op": "CREATE_ENTRY",
+        "entry_id": "example-entry-002"
+      },
+      {
+        "op": "LINK",
+        "source_entry_id": "example-entry-001",
+        "target_entry_id": "example-entry-002",
+        "navigation_only": true
+      }
+    ],
+    "input_receipt": null,
+    "candidate_search_receipt": null,
+    "apply_status": "DESIGN_ONLY_NOT_APPLIED"
+  },
+  "projection_draft": {
+    "contract": "knowledge-projection-v1",
+    "projection_id": "example-projection-001",
+    "revision": 1,
+    "namespace": "synthetic-example-only",
+    "acl_ref": "fictional-review-team",
+    "selected_statement_revisions": [
+      {
+        "statement_id": "example-statement-001",
+        "revision": 1,
+        "semantic_revision_hash": "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed"
+      },
+      {
+        "statement_id": "example-statement-002",
+        "revision": 1,
+        "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      }
+    ],
+    "profile_hash": null,
+    "source_snapshot": [
+      {
+        "source_id": "example-source-001",
+        "version": "example-rev-1",
+        "body_sha256": "f0c13b76ce1eae78f774f249522118dd5e1c53b1e8dd8c4dbbeffd5fd51f2635"
+      }
+    ],
+    "scope": "일반 처리와 긴급처리의 검토·기록에 관한 재사용 설명",
+    "purposes": [
+      "관련 원문과 아직 확인하지 못한 적용 범위를 함께 제시"
+    ],
+    "typed_graph": null,
+    "coverage_decisions": [
+      {
+        "statement_id": "example-statement-001",
+        "decision": "INCLUDED",
+        "candidate_role": "EFFECT",
+        "reason": "의무 문장으로 검토할 후보이며 프로필·양태·행위·원문 대조는 아직 완료되지 않음"
+      },
+      {
+        "statement_id": "example-statement-002",
+        "decision": "UNRESOLVED",
+        "candidate_role": null,
+        "reason": "별도 절차의 의미와 일반 절차를 수정하는지 여부가 미확인. CONDITION/EXCEPTION으로 강제 분류하지 않음"
+      }
+    ],
+    "import_manifest": [
+      {
+        "statement_id": "example-statement-001",
+        "revision": 1,
+        "semantic_revision_hash": "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed"
+      },
+      {
+        "statement_id": "example-statement-002",
+        "revision": 1,
+        "semantic_revision_hash": "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      }
+    ],
+    "compiler_binding": null,
+    "readiness": "DESIGN_DRAFT_MISSING_REQUIRED_BINDINGS",
+    "missing_bindings": [
+      "실제 승인 프로필",
+      "실제 검증된 normalized observation",
+      "원문 분석과 typed graph 검증"
+    ],
+    "package": null,
+    "approval": null,
+    "publication": null
+  },
+  "expected_properties": [
+    {
+      "case": "프로필 없는 축적",
+      "expected": "entry와 statement는 보존. 아직 컴파일·승인·게시하지 않음"
+    },
+    {
+      "case": "제목·배치 변경",
+      "expected": "entry 객체 hash는 변경되고 statement 판본·의미 hash는 동일",
+      "entry_hash_before": "a2ad2e6ced5f39c4d31ebde6af7298a5ae5db486042bde597bdc98f403c092d3",
+      "entry_hash_after": "45f0f7412ce7c644f84ec2bc08410f5c5ca58e3dfb90d6f39f4b0955269d2741",
+      "statement_hashes_before": [
+        "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed",
+        "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      ],
+      "statement_hashes_after": [
+        "9ddd0f2a475b84d8090a8f651a945deeda8b37baaaec5f8e8d04f82c5fd7a0ed",
+        "d973aeb8109ce69740bce718857d6edf04e134fbbdbb7ebeff7d2ae216bd14ee"
+      ]
+    },
+    {
+      "case": "자유 링크 순환",
+      "expected": "두 항목 간 왕복 탐색 허용. 컴파일 의존/예외 간선으로 사용하지 않음"
+    },
+    {
+      "case": "미확인된 긴급 절차",
+      "expected": "관련 범위의 미해결로 보존. 나중에 필수 binding을 완료해 컴파일하더라도 확인되지 않은 긴급처리를 조용히 제외해 READY로 표시하지 않음"
+    },
+    {
+      "case": "같은 판단 반복",
+      "expected": "새 원문 근거나 독립적인 법률 지지로 계산하지 않음"
+    },
+    {
+      "case": "기존 게시본의 초안 편집",
+      "expected": "일반 초안 수정은 승인 snapshot 유지. 명시적 철회는 역의존과 활성 상태를 함께 갱신"
+    }
+  ]
+}

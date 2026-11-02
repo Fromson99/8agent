@@ -47,11 +47,20 @@ def change(document=None,structure=None,operation='REPLACE',quote=None):
 
 
 def metadata():
-    return S(documents={'a':'가상심사규정','b':'가상심사규정 시행세칙','c':'다른규정'},
+    matcher = S(documents={'a':'가상심사규정','b':'가상심사규정 시행세칙','c':'다른규정'},
         document_context={},document_aliases={'a':['가상규정']},stored_coordinates={},units={
             ('a','ch'):{'surface':'제2장','title':'심사','parent':None,'span':[0,3]},
             ('a','1'):{'surface':'제10조','title':'승인','parent':'ch','span':[0,2]},
             ('a','2'):{'surface':'제11조','title':'보고','parent':None,'span':[3,4]}})
+    # Match persisted source metadata: a bare coordinate selects a bound body
+    # branch, never an unresolved title or an addendum with the same surface.
+    from lawrag.core.legal_coordinate import parse_label
+    for key, node in matcher.units.items():
+        coordinate = parse_label(node['surface'])
+        assert coordinate is not None
+        node.update(coordinate_scope='body', coordinate_key='body:'+coordinate.canonical_surface())
+        matcher.stored_coordinates[key] = coordinate
+    return matcher
 
 
 @pytest.mark.parametrize('count',[0,1,160,161,1000])

@@ -1,0 +1,28 @@
+{
+  "status": "LOCAL_CONTRACTS_PASS_FIELD_UNMEASURED",
+  "field_rollout_status": "HOLD_ORA01654_CAPACITY_AND_PROJECTION_REVIEW",
+  "field_followup": "Subsequent screenshots show PK index extent allocation failure. Larger batches do not resolve capacity or duplicate projection rows.",
+  "tests_passed": 48,
+  "tests_failed": 0,
+  "tests": "test_fresh.py + test_handoff.py + test_batch_resume.py",
+  "python_310_syntax": true,
+  "oracle_capacity_sql_parse": true,
+  "package_code_binding": "f97b383a229d738f0c0ce75495122e5134f4a2cad44c7a619f9b34555dbc69e1",
+  "changed_from_r1": [
+    "CODE_MANIFEST.json",
+    "gold_io.py",
+    "jdbc_transport.py",
+    "run.py"
+  ],
+  "added_from_r1": [
+    "PREDECESSOR.json",
+    "batch_resume.py"
+  ],
+  "native_oracle_calls": 0,
+  "live_dataiku_runs": 0,
+  "model_calls": 0,
+  "speedup_measured": false,
+  "same_query_projection": true,
+  "zip_sha256": "2775250dea796df6da35f0a47e1e5119ab256ae5860609e4334016d119d064b7",
+  "ddl_and_index_contract_unchanged": true
+}

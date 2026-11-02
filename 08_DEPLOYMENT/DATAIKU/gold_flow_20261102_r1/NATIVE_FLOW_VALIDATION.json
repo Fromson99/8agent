@@ -1,0 +1,139 @@
+{
+  "status": "PASS",
+  "field_calls": 0,
+  "real_models": 0,
+  "synthetic_embedding_calls": 1,
+  "created_schemas": [
+    "A8_GF_911AC53D8A",
+    "A8_GF_83EC7FE26F"
+  ],
+  "dropped_schemas": [
+    "A8_GF_911AC53D8A",
+    "A8_GF_83EC7FE26F"
+  ],
+  "checks": [
+    "schema",
+    "source",
+    "query",
+    "verify",
+    "vector",
+    "report",
+    "resume_existing_source_query_and_cached_vectors_no_new_model"
+  ],
+  "fixture_generation": "/tmp/g19-flow-cold-compact-fixture/built/generation",
+  "identity_adapter": "local SYSTEM exposed as expected login in fixture only",
+  "expected": {
+    "source_rows": 8,
+    "query_rows": 112
+  },
+  "db_report": {
+    "tables": [
+      {
+        "key": "DOC_VER",
+        "table": "A8_GF_911AC53D8A.LGL_G19_DOC_VER_S_1",
+        "rows": 2,
+        "checked_at": 1793606583.675438
+      },
+      {
+        "key": "DOC_UNIT",
+        "table": "A8_GF_911AC53D8A.LGL_G19_DOC_UNIT_S_1",
+        "rows": 3,
+        "checked_at": 1793606583.6766498
+      },
+      {
+        "key": "DOC_BLK",
+        "table": "A8_GF_911AC53D8A.LGL_G19_DOC_BLK_S_1",
+        "rows": 3,
+        "checked_at": 1793606583.6776354
+      },
+      {
+        "key": "SRC_POST",
+        "table": "A8_GF_911AC53D8A.LGL_G19_SRC_POST_S_1",
+        "rows": 1,
+        "checked_at": 1793606583.679316
+      },
+      {
+        "key": "SRCH_POST",
+        "table": "A8_GF_911AC53D8A.LGL_G19_SRCH_POST_S_1",
+        "rows": 1,
+        "checked_at": 1793606583.6806402
+      },
+      {
+        "key": "SRCH_ROW",
+        "table": "A8_GF_911AC53D8A.LGL_G19_SRCH_ROW_S_1",
+        "rows": 112,
+        "checked_at": 1793606583.6818264
+      },
+      {
+        "key": "SRCH_CHNL",
+        "table": "A8_GF_911AC53D8A.LGL_G19_SRCH_CHNL_S_1",
+        "rows": 1,
+        "checked_at": 1793606583.6827877
+      },
+      {
+        "key": "ONTL_POST",
+        "table": "A8_GF_83EC7FE26F.LGL_G19_ONTL_POST_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.683889
+      },
+      {
+        "key": "ONTL_HEAD",
+        "table": "A8_GF_83EC7FE26F.LGL_G19_ONTL_HEAD_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.684919
+      },
+      {
+        "key": "ONTL_ANC",
+        "table": "A8_GF_83EC7FE26F.LGL_G19_ONTL_ANC_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.6860611
+      },
+      {
+        "key": "VCTR_POST",
+        "table": "A8_GF_911AC53D8A.LGL_G19_VCTR_POST_S_1",
+        "rows": 1,
+        "checked_at": 1793606583.687219
+      },
+      {
+        "key": "VCTR_ITEM",
+        "table": "A8_GF_911AC53D8A.LGL_G19_VCTR_ITEM_S_1",
+        "rows": 3,
+        "checked_at": 1793606583.688634
+      },
+      {
+        "key": "VCTR_HEAD",
+        "table": "A8_GF_911AC53D8A.LGL_G19_VCTR_HEAD_S_1",
+        "rows": 0,
+        "checked_at": 1793606583.6898606
+      },
+      {
+        "key": "AGT_RUN",
+        "table": "A8_GF_83EC7FE26F.LGL_AGT_RUN_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.6908882
+      },
+      {
+        "key": "AGT_REC",
+        "table": "A8_GF_83EC7FE26F.LGL_AGT_REC_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.692091
+      },
+      {
+        "key": "AGT_BODY",
+        "table": "A8_GF_83EC7FE26F.LGL_AGT_BODY_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.6932578
+      },
+      {
+        "key": "EXEC_ST",
+        "table": "A8_GF_83EC7FE26F.LGL_EXEC_ST_A_1",
+        "rows": 0,
+        "checked_at": 1793606583.6942775
+      }
+    ],
+    "status": "DB_COUNTS_CONFIRMED",
+    "source_query": "SOURCE_QUERY_VERIFIED",
+    "vectors": 3,
+    "serving": "NOT_SWITCHED"
+  }
+}

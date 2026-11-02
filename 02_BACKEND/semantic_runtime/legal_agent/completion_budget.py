@@ -2,12 +2,39 @@
 from contextlib import closing
 from dataclasses import replace
 from datetime import datetime, timezone
-from pathlib import Path
-import sqlite3
+from ..oracle_runtime_paths import Path
+from .. import runtime_sqlite as sqlite3
 import time
+import json
 from .completion_contracts import enabled
 from .corrected_memory import digest
-from .errors import ContractError
+from .errors import ContractError, TransportError, InvestigationPending
+
+
+def prior_stop(db):
+    """A new native run is not permission to replay an unknown or terminal turn."""
+    from .journal_storage import register
+    register(db)
+    row = db.execute("SELECT journal_text(payload_json),payload_hash FROM event WHERE kind='RUN_FAILED' ORDER BY seq DESC LIMIT 1").fetchone()
+    failure = None
+    if row is not None:
+        failure = json.loads(row[0])
+        if digest(failure) != row[1]:
+            raise ContractError('request resume failure journal hash mismatch')
+    unknown = db.execute("SELECT attempt_id FROM model_attempt WHERE status IN ('SENT','UNKNOWN') LIMIT 1").fetchone()
+    if unknown is not None:
+        code = (failure or {}).get('code')
+        return {'kind':'UNKNOWN', 'attempt_id':unknown[0],
+            'code':code if code in ('MODEL_DEADLINE_EXCEEDED','MODEL_TRANSPORT_ERROR') else 'MODEL_TRANSPORT_ERROR'}
+    detail = (failure or {}).get('diagnostics') or {}
+    investigation = detail.get('investigation') or {}
+    if ((failure or {}).get('code') == InvestigationPending.code
+            and investigation.get('resume_available') is False):
+        return {'kind':'TERMINAL', 'code':failure['code'],
+            'stage':detail.get('stage') or 'ASSESS',
+            'output_contract':detail.get('output_contract'),
+            'cause_codes':investigation.get('cause_codes', [])}
+    return None
 
 
 def restore(model):
@@ -32,7 +59,7 @@ def restore(model):
     deadline_at=old['deadline_at'] if old else session.context.deadline_at
     deadline=min(session.context.deadline,time.monotonic()+
         (datetime.fromisoformat(deadline_at)-datetime.now(timezone.utc)).total_seconds())
-    carried={'model_reserved':0,'tool_used':0};previous=[]
+    carried={'model_reserved':0,'tool_used':0};previous=[];stop=None
     transport=session.transport if hasattr(session,'transport') else session.gateway.transport if session.gateway is not None else None
     routing=getattr(transport,'provider_policy',None);provider_resume=None
     budget=session.work.budget()
@@ -45,6 +72,7 @@ def restore(model):
             prior.row_factory=sqlite3.Row
             run=prior.execute('SELECT run_id,deadline_at,binding_hash FROM run WHERE singleton=1').fetchone()
             b=prior.execute('SELECT * FROM budget WHERE singleton=1').fetchone()
+            observed_stop=prior_stop(prior)
             if routing and run:
                 from types import SimpleNamespace
                 from . import provider_routing
@@ -58,6 +86,8 @@ def restore(model):
             raise ContractError('request resume physical limits changed')
         for k in carried:carried[k]=max(carried[k],b[k])
         previous.append(row['run_id'])
+        if observed_stop and (stop is None or observed_stop['kind']=='UNKNOWN'):
+            stop={**observed_stop,'prior_run_id':row['run_id']}
     session.context=replace(session.context,deadline=deadline,deadline_at=deadline_at)
     session.work.context=session.context
     session.sources.context=session.context;session.sources.source.context=session.context
@@ -77,3 +107,14 @@ def restore(model):
             (key,ih,binding,deadline_at))
         db.execute('INSERT INTO completion_request_run VALUES(?,?,?)',
             (key,session.context.run_id,str(Path(journal).resolve())))
+    if stop:
+        session.work.event('REQUEST_RESUME_BLOCKED',stop)
+        if stop['kind']=='UNKNOWN':
+            error=TransportError('previous request has an unknown model outcome; no automatic replay',unknown=True)
+            error.code=stop['code']
+            if error.code=='MODEL_DEADLINE_EXCEEDED':error.http_status=504
+            raise error
+        raise InvestigationPending('같은 요청의 검토가 종료되어 추가 모델 호출을 하지 않습니다.',
+            stage=stop['stage'],diagnostics={
+                'resume_available':False,'cause_codes':stop['cause_codes'],
+                'prior_run_id':stop['prior_run_id'],'output_contract':stop['output_contract']})

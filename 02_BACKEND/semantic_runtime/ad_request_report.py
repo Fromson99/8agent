@@ -8,9 +8,9 @@ from contextlib import nullcontext
 from datetime import datetime, timezone
 import json
 import os
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import time
-from pathlib import Path
+from .oracle_runtime_paths import Path
 from . import observability as obs
 from .request_summary import request_fields
 

@@ -1,0 +1,89 @@
+{
+  "status": "LOCAL_VALIDATED_FIELD_NOT_EXECUTED",
+  "contract_tests": 24,
+  "native_contracts": {
+    "status": "PASS_NATIVE_ORACLE_CONTRACTS",
+    "field_database": false,
+    "models": 0,
+    "existing_data_mutated": false,
+    "created_schemas": [
+      "A8_G19_D03B620F55",
+      "A8_G19_E02F6BD22E"
+    ],
+    "dropped_schemas": [
+      "A8_G19_E02F6BD22E",
+      "A8_G19_D03B620F55"
+    ],
+    "checks": [
+      "17_tables_exact_columns_pk_and_indexes",
+      "17_insert_read_rollback_and_absence_checks",
+      "vector_float32_two_and_three_dimensions",
+      "set_insert_idempotent_null_empty_unicode_large_clob",
+      "independent_full_value_verification",
+      "conflicting_existing_row_rolls_back_new_rows",
+      "gold_char_flag_insert_and_readback",
+      "publication_timestamp_default"
+    ],
+    "oracle_version": "23.26.3.0.0",
+    "resource_guard": {
+      "non_oracle_user_segment_bytes": 9287499776,
+      "users_free_extent_bytes": 737869824,
+      "maximum_new_schema_quota_bytes": 67108864
+    },
+    "database_calls": 179
+  },
+  "vendor_python_files_exact_r11": 44,
+  "package_files": 54,
+  "gold_tables": 13,
+  "gold_columns": 60,
+  "agent_tables": 4,
+  "agent_columns": 26,
+  "zip_integrity": true,
+  "execution_txt_compiles": true,
+  "nested_zip": false,
+  "javascript_members": false,
+  "old_data_deleted": false,
+  "field_executed": false,
+  "models_or_embeddings_called": 0,
+  "not_certified": [
+    "field permissions/capacity",
+    "Dataiku JDBC end-to-end",
+    "full data ingestion",
+    "Gold runtime consumer activation",
+    "approved ontology ingestion",
+    "embedding"
+  ],
+  "reused_gold_definitions": [
+    "READ_COLUMNS",
+    "mapped_source",
+    "mapped_query"
+  ],
+  "corrected_before_delivery": "Legacy UTF-8 canonical hash encoding restored; real SQLite projection test added.",
+  "attachments": [
+    {
+      "name": "DATAIKU_GOLD_SHAPE_20261102_R1.zip",
+      "bytes": 233845,
+      "sha256": "c1df3b82c7e589500cc81ffd8c7e2b3794eee9d7b39472beb589d3151f538a2e"
+    },
+    {
+      "name": "DATAIKU_GOLD_SHAPE_RUN_R1.txt",
+      "bytes": 5120,
+      "sha256": "1b99475d4936eda014a84182097666d716619a93d0620e3ae1b7e05463996cae"
+    },
+    {
+      "name": "GUIDE.txt",
+      "bytes": 9468,
+      "sha256": "f8ab65d9deb2d88241be42a1c8ee00e6a5844606734ac66326fa5eb27177d455"
+    },
+    {
+      "name": "DBA_INQUIRY.txt",
+      "bytes": 1884,
+      "sha256": "61ef6e3836793a6798cd52423d8f6219f137d18a6c893cf65372aedb0b29c5d0"
+    },
+    {
+      "name": "EXISTING_MIGRATION.txt",
+      "bytes": 3829,
+      "sha256": "d78100cfa630008b44289a052b2a6e6869f437f93bcd4f8984ca36b4b8eb1599"
+    }
+  ]
+}

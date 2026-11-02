@@ -100,7 +100,7 @@ class _Gateway(ModelGateway):
         wire_view = compact_wire_view(view, phase) if self.compact else view
         if minimal.applies(self.profile, view):
             wire_view = minimal.project(wire_view, schema)
-            instructions = '\n' + minimal.INSTRUCTIONS
+            instructions = '\n' + minimal.instructions(wire_view)
         user = {'view': wire_view}
         if not self.compact:
             user['output_schema'] = schema

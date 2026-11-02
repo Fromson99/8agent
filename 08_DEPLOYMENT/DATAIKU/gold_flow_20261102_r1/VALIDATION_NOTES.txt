@@ -1,0 +1,49 @@
+2026-11-02 · Dataiku Flow R1 구현/검증 기록
+
+구현 경로: package/flow_spec.py → install_flow.py / flow_runtime.py → flow_entry.py
+입력: flow_inputs.py가 기존 NFS INFO/READ 계약과 기존 R11 준비 함수를 호출한다.
+DB: engine/의 FRESH_1 60파일은 이전 메일 전달본과 바이트 동일. 계약/PK/DDL/SQL/배치/벡터 엔진 변경 없음.
+기존 노트북 state.json과 같은 code/contract/database/object/generation/files/source/query binding을 사용한다.
+기존 준비 명세가 없을 때만 flow-inputs.json으로 로컬 입력 계획을 저장하며 DB 성공 기록을 만들지 않는다.
+
+실패 처리: HTTP 읽기 요청은 한 번 실행, 수신 완료 조각은 S3에 보관 후 재실행에서 재사용.
+해시/세대/DB/미확인 쓰기 충돌은 원문 오류와 함께 중단. 다음 Scenario 단계 미실행.
+기존 Job.batch와 vector_stage의 pending/reconciliation/unknown 계약은 그대로 유지.
+로컬 job.lock으로 현재 노트북과 Flow의 동시 쓰기를 차단한다.
+Flow별 로그는 Dataiku Job과 단계별 S3 폴더에 보관한다. 대형 로그 전체 반복 업로드 대신 조각 기록.
+화면 갱신 실패는 로그에 별도 표시하고, DB 적재 결과와 대시보드 게시 상태를 구분한다.
+
+검증:
+- test_flow.py 17개 통과: 신규수신/로컬재사용/다른위치캐시복원/기존폴더캐시/부분수신/
+  누락된로컬파일복원/변조캐시차단/로컬충돌보존/미설정연결/동시실행/
+  엔진원본동일/17표연결/HTML이스케이프/실제자식프로세스실패·성공로그/경로/관찰상태.
+- SDK_INSTALL_VALIDATION.json: 공식 dataiku-api-client15.2.0 SDK, 모의 REST 경계.
+  실제 첨부 ZIP을 전체 설치 TXT로 읽고 해시검증/실행, 재설치 동일, 8레시피·17DB·7구역·1Scenario.
+  현장 DSS 서버 테스트가 아니며 SDK 호출/요청 형식과 객체 구성 검증이다.
+- COLD_PREPARATION.json: 작은 실제 compact-v2 파일 세대(합성2문서/3조문)의
+  원문8행·검색112행 명세를 생성/재사용. 모델 호출0, 기존 DB 적재 기록 조작0.
+- NATIVE_FLOW_VALIDATION.json / NATIVE_FLOW.log: 로컬 Oracle23의 무작위 시험2스키마,
+  각32MiB쿼터, 17표 생성과 실제8원문/112검색/3벡터 저장, 검증·최종COUNT·재개7조건 통과.
+  벡터는 모의 Mesh 응답 1회이며 재실행 추가호출0. 실제 외부 모델0.
+  실제SYSTEM접속을 시험 어댑터에서 PIDD2APP identity로 표시했으므로 현장 앱계정 권한 검증은 아니다.
+  두 시험스키마는 finally에서 정확한 이름으로 삭제했고 기존 SIDDS/SIDDA 데이터는 변경하지 않았다.
+- Chromium 데스크톱1440/모바일390폭 화면 렌더링·가로넘침0 확인.
+  로컬 브라우저 한글 폰트는 Windows Malgun을 검사 시 주입했다. 전달HTML은 OS 기본 한글 폰트를 사용한다.
+
+처음 실패/보완 기록:
+- 첫 로컬 Chromium 시작은 libnspr4.so 부재로 실패. 기존 /tmp/libs의 런타임 라이브러리 경로로 해결.
+- 초기 화면 검사에서 한글 폰트가 없는 로컬 브라우저의 네모 글자를 확인, 검사 폰트를 지정해 재확인.
+- 초기 fixture 생성은 conftest의 inspect.py 이름 충돌로 실패. pytest/inspect 선행 import로 해결.
+- 처음 만든 비compact 시험세대는 엔진의 SOURCE_SCHEMA 검사에서 거절. 그 자료는 그대로 보존하고
+  계약에 맞는 별도 compact-v2 합성 세대를 만들어 준비/Oracle 검증에 사용.
+- SDK 모의 REST 준비의 get_project 누락·Python envSelection 기본값 누락을 보완했다.
+- 누락 로컬 파일이 있더라도 full-manifest.json이 남은 경우 즉시 오류 내던 신규 입력 처리를
+  보관 캐시/동일 NFS 세대에서 복원하도록 보완하고 회귀 검사 추가.
+
+명시 한계:
+삼성 Dataiku 실제 UI/작업계정/서버/Python 코드환경/S3/NFS 전송서비스/전체61M행/실제 임베딩 미검증.
+Recipe가 같은 서버/공유 경로의 준비자료·체크포인트를 읽는 배치 환경을 전제로 한다.
+NFS 데이터 캐시는 복원 가능하지만 사라진 원래 DB 적재 상태나 임베딩 응답을 만들어내지는 않는다.
+Insight는 최신 저장된 스냅샷이며 열린 페이지 자동 새로고침은 보장하지 않는다.
+MAIN132/Gold서비스연결/GENOS리비전/기존 테이블/쿼터/Git push 변경0.
+일반 신규 실행 연결 계약 검사이며 성능 비교/모델 품질/현장 배포 인증이 아니다.

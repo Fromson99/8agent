@@ -62,7 +62,7 @@ class KnowledgeRepository:
 
     def rebuild(self,principal,directory):
         """Derived files can be deleted. Readers still check the live authority."""
-        from pathlib import Path
+        from ..oracle_runtime_paths import Path
         from .core_evidence_route import enabled
         if enabled(self.cases):
             from lawrag.pipeline.legal_wiki_compiler import rebuild

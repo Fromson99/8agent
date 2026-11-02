@@ -279,7 +279,7 @@ def retained_after_failure(parent,checkpoint,call_id,child,result,port):
 def retained_context(child,port):
     from .legal_agent.unified_publication import _commit
     from .legal_agent.shortcut_store import selected_store
-    from pathlib import Path
+    from .oracle_runtime_paths import Path
     c=_commit(child);path=Path(c['case_db']);runtime=child.path.parents[4]
     if path.resolve() not in {(runtime/'case-memory'/'cases-v3.sqlite').resolve(),selected_store(runtime).resolve()}:
         raise ContractError('retained result authority path changed')

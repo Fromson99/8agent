@@ -3,9 +3,9 @@ from contextlib import closing
 from datetime import datetime, timezone
 import json
 import os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import tempfile
 import uuid
 
@@ -156,6 +156,10 @@ def publish(path, output, generation_id, manifest_sha256, source_store_sha256, t
     validate_bundle(bundle, generation_id, manifest_sha256, terms, documents)
     # Hard-link publication provides atomic, no-overwrite visibility on the same filesystem.
     output = Path(output); output.parent.mkdir(parents=True, exist_ok=True)
+    from .oracle_runtime_paths import virtual, write_file
+    if virtual(output):
+        write_file(output,(json.dumps(bundle,ensure_ascii=False,sort_keys=True,indent=2)+'\n').encode(),exclusive=True)
+        return {'path':str(output),'sha256':sha(output),'bundle_id':bundle['id'],'expressions':len(bundle['expressions']),'recipes':len(bundle['recipes']),'activated':False}
     fd, temporary = tempfile.mkstemp(prefix='.learning-', dir=output.parent)
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as stream:

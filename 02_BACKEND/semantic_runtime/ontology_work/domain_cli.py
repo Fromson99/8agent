@@ -1,7 +1,7 @@
 """Actions dispatched by the existing ontology-work CLI, not a second pipeline."""
 import json
 import os
-from pathlib import Path
+from ..oracle_runtime_paths import Path
 from .configuration import domain_workflow, settings
 from .profile import compile_profile
 from ..legal_agent.errors import ContractError
@@ -9,7 +9,7 @@ from ..legal_agent.errors import ContractError
 ACTIONS = ['profile-validate', 'profile-register', 'profile-review', 'domain-status',
            'import-raw', 'export-journal', 'normalize', 'accumulate', 'save-accumulation',
            'domain-preview', 'domain-review', 'stage-publication', 'verify-publication',
-           'activate-publication', 'reconcile-result']
+           'activate-publication', 'reconcile-result', 'evaluation-spec-save']
 
 
 def read(path):
@@ -68,6 +68,8 @@ def run(args):
             if a == 'save-accumulation':
                 return w.save_accumulation(**spec, proposal=read(args.proposal))
             return w.accumulate(**spec)
+        if a == 'evaluation-spec-save':
+            return w.save_evaluation_spec(args.bundle, args.revision, args.work_hash, read(args.input))
         if a == 'domain-preview':
             return w.preview(args.bundle)
         if a == 'stage-publication':

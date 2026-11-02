@@ -350,7 +350,7 @@ class LoopTransport(CompletionTransport):
 
     def send_once(self, *, body, ticket):
         from test_investigation_completion_adr0678 import decision
-        v = json.loads(body['messages'][1]['content'])['view']; phase = v.get('source_stage', v['phase'])
+        v = json.loads(body['messages'][1]['content'])['view']; phase = v.get('source_stage') or v['phase']
         if phase.startswith('source-law-navigation-') and v.get('assessment_gaps'):
             self.phases.append(phase)
             out = decision(v, 'FINISH')
@@ -379,7 +379,7 @@ def ask(tmp_path, tree, transport):
                'candidate_navigation': {'mode': 'law-first-v1', 'investigation_control': True, 'completion_contract': True}}
     app = create_app(tmp_path, gen, contracts_root=ROOT, provider=object(), implementation='legal-agent-unified-v6',
         legal_agent_profile=profile, legal_agent_transport=transport,
-        memory_identity=lambda _: {'user_id': 'u', 'team_id': 't', 'document_ids': ['d']})
+        memory_identity=lambda _: {'user_id': 'u', 'team_id': 'risk_team', 'document_ids': ['d']})
     app.state.pipeline.term_agent.unit_fulltext = idx
     with TestClient(app) as api:
         return api.post('/v1/rag/ask', json={'question': '모의승인규정 제1조 승인 기준은?', 'session_id': 's', 'request_id': 'r1'})

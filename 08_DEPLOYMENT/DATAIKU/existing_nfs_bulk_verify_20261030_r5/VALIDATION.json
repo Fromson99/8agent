@@ -1,0 +1,52 @@
+{
+  "schema_version": "source-verify-bulk-validation-v1",
+  "created_at": "2026-10-30T05:26:04.950168+00:00",
+  "status": "LOCAL_PASS_FIELD_UNTESTED",
+  "tests": {
+    "contract_and_local_oracle": 23,
+    "whole_notebook": 3,
+    "total": 26,
+    "failed": 0
+  },
+  "exact_package": {
+    "DATAIKU_EXISTING_NFS_CLIENT_20261030_R5.zip": {
+      "sha256": "f1284bd750d8a61b6354609842de71e999470ecef875a6769f7016abdbdc5866",
+      "bytes": 311791
+    },
+    "DATAIKU_EXISTING_NFS_RUN_R5.txt": {
+      "sha256": "35b685476b0a912ef416ef5ff35dd9730e6edf5d4aed464a05f12ed73f29a954",
+      "bytes": 4973
+    }
+  },
+  "measured_sql": {
+    "local_oracle": {
+      "rows": 20,
+      "R4_piece_calls": 11,
+      "R5_native_calls": 1,
+      "byte_equal": true,
+      "model_calls": 0,
+      "driver": "oracledb behind fake SQLExecutor2; field JDBC untested"
+    },
+    "simulated_full_verify": {
+      "block_rows": 205,
+      "R4_equivalent_calls": 22,
+      "R5_calls": 10,
+      "chain_equal": true,
+      "later_mutation_rejected": true
+    }
+  },
+  "notebook_previous_revisions": [
+    "r2",
+    "r3",
+    "r4"
+  ],
+  "model_calls": 0,
+  "field_execution": false,
+  "field_time_speedup": null,
+  "full_checks_skipped": 0,
+  "verify_cursor_resume": false,
+  "existing_source_rows_preserved": true,
+  "original_deadlines_and_counters_preserved": true,
+  "main_changed": false,
+  "mail_sent": false
+}

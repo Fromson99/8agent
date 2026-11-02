@@ -10,9 +10,9 @@ from contextlib import contextmanager
 import logging
 import hashlib
 import json
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import threading
 import time
 
@@ -670,7 +670,12 @@ class ProgressCapture(logging.Handler):
         if not row:
             return
         request = json.loads(row[0])
-        view = wire_view(request)
+        from .detailed_log_storage import is_reference
+        if is_reference(request):
+            saved=db.execute('SELECT v.body_json FROM model_view v JOIN model_attempt a USING(view_id) WHERE a.attempt_id=?',
+                             (event.get('attempt_id'),)).fetchone()
+            view=json.loads(saved[0]) if saved else {}
+        else:view = wire_view(request)
         stage = view.get('source_stage') or request.get('phase') or '에이전트'
         basis = {'kind': event_kind, 'journal_seq': seq, 'detail_mode': 'activity'}
         if event_kind == 'ATTEMPT_SENT':

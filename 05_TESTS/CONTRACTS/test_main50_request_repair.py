@@ -317,13 +317,18 @@ def test_interrupted_corrective_transport_resumes_original_view_without_third_ca
         raise RuntimeError('synthetic interruption during corrective transport')
     i.invoke=invoke
     with pytest.raises(RuntimeError,match='synthetic interruption'):i.run()
-    retry=deepcopy(i.p['decision_retry']);assert len(calls)==2
-    assert retry['input_hash']!=__import__('semantic_runtime.contracts',fromlist=['digest']).digest(i.view()[0])
+    def journal():
+        return [json.loads(r[0]) for r in native.work.db.execute(
+            "SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE' ORDER BY seq")]
+    reserved=journal()[-1];assert len(calls)==2
+    assert reserved['status']=='RESERVED' and reserved['attempt']==1
+    assert reserved['binding']['owner']=='read-choice'
     reopened=modern(native,deepcopy(i.p))
     reopened.invoke=lambda *args:pytest.fail('unknown corrective outcome must not trigger a third attempt')
     reopened.bounded_result=lambda reason:{'bounded':reason}
-    assert reopened.run()=={'bounded':'MODEL_DECISION_UNRESOLVED'}
-    assert reopened.p['decision_retry']['input_hash']==retry['input_hash']
+    with pytest.raises(ContractError,match='unknown'):reopened.run()
+    assert journal()[-1]==reserved and len(calls)==2
+    assert not reopened.p.get('accepted')
 
 
 def test_retry_menu_tamper_is_rejected_before_execution(session):
@@ -373,17 +378,19 @@ def test_current_saved_view_is_suppressed_but_missing_body_can_be_represented(se
 def test_native_transient_read_failure_offers_different_route_without_false_adoption(session):
     native,_=session;i=modern(native);original=i.execute_tool;calls=[];failed=[]
     def execute(v,d,a,*,model_selected=False):
-        if v['next_action']=='READ_PARENT':
+        if v['next_action']=='READ_ARTICLES':
             failed.append(v['targets'][0]);raise TimeoutError('synthetic source read timeout')
         return original(v,d,a,model_selected=model_selected)
     def invoke(system,d,schema,phase,timeout):
         calls.append(phase)
-        if len(calls)==1:return decision(d,'READ_PARENT',next(a['id'] for a in d['actions'] if a['action']=='READ_PARENT'))
+        if len(calls)==1:return {'choice':'READ','selections':[{
+            'target':d['read_candidates'][0]['target'],'issue_id':d['issues'][0]['id'],
+            'missing_need':'승인 기준 원문 확인','relation':'DIRECT','source_ref':None}]}
         assert d['tool_recovery'][0]['code']=='SOURCE_TEMPORARILY_UNAVAILABLE'
         assert not d['tool_recovery'][0]['absence_proven']
-        assert failed[0] not in {a['id'] for a in d['actions']}
-        assert any(a['action']=='SEARCH_STRUCTURE' for a in d['actions'])
-        return decision(d,'PENDING')
+        assert failed[0] not in {a['target'] for a in d['read_candidates']}
+        assert any(a['choice'] in ('LOCATE','CATALOG_SEARCH') for a in d['tool_options'])
+        return {'choice':'PENDING','reason':'일시적 원문 조회 실패를 보존한다.'}
     i.execute_tool=execute;i.invoke=invoke;i.bounded_result=lambda reason:{'bounded':reason}
     assert i.run()=={'bounded':'MODEL_PENDING'}
     assert len(calls)==2 and not inv.originals_for(i.s,i.p)

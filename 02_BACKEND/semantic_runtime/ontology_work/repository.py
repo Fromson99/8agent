@@ -8,6 +8,7 @@ import json,re,sqlite3
 from ..contracts import digest
 from ..legal_agent.errors import ContractError
 from .schema import now
+from .wiki_repository import WorkspaceTransactions, workspace_bundle
 
 TABLES={'work':'LGL_ONT_WORK_A','event':'LGL_ONT_EVT_A','publication':'LGL_ONT_PUB_A','head':'LGL_ONT_HEAD_A','anchor':'LGL_ONT_ANC_A'}
 COLUMNS={
@@ -43,7 +44,7 @@ def ddl(owner='SIDDA',dialect='oracle'):
     return out
 
 def value(x):return x.read() if hasattr(x,'read') else x
-class Repository:
+class Repository(WorkspaceTransactions):
     def __init__(self,connect,*,dialect='sqlite',owner=''):
         self.connect,self.dialect,self.owner=connect,dialect,owner
         self.tables={k:(ident(owner)+'.' if owner else '')+ident(v) for k,v in TABLES.items()}
@@ -99,6 +100,7 @@ class Repository:
         suffix=' FOR UPDATE' if self.dialect=='oracle' else ''
         return self.execute(c,f"SELECT PUB_ID,CHG_SEQ_NO FROM {self.tables['head']} WHERE BNDL_ID=:1"+suffix,(bid,)).fetchone()
     def draft(self,bid,work_hash,expected,actor,status="DRAFT"):
+        if bid.startswith("ws-"):raise ContractError("workspace objects require atomic workspace commit")
         if status not in ("INPUT","DRAFT"):raise ContractError("draft status")
         with self.session(True) as c:
             head=self.lock(c,bid)
@@ -125,7 +127,7 @@ class Repository:
     def publish(self,bid,revision,work_hash,approval,payload,expected_sequence,actor):
         from ..legal_agent.ontology_context import configuration
         from ..legal_agent.ontology_compiler import anchor_key
-        if 'assembly_package' in payload:raise ContractError('assembly publications require stage/verify/activate')
+        if 'assembly_package' in payload or workspace_bundle(bid):raise ContractError('assembly publications require stage/verify/activate')
         configuration(payload);ph=digest(payload);pid=digest([bid,revision,approval,ph])
         with self.session(True) as c:
             head=self.lock(c,bid);row=self.latest(bid,c)
@@ -143,6 +145,8 @@ class Repository:
             self.event(c,bid,revision,'PUBLISHED',actor,publication_id=pid,package_sha256=ph)
         return {'publication_id':pid,'package_sha256':ph,'active':True,'reused':False}
     def activate(self,bid,pid,expected_sequence,actor):
+        if workspace_bundle(bid):
+            raise ContractError('workspace activation or withdrawal requires the workspace workflow')
         with self.session(True) as c:
             head=self.lock(c,bid)
             if head is None or head[1]!=expected_sequence:raise ContractError('stale rollback head')
@@ -160,10 +164,10 @@ class Repository:
         with self.session() as c:
             sql=f"SELECT p.PUB_ID,p.PKG_HASH_VAL,p.PKG_JSON_CN FROM {self.tables['anchor']} a JOIN {self.tables['publication']} p ON p.PUB_ID=a.PUB_ID JOIN {self.tables['head']} h ON h.PUB_ID=p.PUB_ID AND h.BNDL_ID=p.BNDL_ID WHERE a.ANC_HASH_VAL=:1"
             # ACL preflight on anchors before reading any stored original/package.
-            ids=self.execute(c,f"SELECT a.PUB_ID,b.DOC_ID FROM {self.tables['anchor']} a JOIN {self.tables['head']} h ON h.PUB_ID=a.PUB_ID JOIN {self.tables['anchor']} b ON b.PUB_ID=a.PUB_ID WHERE a.ANC_HASH_VAL=:1",(anchor_key(anchor),)).fetchmany(1025)
+            ids=self.execute(c,f"SELECT a.PUB_ID,b.DOC_ID,h.BNDL_ID FROM {self.tables['anchor']} a JOIN {self.tables['head']} h ON h.PUB_ID=a.PUB_ID JOIN {self.tables['anchor']} b ON b.PUB_ID=a.PUB_ID WHERE a.ANC_HASH_VAL=:1",(anchor_key(anchor),)).fetchmany(1025)
             if len(ids)>1024:raise ContractError('ontology anchor result bound')
-            denied={pid for pid,did in ids if did not in allowed_documents}
-            allowed={pid for pid,_ in ids}-denied
+            denied={pid for pid,did,bid in ids if did not in allowed_documents or not self.workspace_visible(bid)}
+            allowed={pid for pid,_,_ in ids}-denied
             if len(allowed)>8:raise ContractError('ontology bundle result bound')
             out=[]
             for pid in sorted(allowed):
@@ -221,19 +225,24 @@ class Repository:
                               package_sha256=package_hash,binding=binding)
 
     def activate_staged(self,bid,pid,expected_sequence,receipt_id,binding,actor,*,rollback=False):
+        if workspace_bundle(bid):
+            raise ContractError('workspace activation requires atomic dependency registration')
         with self.session(True) as c:
-            head=self.lock(c,bid)
-            if not head or int(head[1])!=expected_sequence:raise ContractError('stale activation head')
-            row=self.execute(c,f"SELECT REV_NO,PKG_HASH_VAL FROM {self.tables['publication']} WHERE PUB_ID=:1 AND BNDL_ID=:2",(pid,bid)).fetchone()
-            receipt=self.execute(c,f"SELECT EVT_JSON_CN FROM {self.tables['event']} WHERE EVT_ID=:1 AND BNDL_ID=:2",(receipt_id,bid)).fetchone()
-            if not row or not receipt:raise ContractError('verified staging receipt required')
-            latest=self.latest(bid,c)
-            if not rollback and (not latest or latest['revision']!=row[0] or latest['status']!='APPROVED'):
-                raise ContractError('stale staged work; explicit rollback required')
-            raw=value(receipt[0]);event=raw if isinstance(raw,dict) else json.loads(raw)
-            if (event.get('action'),event.get('publication_id'),event.get('package_sha256'),event.get('binding'))!=('CONSUMER_VERIFIED',pid,row[1],binding):
-                raise ContractError('consumer receipt binding mismatch')
-            if head[0]==pid:return {'publication_id':pid,'active':True,'sequence':head[1],'reused':True}
-            self.execute(c,f"UPDATE {self.tables['head']} SET PUB_ID=:1,CHG_SEQ_NO=CHG_SEQ_NO+1 WHERE BNDL_ID=:2",(pid,bid))
-            self.event(c,bid,row[0],'ROLLED_BACK' if rollback else 'ACTIVATED',actor,publication_id=pid,consumer_receipt=receipt_id)
-            return {'publication_id':pid,'active':True,'sequence':head[1]+1,'reused':False}
+            return self._activate_staged(c,bid,pid,expected_sequence,receipt_id,binding,actor,rollback=rollback)
+
+    def _activate_staged(self,c,bid,pid,expected_sequence,receipt_id,binding,actor,*,rollback=False):
+        head=self.lock(c,bid)
+        if not head or int(head[1])!=expected_sequence:raise ContractError('stale activation head')
+        row=self.execute(c,f"SELECT REV_NO,PKG_HASH_VAL FROM {self.tables['publication']} WHERE PUB_ID=:1 AND BNDL_ID=:2",(pid,bid)).fetchone()
+        receipt=self.execute(c,f"SELECT EVT_JSON_CN FROM {self.tables['event']} WHERE EVT_ID=:1 AND BNDL_ID=:2",(receipt_id,bid)).fetchone()
+        if not row or not receipt:raise ContractError('verified staging receipt required')
+        latest=self.latest(bid,c)
+        if not rollback and (not latest or latest['revision']!=row[0] or latest['status']!='APPROVED'):
+            raise ContractError('stale staged work; explicit rollback required')
+        raw=value(receipt[0]);event=raw if isinstance(raw,dict) else json.loads(raw)
+        if (event.get('action'),event.get('publication_id'),event.get('package_sha256'),event.get('binding'))!=('CONSUMER_VERIFIED',pid,row[1],binding):
+            raise ContractError('consumer receipt binding mismatch')
+        if head[0]==pid:return {'publication_id':pid,'active':True,'sequence':head[1],'reused':True}
+        self.execute(c,f"UPDATE {self.tables['head']} SET PUB_ID=:1,CHG_SEQ_NO=CHG_SEQ_NO+1 WHERE BNDL_ID=:2",(pid,bid))
+        self.event(c,bid,row[0],'ROLLED_BACK' if rollback else 'ACTIVATED',actor,publication_id=pid,consumer_receipt=receipt_id)
+        return {'publication_id':pid,'active':True,'sequence':head[1]+1,'reused':False}

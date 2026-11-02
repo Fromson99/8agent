@@ -2,9 +2,9 @@ from semantic_runtime.legal_agent.shortcut_store import selected_store
 from contextlib import asynccontextmanager
 import json
 import os as _os
-from pathlib import Path
+from .oracle_runtime_paths import Path
 import re
-import sqlite3
+from . import runtime_sqlite as sqlite3
 import time
 import uuid
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -224,6 +224,19 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         from .legal_agent.source_tiers_ui import SCRIPT
         return Response(SCRIPT,media_type='application/javascript')
 
+    def source_journal(path):
+        from .legal_agent import journal_storage
+        with journal_storage.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+            version=db.execute('PRAGMA user_version').fetchone()[0]
+        if version==6:
+            from .legal_agent.unified_repository import UnifiedRepository
+            return UnifiedRepository(path)
+        if version==5:
+            from .legal_agent.obligation_repository import ObligationRepository
+            return ObligationRepository(path)
+        from .legal_agent.tiers_repository import TiersRepository
+        return TiersRepository(path)
+
     @app.get('/v1/rag/source-candidates')
     def source_candidates(run_id:str,offset:int=Query(0,ge=0)):
         from html import escape
@@ -232,7 +245,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         if not re.fullmatch(r'[A-Za-z0-9_-]+',run_id):raise HTTPException(404,'실행을 확인할 수 없습니다.')
         paths=list((runtime/'legal-agent/runs').glob('*/'+run_id+'/journal.sqlite'))
         if len(paths)!=1:raise HTTPException(404,'실행을 확인할 수 없습니다.')
-        repo=TiersRepository(paths[0])
+        repo=source_journal(paths[0])
         try:
             row=repo.db.execute("SELECT result_json FROM publication WHERE status='PUBLISHED'").fetchone()
             if not row:
@@ -261,7 +274,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             raise HTTPException(404,'출처를 확인할 수 없습니다.')
         journals=list((runtime/'legal-agent/runs').glob('*/'+run_id+'/journal.sqlite'))
         if len(journals)!=1: raise HTTPException(404,'출처를 확인할 수 없습니다.')
-        repo=TiersRepository(journals[0])
+        repo=source_journal(journals[0])
         try:
             row=repo.db.execute("SELECT result_json FROM publication WHERE status='PUBLISHED'").fetchone()
             if not row:
@@ -364,10 +377,12 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         if scope is not None and not isinstance(scope,str):raise ValueError('scope must be a string')
         allowed={'question','q','document_ids','use_llm','scope','team_id','public_question','ad_session_id','ad_channel'}
         if body.get('memory') is True or unified:
-            allowed.update({'memory','session_id','request_id','user_id','expected_revision','memory_authorization','investigation_id','investigation_revision','branch_id'})
+            allowed.update({'memory','session_id','request_id','user_id','expected_revision','memory_authorization','investigation_id','investigation_revision','branch_id','review_action'})
         if set(body)-allowed:raise ValueError('unsupported request fields')
+        if 'review_action' in body and (not unified or not body.get('session_id')):
+            raise ValueError('review actions require an authenticated case session')
         external = getattr(pipeline.term_agent.transport, 'public_scope', None) if is_legal_agent else None
-        if external is not None and use_llm:
+        if external is not None and (use_llm or 'review_action' in body):
             if body.get('public_question') is not True:
                 raise ValueError('local external model requires public_question=true')
             if scope is not None:
@@ -377,7 +392,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             raise ValueError('public_question is only used for local external model requests')
         case_options={}
         if unified and (body.get('memory') is True or 'session_id' in body):
-            if not use_llm:raise ValueError('case requests require a model')
+            if not use_llm and 'review_action' not in body:raise ValueError('case requests require a model')
             revision=body.get('expected_revision')
             if revision is not None and (type(revision) is not int or revision<1):raise ValueError('invalid expected revision')
             body,principal=session_inputs(body,request)
@@ -477,7 +492,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     def require_ad(body):
         if pipeline.contracts.pipeline.get('ad_management',{}).get('enabled') is not True:
             raise HTTPException(403,'AD_DISABLED: 관리 모드는 비활성화되어 있습니다.')
-        import os,sqlite3
+        import os
+        from . import runtime_sqlite as sqlite3
         from .ad_store import fingerprint,table_exists
         from .ad_gateway import workspace
         path=selected_store(runtime)
@@ -575,7 +591,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 <h1>법률 검색</h1><small id="status">데이터 확인 중</small><p><textarea id="q" placeholder="질문을 입력하세요"></textarea></p>
 <label><input id="llm" type="checkbox"> LLM 답변 사용</label><br>PUBLIC_TOGGLE<button id="ask">검색하기</button><pre id="result"></pre><section id="sources"></section><details id="audit" hidden><summary>탐색·근거 판단</summary><pre id="audit-text"></pre></details>
 <script src="/rag/source-tiers.js"></script><script>const $=id=>document.getElementById(id);fetch('/health').then(r=>r.json()).then(x=>$('status').textContent=`데이터: ${x.generation_id} · ${x.data_status}`);
-$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):(x.message||(r.ok?'현재 충분한 법률 검토를 하지 못했습니다. 답변에 필요한 원문 조사·검토가 완료되지 않았습니다.':'현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. ('+r.status+')'))+'\\n조회 번호: '+(x.request_id||'');}catch(e){$('result').textContent='현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (connection)';}};</script></html>'''
+$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const review=x.assembly?.term_agent?.review_explanation;const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):(x.message||(r.ok?'현재 충분한 법률 검토를 하지 못했습니다. 답변에 필요한 원문 조사·검토가 완료되지 않았습니다.':'현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. ('+r.status+')'))+'\\n조회 번호: '+(x.request_id||'');if(review){$('result').textContent+='\\n\\n검토 상태: '+review.outcome+'\\n'+review.items.map(i=>i.reason+' · '+i.impact).join('\\n');}}catch(e){$('result').textContent='현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (connection)';}};</script></html>'''
         return html.replace('PUBLIC_TOGGLE', public_toggle)
 
     @app.api_route('/{path:path}',methods=['GET','POST','PUT','DELETE'])

@@ -127,6 +127,8 @@ def restore_condition(value):
 def assessment_fact_sources(utterance,state,*,modern):
     # A request's wording is scope, not automatically an admitted case fact.
     facts=state.get('facts',[])
+    if state.get('scenario_context'):
+        return [{'id':'U'+str(n),'text':str(f['value'])} for n,f in enumerate(facts,1)]
     if modern and not facts:return []
     return [{'id':'U0','text':utterance}]+[{'id':'U'+str(n),'text':str(f.get('value',''))} for n,f in enumerate(facts,1)]
 
@@ -301,6 +303,8 @@ class CompletionExecution:
         sources = [s for s in self.selected_originals(parts) if s['source_id'] in selected]
         if stage == 'COMPOSE':
             assessment = parts['ASSESS']['payload']
+            from ..ontology_work.runtime import assert_assessment
+            assert_assessment(assessment,getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))
             if assessment.get('assessment_basis',{}).get('scenario_choice'):
                 from .ontology_scenarios import verify_selected_text
                 verify_selected_text(assessment)
@@ -340,6 +344,7 @@ class CompletionExecution:
             else:
                 plan = cc.default_plan(assessment, format, selection.get('issues'))
             result = cc.compose(assessment, plan)
+            assert_assessment(assessment,getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))
             cc.verify_composition(assessment, result)
             if rich:
                 from .answer_stream import current_sink
@@ -396,15 +401,27 @@ class CompletionExecution:
         if data.get('investigation_chain'):
             context['investigation_chain'] = trail.compact(data['investigation_chain'],
                 brief=self.s.profile.get('candidate_navigation',{}).get('compact_input',False))
+        if state.get('scenario_context'):
+            from .scenario_review import task_input
+            context=task_input(context,state,self.host.question(state))
+            context['hypothetical_scenario']=deepcopy(state['scenario_context'])
         locator_options = rr.assessment_locator_options(sources, selection.get('reference_navigation', {}), selected_scope=investigation.get('selected_connection_scope'), binding=investigation.get('binding'), session=self.s.sources) if modern and profile.get('candidate_navigation',{}).get('selected_connection_scope') else None
         allowed_targets = ['', *(r['target'] for r in locator_options)] if locator_options is not None else None
         from . import ontology_assessment
         ontology_payload=ontology_assessment.project(self.s.sources,investigation,sources,options)
+        if modern:schema=ontology_assessment.usage_schema(schema,ontology_payload)
+        from . import scenario_review
+        scenario_context=state.get('scenario_context')
+        if scenario_context and not modern:raise ContractError('hypothetical review requires the modern assessment contract')
+        from . import assessment_links, scenario_application, scenario_computation
+        schema=scenario_review.attach(schema,scenario_context,typed=True)
+        shared_reviews=bool(scenario_context and (judgment_context is not None or requirement_context is not None))
+        if shared_reviews:schema=assessment_links.attach(schema,options)
         from . import ontology_scenario_runtime
         scenario_catalog=ontology_scenario_runtime.catalog_from(ontology_payload)
         # Scenario-only selection cannot attest to the full current request.
         # Preserve ontology inputs in the ordinary ASSESS when coverage is on.
-        if scenario_catalog is not None and requirement_context is None and not (judgment_context or {}).get('need_continuity') and not ontology_scenario_runtime.ordinary_after_reentry(selection):
+        if not scenario_context and scenario_catalog is not None and requirement_context is None and not (judgment_context or {}).get('need_continuity') and not ontology_scenario_runtime.ordinary_after_reentry(selection):
             result=ontology_scenario_runtime.assess(self,scenario_catalog,sources,options,self.issues,utterance,selection,judgment_context)
             if modern:result=rr.bind_gaps(result,self.s.sources,rounds,allowed_targets=allowed_targets)
             return self.finish_assessment(result,selection,sources,options,modern,False,raised,closed,
@@ -414,8 +431,18 @@ class CompletionExecution:
             'previous_assessment_hash':digest(previous_assessments), 'read_judgments_hash':digest(judgment_context), 'source_goals_hash':digest(pending_source_goals),
             'gap_outcomes':[{k:v for k,v in r.items() if k != 'investigative_actions'} for r in history],
             'stop_reason':selection.get('stop_reason')}
-        if requirement_context is not None:basis['requirement_context_hash']=requirement_context['binding_hash']
+        if state.get('scenario_context'):
+            basis['scenario_context_hash']=digest(state['scenario_context'])
+            basis['scenario_application_version']=schema['properties']['scenario_review']['properties']['version']['const']
+        if shared_reviews:basis['review_links_version']=assessment_links.VERSION
+        if requirement_context is not None:
+            basis['requirement_context_hash']=requirement_context['binding_hash']
+            basis['requirement_link_rule']=requirements.LINK_RULE
+        from .assessment_input import VERSION as assessment_input_version
+        basis['assessment_input_version']=assessment_input_version
         if ontology_payload:basis['ontology_context_hash']=digest(ontology_payload)
+        refs=ontology_payload.get('ontology_assessment',{}).get('workspace_publications',[])
+        if refs:basis['workspace_publications']=refs
         signature = digest(basis)
         if hasattr(self.s.work, 'db'):
             import json
@@ -424,6 +451,8 @@ class CompletionExecution:
                 saved=json.loads(row[0])
                 if digest(saved)!=row[1]:raise ContractError('assessment cache journal hash mismatch')
                 cached=saved['assessment']
+                if scenario_context:scenario_review.verify_saved(cached,scenario_context,state['facts'])
+                assessment_links.verify_saved(cached)
                 if requirement_context is not None and not cached.get('source_excerpt_reply'):
                     requirements.verify_saved(cached,requirement_context,options)
                 if cached.get('source_excerpt_reply'):
@@ -431,6 +460,8 @@ class CompletionExecution:
                 else:
                     self.verify_claims(cached['claims'], sources)
                 self.s.work.event('ASSESSMENT_REUSED', {'basis_hash':signature})
+                from ..ontology_work.runtime import assert_assessment
+                assert_assessment(cached,getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))
                 return deepcopy(cached)
         model_sources=sources
         model_options=options
@@ -450,10 +481,12 @@ class CompletionExecution:
             raise InvestigationPending('같은 판단의 수정 한도를 소진했습니다.',stage='ASSESS',
                 diagnostics={'cause_codes':['ASSESSMENT_CONTRACT_UNRESOLVED'],'resume_available':False})
         if prior and prior['status']=='REJECTED':
-            feedback={'errors':prior['error'],'validation':prior['failure'],'rejected_assessment':prior.get('proposal')}
+            feedback={'errors':prior['error'],'validation':prior['failure'],'rejected_assessment':assessment_links.repair_proposal(prior.get('proposal'))}
         from .law_candidates import answer_first
         answer_policy = ('\n각 판단 이유(reason/explanation)는 결론과 근거를 한 번만 짧게 적는다. 재고·자문자답·같은 문장의 반복은 쓰지 않는다. 이 필드는 최대600자이며 원문 인용이나 최종 답변의 길이 제한이 아니다.' if modern or profile.get('candidate_navigation',{}).get('bounded_judgment_notes') else '')
 
+        if state.get('scenario_context'):
+            answer_policy += '\n이 요청은 실제 사건과 분리된 가정 검토다. hypothetical_scenario의 FACT는 이 분기의 사실 가정이며 RULE은 실제 규정과 다른 규칙 가정이다. 원문과 승인 규정은 바뀌지 않는다. 가정하의 판단임을 주장에 명시하고 계산 결과만으로 승인·예외의 미확인을 해결하지 않는다. 이미 확보한 원문은 재사용하고 가정 때문에 필요한 새 범위만 gaps에 제시한다.'
         if guarded:answer_policy += '\n'+consistency.PROMPT
         if ontology_payload:answer_policy += '\n'+ontology_assessment.PROMPT
         if judgment_context is not None:answer_policy += '\n'+final_judgment.PROMPT
@@ -464,14 +497,28 @@ class CompletionExecution:
             from .judgment_changes import PROMPT as change_prompt
             answer_policy += '\n'+change_prompt
         if requirement_context is not None:answer_policy += '\n'+requirements.PROMPT
+        if scenario_context:answer_policy += '\n'+(scenario_computation.PROMPT if scenario_computation.enabled(scenario_context) else scenario_application.PROMPT)
+        if shared_reviews:answer_policy += '\n'+assessment_links.PROMPT
         generation_schema,expand_assessment=assessment_projection(schema,allowed_targets=allowed_targets) if modern else (schema,lambda v:v)
+        if shared_reviews:
+            generation_schema,expand_links=assessment_links.projection(generation_schema)
+            expand_base=expand_assessment
+            expand_assessment=lambda raw:expand_base(expand_links(raw))
+        if scenario_computation.enabled(scenario_context):
+            generation_schema,expand_computed_gaps=scenario_computation.projection(generation_schema,scenario_context)
+            expand_prior=expand_assessment
+            expand_assessment=lambda raw:expand_prior(expand_computed_gaps(raw))
         if allowed_targets is not None:
             answer_policy += '\nmissing_target은 locator_options.target의 제공된 표기를 그대로 선택한다. 필요한 위치가 목록에 없으면 빈 문자열로 두고 reason에 필요한 내용을 설명한다. 조항 번호를 추측하지 않는다.'
+        ontology_usage = None
+        ontology_received = False
         for attempt in range(start,2):
             cached = decision_journal.reserve(attempt)
             value = None
             try:
-                value = deepcopy(cached['value']) if cached else expand_assessment(self.invoke((MODERN_ASSESS_PROMPT if modern else ASSESS_PROMPT)+task_instructions()+('\n'+content_impl.PROMPT if modern else '')+('\n'+narrative.ASSESS_GUIDANCE if rich else '')+('\n'+CONDITION_GUIDANCE if modern else '')+answer_policy, {**context,
+                def scenario_input(data):
+                    return scenario_review.project(data,scenario_context,state['facts']) if scenario_context else data
+                value = deepcopy(cached['value']) if cached else expand_assessment(self.invoke((MODERN_ASSESS_PROMPT if modern else ASSESS_PROMPT)+task_instructions()+('\n'+content_impl.PROMPT if modern else '')+('\n'+narrative.ASSESS_GUIDANCE if rich else '')+('\n'+CONDITION_GUIDANCE if modern else '')+answer_policy, scenario_input({**context,
                     **({'ontology_bundles':ontology_payload['ontology_bundles']} if ontology_payload else {}),
                     'current_request': utterance,
                     **({'requirement_context':requirement_context} if requirement_context is not None else {}),
@@ -492,15 +539,23 @@ class CompletionExecution:
                     'adoption_fallback': fallback,
                     'reentry_budget': getattr(self, 'reentry_counters', {}),
                     'user_fact_sources': fact_sources,
-                    'repair_feedback': feedback}, generation_schema,
+                    'repair_feedback': feedback}), generation_schema,
                     'memory-assess' if not attempt else 'memory-assess-repair'))
+                ontology_received = True
                 reconciliation=None
+                target_binding=None
+                if judgment_context is not None:
+                    from .need_continuity import bind_reviewed_targets
+                    value,target_binding=bind_reviewed_targets(value,judgment_context,options)
+                    if target_binding:self.s.work.event('ASSESSMENT_TARGETS_BOUND',target_binding)
                 if requirement_context is not None and profile.get('candidate_navigation',{}).get('reference_bundle_review'):
                     value,reconciliation=requirements.reconcile_material_gaps(value,requirement_context,options)
                     if reconciliation:self.s.work.event('REQUIREMENT_GAPS_RECONCILED',reconciliation)
                 if guarded:consistency.validate_proposal(value)
+                checked_value, checked_schema, scenario_receipt = scenario_review.core(value,schema,scenario_context,state['facts'])
                 if modern:
-                    core_value, core_schema = value, schema
+                    if shared_reviews:checked_value,checked_schema=assessment_links.core(checked_value,checked_schema)
+                    core_value, core_schema, proposed_usage = ontology_assessment.usage_core(checked_value, checked_schema, ontology_payload)
                     if requirement_context is not None:
                         requirements.validate_review(value,requirement_context,options)
                         core_value,core_schema=requirements.core(core_value,core_schema)
@@ -510,6 +565,7 @@ class CompletionExecution:
                     accepted, proposal=content_impl.prepare(core_value,core_schema,self.issues,options,fact_sources)
                     accepted=rr.bind_gaps(accepted,self.s.sources,rounds,allowed_targets=allowed_targets)
                     result=content_impl.materialize(accepted,options,self.issues,proposal)
+                    ontology_usage=proposed_usage
                 else:
                     value = cc.with_targets(value)
                     value, bound_refs = cc.bind_rule_evidence(value, options)
@@ -526,14 +582,22 @@ class CompletionExecution:
                     except MemoryError as exc:
                         raise output.OutputContractError(str(exc),[output.issue('CLAIM_EVIDENCE_INVALID','/claims')],
                             category='EVIDENCE_CONTRACT_INVALID') from exc
+                if scenario_receipt:
+                    result.setdefault('model_proposal',{})['scenario_review']=scenario_receipt
+                    if scenario_receipt.get('version')==scenario_application.VERSION:
+                        result['scenario_application_display']=scenario_application.display(scenario_receipt,scenario_context)
+                if shared_reviews:result[assessment_links.FIELD]=deepcopy(value[assessment_links.FIELD])
+                if target_binding:result.setdefault('model_proposal',{})['target_binding']=target_binding
                 if not cached:decision_journal.accept(attempt,value)
                 if judgment_context is not None:final_judgment.retain(result,value,judgment_context,investigation,options)
                 if requirement_context is not None:
                     requirements.retain(result,value,requirement_context,options,reconciliation=reconciliation)
                     self.s.work.event('REQUIREMENT_COVERAGE_REVIEWED',{'receipt':result[requirements.FIELD],
                         'request_parts':len(requirement_context['request_parts']),'separate_model_call':False})
+                assessment_links.verify_saved(result)
                 break
             except (ProposalError, ValidationError) as exc:
+                ontology_usage = None
                 value=getattr(exc,'proposal',value)
                 truncated = modern and getattr(exc, 'generation_failure', None) == 'OUTPUT_LENGTH_LIMIT'
                 if not cached:decision_journal.reject(attempt,exc,value,can_retry=False if truncated else None)
@@ -558,13 +622,33 @@ class CompletionExecution:
                     normalized=True
                     break
                 if not attempt and output.repairable(exc) and not truncated:
-                    feedback = {'errors': str(exc), 'validation':output.diagnostics(exc), 'rejected_assessment': value}
+                    feedback = {'errors': str(exc), 'validation':output.diagnostics(exc), 'rejected_assessment': assessment_links.repair_proposal(value)}
                     continue
                 if modern and (judgment_context is not None or requirement_context is not None):
                     final_judgment.independent_research(self,exc,value,schema,
                         content_impl=content_impl,options=options,facts=fact_sources,sources=sources,
                         investigation=investigation,rounds=rounds,allowed_targets=allowed_targets,
                         decision_key=decision_journal.key)
+                if modern and options and output.repairable(exc):
+                    # The rejected opinion stays rejected. Deliver verified originals
+                    # through the existing no-claim contract, without another model.
+                    result = {'claims':[], 'gaps':[], 'disposition':'LIMITED_ANSWER',
+                        'issue_assessments':[{'issue_id':i['id'], 'status':'INSUFFICIENT',
+                            'reason':'원문은 확보했지만 주장과 근거의 최종 검토를 완료하지 못했습니다.'}
+                            for i in self.issues], 'completion_contract':contract,
+                        'model_proposal':{'review_status':'INCOMPLETE',
+                            'failure_code':'ASSESSMENT_CONTRACT_UNRESOLVED',
+                            'failure':output.diagnostics(exc),'decision_key':decision_journal.key,
+                            'rejected_proposal_hash':digest(value),
+                            'previous_gap_history':deepcopy(history),
+                            'previous_assessments':deepcopy(previous_assessments)}}
+                    if judgment_context is not None:final_judgment.incomplete(result,judgment_context)
+                    self.s.work.event('ASSESSMENT_REVIEW_STOPPED',{
+                        'cause_code':'ASSESSMENT_CONTRACT_UNRESOLVED','attempt':attempt,
+                        'decision_key':decision_journal.key,'rejected_proposal_hash':digest(value),
+                        'legal_conclusion_confirmed':False,'retry':False})
+                    normalized=True
+                    break
                 # A second structural rejection becomes a weaker visible answer, not a failed request.
                 candidate, changes = (None,'v5 source/structure contract unresolved') if modern else cc.normalize_assessment(value, schema, self.issues)
                 if candidate is not None and any(cc.rule_errors(c, fact_sources) for c in candidate['claims'] if c.get('rule') is not None):
@@ -586,11 +670,18 @@ class CompletionExecution:
                 notes.append('ASSESSMENT_NORMALIZED'); normalized = True
                 break
 
+        if scenario_computation.enabled(scenario_context):
+            result['scenario_calculation']=scenario_computation.build(scenario_context)
+        result['ontology_explanation']=ontology_assessment.explanation(ontology_payload,
+            decision_key=decision_journal.key, usage=ontology_usage, received=ontology_received,
+            enabled=ontology_assessment.enabled(profile))
         return self.finish_assessment(result,selection,sources,options,modern,normalized,raised,closed,
             investigation,contract,basis,notes,signature)
 
     def finish_assessment(self,result,selection,sources,options,modern,normalized,raised,closed,
                           investigation,contract,basis,notes,signature):
+        from ..ontology_work.runtime import assert_assessment
+        assert_assessment({'assessment_basis':basis},getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))
         from . import read_judgment_final as final_judgment
         actionable = [g for g in result['gaps'] if g['material'] and g['kind'] != 'MISSING_FACT']
         # Only gaps not raised in an earlier round may reopen investigation.
@@ -610,7 +701,9 @@ class CompletionExecution:
             raise Reenter('SELECT', 'material assessment gap requires additional originals', {
                 'reentry_kind': 'ASSESS_GAP_REENTRY', 'gaps': fresh, 'assessment': result,
                 'investigation_state': selection['investigation_state']})
-        stop_reason = ('ASSESSMENT_OUTPUT_LIMIT' if result.get('model_proposal',{}).get('failure_code')=='OUTPUT_LENGTH_LIMIT'
+        failure_code=result.get('model_proposal',{}).get('failure_code')
+        stop_reason = ('ASSESSMENT_OUTPUT_LIMIT' if failure_code=='OUTPUT_LENGTH_LIMIT' else
+                       'ASSESSMENT_CONTRACT_UNRESOLVED' if failure_code=='ASSESSMENT_CONTRACT_UNRESOLVED'
                        else selection.get('stop_reason'))
         if fresh:
             stop_reason = 'ASSESSMENT_REENTRY_LIMIT' if count >= limit else 'INVESTIGATION_BUDGET'
@@ -643,6 +736,10 @@ class CompletionExecution:
         from . import requirement_coverage as requirements
         if modern and requirements.enabled(self.s.sources.profile):requirements.limit_unreviewed(result)
         result['assessment_basis'] = basis
+        from .review_explanation import build as explain_review, current_gap_limitations
+        current_gap_limitations(result, sources)
+        result['review_explanation'] = explain_review(result, sources)
+        result.pop('ontology_explanation', None)
         self.s.work.event('ASSESSMENT_VALIDATED', {'basis_hash':signature, 'assessment':result})
         self.s.work.event('MEMORY_SEMANTIC_REVIEW_SKIPPED', {'stage': 'ASSESS', 'policy': 'disabled',
             'payload_sha256': digest(result), 'quality_certified': False})

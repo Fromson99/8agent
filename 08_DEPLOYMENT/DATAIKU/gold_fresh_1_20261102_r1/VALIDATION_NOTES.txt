@@ -1,0 +1,10 @@
+사용자 최신 지시: 삭제 대신 표 이름 _1로 새 전체 세트 생성·적재.
+R9 삭제수정 작업은 중단/미발송. 기존 R8 및 이전 실패 원본 보존.
+17표 모두 _1, Gold13/60열 및 Agent4/26열 컬럼·타입·PK·인덱스 구성 동일.
+이전 Agent 명칭 보존 검사는 새 사용자 요구로 Agent도 _1인 기대값으로 수정; 나머지 검증 동일.
+새단독ZIP/완전TXT/환경/가이드/표목록. fresh entry에 reset_source 없음, Oracle DELETE/TRUNCATE/LOCK TABLE 없음.
+원본준비는 기존immutable입력 재사용, 진행은 새contractsha별 디렉터리, 기존state/DB자료0변경.
+정확코드32단위 통과. native11조건, 제한계정CREATE SESSION+대상SELECT/INSERT만 사용하여 실제 적재·재조회,
+DELETE는예상ORA01031로거절. 기존DB권한자동변경0, 모델0, 실제삼성DB접속0, MAIN변경0.
+권한차이 미검증을 성공으로 확대하지 않음: CREATE는 격리관리연결에서 확인, 실제앱CREATE권한미확인.
+기존R8도구(progress/error/mesh/vector/transport)는 바이트동일 재사용, 새tablecontract로실행.

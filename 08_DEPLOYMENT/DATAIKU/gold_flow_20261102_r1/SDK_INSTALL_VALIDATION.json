@@ -1,0 +1,25 @@
+{
+  "sdk": "dataiku-api-client 15.2.0",
+  "boundary": "in-memory REST, no actual DSS",
+  "status": "PASS",
+  "counts": {
+    "managedfolders": 9,
+    "datasets": 17,
+    "recipes": 8,
+    "scenarios": 1,
+    "zones": 7,
+    "insights": 1
+  },
+  "checks": [
+    "delivered ZIP + complete install TXT entrypoint",
+    "install",
+    "reinstall idempotent",
+    "8 recipe scripts compile",
+    "17 external append outputs",
+    "scenario stage sequence stops on error",
+    "installation never starts load",
+    "7 colored zones",
+    "existing insight preserved"
+  ],
+  "rest_calls": 335
+}

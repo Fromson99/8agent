@@ -85,6 +85,12 @@ def _render(st, w):
         st.subheader(path['title']); st.text(path['body'])
         st.json({'nodes': path['nodes'], 'edges': path['edges'], 'unresolved': path['unresolved']})
     reason = st.text_input('문장·범위·산정·예외·반례 검토 의견', key=selected + str(d['revision']))
+    with st.expander('숫자·조건 실행 명세'):
+        st.caption('원문 설명문은 실행하지 않습니다. 타입·단위·개념·기간·기준일을 갖춘 식을 저장하면 새 초안이 되며 다시 승인·게시해야 합니다.')
+        execution_spec = st.text_area('타입 식 JSON', json.dumps(d.get('evaluation_spec', {'fields':{}, 'rules':[]}), ensure_ascii=False, indent=2), key='evaluation_'+selected+str(d['revision']))
+        if st.button('실행 명세를 새 판본으로 저장'):
+            w.save_evaluation_spec(selected,d['revision'],d['work_hash'],json.loads(execution_spec));st.rerun()
+        if preview.get('evaluation_plan'):st.json(preview['evaluation_plan'])
     reviewed = st.checkbox('원문과 변경 이력을 확인했습니다.')
     if d['status'] == 'DRAFT':
         yes, no = st.columns(2)

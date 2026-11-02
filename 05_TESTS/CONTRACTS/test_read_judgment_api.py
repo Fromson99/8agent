@@ -1,4 +1,7 @@
-"""Deterministic navigation contracts; no live-model quality or speed claims."""
+"""Legacy read-judgment wire compatibility; current full profile uses test_agent_loop_fault_recovery.
+
+Deterministic navigation contracts; no live-model quality or speed claims.
+"""
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -27,7 +30,7 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
     from test_legal_agent_double_harness import wire
     from test_source_span_norm import proposal
 
-    root = next(p for p in Path(__file__).resolve().parents if (p / '00_SYSTEM/PIPELINE.json').is_file())
+    from test_legal_agent_double_harness import ROOT as root
     target_text = '모의 인수 업무는 승인하여야 한다.'
     first = '제2조에 따른 적용 범위를 확인한다.' if route in ('connection','chain') else '업무 절차를 확인한다.'
     if route=='context':first=' '.join(f'제{i}조에 따른 기준을 확인한다.' for i in range(2,11))
@@ -88,7 +91,7 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
 
         def send_once(self, *, body, ticket):
             view = expand_cards(json.loads(body['messages'][1]['content'])['view'])
-            phase = view.get('source_stage', view['phase'])
+            phase = view.get('source_stage') or view['phase']
             self.calls.append(phase)
             self.views.append(deepcopy(view))
             def respond(value):
@@ -253,6 +256,12 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
     profile = json.loads((root / '00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json').read_text())
     assert profile['candidate_navigation']['small_connection_context'] is False
     profile['candidate_navigation'].update(selected_connection_scope=True,small_connection_context=True,answer_first=False,answer_progress_control=False,read_judgment=True)
+    # This matrix verifies the retained v1 judgment wire, including KEEP deltas.
+    # Later supervisor/need/scope contracts have their own full-profile API matrix.
+    profile['candidate_navigation'].update(new_read_reviews=False,stable_navigation_references=False,
+        minimal_input=False,independent_read_recovery=False,supervisor_mode='off',
+        source_goal_control=False,assessment_consistency=False,scope_completion=False,
+        requirement_coverage=False,reference_bundle_review=False)
     profile.update(model_binding=transport.binding, answer_presentation='structured')
     app = create_app(tmp_path, generation, contracts_root=root, provider=object(),
         implementation='legal-agent-unified-v6', legal_agent_profile=profile, legal_agent_transport=transport,
@@ -262,7 +271,13 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
         request = {'question': question, 'session_id': route, 'request_id': 'r1'}
         response = api.post('/v1/rag/ask', json=request)
         if mode=='final_failed':
-            assert response.status_code==422
+            assert response.status_code==200,response.text
+            result=response.json();outcome=result['assembly']['term_agent']['accepted_outcome']
+            assert not result['answer']['claims'] and result['answer']['unresolved']
+            assert outcome['disposition']=='LIMITED_ANSWER' and outcome['answer_coverage']!='COVERED'
+            assert outcome['stop_reason']=='ASSESSMENT_CONTRACT_UNRESOLVED'
+            count=len(transport.calls);again=api.post('/v1/rag/ask',json=request)
+            assert again.status_code==200 and again.json()['answer']==result['answer'] and len(transport.calls)==count
             assert len([p for p in transport.calls if p.startswith('memory-assess')])==2
             from semantic_runtime.legal_agent import read_judgment as rj
             journal=next(tmp_path.glob('90_RUNTIME/semantic/legal-agent/runs/*/*/journal.sqlite'))
