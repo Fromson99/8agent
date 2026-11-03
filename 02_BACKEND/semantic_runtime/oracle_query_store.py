@@ -45,7 +45,7 @@ class SourceConnection(Connection):
         fields.append('JSON_ARRAY('+','.join('r.'+columns[k] for k in keys)+' RETURNING VARCHAR2(4000)) AS "a8_row_id"')
         suffix=str(number)
         join=''
-        if kind=='block_payload':
+        if kind=='block_payload' and getattr(self,'_needs_literal',True):
             fields.append("JSON_VALUE(l.VALUE_JSON,'$.text' RETURNING CLOB ERROR ON ERROR) AS \"a8_normalized_text\"")
             join=f" LEFT JOIN {ROW} l ON l.RELEASE_ID=:a8_literal_release{suffix} AND l.KIND='native.block_literal' AND l.DOCUMENT_ID=r.DOCUMENT_ID AND l.OWNER_ID=r.BLOCK_ID "
         text='SELECT '+','.join(fields)+' FROM SIDDA.'+TABLES[kind]+' r '+join+\

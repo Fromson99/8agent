@@ -285,6 +285,22 @@ class ExplorationTools:
         items, terms = [], []
         if mode == 'fulltext':
             terms = question_terms(query)
+            if hasattr(self.matcher.fulltext,'search_page'):
+                sources=self.matcher.sources
+                allowed=(sources.ids_for_documents(docs) if hasattr(sources,'ids_for_documents') else set(self.sources_in(args['target'])))
+                result=self.matcher.fulltext.search_page(self.matcher.fulltext_db,terms,allowed,
+                    bounds=bounds,offset=offset,limit=self.profile['page_size'])
+                for hit in result['items']:
+                    card=self.node_card(hit['document_id'],hit['unit_id'],
+                        **({'source_id':hit['source_id']} if hit['unit_id'] is None else {}),route=route)
+                    card.update(fulltext_hit={'unit_id':hit['unit_id'],'block_ids':hit['block_ids'],
+                        'source_id':hit['source_id'],'score':hit['score'],'match_extent':'own_blocks'},
+                        read_action={'tool':'read','args':{'target':card['target'],'extent':'exact','cursor':None},'reason':'검색된 최소 구조 단위 원문 확인'})
+                    items.append(card)
+                return items,result['next_offset'],[],{'search_receipt':{'mode':mode,'query':query,'query_terms':terms,
+                    'searched_target':args['target'],'document_ids':docs,'bounds':bounds,
+                    'total_status':'exact','total':result['total'],'granularity':'stored-own-block-owner',
+                    'tokenizer':self.matcher.fulltext.manifest['tokenizer'],'ranking':self.matcher.fulltext.manifest['ranking']}}
             if hasattr(self.matcher.fulltext, 'rank_units'):
                 hits=self.matcher.fulltext.rank_units(self.matcher.fulltext_db,terms,set(self.sources_in(args['target'])))
                 for hit in hits:
@@ -323,24 +339,25 @@ class ExplorationTools:
                         items.append({'target': d, 'title': self.matcher.documents[did], **self.location(d), 'content_read': False})
             for (did, uid), u in ((row for did in sorted(docs) for row in self.matcher.units.for_document(did)) if hasattr(self.matcher.units,'for_document') else self.matcher.units.items()):
                 if did in docs and (not bounds or bounds[0] <= u['span'][0] < bounds[1]) and q in normalized(u.get('title', '')):
-                    items.append(self.node_card(did, uid, route=route))
+                    items.append({'_node_key':(did,uid)})
         else:
             marks = ','.join('?' for _ in docs)
             oracle=getattr(self.store,'is_oracle_query',False)
             if oracle:
                 sql='SELECT document_id,block_id,unit_id FROM source_block WHERE document_id IN ('+marks+') AND instr(legal_normalized(text),?)>0'
-                args=[*docs,normalized(query)]
+                params=[*docs,normalized(query)]
                 if bounds:
-                    sql+=' AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<?';args.extend(bounds)
-                rows=self.store.db.execute(sql+' ORDER BY document_id,CAST(block_id AS INTEGER)',args)
+                    sql+=' AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<?';params.extend(bounds)
+                rows=self.store.db.execute(sql+' ORDER BY document_id,CAST(block_id AS INTEGER)',params)
             else:
                 rows=self.store.db.execute('SELECT document_id,block_id,unit_id,text FROM source_block WHERE document_id IN ('+marks+') ORDER BY document_id,CAST(block_id AS INTEGER)', docs)
             for r in rows:
                 if bounds and not bounds[0] <= int(r['block_id']) < bounds[1]: continue
                 if oracle or normalized(query) in normalized(r['text']):
-                    items.append(self.node_card(r['document_id'], str(r['unit_id']), route=route))
-        items = list({i['target']: i for i in items}.values())
+                    items.append({'_node_key':(r['document_id'],str(r['unit_id']))})
+        items = list({('node',*i['_node_key']) if '_node_key' in i else ('target',i['target']): i for i in items}.values())
         page, next_pos = self.page(items, offset)
+        page=[self.node_card(*i['_node_key'],route=route) if '_node_key' in i else i for i in page]
         receipt = {'mode': mode, 'query': query, 'query_terms': terms, 'searched_target': args['target'],
                    'document_ids': docs, 'bounds': bounds, 'total_status': 'exact', 'total': len(items)}
         if mode == 'fulltext':

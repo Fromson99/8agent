@@ -1,0 +1,154 @@
+NFS 테이블 용량 · Oracle 이관 예상 R1 — 2026-11-03
+
+목적
+Dataiku에서 NFS 원본 또는 이미 받아 둔 NFS 사본의 파일/SQLite 테이블별 크기를
+확인하고, 현재 Gold R19 _1 원문·검색 이관 계약의 예상 저장량을 계산합니다.
+별도 SQL로 현재 Oracle의 실제 테이블·인덱스·LOB 할당량도 조회합니다.
+기존 적재를 실행/재개하지 않으며 원본 파일과 Oracle 데이터를 변경하지 않습니다.
+
+첨부 파일
+1. DATAIKU_NFS_TABLE_CAPACITY_20261103_R1.zip — 실제 Python 코드, SQL, 계약 JSON
+2. DATAIKU_NFS_TABLE_CAPACITY_RUN_R1.txt — 전체 Python 실행 셀
+3. ORACLE_TABLE_CAPACITY_R1.sql — SQL 노트북용 SELECT 9개
+4. ORACLE_TABLE_CAPACITY_R1.txt — 위 SQL과 완전히 같은 본문
+5. GUIDE.txt — 이 안내
+ZIP을 다른 ZIP에 넣지 않았습니다. SQL/TXT에는 DROP/TRUNCATE/DELETE/INSERT가 없습니다.
+
+기본 집계 범위
+기존 이관 작업의 full-state.json에 결속된 generation 전체입니다.
+financial-risk-success-20261005-schema-r2의 기존 준비 폴더를 기본 사용합니다.
+전체 NFS 서버/과거 백업을 자동 검색하거나 다른 generation을 최신 날짜로 선택하지 않습니다.
+이 기본값은 현재 이관 중인 세대의 테이블을 모두 비교하기 위한 선택입니다.
+
+실행 환경
+- Dataiku LEGAL_RAG 프로젝트, Python 3.9 이상, 표준 sqlite3 모듈.
+- 기존 적재 원본/로그를 볼 수 있는 같은 실행 환경의 별도 조회용 Python 노트북.
+- 기존 적재가 원본을 읽는 중이면 디스크 경쟁을 피하도록 적재가 Idle일 때 실행합니다.
+  원본 SQLite의 쓰기가 끝난 상태여야 합니다. 비어 있지 않은 WAL/journal은 거절합니다.
+- 배포용 ZIP 업로드 위치: 기존 관리 폴더 ehA8dpVm.
+- Oracle 연결: 기존 AIDP. 새 계정/비밀번호를 입력하거나 코드에 넣지 않습니다.
+
+1. NFS/SQLite 용량 확인
+1) ZIP을 이름 그대로 ehA8dpVm에 업로드합니다. 압축을 풀어서 올리지 않습니다.
+2) DATAIKU_NFS_TABLE_CAPACITY_RUN_R1.txt 전체를 Python 노트북 새 셀에 붙입니다.
+3) ACTION = 'nfs'를 유지합니다.
+4) 이전 적재에서 OLD_JOB_DIR을 직접 지정했다면 그와 같은 경로를 입력합니다.
+   기본 경로는 다음과 같습니다.
+   <LEGAL_PIPELINE_SCRATCH 또는 tempfile.gettempdir()>/legal-existing-nfs-20261029-r1/
+     financial-risk-success-20261005-schema-r2/oracle-import-r2
+   root는 그 안 full-state.json의 identity.generation에서 읽습니다.
+   파일이 안 보이면 OLD_JOB_DIR 또는 GENERATION_DIR을 실제 경로로 지정합니다.
+   파일이 없다는 이유로 적재/다운로드/준비 계산을 새로 실행하지 않습니다.
+5) 셀 하나만 실행합니다. Run All, 기존 적재 셀 재실행, 커널 재시작은 필요 없습니다.
+6) 입력 SHA 확인 → DB별 용량 → 표본 → 결과 요약 순서로 출력됩니다.
+   기존 projection-descriptor-r7.json의 해시와 실제 입력파일 SHA를 비교합니다.
+   전체 이관 행을 재생성하지 않습니다. SHA 확인은 파일을 순차 읽으므로 시간이 듭니다.
+7) 완료 뒤 SQLITE_TABLES.csv와 ORACLE_BY_TABLE.csv 또는 RESULTS.zip 링크로 받습니다.
+
+NFS 직접 연결/과거 세대까지 보고 싶을 때
+- 기본 SOURCE_MODE='RESTORED_COPY'는 Dataiku에 이미 받은 사본을 읽습니다.
+  원본과 결속된 파일 크기는 확인하지만, 현재 원격 NFS의 실제 할당량/남은 공간/
+  과거 세대/백업까지 확인했다고 표시하지 않습니다. 재다운로드는 하지 않습니다.
+- Dataiku에서 NFS가 실제 파일 경로로 보이는 경우 GENERATION_DIR을 그 generation으로,
+  SOURCE_MODE='NFS_MOUNT'로 바꾸세요. 해당 모드는 사용자가 지정한 실제 마운트 경로라는 전제입니다.
+  기존 알려진 GENOS 경로는 다음이지만, Dataiku에도 같은 경로가 존재한다고 가정하지 않습니다.
+  /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+- 과거 세대까지 포함하려면 SCAN_ROOT에 Dataiku에서 실제 접근 가능한 상위 NFS 경로를 지정합니다.
+  GENERATION_DIR은 SCAN_ROOT 아래여야 합니다. 모든 정규 파일 크기와 SQLite 파일을 조사합니다.
+  그 밖의 세대는 현재 준비 명세의 이관 대상이 아니므로 Oracle 예상에 임의 합산하지 않습니다.
+- NFS가 GENOS에서만 보이고 Dataiku에는 현재 세대 사본만 있으면 전체 NFS 서버 집계는
+  이번 Dataiku 실행만으로 할 수 없습니다. 해당 NFS 경로를 Dataiku에 마운트해야 합니다.
+  현재 세대 사본 결과를 NFS 서버 전체 크기로 해석하지 마세요.
+
+2. 현재 Oracle 실제 용량 확인 — 둘 중 한 방법
+방법 A: SQL 노트북
+- AIDP 연결 SQL 노트북에서 ORACLE_TABLE_CAPACITY_R1.sql/TXT의 번호별 SELECT를 하나씩 실행합니다.
+- 01 접속자/DB, 02 문자셋, 03 테이블/통계, 04 인덱스, 05 LOB 설정,
+  06 테이블+인덱스+LOB 실제 할당, 07 접속자 소유 세그먼트 보조조회,
+  08 SIDDS/SIDDA quota, 09 공유 테이블스페이스 여유입니다.
+- SIDDS/SIDDA의 LGL_/LEGAL_ 테이블을 읽으므로 구형 LGL_SRCH_ROW_S, G19, G19 _1이 함께 나옵니다.
+  소유자가 같아도 이름이 다른 테이블은 별도 행입니다. 삭제 여부는 판단하지 않습니다.
+방법 B: Python에서 자동 저장
+- 같은 전체 실행 TXT에서 ACTION='oracle', OUTPUT_DIR=''로 바꿔 실행합니다.
+- AIDP SQLExecutor2로 동일 SELECT만 실행하고 CSV/ORACLE_METADATA.json/RESULTS.zip을 만듭니다.
+- Oracle 결과를 NFS 결과 폴더에 덮어쓰지 않습니다. 별도 결과 폴더를 사용합니다.
+
+Oracle 권한/값 해석
+- DBA_SEGMENTS/DBA_TS_QUOTAS/DBA_DATA_FILES 조회가 막히면 UNAVAILABLE와 ORA 코드로 남깁니다.
+  0바이트나 무제한으로 대체하지 않습니다. DBA는 같은 SQL 파일에서 필요한 SELECT만 실행하면 됩니다.
+- USER_SEGMENTS는 접속자 소유 세그먼트만 보입니다. 접속자가 PIDD2APP이면 SIDDS/SIDDA 크기를
+  대신 보여주는 조회가 아닙니다. CURRENT_SCHEMA를 바꿔도 이 차이를 해결하지 못합니다.
+- 일반 heap, 비파티션 표의 본체+일반 인덱스+LOBSEGMENT+LOBINDEX를 중복 없이 합칩니다.
+  파티션/IOT/cluster는 SPECIAL_LAYOUT_UNMEASURED로 표시합니다. 별도 DBA 집계가 필요합니다.
+- NUM_ROWS/AVG_ROW_LEN은 LAST_ANALYZED 시점 통계입니다. 지금의 정확한 행수/남은 적재량이 아닙니다.
+- 할당량은 사용 중인 문자열 길이가 아니라 Oracle이 확보한 extent 용량입니다.
+- quota MAX_BYTES=-1은 해당 등록한도 무제한입니다. quota 행 부재는 0/무제한의 증거가 아닙니다.
+- tablespace 여유는 다른 사용자와 공유하며 자동확장 설정 여유는 실제 디스크 여유를 보증하지 않습니다.
+
+결과 파일
+- NFS_FILES.csv: 모든 정규 파일의 논리 바이트, filesystem 할당, 하드링크 중복.
+- SQLITE_DATABASES.csv: DB 파일별 page 크기/전체 페이지/여유 페이지/dbstat 합계/그 외 페이지.
+- SQLITE_TABLES.csv: 테이블+소속 인덱스의 바이트/GiB, 물리 행수, 이관 예정 행수, 표본 상태.
+- SQLITE_OBJECTS.csv: 개별 btree/index/shadow 상세. TABLES.csv와 중복 합산하지 않습니다.
+- ORACLE_BY_KIND.csv: 논리 종류별 예정 행수, 표본/가정 구분, A/B/C heap/index/LOB/합계.
+- ORACLE_BY_TABLE.csv: Oracle 물리 테이블별 A/B/C 예상. ORIGINAL과 REDUCED는 대안이며 더하지 않습니다.
+- UNMAPPED_TABLES.csv: 일반 이관표에 직접 매핑되지 않은 FTS 특수 구조/기타 표. 누락 숨김 방지용입니다.
+- ORACLE_NOT_ESTIMATED.csv: 원문3표+검색행표 외 이관 계약표. 미래 내용/행수가 없어 미산정한 범위입니다.
+- ASSUMPTIONS.json: 계산식 가정. REPORT.json: 전체 상태/범위/결속/오류/결과.
+- RESULTS.zip: 결과 CSV/JSON만 포함. 실제 원문/행본문은 포함하지 않습니다.
+1 GiB=1,073,741,824 bytes. 파일 전체를 메모리에 올리지 않고 DB를 하나씩 처리합니다.
+
+SQLite 크기 해석
+dbstat 페이지 크기를 표와 인덱스에 귀속합니다. VIEW는 저장공간 0입니다.
+FTS 가상표는 소속 shadow 표/인덱스를 합쳐 표시하고 shadow를 독립 합계로 더하지 않습니다.
+파일 여유 페이지/freelist와 schema/기타 관리 페이지는 테이블 크기와 분리합니다.
+파일 논리 크기와 filesystem st_blocks는 다릅니다. NFS 압축/스냅샷/스토리지 장비의 소비량은 미측정입니다.
+일반 rowid 표는 leaf cell 수, WITHOUT ROWID는 전체 btree cell 수로 행수를 셉니다.
+dbstat가 없거나 제한시간을 넘으면 테이블 바이트를 NULL/미측정으로 남깁니다.
+심볼릭 링크는 따라가지 않으며 제외 목록에 표시합니다. 하드링크 중복은 별도 보고합니다.
+파일/테이블 합계는 선택된 루트 범위이며 NFS 전체를 원자적으로 동결한 스냅샷은 아닙니다.
+
+Oracle 예상치 계산과 한계
+1) 저장된 준비 명세의 실제 종류별 이관 예정 행수를 사용합니다. 원본과 SHA가 다르면 중단합니다.
+2) 일반 테이블/VIEW는 첫 64행을 읽고 현재 G19 방식의 JSON·조회키·원문 매핑으로 크기를 산출합니다.
+   무작위 표본이 아닙니다. 앞부분 편향/큰 후속 행을 놓칠 수 있으므로 확정 용량이 아닙니다.
+3) FTS posting/native 파생행 등 직접 표본화하지 않은 종류는 ASSUMED로 남깁니다.
+   해당 행의 CLOB 길이를 A/B/C 각각 256/1024/4096 ASCII 문자로 가정합니다.
+   표본에 실패한 표도 가정 행수로 별도 집계합니다. 이는 관측 평균이나 최저/최고 한도가 아닙니다.
+4) VARCHAR는 AL32UTF8, CLOB은 AL16UTF16 크기로 계산합니다. JSON UTF-8 바이트만으로 CLOB을 추정하지 않습니다.
+   SQL의 NLS/LOB 설정이 다르면 이 가정을 조정해야 합니다. 압축/중복제거 효과는 넣지 않습니다.
+5) A/B/C는 표본 크기 민감도 0.8/1.0/1.5, heap 충전율 .90/.85/.70,
+   index 충전율 .90/.75/.60, LOB 할당단위 512/2048/8192 bytes를 가정합니다.
+   LOB 3900 bytes 이하 inline, locator/header 40 bytes, index entry overhead 12 bytes,
+   외부 LOB index overhead 64 bytes는 용량 계획용 상수이며 현장 실측값이 아닙니다.
+   ASSUMED 행은 별도 CLOB 길이 가정만 적용하고 0.8/1.0/1.5를 다시 곱하지 않습니다.
+6) ORIGINAL과 중복전개3항목 제외 시나리오를 제공합니다. 제외 대상은 manifest에 연결된
+   navigation.occurrence_keys, dictionary.entry_corpus_link, dictionary.entry_definition_link입니다.
+   실제 축소 적재가 승인/완료됐다고 판정하지 않습니다. 기존 Oracle 행은 자동 삭제하지 않습니다.
+7) 원문 DOC_VER/DOC_UNIT/DOC_BLK와 검색 SRCH_ROW 한 세대의 예상입니다.
+   게시 메타데이터, 기존 릴리스 보관량, 벡터 생성물, 온톨로지, agent journal,
+   TEMP/UNDO/redo/백업/운영 증가분은 포함하지 않습니다. 전체 DB 합계로 표시하지 않습니다.
+8) 아직 원본을 쓰는 중이거나 메타데이터/원본 해시가 달라지면 기존 결과와 원인을 보존하고 중단합니다.
+   가정 행의 비중이 크면 B값만 보고 공간을 신청하지 말고 ORACLE_BY_KIND.csv와 현재 할당 SQL을 함께 검토합니다.
+
+중단/재개
+- dbstat 한 DB당 기본300초, 표본 쿼리당15초의 SQLite progress 제한을 사용합니다.
+  제한에 걸린 곳은 NULL/가정으로 남습니다. OS의 NFS 읽기 대기까지 강제 중단하는 타이머는 아닙니다.
+- 직접 멈추려면 이번 조회 셀만 Interrupt하세요. 기존 적재 커널/상태파일은 건드리지 않습니다.
+- 완료 DB별 REPORT.json을 저장합니다. OUTPUT_DIR에 그 폴더를 넣고 같은 설정으로 다시 실행하면
+  서명/설정이 같은 완료 DB를 재사용합니다. SHA 확인은 다시 하고 실패/부분 DB는 다시 확인합니다.
+- 표본수/제한시간/대상/계약을 바꾸려면 OUTPUT_DIR=''로 새 결과 폴더를 만듭니다.
+- 결과 폴더를 원본 generation/NFS 집계 루트 안에 만들지 않습니다.
+
+검증 범위
+로컬 합성 SQLite로 물리공간 대사, 인덱스/FTS/VIEW 중복 방지, WITHOUT ROWID 행수,
+한글/이모지/CLOB 계산, BLOB base64, SHA 불일치 거절, 읽기전용, 시간 제한, 재개를 확인합니다.
+실제 현장 Dataiku/NFS/Oracle 실행 결과와 용량은 사용자가 실행한 CSV에서 확인해야 합니다.
+제품/MAIN/적재 데이터/Oracle DDL은 변경하지 않습니다.
+
+근거
+현재 이관 매핑: gold_fresh_1_reduced_20261103_r4_1/package/contract.json, legacy_gold_mapping.py
+SQLite dbstat: https://www.sqlite.org/dbstat.html
+Oracle CLOB 문자셋: https://docs.oracle.com/en/database/oracle/oracle-database/19/nlspg/supporting-multilingual-databases-with-unicode.html
+Oracle 용량 계획: https://docs.oracle.com/en/database/oracle/oracle-database/21/arpls/DBMS_SPACE.html
+Dataiku SQL: https://doc.dataiku.com/dss/13/notebooks/sql-notebook.html

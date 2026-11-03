@@ -271,8 +271,21 @@ class UnitFulltextIndex:
         """Compatibility for article consumers; exact hits remain in rank_units."""
         if limit is not None and (not isinstance(limit,int) or limit<0): raise ValueError('invalid fulltext limit')
         if limit == 0: return []
-        roots=list(dict.fromkeys(h['source_id'] for h in self.rank_units(db,terms,allowed)))
-        return roots if limit is None else roots[:limit]
+        self.check_unchanged()
+        if allowed is not None and set(allowed)-self.source_ids:raise ValueError('unit FTS does not cover requested article scope')
+        if not terms or allowed is not None and not allowed:return []
+        where='unit_fts MATCH ?';params=[expression(terms)]
+        if allowed is not None:
+            where+=' AND u.source_id IN (SELECT value FROM json_each(?))';params.append(json.dumps(sorted(allowed)))
+        cursor=db.execute('SELECT u.source_id FROM unit_fts f JOIN unit u ON u.key=f.key WHERE '+where+' ORDER BY f.rank,f.key',params)
+        roots=[];seen=set()
+        try:
+            for (sid,) in cursor:
+                if sid not in seen:seen.add(sid);roots.append(sid)
+                if limit is not None and len(roots)>=limit:break
+        finally:cursor.close()
+        self.check_unchanged()
+        return roots
 
     @latency.timed('unit_fts.bind')
     def _page_query(self, terms, allowed, cursor, limit, kind, identity=None, unit_keys=None):
@@ -302,6 +315,57 @@ class UnitFulltextIndex:
         if unit_keys is not None:
             where += ' AND u.key IN (SELECT value FROM json_each(?))'; params.append(json.dumps(sorted(set(unit_keys))))
         return where, params, binding, offset, bool(terms and scope and (unit_keys is None or unit_keys))
+
+    def search_metadata(self,db,terms,allowed):
+        self.check_unchanged()
+        if allowed is not None and set(allowed)-self.source_ids:raise ValueError('unit FTS does not cover requested article scope')
+        if not terms or allowed is not None and not allowed:return []
+        from copy import deepcopy
+        binding=(self.manifest['index_sha256'],tuple(terms),None if allowed is None else tuple(sorted(allowed)))
+        cached=getattr(self,'_navigation_metadata',None)
+        if cached is not None and cached[0]==binding:return deepcopy(cached[1])
+        where='unit_fts MATCH ?';params=[expression(terms)]
+        if allowed is not None:
+            where+=' AND u.source_id IN (SELECT value FROM json_each(?))';params.append(json.dumps(sorted(allowed)))
+        rows=db.execute("SELECT u.key,u.document_id,u.source_id,json_extract(u.json,'$.unit_id'),json_extract(u.json,'$.block_ids'),f.rank FROM unit_fts f JOIN unit u ON u.key=f.key WHERE "+where+' ORDER BY f.rank,f.key',params)
+        result=[];size=0
+        for key,did,sid,uid,blocks,score in rows:
+            row={'key':key,'document_id':did,'source_id':sid,'unit_id':uid,'block_ids':json.loads(blocks),'score':score}
+            size+=len(json.dumps(row,ensure_ascii=False).encode())
+            if size>64*1024*1024:raise ValueError('fulltext navigation metadata budget exceeded')
+            result.append(row)
+        self.check_unchanged()
+        if size<=4*1024*1024:self._navigation_metadata=(binding,deepcopy(result))
+        return result
+
+    def search_bodies(self,db,keys):
+        if not keys:return {}
+        rows=db.execute('SELECT key,json FROM unit WHERE key IN (SELECT value FROM json_each(?))',(json.dumps(keys),))
+        bodies={key:json.loads(raw) for key,raw in rows}
+        if set(bodies)!=set(keys):raise ValueError('unit FTS selected body missing')
+        return bodies
+
+    def search_page(self,db,terms,allowed=None,**kwargs):
+        return search_page(self,db,terms,allowed,**kwargs)
+
+    def rank_page(self,db,terms,allowed=None,*,cursor=None,limit=16,unit_keys=None):
+        where,params,binding,offset,nonempty=self._page_query(terms,allowed,cursor,limit,'rank',unit_keys=unit_keys)
+        if not nonempty:return {'items':[],'total':0,'next_cursor':None}
+        projection=self._projection(db,terms,allowed,unit_keys)
+        if projection is not None:
+            ranked=sorted((score,key) for hits in projection['hits'].values() for score,key in hits)
+            total=len(ranked);selected=ranked[offset:offset+limit];keys=[key for _,key in selected]
+            rows=db.execute('SELECT key,json FROM unit WHERE key IN (SELECT value FROM json_each(?))',(json.dumps(keys),)) if keys else []
+            bodies={key:json.loads(raw) for key,raw in rows}
+            if set(bodies)!=set(keys):raise ValueError('unit FTS projection body missing')
+            items=[{**bodies[key],'score':score,'query_terms':list(terms)} for score,key in selected]
+        else:
+            join=' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
+            total=db.execute('SELECT COUNT(*)'+join,params).fetchone()[0]
+            rows=db.execute('SELECT u.json,unit_fts.rank'+join+' ORDER BY unit_fts.rank,u.key LIMIT ? OFFSET ?',[*params,limit,offset])
+            items=[{**json.loads(raw),'score':score,'query_terms':list(terms)} for raw,score in rows]
+        self.check_unchanged()
+        return {'items':items,'total':total,'next_cursor':{'binding':binding,'offset':offset+len(items)} if offset+len(items)<total else None}
 
     def law_groups_page(self, db, terms, allowed=None, *, cursor=None, limit=12, unit_keys=None):
         """All matching laws remain addressable before any top-k source selection."""
@@ -374,6 +438,33 @@ class UnitFulltextIndex:
             items = [{**json.loads(raw), 'query_terms': list(terms)} for (raw,) in rows]
         return {'items': items, 'total': total, 'next_cursor':
                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
+
+
+def search_page(index,db,terms,allowed,*,bounds=None,offset=0,limit=16):
+    """Deduplicate navigation identities before reading this page's bodies.
+
+    Preserve the old dict semantics: first occurrence determines order, last
+    matching occurrence determines the hit shown for a shared navigation node.
+    """
+    if type(offset) is not int or offset<0 or type(limit) is not int or not 1<=limit<=100:
+        raise ValueError('invalid fulltext navigation page')
+    metadata=index.search_metadata(db,terms,allowed)
+    selected={}
+    for row in metadata:
+        if bounds and not any(bounds[0]<=int(b)<bounds[1] for b in row['block_ids']):continue
+        uid=row['unit_id']
+        identity=(row['document_id'],str(uid) if uid is not None else None,row['source_id'] if uid is None else None)
+        selected[identity]=row
+    total=len(selected);page=list(selected.values())[offset:offset+limit]
+    bodies=index.search_bodies(db,[r['key'] for r in page])
+    items=[]
+    for row in page:
+        body=bodies[row['key']]
+        if any(body[k]!=row[k] for k in ('key','document_id','source_id','unit_id','block_ids')):
+            raise ValueError('fulltext metadata differs from selected body')
+        items.append({**body,'score':row['score'],'query_terms':list(terms)})
+    index.check_unchanged()
+    return {'items':items,'total':total,'next_offset':offset+len(items) if offset+len(items)<total else None}
 
 
 class ArticleProjection:

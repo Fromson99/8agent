@@ -86,14 +86,22 @@ class WorkspaceTransactions:
         """Current authority is SQL, never a cached request package or draft index."""
         if len(references) > 8:
             raise ContractError('workspace publication bound')
-        result = {}
+        result = {ref['publication_id']:False for ref in references}
+        visible=[ref for ref in references if self.workspace_visible(ref['bundle_id'])]
+        if not visible:return result
         with self.session() as c:
-            for ref in references:
-                bid, pid = ref['bundle_id'], ref['publication_id']
-                if not self.workspace_visible(bid):
-                    result[pid] = False
-                    continue
-                row = self.execute(c, f"SELECT p.PKG_HASH_VAL FROM {self.tables['publication']} p JOIN {self.tables['head']} h ON h.PUB_ID=p.PUB_ID AND h.BNDL_ID=p.BNDL_ID WHERE p.PUB_ID=:1 AND p.BNDL_ID=:2", (pid, bid)).fetchone()
-                docs = self.execute(c, f"SELECT DOC_ID FROM {self.tables['anchor']} WHERE PUB_ID=:1", (pid,)).fetchmany(129) if row else []
-                result[pid] = bool(row and row[0] == ref['package_sha256'] and docs and len(docs) <= 128 and {d[0] for d in docs} <= set(allowed_documents))
+            # One current-authority read; no cache survives revocation.
+            binds=[];conditions=[]
+            for ref in visible:
+                n=len(binds)+1;conditions.append(f'(p.PUB_ID=:{n} AND p.BNDL_ID=:{n+1})')
+                binds.extend((ref['publication_id'],ref['bundle_id']))
+            rows=self.execute(c,f"SELECT p.PUB_ID,p.BNDL_ID,p.PKG_HASH_VAL,a.DOC_ID FROM {self.tables['publication']} p JOIN {self.tables['head']} h ON h.PUB_ID=p.PUB_ID AND h.BNDL_ID=p.BNDL_ID JOIN {self.tables['anchor']} a ON a.PUB_ID=p.PUB_ID WHERE "+' OR '.join(conditions),tuple(binds)).fetchmany(1025)
+            if len(rows)>1024:raise ContractError('workspace publication anchor bound')
+            grouped={}
+            for pid,bid,sha,did in rows:grouped.setdefault((pid,bid),[]).append((sha,did))
+            for ref in visible:
+                items=grouped.get((ref['publication_id'],ref['bundle_id']),[])
+                result[ref['publication_id']]=bool(items and len(items)<=128
+                    and all(sha==ref['package_sha256'] for sha,did in items)
+                    and {did for sha,did in items}<=set(allowed_documents))
         return result

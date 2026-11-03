@@ -1,0 +1,16 @@
+..........................F                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_gold_consumer_accepts_sealed_envelope __________________
+08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261103_r1/test_vector_fast.py:263: in test_gold_consumer_accepts_sealed_envelope
+    reader=module.NativeVectorReader(request,NS(table=lambda key:key))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vector_gold_consumer' has no attribute 'NativeVectorReader'
+----------------------------- Captured stdout call -----------------------------
+{"action":"vector","checkpoint":"/tmp/pytest-of-jin/pytest-275/test_gold_consumer_accepts_sea0/gold-shape-db556ac13596","dimensions":2,"elapsed_s":0,"model":"fixture","phase":"VECTOR_TARGET","query_release":"8e27b7849f6c985a785db90ef278c83150b9480d59517b6c6c5e3c5d9482ca8f"}
+{"batch_rows":128,"elapsed_s":0,"phase":"VECTOR_INSERT_ACK","request_s":0.01,"rows":128,"sdk_calls":8,"table":"SIDDS.LGL_G19_VCTR_ITEM_S_1"}
+{"batch_rows":22,"elapsed_s":0,"phase":"VECTOR_INSERT_ACK","request_s":0.01,"rows":150,"sdk_calls":10,"table":"SIDDS.LGL_G19_VCTR_ITEM_S_1"}
+{"batch_rows":1,"elapsed_s":0,"phase":"VECTOR_INSERT_ACK","request_s":0.01,"rows":150,"sdk_calls":10,"table":"SIDDS.LGL_G19_VCTR_POST_S_1"}
+{"elapsed_s":0,"phase":"VECTORS_STORED_INSERT_ACK_NOT_ACTIVATED","publication_id":"89e93acfca9efa7b4b704f2bcc40102fb459fb3514f0887b8882a2daf729af8e","rows":150,"serving":"NOT_SWITCHED"}
+=========================== short test summary info ============================
+FAILED 08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261103_r1/test_vector_fast.py::test_gold_consumer_accepts_sealed_envelope
+1 failed, 26 passed in 0.46s

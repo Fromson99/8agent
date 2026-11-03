@@ -24,6 +24,7 @@ V7 = 'investigation-completion-v7'
 V8 = 'investigation-completion-v8'
 KNOWN = (V1, V2, V3, CONTRACT, V5, V6, V7, V8)
 GAP_REASON_PRESENTATION = 'attributed-gap-reasons-v1'
+USER_LIMITATION_PRESENTATION = 'user-limitations-v1'
 
 def version(profile):
     return profile.get('candidate_navigation', {}).get('completion_policy_version', CONTRACT)
@@ -386,14 +387,15 @@ def verify_source_excerpt_reply(assessment, sources):
         raise ContractError('source excerpt reply differs from unresolved assessment or originals')
 
 
-def render_source_excerpt_reply(assessment):
+def render_source_excerpt_reply(assessment, *, user_presentation=False):
     from html import escape
     reply = assessment['source_excerpt_reply']
     if (reply.get('schema_version') != SOURCE_REPLY_CONTRACT or assessment['claims']
             or reply.get('legal_conclusion_confirmed') is not False
             or reply.get('absence_proven') is not False or not reply.get('sources')):
         raise ContractError('invalid source excerpt reply')
-    blocks = (['원문은 확보했으나 답변 검토를 완료하지 못했습니다. 확인한 원문을 제공합니다.']
+    blocks = (['확인한 원문을 제공합니다.'] if user_presentation else
+              ['원문은 확보했으나 답변 검토를 완료하지 못했습니다. 확인한 원문을 제공합니다.']
               if assessment.get('stop_reason') in ('ASSESSMENT_OUTPUT_LIMIT','ASSESSMENT_CONTRACT_UNRESOLVED') else
               ['확보한 자료만으로 질문의 결론을 확정하기는 어렵습니다. 확인한 원문과 아직 확인하지 못한 범위를 정리합니다.'])
     for row in reply['sources']:
@@ -459,15 +461,36 @@ def default_plan(assessment, requested_format=None, issues=None):
             'issue_sections': sections}
 
 
+def public_limitations(assessment, plan):
+    """Keep operational review receipts internally; expose substantive gaps.
+
+    Versioned at composition time so old saved answers still verify exactly.
+    Never infer that a missing review is completed, or filter model prose by words.
+    """
+    version = plan.get('limitation_presentation')
+    if version is None:
+        return list(assessment.get('limitations', []))
+    if version != USER_LIMITATION_PRESENTATION:
+        raise ContractError('unknown limitation presentation')
+    hidden, visible = set(), set()
+    for row in assessment.get('limitation_items', []):
+        internal = (row.get('issue_id') is None and
+                    row.get('id') in {'L-requirement-review', 'L-review-incomplete'} and
+                    row.get('kind') in {'EXECUTION_LIMIT', 'REVIEW_INCOMPLETE'})
+        (hidden if internal else visible).add(row['text'])
+    return [text for text in assessment['limitations'] if text not in hidden - visible]
+
+
 def displayed_limitations(assessment, plan):
     """Expose recorded reasons only in final presentation, never model input.
 
     Old plans retain their exact rendering for saved-publication verification.
     Reasons remain unverified model observations, separate from legal claims.
     """
+    limits = public_limitations(assessment, plan)
     presentation = plan.get('gap_reason_presentation')
     if presentation is None:
-        return assessment['limitations']
+        return limits
     if presentation != GAP_REASON_PRESENTATION:
         raise ContractError('unknown gap reason presentation')
     by_id = {row['id']: row for row in assessment['limitation_items']}
@@ -486,7 +509,7 @@ def displayed_limitations(assessment, plan):
         label = ('당시 미확인 사유' if item.get('navigation_status') else '미확인 사유')
         detail = item['text'] + ' ' + label + '(AI 판단·검증 전): ' + reason
         replacements.setdefault(item['text'], []).append(detail)
-    return list(dict.fromkeys(detail for text in assessment['limitations']
+    return list(dict.fromkeys(detail for text in limits
                               for detail in replacements.get(text, [text])))
 
 
@@ -502,7 +525,8 @@ def render(assessment, plan):
         raise ContractError('unknown composition layout')
     sections = plan.get('issue_sections') if assessment.get('completion_contract', V1) != V1 else None
     if assessment.get('source_excerpt_reply'):
-        text = render_source_excerpt_reply(assessment)
+        text = render_source_excerpt_reply(assessment,
+            user_presentation=plan.get('limitation_presentation') == USER_LIMITATION_PRESENTATION)
     elif plan.get('presentation') == 'grounded-narrative-v1':
         from .narrative_answer import render as render_narrative
         text = render_narrative(assessment, plan)
@@ -573,6 +597,7 @@ def compose(assessment, plan):
     plan = deepcopy(plan)
     if assessment.get('completion_contract') == V8:
         plan['gap_reason_presentation'] = GAP_REASON_PRESENTATION
+        plan['limitation_presentation'] = USER_LIMITATION_PRESENTATION
     return {**({'assessment_basis': deepcopy(assessment['assessment_basis'])} if 'assessment_basis' in assessment else {}),
             **({'source_excerpt_reply': deepcopy(assessment['source_excerpt_reply'])} if 'source_excerpt_reply' in assessment else {}),
             **({'read_judgment_review': deepcopy(assessment['read_judgment_review'])} if 'read_judgment_review' in assessment else {}),

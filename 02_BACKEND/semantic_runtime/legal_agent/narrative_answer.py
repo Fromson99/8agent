@@ -234,7 +234,7 @@ def preserved_plan(assessment, requested_format=None, issues=None):
 def verify_preserved_plan(assessment, value):
     from .completion_v5 import verify_content
     allowed = {'layout', 'claim_order', 'issue_sections', 'presentation',
-               'accepted_assessment_hash', 'gap_reason_presentation'}
+               'accepted_assessment_hash', 'gap_reason_presentation', 'limitation_presentation'}
     if (value.get('presentation') != PRESERVED_VERSION or set(value) - allowed
             or value.get('accepted_assessment_hash') != digest(assessment)):
         raise ContractError('preserved answer plan differs from accepted assessment')

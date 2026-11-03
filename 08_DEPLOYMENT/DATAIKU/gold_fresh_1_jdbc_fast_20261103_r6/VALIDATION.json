@@ -1,0 +1,30 @@
+{
+  "status": "PASS_LOCAL_CONTRACTS_FIELD_DATAIKU_UNVERIFIED",
+  "pytest": 22,
+  "same_22_from_actual_extracted_zip": true,
+  "zip_sha256": "7d304b22371881004efbab881f851b684f17af1791d38f001699c6d2773270d1",
+  "sql_execution_receipt": "JDBC_SQL_CONTRACTS.json",
+  "new_oracle_driver_imports": 0,
+  "connection_credential_reads": 0,
+  "direct_oracle_network_connections_in_runtime": 0,
+  "native_binds": false,
+  "performance_improvement_measured": false,
+  "dataset_writer_implemented_in_load": false,
+  "dataset_writer_readonly_probe": "CHECK_DATASET_WRITER_R6.txt",
+  "field_photo": {
+    "error": "NATIVE_DRIVER_REQUIRED_ORACLEDB",
+    "prior_source_rows": 835713,
+    "prior_search_rows": 513042,
+    "query_total": 38463150,
+    "r5_writes_started": false
+  },
+  "limits": [
+    "Large changing SQL text remains on JDBC query path",
+    "Dataiku Dataset Writer is an official supported alternative, but current mapping and field writes are not confirmed",
+    "Interrupted partial search file still regenerates prefix",
+    "ORA-01654 space shortage remains separate"
+  ],
+  "main_changed": false,
+  "field_db_changed": false,
+  "models": 0
+}

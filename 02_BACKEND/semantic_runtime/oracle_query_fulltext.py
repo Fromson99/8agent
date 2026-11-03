@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import math
+from functools import lru_cache
 
 from .oracle_dp_io import DPError, digest
 from .oracle_query_catalog import ROW, json_body
@@ -16,6 +18,11 @@ from .oracle_query_catalog import ROW, json_body
 def query_phrases(terms):
     if not isinstance(terms,(list,tuple)) or len(terms)>64 or any(not isinstance(t,str) or len(t)>4096 for t in terms):
         raise DPError('QUERY_FTS_TERMS: expected bounded query strings')
+    return [tuple(p) for p in _phrases(tuple(terms))]
+
+
+@lru_cache(maxsize=16)
+def _phrases(terms):
     phrases=[]
     # This reproduces SQLite unicode61 exactly, including its Unicode-version
     # and diacritic rules. No original/index/result data enters this connection.
@@ -31,7 +38,7 @@ def query_phrases(terms):
                 phrases.append(tokens)
     if sum(map(len,phrases))>256:
         raise DPError('QUERY_FTS_TERMS: query token budget exceeded')
-    return phrases
+    return tuple(phrases)
 
 
 class UnitIndex:
@@ -140,15 +147,25 @@ class UnitIndex:
             "JSON_TABLE(p.VALUE_JSON,'$.positions[*]' COLUMNS(pos NUMBER PATH '$' ERROR ON ERROR)) j "
             "WHERE p.RELEASE_ID=:q_release AND p.KIND=:q_posting AND p.LOOKUP_ID IN ("+
             ','.join(':'+token_names[t] for t in tokens)+')')
+        # Published tf is the exact FTS5 occurrence count. Unigrams do not
+        # need to expand occurrence positions; phrases still use adjacency.
+        postings=(f"SELECT p.OWNER_ID AS k,p.DOCUMENT_ID AS did,p.LOOKUP_ID AS token,JSON_VALUE(p.VALUE_JSON,'$.tf' RETURNING NUMBER ERROR ON ERROR) AS tf FROM {ROW} p "
+            "WHERE p.RELEASE_ID=:q_release AND p.KIND=:q_posting AND p.LOOKUP_ID IN ("+
+            ','.join(':'+token_names[t] for t in tokens)+')')
+        single_only=all(len(p)==1 for p in phrases)
+        candidate_scope=" AND did IN (SELECT j.did FROM JSON_TABLE(:q_documents,'$[*]' COLUMNS(did VARCHAR2(512) PATH '$')) j)" if single_only else ''
         counts=[]
         for i,phrase in enumerate(phrases):
+            if len(phrase)==1:
+                counts.append(f'SELECT {i} AS phrase,k,SUM(tf) AS tf FROM postings WHERE token=:{token_names[phrase[0]]}'+candidate_scope+' GROUP BY k')
+                continue
             joins=''.join(f' JOIN positions p{n} ON p{n}.k=p0.k AND p{n}.col=p0.col AND p{n}.pos=p0.pos+{n}'
                           f' AND p{n}.token=:{token_names[t]}' for n,t in enumerate(phrase[1:],1))
             counts.append(f'SELECT {i} AS phrase,p0.k,COUNT(*) AS tf FROM positions p0'+joins+
                           f' WHERE p0.token=:{token_names[phrase[0]]} GROUP BY p0.k')
         where=["r.DOCUMENT_ID IN (SELECT j.did FROM JSON_TABLE(:q_documents,'$[*]' COLUMNS(did VARCHAR2(512) PATH '$')) j)"]
         if source_ids is not None:
-            where.append("l.sid IN (SELECT j.sid FROM JSON_TABLE(:q_sources,'$[*]' COLUMNS(sid VARCHAR2(512) PATH '$')) j)")
+            where.append("r.OWNER_ID IN (SELECT j.sid FROM JSON_TABLE(:q_sources,'$[*]' COLUMNS(sid VARCHAR2(512) PATH '$')) j)")
             binds.append(('q_sources',json_body(source_ids),'CLOB'))
         if unit_keys is not None:
             where.append("r.LOOKUP_ID IN (SELECT j.k FROM JSON_TABLE(:q_units,'$[*]' COLUMNS(k VARCHAR2(512) PATH '$')) j)")
@@ -162,18 +179,130 @@ class UnitIndex:
         binds += [('q_documents_n',n,'NUMBER'),('q_average',total/n,'NUMBER')]
         # FTS5 BM25: global (pre-ACL) phrase document frequency, k1=1.2,
         # b=.75, one indexed body column, negative score sorts first.
-        cte=('WITH positions AS ('+positions+'), frequencies AS ('+' UNION ALL '.join(counts)+'), '
-            'df AS (SELECT phrase,COUNT(*) AS n FROM frequencies GROUP BY phrase), '
+        global_df=(' UNION ALL '.join(f'SELECT {i} AS phrase,COUNT(DISTINCT k) AS n FROM postings WHERE token=:{token_names[p[0]]}' for i,p in enumerate(phrases)) if single_only else 'SELECT phrase,COUNT(*) AS n FROM frequencies GROUP BY phrase')
+        cte=('WITH postings AS ('+postings+'), '+('positions AS ('+positions+'), ' if any(len(p)>1 for p in phrases) else '')+'frequencies AS ('+' UNION ALL '.join(counts)+'), '
+            'df AS ('+global_df+'), '
             'lengths AS ('+lengths+'), matches AS ('
             'SELECT l.k,l.did,l.sid,-SUM(CASE WHEN :q_documents_n<=2*df.n THEN 1e-6 ELSE LN((:q_documents_n-df.n+0.5)/(df.n+0.5)) END'
             '*f.tf*2.2/(f.tf+1.2*(0.25+0.75*l.n/:q_average))) AS score '
             'FROM frequencies f JOIN df ON df.phrase=f.phrase JOIN lengths l ON l.k=f.k GROUP BY l.k,l.did,l.sid) ')
         return cte,binds
 
+    def _projection(self,terms,allowed,unit_keys=None):
+        """One bounded metadata result shared by law/article/hit pages."""
+        from .oracle_query_cache import for_request, key
+        self.check_unchanged()
+        scope=({'documents':sorted(allowed.document_ids)} if hasattr(allowed,'document_ids') else None if allowed is None else {'sources':sorted(set(allowed))})
+        cache=for_request(self.request)
+        cache_key=key('fts-matches',terms=list(terms),scope=scope,
+                      units=None if unit_keys is None else sorted(set(unit_keys)))
+        found,value=cache.get(cache_key)
+        if found:return value
+        cte,binds=self._matches(terms,allowed,unit_keys)
+        if cte is None:
+            cache.put(cache_key,[]);return []
+        # Never mirror the index. At most 2049 compact keys are considered;
+        # overflow reuses the exact paged SQL below without truncating totals.
+        statement=("SELECT COUNT(*) AS N,CASE WHEN COUNT(*)<=2048 THEN "
+            "JSON_ARRAYAGG(JSON_ARRAY(k,did,sid,score NULL ON NULL RETURNING CLOB) RETURNING CLOB) END AS ITEMS FROM ("+
+            cte+'SELECT k,did,sid,score FROM matches FETCH FIRST 2049 ROWS ONLY)')
+        rows=self.sql.query(statement,binds,limit=1)
+        if len(rows)!=1 or type(rows[0]['N']) is not int or not 0<=rows[0]['N']<=2049:
+            raise DPError('QUERY_FTS_PROJECTION: invalid bounded match count')
+        n=rows[0]['N']
+        if n>2048:
+            cache.put(cache_key,None);return None
+        values=json.loads(rows[0]['ITEMS']) if n else []
+        if not isinstance(values,list) or len(values)!=n:
+            raise DPError('QUERY_FTS_PROJECTION: incomplete match metadata')
+        seen=set()
+        documents=self.request.sources.allowed if not hasattr(allowed,'document_ids') else allowed.document_ids
+        for row in values:
+            if (not isinstance(row,list) or len(row)!=4 or any(not isinstance(x,str) or not x for x in row[:3])
+                    or row[1] not in documents or row[0] in seen
+                    or not isinstance(row[3],(int,float)) or not math.isfinite(row[3])
+                    or (allowed is not None and not hasattr(allowed,'document_ids') and row[2] not in allowed)
+                    or (unit_keys is not None and row[0] not in unit_keys)):
+                raise DPError('QUERY_FTS_PROJECTION: invalid identity, scope or score')
+            seen.add(row[0])
+        values.sort(key=lambda r:(r[3],r[0]))
+        self.check_unchanged();cache.put(cache_key,values)
+        return values
+
+    def _project_page(self,projection,terms,kind,identity,binding,offset,limit):
+        if kind in ('laws','articles'):
+            groups={}
+            for k,did,sid,score in projection:
+                if kind=='articles' and did!=identity:continue
+                ident=did if kind=='laws' else sid
+                group=groups.setdefault(ident,{'score':score,'sources':set(),'units':0})
+                group['score']=min(score,group['score']);group['sources'].add(sid);group['units']+=1
+            ordered=sorted(groups,key=lambda v:(groups[v]['score'],v));total=len(ordered)
+            items=[({'document_id':i,'article_count':len(groups[i]['sources']),'unit_count':groups[i]['units']}
+                    if kind=='laws' else {'source_id':i,'unit_count':groups[i]['units']}) for i in ordered[offset:offset+limit]]
+        else:
+            selected=[r for r in projection if identity is None or r[2]==identity]
+            total=len(selected);selected=selected[offset:offset+limit]
+            if kind=='rank_keys':
+                items=[{'key':k,'document_id':d,'source_id':s,'score':score} for k,d,s,score in selected]
+            else:
+                keys=[r[0] for r in selected]
+                values=self.records.page(self.kinds['unit'],lookup_ids=keys,limit=len(keys))['rows'] if keys else []
+                bodies={v['key']:json.loads(v['json']) for v in values}
+                if set(bodies)!=set(keys):raise DPError('QUERY_FTS_BODY: selected hit body set differs')
+                items=[]
+                for k,did,sid,score in selected:
+                    body=bodies[k]
+                    if body['key']!=k or body['document_id']!=did or body['source_id']!=sid:
+                        raise DPError('QUERY_FTS_BODY: hit identity differs from projection')
+                    items.append({**body,'query_terms':list(terms),**({'score':score} if kind=='rank' else {})})
+        if offset and offset>=total:raise DPError('QUERY_CURSOR: page offset outside completed query result')
+        return {'items':items,'total':total,'next_cursor':{'binding':binding,'offset':offset+len(items)} if offset+len(items)<total else None}
+
+    def search_metadata(self,db,terms,allowed):
+        from .oracle_query_cache import for_request,key
+        from .oracle_query_db import Connection
+        self.check_unchanged()
+        scope={'documents':sorted(allowed.document_ids)} if hasattr(allowed,'document_ids') else None if allowed is None else {'sources':sorted(set(allowed))}
+        cache=for_request(self.request);cache_key=key('fts-navigation',terms=list(terms),scope=scope)
+        found,result=cache.get(cache_key)
+        if found:return result
+        result=[];cursor=None;size=0
+        with Connection(self.request,self.asset) as relation:
+            relation.set_progress_handler(lambda:self.check_unchanged(),1)
+            while True:
+                page=self._page(terms,allowed,'rank_keys',cursor=cursor,limit=100)
+                keys=[r['key'] for r in page['items']]
+                rows=relation.execute("SELECT key,json_extract(json,'$.unit_id') AS unit_id,json_extract(json,'$.block_ids') AS block_ids FROM unit WHERE key IN (SELECT value FROM json_each(?))",(json.dumps(keys),)) if keys else []
+                metadata={r[0]:{'unit_id':r[1],'block_ids':json.loads(r[2])} for r in rows}
+                if set(metadata)!=set(keys):raise DPError('QUERY_FTS_BODY: navigation metadata missing')
+                for row in page['items']:
+                    value={**row,**metadata[row['key']]}
+                    size+=len(json_body(value).encode())
+                    if size>64*1024*1024:raise DPError('QUERY_FTS_RESULT_BUDGET: navigation metadata exceeds memory budget')
+                    result.append(value)
+                cursor=page['next_cursor']
+                if cursor is None:break
+        self.check_unchanged();cache.put(cache_key,result)
+        return result
+
+    def search_bodies(self,db,keys):
+        values=self.records.page(self.kinds['unit'],lookup_ids=keys,limit=len(keys))['rows'] if keys else []
+        bodies={v['key']:json.loads(v['json']) for v in values}
+        if set(bodies)!=set(keys):raise DPError('QUERY_FTS_BODY: selected hit body set differs')
+        return bodies
+
+    def search_page(self,db,terms,allowed=None,**kwargs):
+        from .unit_fulltext import search_page
+        return search_page(self,db,terms,allowed,**kwargs)
+
+    def rank_page(self,db,terms,allowed=None,*,cursor=None,limit=16,unit_keys=None):
+        return self._page(terms,allowed,'rank',cursor=cursor,limit=limit,unit_keys=unit_keys)
+
     def _page(self,terms,allowed,kind,identity=None,*,cursor=None,limit=12,unit_keys=None):
         if type(limit) is not int or not 1<=limit<=100:
             raise DPError('QUERY_PAGE: fulltext pages require 1..100 rows')
-        scope=(sorted(allowed.document_ids) if hasattr(allowed,'document_ids') else None if allowed is None else sorted(set(allowed)))
+        scope=({'documents':sorted(allowed.document_ids)} if hasattr(allowed,'document_ids') else None if allowed is None else {'sources':sorted(set(allowed))})
         binding=digest({'release':self.request.release_id,'terms':list(terms),'documents':sorted(self.request.sources.allowed),
                         'allowed':scope,'kind':kind,'identity':identity,'units':None if unit_keys is None else sorted(set(unit_keys))})
         offset=0
@@ -182,6 +311,9 @@ class UnitIndex:
                     type(cursor['offset']) is not int or cursor['offset']<0):
                 raise DPError('QUERY_CURSOR: fulltext cursor belongs to another request scope/query')
             offset=cursor['offset']
+        projection=self._projection(terms,allowed,unit_keys)
+        if projection is not None:
+            return self._project_page(projection,terms,kind,identity,binding,offset,limit)
         cte,binds=self._matches(terms,allowed,unit_keys)
         if cte is None:
             return {'items':[],'total':0,'next_cursor':None}
@@ -195,8 +327,8 @@ class UnitIndex:
         elif kind=='articles':
             selection='SELECT sid,COUNT(*) AS units,MIN(score) AS score FROM matches'+predicates+' GROUP BY sid'
             order='score,sid'
-        elif kind in ('hits','rank'):
-            selection='SELECT k,score FROM matches'+predicates
+        elif kind in ('hits','rank','rank_keys'):
+            selection=('SELECT k,did,sid,score FROM matches' if kind=='rank_keys' else 'SELECT k,score FROM matches')+predicates
             order='score,k'
         else:
             raise DPError('QUERY_FTS_KIND: unknown result shape')
@@ -211,6 +343,8 @@ class UnitIndex:
             items=[{'document_id':r['DID'],'article_count':r['ARTICLES'],'unit_count':r['UNITS']} for r in rows]
         elif kind=='articles':
             items=[{'source_id':r['SID'],'unit_count':r['UNITS']} for r in rows]
+        elif kind=='rank_keys':
+            items=[{'key':r['K'],'document_id':r['DID'],'source_id':r['SID'],'score':r['SCORE']} for r in rows]
         else:
             keys=[r['K'] for r in rows]
             values=self.records.page(self.kinds['unit'],lookup_ids=keys,limit=len(keys))['rows'] if keys else []
@@ -248,5 +382,12 @@ class UnitIndex:
             raise DPError('QUERY_PAGE: invalid fulltext result limit')
         if limit==0:
             return []
-        roots=list(dict.fromkeys(row['source_id'] for row in self.rank_units(db,terms,allowed)))
-        return roots if limit is None else roots[:limit]
+        roots=[];seen=set();cursor=None
+        while True:
+            page=self._page(terms,allowed,'rank_keys',cursor=cursor,limit=100)
+            for row in page['items']:
+                sid=row['source_id']
+                if sid not in seen:seen.add(sid);roots.append(sid)
+                if limit is not None and len(roots)>=limit:return roots
+            cursor=page['next_cursor']
+            if cursor is None:return roots

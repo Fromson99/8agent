@@ -1,0 +1,14 @@
+벡터 적재 R1 구현 계약 — 2026-11-03
+대상: 완료된 R6/R7의 같은 generation/query release, 기존 AIDP _1 벡터 두 표.
+호출: Dataiku Mesh의 기존 임베딩 연결 → bounded insert-only JDBC → Gold vector envelope.
+원문/검색 state는 읽기만, 기존 벡터/HEAD/운영 서비스는 자동 변경하지 않음.
+정상: 임베딩 16개씩; 적재 최대128행/JSON 2MiB; INSERT SELECT JSON_TABLE/TO_VECTOR + COMMIT.
+완료: DB 응답 기준 VECTORS_STORED_INSERT_ACK_NOT_ACTIVATED. 원문 재검증·최종 전수 COUNT 없음.
+중단: commit 결과 불명 묶음의 PK만 확인. 전부 있음=ACK, 없음=같은 캐시 삽입, 일부=중단.
+모델: 요청 의도와 횟수 먼저 저장; 응답 캐시가 있으면 재사용. 응답 미확인 상태는 자동 재호출 금지.
+재개: 마지막 ACK의 블록/본문 offset부터 읽음. 전체 재순회/전체 건수 선계산 없음.
+캐시: 미확정 임베딩 응답만 유지, DB ACK/state 저장 뒤 이 작업이 만든 확정 캐시만 정리.
+한도: 단일 프로세스/파일 잠금; 새 벡터 단계 첫 시작부터 7일/최대1,000,000 SDK 시도, 재개시 유지.
+실패/보존: 원래 오류 코드와 상태/미확정 캐시 보존. PK/길이/차원/유한수/원문범위/DB대상 유지.
+확인: 정상·재개·ACK 유실·부분 적재·모델 응답 불명·원문 변경·잠금·전체검사 미실행·실제 로컬 Oracle SQL.
+현장: 내부 Dataiku/모델/Oracle 현장 실행은 불가. 속도 개선율이나 현장 성공으로 확대하지 않음.

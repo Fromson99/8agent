@@ -42,11 +42,24 @@ def discover(recall, original):
 
 
 def blocks(s,did,uid,extent):
-    unit = s.matcher.units[(did,str(uid))]
+    s.store.check_unchanged()
+    if did not in s.scope: raise ContractError('block metadata outside request scope')
+    binding=(s.store,getattr(s.store,'_binding_state',None),frozenset(s.scope))
+    if getattr(s,'_unit_blocks_binding',None)!=binding:
+        s._unit_blocks_binding=binding;s._unit_blocks={};s._unit_blocks_count=0
+    unit=s.matcher.units[(did,str(uid))]
+    key=(did,str(uid),extent,digest(unit))
+    if key in s._unit_blocks:return list(s._unit_blocks[key])
     if extent=='exact':
-        return [str(r[0]) for r in s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND unit_id=? ORDER BY CAST(block_id AS INTEGER)',(did,uid))]
-    lo,hi = unit['span']
-    return [str(r[0]) for r in s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<? ORDER BY CAST(block_id AS INTEGER)',(did,lo,hi))]
+        rows=s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND unit_id=? ORDER BY CAST(block_id AS INTEGER)',(did,uid))
+    else:
+        lo,hi=unit['span']
+        rows=s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<? ORDER BY CAST(block_id AS INTEGER)',(did,lo,hi))
+    values=[str(r[0]) for r in rows]
+    s.store.check_unchanged()
+    if s._unit_blocks_count+len(values)<=50000:
+        s._unit_blocks[key]=tuple(values);s._unit_blocks_count+=len(values)
+    return values
 
 
 def block_lengths(s, did, ids):

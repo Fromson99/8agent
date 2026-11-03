@@ -124,18 +124,20 @@ def result_port(pipeline,session,cases,result):
         display_meta['scenario_comparison']=result['scenario_comparison']
     routing=result.get('request_routing') or getattr(cases,'request_routing',None)
     if routing is not None:meta['request_routing']=routing
+    from .completion_contracts import public_limitations
+    user_limits=public_limitations(raw,raw.get('composition_plan',{}))
     return {'request':session.context.request,'query':query,
         'retrieval':{'candidates':originals,'routes':{},'vector_status':'NOT_USED','generation_id':query['generation_id'],'term_agent':meta},
         'selection':{'selected':contexts,'discarded_ids':[x['source_id'] for x in originals if x['source_id'] not in selected],
                      'method':'term-agent','term_agent':meta},
-        'assembly':{'context':contexts,'unresolved':raw.get('limitations',[]),
+        'assembly':{'context':contexts,'unresolved':user_limits,
                     'data_status':pipeline.store.manifest['data_status'],
                     'term_agent':{**meta,**display_meta,**({'judgment_view':view} if view else {})}},
         'answer':{'schema_version':'term-runtime-v1','id':'answer:'+session.context.run_id,
             'scope':session.work.binding['scope'],'query_id':query['id'],'generation_id':query['generation_id'],
             'source_store_sha256':session.work.binding['store_sha256'],'text':raw['text'],
             'claims':[{'id':'claim:'+str(i+1),'text':c['text'],'source_ids':list(dict.fromkeys(e['source_id'] for e in claim_evidence(c)))} for i,c in enumerate(raw.get('claims',[]))],
-            'unresolved':[{'reason':reason} for reason in raw.get('limitations',[])],
+            'unresolved':[{'reason':reason} for reason in user_limits],
             'provider_receipt':{'backend':'legal_agent','model':session.profile['model_binding'],
                 'quality_certified':False,'unified':True,
                 'assessment_review_policy':'disabled','assessment_review_status':'SKIPPED',

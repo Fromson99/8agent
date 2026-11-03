@@ -1,0 +1,111 @@
+8-AGENT 일일 작업 기록 — 2026-11-03
+
+조회 기간: 2026-11-03 01:04:25.879 ~ 2026-11-04 01:04:25.879 (Asia/Seoul)
+작성일: 2026-11-04, 매일 새벽 1시 자동화의 첫 실행
+대상 저장소: /home/jin/8-AGENT, 브랜치 feature/legal_RAG
+기준 Git HEAD: edd2b4d7f (2026-11-03 13:56:50 커밋)
+기간 원칙: 첫 실행은 직전 24시간을 조사했다. 전날 작업을 중심으로 자정 이후도 확인했으며, 실행 시작 시점까지 미커밋 대상 파일과 11월 3~4일 감사 TXT에서 자정 이후 수정은 발견되지 않았다. 이번 일지·검사 기록은 실행 시작 이후 새로 만든 기록이다. 파일 시각만으로 작업 완료를 판정하지 않고 실제 결과 보고서와 연결 상태를 함께 확인했다.
+
+1. 오늘의 핵심 결과
+
+로컬 선택은 MAIN136 / gold-query-optimized-20261103-r2다. 일반 RAG 입력 중복 정리, 관리 화면 연결, 반복 조회·FTS·복구 조건 수정이 누적 반영됐다. 이번 일지 작성 중 Gold binding의 서빙 517파일을 대조한 결과, 선택 릴리스와 작업 코드 모두 해시 불일치가 없었다. 배포 근거는 USER_DIRECTED_CUTOVER, quality_certified=false다. Git 커밋과 로컬 MAIN 선택, 현장 배포는 별개 상태다. [E01, E02]
+
+속도는 개선 완료로 보고할 수 없다. 후속 실제 SQLite 비교의 완료된 369조 한 쌍은 165.220초에서 198.500초로 느려졌고 호출은 8회로 같았다. 이어진 원응답 재생에서 가장 큰 병목은 SQLite의 하위 노드 목록을 구할 때 전체 노드를 반복 순회하는 처리로 확인됐다. 원인 진단은 완료됐지만 이 병목의 제품 수정은 아직 수행하지 않았다. [E03, E04]
+
+2. 완료한 구현·반영과 검증
+
+가. 관리 화면·가정 표시를 MAIN134에 연결
+- 공통 대시보드·자유 작업공간·도메인·시나리오 화면을 연결하고, 인증 호스트의 reader/writer/용어집과 현재 가정·기준 사건 표시를 분리했다. 앞선 서버 계산 작업을 실제 선택 경로에 포함했다.
+- 기록상 계약169, 준비 API14, root16, Gold9, 별도 UI묶음6 조건을 확인했다. 서로 중복되는 검사를 합산하지 않는다. 로컬 Oracle 격리 범위 작성→승인·게시→새 프로세스 조회·권한 거절→철회 확인은 통과했다.
+- 현장 Dataiku/GENOS/NFS 동시성 및 실제 모델의 가정 답변 품질은 별도 미검증/미통과다. [E05]
+
+나. 일반 RAG 입력·검토 중복을 MAIN135에서 정리
+- 일반 ASSESS/보완에 무손실 입력 공유와 review_links를 확대했다. 완전히 확보된 조사 범위 중 명시적으로 USE/EXCLUDE/OPEN을 선택한 작업 장부만 서버가 조립하며, 독립 의미 판단과 미확보·충돌은 유지한다.
+- 같은 입력 구성에서 원문2개의 user bytes는 24,204→19,590, 질문 반복9→2, 첫 원문6→1이었다. 자료별 목적200개에서는 필수 검토행603→402였다. 12구성의 전체 입력 복원은 같았으며 bytes를 토큰이나 실제 속도 개선으로 바꾸어 해석하지 않는다.
+- 계약196, 모의 API22, 준비 API13, root16, Gold9 확인 기록이 있다. 준비13은 앞 API와 겹친다. 이 구현 검증의 새 모델·Oracle 호출은0이었다. [E06]
+
+다. 내부 검토 경고 표시와 실제 부족 사항을 구분
+- 서버가 만든 내부 검토 미완료 항목만 새 답변의 공개 본문/API/스트림에서 제외했다. 실제 부족 자료·사실 요청·가정 비교·인용과 내부 PARTIAL 상태, 옛 저장 답변 검증은 유지한다.
+- 해당 작업에서 새8/고유41검사 통과, 기존16실패 동일 기록을 남겼다. MAIN136 반영 보고서와 이번 파일 해시 대조에서 누적 코드 보존을 확인했다. 표시 변경을 최종 검토 완료나 속도 해결로 간주하지 않는다. [E07, E01]
+
+라. Gold·SQLite 조회 최적화를 MAIN136에 반영
+- 요청 범위·판본·권한에 결속된 상한 캐시, 문서 SourceScope 전달, 선택 페이지 본문·카드만 읽기, Oracle 단일 토큰 tf/전역 df, 물리 키 조건 전달, 불필요 CLOB JOIN 제거, 블록 목록·용어집 재사용, 온톨로지 게시·권한 확인 배치를 반영했다.
+- 원문 확보 후 남은 need에 연결된 행동이 없으면 no-progress 추가 복구를 열지 않도록 했다. FINISH 후 조사 감독 경로는 별도로 남았다.
+- 새·표적 계약38, 회귀177, 준비 API14, root16, Gold9 확인. 로컬 Oracle 합성15조건에서 기존/수정 SQL의 키·점수 동일성을 확인했다. 전체 성공 SELECT180/fixture 실패1은 현장 전체 성능 측정이 아니다.
+- 기존 가정 fixture6실패를 보존했다. 27항목은14반영/6부분/3기존유지/4조건부·현장 확인으로 나뉜다. 원문·Gold query·매핑·설정·layout4는 보존했고 MAIN135 원복 경로가 있다. [E01]
+
+3. 실제 실험의 실패·미확인과 원인 진단
+
+- 기본22기능 목록과 로컬 확인을 정리했다. 실제 온톨로지 A/B는 동결 MAIN133에서 OFF2/2 완료, ON0/2 완료였다. ON 게시본의 실제 전송은 확인했지만 최종 연결 검토가 끝나지 않아 속도 향상을 입증하지 못했다. 대사 실험은 native supervisor 승인 연결 오류로 표 생성0이었다. [E08]
+- MAIN134 가정 의미 검토는 계획3개 중 실제1개 timeout, 나머지2개 미실행이었다. 숫자3분기 계산·기준 사건 보존과 실제 의미 답변 완료를 구분한다. 저액의 공급자 HTTP200 이후 공백/UNKNOWN을 성공으로 바꾸지 않는다. [E09]
+- 복합 법령 답변 ADR1300은 정상 모델2회 후 연결 오류/UNKNOWN, API502·최종 주장0이었다. 별도 출처 접힘 표시 후보는 로컬 검사·브라우저 확인을 통과했으나 작업 제품/MAIN/실제 GENOS 반영으로 기록하지 않는다. [E10]
+- Near AI 단독 Oracle 시험 ADR1303/1304는 ORA-01460/API500 및 사용자 SQLite 전환 중단 기록으로 남았다. 두 시험의 물리13회와 미실행 셀을 SQLite 성과에 섞지 않는다. SQLite ADR1305는 필요 조문2/2를 확보했지만 최종 완성답변0/2였다. 한 질문은429, 다른 질문은 검토 연결 충돌 후 원문 전용 응답이었다. [E11, E12]
+- 최종 검토표 제외 실험 ADR1306은 판단표만 제외해 최종0/2, ADR1307은 판단·질문충족 두 표를 제외해 핵심내용6/6·전달2/2였다. 제품 상태는 PARTIAL2이며 일반 품질 인증이나 기본 검토표 영구 제거가 아니다. 365/369는 각각202.446/398.318초,10/17호출이었다. [E13]
+- MAIN135/136의 같은 두 질문·양쪽 검토표OFF·NearAI/SQLite 비교 ADR1309는 전체 속도 개선 미통과다. 369조는165.220→198.500초(+20.14%),8→8호출이었다. 원문 SELECT4262→3983, 관측 SQL API2.886→2.581초는 줄었지만 후보는371조까지 추가 조사해 순수 SQL 인과 비교가 아니다. 365조 후보는429/API503으로 끝났으므로25.798초를 빠른 성공으로 계산하지 않는다. [E03]
+- ADR1310은 같은 저장 응답8개를 두 번 재생해 보호 입력16/16·최종 답변2/2 동일을 확인했다. 첫121.306초 중 Nodes.children 표본88.273초(72.8%), children2672회였다. 매번 전체256,848노드를 순회하는 코드·횟수에서6.86억 조건검사를 계산했으며 하드웨어 직접 측정값은 아니다. 이미 준비된 document_tree.children 색인이 이 경로에서 사용되지 않았다. FINISH 뒤 감독 REDIRECT와 추가 선택의 실제 모델 통신24.537초도 확인했다. 새 모델·Oracle0, 제품 수정0이며 SQLite88초를 Oracle Gold 지연으로 일반화하지 않는다. [E04]
+- ADR1302는 README/예약에 Proposed·in_progress와 TODO가 남아 있다. 후속 시험이 있다는 이유로 이 예약을 완료 처리하지 않았다. [E14]
+
+4. Dataiku 적재·벡터·용량 작업
+
+- 전송 R3는 gzip/Base64와 임시 LOB 해제, 기존 체크포인트 재개 및 적재/후속 전수검증 분리를 구현했다. 현장 사진의 요청2~3초 대부분을 값 검증0.04~0.07초 제거만으로 해결할 수 있다는 증거는 없었다. [E15]
+- 축소 R4는 소비자 계약을 보존하며 중복 표현3종을 SELECT 전에 제외하는 별도 query release를 준비했고 로컬37검사를 통과했다. 기존 준비 publisher 해시를 바꾼 탓에 현장 RESUME_PREPARATION_BINDING_CHANGED가 발생했다. R4.1은 원래 준비 생성기 바이트를 보존하고 export를 분리해51검사를 통과했다. 기존 원문·상태를 바꾸거나 해시 검사를 끄지 않았다. 현장 최종 성공과 실제 절감률은 미확인이다. [E16, E17]
+- R5는 실제 native CLOB bind와 정상 묶음의 반복 검증 제거를 구현해35검사 및 로컬 Oracle 확인을 수행했다. 현장 드라이버 import 실패 후 R6는 추가 설치 없는 SQLExecutor2/JDBC 경로로 바꾸고22검사 및 생성 SQL의 로컬 Oracle 실행을 확인했다. R6는 실제 bind가 아니며 payload별 SQL 파싱 비용은 남는다. R5/R6의 이전 삼성메일 발송·재조회 기록은 보존하고 이번 자동화에서는 메일을 발송하지 않았다. [E18, E19]
+- R7은 생산자 커서로 일반 표/FTS 길이·posting의 완료 위치 다음부터 재개한다. R6 원본은 유지했다. source/native prefix 재생과 기존 R6 체크포인트의 첫 재개 비용 등은 남으며 현장 미실행이다. [E01, E20]
+- 벡터 R1은 완료된 R6/R7 원문·검색 판본에 결속하고 내부 Mesh 최대16구간, DB 최대128행/JSON2MiB 묶음과 pending/ACK/재개 처리를 준비했다. 최종 ZIP74파일, 검사34개, 로컬 Oracle SQL6조건을 확인했다. 실제 임베딩·현장 실행·서비스 활성화·메일 발송은0이고 완료 표시는 STORED/NOT_ACTIVATED 범위다. [E21]
+- NFS/SQLite 표별 크기와 Oracle 실제 할당량을 분리하는 읽기 전용 용량 확인 패키지는9검사·SELECT9개를 준비했다. 실제 NFS/Oracle 현장 용량 측정은 아직 없다. 기존 사진의 검색60,971,724행과 제외 후보22,508,574행은 계획량이며 실제 완료·남은 용량·전체 완료시간으로 바꾸어 쓰지 않는다. [E22, E23]
+
+5. 이번 자동 정리에서 확인한 범위와 Git 보존
+
+- 11월3일 기존 커밋: 9645340bd(08:53:52), edd2b4d7f(13:56:50). 누적 커밋에는 이전 날짜 작업도 들어 있으므로 모든 줄을 당일 신규 구현으로 세지 않는다. ADR1289는 첫 조회구간 이전 완료 기록이며 이번에는 그 후속 검증·MAIN134 연결을 다뤘다.
+- 실행 시작 시 미커밋539파일, 총6,930,388bytes였다. 제품·pin·테스트, ADR1303~1310 실행 도구, Dataiku R5/R6/R7·벡터·용량 패키지의 코드·설정·작은 검증 기록을 확인했다. 모두 텍스트이고 최대 파일은 약203KB다. TABLES.csv는 표/열 정의 목록이며 원문 행 데이터가 아니다.
+- Python425파일 구문, JSON75파일 파싱과 기존 추적 변경의 git diff --check는 통과했다. 새 파일까지 staging한 검사에서는 봉인 실행기·패키지의 기존 공백 경고15건(파일 끝 빈 줄11/줄 끝 공백4)이 드러났으며 원본 바이트·manifest를 보존하기 위해 수정하지 않았다. 기존 edit_core.py 문자열 escape 경고1개도 보존했다. 일반 자격증명 패턴 검사에서 확정 후보0이었으며, 파일 제외 규칙을 유지하고 강제 추가하지 않는다. 이는 완전한 비밀 탐지 보증은 아니다.
+- 현재 작업의 표적 계약검사66개 중60통과/6실패,32.81초. 실패는 test_native_typed_scenario_and_explicit_ontology_use의 missing_receipt/wrong_condition/stale_value/repair_success/rule_stale/rule_success다. 모두 기대 RESPONSE_RECEIVED와 실제 PREPARED_NOT_SENT 불일치다. ADR1308의 수정 전 보존 로그와 실패6이름·assertion6개가 같았다. 이번에 수정 전 코드를 다시 실행하거나 테스트를 고치지는 않았다.
+- 위 검사는 합성 transport·임시 SQLite 기반이다. 이번 정리의 새 외부 모델·Oracle 호출·MAIN 전환·원격 push·배포·메일은0이다. 기존 검증 수치와 이번66검사를 독립 성공표본으로 합산하지 않는다.
+- 기존 staging은 비어 있었고 merge/rebase/index lock은 없었다. 확인 기간에539파일 내용은 동일했다. 최초 staging에서 패키지 TABLES.csv 4개의 CRLF가 LF로 변환되는 것을 발견했다. 기존 .gitattributes의 봉인 CSV 보존 방식에 R5/R6/R7/벡터R1의 정확한4경로만 추가해 원래 바이트와 해시를 유지한다. 원본 코드·CSV·manifest는 수정하지 않는다.
+- 이번 문서와 CSV 보존 설정을 더한541파일의 명시적 목록으로 현재 브랜치에 로컬 보존 커밋을 만든다. staging한 원본539파일을 작업 바이트와 다시 대조하며, 전체 테스트 통과나 품질 인증 커밋으로 표현하지 않는다.
+- 실제 커밋 해시·남은 변경과 검사 원본/해시는 아래 실행 영수증에 남긴다. 이 영수증과 원시 검사 로그는 Git 제외 감사 경로에 보존한다.
+  09_ARTIFACTS/AUDITS/20261104-daily-work-log/run.json
+
+6. 11월4일에 할 만한 일 — 제안이며 아직 실행하지 않음
+
+우선1. SQLite 하위 노드 조회를 기존 children 색인에 연결
+이유: ADR1310에서 가장 큰 관측 병목이었다. 첫 단계는 Nodes.children과 document_tree.children의 순서·root·중복·순환·seen metadata 계약을 대조하는 것이다. 완료 기준은 기존 선택·보호 입력·원문·최종 결과 동일, 전체 노드 반복 순회 제거와 같은 저장 응답에서 실제 지연 감소 확인이다. 신규 비교는 별도 ADR 절차를 따른다. [E04]
+
+우선2. 같은 요청의 구조 검증·개별 원문 조회 재사용
+이유: resolve16/verify14회와 source JSON1345회·블록2281회 조회가 남는다. 먼저 요청 판본·권한·메타데이터·선택 해시가 같은 성공 검증의 재사용 지점을 확인한다. 완료 기준은 권한/판본 변화·부분 조회 거절 보존, 호출·메모리 상한과 재조회 감소의 계측이다. Oracle root/SourceScope는 SQLite와 별도 확인한다. [E04]
+
+우선3. FINISH 이후 감독의 추가 조사 조건 점검
+이유: no-progress 복구를 줄여도 종료 감독의 REDIRECT는 별도 경로로 남아 있다. 먼저 ADR1310의5~8번째 응답을 원래 요구·미확보·충돌·예상 답변 변화와 대조한다. 완료 기준은 필요한 추가 근거는 보존하면서 근거 없는 범위 확장과 추가 호출을 줄이고, 종료·부분답변·예산 계약을 유지하는 것이다. [E04]
+
+우선4. Dataiku R6/R7·벡터 R1의 현장 실행 조건과 용량 확보 확인
+이유: 로컬 SQL/합성 검사가 현장 전량 적재나 공간 확보를 입증하지 않는다. 먼저 기존 job state와 pending, 실제 패키지·원문/검색 판본, 읽기 전용 용량 결과를 확보한다. 완료 기준은 허용된 현장 경로에서 재개·중복·결과불명 처리를 확인하고, 전체 시간·적재 상태·서비스 활성화 상태를 각각 기록하는 것이다. 현재 미확정 값을 임의 생성하거나 자동 배포하지 않는다. [E18~E23]
+
+우선5. 알려진 가정6실패와 실제 답변 미완료를 분리해 정리
+이유: 테스트 상태 표시 불일치, 실제 공급자 UNKNOWN/429, 의미 답변 실패는 서로 다른 문제다. 먼저 보존 실패6개와 실제 wire/표시 계약을 대조하고 ADR1302 예약의 미완료 사유를 확인한다. 완료 기준은 실패 원인을 각각 연결하고, 필요한 fixture 수정과 제품 수정·실모델 후속을 별도 범위로 정하는 것이다. 기존 실패를 삭제하거나 예약만으로 완료 처리하지 않는다. [E07~E14]
+
+7. 근거 경로 — 저장소 루트 기준
+
+[E01] 09_ARTIFACTS/AUDITS/20261103-gold-query-optimization/final/수정과_검증_메인반영결과.txt
+[E02] 01_DATA/ACTIVE/local/ACTIVE_RELEASE.json ; 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/binding.json
+[E03] 09_ARTIFACTS/AUDITS/20261103-main136-sqlite-latency/실제_전후속도_비교결과.txt
+[E04] 09_ARTIFACTS/AUDITS/20261103-main136-latency-profile/느린이유_함수_SQL_중단로직_분석.txt
+[E05] 09_ARTIFACTS/AUDITS/20261103-rag-ontology-console-integration/수정과_검증_메인반영결과.txt
+[E06] 09_ARTIFACTS/AUDITS/20261103-ordinary-assessment-contract-main/정리와_검증_메인반영결과.txt
+[E07] 09_ARTIFACTS/AUDITS/20261103-user-review-display-latency/표시수정과_처리시간_진단.txt
+[E08] 09_ARTIFACTS/AUDITS/20261103-local-integration-verified/로컬검증결과.txt
+[E09] 09_ARTIFACTS/AUDITS/20261103-main134-display-live/실제실험과_검증결과.txt
+[E10] 09_ARTIFACTS/AUDITS/20261103-connected-law-genos/실험결과와_GENOS수정.txt
+[E11] 09_ARTIFACTS/AUDITS/20261103-main135-nearai/실제답변_검증결과.txt ; 04_EXPERIMENTS/ADR/ADR-1304-main135-nearai-remaining-cells/README.md
+[E12] 09_ARTIFACTS/AUDITS/20261103-main135-nearai-sqlite/SQLite_실제답변_검증결과.txt
+[E13] 09_ARTIFACTS/AUDITS/20261103-main135-tables-off-sqlite/검토표제외_비교와_실제답변.txt
+[E14] 04_EXPERIMENTS/ADR/ADR-1302-qwen-current-transport-diagnosis/README.md
+[E15] 09_ARTIFACTS/AUDITS/20261103-g19-transport-resume/수정과_검증결과.txt
+[E16] 09_ARTIFACTS/AUDITS/20261103-g19-reduced-implementation/수정과_검증결과.txt
+[E17] 09_ARTIFACTS/AUDITS/20261103-g19-preparation-binding-fix/수정과_검증결과.txt
+[E18] 08_DEPLOYMENT/DATAIKU/gold_fresh_1_native_bind_20261103_r5/수정과_발송결과.txt
+[E19] 08_DEPLOYMENT/DATAIKU/gold_fresh_1_jdbc_fast_20261103_r6/수정과_발송결과.txt
+[E20] 08_DEPLOYMENT/DATAIKU/gold_fresh_1_jdbc_seek_20261103_r7/사용방법과_범위.txt
+[E21] 08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261103_r1/수정과_검증결과.txt
+[E22] 08_DEPLOYMENT/DATAIKU/nfs_table_capacity_20261103_r1/GUIDE.txt ; 08_DEPLOYMENT/DATAIKU/nfs_table_capacity_20261103_r1/VALIDATION.json
+[E23] 09_ARTIFACTS/AUDITS/20261103-dataiku-r3-capacity/현장사진과_용량확인.txt
+[E24] 04_EXPERIMENTS/ADR/ADR-1308-gold-query-optimization/artifacts/prior-fixtures.stdout.txt

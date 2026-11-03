@@ -1,0 +1,7 @@
+초기 도구 patch는 같은 파일 Delete/Add를 한 패치에 함께 넣어 적용 전 거절됐다. 생성한 새 복사본에서만 수정 후 재적용.
+단위검사 1차: 15통과/12실패. 모의 DB를 JDBC install이 덮어쓴 fixture 오류(_g8_transport 누락), 제품 SQL 실패 아님. 원 결과는 세션 도구 출력에 보존.
+2차: 26통과/1실패. 소비자 클래스 이름 fixture 오류(NativeVectorReader → 실제 VectorReader). TEST_RUN_02.txt 보존.
+3차: 27통과. 이후 실제 조문 ID 연결 문제를 코드 탐색으로 발견하여 navigation source 경로로 수정.
+4차: 조문 ID·R7/reduced·byte경계 재개 포함32통과. TEST_RUN_04.txt 보존.
+5차: 전체 전달 TXT의 성공/실패 로그 처리 포함34통과. TEST_RUN_05.txt 보존.
+Oracle 1차: 정상과 의도된 PK/차원 오류를 포함6조건 통과. ORACLE_RUN_01.txt 보존. 오류 SQL metadata는 기대한 실패 검사 출력.

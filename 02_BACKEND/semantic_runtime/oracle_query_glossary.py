@@ -53,6 +53,18 @@ class Glossary(Base):
 
     def lookup(self,label,*,limit=8,offset=0):
         self.check_unchanged();self.page(limit,offset)
+        if not isinstance(label,str) or not 2<=len(label.strip())<=120:raise ValueError('label length must be 2..120')
+        from .oracle_query_cache import for_request,key
+        cache=for_request(self.request)
+        binding=key('glossary-page',glossary=self.binding,label=label,limit=limit,offset=offset)
+        found,value=cache.get(binding)
+        if found:return value
+        value=self._lookup(label,limit=limit,offset=offset)
+        self.check_unchanged();cache.put(binding,value)
+        return value
+
+    def _lookup(self,label,*,limit=8,offset=0):
+        self.check_unchanged();self.page(limit,offset)
         if not isinstance(label,str) or not 2<=len(label.strip())<=120:
             raise ValueError('label length must be 2..120')
         db=self.dbs['lookup'];key=norm(label)

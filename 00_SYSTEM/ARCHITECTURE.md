@@ -1,5 +1,8 @@
 # MAIN — 원문과 용어 기반 탐색
 
+**2026-11-03 로컬 MAIN136:** `gold-query-optimized-20261103-r2`·서빙517·Gold동일. 반복조회/범위전달/페이지본문/FTS tf·정확순위/need기반복구를 수정했다. [검증과 잔여조건](../09_ARTIFACTS/AUDITS/20261103-gold-query-optimization/final/수정과_검증_메인반영결과.txt). 실제모델·현장속도 미인증. 기존원문·layout4·Goldquery/매핑보존. 아래MAIN135는이전시점.
+
+
 **2026-11-03 현재 로컬 MAIN135:** `ordinary-assessment-20261103-r1`·서빙516/작업540·Gold동일. 일반입력 무손실공유/공유검토 연결·완전확보 조사장부 서버조립을 적용했고 원문/권한/의미 검증을 유지한다. [검증·한계·원복](../09_ARTIFACTS/AUDITS/20261103-ordinary-assessment-contract-main/정리와_검증_메인반영결과.txt). 실제Qwen·큰자료법률품질 미인증. 아래 MAIN134는 이전 시점이다.
 <!-- ORDINARY_ASSESS_MAIN135_1301_20261103 -->
 

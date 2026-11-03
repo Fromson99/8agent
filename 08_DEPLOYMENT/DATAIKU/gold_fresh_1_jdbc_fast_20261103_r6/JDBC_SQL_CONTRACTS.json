@@ -1,0 +1,44 @@
+{
+  "status": "PASS_JDBC_SQL_INSERT_ONLY_CONTRACTS",
+  "field_database": false,
+  "models": 0,
+  "existing_data_mutated": false,
+  "created_schemas": [
+    "A8_JF6_2F1AF57496",
+    "A8_JF6_64CC637C2B",
+    "A8_JF6_9A26BACC7F"
+  ],
+  "dropped_schemas": [
+    "A8_JF6_9A26BACC7F",
+    "A8_JF6_64CC637C2B",
+    "A8_JF6_2F1AF57496"
+  ],
+  "checks": [
+    "jdbc_literal_transport_gate_unicode_above_32k",
+    "17_tables_exact_columns_pk_and_indexes",
+    "17_insert_read_rollback_and_absence_checks",
+    "vector_float32_two_and_three_dimensions",
+    "jdbc_sql_insert_only_null_empty_large_unicode_clob_exact_values",
+    "literal_sql_sha_changes_with_payload_documented_limit",
+    "interrupted_batch_keys_only_present_or_absent",
+    "primary_key_rejects_duplicate_and_rolls_back_whole_new_batch",
+    "gold_char_flag_insert_and_readback",
+    "publication_timestamp_default",
+    "restricted_select_insert_account_all_17_preflight_and_rollback_probes",
+    "restricted_insert_only_without_delete_or_lock_any_privilege",
+    "delete_permission_absent_but_new_table_load_succeeds"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "resource_guard": {
+    "non_oracle_user_segment_bytes": 9287565312,
+    "users_free_extent_bytes": 737804288,
+    "maximum_new_schema_quota_bytes": 67108864
+  },
+  "restricted_system_privileges": [
+    "CREATE SESSION"
+  ],
+  "transport_mode": "DATAIKU_JDBC_LITERAL",
+  "sql_executor_emulated_on_local_oracle": true,
+  "field_dataiku_jdbc_executed": false,
+  "test_harness_driver_version": "26.0.1"
+}

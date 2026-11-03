@@ -1,0 +1,29 @@
+2026-11-03 벡터 생성·Oracle 적재 R1 준비 완료
+
+사용자 요청: 마지막 적재의 벡터 단계도 실행할 쿼리/실행문 준비, INSERT 최적화와 불필요한 반복 검증 제거.
+전달물: DATAIKU_GOLD_VECTOR_FAST_20261103_R1.zip / DATAIKU_GOLD_VECTOR_FAST_RUN_R1.txt / GUIDE.txt / VECTOR_INSERT_SQL_R1.txt.
+대상: 완료된 R6/R7 full/reduced 작업의 동일 원문/검색 판본, AIDP SIDDS의 기존 _1 벡터2표.
+
+변경
+- 이전 vector_stage의 import run/VERIFIED_R1_REQUIRED를 R6/R7 완료 상태를 읽는 진입점으로 교체.
+- 실제 navigation.source의 조문 ID/원문 연결을 사용. 이전 document:unit 임의 ID와 preview segmentation을 구분해 새 segment_profile 결속.
+- 내부 Mesh 최대16구간 임베딩, DB 최대128행/JSON2MiB 일괄 INSERT/COMMIT.
+- 정상 묶음 존재조회/COUNT/CLOB대조/벡터거리 대조와 마지막 전체 COUNT 제거.
+- 전체 원문 선계산/대용량 SHA 반복/완료구간 재순회 제거. 조문ID/블록 index/문자 offset으로 재개.
+- 모델 의도/응답 캐시/DB pending/ACK/checkpoint 보존. 결과불명 DB 묶음의 PK만 조회.
+- 확정 캐시만 ACK/state저장 뒤 제거. 모델 결과불명 무재호출, 부분 PK 중단, 원문/대상/차원/잠금 유지.
+- 원문/검색 state read-only, VCTR_HEAD/GENOS 서비스 전환 없음. source publish도 자동실행하지 않음.
+
+확인
+- 최종 ZIP74파일/실제 Python64개 SHA 및 원본 package 바이트 일치. Python3.10 문법 통과.
+- ZIP 추출 코드의 단위/실제진입점/메타데이터소비자/전달TXT 검사34개 통과.
+- 실제 로컬 Oracle23.26.3.0.0 SQL6조건: 32x1024 FLOAT32+긴한글/보조문자 CLOB,
+  test-only 내용대조, pending PK 전부/없음/일부, 중복 전체rollback, 차원오류rollback, 게시INSERT.
+- SQLExecutor2 인터페이스 모의/실제 생성 SQL Oracle실행. 격리 시험 스키마 제거.
+- 실패fixture2종과 이후 수정 이력은 FAILURE_HISTORY.txt/TEST_RUN_02.txt 등에 보존.
+- 최종 artifact 해시/파일크기: ATTACHMENT_MANIFEST.json.
+
+범위
+새 실모델0, 현장 Dataiku/Oracle 실행0, 서비스/MAIN/원문/Gold 기존DB 변경0, DDL 현장0, 메일발송0.
+현장 속도·전체완료·실제 검색품질 인증 아님. SQL payload마다 달라지는 JDBC 파싱비용은 남음.
+완료는 VECTORS_STORED_INSERT_ACK_NOT_ACTIVATED / full_values_verified=false.

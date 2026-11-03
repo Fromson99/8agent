@@ -764,6 +764,33 @@ def validate_failed_operation(investigation, decision, actions):
         raise ProposalError('same failed operation in this request; select a different offered target/query or leave UNRESOLVED')
 
 
+def recovery_need_targets(inv,data):
+    """Only an explicit outstanding need can extend an already-read search.
+
+    Legacy or initial discovery keeps its bounded route. No need, judgment,
+    source status or model opinion is rewritten by this eligibility check.
+    """
+    if not getattr(inv,'policy',{}).get('read_judgment') or not any(s.get('text') for s in data.get('sources',[])):
+        return None
+    from . import need_continuity,read_judgment
+    targets=set()
+    for need in need_continuity.known_needs(inv,data).values():
+        if need.get('status') not in ('OPEN','REQUIRED','BLOCKED'):continue
+        for declaration in need.get('declarations',[]):
+            targets.update(a['target'] for a in declaration.get('proposed_actions',[]) if a.get('target'))
+    state=read_judgment.state_for(inv,data)
+    # History stores receipt keys. Only the latest decision can propose a
+    # current continuation; an old action cannot revive a closed need.
+    history=state.get('history',[])
+    latest=state.get('receipts',{}).get(history[-1],{}) if history else {}
+    open_text={n.get('text') for n in need_continuity.known_needs(inv,data).values() if n.get('status')=='OPEN'}
+    targets.update(a['target'] for a in latest.get('next_actions',[])
+                   if a.get('target') and a.get('missing_need') in open_text)
+    for gap in data.get('gap_targets',[]):
+        targets.update(gap.get('read_actions',[]));targets.update(gap.get('navigation_actions',[]))
+    return targets
+
+
 def no_progress_recovery(inv):
     """Bounded discovery-to-read chain; no new budget or source progress."""
     if not inv.modern:return None
@@ -792,6 +819,9 @@ def no_progress_recovery(inv):
     useful = {'READ_ARTICLES','READ_SCOPE','READ_PARENT','SEARCH_BODY','SEARCH_STRUCTURE','RETRY_LAW_STRUCTURE',
               'RESEARCH','FOLLOW_CONNECTION','OPEN_LAW','OPEN_STRUCTURE','BROWSE_STRUCTURE',
               'NEXT_ARTICLES','NEXT_LAWS','NEXT_STRUCTURE','NEXT_HITS'}
+    eligible=recovery_need_targets(inv,data)
+    if eligible is not None:
+        actions={ident:a for ident,a in actions.items() if ident in eligible}
     if not any(a['action'] in useful for a in actions.values()):return None
     def targets(menu):
         return {digest([a['action'],a.get('identity')]) for a in menu.values() if a['action'] in useful}

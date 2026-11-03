@@ -1,0 +1,28 @@
+"""Close interrupted Oracle evidence without inventing an API response."""
+from common import *
+import re,time,collections
+partial=ART/'live/ontology-369-ontology-on';calls=read(partial/'calls.json')
+assert all(c['status']=='responded' for c in calls)
+put(partial/'interruption-summary.json',{'case_id':'ontology-369','arm':'ontology-on','http_status':None,'status':'USER_INTERRUPTED','request_seconds':None,'physical_calls':len(calls),'unknown':0,'claims':0,'answer_chars':0,'reason':'User requested SQLite; Oracle worker SIGTERM after all recorded sends had known complete outcomes','api_response_exists':False,'interrupted_pid':2062034,'original_runtime_preserved':True})
+# Audit the interrupted journal as an attempted partial cell. This is an offline
+# observer variant; it never creates a provider/API response or changes product.
+source=(Path(__file__).parent/'audit.py').read_text()
+source=source.replace("if not (d/'result.json').exists():continue", "if not (d/'result.json').exists() and not (d/'interruption-summary.json').exists():continue")
+source=source.replace("r=read(d/'result.json')", "r=read(d/('result.json' if (d/'result.json').exists() else 'interruption-summary.json'))")
+source=source.replace("response=raw(d/'response.json.gz')['body'];", "response=raw(d/'response.json.gz')['body'] if (d/'response.json.gz').exists() else {}; ")
+exec(compile(source,str(Path(__file__).parent/'audit.py')+'[interruption-aware-offline]','exec'),globals())
+exec(compile((Path(__file__).parent/'ledger.py').read_text(),str(Path(__file__).parent/'ledger.py'),'exec'),globals())
+aa=read(ART/'source-wire-audit.json')['cells'];physical=sum(a['physical_calls'] for a in aa);cost=sum(a['reported_cost_usd'] for a in aa)
+result={'status':'USER_STOPPED_SWITCHED_TO_SQLITE','record_status':'complete','planned_cells':3,'attempted_cells':2,'completed_api_responses':1,'technical_failure':1,'user_interrupted':1,'not_run':1,'correct_final_answers':None,'physical_calls':physical,'unknown':0,'reported_cost_usd':cost,'reported_tokens':sum(a['reported_tokens'] for a in aa),'main_changes':0,'oracle_writes':0,'source_integrity':all(not a[k] for a in aa for k in ('source_mismatches','acl_violations','wire_mismatches')),'cells':[{'cell':a['cell'],'http_status':a['http_status'],'calls':a['physical_calls'],'failure':a['failure']} for a in aa],'scope':'Known365ON Oracle500 preserved;369ON stopped on explicit user instruction after1 completedNearAI response;369OFF never dispatched. No invented API response or resource-final metric for terminated worker.'}
+put(RUN/'result.json',result)
+m=read(ADR/'실험/manifest.json');m['runs'][0].update(status='complete',sha256=sha(RUN/'result.json'));m['retrieval_accounting']=read(ART/'retrieval-metrics.json')
+m['results'].update(status='complete',by_arm={'baseline':{'not_run':1},'ontology-on':{'technical_failure':1,'user_interrupted':1}},comparisons=[],judge_disagreements=0,usage={'physical_calls':physical,'reported_cost_usd':cost,'unknown':0},latency={'complete365ON_request_seconds':read(ART/'live/ontology-365-ontology-on/result.json')['request_seconds'],'interrupted369ON_seconds':None},error_taxonomy=[{'type':'other','reason':'ORA-01460 on365ON, then user-requested SQLite switch during369ON'}]);put(ADR/'실험/manifest.json',m)
+heads=['결정 요약','문제와 변경 전 구조','가설과 사전 판정 기준','실험 설계','데이터·모델·재현성','결과','사례별 오류 분석','비용·지연·회수 규모','해석','한계와 일반화 가능 범위','운영 결정·롤백 조건','재현 명령']
+vals=['사용자가 Oracle 중단 및 SQLite 실행을 지시해 중단. 미실행3셀 중365ON은 API500,369ON은첫정상모델뒤사용자중단,369OFF미실행. 최종정답률 산정불가.','부모1303은 첫365OFF6정상모델뒤 Oracle500. 실패셀은 반복하지 않고 당시 미실행세셀만별도동결했다.','design/criteria.json의3셀원문대조와 NearAI단독. 결과를보기전에 independent known APIfailure는보존후다음셀을허용하고 UNKNOWN/resource는전역중단으로선언했다.','MAIN135516동일·NearAI only·OracleGold읽기전용·새SQLite상태. 365ON→369ON→369OFF. 실제첫셀실패후두번째중사용자중단.','hashes design/freeze.json, 원문버전·모델·프로필은부모와동일. 제품수정0. 기준답변제품비공개.',json.dumps(result,ensure_ascii=False,indent=2),'365ON은 원문3요건확인뒤에도 감독이3개월기준을추가조사하도록 RESEARCH를제시. CONTINUE_TARGETED 불일치거절후기존독립조사복구로실행된Oracle쿼리에서ORA-01460.369ON중단은모델실패가아니며원응답1개HTTP200보존.',f'물리{physical}·NearAI HTTP200{physical}·UNKNOWN0·보고${cost:.8f}. 중단후새모델/Oracle dispatch0.369ON완료시간과peakRSS는미확인으로남긴다.','모델전송성공과최종답변완료는별개. 사용자의SQLite전환요청은실패숨김이나자동재실행이아니다. 전체Oracle시도비용은1303과별도합산가능하나SQLite정답률에섞지않는다.','한질문API500/다른질문사용자중단. 공급자안정성이나법률정답률인증불가. 기존원본모델/실패/SQLite WAL보존.','제품/MAIN/Gold/Oracle내용·DDL/게시/Git/메일변경0. 후속SQLite ADR1305로사용자요청진행.','prepare→freeze→native3planned→userSTOP/SIGTERM→interruption-aware offlineaudit/ledger→recordfinalize→hash/status/validate. 중단실제셀재실행0.']
+front=(ADR/'README.md').read_text().split('---',2)[1];front=re.sub(r'(?m)^status:.*$','status: Rejected',front)
+(ADR/'README.md').write_text('---'+front+'---\n\n# Oracle 추가 시험·사용자 SQLite 전환 중단\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{v}' for i,(h,v) in enumerate(zip(heads,vals),1))+'\n')
+for q in m['questions']:
+ p=ADR/'실험'/q['file'];p.write_text(p.read_text().split('## 8. 사례 최종 판정')[0]+'## 8. 사례 최종 판정\n\n'+('365ON Oracle기술실패, 최종답변0.' if q['case_id'].endswith('365') else '369ON 첫1모델정상후사용자중단·API응답없음,369OFF미실행.')+'\n')
+(ADR/'실험/README.md').write_text('# 사용자 요청에 따른 Oracle중단\n\n'+'\n'.join(f'- [{q["case_id"]}]({q["file"]})' for q in m['questions'])+'\n')
+put(ART/'manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':'ADR-1304','files':[{'path':str(p.relative_to(ROOT)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Preserved user-interrupted Oracle trial','contains_raw_prompts_and_outputs':'raw' in p.parts or 'canonical' in p.parts} for p in sorted(ART.rglob('*')) if p.is_file() and p!=ART/'manifest.json']})
+print('Oracle record closed',physical,'calls',cost,'USD; user interruption preserved')

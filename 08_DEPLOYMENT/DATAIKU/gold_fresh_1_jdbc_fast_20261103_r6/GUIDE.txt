@@ -1,0 +1,78 @@
+Oracle 적재 R6 — oracledb 설치 없이 기존 Dataiku AIDP 연결 사용
+2026-11-03 / LEGAL_RAG / 기존 _1 테이블 / R5 실행문 대체
+
+사진의 NATIVE_DRIVER_REQUIRED_ORACLEDB는 R5에서 import oracledb가 실패했다는 뜻입니다.
+R5는 이 단계에서 DB 적재와 체크포인트 변경 전에 멈췄습니다. 화면의 원문 835,713행,
+검색 513,042행은 저장돼 있던 이전 진행 기록이며 R5가 새로 적재한 수치가 아닙니다.
+R6는 oracledb/cx_Oracle 설치, 비밀번호 조회, Oracle 직접 접속 없이 기존 dataiku.SQLExecutor2(connection='AIDP')를 사용합니다.
+
+첨부 4개
+- DATAIKU_GOLD_FRESH_1_JDBC_FAST_20261103_R6.zip : 실제 실행 코드
+- DATAIKU_GOLD_FRESH_1_JDBC_FAST_RUN_R6.txt : 전체 실행문
+- CHECK_DATASET_WRITER_R6.txt : 선택 사항, Dataiku Writer 연결정보 읽기 전용 확인
+- GUIDE.txt : 이 안내서
+
+바로 실행
+1. 이전 적재 셀/프로세스를 종료합니다.
+2. R6 ZIP을 그대로 LEGAL_RAG 관리 폴더 ehA8dpVm에 업로드합니다. 압축을 풀거나 재포장하지 않습니다.
+3. 기존 LEGAL_RAG Python 노트북에서 R6 실행 TXT 전체를 새 셀에 붙여 실행합니다.
+   기본 ACTION="load". OLD_JOB_DIR=""는 이전 기본 경로이며, 이전에 직접 지정했으면 같은 값을 넣습니다.
+   노트북 현재 디렉터리는 기존 것을 사용하고 로그는 gold-progress-logs에 생깁니다.
+   R5의 ORACLE_DSN 설정은 사용하지 않습니다. 새 Python 패키지를 설치하지 않습니다.
+4. LOADED_INSERT_ACK가 적재 응답 기준 완료입니다.
+5. 기존 시험 채널 게시 정보까지 쓸 때만 ACTION="publish"로 바꿔 같은 셀을 실행합니다.
+   SOURCE_QUERY_PUBLISHED가 완료입니다. 이전 verify_publish 전체 재검증은 하지 않습니다.
+   운영/GENOS 서비스 전환·임베딩 생성은 실행하지 않습니다.
+
+변경 내용
+- R5에서 제거한 반복 검증은 그대로 제거된 상태입니다.
+- 정상 묶음은 INSERT SELECT JSON_TABLE + COMMIT + 체크포인트입니다.
+- 존재 조회/전체 컬럼 COUNT/DBMS_LOB.COMPARE/원격 전체 건수 스캔/전체 되읽기/전수 검증 없음.
+- 대용량 SQLite 전체 SHA 반복/원문 COUNT 재계산/원문 chain 검사/검색행 중복 해시 검사 없음.
+- 정상 load에 합성 전송 시험을 강제하지 않으며 17표 깊은 사전 검사도 없습니다.
+- 최소 접속 대상/표 식별, Oracle PK·타입, 중단 위치 저장과 pending 묶음의 PK 확인만 유지합니다.
+- 원문은 기존 약 1,000행/2MiB, 검색은 기존 5,000행/2MiB 단위를 유지합니다.
+- Dataiku 경로에서는 SQL 안의 COMMIT 뒤 별도 중복 COMMIT을 추가하지 않습니다.
+
+속도 개선 범위
+R6는 추가 설치 없이 실행하는 경로입니다. SQLExecutor2에 실제 bind API가 있다고 가정하지 않습니다.
+데이터는 기존 R3의 gzip/base64·UTF-8 복원 코드로 SQL 문자열 안에 전달합니다.
+따라서 payload마다 SQL 텍스트가 바뀌는 파싱/컴파일 비용은 남습니다.
+제거한 검증 비용의 효과와 전체 행/초는 현장 결과로 확인해야 합니다. 14.8배나 특정 완료시간을 약속하지 않습니다.
+LOAD.transport.mode=DATAIKU_JDBC_LITERAL, native_binds=false로 표시합니다.
+
+Dataset Writer로 더 바꾸는 방법 — 선택 사항
+Dataiku는 Dataset Writer + appendMode=True로 기존 SQL 테이블에 추가 적재하는 공식 경로를 제공합니다.
+이 방법은 별도 Oracle Python 드라이버와 거대한 PL/SQL 생성 없이 데이터를 DSS에 전달합니다.
+R6 적재 경로에 Writer를 자동으로 켜지는 않았습니다. 현재 실제 데이터셋 연결과 쓰기 동작은 미확인입니다.
+CHECK_DATASET_WRITER_R6.txt 전체를 별도 노트북 셀에서 실행하면 설정을 읽기만 합니다.
+확인 대상은 AIDP / SIDDS.LGL_G19_SRCH_ROW_S_1이며, 기존 Flow 설치본의 예상 이름은 G19F1_DB_SRCH_ROW입니다.
+실제 이름은 스크립트가 찾아 출력합니다. 등록/변경/삭제/DDL/DB쓰기를 하지 않습니다.
+MAPPING_FOUND면 데이터셋 이름과 9개 실제 컬럼을 확인한 것이고, DATASET_MAPPING_NEEDED면 연결 등록이 필요합니다.
+결과 파일 DATASET_WRITER_MAPPING_R6.json을 보면 해당 데이터셋에 맞춰 Writer 경로를 연결할 수 있습니다.
+Writer는 항상 appendMode=True, infer_schema=False / drop_and_create=False를 명시해야 합니다.
+CLOB 실제 전달과 close 실패 시 부분 적재/재개 처리는 현장 시험 대상입니다. 매번 전수 검사하자는 뜻은 아닙니다.
+
+재개
+R1/R3 일반판 또는 이미 시작한 R4.1 축소판, 실제로 state 전환까지 진행한 R5도 이어받습니다.
+R5가 사진의 import 오류에서 멈췄다면 원래 R4.1 체크포인트에서 바로 이어갑니다.
+새 검색 판본을 만들지 않고 기존 완료 위치를 유지하며 변경 직전 state-before-r6-*.json을 보관합니다.
+미확정 pending 묶음만 PK 조회: 전부 있으면 완료 위치로 진행, 전혀 없으면 같은 묶음 삽입,
+일부만 있으면 PENDING_PARTIAL_KEYS_REVIEW_REQUIRED로 중지합니다. 전체값/CLOB은 비교하지 않습니다.
+중복 PK는 ORA-00001로 멈추고 묶음 전체 롤백/진행 기록 보존. 오류를 무시하지 않습니다.
+중단 후 같은 R6 ZIP/TXT, OLD_JOB_DIR, ACTION으로 재실행합니다. 상태 파일을 삭제하거나 예전 실행문으로 되돌리지 않습니다.
+원본 generation은 작업 중 수정/교체하지 않습니다. 진행 중인 검색 파일은 기존 위치까지 앞부분을 재생성하는 비용이 남습니다.
+ORA-01654/ORA-01653 공간 부족은 별도이며 R6가 테이블스페이스나 인덱스를 변경하지 않습니다.
+
+확인 범위
+- 추가 Oracle 드라이버 import를 금지한 새 프로세스에서도 실제 R6 실행 모듈 import/코드 확인 통과.
+- 일반/축소 경로의 준비 기록 재사용·적재·재실행·게시, 중단 묶음 처리 검사 통과.
+- 생성 SQL을 로컬 Oracle 23.26에 실행하여 긴 한글/보조문자·NULL/빈 CLOB·PK 충돌 롤백,
+  제한 SELECT+INSERT 계정, 1,001개 pending PK 조회 확인. 테스트용 새 스키마 모두 제거.
+- 로컬 시험의 SQLExecutor2 인터페이스는 모의이며 실제 SQL은 Oracle에 실행했습니다.
+  현장 Dataiku JDBC 전체와 Dataset Writer의 실제 처리량을 인증한 것은 아닙니다.
+
+공식 문서
+https://developer.dataiku.com/latest/concepts-and-examples/datasets/datasets-data.html
+https://developer.dataiku.com/latest/api-reference/python/datasets.html
+https://doc.dataiku.com/dss/latest/sql/datasets.html

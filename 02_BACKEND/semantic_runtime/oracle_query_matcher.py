@@ -11,16 +11,27 @@ from .navigation_match import ReverseMatcher, SurfaceIndex, MorphIndex
 
 
 def pages(request,kind,**filters):
-    cursor=None;count=0
+    from .oracle_query_cache import for_request, key
+    cache = for_request(request); cache_key = key(kind, **filters)
+    hit, saved = cache.get(cache_key)
+    if hit:
+        yield from saved
+        return
+    cursor=None;count=0; collected=[]; size=0
     while True:
         page=request.records.page(kind,limit=100,after=cursor,**filters)
         for value in page['rows']:
             count+=1
             if count>10000:
                 raise DPError('QUERY_NAV_BUDGET: narrow the requested navigation page')
-            yield value
+            if collected is not None:
+                size += len(json.dumps(value,ensure_ascii=False).encode())
+                if size <= 4*1024*1024: collected.append(value)
+                else: collected = None
+            yield copy.deepcopy(value)
         cursor=page['next']
         if cursor is None: break
+    if collected is not None: cache.put(cache_key, collected)
 
 
 class Units(Mapping):
@@ -38,6 +49,12 @@ class Units(Mapping):
         did,uid=key
         if did not in self.request.sources.allowed: raise KeyError(key)
         key=(did,str(uid))
+        from .oracle_query_cache import for_request, key as cache_key
+        hit, found = for_request(self.request).find_rows(cache_key('native.unit', document_id=did), 'unit_id', key[1])
+        if hit:
+            if not found: raise KeyError(key)
+            if len(found) != 1: raise DPError('QUERY_STRUCTURE: duplicate unit identity')
+            return found[0]
         if key in self.cache:
             self.cache.move_to_end(key)
             return copy.deepcopy(self.cache[key][0])
@@ -67,10 +84,15 @@ class Units(Mapping):
 class SourceMetadata(Mapping):
     def __init__(self,request,sources): self.request,self.sources=request,sources
     def __getitem__(self,sid):
+        from .oracle_query_cache import for_request, key
+        cache=for_request(self.request); cache_key=key('source-metadata',sid=sid)
+        hit,value=cache.get(cache_key)
+        if hit:return value
         rows=self.request.records.page('native.source',lookup_id=sid,limit=2)['rows']
         if not rows: raise KeyError(sid)
         if len(rows)!=1: raise DPError('QUERY_SOURCE_DUPLICATE: ambiguous source metadata')
-        return rows[0]
+        cache.put(cache_key,rows[0])
+        return copy.deepcopy(rows[0])
     def __iter__(self): return iter(self.sources)
     def __len__(self): return len(self.sources)
     def ids_for_documents(self,ids): return self.sources.ids_for_documents(ids)

@@ -926,13 +926,37 @@ def _public_answer_text(body):
     comparison = _comparison_answer_text(body)
     if comparison is not None:
         return comparison
-    text = _answer_text(body)
+    text = _without_review_diagnostics(body, _answer_text(body))
     if body.get("basis_review_text") and not body.get("workflow_id"):text += "\n"+str(body["basis_review_text"])
     answer = body.get('answer')
     if isinstance(answer, dict) and (answer.get('provider_receipt') or {}).get('final_review_policy') == 'advisory':
         return _without_inline_reference_numbers(text).strip()
     text = re.split(r"(?:^|\n)\s*확인 한계\s*:", text, maxsplit=1)[0]
     return _without_inline_reference_numbers(text).strip()
+
+
+def _visible_review_limitations(stage):
+    hidden, visible = set(), set()
+    for row in stage.get('limitation_items', []):
+        internal = (row.get('issue_id') is None and
+                    row.get('id') in {'L-requirement-review', 'L-review-incomplete'} and
+                    row.get('kind') in {'EXECUTION_LIMIT', 'REVIEW_INCOMPLETE'})
+        (hidden if internal else visible).add(row['text'])
+    return [text for text in stage.get('limitations', []) if text not in hidden - visible]
+
+
+def _without_review_diagnostics(body, text):
+    """Project old saved answers without rewriting their publication or claims."""
+    view = _judgment_view(body)
+    if not view:
+        return text
+    stage = next(row for row in view['stages'] if row['stage'] == 'COMPOSE')
+    hidden = set(stage.get('limitations', [])) - set(_visible_review_limitations(stage))
+    head, marker, tail = text.rpartition('\n\n확인 범위\n\n')
+    if not marker or not hidden:
+        return text
+    lines = [line for line in tail.split('\n') if line not in {'- '+value for value in hidden}]
+    return head + (marker + '\n'.join(lines) if any(line.strip() for line in lines) else '')
 
 
 def _report_document_name(value):
@@ -1849,7 +1873,7 @@ def _judgment_html(body):
                 if item.get('quote'): rows.append('<blockquote>' + e(item['quote']) + '</blockquote>')
                 rows += ['</details>', '']
             rows += ['</details>', '']
-        rows += [paragraphs('추가 확인할 사항', stage.get('limitations', [])),
+        rows += [paragraphs('추가 확인할 사항', _visible_review_limitations(stage)),
                  '<p>수정 요청 예: “' + e(stage['id']) + '번 단계에서 이 부분을 다시 확인해 주세요.”</p>', '</details>', '']
     rows += ['</details>', '<!-- GENOS_JUDGMENT_VIEW_END -->']
     return '\n'.join(rows)
@@ -2459,8 +2483,8 @@ async def run(data):
         return {'text':render_error(safe),'answer_status':'failed','request_id':safe['request_id']}
 
 
-def _review_explanation_text(body):
-    """Plain markdown projection of the server-bound public review contract."""
+def _review_explanation_text(body, *, diagnostics=False):
+    """Show concrete follow-up needs; internal review tables are opt-in diagnostics."""
     agent = (body.get('assembly') or {}).get('term_agent') or {}
     view = agent.get('review_explanation')
     if not isinstance(view, dict) or view.get('schema_version') != 'review-explanation-v1':
@@ -2471,6 +2495,12 @@ def _review_explanation_text(body):
     def safe(value):
         text=escape(str(value)).replace('|', '&#124;').replace('\n', ' ')
         return re.sub(r'([\\`*_\[\]()#!~])', r'\\\1', text)
+    if not diagnostics:
+        facts = [action for action in view.get('actions', [])
+                 if action.get('kind') == 'REQUEST_FACT' and action.get('actor') == 'USER'
+                 and action.get('enabled') and action.get('fact_name')]
+        lines = ['**추가로 필요한 정보**', '', *('- '+safe(action['fact_name']) for action in facts)] if facts else []
+        return '\n'.join(lines + _scenario_comparison_lines(agent, safe)).strip()
     lines = ['**검토 상태: '+safe(view['outcome'])+'**', '', '| 대상 | 자료 확보 | 최종 검토 | 이유·영향 |', '|---|---|---|---|']
     for item in view['items']:
         target = ' / '.join(t.get('coordinate') or t['id'] for t in item.get('targets', [])) or item['id']
@@ -2506,6 +2536,11 @@ def _review_explanation_text(body):
                 lines.append('  - '+safe(node['kind'])+': '+safe(node['text']))
             for edge in path['edges']:
                 lines.append('  - 관계: '+safe(edge['from'])+' → '+safe(edge['to'])+' · '+safe(edge['type']))
+    return '\n'.join(lines + _scenario_comparison_lines(agent, safe))
+
+
+def _scenario_comparison_lines(agent, safe):
+    lines = []
     scenario = agent.get('scenario_comparison')
     if scenario:
         lines += ['', '**가정 비교 — 실제 사건·승인 규칙 유지 / 최종 결론 미확정**', '', '| 항목 | 기준 | 가정 |', '|---|---|---|']
@@ -2514,4 +2549,4 @@ def _review_explanation_text(body):
         for row in scenario['comparisons']:
             lines.append('| '+safe(row['node_id'])+' | '+safe(row['before']['status'])+' | '+safe(row['after']['status'])+' |')
         lines.extend('- '+safe(row.get('reason') or row.get('state')) for row in scenario['unresolved'])
-    return '\n'.join(lines)
+    return lines

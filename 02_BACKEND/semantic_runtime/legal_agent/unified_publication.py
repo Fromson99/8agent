@@ -100,7 +100,7 @@ def validate_saved(repo,result):
         from ..ontology_work.runtime import assert_assessment
         assert_assessment(assessment,principal['document_ids'])
         if assessment.get('completion_contract'):
-            from .completion_contracts import verify_composition, verify_span_claim
+            from .completion_contracts import verify_composition, verify_span_claim, public_limitations
             composition=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['COMPOSE'],)).fetchone()[0])
             verify_composition(assessment,composition)
             expected_text=composition['text']
@@ -118,7 +118,10 @@ def validate_saved(repo,result):
                 if presentation!={'method_id':'HISTORY_EXPLAIN','history_hash':digest(history)}:
                     raise ContractError('history events differ from accepted current case')
                 expected_text=expected['text']
-            if result['answer']['text']!=expected_text or result['answer']['unresolved']!=[{'reason':v} for v in assessment['limitations']]:
+            expected_limits=public_limitations(assessment,composition['composition_plan'])
+            if (result['answer']['text']!=expected_text
+                    or result['answer']['unresolved']!=[{'reason':v} for v in expected_limits]
+                    or result['assembly']['unresolved']!=expected_limits):
                 raise ContractError('public answer differs from verified rendering')
             for claim in assessment['claims']:verify_span_claim(claim,list(originals.values()))
             if assessment.get('source_excerpt_reply'):

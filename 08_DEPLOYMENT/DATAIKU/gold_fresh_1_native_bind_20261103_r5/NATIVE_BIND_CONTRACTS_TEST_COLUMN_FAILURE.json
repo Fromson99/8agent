@@ -1,0 +1,30 @@
+{
+  "status": "FAILED",
+  "field_database": false,
+  "models": 0,
+  "existing_data_mutated": false,
+  "created_schemas": [
+    "A8_NB5_D66ADF2CAE",
+    "A8_NB5_52F08F17A2"
+  ],
+  "dropped_schemas": [
+    "A8_NB5_52F08F17A2",
+    "A8_NB5_D66ADF2CAE"
+  ],
+  "checks": [
+    "native_clob_transport_gate_unicode_above_32k",
+    "17_tables_exact_columns_pk_and_indexes",
+    "17_insert_read_rollback_and_absence_checks",
+    "vector_float32_two_and_three_dimensions"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "resource_guard": {
+    "non_oracle_user_segment_bytes": 9287565312,
+    "users_free_extent_bytes": 737804288,
+    "maximum_new_schema_quota_bytes": 67108864
+  },
+  "error_type": "DatabaseError",
+  "codes": [
+    "ORA-00904"
+  ]
+}

@@ -1,0 +1,21 @@
+2026-11-03 — 사용자 지시: Oracle 적재 수정·삼성메일 발송, 후속 반복/과도한 검증 제거.
+
+최종 경로: pipeline_entry → fast_loader → fast_insert → native_transport.
+Dataiku 권한 기반 AIDP 연결정보를 메모리에서 받아 python-oracledb의 실제 CLOB 바인드 사용.
+정상 묶음: 고정 INSERT SELECT JSON_TABLE(:payload) + COMMIT + 진행 위치 저장.
+루틴의 존재 조회/전체값·LOB 비교/전체 되읽기/원격 COUNT/대형 SQLite SHA/원문 chain 검사/중복 COMMIT 제거.
+메타데이터·연결/표 동일성, PK·타입, 체크포인트, 미확정 pending에만 PK 확인 유지.
+R1/R3 또는 기존 R4.1 판본·완료 위치 유지. 새로운 축소판 생성이나 전체 재시작 없음.
+상태 LOADED_INSERT_ACK / SOURCE_QUERY_PUBLISHED, 전수 대조를 했다고 표시하지 않음.
+
+최종 35개 검사 통과. 실제 발송 ZIP을 별도 디렉터리에 풀고 같은 35개 통과(중복 검사이며 70개로 합산하지 않음).
+로컬 Oracle 23.26 실제 native INSERT·긴 Unicode/NULL/빈 CLOB·PK 중복 전체 롤백·제한 계정 통과.
+기존 데이터 변경 없음. 임의 이름 격리 테스트 스키마는 모두 제거. 초기 실패·수정 사항은 VALIDATION.json과 별도 실패 영수증에 보존.
+현장 Dataiku 드라이버/상세 읽기 권한/직접 네트워크 미확인. 실제 성능 향상률과 전량 완료시간 미측정.
+기존 공간 부족은 해결 대상이 아님. partial 검색 파일 prefix 생성, checkpoint fsync는 유지.
+전수 해시를 제거했으므로 기존 입력 generation은 작업 중 불변이어야 함.
+
+삼성메일: hyungjininfocz.son@partner.samsung.com
+메시지 1a19fd35a9a8c601, SENT 및 수신자/첨부3개 이름·크기 재조회 확인.
+코드 ZIP·전체 실행 TXT·GUIDE.txt를 각각 첨부. 중첩 ZIP/JavaScript 없음.
+운영 Dataiku/Oracle/GENOS 실행·MAIN 승격·DDL 변경·Git push 없음. 로컬 테스트용 DDL만 별도 스키마에 실행.

@@ -170,8 +170,14 @@ class Repository(WorkspaceTransactions):
             allowed={pid for pid,_,_ in ids}-denied
             if len(allowed)>8:raise ContractError('ontology bundle result bound')
             out=[]
-            for pid in sorted(allowed):
-                row=self.execute(c,f"SELECT PKG_HASH_VAL,PKG_JSON_CN FROM {self.tables['publication']} WHERE PUB_ID=:1",(pid,)).fetchone()
+            ordered=sorted(allowed)
+            if not ordered:return out
+            marks=','.join(':'+str(i+1) for i in range(len(ordered)))
+            rows=self.execute(c,f"SELECT PUB_ID,PKG_HASH_VAL,PKG_JSON_CN FROM {self.tables['publication']} WHERE PUB_ID IN ({marks})",tuple(ordered)).fetchmany(len(ordered)+1)
+            by_id={row[0]:row[1:] for row in rows}
+            if len(rows)!=len(by_id) or set(by_id)!=allowed:raise ContractError('ontology publication batch changed or incomplete')
+            for pid in ordered:
+                row=by_id[pid]
                 raw=value(row[1])
                 if len(json.dumps(raw,ensure_ascii=False) if isinstance(raw,dict) else raw)>2_000_000:raise ContractError('ontology package result bound')
                 payload=raw if isinstance(raw,dict) else json.loads(raw)

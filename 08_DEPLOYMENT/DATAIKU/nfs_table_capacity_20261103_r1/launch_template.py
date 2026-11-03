@@ -1,0 +1,99 @@
+# Dataiku LEGAL_RAG의 별도 조회용 Python 노트북 새 셀에 전체 복사.
+# 관리 폴더 ehA8dpVm에 이번 ZIP을 압축 그대로 올린 뒤 실행.
+ACTION = 'nfs'  # 'nfs': 파일/SQLite/이관 예상, 'oracle': Oracle SELECT 메타데이터
+OLD_JOB_DIR = ''  # 기존 적재에 직접 지정했다면 같은 oracle-import-r2 경로
+GENERATION_DIR = ''  # 기본: OLD_JOB_DIR/full-state.json의 정확한 generation
+SCAN_ROOT = ''  # 기본: 위 generation. 과거 세대 포함은 Dataiku에 실제 보이는 상위 NFS 경로
+SOURCE_MODE = 'RESTORED_COPY'  # NFS를 직접 마운트해 읽는 경우만 'NFS_MOUNT'
+OUTPUT_DIR = ''  # 기본: 새 결과 폴더. 중단 후 이어 확인할 때 출력된 기존 결과 폴더 입력
+CONNECTION = 'AIDP'
+SAMPLE_ROWS = 64
+SAMPLE_SECONDS = 15
+DBSTAT_SECONDS = 300
+ZIP_NAME = '__ZIP_NAME__'
+ZIP_SHA256 = '__ZIP_SHA256__'
+
+import hashlib
+import importlib.util
+import io
+import json
+from pathlib import Path, PurePosixPath
+import sys
+import tempfile
+import time
+import uuid
+import zipfile
+import dataiku
+
+_folder=dataiku.Folder('ehA8dpVm')
+_paths=[p for p in _folder.list_paths_in_partition() if PurePosixPath(p).name==ZIP_NAME]
+if len(_paths)!=1:
+    raise ValueError('관리 폴더 ehA8dpVm에 이번 ZIP을 정확히 한 개 업로드하세요.')
+with _folder.get_download_stream(_paths[0]) as _stream:
+    _raw=_stream.read(8*1024**2+1)
+if len(_raw)>8*1024**2 or hashlib.sha256(_raw).hexdigest()!=ZIP_SHA256:
+    raise ValueError('ZIP_HASH_MISMATCH')
+_package=Path(tempfile.gettempdir())/('legal-capacity-code-'+ZIP_SHA256[:16])
+_package.mkdir(exist_ok=True)
+with zipfile.ZipFile(io.BytesIO(_raw)) as _archive:
+    _manifest=json.loads(_archive.read('CODE_MANIFEST.json'))
+    if len(_archive.namelist())!=len(set(_archive.namelist())) or set(_archive.namelist())!=set(_manifest)|{'CODE_MANIFEST.json'}:
+        raise ValueError('ZIP_MANIFEST')
+    if sum(i.file_size for i in _archive.infolist())>16*1024**2:
+        raise ValueError('ZIP_SIZE')
+    for _item in _archive.infolist():
+        _name=PurePosixPath(_item.filename)
+        if _name.is_absolute() or '..' in _name.parts or _item.is_dir() or (_item.external_attr>>16)&0o170000==0o120000:
+            raise ValueError('ZIP_PATH')
+        _path=_package.joinpath(*_name.parts)
+        if _package.resolve() not in _path.resolve().parents:
+            raise ValueError('ZIP_ESCAPE')
+        _content=_archive.read(_item)
+        if _item.filename!='CODE_MANIFEST.json' and hashlib.sha256(_content).hexdigest()!=_manifest[_item.filename]:
+            raise ValueError('CODE_HASH')
+        if _path.exists():
+            if _path.read_bytes()!=_content:
+                raise ValueError('EXTRACTED_CODE_CHANGED')
+        else:
+            _path.parent.mkdir(parents=True,exist_ok=True)
+            _path.write_bytes(_content)
+
+def _load_capacity_module(name):
+    _spec=importlib.util.spec_from_file_location(name,_package/(name+'.py'))
+    _mod=importlib.util.module_from_spec(_spec)
+    sys.modules[name]=_mod
+    _spec.loader.exec_module(_mod)
+    return _mod
+
+_capacity=_load_capacity_module('capacity')
+_output=Path(OUTPUT_DIR).expanduser().resolve() if OUTPUT_DIR else Path.cwd()/('nfs-capacity-results-'+time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8])
+if ACTION=='nfs':
+    _scratch=dataiku.get_custom_variables().get('LEGAL_PIPELINE_SCRATCH') or ''
+    _config=_capacity.resolve_inputs(OLD_JOB_DIR,GENERATION_DIR,SCAN_ROOT,SOURCE_MODE,_scratch)
+    _config.update(output=str(_output),sample_rows=SAMPLE_ROWS,sample_seconds=SAMPLE_SECONDS,dbstat_seconds=DBSTAT_SECONDS)
+    print('이번 범위:',_config['scan_root'] or _config['generation'],'| 원본 구분:',SOURCE_MODE)
+    print('예상치 준비 명세:',_config['descriptor'] or '없음: 검색 전체 이관량은 미확인')
+    print('결과 폴더:',_output,flush=True)
+    _result=_capacity.run(_config,json.loads((_package/'target_contract.json').read_text()))
+elif ACTION=='oracle':
+    from dataiku import SQLExecutor2
+    _executor=SQLExecutor2(connection=CONNECTION)
+    def _query_capacity(sql):
+        _frame=_executor.query_to_df(sql,infer_from_schema=True,parse_dates=False)
+        _frame=_frame.astype(object).where(_frame.notna(),None)
+        # Datetime and NumPy scalars must be JSON-compatible in saved results.
+        return json.loads(_frame.to_json(orient='records',date_format='iso'))
+    _queries=_load_capacity_module('oracle_queries')
+    _result=_queries.run(_query_capacity,_output)
+else:
+    raise ValueError('ACTION must be nfs or oracle')
+
+from IPython.display import display,FileLink
+for _path in sorted(_output.glob('*.csv')):
+    display(FileLink(str(_path.relative_to(Path.cwd())) if _path.is_relative_to(Path.cwd()) else str(_path)))
+with zipfile.ZipFile(_output/'RESULTS.zip','w',zipfile.ZIP_DEFLATED) as _z:
+    for _path in sorted(_output.iterdir()):
+        if _path.suffix in ('.csv','.json'):
+            _z.write(_path,_path.name)
+_result_zip=_output/'RESULTS.zip'
+display(FileLink(str(_result_zip.relative_to(Path.cwd())) if _result_zip.is_relative_to(Path.cwd()) else str(_result_zip)))

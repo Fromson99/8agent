@@ -1,0 +1,36 @@
+# LEGAL_RAG Python 노트북의 새 셀: 읽기 전용, 추가 설치/DB쓰기/설정 변경 없음.
+import json
+from pathlib import Path
+import dataiku
+
+EXPECTED = ['RFRN_POST_HASH_VALU','RFRN_DTA_TYPE_VALU','RFRN_DTA_ID','RGLT_DOC_ID',
+            'RFRN_DTA_IDNF_CTNT','BLNG_DTA_IDNF_CTNT','TAGT_DTA_IDNF_CTNT','SRCH_DATA_HASH_VALU','SRCH_DATA_CTNT']
+report = {'project':'LEGAL_RAG','target':'SIDDS.LGL_G19_SRCH_ROW_S_1','candidates':[],
+          'table_writes':0,'settings_changes':0,'new_driver_required':False}
+try:
+    project = dataiku.api_client().get_project('LEGAL_RAG')
+    for item in project.list_datasets():
+        if str(item.get('type','')).lower() != 'oracle': continue
+        dataset = project.get_dataset(item['name'])
+        settings = dataset.get_settings().get_raw()
+        params = settings.get('params',{})
+        if params.get('schema')!='SIDDS' or params.get('table')!='LGL_G19_SRCH_ROW_S_1': continue
+        columns = dataset.get_schema().get('columns',[])
+        candidate = {'dataset':item['name'],'connection':params.get('connection'),
+                     'schema':params.get('schema'),'table':params.get('table'),'mode':params.get('mode'),
+                     'managed':settings.get('managed',False),
+                     'columns':[{'name':c['name'],'type':c['type']} for c in columns]}
+        candidate['expected_external_mapping'] = (candidate['connection']=='AIDP' and
+            candidate['mode']=='table' and not candidate['managed'] and
+            {c['name'] for c in columns}==set(EXPECTED))
+        report['candidates'].append(candidate)
+    report['status']='MAPPING_FOUND' if any(c['expected_external_mapping'] for c in report['candidates']) else 'DATASET_MAPPING_NEEDED'
+except Exception as exc:
+    # Connection credentials and raw error messages are never printed.
+    report['status']='DATAIKU_DATASET_INSPECTION_UNAVAILABLE'
+    report['error_type']=type(exc).__name__
+print(json.dumps(report,ensure_ascii=False,indent=2))
+path=Path.cwd()/'DATASET_WRITER_MAPPING_R6.json'
+path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('결과 파일:',path)
+print('MAPPING_FOUND는 연결 정보 확인입니다. 실제 writer 적재·속도 시험 결과는 아닙니다.')

@@ -1,0 +1,23 @@
+벡터 적재에 실제 사용하는 SQL — R1
+실행은 DATAIKU_GOLD_VECTOR_FAST_RUN_R1.txt가 담당합니다.
+아래 SQL의 :payload는 생성된 벡터와 메타데이터를 담은 JSON 배열 CLOB, :dim은 1024입니다.
+SQL만으로 임베딩을 만들지 않습니다. Python 실행문이 내부 Dataiku Mesh에서 생성한 뒤 전달합니다.
+현재 Dataiku SQLExecutor2 전송은 실제 native bind가 아니라 검증된 UTF-8/gzip/base64 전달을 사용합니다.
+
+BEGIN INSERT INTO SIDDS.LGL_G19_VCTR_ITEM_S_1 (VCTR_POST_ID,VCTR_SCTN_ID,RGLT_DOC_ID,BODY_UNIT_ID,VCTR_DTLS_IFMN_CTNT,EMBD_VCTR) SELECT j.p,j.s,j.d,j.u,j.m,TO_VECTOR(j.v,:dim,FLOAT32) FROM JSON_TABLE(:payload,'$[*]' ERROR ON ERROR COLUMNS(p VARCHAR2(100) PATH '$.VCTR_POST_ID' ERROR ON ERROR,s VARCHAR2(100) PATH '$.VCTR_SEG_ID' ERROR ON ERROR,d VARCHAR2(50) PATH '$.DOC_ID' ERROR ON ERROR,u VARCHAR2(50) PATH '$.SRC_UNIT_ID' ERROR ON ERROR,m CLOB PATH '$.VCTR_META_CTNT' ERROR ON ERROR,v CLOB PATH '$.EMBD_VCTR_VALU' ERROR ON ERROR)) j;
+COMMIT;
+EXCEPTION WHEN OTHERS THEN ROLLBACK;
+RAISE;
+END;
+
+payload 각 행 필드:
+VCTR_POST_ID: 같은 원문/검색판본과 임베딩 프로필의 게시 ID
+VCTR_SEG_ID: 실제 원문 구간 ID
+DOC_ID: 원문 문서 ID
+SRC_UNIT_ID: navigation.source에 실제 등록된 조문 ID(article:... 등)
+VCTR_META_CTNT: 문서/조문/블록/본문 범위와 원문 해시의 JSON 문자열
+EMBD_VCTR_VALU: L2 정규화한 숫자 배열의 JSON 문자열
+
+정상 묶음에는 NOT EXISTS/COUNT/DBMS_LOB.COMPARE/VECTOR_DISTANCE/되읽기 없음.
+중단 후 결과 미확정 묶음에만 기존 PK를 조회합니다.
+최종 VCTR_POST 기록은 별도 INSERT/COMMIT. VCTR_HEAD와 서비스 선택은 수정하지 않습니다.

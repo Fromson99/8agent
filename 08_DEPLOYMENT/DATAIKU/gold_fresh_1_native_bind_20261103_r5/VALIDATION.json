@@ -1,0 +1,56 @@
+{
+  "status": "PASS_LOCAL_CONTRACTS_FIELD_PREREQUISITES_UNVERIFIED",
+  "date": "2026-11-03",
+  "package_sha256": "c987a913f201fb6a691ce1dccece96fb190f45050636ec414ed8575dbc76c1cb",
+  "pytest_passed": 35,
+  "actual_extracted_zip_same_35_passed": true,
+  "oracle_contract_receipt": "NATIVE_BIND_CONTRACTS.json",
+  "native_sql_components": {
+    "native_transport.py": "784d6f4af5818497ee75488e78620af8b5da691f94afe70fe5003a4bd205997d",
+    "fast_insert.py": "8f5bd7de7ecf7f27dad3c63099fceb83d97fb1a88e0f2df82cd2bea13023da37"
+  },
+  "target_field_dataiku_executed": false,
+  "performance_ab_or_full_migration_benchmark": false,
+  "models": 0,
+  "prior_iteration_tests": {
+    "before_user_removed_checks": 29,
+    "native_before_simplification": "NATIVE_BIND_CONTRACTS_BEFORE_SIMPLIFICATION.json"
+  },
+  "corrected_failures": [
+    "Test fixture initially omitted 17 table object IDs (2 cases).",
+    "Synthetic navigation fixture lacked native source JSON and definition table (2 cases).",
+    "Runtime ready() treated absent zero-row source counters as incomplete; fixed default 0 (2 cases).",
+    "New source exporter retained relative import from vendor module; fixed to absolute import (1 case).",
+    "Oracle test-only SELECT used logical rather than physical column names; receipt preserved; no target runtime SQL failure.",
+    "Initial extracted-ZIP test launcher resolved venv symlink to system Python; corrected executable path."
+  ],
+  "removed_runtime_checks": [
+    "routine existing-key queries",
+    "full values/CLOB comparison after insertion",
+    "full verify_publish pass",
+    "remote final COUNT scans",
+    "whole SQLite hash scans",
+    "source COUNT scans",
+    "source rolling chain verification",
+    "duplicate source/query digest verification",
+    "17-table deep preflight",
+    "mandatory synthetic load gate",
+    "duplicate COMMIT roundtrip",
+    "legacy seven-day deadline enforcement"
+  ],
+  "retained": [
+    "connection/table identity once",
+    "database constraints",
+    "checkpoint locks and durable progress",
+    "pending-only PK reconciliation",
+    "small metadata/code identity"
+  ],
+  "limits": [
+    "field driver/connection details permission/notebook network unverified",
+    "Oracle local version 23.26; field version not reproduced",
+    "no table-space expansion",
+    "inputs must remain unchanged; no full-file content verification",
+    "partial search file still regenerates prefix to old checkpoint",
+    "completion acknowledges writes and does not certify full data equality"
+  ]
+}

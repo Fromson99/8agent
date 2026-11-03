@@ -1,0 +1,87 @@
+Oracle 적재 R5 — 실제 CLOB 바인드 + 불필요한 반복 검증 제거
+2026-11-03 / LEGAL_RAG / AIDP / PIDD2APP / 기존 _1 테이블
+
+첨부 3개
+1. DATAIKU_GOLD_FRESH_1_NATIVE_BIND_20261103_R5.zip : 실행 코드
+2. DATAIKU_GOLD_FRESH_1_NATIVE_BIND_RUN_R5.txt : Jupyter 셀 전체 실행문
+3. GUIDE.txt : 이 안내서
+ZIP을 풀거나 다른 ZIP에 다시 넣지 마세요. 기존 R1/R3/R4.1 원본과 진행 폴더는 보존합니다.
+
+실행
+1. 진행 중인 이전 적재 셀/프로세스를 먼저 종료합니다. 동시에 실행하지 않습니다.
+2. Dataiku LEGAL_RAG 프로젝트의 관리 폴더 ehA8dpVm에 위 ZIP을 이름 그대로 업로드합니다.
+3. 기존 적재에 사용한 LEGAL_RAG Python 노트북/코드 환경을 엽니다.
+   노트북 작업 디렉터리는 기존 위치를 그대로 사용합니다. 로그는 현재 디렉터리의 gold-progress-logs에 저장됩니다.
+4. TXT 전체를 새 Python 셀에 붙여 넣고 실행합니다. 기본 ACTION = "load"입니다.
+   OLD_JOB_DIR = ""는 기존 기본 경로를 사용합니다. 과거에 직접 지정했다면 같은 값만 넣습니다.
+   ORACLE_DSN = ""는 AIDP에서 자동 확인합니다. 사용자명·비밀번호를 셀에 넣지 않습니다.
+5. 끝에 LOADED_INSERT_ACK가 나오면 적재 응답/진행 기록 기준 완료입니다.
+6. 기존 시험 채널의 게시 정보까지 쓸 때 ACTION = "publish"로 바꿔 같은 셀을 실행합니다.
+   SOURCE_QUERY_PUBLISHED가 완료 표시입니다. 전수 대조를 하지 않았으므로 VERIFIED로 표시하지 않습니다.
+   실제 운영/GENOS 서비스 포인터 전환이나 임베딩 생성은 하지 않습니다.
+
+R5 실행 전 조건
+- 노트북 Python 코드 환경에 python-oracledb(패키지 이름: oracledb)가 있어야 합니다.
+  없으면 NATIVE_DRIVER_REQUIRED_ORACLEDB로 시작 전에 멈춥니다. Dataiku 해당 코드 환경의
+  Packages to install에 oracledb를 추가하여 환경을 빌드한 뒤 노트북 커널을 재시작합니다.
+  스크립트는 패키지를 자동 설치하지 않습니다.
+- 현재 Dataiku 계정에 AIDP 연결 상세 읽기 권한이 있어야 합니다. 공식 get_info API가
+  허용한 user/password를 메모리에서만 받아 사용합니다. 권한/암호/연결 설정을 변경하지 않습니다.
+  권한이 없으면 NATIVE_AIDP_DETAILS_UNAVAILABLE_CHECK_CONNECTION_READ_PERMISSION으로 멈춥니다.
+- 노트북 실행 호스트에서 동일 Oracle TCP 주소로 직접 연결되어야 합니다.
+  SQLExecutor2가 DSS 서버에서 접속되는 것만으로 노트북 직접 접속이 보장되지는 않습니다.
+- 지원 경로: 기본 사용자/비밀번호 TCP. Proxy/Kerberos/TCPS/wallet/복합 descriptor는 이번 경로 대상이 아닙니다.
+- URL 자동 확인이 안 되면 ORACLE_DSN에 AIDP의 실제 host:port/service 또는
+  jdbc:oracle:thin:@host:port:SID 형식의 주소만 넣습니다. 실제 주소를 임의 추측하지 않습니다.
+  직접 연결한 SESSION_USER/DB/PDB/service/schema/edition을 JDBC AIDP와 비교한 뒤 적재합니다.
+- 연결만 먼저 보고 싶으면 ACTION = "check"를 선택할 수 있습니다. 기본 load 실행에는
+  합성 CLOB 전송 시험을 반복하지 않습니다. check는 대상 표/체크포인트를 바꾸지 않습니다.
+
+정상 적재에서 제거한 것
+- 존재 확인 SELECT / WHERE NOT EXISTS
+- INSERT 뒤 전체 컬럼 일치 COUNT와 DBMS_LOB.COMPARE
+- 매 묶음/완료 후 원문·검색행 되읽기 및 원격 전체 COUNT
+- verify_publish 전체 재검증 단계
+- 원본 SQLite 전체 SHA 반복 계산, 원문 COUNT 재계산, 파일 앞뒤 전체 해시
+- 원문 rolling chain 재계산·대조, 검색행의 이미 계산된 해시를 다시 계산하는 검사
+- 매번 17개 테이블의 컬럼/인덱스/트리거를 깊게 조회하는 사전 검사
+- load 중 합성 CLOB 시험 및 COMMIT 후 중복 COMMIT 왕복
+- 과거 7일 deadline에 따른 기계적 재개 중단(원래 값은 기록에 보존)
+
+정상 묶음은 고정 INSERT SELECT JSON_TABLE(:payload) + COMMIT + 체크포인트 저장입니다.
+값은 SQL 본문이 아닌 실제 CLOB 바인드로 보냅니다. 한 연결의 statement cache를 재사용합니다.
+원문은 기존 약 1,000행/2MiB, 검색은 기존 5,000행/2MiB 묶음 경계를 유지합니다.
+PK/NOT NULL/컬럼 타입·길이는 Oracle이 검사합니다. 오류를 무시하거나 행을 건너뛰지 않습니다.
+
+재개
+- R1/R3 일반판 또는 이미 시작한 R4.1 축소판을 자동 선택합니다. 새 검색 판본을 만들지 않습니다.
+- 기존 source/query 완료 위치와 미확정 pending을 유지하며 최초 변경 직전 state-before-r5-*.json을 보관합니다.
+- 완료된 원문/파일은 건너뜁니다. 진행 중인 검색 파일의 앞부분을 재생성해 위치까지 이동하는 비용은 남아 있습니다.
+- 응답이 끊긴 pending 묶음만 PK를 조회합니다. 모두 존재하면 완료 위치로 이동하고,
+  하나도 없으면 같은 묶음을 삽입합니다. 일부만 존재하면 PENDING_PARTIAL_KEYS_REVIEW_REQUIRED로 멈춥니다.
+  이 복구에서도 CLOB/전체값은 비교하지 않습니다.
+- 정상 신규 INSERT에서 중복 PK가 나오면 ORA-00001로 중단하고 진행 기록을 보존합니다.
+- 중단 후에는 같은 ZIP/TXT, 같은 OLD_JOB_DIR, 같은 ACTION으로 재실행합니다.
+  상태 JSON을 삭제하거나 예전 R1/R3/R4.1 실행문으로 돌아가지 마세요. R5의 INSERT_ACK 상태/체인 미계산 표시는
+  이전 코드의 전수 검증 전제와 다릅니다. state-before-r5는 이력 보존용이며 자동 원복 파일이 아닙니다.
+- 원본 generation 파일은 적재 중 교체/수정하지 않습니다. R5는 대용량 파일을 매번 다시 해시하지 않습니다.
+
+확인할 화면
+NATIVE_R5_PIPELINE → NATIVE_CONNECTION_VERIFIED → R5_RESUME_BOUND → LOAD → LOADED_INSERT_ACK.
+LOAD의 transport에 mode=NATIVE_CLOB_BIND, sql_bytes, sql_sha256, payload_bytes, request_s가 나옵니다.
+동일 테이블에서 내용이 달라도 sql_sha256이 같은지, 실제 행/초가 얼마인지 볼 수 있습니다.
+request_s는 네이티브 전송/DB 실행/COMMIT을 포함하며, 로컬 준비/전체 작업 시간과는 다릅니다.
+
+현재 확인 범위
+- 로컬 Oracle 23.26에서 실제 바인드 INSERT, 긴 한글/보조문자, NULL/빈 CLOB, PK 충돌 시 전체 묶음 ROLLBACK,
+  SELECT+INSERT만 가진 계정 적재, 중단 묶음의 PK 조회를 확인했습니다. 임시 테스트 스키마는 종료 후 제거했습니다.
+- 일반판/축소판 준비 기록 재사용, 적재·재실행·게시 경로를 작은 합성 입력으로 확인했습니다.
+- 현장 Dataiku 연결 상세 권한/드라이버/직접 네트워크와 Oracle 버전별 실제 속도는 현장 실행 전 미확인입니다.
+- 사진의 같은 SQL 0.127초 / 새 SQL 1.878초는 합성 재사용 시험 결과입니다.
+  R5 전체 적재가 같은 비율로 빨라진다는 뜻이 아니며 완료 시간을 약속하지 않습니다.
+- 기존 ORA-01654/ORA-01653 공간 부족은 별도입니다. R5가 테이블스페이스를 늘리거나 인덱스를 삭제하지 않습니다.
+
+구현 참고(공식 문서)
+https://developer.dataiku.com/latest/api-reference/python/connections.html
+https://doc.dataiku.com/dss/latest/connecting/sql/oracle.html
+https://python-oracledb.readthedocs.io/en/latest/user_guide/lob_data.html
