@@ -1,0 +1,95 @@
+GENOS MAIN133 전체 덮어쓰기 — 2026-11-03 R1
+
+대상은 GENOS RAG 코드스페이스의 기존 ~/DEV Git checkout입니다.
+현재 선택 MAIN133 / scenario-cumulative-20261102-r1의 서빙 코드 513개와
+기존 운영보조 3개, 총 516개를 한 번에 적용합니다. 이전 ZIP·패치 적용은 필요 없습니다.
+MAIN133 이후 작업 후보 ADR1289/1290은 아직 선택 MAIN에 없으므로 포함하지 않습니다.
+
+1. 첨부와 실행 위치
+다음 첨부를 사용자가 실제 업로드하는 TRANSFER 폴더에 둡니다.
+  GENOS_MAIN133_FULL_OVERWRITE_20261103_R1.zip
+  GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt
+  GUIDE.txt
+  GENOS_MAIN133_WORKFLOW_PASTE_ALL.txt
+코드스페이스 터미널의 현재 위치를 그 TRANSFER 폴더로 둡니다.
+TRANSFER 절대경로를 추정해서 이동하거나 먼저 ~/DEV로 이동하지 않습니다.
+기존 코드로 실행 중인 배치/프로세스는 종료한 뒤 적용합니다.
+
+2. 전체 덮어쓰기 한 줄 실행
+bash ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt
+
+실제 python3를 사용합니다. 코드서빙 기준 Python 3.11입니다.
+ZIP 해시 확인 → 같은 TRANSFER 안에 준비 → 대상 검사 → 원래 파일 전체 백업
+→ ~/DEV의 516개 코드 교체 → 전체 코드/엔진/워크플로우 해시 검증 순서입니다.
+이전 버전, 누락 파일, 대상 파일의 현장 수정본도 백업 후 이번 버전으로 교체합니다.
+원문·DB·generation·.env·가상환경·Git 이력·대상 밖 파일은 보존합니다.
+첨부 확장자 제한에 맞춰 viewer app.js는 ZIP의 app.js.txt로 전송하고,
+설치 시 선택 MAIN과 동일한 바이트로 원래 app.js 경로에 복원합니다.
+중첩 ZIP은 없습니다. code.zip은 현장 검증을 위해 설치기가 로컬에서 생성합니다.
+
+완료 출력:
+  APPLIED MAIN133 FULL R1: all 516 code files verified; original files backed up
+  MAIN133_FULL_EXIT=0
+이 표시는 코드 교체/해시 확인 완료입니다. 리비전 배포나 실제 질문 성공은 별도입니다.
+
+3. 로그·재개·복구
+로그와 종료코드: TRANSFER/main133-full-overwrite-r1-logs/
+백업과 상태: TRANSFER/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1/
+  backup/, ROOT_BINDING.json, INSTALL_STATE.json
+중단되면 같은 한 줄을 다시 실행합니다. 원래 백업과 before/after 해시를 확인해 이어갑니다.
+설치 후 별도 변경이나 백업 변조가 있으면 자동 덮어쓰지 않고 멈춥니다.
+상태: bash ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt status
+검사: bash ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt check
+코드 원복: bash ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt rollback
+원복은 설치 직전 코드 바이트를 복원하며 DB 기록을 되돌리지 않습니다.
+MAIN133으로 Oracle layout4 기록을 쓴 이후 layout4를 못 읽는 구 MAIN129 이하로
+내리지 않습니다. 이때는 layout4 reader가 있는 호환 복구 릴리스를 사용합니다.
+이미 새 리비전을 배포했다면 코드/데이터 호환성을 확인해 리비전도 별도로 복구합니다.
+
+4. 코드서빙 배포
+실행기의 기본 동작은 코드 적용까지입니다. 기존 배포 절차에 따라 변경을 확인합니다.
+  git -C ~/DEV diff --check
+  git -C ~/DEV diff --stat
+선택된 코드 바이트를 임의 정리하거나 엔진 pin을 다시 쓰지 않습니다.
+TRANSFER의 COMMIT_PATHS.txt에 든 516개 대상만 기존 DEV에서 stage/commit합니다.
+아래 명령은 TRANSFER에서 실행하며, 대상 밖 staged 변경이 있으면 먼저 멈춥니다.
+
+python3 - <<'PY'
+import json, subprocess
+from pathlib import Path
+package = Path('GENOS_MAIN133_FULL_OVERWRITE_20261103_R1')
+root = Path.home().joinpath('DEV').resolve(strict=True)
+paths = json.loads((package / 'PACKAGE.json').read_text())['patch']
+staged = subprocess.check_output(['git','-C',str(root),'diff','--cached','--name-only','-z']).decode().split('\0')
+if set(filter(None, staged)) - set(paths):
+    raise SystemExit('대상 밖 staged 변경이 있습니다. 기존 작업을 확인하세요.')
+subprocess.run(['git','-C',str(root),'add','--',*paths],check=True)
+subprocess.run(['git','-C',str(root),'diff','--cached','--stat'],check=True)
+PY
+
+검토 후 기존 절차로 commit합니다. 이미 동일 커밋이면 빈 커밋을 만들지 않습니다.
+  git -C ~/DEV commit -m 'Apply MAIN133 scenario-cumulative-20261102-r1'
+  bash ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt gate-code
+GENOS_RELEASE_GATE PASS 및 CODE_CHECK PASS의 commit/manifest hash를 기록합니다.
+기존 실제 NFS generation을 사용하는 환경에서는 같은 checkout으로 추가 검사합니다.
+아래 실제_GENERATION_절대경로만 사용자가 현재 선택 경로로 바꿉니다.
+  python3 ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1/genos_release_gate.py --code-zip ./GENOS_MAIN133_FULL_OVERWRITE_20261103_R1/code.zip --deploy-root ~/DEV --generation '실제_GENERATION_절대경로'
+Oracle 환경에 로컬 SQLite generation 경로를 억지로 지정하지 않습니다.
+기존 원격으로 검증한 commit을 push하고, GENOS 코드서빙 화면에서 같은 commit으로
+리비전을 배포합니다. 원격 주소·리비전·generation 경로는 현장 값을 사용합니다.
+현재 설정 DP, Oracle 매핑·권한, NFS 로그 경로, 내부 모델 설정을 유지합니다.
+신규 DB DDL이나 데이터 재적재는 이번 실행에 포함되지 않습니다.
+
+5. 워크플로우 및 완료 확인
+첨부 GENOS_MAIN133_WORKFLOW_PASTE_ALL.txt 전체를 기존 워크플로우 Python 단계에
+반영합니다. 이는 ZIP/Git 적용과 별개이며 기존 노드 연결·설정은 유지합니다.
+코드서빙 직접 테스트 UI가 아니라 워크플로우 테스트 화면에서 실제 질문/웜업을 수행합니다.
+배포 commit, 코드서빙 리비전, 실제 데이터 설정, 요청 ID와 답변 결과를 함께 남깁니다.
+현장 Oracle/ORDS/NFS/내부 모델 성공은 이번 외부 준비로 확인하지 않았습니다.
+
+6. 포함 범위와 한계
+누적 검토 복구·멀티턴·가정 입력/타입 적용값·공유 검토와 Oracle layout4를 포함합니다.
+품질 인증 상태는 quality_certified=false입니다. 가정 답변의 반복/과차단/옛값 문제와
+공급자 UNKNOWN 등 기존 미통과 이력은 유지합니다. MAIN133_RESULTS.txt를 참고합니다.
+이전 MAIN123 전체 교체 ZIP 대신 이번 MAIN133 ZIP과 RUN.txt를 함께 사용합니다.
+이전 첨부·백업·실패 기록은 보관합니다.

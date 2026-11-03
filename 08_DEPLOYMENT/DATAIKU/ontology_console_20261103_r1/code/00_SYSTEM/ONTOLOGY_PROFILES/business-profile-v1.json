@@ -1,0 +1,55 @@
+{
+  "schema_version": "ontology-business-profile-v1",
+  "status": "DRAFT",
+  "runtime_enabled": false,
+  "profile_id": "listing-disclosure-v1",
+  "revision": 1,
+  "display_name": "상장·공시 업무",
+  "parent": {
+    "profile_id": "legal-core-v1",
+    "revision": 1,
+    "sha256": "b2432cc8e97914d28dc35c2b663638359715b69af965e573cb1186bee7fa489d"
+  },
+  "glossary": {
+    "binding_source": "authenticated_task_selected_snapshot.glossary",
+    "selected_concept_refs": [],
+    "empty_selection_policy": "USE_AUTHORIZED_SNAPSHOT_CANDIDATES",
+    "vocabulary_definitions": []
+  },
+  "document_scope": "AUTHENTICATED_TASK_ALLOWED_DOCUMENTS",
+  "selected_purposes": [
+    "applicability",
+    "required-action",
+    "calculation-basis"
+  ],
+  "comparison_axes": [
+    "actor",
+    "object",
+    "scope",
+    "time_basis",
+    "modality",
+    "action",
+    "unit",
+    "denominator",
+    "aggregation"
+  ],
+  "selected_review_rules": [
+    "origin-locator",
+    "known-glossary-ref",
+    "edge-endpoints",
+    "graph-closure",
+    "faithful-observation",
+    "obligation-vs-condition",
+    "scope-and-quantity"
+  ],
+  "additional_review_questions": [
+    "적용 시장·행위자·적용 시점이 다른 규칙을 같은 용어라는 이유로 합쳤는가?",
+    "위임·참조 대상의 필요한 하위 범위가 실제로 확보되었는가?",
+    "최종 목적에서 사용하지 않은 원문을 다른 목적에서도 불필요하다고 일반화했는가?"
+  ],
+  "instruction_example_refs": [],
+  "approval_ref": null,
+  "notes": [
+    "미승인 템플릿. 등록·내용 검토 후 exact work hash를 설정에 선택한다."
+  ]
+}

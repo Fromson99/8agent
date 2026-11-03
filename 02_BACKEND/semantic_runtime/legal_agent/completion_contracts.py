@@ -331,8 +331,10 @@ def refresh_limitations(value, issues, stop_reason=None, *, closed=None, notes=(
         key = gap_key(gap)
         ident = 'L' + digest([gap['issue_id'], gap['kind'], gap.get('material_id'), target])[:20]
         words = CLOSED_WORDS.get(closed.get(key)) if gap['kind'] != 'MISSING_FACT' else None
-        text = labels[gap['issue_id']] + ' — ' + (target + ': ' if target else '') + (words or GAP_WORDS[gap['kind']]) + '.'
+        label = ('현재 가정의 쟁점 ' + gap['issue_id']) if value.get('scenario_calculation') else labels[gap['issue_id']]
+        text = label + ' — ' + (target + ': ' if target else '') + (words or GAP_WORDS[gap['kind']]) + '.'
         items.append({'id': ident, 'kind': gap['kind'], 'issue_id': gap['issue_id'], 'text': text,
+                      **({'historical_issue': labels[gap['issue_id']]} if value.get('scenario_calculation') else {}),
                       **({'missing_target': target} if target else {}),
                       **({'navigation_status': closed[key]} if key in closed else {})})
     # Recovery/normalization are operational diagnostics, never user limitations.

@@ -36,3 +36,8 @@ tmp/pdfs/legal-rag-review/** -text -eol
 08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r1/*.csv -text -eol
 08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r2/*.csv -text -eol
 08_DEPLOYMENT/DATAIKU/vector_silver_20261029_r3/*.csv -text -eol
+
+# Keep the prepared Gold handoff tables byte-for-byte, including CRLF.
+08_DEPLOYMENT/DATAIKU/gold_fresh_1_reduced_20261103_r4/package/TABLES.csv -text -eol
+08_DEPLOYMENT/DATAIKU/gold_fresh_1_reduced_20261103_r4_1/package/TABLES.csv -text -eol
+08_DEPLOYMENT/DATAIKU/gold_fresh_1_transport_20261103_r3/package/TABLES.csv -text -eol

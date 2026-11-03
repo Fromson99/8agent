@@ -1,0 +1,69 @@
+{
+  "task": "Dataiku G19 transport resume optimization and optional diagnostic view fallback",
+  "validation": {
+    "transport_resume": 31,
+    "diagnostic": 36,
+    "counts_overlap_with_previous_checks": true,
+    "failures": 0,
+    "warning": "pytest cache_dir config warning when cacheprovider disabled"
+  },
+  "field_oracle_calls": 0,
+  "local_oracle_calls": 0,
+  "dataiku_calls": 0,
+  "actual_performance_comparison": false,
+  "main_changed": false,
+  "email_sent": false,
+  "existing_r1_packages_modified": false,
+  "r3_changes": {
+    "changed": [
+      "CODE_MANIFEST.json",
+      "gold_io.py",
+      "jdbc_transport.py",
+      "run.py"
+    ],
+    "added": [
+      "PREDECESSOR.json",
+      "transport_gate.py",
+      "transport_resume.py"
+    ],
+    "removed": [
+      "01_CREATE_FRESH_1_REVIEW.sql"
+    ]
+  },
+  "artifacts": {
+    "r3": [
+      {
+        "name": "DATAIKU_GOLD_FRESH_1_TRANSPORT_20261103_R3.zip",
+        "bytes": 248722,
+        "sha256": "5b89ee40480cea606258f61309789178f4f6a316b6f7eda13e0b46182fdfa906"
+      },
+      {
+        "name": "DATAIKU_GOLD_FRESH_1_RUN_R3.txt",
+        "bytes": 6934,
+        "sha256": "63bacace3d82ecfc848458e1e5404b1b93e81c522f7c534f9272d4d96df313bd"
+      },
+      {
+        "name": "GUIDE.txt",
+        "bytes": 6269,
+        "sha256": "91caa03a90430e551841b49b82b51891c8d4e4d5d649549acf6864e91d9a8ada"
+      }
+    ],
+    "diagnostic_r2": [
+      {
+        "name": "G19_INDEX_JOIN_TEMP_CHECK_20261103_R2.zip",
+        "bytes": 14579,
+        "sha256": "3aa85c7ac5c99975a2413fb0133fe8f43007ea39ac88293eb3f3d59932384359"
+      },
+      {
+        "name": "01_RUN_INDEX_JOIN_TEMP_CHECK_R2.txt",
+        "bytes": 3279,
+        "sha256": "d704adbeb0358e11b70d59db8827f70b77eded5e4295fb4a8bfd7d1b3fe89558"
+      },
+      {
+        "name": "GUIDE.txt",
+        "bytes": 9491,
+        "sha256": "6403fb55fcac5b650507bc294e367ca7eb4b1d9cdab675d82d583561dcdbd4d8"
+      }
+    ]
+  }
+}

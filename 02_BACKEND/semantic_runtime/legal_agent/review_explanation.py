@@ -44,13 +44,15 @@ def need_items(assessment):
         declaration = str(need.get('text') or '').strip()
         import re
         if not linked and declaration and not re.match(r'^(?:없음(?:[.。\s]|$)|N/A$|None$|null$)', declaration):
-            reason += ' 조사 당시 확인 목적(이력): ' + declaration
+            if not assessment.get('scenario_calculation'):
+                reason += ' 조사 당시 확인 목적(이력): ' + declaration
         rows.append({'id': need['id'], 'kind': 'REVIEW' if acquired or not linked else 'SOURCE',
             'target_refs': links, 'issue_refs': deepcopy(need.get('issue_refs', [])),
             'targets': [{k: deepcopy(t[k]) for k in ('id', 'document_id', 'coordinate', 'coordinate_scope') if k in t} for t in linked],
             'acquisition': acquisition, 'delivery': 'PRESENTED' if acquired else 'NOT_RECORDED',
             'review': status, 'reason': reason, 'impact': '해당 필요 항목에 대한 결론을 확정할 수 없습니다.' if action else '기록된 검토 범위에 한정합니다.',
-            'next_action': action, 'actor': 'SYSTEM', 'claim_refs': deepcopy(final.get('claim_refs', []))})
+            'next_action': action, 'actor': 'SYSTEM', 'claim_refs': deepcopy(final.get('claim_refs', [])),
+            **({'historical_declaration': declaration} if assessment.get('scenario_calculation') and declaration else {})})
     return rows
 
 
@@ -86,6 +88,7 @@ def build(assessment, sources):
         'SCENARIO_APPLICATION_COVERAGE':'변경된 규칙 조건을 적용한 주장을 확인하지 못했습니다.',
         'SCENARIO_CHANGED_VALUE_MISSING':'적용 설명에 변경된 규칙값이 반영되지 않았습니다.',
         'SCENARIO_SUPERSEDED_RULE':'가정 적용 설명에서 변경 전 규칙값을 다시 사용했습니다.',
+        'COMPUTED_GAP_IN_REASON':'미확인 입력이 설명문에만 적혀 있어 구조화된 입력 연결을 완료하지 못했습니다.',
         'SCENARIO_REVIEW_SHAPE':'가정 검토 결과의 필수 형식을 확인하지 못했습니다.',
         'SCENARIO_CONTEXT_MISMATCH':'최종 검토가 현재 가정 분기에 연결되지 않았습니다.',
         'SCENARIO_CONDITION_CONFLICT':'최종 검토와 타입 조건 평가 결과가 다릅니다.',
@@ -121,6 +124,7 @@ def build(assessment, sources):
         'completed': [{'source_id': s['source_id'], 'document_id': s['document_id'],
             'document_name': s.get('document_name') or s['document_id'], 'coordinate': s.get('heading', ''),
             'acquisition': 'ACQUIRED'} for s in sources],
+        **({'historical_issues': list(dict.fromkeys(r['historical_issue'] for r in assessment.get('limitation_items', []) if r.get('historical_issue')))} if assessment.get('scenario_calculation') else {}),
         'items': items, 'failed_checks': failures, 'ontology': deepcopy(assessment.get('ontology_explanation',
             {'status': 'NOT_RECORDED', 'bundles': [], 'adoption': 'NOT_RECORDED'})),
         'scenario_review':deepcopy(assessment.get('model_proposal',{}).get('scenario_review')),

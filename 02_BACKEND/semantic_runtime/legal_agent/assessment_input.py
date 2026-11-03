@@ -9,10 +9,11 @@ from copy import deepcopy
 from ..contracts import digest
 from .errors import ContractError
 
-VERSION = 'lossless-assessment-input-v1'
+VERSION = 'lossless-assessment-input-v2'
+SUPPORTED_VERSIONS = ('lossless-assessment-input-v1', VERSION)
 META = 'assessment_input'
 REF = 'assessment_text_ref'
-INSTRUCTIONS = ('ASSESS 입력의 current_case.facts와 current_case.scenario가 현재 사실과 가정이다. '
+INSTRUCTIONS = ('일반 ASSESS의 current_facts는 현재 사실이다. 가정 검토에서는 current_case.facts와 current_case.scenario가 현재 사실과 가정이다. '
     'baseline_history와 중첩된 기존 질문·이전 판단은 원래 요구 범위와 변경 이력이며 현재 값이 아니다. '
     'assessment_text_ref는 assessment_input.texts의 같은 ID에 있는 전체 원문을 뜻한다. '
     '참조는 생략·요약이 아니며 끝의 조건·예외까지 읽는다. 같은 본문을 참조하더라도 문서·원문 ID·판본·역할은 서로 구분한다. '
@@ -20,8 +21,7 @@ INSTRUCTIONS = ('ASSESS 입력의 current_case.facts와 current_case.scenario가
 
 
 def applies(view, *, stage=None):
-    return ((stage or view.get('source_stage')) in ('memory-assess', 'memory-assess-repair')
-            and 'hypothetical_scenario' in view)
+    return (stage or view.get('source_stage')) in ('memory-assess', 'memory-assess-repair')
 
 
 def project(view, *, stage=None):
@@ -75,7 +75,7 @@ def restore(projected):
     """Audit the exact input representation; not a model-output decoder."""
     value = deepcopy(projected)
     meta = value.pop(META, None)
-    if not isinstance(meta, dict) or meta.get('version') != VERSION or set(meta) != {'version', 'source_hash', 'moved', 'texts'}:
+    if not isinstance(meta, dict) or meta.get('version') not in SUPPORTED_VERSIONS or set(meta) != {'version', 'source_hash', 'moved', 'texts'}:
         raise ContractError('invalid assessment input receipt')
     table = {}
     for row in meta['texts']:

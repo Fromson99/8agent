@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+package_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+operation="${1:-check}"
+mkdir -p "$package_dir/logs"
+run_log="$package_dir/logs/${operation}-$(date +%Y%m%d-%H%M%S)-$$.log"
+exec > >(tee -a "$run_log") 2>&1
+trap 'code=$?; echo "EXIT_STATUS=$code"; exit "$code"' EXIT
+python3 "$package_dir/install.py" "$operation" --root "$HOME/DEV"

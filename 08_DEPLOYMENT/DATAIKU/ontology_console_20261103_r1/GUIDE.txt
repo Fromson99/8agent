@@ -1,0 +1,39 @@
+온톨로지 공통 관리 화면 / 2026-11-03 r1
+
+연결 대상: 로컬 ontology-console-20261103-r1. quality_certified=false.
+기존 R4 대시보드의 승인 전용 기능과 자유 작업공간·도메인·시나리오 화면을 함께 제공한다.
+이 묶음은 현장 배포 완료 기록이 아니다. 인증·자료·모델 연결은 현장의 기존 설정을 사용한다.
+
+실행: streamlit run streamlit_app.py
+필요 패키지는 기존 Streamlit 운영 환경과 해당 Oracle/Dataiku 어댑터 의존성을 사용한다.
+code/는 이번에 검증한 전체 서빙 코드다. 기존 라이브러리와 혼합하지 않고 새 프로세스로 시작한다.
+package-binding.json은 화면·backend 전체 해시를 검사한다. 원문·DB·비밀번호는 들어 있지 않다.
+
+GENOS_RAG_ONTOLOGY_CONFIG: 운영자가 관리하는 ontology-connection-v1 설정 파일.
+로컬은 GENOS_ONTOLOGY_OPERATOR, 원격은 Dataiku 브라우저 인증 사용자로 권한을 확인한다.
+operators[사용자].document_ids는 원문 범위, workspace_publish=true는 별도 게시 관리 권한이다.
+도메인/작업공간 namespace·source_snapshot·acl_ref가 일치해야 한다.
+work_store는 로컬 개발에서만 local, 원격에서는 기존 Dataiku managed folder다.
+
+원격 mapped Gold 호스트:
+GENOS_ONTOLOGY_HOST_FACTORY를 운영자가 설치한 모듈:context 함수로 지정한다.
+함수는 인증된 요청의 기존 Gold store/request와 별도 관리자 writer_connect를 열고,
+semantic_runtime.ontology_work.mapped_authoring.context(actor=인증사용자, store=store,
+ request=request, writer_connect=별도관리연결, agent_owner=기존작업표소유자,
+ config=설정)를 yield하는 context manager여야 한다. 연결은 렌더 종료 시 닫는다.
+호스트는 원래의 문서 권한과 소스 snapshot을 좁히며 DB/자격증명을 브라우저 입력에서 받지 않는다.
+로컬 connect.open_store는 새 전용 프로세스 계약을 갖는다. 이를 Streamlit rerun의 공유 전역 연결로
+캐시하지 않는다. 현장 호스트의 요청별 어댑터 수명/동시성 검증은 현장 반영 시 별도로 수행한다.
+호스트 포트가 없으면 관리 연결만 설정됨/읽기 확인 전으로 표시하고, 원격 용어집 작업은 차단된다.
+
+RAG reader의 workspace_runtime_scopes는 관리자의 쓰기 권한과 별도로 등록한다.
+readiness_anchors에는 운영자가 선택한 현재 원문 앵커를 최대16개 지정한다.
+미사용/읽기범위없음/게시본없음/읽기확인 상태를 구분하며 오류를 빈 자료로 바꾸지 않는다.
+READY는 이 앵커·범위의 게시본과 원문 대조 결과이며 법률 의미 품질 인증이 아니다.
+기존 승인 대시보드는 자동 게시하지 않는다. 자유 작업공간은 명시적 승인·소비검증·활성화를 따른다.
+
+검증: 두 실제 앱의 저장·왕복과 공통 화면의 컴파일·승인·활성화, 로컬 Oracle 격리 게시본
+새 프로세스 읽기와 철회 차단. 실모델 개선효과·현장 GENOS/Dataiku는 별도 미검증.
+원복: MAIN133 포인터/Gold 이전 binding/이전 UI 묶음을 함께 복구한다.
+새 계산 답변은 이번 application-v4 reader가 필요하므로 새 저장 namespace를 구 reader로 읽지 않는다.
+Oracle layout4 reader를 유지하고 원문/이력/실패 기록은 삭제하지 않는다.

@@ -1,0 +1,37 @@
+{
+  "status": "LOCAL_VALIDATED_FIELD_NOT_RUN",
+  "date": "2026-11-03",
+  "tests": {
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/plsql_reuse_check_20261103_r1/test_check.py",
+    "passed": 11,
+    "failed": 0
+  },
+  "actual_oracle_calls": 0,
+  "actual_dataiku_calls": 0,
+  "product_changes": 0,
+  "field_performance_measured": false,
+  "actual_bind_tested": false,
+  "files": {
+    "plsql_reuse_check.py": {
+      "sha256": "2e6cb9d5e320664742bd86c864bef371f098cbd32083bacebe81f89908ca32ea",
+      "bytes": 10516
+    },
+    "01_RUN_PLSQL_REUSE_CHECK_R1.txt": {
+      "sha256": "2e6cb9d5e320664742bd86c864bef371f098cbd32083bacebe81f89908ca32ea",
+      "bytes": 10516
+    },
+    "test_check.py": {
+      "sha256": "bc5ac0a6bdcd1f63458f03f72a3d0b45a9e73dd6139b99a178f7aee610d82fdc",
+      "bytes": 5949
+    },
+    "GUIDE.txt": {
+      "sha256": "77d0d38c996eb6188bc15e10858909bd670ad7ffcd931fb87a4147ed380749e9",
+      "bytes": 3570
+    }
+  },
+  "references": [
+    "https://developer.dataiku.com/latest/api-reference/python/sql.html",
+    "https://docs.oracle.com/en/database/oracle/oracle-database/19/tgsql/improving-rwp-cursor-sharing.html",
+    "08_DEPLOYMENT/DATAIKU/gold_fresh_1_20261102_r1/package/jdbc_transport.py"
+  ]
+}

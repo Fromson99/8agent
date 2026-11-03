@@ -354,8 +354,8 @@ def graph(item):
 
 def render_ontology():
     if os.environ.get("GENOS_RAG_ONTOLOGY_CONFIG"):
-        from ontology_dashboard import render
-        return render(embedded=True, initial_page='검토 대시보드')
+        from ontology_console import render
+        return render(embedded=True)
     header(4,'생성된 개념과 연결 관계를 살펴보고, 조건·제외·재개 기준을 검토합니다.')
     left,right=st.columns([1,2.25],gap='large')
     with left:
@@ -394,8 +394,8 @@ def render_ontology():
 
 def render_simulation():
     if os.environ.get("GENOS_RAG_ONTOLOGY_CONFIG"):
-        from semantic_runtime.ontology_work.ui import render
-        return render(simulation=True)
+        from ontology_console import render
+        return render(embedded=True, initial_panel='시나리오 검증')
     header(5,'온톨로지 버전과 질문 묶음을 고정하고, 예상한 동작과 실제 결과의 차이를 확인합니다.')
     st.caption('시뮬레이션 화면 시안 · 고정된 예시 결과를 표시하며 엔진·LLM을 실행하거나 실제 품질을 평가하지 않습니다.')
     control,results=st.columns([1,2.25],gap='large')

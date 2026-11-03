@@ -1,0 +1,72 @@
+Oracle 기존 _1 적재 재개 / 전송 최적화 R3 (2026-11-03)
+
+지금 사용할 파일
+- DATAIKU_GOLD_FRESH_1_TRANSPORT_20261103_R3.zip
+- DATAIKU_GOLD_FRESH_1_RUN_R3.txt
+- GUIDE.txt (이 문서)
+
+환경과 실행
+1. 기존 작업이 STOPPED/종료이고 노트북이 Idle인지 확인합니다. 기존 적재와 동시에 실행하지 않습니다.
+2. Dataiku LEGAL_RAG 프로젝트의 기존 Python 노트북(사진의 aidptest2 notebook_13)을 사용합니다.
+   연결은 AIDP, 예상 접속 계정은 PIDD2APP입니다. 같은 원본 준비 폴더/같은 _1 테이블을 이어갑니다.
+3. 관리 폴더 ehA8dpVm에 이번 ZIP을 이름 그대로 업로드합니다. 압축을 풀어서 올리지 않습니다.
+4. DATAIKU_GOLD_FRESH_1_RUN_R3.txt 전체를 새 Python 셀에 붙여 넣습니다. Run All은 사용하지 않습니다.
+   ACTION = "load" 를 유지합니다. 추가 TEMP/인덱스 진단을 먼저 돌릴 필요는 없습니다.
+   OLD_JOB_DIR = '' 는 기존 기본 원본 준비 폴더를 사용합니다.
+   예전에 다른 값을 직접 지정했다면 OLD_JOB_DIR만 그때의 정확한 절대경로로 지정합니다.
+   실제 기본값: tempfile.gettempdir()/legal-existing-nfs-20261029-r1/financial-risk-success-20261005-schema-r2/oracle-import-r2
+5. 그 셀 한 개를 실행합니다. 첫 실행의 코드 변경 결속은 기존 job.lock 안에서 수행합니다.
+
+무엇이 바뀌었나
+- 큰 JSON CLOB의 gzip 전송을 HEX에서 Base64로 변경합니다. JSON/UTF-8 내용은 그대로입니다.
+- gzip BLOB은 압축 해제 직후, 원시 BLOB은 CLOB 변환 직후 해제하여 INSERT 동안 보유하지 않습니다.
+- 직접 만드는 임시 LOB에 CALL 수명을 지정하고 정상/예외 시 명시적으로 해제합니다.
+- Python render_s, 전송 sql_bytes를 요청시간과 구분하여 진행 상태에 남깁니다.
+- 기본 실행은 load만 수행합니다. 전체 원문·검색 재검증, 게시, 임베딩/벡터 단계는 자동 실행하지 않습니다.
+- 기존 17개 테이블 INSERT/ROLLBACK 사전시험을 반복하지 않습니다. 현재 schema/PK/index/trigger의 읽기 전용 확인은 유지합니다.
+- 전송 형식 변경 때문에 시작 시 표를 건드리지 않는 1회 CLOB 전체 비교를 수행합니다.
+  32KiB 초과 한글/보충문자/SQL 모양 문자열을 새 codec으로 복원하고 독립적인 비압축 CLOB과 비교합니다.
+  실패하면 실제 적재·체크포인트 전환 전에 중단합니다. 이 과정은 현장 성능 실험이 아닙니다.
+
+유지하는 검사
+- 배치 INSERT의 PK 중복 방지/같은 키의 내용 충돌 검사 및 트랜잭션.
+- WRITE_UNCONFIRMED의 pending 행/해시/저장 여부 확인. 모르는 결과를 성공으로 넘기지 않습니다.
+- 원본 세대/파일 SHA/DB 및 객체 ID/contract/원래 deadline/진행 offset.
+- 검증 전에는 LOADED_UNVERIFIED이며 새 완료 명세를 게시하지 않습니다.
+- 검색 배치는 기존 R1의 5000행/2MiB 기준을 유지합니다. 보류된 batch R2를 적용하지 않습니다.
+- 없는 테이블/인덱스를 생성하거나 변경하지 않습니다. 누락 시 RESUME_*_MISSING으로 멈춥니다.
+
+완료와 나중 검증
+- load 완료: 마지막 LOADED_UNVERIFIED, PROCESS_EXIT=0. 이는 적재 완료이며 전수검증/게시 완료는 아닙니다.
+- 실제 사용/게시 전에 같은 TXT에서 ACTION = "verify_publish" 로 바꾸어 실행합니다.
+  기존 전체 대조·게시 경로를 사용하며 검증 실패 시 성공으로 처리하지 않습니다.
+- 벡터/임베딩은 이번 TXT에서 실행하지 않습니다. 이 파일을 전체 벡터 파이프라인 완료로 해석하지 않습니다.
+
+중단/재개
+- 오류가 나면 원래 셀이나 Run All을 재실행하지 말고 오류와 현재 진행 기록을 먼저 확인합니다.
+- 환경 문제를 해결한 뒤 동일한 R3 TXT/ACTION/OLD_JOB_DIR로 재개합니다. 자동 재시도는 없습니다.
+- pending의 저장이 확인되면 중복 INSERT 없이 이어갑니다. 누락/충돌 또는 조회 결과가 불명이면
+  PENDING_WRITE_REQUIRES_RECONCILIATION으로 멈춥니다. retry_missing 자동 허용은 하지 않습니다.
+- ORA-01654/ORA-01691 공간 부족은 이번 최적화로 해결하지 않습니다. 공간이 부족하면 다시 멈춥니다.
+- 원래 deadline이 지났으면 연장하지 않고 멈춥니다.
+- 로그: 노트북 현재 작업 폴더/gold-progress-logs 아래 실제 출력된 .log/.errors.jsonl.
+- 진행 파일: OLD_JOB_DIR의 상위 폴더/gold-shape-db556ac13596/state.json.
+
+코드 호환과 원복 한계
+- 정확한 gold_fresh_1_20261102_r1 코드만 등록된 이전 버전입니다.
+  이전 코드 binding: e76e5226e56e9fed13e26e7d4a4c59dadd4f79017a9d837b75b845dd3651df58
+  contract: db556ac135963a5dcdaafe35cf5e5c20b92d20e3af3200374a9c0e042bf132e4
+- R2/다른 수정본/다른 세대나 이미 vector 체크포인트가 있는 상태는 자동 이행하지 않습니다.
+- 이행 시 state-before-r3-<원래상태해시>.json을 보존하고, 진행 내용은 유지한 채 코드 binding과 이행 영수증만 추가합니다.
+- 전송 사전검사 실패로 이행 전 중단됐다면 원래 R1 state는 그대로입니다.
+- R3 이행 이후 원래 R1 TXT를 실행하거나 백업 state를 덮어쓰지 마세요. R3에서 동일 상태로 재개합니다.
+  원복이 필요하면 현재 state/백업/로그를 보존한 상태에서 현재 offset을 유지하는 역이행을 별도로 준비해야 합니다.
+
+확인 범위
+- 로컬 단위 검사와 실제 실행 TXT bootstrap/실제 pipeline_entry 경로의 모의 JDBC 검사만 수행했습니다.
+- 현장 Dataiku/Oracle에서 이번 codec이 실행되거나 실제 속도가 개선된 것은 아직 확인하지 않았습니다.
+- 전달용 SQL 문자열 및 임시 LOB 수명 최적화입니다. 실행계획 미확인 상태에서 인덱스 힌트/조인 순서를 강제하지 않습니다.
+- Oracle 참고: DBMS_LOB의 CALL/CREATETEMPORARY/FREETEMPORARY,
+  https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/DBMS_LOB.html
+  UTL_ENCODE.BASE64_DECODE,
+  https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/UTL_ENCODE.html

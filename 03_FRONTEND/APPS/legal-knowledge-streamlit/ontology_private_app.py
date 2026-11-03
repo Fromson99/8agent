@@ -39,7 +39,7 @@ def main():
             st.rerun()
         return
     # Never create the backend or load source data before authentication.
-    from ontology_dashboard import render
+    from ontology_console import render
     render()
 
 

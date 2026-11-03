@@ -1,0 +1,45 @@
+{
+  "schema": "g19-reduced-local-contract-validation-v1",
+  "tests": {
+    "passed": 37,
+    "failed": 0,
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/gold_fresh_1_reduced_20261103_r4/test_reduced.py --disable-warnings"
+  },
+  "code_binding": "07d35d0ecd768e9a2ca8c2e92b321e2a25af47e2fb1472dcedb883341a19b277",
+  "zip_members": 65,
+  "attachments": [
+    {
+      "name": "DATAIKU_GOLD_FRESH_1_REDUCED_20261103_R4.zip",
+      "bytes": 253360,
+      "sha256": "d5d8a88393fd576eb87cb3ccc01ed46e768f96f9aec2e69f2314e25bb49b6b54"
+    },
+    {
+      "name": "DATAIKU_GOLD_FRESH_1_RUN_R4.txt",
+      "bytes": 7112,
+      "sha256": "640402cf93f1af9ecfef33358243ccfbe0f892c11183ff6962dccefe3dcd02e9"
+    },
+    {
+      "name": "GUIDE.txt",
+      "bytes": 7987,
+      "sha256": "6005c5a316340748cc5ff1a632f434546b051443426a4e1fe94da4c9223dcf2a"
+    }
+  ],
+  "validation_kind": "small synthetic contract/unit checks; no performance experiment",
+  "oracle_calls": 0,
+  "field_applied": false,
+  "speedup_measured": false,
+  "main_changed_by_this_task": false,
+  "emails_sent": 0,
+  "previous_failures": [
+    {
+      "passed": 30,
+      "failed": 2,
+      "reason": "missing IPython test double"
+    },
+    {
+      "passed": 35,
+      "failed": 2,
+      "reason": "epoll cannot register /dev/null test stdout"
+    }
+  ]
+}

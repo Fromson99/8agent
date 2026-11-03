@@ -1,0 +1,49 @@
+Dataiku PL/SQL 문장 재사용 확인 R1
+
+실행
+기존 적재가 끝나고 Dataiku LEGAL_RAG 노트북이 Idle일 때 새 Python 셀을 엽니다.
+01_RUN_PLSQL_REUSE_CHECK_R1.txt 전체를 복사해 한 번 실행합니다.
+기존 AIDP 연결/PIDD2APP 계정을 사용하며 ZIP 업로드, 패키지 설치, DBA 권한은 필요하지 않습니다.
+다른 접속 계정이면 상단 EXPECTED_USER를 실제 계정에 맞춰 지정합니다.
+Run All이나 기존 적재 셀은 실행하지 않습니다.
+
+시험 내용
+같은 합성 JSON을 gzip/HEX로 보내 BLOB 압축 해제와 CLOB 변환을 실행합니다.
+기존 fresh R1 전달 방식과 같은 계열이며 임시 LOB는 CALL 수명/명시적 정리를 사용합니다.
+SAME: 최초 실행한 큰 PL/SQL 문장과 바이트까지 같은 문장을 반복합니다.
+NEW: 동일 데이터/동일 길이/동일 작업에서 주석의 8자리 번호만 바꿉니다.
+4쌍의 순서는 SAME→NEW / NEW→SAME으로 번갈아 실행합니다. 각 쌍에 PING을 둡니다.
+최초 SAME은 별도 표시하며 중앙값에서 제외합니다. DB 전체 cold/warm 통제는 아닙니다.
+사전 PREQUERY_CHECK는 의도한 ORA-20986을 잡아 pre_queries 실행 여부를 확인합니다.
+테이블 INSERT/UPDATE/DELETE, DDL, COMMIT, 원본 읽기, 적재 state 변경은 없습니다.
+정상 경로 15번의 query_to_df 호출입니다. 임시 LOB와 합성 데이터만 사용합니다.
+
+읽는 방법
+마지막 표와 중앙값을 확인합니다. NEW가 여러 쌍에서 일관되게 느리면 문장 재사용의
+효과를 지지하지만 Oracle 파싱만의 시간으로 확정할 수는 없습니다.
+SAME도 계속 느리면 Dataiku/전송/LOB 처리 등 공통 비용 또는 재사용 미성립이 남습니다.
+차이가 작다고 실제 적재의 파싱 비용이 없다고 단정하지 않습니다.
+합성 payload이고 INSERT/검증/COMMIT은 없어 실제 전체 이관 개선율을 계산할 수 없습니다.
+실제 JDBC bind 전송은 테스트하지 않습니다. query_to_df 함수 인자 이름은 기록하지만,
+**kwargs나 인자 이름만으로 bind 지원을 인증하지 않습니다. 지원 확인 후 별도 연결 시험이 필요합니다.
+
+오류/대기
+한 요청이 오류이면 자동 재시도 없이 종료하고 완료한 결과를 남깁니다.
+총 120초 이후 다음 요청을 시작하지 않고, 30초 이상 걸린 요청 뒤에도 후속을 멈춥니다.
+이 한도는 진행 중 요청을 강제 취소하지 않습니다. 오래 대기하면 셀을 중단하세요.
+STOPPED/INTERRUPTED는 성공 판정이 아니며 완료한 쌍만 표시합니다.
+
+저장
+노트북 작업 폴더/gold-plsql-checks/<고유번호>/REPORT.json
+매 요청 전에 SENT, 이후 결과/시간/SQL hash/접속 식별자를 기록합니다.
+원문/전체 SQL/인증정보는 보고서에 넣지 않습니다. 새 실행은 별도 폴더를 사용합니다.
+
+검증 범위
+현장 Dataiku/Oracle 성능 실행은 이 파일 제공 시점에 미실행입니다.
+로컬 검사는 SQL 생성, 압축 왕복, 동일성, 모의 Dataiku 실행/오류/중단/결과 보존을 확인합니다.
+
+공식 근거
+Oracle은 주석을 포함한 SQL/PLSQL 텍스트 동일성을 shared cursor 비교에 사용합니다.
+https://docs.oracle.com/en/database/oracle/oracle-database/19/tgsql/improving-rwp-cursor-sharing.html
+Dataiku query_to_df의 공개 pre_queries 인자를 사용합니다. 숨은 옵션/자격증명 추출은 없습니다.
+https://developer.dataiku.com/latest/api-reference/python/sql.html

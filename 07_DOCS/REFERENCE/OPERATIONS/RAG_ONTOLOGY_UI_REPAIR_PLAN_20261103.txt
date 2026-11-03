@@ -1,0 +1,192 @@
+RAG·온톨로지·화면 수정 계획
+작성: 2026-11-03 / 상태: 구현 전 계획 / 자체 검토
+
+목표
+사용자가 관리 화면에서 기록을 저장하고, 필요한 문장을 원문과 함께 검토·승인·게시한 뒤,
+같은 게시본을 RAG가 사용하고 채팅 화면이 근거·계산·미확인을 일관되게 보여주도록 연결한다.
+완료 범위는 코드 통합, 실제 화면 진입점 검사, 선택 MAIN 결속, 별도 관리 화면 패키지 결속까지다.
+현장 Dataiku/GENOS 적용 여부와 실제 모델 답변 품질은 각각 별도 결과로 남긴다.
+이번 문서는 계획만 작성했으며 코드 수정·모델 실행·게시·MAIN 변경은 하지 않았다.
+
+기준선과 범위
+- 기준은 2026-11-03 연결 검사와 현재 MAIN133/scenario-cumulative-20261102-r1.
+- 선택 서빙 513파일 무결성 정상. 작업에는 제품 7파일+pin 31파일의 서버 계산 후속 수정이 남아 있다.
+- 검사 128개 중 124통과/4실패. 실제 로컬 Oracle 기존 게시 3개·원문 앵커 12개·선택 경로 9개 확인.
+- 기본 로컬 RAG OFF와 Gold ON은 현재 의도된 경로 차이이며, 설정을 무조건 하나로 덮어쓰지 않는다.
+- 03_FRONTEND의 Streamlit 진입 파일은 MAIN133의 513파일에 포함되지 않는다.
+  따라서 MAIN만 반영해도 Dataiku 관리 화면이 바뀐다고 볼 수 없다. 화면 패키지를 별도로 결속해야 한다.
+- 정적 legal-knowledge-ops-site는 예시 화면이라는 현재 표시를 유지한다.
+  이번 우선 수정 대상은 실제 연결용 Streamlit 관리 화면과 GENOS/기본 RAG 결과 표시 경로다.
+
+문제별 전후 비교
+
+P1. 관리 메뉴에서 최신 작업공간에 접근할 수 없음 — 검사 F01
+  기존: app.py/ontology_app.py → ontology_dashboard → 기존 Workflow.
+  관측: 최신 wiki_ui/domain_ui는 직접 실행 검사만 통과했고 두 관리 진입점에 메뉴가 없다.
+  수정: 두 진입점이 같은 공통 화면 선택기를 사용해 자유 작업공간·생성/승인·도메인 설정을 연다.
+  목표: 같은 운영자·원문 범위로 기존 대시보드와 최신 패널을 왕복하며 저장 상태를 다시 볼 수 있다.
+  통과 조건: 두 실제 앱 진입점의 AppTest에서 메뉴 이동·저장·재조회·기존 승인 동작이 모두 연결된다.
+
+P2. 메뉴 연결만으로 원격 컴파일까지 보장되지 않음 — 계획 단계 추가 코드 확인
+  기존: wiki_ui.render에서 재사용 준비를 열면 domain_workflow(actor=actor())를 호출.
+  domain_workflow에는 ports 인자가 있지만 화면에서는 전달하지 않는다.
+  기본 glossary_binding은 sqlite-local/local만 허용하고 원격에서는 인증된 Oracle 포트 주입을 요구한다.
+  관측: 원격 포트가 없는 기본 호출은 원격 용어집 연결을 만들 수 없는 코드다.
+  실제 현장 장애를 이번에 재현했다는 뜻은 아니다. 기존 로컬 UI 검사는 factory를 합성 포트로 바꿔 실행했다.
+  수정: 기존 configuration의 factory를 확장하고 화면에서 인증된 authoring 포트를 전달한다.
+  목표: 로컬과 원격 모두 선택 원문·용어집·운영자·작업 저장소를 명시적으로 결속해 컴파일한다.
+  통과 조건: 원격 설정의 모의 어댑터 검사와 실제 Oracle의 별도 시험 namespace에서
+  같은 게시본을 새 프로세스의 RAG가 읽는 연결을 확인한다. 포트 누락이면 해당 기능을 미준비로 표시한다.
+
+P3. 작업 코드와 선택 MAIN의 계산·표시 기능 차이 — 검사 F02
+  기존: MAIN133은 이전 가정 처리, 작업에는 ADR1289의 서버 계산/비교 수정이 있음.
+  관측: 7제품 파일 차이. ADR1290은 저액 표시 일부 확인, 내부 ID 노출/옛요구문 잔존,
+  고액 보완 UNKNOWN, 규칙 의미 분기 미실행으로 전체 미통과.
+  수정: 최신 7파일을 기준으로 표시 경계와 현재/기준 사실 구분을 보완하고 같은 후보로 검증한다.
+  목표: 현재 가정의 값·계산·미확인과 과거 조사 목적을 구분해 보이고 기술 참조를 사용자 설명으로 노출하지 않는다.
+  통과 조건: API 저장·재조회·채팅 표시에서 같은 계산표/상태가 유지되고 원응답·이력은 무손실 보존된다.
+  모델의 잘못된 근거 연결을 자동으로 맞춰 주거나 미등록 최종 효과식을 만들어 통과시키지 않는다.
+
+P4. 실제 사용 경로의 온톨로지 활성 여부가 불명확함 — 검사 F03
+  기존: 기본 서비스는 OFF/A0, Gold는 ON/DB. 관리 설정과 RAG 읽기 scope도 별도.
+  관측: 양쪽 엔진은 MAIN133으로 같지만 기능 활성 상태는 다르다.
+  수정: 관리 화면과 RAG 요청에 사용되는 환경·게시 namespace·원문 세대·허용 scope를 함께 점검하고
+  운영 화면에 '미사용 / 사용 준비됨 / 연결 오류 / 사용 가능한 게시 지식 없음'을 구분해 표시한다.
+  상태 문구는 제안이며 새 공개 API enum을 바로 추가하는 것이 아니다. 기존 상태에서 표시값을 만든다.
+  목표: 단순 enabled=true를 게시 지식 사용 성공으로 오인하지 않고 실제 사용 경로를 확인할 수 있다.
+  통과 조건: OFF, ON+빈 데이터, ON+게시 데이터, 연결 실패, scope 불일치가 서로 다른 상태로 관측된다.
+  원래 일반 RAG 복귀와 기존 DB 연결 오류 처리 정책은 유지한다.
+
+P5. 검사와 운영 문서가 현재 구현을 충분히 반영하지 못함 — 검사 F04/F05
+  기존: 과거 compiler 전체 해시와 Markdown 출처 목록을 기대하며 일부 안내는 MAIN125/132를 현재로 표시.
+  관측: 관련 4검사 실패, 최신 출처 접기와 새 실행계획 승인 검사는 통과.
+  수정: 불변 의미·하위 호환·원문 보존 검사로 정리하고 문서는 실제 선택 포인터/화면 패키지 상태를 기록한다.
+  목표: 정당한 확장은 허용하면서 근거·승인·표시 손실을 잡는 검사를 유지한다.
+  통과 조건: 단순 기대 해시 교체나 실패 삭제 없이 동일 범위 기존 검사와 추가 연결 검사가 통과한다.
+
+실행 순서와 변경 지도
+
+1단계 — 기준 고정과 연결 설정 정리
+  작업: 현재 포인터·release manifest·Gold binding·관리 화면 파일·설정 지문을 새 작업 기록에 고정한다.
+  프런트/백엔드/Gold가 어떤 조합으로 실행되는지 목록화하고 다른 작업의 파일을 덮어쓰지 않는다.
+  대상: service.py의 application/_ontology_status, Gold connect.py의 load_profile/open_store,
+  ontology_work/configuration.py, 화면 backend()의 코드 root 선택.
+  변경 원칙: 원문·게시 세대·물리 매핑·인증 정보는 기존 값에서 가져온다. 사용자 입력으로 권한을 넓히지 않는다.
+  산출물: 변경 파일 목록, 동일 후보 hash, 실제 앱 진입 명령, 권한/데이터/게시 scope 대조표.
+  종료 조건: 화면과 RAG의 같은 자료/게시본 사용 여부를 검증할 기준이 준비됨.
+
+2단계 — 화면 연결과 authoring 포트 결속
+  제안 신규 파일: 03_FRONTEND/APPS/legal-knowledge-streamlit/ontology_console.py.
+  역할은 공통 화면 선택과 서버가 제공한 기능 준비 상태 표시로 제한한다.
+  app.py::render_ontology, ontology_app.py, 필요한 ontology_private_app.py의 인증 후 분기가 이를 호출한다.
+  기존 ontology_dashboard.render, wiki_ui.render, domain_ui.render를 재사용한다.
+  선택된 화면만 실행해 불필요한 DB 조회·모델 준비가 동시에 발생하지 않게 한다.
+  UI rerun 시 모델 호출은 명시적 작업 클릭에만 연결한다.
+  backend 변경 후보:
+  - configuration.py의 workflow/domain_workflow/workspace_workflow:
+    기존 ports 주입을 공통으로 사용하고, 인증된 호스트가 제공한 repository/store/source_reader/glossary를 전달.
+  - wiki_ui.py/domain_ui.py:
+    선택적 서버 factory/ports 인자를 받도록 확장하되 기존 직접 호출과 테스트 호환 유지.
+  - actor나 환경이 달라지면 해당 화면의 선택·cursor·초안 핸들을 분리/무효화한다.
+    저장 정본을 지우지 않으며 화면에 남은 다른 운영자의 객체를 재사용하지 않는다.
+  원격 저장 계약:
+  - RAG 읽기는 기존 request_ontology_repository의 ACL/SQL 예산/읽기 전용 계약 사용.
+  - authoring 쓰기는 기존 관리용 자격증명·Agent work/events·Dataiku work store를 사용.
+  - mapped Gold의 기존 ontology_repository(..., agent_owner=..., read_only=False) 확장점을 사용하되
+    실제 관리 권한과 사전 생성 테이블이 확인된 경우에만 구성한다. RAG reader 자격증명을 쓰기용으로 전용하지 않는다.
+  - 기존 workspace_publish와 workspace_runtime_scopes를 각각 확인. UI 버튼 숨김이 권한 검증을 대신하지 않는다.
+  - 일반 승인 대시보드의 '내용 승인'은 계속 승인까지만 수행한다.
+    게시 권한이 있는 작업공간의 별도 게시 동작은 stage→verify→activate 영수증을 확인한다.
+  종료 조건: 실제 두 진입점에서 기존 승인과 최신 작업공간이 동작하고 미준비/권한 부족 경로가 구분됨.
+
+3단계 — 최신 계산·현재 사실·미확인 표시 통합
+  기준 파일: legal_agent의 completion_contracts.py, completion_execution.py,
+  review_actions.py, review_explanation.py, scenario_application.py, scenario_review.py, scenario_computation.py.
+  결과 소비자: semantic_runtime/app.py의 /rag/, chat_adapter.py,
+  08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py의 검토/가정 표시.
+  먼저 서버 계산 결과가 answer/검토표/저장답변에 어떻게 전달되는지 한 후보에서 확인한다.
+  계산 자체와 모델의 법률 의미 설명은 기존 책임을 유지한다.
+  표시 보완:
+  - 현재 입력과 기준 입력을 명시적으로 구분하고 현재 질문 영역에 기준사건의 옛 금액을 요구사항처럼 제시하지 않는다.
+  - 과거 조사 목적의 원문은 이력으로 보존. 텍스트 숫자를 임의 치환하지 않는다.
+  - computed_gap_ref는 제공된 명시적 선택만 복원한다. 자유문 속 ID를 근거 연결로 추정하지 않는다.
+  - 서버가 이번 요청에 제시한 computed_gap_ref를 구조화 선택 대신 사용자 이유문에 쓴 경우는
+    정확한 제공 ID와 필드 위치로 판별하고 원제안/구체 오류를 보존해 기존 보완 담당·횟수 안에서 처리한다.
+    일반 인용·원문·ID처럼 보이는 임의 문자열을 포괄적으로 차단하지 않는다.
+    검증되지 않은 의미를 새 설명으로 만들거나 문자열 절단으로 감추지 않는다.
+    보완 실패 시 검증된 계산과 검토 미완료/확인 필요를 기존 제한 응답 계약으로 표시한다.
+  - 정상적인 과거 비교와 현재 옛값 재사용을 구분하는 계약을 유지·검사한다.
+  기존 v2/v3 독자·기존 저장답변·기준 사건은 읽을 수 있어야 한다.
+  N1 미등록 효과식은 UNKNOWN 유지. 공급자 공백/UNKNOWN 원인 해결을 이 수정의 성과로 약속하지 않는다.
+  종료 조건: 동일 요청의 저장/재조회/화면이 일치하고 원문·ACL·예산·현재/과거 구분이 유지됨.
+
+4단계 — 회귀 검사와 화면부터 RAG까지 검증
+  4개 기존 실패 검사 개선:
+  - compiler는 실행계획 미제공 시 기존 산출 의미·승인·인용 불변,
+    제공 시 새 승인 요구·변조 거절·구판 reader 호환을 검증한다. 관련 변경의 정당성을 확인하며 검사를 없애지 않는다.
+  - 출처는 DOM의 문서/판본/본문을 검사해 원문 공백·특수문자·인용을 보존한다. 답변과 원응답을 변경하지 않는지도 확인한다.
+  기존 검사: test_wiki_workspace*, test_domain_profile_ui, test_ontology_dashboard,
+  test_main_workflow_display, test_genos_source_accordion, test_review_explanation_actions 등 관련 범위 재사용.
+  새 연결 검사: 공통 패널만 직접 부르는 대신 app.py/ontology_app.py에서 출발한다.
+  정상 흐름:
+  운영자 로그인 → 자유 기록 → 문장 선택 → 정규화/원문 분석 → 컴파일 → 승인 → 게시 준비/검증/활성화
+  → 새 RAG 요청의 원문 도착 → 동일 publication 회수 → 근거/계산/미확인 표시 → 저장답변 재조회.
+  같은 request/operation ID 재전송은 결과를 재사용하고 모델·게시 횟수가 증가하지 않아야 한다.
+  실패 흐름:
+  권한 없는 게시, 원문 버전 변경, 동시 revision 충돌, 승인 후 원문 철회,
+  게시 ACK 유실, 모델 UNKNOWN, 일부 단계 성공 후 중단, 설정 변경 후 기존 프로세스 재사용을 확인한다.
+  게시 결과 불명은 성공 표시나 재게시 대신 영수증/HEAD 조회로 확인한다.
+  복구 담당은 기존 저장·모델·ASSESS 담당을 유지하며 새 중복 재시도 계층을 만들지 않는다.
+  Oracle: 우선 기존 게시물 읽기 전용 검사를 유지하고, 작성→활성화 검사는 별도 시험 namespace/Agent work scope에서 수행한다.
+  실제 모델: 연결 검사와 분리해 새 ADR에 입력/예산/종료 기준을 먼저 고정한다.
+  ADR1290 실패를 덮어쓰거나 같은 기록을 성공으로 바꾸지 않는다. 저액·고액·규칙과 승인 누락/권한/판본 반례를 명시한다.
+  원문/권한/저장/버전 회귀는 반영 차단 사유다. 의미 품질 한계는 별도 공개하며 기존 사용자 지정 전환 정책과 구분한다.
+
+5단계 — MAIN과 관리 화면 패키지를 각각 반영
+  작업 코드 검증 → 필요한 31개 계열 pin 등 실제 변경 inventory 갱신 → 불변 후보 검사
+  → 공식 prepare/apply 절차 → 선택 포인터/Gold binding → 새 프로세스 실제 서비스 진입점 확인.
+  새 릴리스 번호는 실행 시 현재 예약/선택 상태를 확인해 정한다. 계획에서 다음 번호를 선점하지 않는다.
+  MAIN 전환과 품질 인증은 구분한다. 자동 품질 인증을 붙이지 않는다.
+  관리 화면은 기존 Dataiku R4를 덮어써 이력을 없애지 않고 새 버전 패키지를 만든다.
+  공통 화면 선택기·기존 대시보드·필수 backend 모듈을 빠짐없이 묶고 검사한 backend manifest를 기록한다.
+  GENOS_ONTOLOGY_CODE_ROOT와 실제 import 기원을 확인해 화면만 새롭고 backend는 옛버전인 혼합을 막는다.
+  로컬 MAIN 확인과 현장 Dataiku 라이브러리 교체/웹앱 재시작,
+  GENOS 리비전/워크플로우 반영은 완료 기록을 따로 남긴다.
+  현장 검증은 접근 가능한 내부 워크플로우 테스트 화면에서 수행한다. 현재 세션에서 현장 적용을 확인했다고 쓰지 않는다.
+
+6단계 — 문서와 원복 경로 정리
+  대상: 00_SYSTEM/ARCHITECTURE.md, 03_FRONTEND/README.md,
+  Gold 연결기 README/ONTOLOGY_ON_GUIDE, 새 화면 패키지 GUIDE, 해당 변경 완료 기록.
+  실제 선택 포인터·엔진·화면 패키지·데이터/게시 scope·활성 상태를 같은 시점으로 기록하고 이전 실패/릴리스 이력 보존.
+  원복: MAIN133 포인터/Gold binding/관리 화면 이전 패키지를 각각 보관한다.
+  이전 reader가 새 계산/게시 저장형식을 읽을 수 있는지 먼저 검사하고, 불가능하면 호환 reader를 포함한 복구 릴리스를 사용한다.
+  Oracle 진행 layout4와 구조화 Oracle/상세 NFS 경계 유지. 새 게시 지식은 HEAD 전환/철회로 관리하고 원문·이력 삭제로 원복하지 않는다.
+
+완료 판정
+A. 실제 관리 화면 두 진입점에서 자유 작업공간과 기존 승인 기능에 접근하고 동일 권한·정본을 사용한다.
+B. 승인/게시 상태가 구분되고 RAG가 같은 publication·원문 판본·허용 scope를 사용한다.
+C. 서버 계산·현재 사실·미확인 표시가 API/채팅/재조회에서 일치하며 이력은 무손실 보존된다.
+D. 수정한 코드·검사한 후보·선택 MAIN·Gold binding·관리 화면 패키지의 대응 관계를 해시로 확인한다.
+E. 실제 현장 적용과 모델 의미 품질의 미확인/실패 범위를 숨기지 않는다.
+
+수치·일정·영향 판단
+N1 관측: MAIN133 513파일; 20261103 감사 inventory.json. 이번 계획에서 재선택 없음.
+N2 관측: 124/128 기술검사 통과, 4실패; 일반 정확도/법률품질 비율로 사용하지 않는다.
+N3 관측: Oracle 3게시/12앵커/9경로, 읽기 SQL157; 연결부 검사이며 최종답변 성공률 아님.
+N4 관측: 미반영 7제품+31pin=38파일; 새 UI/포트 변경 파일 수는 구현 후 확정.
+N5 목표: 메뉴 이동·상태 조회만으로 추가 모델 호출0, 동일 요청 재조회 추가 모델 호출0.
+N6 계획: 기존 원문/색인 재구축·운영 DDL 없이 연결과 호환성 수정 우선. 실제 어댑터 계약 부족이 드러나면 별도 범위를 명시한다.
+일정/비용/속도 개선율은 미산정. 원격 포트 결속·실제 모델 장애·현장 배포 대기가 주요 변동 요인이다.
+작업 순서는 1→2→3→4→5→6. 2와3은 기능적으로 분리할 수 있으나 무거운 검사는 환경 제약에 따라 순차 실행한다.
+UI 추가가 모델 호출을 늘리거나 같은 자료 조회를 중복하면 악화이므로 rerun/중복 요청 시 호출 수를 함께 확인한다.
+이 계획은 연결과 일관성을 목표로 하며 법률 정확도·응답시간 개선률을 예측하지 않는다.
+
+근거
+09_ARTIFACTS/AUDITS/20261103-rag-ontology-ui-check-105744/검사결과.txt
+같은 폴더 inventory.json, service.json, gold.json, oracle-readonly.json, tests*.json, completion.json
+09_ARTIFACTS/AUDITS/20261103-scenario-server-computation-live/실제실험과_검증결과.txt
+07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md
+02_BACKEND/semantic_runtime/ontology_work/configuration.py, wiki_ui.py, domain_ui.py
+08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/physical_mapping.py
+08_DEPLOYMENT/DATAIKU/ontology_dashboard_20261028_r4/GUIDE.txt
+AGENTS.md의 실험/검증/MAIN 및 GENOS 현장 적용 구분 지침

@@ -64,7 +64,8 @@ def failure(stage):
 
 
 def backend():
-    root = Path(os.environ.get('GENOS_ONTOLOGY_CODE_ROOT', Path(__file__).resolve().parents[3]))
+    from ontology_console import load_backend
+    root = load_backend()
     backend_path = str(root / '02_BACKEND')
     if backend_path not in sys.path:
         sys.path.insert(0, backend_path)
@@ -370,5 +371,5 @@ def render(*, embedded=False, initial_page=None):
 
 
 def main():
-    st.set_page_config(page_title='기록에서 승인까지', page_icon='✓', layout='wide', initial_sidebar_state='collapsed')
-    render()
+    from ontology_console import main as console_main
+    console_main()

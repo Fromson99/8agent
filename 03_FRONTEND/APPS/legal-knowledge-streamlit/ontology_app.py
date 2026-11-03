@@ -3,6 +3,6 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ontology_dashboard import main
+from ontology_console import main
 
 main()

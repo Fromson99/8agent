@@ -1,0 +1,79 @@
+# 방금 FileNotFoundError가 난 같은 Python 노트북의 새 셀에 전체 복사.
+# 사진의 정확한 보고서만 현재 LEGAL_RAG 프로젝트의 노트북 작업 폴더에서 찾습니다.
+# SQL/INSERT/임베딩/기존 진단 재실행 없음. 기존 파일 변경 없음.
+from pathlib import Path as _R3Path
+import json as _r3_json
+
+_R3_REPORT_DIR = '20261103-085804-d7470704'
+
+
+def _r3_find_report(cwd):
+    cwd = _R3Path(cwd).resolve()
+    project = next((p for p in (cwd, *cwd.parents) if p.name == 'LEGAL_RAG'), None)
+    roots = [cwd]
+    errors = []
+    if project is not None:
+        roots.append(project)
+        try:
+            for index, child in enumerate(project.iterdir()):
+                if index >= 128:
+                    errors.append('프로젝트 폴더가 128개를 넘어 탐색을 중단했습니다.')
+                    break
+                if child.is_dir() and not child.is_symlink():
+                    roots.append(child)
+        except OSError as exc:
+            errors.append('프로젝트 폴더 조회 실패: ' + type(exc).__name__)
+    found = set()
+    for root in roots:
+        candidate = root / 'gold-bottleneck-reports' / _R3_REPORT_DIR / 'REPORT.json'
+        try:
+            if candidate.is_file():
+                resolved = candidate.resolve(strict=True)
+                if (project or cwd) in resolved.parents:
+                    found.add(resolved)
+        except OSError as exc:
+            errors.append('보고서 경로 조회 실패: ' + type(exc).__name__)
+    return sorted(found), errors
+
+
+def _r3_recover_time_analysis():
+    cwd = _R3Path.cwd()
+    print('현재 작업 폴더:', cwd)
+    found, errors = _r3_find_report(cwd)
+    for message in errors:
+        print(message)
+    if len(found) != 1 or errors:
+        print('찾은 보고서:', len(found), '개')
+        for path in found:
+            print(str(path))
+        print('자동 분석하지 않았습니다. 이 결과를 보내 주세요.')
+        print('0개는 현재 환경에서 파일을 찾지 못했다는 뜻이며 삭제를 확정하지 않습니다.')
+        print('원래 R3 결과가 남은 노트북/작업 폴더 확인이 필요합니다. R3 INSERT 시험은 다시 실행하지 마세요.')
+        return
+    path = found[0]
+    with path.open('rb') as stream:
+        raw = stream.read(16 * 1024**2 + 1)
+    if len(raw) > 16 * 1024**2:
+        print('보고서가 16MiB 제한을 넘습니다. 자동 분석하지 않았습니다.')
+        return
+    report = _r3_json.loads(raw)
+    items = report.get('items', [])
+    good = [p for p in report.get('oracle', {}).get('insert_probes', [])
+            if p.get('status') == 'ROLLED_BACK_VERIFIED']
+    if (report.get('mode') != 'snapshot_and_rollback_probes'
+            or report.get('status') != 'COMPLETE'
+            or len(items) != 92 or sum(i.get('rows', 0) for i in items) != 60971724
+            or len(good) != 27):
+        print('사진의 R3 요약(92종/60,971,724행/27회)과 보고서가 다릅니다. 자동 분석하지 않았습니다.')
+        print('확인할 경로:', path)
+        return
+    print('확인된 R3 보고서:', path)
+    module = globals().get('_time_analysis_module')
+    if module is None or not callable(getattr(module, 'run', None)):
+        print('03 시간 분석 TXT의 TIME_REPORT_PATH에 아래 절대 경로를 넣고 그 셀만 실행하세요.')
+        print('TIME_REPORT_PATH = ' + repr(str(path)))
+        return
+    module.run(report_path=str(path))
+
+
+_r3_recover_time_analysis()

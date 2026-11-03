@@ -1,0 +1,11 @@
+{
+  "syntax311": "{\"python\": \"3.11.15\", \"compiled\": 430}\n",
+  "workflow310": "3.10.20 workflow compile PASS\n",
+  "wrapper311": {
+    "exit": 0,
+    "stdout": "PREPARING_PACKAGE=/tmp/main133-py311-entry-0em2s0f8/.GENOS_MAIN133_FULL_OVERWRITE_20261103_R1.prepare-zvdhyx1x\nTRANSFER=/tmp/main133-py311-entry-0em2s0f8\nPACKAGE=/tmp/main133-py311-entry-0em2s0f8/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1\nDEV_REQUESTED=/tmp/main133-py311-entry-0em2s0f8/DEV\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\", \"physical\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main133-py311-entry-0em2s0f8/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1\", \"checkout\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\", \"inside_checkout\": false}\nCHECK_PASS MAIN133: package hashes, dependencies, writable targets and Python syntax\n{\"event\": \"CHECKOUT_RESOLVED\", \"requested\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\", \"physical\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\"}\n{\"event\": \"PACKAGE_LOCATION_VALID\", \"package\": \"/tmp/main133-py311-entry-0em2s0f8/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1\", \"checkout\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\", \"inside_checkout\": false}\n{\"status\": \"CODE_GATE_PASS\", \"root\": \"/tmp/main133-py311-entry-0em2s0f8/DEV\", \"files\": 516, \"python\": \"/home/jin/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/bin/python3\", \"version\": \"3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]\", \"generation_opened\": false, \"model_calls\": 0}\nAPPLIED MAIN133 FULL R1: all 516 code files verified; original files backed up\nMAIN133_FULL_EXIT=0 LOG=/tmp/main133-py311-entry-0em2s0f8/main133-full-overwrite-r1-logs/20261103T034404Z-2015794.log\n",
+    "stderr": ""
+  },
+  "field_verified": false,
+  "model_calls": 0
+}

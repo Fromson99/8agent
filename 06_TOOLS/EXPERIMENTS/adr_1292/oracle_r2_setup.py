@@ -1,0 +1,10 @@
+from common import *
+p=Path(__file__).parent/'oracle.py';s=p.read_text().replace("O=ART/('oracle-'+args.mode)","O=ART/('oracle-create-r2' if args.mode=='create' else 'oracle-'+args.mode)").replace("namespace':'ADR1292-console-contract'","namespace':'ADR1292-console-contract-r2'")
+s=s.replace("glossary=domain.glossary.candidates(['주식']);domain.glossary.verify_candidates(glossary)\n     result['glossary_restored']=len(glossary['candidates'])", "domain.glossary.check();assert read(ART/'oracle-create/result.json')['glossary_restored']==4\n     result['glossary_restore_evidence']=str((ART/'oracle-create/result.json').relative_to(ROOT))")
+s=s.replace("  from test_wiki_workspace import seed,compiled,wire_normalization,pin", "  from test_wiki_workspace import seed,compiled,wire_normalization,pin\n  import test_wiki_workspace as fixtures\n  old_proposal=fixtures.typed_proposal\n  def proposal(*a,**kw):\n   value=old_proposal(*a,**kw)\n   def walk(v):\n    if isinstance(v,dict):\n     if set(v)=={'source','quote'} and v['source']=='S1':v['source']=original['id']\n     for child in v.values():walk(child)\n    elif isinstance(v,list):\n     for child in v:walk(child)\n   walk(value);return value\n  fixtures.typed_proposal=proposal")
+s=s.replace("artifacts/design/originals.json')[0]", "artifacts/design/originals.json')[2]")
+s=s.replace("result.update(seconds=time.monotonic()-start,", "result.update(runner_sha256=sha(__file__),seconds=time.monotonic()-start,")
+p.write_text(s)
+for n in ('release_prepare.py',):
+ p=Path(__file__).parent/n;s=p.read_text().replace("'oracle-create'","'oracle-create-r2'");p.write_text(s)
+put(ART/'oracle-r2-fixture-correction.json',{'prior':bind(ART/'oracle-create/result.json'),'reason':'Synthetic typed_proposal fixture fixed S1 reference did not match actual local source handle S1420. Product correctly rejected basis. Bind synthetic proposal to exact provided source ID; new private namespace r2, real source text/version unchanged. Prior four restored glossary candidates remain verified component evidence; no performance claim.','runner':bind(Path(__file__).parent/'oracle.py')})

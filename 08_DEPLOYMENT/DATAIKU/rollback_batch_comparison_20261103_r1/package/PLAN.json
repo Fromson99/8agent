@@ -1,0 +1,80 @@
+{
+  "schema_version": "dataiku-rollback-comparison-plan-v1",
+  "field_run_id": "run-001",
+  "local_checks": "synthetic contracts only; not a performance result",
+  "hypotheses": [
+    "R3 exception receipt may dominate request boundary; compare equal payload normal versus diagnostic exception",
+    "Larger grouping may reduce request overhead for equal ordered source rows; no speedup assumed"
+  ],
+  "source": {
+    "kinds": [
+      "entry_corpus_link",
+      "occurrence_keys",
+      "unit_fts_posting",
+      "unit"
+    ],
+    "max_distinct_rows_per_kind": 10000,
+    "max_mapped_bytes_per_kind": 25165824,
+    "sample_seconds": 12,
+    "fts_max_terms": 256,
+    "fts_max_positions_per_term": 4096,
+    "prefix_bias": true
+  },
+  "response_comparison": {
+    "max_rows": 2000,
+    "max_actual_payload_bytes": 2097152,
+    "paired_repetitions": 3,
+    "order": "alternate normal/exception, inverse by kind; warm-up separately; identical source rows/release/PK per pair"
+  },
+  "batch_comparison": {
+    "baseline": [
+      5000,
+      2097152
+    ],
+    "candidate": [
+      10000,
+      4194304
+    ],
+    "size_basis": "same pre-query-row projection JSON byte counts as installed R1 grouped()",
+    "same_ordered_rows": true,
+    "paired_repetitions": 3,
+    "order": "alternate baseline/candidate, inverse by kind",
+    "skip_identical_partitions": true
+  },
+  "guards": {
+    "actual_payload_max_bytes": 8388608,
+    "query_limit": 600,
+    "worker_seconds": 600,
+    "single_activity_seconds": 60,
+    "parent_seconds": 660,
+    "no_commit": true,
+    "no_ddl": true,
+    "no_delete": true,
+    "no_model": true,
+    "abort_on_first_oracle_error_or_unknown": true,
+    "original_state_exact_hash_before_after": true,
+    "source_headers_data_version_journals_checked": true
+  },
+  "correctness": [
+    "full scalar and LOB equality on every block",
+    "PK duplicates reject across validation chunks",
+    "rollback namespace empty before/after every attempt",
+    "same-row reinsertion and conflict/missing-value verification in isolated rollback transaction",
+    "local original batch-resume contract tests; no real original pending replay"
+  ],
+  "decision": {
+    "need_all_three_paired_runs": true,
+    "descriptive_median_ratio_only": true,
+    "no_p95": true,
+    "no_automatic_adoption": true,
+    "no_full_job_eta_or_capacity_certification": true
+  },
+  "not_measured": [
+    "real COMMIT",
+    "full raw projection",
+    "final verification and embedding",
+    "server parse versus network separately",
+    "physical DB allocation",
+    "original pending durable-write reconciliation"
+  ]
+}

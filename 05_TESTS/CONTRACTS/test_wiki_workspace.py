@@ -1,6 +1,7 @@
 """Synthetic workspace contracts; no model, production corpus or Oracle writes."""
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -90,7 +91,7 @@ def published(e, w, item):
 def test_dataiku_journal_page_preserves_corrections_and_partial_retry(env, ws, monkeypatch):
     import importlib.util
     from semantic_runtime.legal_agent import journal_storage
-    root = Path(__file__).resolve().parents[2]
+    root = Path(os.environ.get('LOOP_TEST_REPOSITORY_ROOT', Path(__file__).resolve().parents[2]))
     path = root / '08_DEPLOYMENT/DATAIKU/ontology_workflow_20261028_r1/ingest_agent_events.py'
     spec = importlib.util.spec_from_file_location('workspace_ingest_recipe', path)
     recipe = importlib.util.module_from_spec(spec); spec.loader.exec_module(recipe)
@@ -320,14 +321,19 @@ def test_cli_existing_entrypoint_and_factory_without_profile(env, ws, monkeypatc
     assert made.glossary is None and made.item(item.eid)['kind'] == 'ENTRY'
 
 
-def test_compiler_v1_bytes_remain_unchanged():
-    root = Path(__file__).resolve().parents[2]
-    import hashlib
-    baseline = json.loads((root / '09_ARTIFACTS/AUDITS/20261030-wiki-workspace-implementation/baseline.json').read_text())
-    pins = {r['path']: r['sha256'] for r in baseline['files']}
-    for name in ('profile.py', 'profile_schema.py', 'assembly_ir.py', 'assembly_compiler.py'):
-        path = '02_BACKEND/semantic_runtime/ontology_work/' + name
-        assert hashlib.sha256((root/path).read_bytes()).hexdigest() == pins[path]
+def test_compiler_v1_saved_package_compatibility(env, ws):
+    item = seed(env, ws)
+    document, stage, receipt = published(env, ws, item)
+    stored = env.repo.publication(stage['publication_id'], {'fictional'})
+    package = stored['context']['assembly_package']
+    assert package['version'] == 'ontology-assembly-package-v1'
+    assert package['paths'][0]['body'] == ws.item(item.sid)['content']['text']
+    assert package['originals'] == [env.source]
+    assert package['approval_ref'] and package['runtime_compilation'] is False
+    before = deepcopy(package)
+    from semantic_runtime.ontology_work.assembly_compiler import verify_package
+    verify_package(package)
+    assert package == before
 
 
 @pytest.mark.parametrize('always_invalid', [False, True])

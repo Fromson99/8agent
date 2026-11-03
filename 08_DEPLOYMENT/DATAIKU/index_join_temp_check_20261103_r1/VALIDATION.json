@@ -1,0 +1,29 @@
+{
+  "version": "g19-index-join-temp-check-20261103-r1",
+  "decision": "ADDITIONAL_READONLY_DIAGNOSTICS_NEEDED_BEFORE_SQL_REWRITE",
+  "local_tests_passed": 32,
+  "local_tests_failed_final": 0,
+  "test_log": "09_ARTIFACTS/AUDITS/20261103-index-join-temp-readonly/LOCAL_CHECK_FINAL.txt",
+  "earlier_runs_overlap": true,
+  "initial_failure": "Local IPython dependency absent in attachment integration test; display adapter mocked; real ZIP bootstrap and child collector retained",
+  "checks": [
+    "Original comparison, config, installed code, contract, state, database and object identity binding",
+    "SELECT-only guard; no application data, raw SQL text, payload or predicate values returned",
+    "Index/constraint metadata, stats, cached instance-SQL_ID-child-plan binding",
+    "Missing cache, unavailable statistics, permission failure and truncation remain incomplete",
+    "Unexpected errors stop without automatic retry",
+    "State mutation and job-lock conflict stop",
+    "Parent timeout reclaims child without claiming Oracle server cancellation",
+    "Actual attached ZIP extraction and subprocess worker with synthetic Dataiku SQL transport",
+    "Stored-result page rendering makes zero additional SQL calls",
+    "Python 3.9 grammar and Oracle-dialect parser; neither is native Oracle runtime validation",
+    "ZIP manifest exact; five members; no nested ZIP or JavaScript"
+  ],
+  "native_oracle_calls": 0,
+  "model_calls": 0,
+  "field_status": "NOT_RUN",
+  "main_or_product_changes": 0,
+  "original_pending_resume": false,
+  "historical_temp_peak_measured": false,
+  "cached_cursor_exact_comparison_attribution": false
+}

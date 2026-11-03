@@ -1,0 +1,90 @@
+Oracle 용량 확인 후속 R1 — 2026-11-03
+
+시간·SQL 최적화와 용량 확인은 별도 실행
+- 03_ANALYZE_SAVED_R3_TIME_R1.txt: 같은 R3 노트북 새 셀에서 전체 복사 실행.
+  저장된 R3 보고서의92종 계획과 실제 시험을 연결해 종류별 시간/비중을 계산한다.
+  SQL/INSERT/모델 호출 없이 끝난다. 새 결과는 gold-time-analysis/<시각>/TIME_ANALYSIS.json.
+  두 전체계획 시간 가정은 미측정 종류를 가장 빠른/느린 시험률로 처리한다는 조건이며
+  실제 최소/최대·전체완료·남은시간이 아니다. 현재5천행 적재와2천행 시험/오류응답 조건도 다르다.
+- 01_CHECK_CAPACITY_RUN_R1.txt: 현재 Oracle 저장공간을 SELECT로 확인하는 별도 셀.
+- 02_DBA_CAPACITY_SELECT.sql: 용량 메타 조회 권한이 막히면 DBA 전달용.
+- 이 묶음에는 적재SQL 최적화 패치나 적재 재개 명령이 없다.
+
+사진기반 분석 상세
+09_ARTIFACTS/AUDITS/20261103-dataiku-r3-capacity/예상시간과_SQL최적화.txt
+
+지금 받은 사진의 의미
+R3 요약 COMPLETE, 실제 INSERT/검증/ROLLBACK 27회/전체 기록27건이다.
+원래 적재 상태는 WRITE_UNCONFIRMED이며 이번 사진으로 재개/전체 적재 완료가 확인된 것은 아니다.
+작은 묶음 시험은 전체 60,971,724 검색행을 넣을 공간이 충분하다는 증거가 아니다.
+사진의 22,508,574행은 제외 검토 후보로 남아 있다. 실제 제외 완료로 계산하지 않는다.
+
+지금 실행할 것
+1. 사진의 Dataiku LEGAL_RAG Python/Jupyter 노트북에서 새 셀을 연다.
+2. 01_CHECK_CAPACITY_RUN_R1.txt 전체를 복사해 한 번 실행한다.
+   ZIP 업로드/설치나 커널 초기화가 필요 없다. 기존 AIDP 연결을 사용한다.
+   기존 적재 셀, R3 INSERT 시험 셀, PROFILE 셀을 다시 실행하지 않는다.
+3. 완료 후 각 새 셀에 아래를 한 줄씩 실행한다. 이 명령은 저장 결과만 표시한다.
+
+SHOW_CAPACITY_PAGE("요약")
+SHOW_CAPACITY_PAGE("테이블")
+SHOW_CAPACITY_PAGE("한도")
+SHOW_CAPACITY_PAGE("여유")
+SHOW_CAPACITY_PAGE("자료")
+
+현재 _1 대상 17개를 고정 조회한다.
+로컬 gold_fresh_1_20261102_r1/package/contract.json의 실제 대상명과 대조했다.
+계약이 다른 적재 대상의 용량으로 해석하지 않는다.
+
+결과의 범위
+- 테이블: 본체+일반 인덱스+LOB 데이터/인덱스 물리 할당 GiB. 현재 확보한 공간이지 순수 본문/회수 가능량이 아니다.
+- 한도: SIDDS/SIDDA 소유자가 해당 tablespace에서 쓰는 전체 할당량과 등록 quota.
+  기존 표도 포함되며, 접속 계정 PIDD2APP의 USER_SEGMENTS/USER_TS_QUOTAS로 대신하지 않는다.
+- 여유: 공유 tablespace의 현재 파일/미할당 extent/자동확장 설정. 사용자의 독점 공간이나 실제 디스크 여유가 아니다.
+- 자료: 이미 저장한 R3의 검색 계획과 앞쪽 SQLite JSON 표본을 읽는다. 새 원문 스캔/INSERT를 하지 않는다.
+  원본 SQLite JSON은 최종 Oracle 행의 전체 크기가 아니다. 32행 prefix와 FTS 편향이 있고
+  일부 종류는 미측정이므로 전체/최소/최대 예상 GB로 제시하지 않는다.
+  전체 보고서의 partial_source_json_bytes도 측정된 종류의 단순 외삽 참고값이며 Oracle 총량이 아니다.
+  BLOB 내용이 숫자 길이로 대체된 표본, 중복 표본, 변경 감지 표본은 외삽에서 제외한다.
+- STATS_ROWS/AVG_ROW_LEN은 과거 통계다. 오래되거나 LOB/인덱스를 빠뜨릴 수 있어 최종 용량으로 환산하지 않는다.
+- 파티션/IOT/클러스터는 이 확인기의 완전한 용량 계산 대상이 아니다. 별도 진단 필요로 표시한다.
+
+권한이 막히면
+앞서 DBA_SEGMENTS/DBA_TS_QUOTAS 조회 권한이 없었다는 기록이 있다.
+이번에도 ORA-00942/ORA-01031이면 해당 항목은 미확인으로 표시하고 가능한 다른 항목만 진행한다.
+권한 우회로 정확한 물리 용량을 알아내는 기능은 없다. 02_DBA_CAPACITY_SELECT.sql을 DBA에 전달해
+Q3(테이블), Q4(계정 quota), Q5(공유 공간)를 조회받아야 한다.
+USER_FREE_SPACE 보조 결과는 현재 접속자에게 보이는 공간뿐이며 SIDDS quota를 대체하지 않는다.
+DBA가 추가로 소유자에게 직접/역할로 부여된 UNLIMITED TABLESPACE 권한을 확인해야 한다.
+
+전체 최종 용량 산정에 남은 것
+이번 셀은 현재 할당/한도/여유를 확인한다. 최종 GB를 임의 배수로 만들지 않는다.
+전체 필요한 용량은 원문+종류별 검색행+PK/보조인덱스+LOB+벡터/메타데이터를 합산한다.
+대표성 있는 종류별 표본과 실제 저장 형태/세그먼트 비용으로 추정하고, 벡터 예정 개수/저장 타입을 포함한다.
+기존 표를 보존할 경우 기존 할당량, 적재 중 임시 공간, 유지할 과거 판본/증가 여유는 구분해 추가한다.
+부분 적재의 현재 할당량을 현재 통계 행 수로 나눠 전체 6천만 행에 일괄 곱하지 않는다.
+
+결과 파일
+노트북 작업 폴더/gold-capacity-reports/<시각-고유값>/CAPACITY_REPORT.json
+동일 폴더 TABLE_CAPACITY.csv (Excel용 UTF-8 BOM).
+원문/전체 SQL/인증 정보는 보고서에 저장하지 않는다. 새 진단 파일만 생성한다.
+R3가 같은 커널에 있으면 _g19_observer.REPORT를 복사해 사용한다. 원본 보고서는 변경하지 않는다.
+커널이 바뀌었다면 TXT 상단 CAPACITY_REPORT_PATH에 기존 REPORT.json의 정확한 경로를 지정할 수 있다.
+사진에는 gold-bottleneck-reports/20261103-085804-d7470704/REPORT.json이 표시됐다.
+자동으로 최신 파일을 선택하지 않는다. R3 보고서가 없어도 Oracle 메타 조회는 진행할 수 있다.
+
+중단
+모두 순차 SELECT이며 대형 COUNT/본문 스캔/INSERT/DDL/임베딩은 없다.
+한 조회가 오래 대기하면 노트북에서 중단한다. 완료한 결과를 저장하며 자동 재시도하지 않는다.
+클라이언트 중단만으로 원격 SELECT 취소를 보장하지 않는다. 종료 확인 후 필요한 경우만 재실행한다.
+
+검증
+로컬21검사 통과: Oracle SQL 정적 파싱, 실제 전달 TXT 모의 실행/화면전환 조회0,
+권한 오류/오접속자 자료대체 방지/누락을0으로채움 방지/사진 산술/원본보고서 보존.
+실제 현장 용량·조회 권한·적재 시간·SQL 최적화 효과는 이번에 측정하지 않았다.
+
+Oracle 공식 근거
+https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_SEGMENTS.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_TS_QUOTAS.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_DATA_FILES.html
+https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_FREE_SPACE.html

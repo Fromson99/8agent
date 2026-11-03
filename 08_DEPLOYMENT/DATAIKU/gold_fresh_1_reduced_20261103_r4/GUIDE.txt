@@ -1,0 +1,91 @@
+Oracle _1 검색 적재 축소 R4 — 2026-11-03
+
+사용 파일
+1. DATAIKU_GOLD_FRESH_1_REDUCED_20261103_R4.zip
+2. DATAIKU_GOLD_FRESH_1_RUN_R4.txt
+3. GUIDE.txt
+
+무엇을 하는 코드인가
+현재 R1 또는 전송 개선 R3 작업의 원문 완료 위치를 재사용하고, 검색 자료는 별도 버전으로 적재합니다.
+새 검색 버전에서 navigation.occurrence_keys, dictionary.entry_corpus_link,
+dictionary.entry_definition_link의 Oracle 적재를 제외합니다.
+원본 SQLite 표/VIEW/파일은 유지합니다. logical occurrence, 원문, 정의·참조·FTS 자료도 유지합니다.
+제외할 표는 생성기의 SELECT 이전에 건너뛰므로 해당 조인 VIEW 전체를 펼쳐 버리는 작업도 피합니다.
+기존 준비 명세의 종류별 행 수·해시를 재사용하며 제외량을 계산하기 위한 전수 스캔을 추가하지 않습니다.
+
+적용 범위와 중요한 차이
+- 원문은 기존 완료 위치에서 이어갑니다. 새 원문 복사본을 만들지 않습니다.
+- 검색은 새 release ID로 처음부터 넣습니다. 옛 검색 완료 행 번호는 재사용하지 않습니다.
+- 기존 검색행과 실패/pending 기록은 삭제하지 않습니다. 옛 행은 공간을 계속 사용합니다.
+- 따라서 이번 코드가 ORA-01654/ORA-01691 공간 부족을 해결하거나 공간을 즉시 회수하지는 않습니다.
+- 원래 검색을 이어 넣는 것보다 새 검색 적재가 더 많은 행을 써야 하는 경우 실행을 차단합니다.
+  판단은 저장된 완료 행 수와 결과불명 배치 행 수를 포함한 보수적인 행수 비교입니다.
+  행수가 적다는 것이 실제 시간·디스크 사용량이 반드시 적다는 보장은 아닙니다.
+- 기존 서비스의 활성 검색 버전은 바꾸지 않습니다. 검증 뒤에도 별도 test channel에 게시합니다.
+- 메인 RAG 코드, 테이블/컬럼/PK/인덱스 DDL, 모델, 임베딩/벡터 작업은 바꾸지 않습니다.
+
+실행 환경과 순서
+1. 기존 적재 작업을 종료하고 Dataiku LEGAL_RAG 프로젝트의 기존 Python 노트북이 Idle인지 확인합니다.
+   사진의 aidptest2 notebook_13과 같은 노트북, AIDP 연결/PIDD2APP 계정을 사용합니다.
+   R1/R3와 동시에 실행하지 않습니다. 실행기는 원래 job.lock과 새 job.lock을 함께 잡습니다.
+2. 관리 폴더 ehA8dpVm에 위 ZIP을 파일명 그대로 업로드합니다. 압축을 풀어 올리지 않습니다.
+3. DATAIKU_GOLD_FRESH_1_RUN_R4.txt 전체를 새 Python 셀에 붙여 넣습니다.
+   ACTION = "load"를 유지합니다. Run All을 사용하지 않습니다.
+   OLD_JOB_DIR = ''는 기존 기본 원본 준비 폴더입니다. 이전에 직접 지정했다면 같은 값을 넣습니다.
+   기본: tempfile.gettempdir()/legal-existing-nfs-20261029-r1/financial-risk-success-20261005-schema-r2/oracle-import-r2
+4. 셀 한 개를 실행합니다. 추가 TEMP/인덱스/배치 비교 검사 코드는 실행하지 않아도 됩니다.
+   기존 schema/PK/index/객체 ID 확인과 표를 쓰지 않는 전송 CLOB 비교는 적재 시작 과정에 포함됩니다.
+5. REDUCED_SEARCH_PLAN에서 original_rows / retained_rows / excluded_rows를 확인합니다.
+   값은 현장에 이미 저장된 준비 명세에서 계산합니다.
+6. REDUCED_FORK_CREATED에서 prior_search_rows_retained와 fewer_remaining_rows_at_least를 표시합니다.
+   후자는 기존 검색을 재개할 때보다 줄어드는 남은 행수의 보수적인 값이며 속도 개선율이 아닙니다.
+7. load 종료는 LOADED_UNVERIFIED 및 PROCESS_EXIT=0입니다. 전수검증/게시 완료와 구분합니다.
+
+검증·게시
+실제 검색에 사용하려면 같은 TXT의 ACTION만 "verify_publish"로 바꾸어 실행합니다.
+원문과 새 검색행의 전체 값/CLOB 대조 및 총 행수 확인 후 새 명세와 별도 test channel을 게시합니다.
+정상 끝 상태: SOURCE_QUERY_VERIFIED, serving=NOT_SWITCHED, PROCESS_EXIT=0.
+기존 서비스 연결을 자동으로 새 채널에 전환하지 않습니다. 화면의 새 query_release_id/test_channel을 보존합니다.
+사용하지 않는 두 VIEW/내부 키표를 직접 조회하는 별도 외부 프로그램은 이 새 검색 버전의 지원 대상이 아닙니다.
+현재 저장소의 검색 소비자 경로를 기준으로 확인했으며 현장 외부 프로그램 전체를 인증한 것은 아닙니다.
+
+저장 경로
+원래 기록: OLD_JOB_DIR 상위/gold-shape-db556ac13596/state.json — 변경하지 않습니다.
+새 기록: OLD_JOB_DIR 상위/gold-shape-db556ac13596-reduced-r4/state.json
+새 검색 명세: 같은 새 폴더/query-reduced.json
+원래 전체 상태 사본: 같은 새 폴더/parent-state-<상태해시>.json
+로그: 노트북 현재 작업 폴더/gold-progress-logs의 실제 출력된 .log/.errors.jsonl.
+원래 입력/DB/객체/계약/코드 버전·deadline과 원문 체크포인트를 결속합니다. deadline을 연장하지 않습니다.
+
+중단·재개
+- 오류 후 자동 반복 실행하지 않습니다. 원인을 해결한 뒤 같은 ZIP/TXT/ACTION/OLD_JOB_DIR로 재개합니다.
+- 새 검색의 결과불명 배치는 원래 PK와 전체 값 대조로 저장 여부를 확인한 뒤에만 진도를 넘깁니다.
+  누락/충돌/권한·연결 실패를 성공 처리하거나 자동 재삽입하지 않습니다.
+- 원래 pending이 원문 쓰기이면 새 작업에서도 그대로 확인합니다.
+  원래 pending이 옛 검색 쓰기이면 원래 기록/사본에 보존하며 새 검색 완료로 계산하지 않습니다.
+- 새 작업 도중 원래 R1/R3 상태를 변경하면 REDUCED_RESUME_BINDING_CHANGED로 중단합니다.
+  원래 상태를 억지로 되돌리거나 새 state.json을 삭제해 우회하지 않습니다.
+- 원래 검색에는 손대지 않으므로 새 버전을 사용하지 않으면 기존 활성 서비스는 유지됩니다.
+  새 적재로 생긴 검색행의 공간 정리는 별도이며 자동 DELETE/원복 DDL은 없습니다.
+
+주요 중단 사유
+REDUCED_RESTART_NOT_FEWER_ROWS_USE_EXISTING_R3:
+  기존 검색이 충분히 진행돼 새로 시작할 행수 이점이 없습니다. 새 state 생성/적재 전에 멈춥니다.
+  원래 R1/R3 기록은 그대로이며 기존 작업 재개 쪽이 적절합니다. 이 검사를 끄지 마세요.
+REDUCED_UNREGISTERED_PARENT_CODE / REDUCED_PARENT_BINDING_CHANGED:
+  확인한 R1/R3 또는 같은 원본/DB 작업이 아닙니다. R2/임의 수정본은 자동 이행하지 않습니다.
+REDUCED_VIEW_CHANGED / REDUCED_SCHEMA_BINDING / REDUCED_COLUMNS_CHANGED:
+  제외 후보의 실제 정의가 지원한 구조와 다릅니다. 임의로 표 이름을 바꿔 통과시키지 않습니다.
+PENDING_WRITE_REQUIRES_RECONCILIATION:
+  결과불명 쓰기를 저장 완료로 확인하지 못했습니다. pending을 삭제하거나 retry_missing을 켜지 않습니다.
+ORIGINAL_DEADLINE_EXPIRED / ORA-01654 / ORA-01691:
+  각각 원래 기한 종료 / 영구 저장공간 문제입니다. 이번 검색 행 축소가 이 상태를 해소하지는 않습니다.
+
+확인 범위
+작은 합성 데이터로 로컬 계약 검사 37개 통과: 유지 행/ID/해시·FTS 위치, 원문/정의 조회,
+현재 MAIN134 Oracle 조회 변환의 scope/new release 결속, 부모 상태 보존, 부분 쓰기 재개,
+변조·잘못된 스키마 거절, 실제 pipeline_entry 경로의 모의 Dataiku, 완전 실행 TXT의 성공/실패.
+현행 로컬 원본의 세 VIEW 정의가 지원한 정의와 같다는 읽기 전용 메타데이터 확인도 수행했습니다.
+현장 Dataiku/Oracle 실행, 속도 개선율, 실제 segment 용량은 아직 측정하지 않았습니다.
+과거 현장 명세가 그대로라면 검색 계획 60,971,724 → 38,463,150행(22,508,574행 제외)입니다.
+이는 새 검색 전체 계획의 36.9164%이며 실제 남은 작업량/시간 개선율/공간 회수율이 아닙니다.

@@ -2475,6 +2475,14 @@ def _review_explanation_text(body):
     for item in view['items']:
         target = ' / '.join(t.get('coordinate') or t['id'] for t in item.get('targets', [])) or item['id']
         lines.append('| '+ ' | '.join(safe(x) for x in (target,item['acquisition'],item['review'],item['reason']+' '+item['impact']))+' |')
+    history = [item for item in view['items'] if item.get('historical_declaration')]
+    if history:
+        lines += ['', '**기준 사건의 조사 이력 (현재 가정의 요구사항 아님)**']
+        for item in history:
+            lines.append('- '+safe(item['historical_declaration']))
+    if view.get('historical_issues'):
+        lines += ['', '**기준 사건의 질문 이력 (현재 가정값은 계산표 참조)**']
+        lines.extend('- '+safe(text) for text in view['historical_issues'])
     for check in view.get('failed_checks', []):
         lines.append('- 검토 실패: '+safe(check['reason'])+' '+safe(check['impact']))
     lines += ['', '다음 행동:']

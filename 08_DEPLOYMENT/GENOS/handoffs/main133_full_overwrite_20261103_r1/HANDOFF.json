@@ -1,0 +1,72 @@
+{
+  "main": 133,
+  "release_id": "scenario-cumulative-20261102-r1",
+  "selected_serving_files": 513,
+  "included_serving_files": 513,
+  "auxiliary_files": {
+    "requirements-serving.txt": "bbb62a4604faf8da3afc7642b04ab52f9b2f43aea31cf9966722a8175a6f4ce5",
+    "requirements.txt": "e4e7aa7129e227d9775a0b6f13b5ad9b09f388ad9d64f62eee71949bb24d39a5",
+    "06_TOOLS/COMMANDS/genos_generation_e2e.py": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498"
+  },
+  "selected_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/scenario-cumulative-20261102-r1/code",
+  "release_manifest_sha256": "3f237363cb73bf4fd6af85c88e12c7375580e844b9b280b877f20e38d5aea091",
+  "active_pointer_sha256": "77f57a55497039332667abc7f6bbf4a0a8dd1f8f898c2323b01d7656285cc317",
+  "important_files": {
+    "service.py": "17dd9030e38cb553ee243b315230d46b261c0938a20893a03578b65f75151cf5",
+    "main.py": "9e0987b2da44e64f5bc61d8cb96c5ee49151d675a905ba5d4ceb8a11787080f0",
+    "00_SYSTEM/PIPELINE.json": "1101d002f8e04b8b8de380dc5658ae9ec16518a2ddaa6b987f5a3823ca2d3d02",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "d84098c145fc14b84ace574d03066aa2f041f511715c981c4b0a847038f37322",
+    "02_BACKEND/semantic_runtime/term_index.py": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0",
+    "02_BACKEND/semantic_runtime/oracle_progress_body.py": "cd5f7bc3bbe0cba964da794b3fe0693c785ddea4e894f5f7fa5fe93cfa614683"
+  },
+  "local_generation_path": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+  "local_generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+  "local_generation_included": false,
+  "deployment_checkout_requested": "~/DEV",
+  "field_checkout_physical": null,
+  "field_commit": null,
+  "field_generation_path": null,
+  "field_generation_manifest_sha256": null,
+  "field_code_serving_revision": null,
+  "field_runtime": null,
+  "quality_certified": false,
+  "field_deployment_verified": false,
+  "overwrite_existing_authorized": true,
+  "installer_basis": "main123_full_overwrite_20261030_r3",
+  "unselected_working_changes_included": false,
+  "transport_paths": {
+    "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "payload/02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js.txt"
+  },
+  "code_manifest_sha256": "01b68f45f114c16fc5259dbd029d56ab308727ac15b0605d11e7d9d777f72d21",
+  "code_files": 516,
+  "package_sha256": "4adffc1b3887fd925a9f3e7cd3939a8dadf812da27e5bed3753a8e44d748442f",
+  "zip_sha256": "7ec6040445e05444d1d506afe5e09f8c4b0f646d19ebd732954191aeb223690e",
+  "materialized_code_zip_sha256": "5295a246e608637b89c9a7499b48e4a97dc65bcf86855a28408c04f5e92182b6",
+  "product_changes_from_main133": 0,
+  "attachments": [
+    {
+      "filename": "GENOS_MAIN133_FULL_OVERWRITE_20261103_R1.zip",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main133_full_overwrite_20261103_r1/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1.zip",
+      "bytes": 2805517,
+      "sha256": "7ec6040445e05444d1d506afe5e09f8c4b0f646d19ebd732954191aeb223690e"
+    },
+    {
+      "filename": "GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main133_full_overwrite_20261103_r1/GENOS_MAIN133_FULL_OVERWRITE_20261103_R1_RUN.txt",
+      "bytes": 5176,
+      "sha256": "e6a219399670914aee4edf0878d4452fa53b8e235044c1731a445166c0631eed"
+    },
+    {
+      "filename": "GUIDE.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main133_full_overwrite_20261103_r1/GUIDE.txt",
+      "bytes": 6612,
+      "sha256": "bc22f5653abcd4322c9421210147a4382530139e6d414e944c012ec6839ec624"
+    },
+    {
+      "filename": "GENOS_MAIN133_WORKFLOW_PASTE_ALL.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/main133_full_overwrite_20261103_r1/GENOS_MAIN133_WORKFLOW_PASTE_ALL.txt",
+      "bytes": 141831,
+      "sha256": "d84098c145fc14b84ace574d03066aa2f041f511715c981c4b0a847038f37322"
+    }
+  ]
+}

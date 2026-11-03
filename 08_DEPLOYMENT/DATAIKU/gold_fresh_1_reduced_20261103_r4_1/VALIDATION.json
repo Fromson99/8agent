@@ -1,0 +1,36 @@
+{
+  "status": "LOCAL_CONTRACT_PASS_FIELD_PENDING",
+  "tests_passed": 51,
+  "test_report": "09_ARTIFACTS/AUDITS/20261103-g19-preparation-binding-fix/check3.xml",
+  "initial_check": {
+    "passed": 38,
+    "setup_errors": 9,
+    "cause": "New regression fixture omitted generation_id; corrected fixture only. Original report retained."
+  },
+  "field_failure": "R4 RESUME_PREPARATION_BINDING_CHANGED before INSERT; field failure not reclassified.",
+  "fix": "Legacy oracle_query_publish restored byte-for-byte to R1/R3; exclusion export isolated in reduced_export.py.",
+  "guards_unchanged": true,
+  "legacy_handoffs_unchanged_files": 220,
+  "archive_members": 66,
+  "production_db_calls": 0,
+  "production_ddl": 0,
+  "field_data_deletions": 0,
+  "main_change": false,
+  "attachments": [
+    {
+      "filename": "DATAIKU_GOLD_FRESH_1_REDUCED_20261103_R4_1.zip",
+      "bytes": 256648,
+      "sha256": "d32b354f92329b4bb4c5502a7ef1d36c8476c2462f36ca264c97949f2ccad4dc"
+    },
+    {
+      "filename": "DATAIKU_GOLD_FRESH_1_RUN_R4_1.txt",
+      "bytes": 7118,
+      "sha256": "e17a77af1bb5dc5deb567cdfcc972fe9bb347cf367f8f490f7d5589064340542"
+    },
+    {
+      "filename": "GUIDE.txt",
+      "bytes": 10365,
+      "sha256": "462076aebb25c4cd21df5ba1c5ad148d67878f579be55574e62032a263b722dc"
+    }
+  ]
+}

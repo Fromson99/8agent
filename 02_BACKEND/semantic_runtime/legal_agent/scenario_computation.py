@@ -136,6 +136,11 @@ def projection(schema, context):
         seen = set()
         for index, row in enumerate(value['gaps']):
             if 'computed_gap_ref' not in row:
+                if any(ref in row.get('reason', '') for ref in options):
+                    raise output.OutputContractError(
+                        '미확인 입력 ID는 이유문에 쓰지 말고 computed_gap_ref와 issue_id 필드로 선택하세요. 원래 설명은 원제안에 보존됩니다.',
+                        [output.issue('COMPUTED_GAP_IN_REASON', '/gaps/'+str(index)+'/reason')],
+                        category='SCENARIO_REVIEW_INVALID')
                 continue
             key = (row['computed_gap_ref'], row['issue_id'])
             if key in seen:

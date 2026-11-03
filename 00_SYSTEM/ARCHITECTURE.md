@@ -1,5 +1,11 @@
 # MAIN — 원문과 용어 기반 탐색
 
+**2026-11-03 현재 로컬 MAIN135:** `ordinary-assessment-20261103-r1`·서빙516/작업540·Gold동일. 일반입력 무손실공유/공유검토 연결·완전확보 조사장부 서버조립을 적용했고 원문/권한/의미 검증을 유지한다. [검증·한계·원복](../09_ARTIFACTS/AUDITS/20261103-ordinary-assessment-contract-main/정리와_검증_메인반영결과.txt). 실제Qwen·큰자료법률품질 미인증. 아래 MAIN134는 이전 시점이다.
+<!-- ORDINARY_ASSESS_MAIN135_1301_20261103 -->
+
+
+**2026-11-03 현재 로컬 MAIN134:** `ontology-console-20261103-r1`·서빙515파일·Gold 동일엔진. 공통 관리 화면과 인증 host 포트·서버 가정 계산/현재·이력 표시를 연결했다. 관리 UI는 MAIN 밖의 별도 `ontology_console_20261103_r1.zip`으로 결속했다. 기본 RAG OFF/Gold ON 설정을 유지하며 실제 모델 개선·현장 적용·법률품질은 미인증이다. [검증·한계·원복](../09_ARTIFACTS/AUDITS/20261103-rag-ontology-console-integration/수정과_검증_메인반영결과.txt). 아래 번호는 당시 기록이다.
+
 <!-- MAIN132_CURRENT_20261102 -->
 **2026-11-02 현재 로컬 선택 MAIN132:** `final-review-multiturn-20261102-r1`, 서빙504파일. MAIN131 누적 기능을 유지하고 유일한 근거 연결 누락 결속·검토미완료 원문응답·후속 사실 재판단 안내를 반영했다. root와Gold는 같은 MAIN132이며 기존 원문·설정·Oracle layout4/상세NFS 경계 보존. 실제 Qwen 오류주입 첫턴7+후속4로 동일사건/원문 유지·재조회0을 확인했다. 사용자 지시 전환이며 법률품질/Oracle E2E/GENOS/NFS 인증은 별도다. [수정·사용·검증·원복](../09_ARTIFACTS/AUDITS/20261102-final-review-main132/수정과_멀티턴_실제검증_메인반영결과.txt). 아래 번호는 과거 기록이다.
 <!-- /MAIN132_CURRENT_20261102 -->

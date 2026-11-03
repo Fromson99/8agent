@@ -1,9 +1,16 @@
-Gold 연결기 — 로컬 MAIN125 Oracle 범위 포트 수정 / 2026-10-30
+2026-11-03 현재 로컬 MAIN135: ordinary-assessment-20261103-r1 / 서빙516파일.
+일반 ASSESS 무손실 입력·공유 검토 연결·완전확보 조사장부 서버조립 반영.
+계약196/모의API22·준비API13(중복)/root16/Gold9 통과. 새실모델·Oracle0, 법률품질 미인증.
+Gold query/매핑/온톨로지설정/연결기는 유지. 이전 MAIN134 binding 원복은
+09_ARTIFACTS/AUDITS/20261103-ordinary-assessment-contract-main/gold-before.json.
+아래 안내의 이전 MAIN 번호는 각 시점의 기록이다.
+
+Gold 연결기 — 로컬 MAIN134 온톨로지 관리·가정 표시 연결 / 2026-11-03
 
 현재 실행
-- 엔진: oracle-scope-20261030-r1 / MAIN125, 정식 선택 코드489파일.
+- 엔진: ontology-console-20261103-r1 / MAIN134, 선택 코드515파일.
 - 정본: 01_DATA/ACTIVE/local/ACTIVE_RELEASE.json → release.json.
-- binding.json이 선택 release ID·manifest hash·489파일과 일치해야 실행한다.
+- binding.json이 선택 release ID·manifest hash·515파일과 일치해야 실행한다.
   MAIN을 바꿨다면 Gold 포트 호환성을 검증하고 binding을 함께 갱신한다.
   불일치 시 조회 전에 거절하며 다른 엔진으로 자동 우회하지 않는다.
 - 같은 원문 새evidence ID 재결속과 새claim ID 충돌 수정을 정식 코드에 포함했다.
@@ -72,3 +79,5 @@ ACTIVE_MAPPING과 ontology_settings, 기존 runtime_patches를 보존했다. run
 04_EXPERIMENTS/ADR/ADR-1240-oracle-fulltext-scope-repair/README.md
 04_EXPERIMENTS/ADR/ADR-1241-main125-gold-live-revalidation/README.md
 이전 MAIN124 통합과 실제 실패는 ADR1238·1239, Gold ON 실패는 ADR1233·1235에 보존했다.
+
+2026-11-03: ADR1292 합성 계약169/준비API14·로컬Oracle 격리게시/재조회/철회 검증. 실제 모델 효과/현장 GENOS 품질 미인증. 별도 관리 화면 GUIDE는 ../.. 경로의 DATAIKU/ontology_console_20261103_r1/GUIDE.txt 참조.

@@ -413,9 +413,10 @@ class CompletionExecution:
         from . import scenario_review
         scenario_context=state.get('scenario_context')
         if scenario_context and not modern:raise ContractError('hypothetical review requires the modern assessment contract')
-        from . import assessment_links, scenario_application, scenario_computation
+        from . import assessment_links, scenario_application, scenario_computation, source_work_review
         schema=scenario_review.attach(schema,scenario_context,typed=True)
-        shared_reviews=bool(scenario_context and (judgment_context is not None or requirement_context is not None))
+        shared_reviews=bool(modern and (judgment_context is not None or requirement_context is not None))
+        host_source_work=source_work_review.eligible(judgment_context,options) if modern else []
         if shared_reviews:schema=assessment_links.attach(schema,options)
         from . import ontology_scenario_runtime
         scenario_catalog=ontology_scenario_runtime.catalog_from(ontology_payload)
@@ -435,6 +436,7 @@ class CompletionExecution:
             basis['scenario_context_hash']=digest(state['scenario_context'])
             basis['scenario_application_version']=schema['properties']['scenario_review']['properties']['version']['const']
         if shared_reviews:basis['review_links_version']=assessment_links.VERSION
+        if host_source_work:basis['source_work_review_version']=source_work_review.VERSION
         if requirement_context is not None:
             basis['requirement_context_hash']=requirement_context['binding_hash']
             basis['requirement_link_rule']=requirements.LINK_RULE
@@ -481,7 +483,7 @@ class CompletionExecution:
             raise InvestigationPending('같은 판단의 수정 한도를 소진했습니다.',stage='ASSESS',
                 diagnostics={'cause_codes':['ASSESSMENT_CONTRACT_UNRESOLVED'],'resume_available':False})
         if prior and prior['status']=='REJECTED':
-            feedback={'errors':prior['error'],'validation':prior['failure'],'rejected_assessment':assessment_links.repair_proposal(prior.get('proposal'))}
+            feedback={'errors':prior['error'],'validation':prior['failure'],'rejected_assessment':assessment_links.repair_proposal(source_work_review.repair_proposal(prior.get('proposal'),judgment_context,options))}
         from .law_candidates import answer_first
         answer_policy = ('\n각 판단 이유(reason/explanation)는 결론과 근거를 한 번만 짧게 적는다. 재고·자문자답·같은 문장의 반복은 쓰지 않는다. 이 필드는 최대600자이며 원문 인용이나 최종 답변의 길이 제한이 아니다.' if modern or profile.get('candidate_navigation',{}).get('bounded_judgment_notes') else '')
 
@@ -499,7 +501,12 @@ class CompletionExecution:
         if requirement_context is not None:answer_policy += '\n'+requirements.PROMPT
         if scenario_context:answer_policy += '\n'+(scenario_computation.PROMPT if scenario_computation.enabled(scenario_context) else scenario_application.PROMPT)
         if shared_reviews:answer_policy += '\n'+assessment_links.PROMPT
+        if host_source_work:answer_policy += '\n'+source_work_review.PROMPT
         generation_schema,expand_assessment=assessment_projection(schema,allowed_targets=allowed_targets) if modern else (schema,lambda v:v)
+        if host_source_work:
+            generation_schema,expand_work=source_work_review.projection(generation_schema,judgment_context,options)
+            expand_core=expand_assessment
+            expand_assessment=lambda raw:expand_core(expand_work(raw))
         if shared_reviews:
             generation_schema,expand_links=assessment_links.projection(generation_schema)
             expand_base=expand_assessment
@@ -622,7 +629,7 @@ class CompletionExecution:
                     normalized=True
                     break
                 if not attempt and output.repairable(exc) and not truncated:
-                    feedback = {'errors': str(exc), 'validation':output.diagnostics(exc), 'rejected_assessment': assessment_links.repair_proposal(value)}
+                    feedback = {'errors': str(exc), 'validation':output.diagnostics(exc), 'rejected_assessment': assessment_links.repair_proposal(source_work_review.repair_proposal(value,judgment_context,options))}
                     continue
                 if modern and (judgment_context is not None or requirement_context is not None):
                     final_judgment.independent_research(self,exc,value,schema,

@@ -54,7 +54,16 @@ def test_render_cleans_answer_but_retains_sources_and_original_body(workflow, po
         body['answer']['provider_receipt'] = {'final_review_policy': policy}
     before = deepcopy(body)
     rendered = workflow.render(body)
-    assert rendered == '수집해야 합니다.\n\n**출처**\n- [별표 1] 개인정보 보호법 · 제3조제1항'
+    from html.parser import HTMLParser
+    class Sources(HTMLParser):
+        def __init__(self): super().__init__(); self.tags=[]; self.text=[]
+        def handle_starttag(self, tag, attrs): self.tags.append(tag)
+        def handle_data(self, data): self.text.append(data)
+    parser=Sources(); parser.feed(rendered)
+    assert rendered.startswith('수집해야 합니다.')
+    assert 'details' in parser.tags and 'summary' in parser.tags
+    assert '[별표 1] 개인정보 보호법' in ''.join(parser.text)
+    assert '제3조제1항' in ''.join(parser.text)
     assert body == before
 
 

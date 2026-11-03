@@ -1,0 +1,50 @@
+{
+  "zip": "08_DEPLOYMENT/GENOS/handoffs/connected_sources_20261103_r1/GENOS_CONNECTED_SOURCES_20261103_R1.zip",
+  "zip_sha256": "a83b8503cda1aee8e067de4dc0cc210b90ff1ead120fc05253d6686b712fb763",
+  "code_manifest_sha256": "f990dffaa18b6d419561ea00e8347060ab674b49af4effb9ef59a1f7cebb855a",
+  "checks": [
+    {
+      "operation": "check",
+      "returncode": 0,
+      "stdout": "CHECK_PASS; target=/tmp/adr1300-installer-h3uv4usa; current=c6d3deab66d352a6b94625cb78f039d1a6810312b3da6d2d1913af879339d2d9\n",
+      "stderr": ""
+    },
+    {
+      "operation": "apply",
+      "returncode": 0,
+      "stdout": "APPLY_PASS; sha256=1279c850dfcfc7adeef24285025a0d486e1a418a30eab9f0848a8155b190a53f; backup=/tmp/adr1300-installer-h3uv4usa/09_ARTIFACTS/GENOS_PATCH_BACKUPS/source-display-20261103-r1/original.py\n",
+      "stderr": ""
+    },
+    {
+      "operation": "check",
+      "returncode": 0,
+      "stdout": "CHECK_PASS; target=/tmp/adr1300-installer-h3uv4usa; current=1279c850dfcfc7adeef24285025a0d486e1a418a30eab9f0848a8155b190a53f\n",
+      "stderr": ""
+    },
+    {
+      "operation": "apply",
+      "returncode": 0,
+      "stdout": "ALREADY_APPLIED\n",
+      "stderr": ""
+    },
+    {
+      "operation": "rollback",
+      "returncode": 0,
+      "stdout": "ROLLBACK_PASS; sha256=c6d3deab66d352a6b94625cb78f039d1a6810312b3da6d2d1913af879339d2d9; backup=/tmp/adr1300-installer-h3uv4usa/09_ARTIFACTS/GENOS_PATCH_BACKUPS/source-display-20261103-r1/original.py\n",
+      "stderr": ""
+    },
+    {
+      "operation": "rollback",
+      "returncode": 0,
+      "stdout": "ALREADY_ORIGINAL\n",
+      "stderr": ""
+    },
+    {
+      "operation": "foreign-file-reject",
+      "returncode": 1,
+      "unchanged": true
+    }
+  ],
+  "field_executed": false,
+  "compatibility": "Installer hashing uses Python3-compatible streaming hashlib; field Python/runtime unobserved"
+}
