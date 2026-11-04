@@ -1,0 +1,101 @@
+{
+  "version": "vector-structure-rebuild-validation-v1",
+  "date": "2026-11-04",
+  "root": "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_structure_20261104_r3/package",
+  "tested_extracted_root": "/tmp/vector-r3-final-hpji9jbb",
+  "extracted_root_cleaned_after_tests": true,
+  "zip_sha256": "d6b3ba6e4533ba0e85147fffd409fba90d9844e5d6d52e4f3a7c1eaecc983c0c",
+  "manifest_sha256": "86b6ca415d3984c67bc431e90d65d50bfe8b1e79c625950ee3006e0af75f3a74",
+  "code_binding": "a25c9d331f61aa5f497bba2ae04aa78024ded4adda0a8d96cfd01e98c45bd1ec",
+  "parent_r2_zip_sha256": "60efc0e8f874c144ce8da126c8c61ec9fec70c3666b43cbf76a95ee7cddfc777",
+  "original_r1_zip_sha256": "3052c3fcee26a75f536108b6c570bffd56bb9149f64701e810acb421c3068310",
+  "original_r1_r2_unchanged": true,
+  "changed_existing_files": [
+    "mesh_embedding.py",
+    "vector_stage.py"
+  ],
+  "added_files": [
+    "structure_segments.py",
+    "vector_plan.py",
+    "vector_progress.py",
+    "vector_reset.py"
+  ],
+  "removed_files": [
+    "VECTOR_RESUME_PARENT.json"
+  ],
+  "package_files_including_manifest": 78,
+  "working_and_zip_files_identical": true,
+  "attachments_hash_verified": true,
+  "contract_sha256": "db556ac135963a5dcdaafe35cf5e5c20b92d20e3af3200374a9c0e042bf132e4",
+  "unit_contract_tests": {
+    "python": "3.9.25",
+    "final_zip_passed": 35,
+    "failed": 0,
+    "log": "FINAL_ZIP_TEST_PY39_02.txt",
+    "includes_real_process_group_interrupt": true,
+    "prior_runs_overlap_do_not_sum": true
+  },
+  "local_oracle_sql_contract": {
+    "status": "PASS",
+    "models": 0,
+    "field_dataiku": false,
+    "existing_data_mutated": false,
+    "checks": [
+      "actual_gzip_jdbc_insert_512x1024_float32_unicode_clob",
+      "test_only_exact_meta_and_float32_vector_readback",
+      "pending_primary_keys_all_none_partial",
+      "duplicate_pk_rolls_back_entire_batch",
+      "oracle_dimension_mismatch_rollback",
+      "publication_insert_ack_and_pending_key",
+      "actual_reset_active_publication_refused",
+      "actual_reset_scoped_to_old_publication_preserves_r3_other_rows_and_idempotent"
+    ],
+    "oracle_version": "23.26.3.0.0",
+    "test_schema": "A8_VS3_F5C2A8B1FF",
+    "payload_bytes": 13282949,
+    "rendered_sql_bytes": 6665917,
+    "test_schema_removed": true
+  },
+  "readonly_local_source_coverage": {
+    "source_root": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation",
+    "source_generation": "term-source-3b667f54bb11d9477888",
+    "field_generation_equal": "UNCONFIRMED",
+    "sources": 33443,
+    "segments": 79586,
+    "errors": [],
+    "extent_counts": {
+      "source": 33217,
+      "unit_own": 249,
+      "unit_subtree": 45981,
+      "sentences": 139
+    },
+    "max_input_chars": 8000,
+    "coverage_checked_blocks": 308795,
+    "blank_sources": 0,
+    "live_model_calls": 0,
+    "oracle_calls": 0,
+    "elapsed_s": 14.13
+  },
+  "failure_history": "FAILURE_HISTORY.txt",
+  "user_authorized_old_vector_reset": true,
+  "reset_scope": "Exact previous R1/R2 publication derived from same source/query/model, ITEM/POST and its cache only; refuse active HEAD; R3 resume never deletes R3.",
+  "live_model_calls": 0,
+  "field_dataiku": "NOT_ACCESSED",
+  "field_stop_reset_load": "NOT_PERFORMED",
+  "field_generation_path": "UNCONFIRMED",
+  "field_generation_manifest_sha256": null,
+  "field_model_limit": "UNCONFIRMED; explicit Mesh overflow FAIL requested",
+  "retrieval_quality": "NOT_MEASURED",
+  "end_to_end_speedup": "NOT_MEASURED",
+  "serving_activation": "NOT_PERFORMED",
+  "main_changed": false,
+  "git_commit_push": "NOT_PERFORMED",
+  "email_r3": "NOT_SENT",
+  "code_serving_revision": null,
+  "validation_commands": [
+    "uv run --python 3.9 --with pytest==8.4.2 --with pyyaml --no-project python -m pytest -q test_vector_structure.py (VECTOR_TEST_PACKAGE=final ZIP extraction)",
+    ".venv/bin/python check_oracle.py (isolated local Oracle schema, removed)",
+    ".venv/bin/python audit_sources.py /home/jin/8-AGENT/01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation (read only)"
+  ],
+  "contract_file_sha256": "f9c3bd1862536e4a80c7463a88a98f4f6646e112ca306c14d9be7aa96975c33f"
+}

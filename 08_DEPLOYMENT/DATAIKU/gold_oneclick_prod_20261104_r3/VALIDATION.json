@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "checks": [
+    "S3_failure_before_Oracle_or_model",
+    "missing_registered_tables_blocked_without_DDL",
+    "R1_CHAR_failure_reproduced_and_R3_VARCHAR2_preflight_passed_real_Oracle",
+    "R2_COLUMNS_MISMATCH_reproduced_and_R3_DTA_names_passed_real_Oracle",
+    "different_owner_SELECT_only_login_rejected_before_any_rows",
+    "corrupt_part_rejected_before_first_insert_or_embedding",
+    "final_result_upload_failure_not_reported_as_success",
+    "exact_delivered_TXT_34_parts_all_stages_no_DDL_no_Flow",
+    "committed_source_response_loss_resumed_without_duplicates",
+    "same_cell_and_final_upload_resume_no_new_embedding",
+    "all_original_uploads_preserved_scoped_status_and_logs",
+    "missing_local_workspace_blocks_before_Oracle_and_embedding",
+    "existing_release_without_original_checkpoint_rejected",
+    "fresh_process_source_vector_acl_and_profile_readback"
+  ],
+  "external_models": 0,
+  "dataiku_sdk": "LOCAL_SUBSTITUTE",
+  "field_execution": false,
+  "full_production_corpus": false,
+  "cleaned": true,
+  "counts": {
+    "DOC_VER": 2,
+    "DOC_UNIT": 3,
+    "DOC_BLK": 3,
+    "SRCH_ROW": 112,
+    "VCTR_ITEM": 3
+  },
+  "synthetic_embedding_calls": 1,
+  "sql_calls": 851,
+  "code_sha256": "5a2ff3c6de310642b135edf2bcc601f0418c9f7794087d54af6bd543125a56c6",
+  "flow_api_calls": 0,
+  "loader_DDL_calls": 0,
+  "distinct_owner_and_login": true,
+  "work_dir": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261104-gold-prod-dta-columns/real-oracle-001/work-base/3f0c1a3c38fb712647ddc780",
+  "scope": "PROD R3: two SRCH_ROW physical names RFRN_DATA_* -> RFRN_DTA_*; DOC_BLK VARCHAR2 fix retained",
+  "unit_tests": {
+    "passed": 32,
+    "failed": 0
+  },
+  "reference_r2_sha256": "7148f3dc0e1c9dc5a1127114e3a646679ec3ea9ad708435f594ae8ef66f6db31",
+  "changed_zip_members": [
+    "FLOW_MANIFEST.json",
+    "registration_current.json"
+  ],
+  "unchanged_zip_members": 90,
+  "engine_unchanged_files": 83,
+  "original_R2_files_preserved": 110,
+  "runtime_archive": "09_ARTIFACTS/AUDITS/20261104-gold-prod-dta-columns/real-oracle-001.tar.gz",
+  "field_NULL_default_BYTE_semantics": "not visible in latest screenshot; original checks retained",
+  "GENOS_MAIN142_default_mapping": "still RFRN_DATA_* and original CHAR; separate serving update required",
+  "MAIN_changed": false,
+  "mail_sent": false
+}

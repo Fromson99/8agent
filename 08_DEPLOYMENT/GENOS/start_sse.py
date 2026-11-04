@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[2]
 APP_DIR = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+BACKEND = ROOT / "02_BACKEND"
+if str(BACKEND) not in sys.path:
+    sys.path.insert(0, str(BACKEND))
 from genos_diagnostics import install as install_system_logging
 
 install_system_logging("server-start")

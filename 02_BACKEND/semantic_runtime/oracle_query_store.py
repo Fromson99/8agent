@@ -4,8 +4,6 @@ from __future__ import annotations
 import copy
 import json
 
-from sqlglot import exp
-
 from .oracle_dp_io import DPError, TABLES, digest
 from .oracle_query_db import Connection
 from .oracle_query_catalog import json_body,ROW
@@ -53,7 +51,7 @@ class SourceConnection(Connection):
         binds=[('a8_version'+suffix,self.request.snapshot.dataset_version,'VARCHAR2'),
                ('a8_scope'+suffix,json_body(sorted(self.request.sources.allowed)),'CLOB')]
         if join: binds.append(('a8_literal_release'+suffix,self.request.release_id,'VARCHAR2'))
-        return exp.Subquery(this=exp.Var(this=text)),binds
+        return text,binds
 
 
 class Selection:

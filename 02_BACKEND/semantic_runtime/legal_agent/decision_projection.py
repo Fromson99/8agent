@@ -489,6 +489,7 @@ def choose_read(inv, data, actions, phase):
         # Judgment/progress semantics keep their existing authoritative contract.
         prompt = ((judgment.NEW_PROMPT if judgment_context.get('wire_version')==judgment.NEW_WIRE_VERSION else judgment.PROMPT)+'\n' if judgment_context is not None else '')+(progress.PROMPT+'\n' if progress_enabled else '')+prompt
         if supervisor_enabled:prompt=supervisor.PROGRESS_PROMPT+'\n'+prompt
+        if progress.SCOPE_GUIDANCE not in prompt:prompt=progress.SCOPE_GUIDANCE+'\n'+prompt
         if goals.enabled(inv):prompt=goals.PROMPT+'\n'+prompt
         call_phase = phase+'-read-choice'+page_suffix+('-repair' if attempt else '')
         try:

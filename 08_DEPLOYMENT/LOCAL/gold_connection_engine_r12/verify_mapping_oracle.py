@@ -26,7 +26,7 @@ def module(name, path):
     return mod
 
 
-def main():
+def main(mapping_path=None, output_root=None):
     import connect
     runtime, binding = connect.load_runtime()
     legacy = HERE.parent / 'gold_connection_r12'
@@ -46,7 +46,7 @@ def main():
     oracledb.defaults.fetch_lobs = False
 
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
-    out = OUT / ('oracle-' + stamp)
+    out = (Path(output_root) if output_root else OUT) / ('oracle-' + stamp)
     out.mkdir(parents=True)
     result = {'started': stamp, 'models': 0, 'real_corpus_writes': 0, 'created_schemas': [],
               'dropped_schemas': [], 'checks': [], 'status': 'RUNNING'}
@@ -77,7 +77,7 @@ def main():
             conn.call_timeout = 15000
             return conn
 
-        data = json.loads((HERE / 'mapping_r14_photos.json').read_text())
+        data = json.loads(Path(mapping_path or HERE / 'mapping_r14_photos.json').read_text())
         # Exercise actual reordered physical columns: logical contracts must survive.
         for table in data['tables'].values():
             table['columns'] = dict(reversed(list(table['columns'].items())))

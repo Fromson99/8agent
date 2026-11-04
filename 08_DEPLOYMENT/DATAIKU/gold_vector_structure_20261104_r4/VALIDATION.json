@@ -1,0 +1,112 @@
+{
+  "version": "vector-r4-long-input-panel-validation-v1",
+  "date": "2026-11-04",
+  "zip_sha256": "0d4bc33c4ab5949f93bc7d6258a42886690ad9d64757c9bbee2ac83f499aebbe",
+  "manifest_file_sha256": "97373978367391d8a98b37193870bd1136af12cc413e13df5760448eb7b240fa",
+  "code_binding": "46e2fcc3a6126ddbd17e9aab8e6df59d93c8ffbe24068bd9663fc4999539affe",
+  "contract_binding": "db556ac135963a5dcdaafe35cf5e5c20b92d20e3af3200374a9c0e042bf132e4",
+  "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_structure_20261104_r4/package",
+  "final_zip_check": {
+    "files": 81,
+    "sha256": "0d4bc33c4ab5949f93bc7d6258a42886690ad9d64757c9bbee2ac83f499aebbe",
+    "extracted_root": "/tmp/vector-r4-final-ct7k0911",
+    "tested_python": "3.9.25",
+    "passed": 49
+  },
+  "parent_zip_sha256": "d6b3ba6e4533ba0e85147fffd409fba90d9844e5d6d52e4f3a7c1eaecc983c0c",
+  "original_r3_unchanged": true,
+  "changed_existing_files": [
+    "structure_segments.py",
+    "vector_stage.py"
+  ],
+  "added_files": [
+    "VECTOR_STRUCTURE_PARENT.json",
+    "notebook_progress.py",
+    "vector_upgrade.py"
+  ],
+  "removed_files": [],
+  "package_files_including_manifest": 81,
+  "critical_file_sha256": {
+    "structure_segments.py": "ac3c5dfee3040335c11dc1cbd4467c771dbfd100d8220e2d576d3b36e02d16bd",
+    "vector_stage.py": "489d7dc5f1adc264692c42dd88c9180119da6b7a685377542863a7adadb3b081",
+    "vector_upgrade.py": "840f2df7b130a6f5351be9aa5d06d41d765fc0594d241e98b326d2c17fc36a41",
+    "notebook_progress.py": "579cee95813ec6bd775e94f7b22ec81a563f849c78149651d62f483bb487c1d9",
+    "vector_reset.py": "e8072fc8aaf790e657c4d32244388de5d3831ed2d851602f761989e38563c0ee",
+    "mesh_embedding.py": "92f2cfc6d509154b66f252e2289c4e8828fef02619e966ce91d6e69c2121fbd0"
+  },
+  "field_failure": "FIELD_FAILURE.json",
+  "original_r3_failure_reproduction": "R3_REPRODUCTION.txt",
+  "unit_tests": {
+    "final_zip_python": "3.9.25",
+    "passed": 49,
+    "failed": 0,
+    "log": "FINAL_ZIP_TEST_PY39.txt",
+    "overlaps_prior_runs_do_not_sum": true
+  },
+  "local_notebook": {
+    "status": "PASS",
+    "environment": "local Jupyter kernel / Python 3.9.25",
+    "field_dataiku": false,
+    "model_calls": 0,
+    "oracle_calls": 0,
+    "cases": [
+      {
+        "case": "success",
+        "display_data": 1,
+        "update_display_data": 3,
+        "same_display_id": true,
+        "stream_messages": 0,
+        "raw_lines_retained": 1003,
+        "result": "COMPLETE",
+        "process_exit": 0
+      },
+      {
+        "case": "failure",
+        "display_data": 1,
+        "update_display_data": 3,
+        "same_display_id": true,
+        "stream_messages": 0,
+        "raw_lines_retained": 1003,
+        "result": "FAILED_OR_STOPPED",
+        "process_exit": 1
+      }
+    ]
+  },
+  "readonly_corpus": {
+    "source_root": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation",
+    "source_generation": "term-source-3b667f54bb11d9477888",
+    "field_generation_equal": "UNCONFIRMED",
+    "sources": 33443,
+    "segments": 79547,
+    "errors": [],
+    "extent_counts": {
+      "source": 33217,
+      "unit_own": 249,
+      "unit_subtree": 45981,
+      "sentences": 100
+    },
+    "max_input_chars": 8000,
+    "coverage_checked_blocks": 308795,
+    "blank_sources": 0,
+    "live_model_calls": 0,
+    "oracle_calls": 0,
+    "elapsed_s": 18.88
+  },
+  "failure_history": "FAILURE_HISTORY.txt",
+  "sql_and_embedding_transport_and_reset_unchanged_verified": true,
+  "oracle_prior_contract_evidence_only": "../gold_vector_structure_20261104_r3/ORACLE_SQL_RESULT.json",
+  "oracle_calls_this_revision": 0,
+  "live_model_calls": 0,
+  "field_dataiku_access": "NOT_PERFORMED",
+  "field_generation_manifest_sha256": null,
+  "field_generation_identity": "UNCONFIRMED",
+  "field_source_body": "NOT_PROVIDED",
+  "field_deployment": "NOT_PERFORMED",
+  "code_serving_revision": null,
+  "field_model_token_limit": "UNCONFIRMED; 8000-character preparation bound and SDK FAIL retained",
+  "retrieval_quality": "NOT_MEASURED",
+  "total_speedup": "NOT_MEASURED",
+  "main_changed": false,
+  "git_commit_push": "NOT_PERFORMED",
+  "email_status_record": "EMAIL_SENT.json"
+}

@@ -1,0 +1,33 @@
+{
+  "status": "AWAITING_FIELD_COLUMN_METADATA",
+  "photo_sha256": "dc5d50d2415dcca12d27e26922c867cadfdf63a0163673c9d6c746f1b53a145a",
+  "trace": "prod_run.py:143 -> prod_pipeline.py:293/21 -> engine/gold_io.py:150/126",
+  "field_code_path_prefix": "/tmp/gold-oneclick-prod-code-71e34b52551f5bfd",
+  "reference_zip": "08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261104_r1/DATAIKU_GOLD_ONECLICK_PROD_20261104_R1.zip",
+  "reference_zip_sha256": "71e34b52551f5bfd32841b7e3c949a51d07ee6f3fed6df3cab84b83e261803ab",
+  "reference_manifest_sha256": "89310f3dfdf6f0d00336108537c5c1752b6bae53073c1f2c3bf21c506d72ebfd",
+  "reference_package_root": "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261104_r1/package",
+  "reference_manifest_members_verified": 91,
+  "reference_critical_file_hashes": {
+    "prod_pipeline.py": "e03685058322445071190ab46203f72c5e6e44892b79916a85061c71b9fe2bd4",
+    "prod_run.py": "efe792d1dc302d1ff3bb59bf40722c8de5bb1a895726b87677f7d743ebe8e276",
+    "engine/gold_io.py": "66db319eff21999e648ee89050c9cedf758f9996c6838d66c1a219c573a04ab8",
+    "registration_current.json": "d72245eb7703af6f0e589d49d780805a76ec1f1de97df488f859dcb8c854bc4f"
+  },
+  "reference_expected_column": {
+    "name": "ADDN_IFMN_UN_APPN_YN",
+    "type": "CHAR(1 BYTE)",
+    "required": false,
+    "default": null
+  },
+  "field_full_zip_hash": "not independently confirmed; screenshot prefix and stack match",
+  "field_actual_column_metadata": null,
+  "field_owner": "taken from existing PARAMS by diagnostic; not inferred from photo",
+  "field_generation_and_revision": "not provided; Dataiku inspect-stage failure",
+  "finding": "One combined condition rejects type/length/byte semantics/nullability/default. Photo does not reveal which field differs.",
+  "execution_boundary": "inspect before restore/prepare/source/search/publish/vector/report in this run; prior run contents unknown",
+  "product_or_DB_changes": 0,
+  "mail_sent": false,
+  "diagnostic": "GOLD_PROD_COLUMN_CHECK_R1.txt; SELECT ALL_TAB_COLUMNS only; existing PARAMS retained",
+  "validation": "VALIDATION.json; 11 local checks with Dataiku substitute, no field Oracle execution"
+}

@@ -1,0 +1,22 @@
+from pathlib import Path
+import sys,json,shutil
+ROOT=Path('/home/jin/8-AGENT');T=Path(__file__).parent;P=ROOT/'06_TOOLS/EXPERIMENTS/adr_1313'
+for n in ('common.py','resource_guard.py','sql_observer.py','check.py','baseline_check.py'):
+ (T/n).write_text((P/n).read_text().replace('ADR-1313-sqlite-oracle-diverse-validation','ADR-1314-oracle-root-local-reuse').replace("default='sqlite'","default='after'"))
+sys.path.insert(0,str(T));from common import *
+sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'));import adr_candidate as ac
+DES.mkdir(exist_ok=False);prev=ROOT/'04_EXPERIMENTS/ADR/ADR-1313-sqlite-oracle-diverse-validation/artifacts';f=read(prev/'design/candidate-sqlite.json');old=ROOT/f['code_root'];prefix=str(old.relative_to(ROOT));files=f['selected_files'];m=read(ADR/'실험/manifest.json')
+for n in ('baseline.json','query-cases.json','ontology-off.json'):put(DES/n,read(prev/'design'/n))
+shutil.copytree(prev/'gold-connector',ART/'gold-connector')
+criteria={'hypothesis':'A single bounded request-local root document view reuses every validated native.unit row for child and point access, without altering selection metadata hash or source ACL; no corpus-wide cache.', 'primary_metric':'Actual Oracle root selection seconds/SQL and exact record parity; complete diverse SQLite/Oracle fixtures and native API exclusions/restart.', 'limits':{'request_seconds':300,'max_calls':2500,'root_documents_cached':1,'root_units':4096,'root_bytes':16777216,'new_model_calls':0},'success':['Old actualOracle root229.4855sec/1397SQL vs after lowerSQL/wall; exact all6successfulselectionrecords and6originalblocks acrossDBs/prior.','Same current5repairs/defaultreview; only verified oracle_dp source restored in isolation to repair captured concurrent code/pin mismatch.','Rootcache scope/deadline/hash protections, overflow fallback/empty/duplicate IDs tested; native API3blockedpreparations pass.'],'fail':['Source/ACL/integrity mismatch stops.','No retry of any actualfailedcase; no runtime or corpus mutation.'],'order':['contracts','sqlite-after','oracle-after'],'new_models':0,'no_main':True,'note':'Before actual1313 alreadyobserved onepass; new before candidate cleans unrelated oracle_dp capture only, APIregression check. Descriptive sequential samecase withwarmdatabase effect, notpopulationbenchmark.'}
+put(DES/'criteria.json',criteria)
+m['design'].update(hypothesis=criteria['hypothesis'],primary_metric=criteria['primary_metric'],success_criteria=criteria['success'],failure_criteria=criteria['fail'],criteria_frozen_before_run=True,criteria_freeze_evidence={'path':str((DES/'criteria.json').relative_to(ROOT)),'sha256':sha(DES/'criteria.json')})
+m['design']['arms']=[{'id':'baseline','role':'baseline','derived_from':['ADR-1312-experiment-v1/after'],'changes':'Completed fivefixes','controls':'source snapshot'},*({'id':a,'role':'candidate','derived_from':['baseline'],'changes':'Clean capturedcode pins'+(' and requestrootreuse' if a=='after' else ''),'controls':'Same517files/source/ACL'} for a in ('before','after'))]
+m['design']['retrieval_stage_plan']={'schema_version':'retrieval-stage-ledger-v1','accounting_unit':'case_id + canonical article-root coordinate','stages_by_arm':{}}
+pm=read(prev.parent/'실험/manifest.json');m['llm_policy']=pm['llm_policy'];m['llm_calls']=[];m['dataset']=pm['dataset'];m['dataset'].update(frozen_source=str((DES/'query-cases.json').relative_to(ROOT)),sha256=sha(DES/'query-cases.json'));m['retrieval_accounting']=pm['retrieval_accounting'];m['lineage']['hypothesis_delta']=criteria['hypothesis'];m['runs'][0].update(arm_ids=['before','after'],selection_rule='Before nativeAPI; after boundedrootcontracts then same17/18DB casesonce, no model.',artifact_path=str((RUN/'result.json').relative_to(ROOT)));put(ADR/'실험/manifest.json',m)
+base=ROOT/read(DES/'baseline.json')['release']['code_root'];restore='02_BACKEND/semantic_runtime/oracle_dp.py'
+for arm in ('before','after'):
+ can=ac.snapshot(ADR,arm,[prefix+'/'+n for n in files],experiment_id=m['experiment_id'],arm_id=arm,run_ids=['run-001']);C=can/'snapshot'/prefix;shutil.copyfile(base/restore,C/restore)
+ expected=read(C/'02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json')['files'][restore];assert sha(C/restore)==expected
+ put(DES/(arm+'-path.json'),{'candidate':str(can.relative_to(ROOT)),'code_relative':prefix,'files':{n:sha(C/n) for n in files},'restored_verified_oracle_dp':expected})
+print('1314 source captured; isolated old verifiedoracle_dp restored, working tree preserved')

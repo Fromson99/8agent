@@ -1,0 +1,64 @@
+Gold B003 최신 컬럼 기준 ZIP 적재 Flow / 2026-11-04
+
+실행 파일
+  DATAIKU_GOLD_ZIP_FLOW_20261104_R1.zip
+  DATAIKU_GOLD_ZIP_FLOW_RUN_R1.txt
+  GOLD_R19_MAPPING.xlsx
+
+1. 새 Dataiku 프로젝트의 코드 Managed Folder에 ZIP을 업로드합니다.
+2. Python 노트북에 RUN_R1.txt 전체를 붙입니다. 맨 위 PARAMS만 한 번 입력합니다.
+   CODE_FOLDER_ID: 코드 ZIP을 올린 폴더 ID
+   ORACLE_CONNECTION: 실제 Oracle 연결 이름
+   EXPECTED_DB_USER: 연결 계정명
+   GOLD_OWNER: 실제 Gold 스키마명. 로컬 시험 스키마를 자동 사용하지 않습니다.
+   EMBED_MODEL / EMBED_DIMENSIONS: 현장 임베딩 모델과 차원
+   WORK_DIR: 모든 레시피가 함께 사용하는 영속 작업 경로 권장
+   기존 조각 업로드 폴더가 있으면 INPUT_FOLDER_ID에 지정합니다.
+3. 셀을 실행하면 Flow 8레시피, 13개 외부 Oracle Dataset, 시나리오가 만들어집니다.
+4. INPUT 폴더에 genos-rag-data-20261007T002029Z-7c0b050f.zip.part000000~000033,
+   ORIGINAL.sha256와 PARTS.sha256를 올립니다. 이미 업로드했다면 이 단계를 생략합니다.
+5. Scenarios의 G19ZIP_RUN_ALL · ZIP부터 Gold 벡터까지를 Run 합니다.
+   파일 업로드를 마쳤다면 PARAMS의 RUN_AFTER_INSTALL=True로 설치 셀에서 바로 시작할 수도 있습니다.
+
+진행 순서
+  조각 목록·실제 Gold 구조 확인 → ZIP SHA 검증·병합·선택 세대 복원
+  → 원문/검색 입력과 컬럼 길이 검사 → 원문 적재 → 검색 적재 → 게시 기록
+  → 구조 단위 임베딩·벡터 적재 → 이번 검색 게시본의 VCTR_HEAD 연결 → 결과 확인
+
+매핑
+  기본 현장 이름 IDD_B003_LGL_*, 13테이블 60컬럼.
+  RGLT_DOC_ID는 6컬럼 VARCHAR2(100 BYTE).
+  SRC_POST.RGSN_ASTM, SRCH_ROW.RFRN_DATA_HASH_VALU/RFRN_DATA_CTNT,
+  SRCH_CHNL/ONTL_HEAD/VCTR_HEAD.CHAN_NO를 사용합니다.
+  코드 내부 논리키와 저장 JSON은 기존 값을 유지합니다.
+  매핑 파일은 package/registration_current.json입니다.
+  TARGET_MODE=DEV_1은 이전 개발계 계약을 명시적으로 선택하는 별도 모드입니다.
+
+DB 동작
+  등록된 테이블/컬럼/PK/인덱스/default/native VECTOR를 실제 DB와 대조합니다.
+  이 Flow는 운영 테이블 CREATE/ALTER/DROP/TRUNCATE를 실행하지 않습니다.
+  원문/검색/벡터는 INSERT 후 COMMIT 및 체크포인트를 기록합니다.
+  기존 서비스 채널을 교체하지 않으며 온톨로지 지식을 자동 승인·게시하지 않습니다.
+  VCTR_HEAD는 이번 검색 게시본에만 연결합니다. 이미 다른 연결이 있으면 거절합니다.
+  ACTIVATE_NEW_VECTOR_HEAD=False로 적재만 할 수 있습니다.
+  같은 작업 재실행은 체크포인트를 사용합니다. 새 WORK_DIR에서 기존 데이터 재삽입은 PK 충돌로 거절할 수 있습니다.
+  임베딩 요청의 결과가 불명확하면 자동 재호출하지 않고 정지합니다.
+
+조회 코드 연결
+  REPORT 폴더에 report.json, serving-mapping.json, documents.json, embedding-profile.json이 생성됩니다.
+  report.json의 query_release_id와 매핑 SHA를 사용합니다.
+  documents.json은 게시된 전체 문서 목록입니다. 사용자 권한은 서비스 호스트가 따로 확인합니다.
+  새 전용 프로세스에서 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py의
+  open_store(mapping=..., mapping_sha256=..., credentials=..., documents=인증된_허용목록,
+             release_id=..., embedding=질의_임베딩_함수, embedding_profile=...)를 사용합니다.
+  embedding 함수는 문자열 하나를 받아 적재와 같은 모델의 벡터를 반환해야 합니다.
+  모델 프로필이 다르면 임베딩 호출 전에 거절합니다. 공개/기본 모델로 자동 대체하지 않습니다.
+  기존 로컬 Gold는 ACTIVE_MAPPING.json의 B03 매핑을 그대로 사용합니다.
+
+검증 범위
+  실제 로컬 Oracle의 임시 B003 13테이블에서 34조각 합성 ZIP 전체 과정을 통과했습니다.
+  문서2/구조3/원문3/검색112/벡터3행, 커밋 후 응답 유실 재개, 전체 재실행,
+  문서ID ASCII100BYTE/한글99BYTE, 새 프로세스 원문·벡터 조회/권한/모델 프로필 거절을 확인했습니다.
+  임시 스키마는 모두 삭제했습니다. Dataiku SDK/폴더와 임베딩은 로컬 대역이며 실제 현장 서버 시험은 아닙니다.
+  실제 Dataiku 프로젝트 생성, 현장 JDBC 권한/패키지/모델, 원본 34조각 전체 적재는 현장 실행 확인이 남아 있습니다.
+  GENOS 배포 없이 Dataiku의 Oracle 연결·임베딩 연결로 실행하는 구성입니다.

@@ -13,6 +13,71 @@ from . import evidence_inventory as inventory, unit_reading as ur
 VERSION = 'selected-connection-scope-v1'
 INLINE_CONNECTION_LIMIT = 5
 
+FINISH_GUIDANCE = '''connection_review의 한 범위 조회 완료는 다른 원문의 연결 확인을 대신하지 않는다. source_inspections는 현재 전달된 원문 구간별 실제 연결 조회 상태다. finish_connection_review의 uninspected_basis가 있으면 그 근거의 미확인 연결과 질문 대상 행위를 함께 검토한다. 질문 대상 원문에 수치·조건이 없다는 이유만으로 다른 일반 규정의 적용을 확정하지 않는다. 일반 규정의 '다른 정함', 예외·특칙 조건이 이번 행위에 어떻게 적용되는지 원문으로 확인한다. 대상 원문을 인용하는 INCOMING 연결도 별도 요건의 단서가 될 수 있다. 필요한 범위의 FOLLOW_CONNECTION과 필요한 원문 READ를 선택한다. 모든 원문·연결을 순회하거나 미확인 조항 번호를 추측하지 않는다. 확인할 수 없거나 요청에 불필요하면 실제 남은 범위와 이유를 보존해 기존 제한된 최종 검토로 넘긴다. 조회 실패·일부 확인은 별도 규정 부재의 증명이 아니다.'''
+
+
+def finish_review(data, value):
+    """Pure source-specific inspection facts, never a legal completion verdict.
+
+    The old flag controls the first directory lookup only. A terminal proposal
+    must not use that global lookup as a substitute for checking its own basis.
+    Older persisted views have no exact-span projection; their unselected basis
+    still requires supervision, while inspected legacy scopes remain compatible.
+    """
+    refs = set(value.get('basis_refs', []))
+    for goal in value.get('answer_progress', {}).get('goals', []):
+        refs.update(goal.get('basis_refs', []))
+    review = data.get('connection_review', {})
+    inspections = review.get('source_inspections')
+    if inspections is None:
+        choices = data.get('connection_scope_choices', [])
+        inspections = []
+        for ref in sorted(refs):
+            offered = [c for c in choices if ref in c.get('source_refs', [])]
+            if offered:
+                inspections.append({'source_ref': ref,
+                    'inspected_scope_ids': [c['id'] for c in offered
+                        if c.get('connection_preview', {}).get('status') not in (None, 'NOT_SELECTED')],
+                    'offered_scope_ids': [c['id'] for c in offered],
+                    'read_actions': [c['read_action'] for c in offered if c.get('read_action')]})
+    pending = [deepcopy(row) for row in inspections
+               if row['source_ref'] in refs and not row['inspected_scope_ids']]
+    return {'uninspected_basis': pending,
+        'supervision_required': bool(review.get('required_before_finish') or pending),
+        'all_connections_required': False, 'legal_sufficiency_approved': False}
+
+
+def source_inspections(data, scopes, choices):
+    """Bind directory attempts to fully contained, delivered source spans only."""
+    by_id = {s['id']: s for s, _ in scopes}
+    rows = []
+    for page in data.get('sources', []):
+        offered = [c for c in choices if page['id'] in c['source_refs']]
+        if not offered:
+            continue
+        owned = {str(s['block_id']) for c in offered for m in by_id[c['id']]['members']
+                 if m['document_id'] == page['document_id'] and m['source_id'] == page['source_id']
+                 for s in m['spans']}
+        delivered = [p for p in page.get('spans', []) if str(p['block_id']) in owned]
+        inspected = []
+        for choice in offered:
+            if choice['connection_preview']['status'] == 'NOT_SELECTED':
+                continue
+            members = [m for m in by_id[choice['id']]['members']
+                       if m['document_id'] == page['document_id'] and m['source_id'] == page['source_id']]
+            spans = [s for m in members for s in m['spans']]
+            # Ancestor context is not the selected anchor; partial overlap may
+            # not certify the rest of a delivered source page.
+            if delivered and all(any(str(s['block_id']) == str(p['block_id'])
+                    and s['start_cp'] <= p['start_cp'] and s['end_cp'] >= p['end_cp']
+                    for s in spans) for p in delivered):
+                inspected.append(choice['id'])
+        rows.append({'source_ref': page['id'], 'source_id': page['source_id'],
+            'document_id': page['document_id'], 'inspected_scope_ids': inspected,
+            'offered_scope_ids': [c['id'] for c in offered],
+            'read_actions': [c['read_action'] for c in offered if c.get('read_action')]})
+    return rows
+
 
 def enabled(inv):
     return bool(inv.modern and inv.policy.get('selected_connection_scope'))
@@ -441,11 +506,14 @@ def offer_choices(inv, data, actions):
         selected['locator_receipt'] = receipt
     data['connection_review'] = {
         'required_before_finish': bool(data.get('sources') and selectable and not attempted),
+        'source_inspections': source_inspections(data, scope_choices, choices),
+        'first_lookup_only': True,
         'status': attempted['connection_preview']['status'] if attempted else
             ('SELECT_SCOPE' if selectable else 'UNAVAILABLE'),
         'scope_id': attempted['id'] if attempted else None,
         'all_targets_required': False,
-        'rule': '종료 판단 전에 사용할 원문 범위를 FOLLOW_CONNECTION으로 선택해 저장 연결을 확인한다. '
+        'rule': 'required_before_finish는 첫 연결 조회 여부이며 질문 대상 전체의 검토 완료가 아니다. '
+                '종료 판단 전에 사용할 원문 범위를 FOLLOW_CONNECTION으로 선택해 저장 연결을 확인한다. '
                 '조회 결과를 받은 뒤 필요한 연결만 읽는다. 빈 목록·일부 확인·실패도 상태를 보존해 종료할 수 있다. '
                 '조회 불가나 예산 소진은 확보 원문을 전달하며 원문 부재로 단정하지 않는다.'}
 

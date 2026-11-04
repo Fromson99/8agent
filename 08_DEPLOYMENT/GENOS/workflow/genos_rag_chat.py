@@ -33,7 +33,7 @@ else:
 WORKFLOW_REVISION = "rag-applied-mode-20261027-r1"
 LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
 PROGRESS_DISPLAY_REVISION = "rag-source-provider-20261013-r2"
-ANSWER_DISPLAY_REVISION = "workflow-source-accordion-20261029-r1"
+ANSWER_DISPLAY_REVISION = "workflow-review-followup-20261104-r1"
 JUDGMENT_DISPLAY_REVISION = "judgment-evidence-svg-20261008-r10"
 HTTP_ERROR_DIAGNOSTICS_REVISION = "http-error-origin-20260928-r1"
 QUESTION_KEYS = ("question", "query", "chatInput", "input", "message", "prompt", "text")
@@ -926,6 +926,18 @@ def _public_answer_text(body):
     comparison = _comparison_answer_text(body)
     if comparison is not None:
         return comparison
+    if _source_reply_has_originals(body):
+        agent = body['assembly']['term_agent']
+        message = ('원문은 확보했지만 답변의 주장과 근거를 연결하는 최종 검토에 실패했습니다. '
+                   '질문에 대한 설명은 아직 완료되지 않았습니다.'
+                   if agent.get('stop_reason') == 'ASSESSMENT_CONTRACT_UNRESOLVED' else
+                   '원문은 확보했지만 답변 생성이 끝나지 않아 설명을 완료하지 못했습니다.'
+                   if agent.get('stop_reason') == 'ASSESSMENT_OUTPUT_LIMIT' else
+                   '원문은 확보했지만 질문에 대한 결론을 확정할 만큼 검토를 마치지 못했습니다.')
+        limits = list(dict.fromkeys(row['reason'] for row in body['answer'].get('unresolved', [])
+                      if isinstance(row, dict) and isinstance(row.get('reason'), str) and row['reason'].strip()))
+        return message + ('\n\n**아직 확인하지 못한 내용**\n\n' + '\n'.join(
+            '- ' + _ChatProgress._plain(reason) for reason in limits) if limits else '')
     text = _without_review_diagnostics(body, _answer_text(body))
     if body.get("basis_review_text") and not body.get("workflow_id"):text += "\n"+str(body["basis_review_text"])
     answer = body.get('answer')
@@ -933,6 +945,25 @@ def _public_answer_text(body):
         return _without_inline_reference_numbers(text).strip()
     text = re.split(r"(?:^|\n)\s*확인 한계\s*:", text, maxsplit=1)[0]
     return _without_inline_reference_numbers(text).strip()
+
+
+def _source_reply_has_originals(body):
+    """Project only typed no-claim replies whose full originals remain in cards.
+
+    Keep legacy/missing-body replies intact; never infer failure from wording.
+    The stored response and legal assessment are not rewritten by this view.
+    """
+    assembly = body.get('assembly') or {}
+    agent = assembly.get('term_agent') or {}
+    answer = body.get('answer')
+    originals = assembly.get('context')
+    return (isinstance(answer, dict) and answer.get('claims') == []
+            and agent.get('source_reply_contract') == 'verified-source-excerpt-reply-v1'
+            and agent.get('text_integrity') == 'VERIFIED_SOURCE_EXCERPTS'
+            and not agent.get('source_bundle')
+            and isinstance(originals, list) and bool(originals)
+            and all(isinstance(row, dict) and isinstance(row.get('text'), str)
+                    and row['text'].strip() and row.get('content_read') is not False for row in originals))
 
 
 def _visible_review_limitations(stage):
@@ -2129,11 +2160,11 @@ def render(body, *, flow=None):
     text = answer
     if (body.get('assembly',{}).get('term_agent') or {}).get('scenario_context'):
         text = '**가정 분기의 검토 결과입니다. 실제 사건과 승인 규칙은 변경하지 않았습니다.**\n\n' + text
+    review = _review_explanation_text(body)
+    if review: text += '\n\n' + review
     graph = _judgment_graph_html(flow or _judgment_flow(body))
     if graph: text += '\n\n'+graph
     if source_text: text += '\n\n'+source_text
-    review = _review_explanation_text(body)
-    if review: text += '\n\n' + review
     judgments = _judgment_html(body)
     if judgments: text += '\n\n' + judgments
     return text
@@ -2484,7 +2515,7 @@ async def run(data):
 
 
 def _review_explanation_text(body, *, diagnostics=False):
-    """Show concrete follow-up needs; internal review tables are opt-in diagnostics."""
+    """Show failed checks and follow-up instructions without private diagnostics."""
     agent = (body.get('assembly') or {}).get('term_agent') or {}
     view = agent.get('review_explanation')
     if not isinstance(view, dict) or view.get('schema_version') != 'review-explanation-v1':
@@ -2499,7 +2530,25 @@ def _review_explanation_text(body, *, diagnostics=False):
         facts = [action for action in view.get('actions', [])
                  if action.get('kind') == 'REQUEST_FACT' and action.get('actor') == 'USER'
                  and action.get('enabled') and action.get('fact_name')]
-        lines = ['**추가로 필요한 정보**', '', *('- '+safe(action['fact_name']) for action in facts)] if facts else []
+        checks = list(dict.fromkeys(check['reason'] for check in view.get('failed_checks', [])
+                      if isinstance(check, dict) and isinstance(check.get('reason'), str) and check['reason'].strip()))
+        pending = [item for item in view.get('items', []) if item.get('kind') == 'REVIEW'
+                   and item.get('next_action') == 'REVIEW_AGAIN' and item.get('reason')]
+        if not checks and pending:
+            checks = list(dict.fromkeys(item['reason'] for item in pending))
+        lines = ['**답변 검토에서 실패한 부분**', '', *('- '+safe(reason) for reason in checks)] if checks else []
+        if checks:
+            lines += ['', '이 실패만으로 원문이 없거나 질문이 잘못됐다는 뜻은 아닙니다.']
+        if any(action.get('kind') == 'REVIEW_AGAIN' and action.get('enabled')
+               for action in view.get('actions', [])):
+            lines += ['', '**같은 대화에서 이어서 요청하기**', '',
+                      '> 방금 실패한 답변 검토를 이미 확보한 원문을 재사용해서 다시 해줘. '
+                      '주장과 근거의 연결을 확인하고, 질문에 대한 설명과 남은 미확인을 함께 알려줘.', '',
+                      '위 문장을 새 메시지로 보내면 재검토를 요청할 수 있습니다. '
+                      '추가 사실이 필요한 항목은 아래 내용을 함께 알려주세요.' if facts else
+                      '위 문장을 새 메시지로 보내면 재검토를 요청할 수 있습니다.']
+        if facts:
+            lines += ['', '**추가로 필요한 정보**', '', *('- '+safe(action['fact_name']) for action in facts)]
         return '\n'.join(lines + _scenario_comparison_lines(agent, safe)).strip()
     lines = ['**검토 상태: '+safe(view['outcome'])+'**', '', '| 대상 | 자료 확보 | 최종 검토 | 이유·영향 |', '|---|---|---|---|']
     for item in view['items']:

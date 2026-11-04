@@ -1,0 +1,46 @@
+{
+  "work_contracts": 49,
+  "package_contracts": 73,
+  "counts_overlap": true,
+  "package_failures": 0,
+  "installer_commands": 7,
+  "restored_original_files": 529,
+  "engine_preflight": {
+    "engines": 30,
+    "files": 497,
+    "errors": []
+  },
+  "models": 0,
+  "main140_pointer_unchanged": true,
+  "field_deployed": false,
+  "workflow_python310_syntax": true,
+  "archives": [
+    {
+      "name": "package-test-runtime",
+      "file_count": 440,
+      "raw_bytes": 68172555,
+      "gzip_bytes": 6302459
+    },
+    {
+      "name": "installer-fixture",
+      "file_count": 1660,
+      "raw_bytes": 25684464,
+      "gzip_bytes": 8490139
+    }
+  ],
+  "initial_failures": [
+    "Initial working API check before pin update: engine hash mismatch; corrected pins then49passed",
+    "Isolated runner stdlib inspect shadowed by test tools; import preparation corrected; product unchanged"
+  ],
+  "email_default_install": {
+    "passed": true,
+    "exact_command": "bash REVIEW_ONECLICK_R1.txt",
+    "cwd": "TRANSFER-equivalent attachment directory",
+    "no_root_or_action_or_exports": true,
+    "default_python3": true,
+    "DEV_symlink_resolved": true,
+    "existing_DEV_touched": false,
+    "all_original_files_restored": 529,
+    "real_field_actions": false
+  }
+}

@@ -1,0 +1,64 @@
+Gold 운영 적재 PROD R2 — ADDN_IFMN_UN_APPN_YN 자료형 수정
+2026-11-04
+
+대상 환경과 첨부
+  기존 PROD R1을 실행한 운영계 Dataiku DSS의 같은 프로젝트·Python 노트북입니다.
+  업로드 위치는 기존 PARAMS['CODE_FOLDER_ID']의 Managed Folder입니다.
+  작업 기준 경로는 기존 PARAMS['WORK_DIR']를 그대로 사용합니다.
+  빈 값이면 기존 실행기 기본 경로 아래 설정별 하위 폴더를 사용합니다.
+  첨부 5개:
+    DATAIKU_GOLD_ONECLICK_PROD_20261104_R2.zip
+    DATAIKU_GOLD_PROD_RUN_R2.txt
+    GUIDE.txt
+    VALIDATION.json
+    SHA256SUMS.txt
+
+사진에서 확인된 차이
+  IDD_B003_LGL_DOC_BLK.ADDN_IFMN_UN_APPN_YN
+  R1 전달 코드: CHAR(1 BYTE)
+  현장 등록 화면: VARCHAR2, 길이 1, NULL 허용, 기본값 공란
+  R2 전달 코드: VARCHAR2(1 BYTE), NULL 허용, 기본값 없음
+
+사진은 등록 화면이며 실제 Oracle ALL_TAB_COLUMNS 결과는 아직 받지 않았습니다.
+BYTE/CHAR 구분은 사진으로 확인되지 않습니다. R2의 실제 DB 사전 검사에서
+DATA_LENGTH=1, CHAR_USED=B, NULLABLE=Y, 기본값 없음까지 그대로 확인합니다.
+그 외 차이를 자동으로 허용하거나 DB를 변경하지 않습니다.
+
+실행 방법
+1. 기존 노트북 PARAMS의 값을 따로 복사해 둡니다.
+   특히 CODE_FOLDER_ID, INPUT_FOLDER_ID, ORACLE_CONNECTION, EXPECTED_DB_USER,
+   GOLD_OWNER, TABLE_PREFIX, TABLE_NAMES, EMBED_MODEL, EMBED_DIMENSIONS, WORK_DIR를
+   기존 실제 값 그대로 사용합니다. TXT의 owner 기본값을 현장 확인값으로 오인하지 않습니다.
+2. 같은 Managed Folder에 DATAIKU_GOLD_ONECLICK_PROD_20261104_R2.zip을 업로드합니다.
+   압축을 풀지 않습니다. 기존 데이터 34조각과 SHA파일 2개는 다시 올리지 않습니다.
+3. 기존 적재 셀이 종료된 상태에서 노트북 Kernel -> Restart를 한 번 실행합니다.
+   메모리에 남은 R1 모듈과 R2 모듈이 섞이지 않도록 하는 단계입니다.
+4. DATAIKU_GOLD_PROD_RUN_R2.txt 전체를 셀 하나에 붙여 넣고,
+   맨 위 PARAMS에 1번에서 복사한 기존 실제 값을 넣습니다.
+5. 셀을 실행합니다. 기존 8단계와 최종 PRODUCTION_GOLD_LOADED 확인은 같습니다.
+
+이번 사진처럼 사전 검사에서 멈춘 R1의 후속 실행용입니다.
+계약의 자료형이 바뀌므로 기존 실행기의 설정별 ID가 달라지고 별도 작업 하위 폴더가
+생깁니다. R1의 로컬/S3 로그와 체크포인트는 그대로 남습니다. WORK_DIR 기준 폴더,
+업로드 폴더, 원본 조각, 기존 DB 행을 지우거나 변경하지 않습니다.
+R1에서 이미 원문 적재 이후까지 진행한 별도 실행이 있다면 그 체크포인트를 R2로
+강제 이전하지 않습니다. 기존 판본 행이 있으면 원래 중복 적재 방지 검사로 중단합니다.
+R2 자체의 재실행은 R2의 같은 설정/체크포인트로 이어집니다.
+
+변경 범위
+  package/registration_current.json의 위 컬럼 type 한 곳
+  새 FLOW_MANIFEST.json, R2 ZIP, R2 실행 TXT/PY
+  적재 엔진 83파일과 실행 Python 모듈은 R1과 동일
+  자동 DDL, 데이터 삭제, 스키마 검사 우회 없음
+
+검증
+  상세 결과: VALIDATION.json
+  로컬 단위/계약 검사와 임시 Oracle 검사 결과를 구분해 기록합니다.
+  실제 Dataiku SDK 및 임베딩은 로컬 대역을 사용하며, 현장 실행 성공을 뜻하지 않습니다.
+
+원복
+  이번 작업은 DB 정의를 바꾸지 않습니다. 이전 R1 ZIP/TXT와 기록은 보존합니다.
+  R1은 CHAR 기대값을 유지하므로 사진의 VARCHAR2 구조에서는 같은 오류가 납니다.
+  R2에서 새로 적재한 뒤 R1에 체크포인트를 복사해 재사용하지 않습니다.
+
+현장 실행은 수행하지 않았습니다. 메일 발송 기록은 별도로 보존합니다.

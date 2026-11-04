@@ -460,11 +460,147 @@ def _extend_scope_schema(schema, ctx):
         'scope_quote': {'type':'string'}, 'reason':rj.TEXT})
     group['properties']['basis_refs']['minItems'] = 1
     group['properties']['issue_refs']['minItems'] = 1
+    # These are the same field relations checked by _validate_scope_review.
+    # Expose them while generating, not only after a contradictory row arrives.
+    branches=[]
+    for disposition in ('USE','EXCLUDE','OPEN'):
+        branch=deepcopy(group);props=branch['properties']
+        props['disposition']={'const':disposition}
+        props['claim_refs']['minItems' if disposition=='USE' else 'maxItems']=1 if disposition=='USE' else 0
+        props['gap_indices']['minItems' if disposition=='OPEN' else 'maxItems']=1 if disposition=='OPEN' else 0
+        if disposition!='EXCLUDE':props['scope_quote']={'const':''}
+        branches.append(branch)
+    group['anyOf']=branches
     schema['properties']['scope_reviews'] = {'type':'array','minItems':len(targets),'maxItems':len(targets),
         'items':obj({'target_id': {'enum':[t['id'] for t in targets]} if targets else {'type':'string'},
             'groups':{'type':'array','items':group}})}
     schema['required'].append('scope_reviews')
 
+
+def generation_schema(schema, ctx):
+    """Ask for one decision per original while preserving canonical group readers.
+
+    The model still decides USE/EXCLUDE/OPEN and every claim/gap/reason. A
+    singleton prevents a whole article being marked used because one part is
+    cited. No original is removed and no disposition is inferred by the host.
+    """
+    continuity = (ctx or {}).get('need_continuity')
+    if not continuity or continuity.get('version') != VERSION:
+        return schema
+    out = deepcopy(schema)
+    scope = out['properties']['read_judgment_review']['properties']['scope_reviews']
+    template = scope['items']
+    branches = []
+    for target in continuity['targets']:
+        refs = target['available_evidence_refs']
+        branch = deepcopy(template)
+        branch['properties']['target_id'] = {'const': target['id']}
+        groups = branch['properties']['groups']
+        groups.update(minItems=len(refs), maxItems=len(refs))
+        group = groups['items']
+        for rule in [group, *group.get('anyOf', [])]:
+            rule['properties']['basis_refs'] = {
+                'type': 'array', 'minItems': 1, 'maxItems': 1,
+                'items': {'type': 'string', 'enum': refs} if refs else {'type': 'string'},
+            }
+        branches.append(branch)
+    if branches:
+        scope['items'] = {'anyOf': branches}
+    return out
+
+
+GENERATION_PROMPT = '''이번 scope_reviews는 원문 구간마다 한 행이다. 각 target의 available_evidence_refs를 한 번씩 검토하고, 각 group.basis_refs에는 하나의 ID만 넣는다. USE는 그 구간이 실제로 뒷받침하는 주장만 claim_refs에 연결한다. 같은 조문 안에 있다는 이유로 다른 항·표제까지 사용한 근거로 쓰지 않는다. 이번 주장에 쓰지 않는 구간은 이유와 함께 EXCLUDE, 결론에 필요한 미확인 구간은 실제 gap과 OPEN으로 구분한다. 사용한 근거를 형식상 EXCLUDE로 바꾸거나 근거를 맞추려고 불필요한 주장을 추가하지 않는다.'''
+
+
+
+SCOPE_JOIN_PROMPT = """scope_reviews의 group에는 claim_refs를 다시 쓰지 않는다. USE/EXCLUDE/OPEN과 원문 basis_refs·issue_refs·이유·gap은 직접 판단한다. USE의 연결 주장은 이번 claims에서 같은 원문을 evidence_refs로 인용하고 같은 issue를 다루는 주장들로 서버가 정확히 조립한다. 해당 주장이 없으면 검토 오류이며, 서버가 주장이나 인용·채택을 만들지 않는다. EXCLUDE/OPEN은 주장 연결이 비어 있다. 다른 검토 행의 claim_refs는 제시된 스키마를 따른다."""
+
+def scope_claim_model_copy(value):
+    if not isinstance(value,dict):return value
+    out=deepcopy(value)
+    review=out.get('read_judgment_review')
+    if not isinstance(review,dict):return out
+    rows=review.get('scope_reviews')
+    if not isinstance(rows,list):return out
+    for row in rows:
+        if not isinstance(row,dict) or not isinstance(row.get('groups'),list):continue
+        for group in row['groups']:
+            if isinstance(group,dict):group.pop('claim_refs',None)
+    return out
+
+
+def scope_claim_projection(schema):
+    """Remove a duplicate equijoin, preserving every model-owned legal decision.
+
+    Only scope rows use this contract. Other independent review links remain
+    explicit. The canonical validators still check adopted judgments, missing
+    claims, unsupported originals, issue coverage, exclusions and gaps.
+    """
+    if 'scope_reviews' not in schema['properties'].get('read_judgment_review',{}).get('properties',{}):return schema,deepcopy
+    out = deepcopy(schema)
+    scopes = out['properties']['read_judgment_review']['properties']['scope_reviews']
+    def omit(node):
+        if isinstance(node, dict):
+            props = node.get('properties', {})
+            if 'basis_refs' in props and 'disposition' in props:
+                props.pop('claim_refs', None)
+                node['required'] = [k for k in node.get('required', []) if k != 'claim_refs']
+            for child in node.values():omit(child)
+        elif isinstance(node, list):
+            for child in node:omit(child)
+    omit(scopes)
+    def expand(raw):
+        from .output_contract import validate_shape
+        validate_shape(raw, out)
+        value = deepcopy(raw)
+        for row in value['read_judgment_review']['scope_reviews']:
+            for group in row['groups']:
+                refs = set(group['basis_refs']);issues = set(group['issue_refs'])
+                group['claim_refs'] = [c['claim_id'] for c in value['claims']
+                    if group['disposition'] == 'USE'
+                    and refs.intersection(c['evidence_refs'])
+                    and issues.intersection(c['issue_refs'])]
+        # Empty USE joins intentionally reach the original validator and fail.
+        # No unsupported USE is silently excluded and no missing claim is added.
+        return value
+    return out, expand
+
+
+
+ORIGINAL_REVIEW_PROMPT = """이번 원문 사용 검토는 original_reviews에서 각 원문 구간을 한 번만 판단한다. 각 행의 고정 basis_refs는 실제로 읽은 한 구간이다. 여러 탐색 목적/target에서 같은 원문을 읽었어도 최종 답변에서의 USE/EXCLUDE/OPEN 결정은 하나다. 서버는 같은 결정을 해당 원문이 속한 모든 target에 그대로 전달한다. 목적의 제외와 원문의 미사용은 다르다. 이번 주장에 실제로 채택한 원문은 USE로 검토하고, 최초 탐색 목적이 달랐다는 이유만으로 EXCLUDE하지 않는다. 의미 판단·이유·쟁점·gap은 직접 정하고 사용하지 않는 원문이나 없는 주장을 서버가 채택하지 않는다."""
+
+
+def original_review_projection(schema, ctx):
+    """Share an explicit model decision across duplicate acquisition targets."""
+    continuity = (ctx or {}).get('need_continuity')
+    if not continuity or continuity.get('version') != VERSION:
+        return schema, deepcopy
+    from .completion_contracts import obj
+    out = deepcopy(schema)
+    review = out['properties']['read_judgment_review']
+    scopes = review['properties'].pop('scope_reviews')
+    branches = scopes['items'].get('anyOf', [])
+    props = {}; by_ref = {}
+    for branch, target in zip(branches, continuity['targets']):
+        for ref in target['available_evidence_refs']:
+            if ref in by_ref: continue
+            key = 'R'+str(len(by_ref)+1); by_ref[ref] = key
+            group = deepcopy(branch['properties']['groups']['items'])
+            for rule in [group, *group.get('anyOf', [])]:
+                rule['properties']['basis_refs'] = {'type':'array', 'items':{'const':ref}, 'minItems':1,'maxItems':1}
+            props[key] = group
+    review['properties']['original_reviews'] = obj(props)
+    review['required'] = ['original_reviews' if name == 'scope_reviews' else name for name in review['required']]
+    def expand(raw):
+        from .output_contract import validate_shape
+        validate_shape(raw, out)
+        value = deepcopy(raw); r = value['read_judgment_review']
+        originals = r.pop('original_reviews')
+        r['scope_reviews'] = [{'target_id':t['id'], 'groups':[deepcopy(originals[by_ref[ref]])
+                              for ref in t['available_evidence_refs']]} for t in continuity['targets']]
+        validate_shape(value, schema)
+        return value
+    return out, expand
 
 def validate_review(value, ctx, options, fail):
     continuity = ctx.get('need_continuity')

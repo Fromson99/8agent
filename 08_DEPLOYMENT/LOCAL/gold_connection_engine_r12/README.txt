@@ -1,4 +1,32 @@
-2026-11-03 현재 로컬 MAIN135: ordinary-assessment-20261103-r1 / 서빙516파일.
+2026-11-04 최신 코드 연결: Gold R5 물리 매핑 + ZIP Flow 게시본
+- B003 실행 매핑 mapping_registration_b003_r5.json 추가. owner는 명시 설정합니다.
+- 로컬 기본값은 ACTIVE_MAPPING.json → mapping_local_chan_no_current.json(B03)을 유지합니다.
+- 명시 외부 매핑은 release_id 또는 channel과 호스트가 인증한 documents를 함께 전달합니다.
+  해당 게시본 범위를 검사하며 로컬 CM21 목록으로 외부 문서를 제한하지 않습니다.
+- packed 로컬 게시본과 ZIP Flow의 일반 검색 게시본을 모두 읽습니다.
+- 새 plain_vector.py는 외부 게시본에 명시 embedding 함수/embedding_profile을 사용합니다.
+  기존 로컬 packed 벡터 포트는 유지합니다. 프로필 불일치·권한 밖·빈 범위를 검사합니다.
+- 원문·검색·벡터 적재 Flow: 08_DEPLOYMENT/DATAIKU/gold_zip_flow_20261104_r1/사용방법.txt
+- 선택 MAIN136 및 원문/기존 게시본은 유지하고 maintained connector 해시만 binding에 갱신했습니다.
+- 실제 로컬 92SQL/8내용해시 동일, 임시 B003 원문·FTS·벡터·온톨로지와 ZIP Flow 전체 통과.
+- 상세: 09_ARTIFACTS/AUDITS/20261104-gold-r5-code-integration/수정과_검증결과.txt
+아래 내용은 각 작업 시점의 이력입니다. 명시 매핑의 문서 범위는 위 최신 설명을 따릅니다.
+
+2026-11-04 최신: SRCH_CHNL/ONTL_HEAD/VCTR_HEAD의 CHAN_ORD를 실제 CHAN_NO로 변경했다.
+활성 매핑 mapping_local_chan_no_current.json / 최신 등록 registration_b003_chan_no_r5.json.
+최신 엑셀·결과: 09_ARTIFACTS/AUDITS/20261104-gold-chan-no/변경과_검증결과.txt
+
+2026-11-04 로컬 스키마: RGLT_DOC_ID 6컬럼을 실제 VARCHAR2(100 BYTE)로 변경했다.
+후속 SRC_POST 등록일시 컬럼도 RGSN_AITM → RGSN_ASTM으로 실제 변경했다.
+후속 SRCH_ROW 조회자료 컬럼도 RFRN_DATA_HASH_VALU/RFRN_DATA_CTNT로 실제 변경했다.
+ACTIVE_MAPPING.json → mapping_local_chan_no_current.json. 로컬 B03 테이블명 및 나머지 컬럼 크기는 유지한다.
+최신 변경·엑셀: 09_ARTIFACTS/AUDITS/20261104-gold-search-rfrn/변경과_검증결과.txt
+SRC_POST 변경·검증: 09_ARTIFACTS/AUDITS/20261104-gold-src-post-rgsn-astm/변경과_검증결과.txt
+현장 신청명 B003과 구분하며, 이전 R18 신청 매핑/문서ID1000 매핑은 현재 DB에 사용하지 않는다.
+상세: 09_ARTIFACTS/AUDITS/20261104-gold-docid100-local/로컬_문서ID100_변경결과.txt
+이번 작업은 엔진 선택을 변경하지 않았다. 아래 MAIN 번호는 각 시점의 통합 이력이며 실제 선택은 binding.json으로 확인한다.
+
+2026-11-03 당시 로컬 MAIN135: ordinary-assessment-20261103-r1 / 서빙516파일.
 일반 ASSESS 무손실 입력·공유 검토 연결·완전확보 조사장부 서버조립 반영.
 계약196/모의API22·준비API13(중복)/root16/Gold9 통과. 새실모델·Oracle0, 법률품질 미인증.
 Gold query/매핑/온톨로지설정/연결기는 유지. 이전 MAIN134 binding 원복은
@@ -21,10 +49,10 @@ Gold 연결기 — 로컬 MAIN134 온톨로지 관리·가정 표시 연결 / 20
 
 현재 데이터·물리명
 - A8_GR12_CM1208 / B03 13테이블60컬럼, CM21문서.
-- ACTIVE_MAPPING.json → mapping_local_vctr_current.json.
+- ACTIVE_MAPPING.json → mapping_local_chan_no_current.json (규정문서ID100, SRC_POST RGSN_ASTM, SRCH_ROW RFRN_DATA_HASH_VALU/CTNT, CHAN_NO 3컬럼).
 - 벡터구간ID VCTR_SCTN_ID, 명세해시값 DTLS_HASH_VALU.
 - 내부 VCTR_SEG_ID/MNFST 논리키는 호환을 위해 유지한다.
-- 신청용 R18: mapping_r18_registration.json. 현재 로컬 보존 타입과 구분한다.
+- 과거 신청용 R18: mapping_r18_registration.json. 현재 로컬 및 최신 B003/문서ID100 신청 자료와 구분한다.
 - 검색 게시물은 binding.json의 기존 query_release_id로 고정한다.
 - 이 통합은 DB 내용·기존 게시물·MAIN 기본 데이터 generation을 바꾸지 않았다.
 

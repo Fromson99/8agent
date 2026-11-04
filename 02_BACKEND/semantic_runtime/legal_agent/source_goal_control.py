@@ -311,17 +311,19 @@ def contained_arrivals(inv,goal):
             if uid==target or uid not in ancestors:continue
             if matcher.units[(did,uid)].get('coordinate_scope')!=goal['coordinate_scope']:continue
             for gid in plan.get('completed',{}).values():
-                record=inv.p.get('selected',{}).get(gid)
-                if not record or record.get('document_id')!=did or record.get('source_id')!=identity.get('source_id'):continue
+                records=list(inventory.acquired_records(inv.p,group_ids=[gid],include_context=False).values())
+                records=[r for r in records if r.get('document_id')==did and r.get('source_id')==identity.get('source_id')]
+                if not records:continue
                 if expected is None:
                     expected=inventory.expected(inv.s,did,unit_reading.blocks(inv.s,did,target,'subtree'))
                     if any(p.get('document_id',did)!=did for p in goal.get('expected',[])):raise ContractError('source goal expected original document mismatch')
                     expected+=goal.get('expected',[])
-                actual=[span for e in record.get('evidence',[]) for span in e.get('spans',[])]
+                actual=[span for record in records for e in record.get('evidence',[]) for span in e.get('spans',[])]
                 if not expected or not inventory.covers(expected,actual):continue
-                for evidence in record['evidence']:
-                    if evidence['document_id']!=did or evidence['source_id']!=record['source_id']:raise ContractError('source goal original identity changed')
-                    inv.s.source.verify(evidence)
+                for record in records:
+                    for evidence in record['evidence']:
+                        if evidence['document_id']!=did or evidence['source_id']!=record['source_id']:raise ContractError('source goal original identity changed')
+                        inv.s.source.verify(evidence)
                 goal['expected']=deepcopy(expected)
                 arrivals.append(gid)
     if arrivals:
@@ -336,18 +338,24 @@ def refresh(inv,goals):
     from . import evidence_inventory as inventory
     for goal in goals:
         validate_scope(goal.get('coordinate_scope'),persisted=True)
-        if goal['status'] not in ('REQUIRED','BLOCKED'):continue
+        if goal['status'] not in ('REQUIRED','BLOCKED','EXCLUDED'):continue
+        # Excluding a search purpose is not evidence that an already read
+        # original is absent. Preserve the model decision and only attach
+        # independently verified acquisition facts, never legal adoption.
+        if goal['status']=='EXCLUDED' and goal.get('arrivals') and goal.get('expected'):continue
         acquired=[]
         for plan in inv.p.get('read_plans',{}).values():
             if plan.get('status')!='ACQUIRED':continue
             identities=[x for x in plan.get('targets',[]) if matches(inv,x,goal)]
             if not identities:continue
             for gid in plan.get('completed',{}).values():
-                record=inv.p.get('selected',{}).get(gid)
-                if not record or record.get('document_id')!=goal['document_id']:continue
+                # Ontology own-block reads can replace selected[gid]. Earlier
+                # verified extents remain bound to this exact branch/offer.
+                records=list(inventory.acquired_records(inv.p,group_ids=[gid],include_context=False).values())
+                records=[r for r in records if r.get('document_id')==goal['document_id']]
+                if not records:continue
                 # A batch receipt for another target cannot satisfy this target.
-                offer=record.get('offer',{})
-                exact=[x for x in identities if x.get('source_id')==record.get('source_id')]
+                exact=[x for x in identities if any(x.get('source_id')==r.get('source_id') for r in records)]
                 if not exact:continue
                 expected=[p for p in goal.get('expected',[]) if p.get('document_id',goal['document_id'])==goal['document_id']]
                 if not expected:
@@ -357,17 +365,19 @@ def refresh(inv,goals):
                     if uid is None:continue
                     blocks=unit_reading.blocks(inv.s,goal['document_id'],str(uid),'subtree')
                     expected=inventory.expected(inv.s,goal['document_id'],blocks)
-                actual=[p for e in record.get('evidence',[]) for p in e.get('spans',[])]
+                actual=[p for record in records for e in record.get('evidence',[]) for p in e.get('spans',[])]
                 if not expected or not inventory.covers(expected,actual):continue
                 # Validate original bytes through the same request source verifier.
-                for e in record['evidence']:
-                    if e['document_id']!=record['document_id'] or e['source_id']!=record['source_id']:raise ContractError('source goal original identity changed')
-                    inv.s.source.verify(e)
+                for record in records:
+                    for e in record['evidence']:
+                        if e['document_id']!=record['document_id'] or e['source_id']!=record['source_id']:raise ContractError('source goal original identity changed')
+                        inv.s.source.verify(e)
                 goal['expected']=deepcopy(expected)
                 acquired.append(gid)
         if not acquired:acquired=contained_arrivals(inv,goal)
         if acquired:
-            goal['status']='ACQUIRED';goal['arrivals']=sorted(set(acquired))
+            if goal['status']!='EXCLUDED':goal['status']='ACQUIRED'
+            goal['arrivals']=sorted(set(acquired))
 
 
 def native_decision(inv,data,actions,choice):

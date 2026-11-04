@@ -417,7 +417,7 @@ class CompletionExecution:
         schema=scenario_review.attach(schema,scenario_context,typed=True)
         shared_reviews=bool(modern and (judgment_context is not None or requirement_context is not None))
         host_source_work=source_work_review.eligible(judgment_context,options) if modern else []
-        if shared_reviews:schema=assessment_links.attach(schema,options)
+        if shared_reviews:schema=assessment_links.attach(schema,options,direct=True)
         from . import ontology_scenario_runtime
         scenario_catalog=ontology_scenario_runtime.catalog_from(ontology_payload)
         # Scenario-only selection cannot attest to the full current request.
@@ -435,7 +435,7 @@ class CompletionExecution:
         if state.get('scenario_context'):
             basis['scenario_context_hash']=digest(state['scenario_context'])
             basis['scenario_application_version']=schema['properties']['scenario_review']['properties']['version']['const']
-        if shared_reviews:basis['review_links_version']=assessment_links.VERSION
+        if shared_reviews:basis['review_links_version']=assessment_links.DIRECT_VERSION
         if host_source_work:basis['source_work_review_version']=source_work_review.VERSION
         if requirement_context is not None:
             basis['requirement_context_hash']=requirement_context['binding_hash']
@@ -484,6 +484,8 @@ class CompletionExecution:
                 diagnostics={'cause_codes':['ASSESSMENT_CONTRACT_UNRESOLVED'],'resume_available':False})
         if prior and prior['status']=='REJECTED':
             feedback={'errors':prior['error'],'validation':prior['failure'],'rejected_assessment':assessment_links.repair_proposal(source_work_review.repair_proposal(prior.get('proposal'),judgment_context,options))}
+            choices=final_judgment.repair_choices(prior.get('proposal'),prior['failure'])
+            if choices:feedback['decision_repair_choices']=choices
         from .law_candidates import answer_first
         answer_policy = ('\n각 판단 이유(reason/explanation)는 결론과 근거를 한 번만 짧게 적는다. 재고·자문자답·같은 문장의 반복은 쓰지 않는다. 이 필드는 최대600자이며 원문 인용이나 최종 답변의 길이 제한이 아니다.' if modern or profile.get('candidate_navigation',{}).get('bounded_judgment_notes') else '')
 
@@ -492,6 +494,9 @@ class CompletionExecution:
         if guarded:answer_policy += '\n'+consistency.PROMPT
         if ontology_payload:answer_policy += '\n'+ontology_assessment.PROMPT
         if judgment_context is not None:answer_policy += '\n'+final_judgment.PROMPT
+        if modern:
+            from .connection_scope import FINISH_GUIDANCE
+            answer_policy += '\n'+FINISH_GUIDANCE
         if judgment_context is not None and judgment_context.get('need_continuity'):
             from .need_continuity import PROMPT as continuity_prompt
             answer_policy += '\n'+continuity_prompt
@@ -500,7 +505,7 @@ class CompletionExecution:
             answer_policy += '\n'+change_prompt
         if requirement_context is not None:answer_policy += '\n'+requirements.PROMPT
         if scenario_context:answer_policy += '\n'+(scenario_computation.PROMPT if scenario_computation.enabled(scenario_context) else scenario_application.PROMPT)
-        if shared_reviews:answer_policy += '\n'+assessment_links.PROMPT
+        if shared_reviews:answer_policy += '\n'+assessment_links.DIRECT_PROMPT
         if host_source_work:answer_policy += '\n'+source_work_review.PROMPT
         generation_schema,expand_assessment=assessment_projection(schema,allowed_targets=allowed_targets) if modern else (schema,lambda v:v)
         if host_source_work:
@@ -511,6 +516,24 @@ class CompletionExecution:
             generation_schema,expand_links=assessment_links.projection(generation_schema)
             expand_base=expand_assessment
             expand_assessment=lambda raw:expand_base(expand_links(raw))
+        if judgment_context is not None and judgment_context.get('need_continuity'):
+            from . import need_continuity
+            generation_schema=need_continuity.generation_schema(generation_schema,judgment_context)
+            generation_schema,expand_scope_claims=need_continuity.scope_claim_projection(generation_schema)
+            expand_before_scope=expand_assessment
+            expand_assessment=lambda raw:expand_before_scope(expand_scope_claims(raw))
+            answer_policy += '\n'+need_continuity.GENERATION_PROMPT+'\n'+need_continuity.SCOPE_JOIN_PROMPT
+        if judgment_context is not None and judgment_context.get('need_continuity'):
+            generation_schema,expand_original_reviews=need_continuity.original_review_projection(generation_schema,judgment_context)
+            expand_before_originals=expand_assessment
+            expand_assessment=lambda raw:expand_before_originals(expand_original_reviews(raw))
+            answer_policy += '\n'+need_continuity.ORIGINAL_REVIEW_PROMPT
+        if judgment_context is not None and judgment_context.get('change_review'):
+            from . import judgment_changes
+            generation_schema,expand_purpose_claims=judgment_changes.claim_projection(generation_schema,judgment_context)
+            expand_before_purposes=expand_assessment
+            expand_assessment=lambda raw:expand_before_purposes(expand_purpose_claims(raw))
+            answer_policy += '\n'+judgment_changes.JOIN_PROMPT
         if scenario_computation.enabled(scenario_context):
             generation_schema,expand_computed_gaps=scenario_computation.projection(generation_schema,scenario_context)
             expand_prior=expand_assessment
@@ -524,6 +547,9 @@ class CompletionExecution:
             value = None
             try:
                 def scenario_input(data):
+                    if judgment_context is not None and judgment_context.get('need_continuity') and data.get('repair_feedback'):
+                        data=deepcopy(data)
+                        data['repair_feedback']['rejected_assessment']=need_continuity.scope_claim_model_copy(data['repair_feedback'].get('rejected_assessment'))
                     return scenario_review.project(data,scenario_context,state['facts']) if scenario_context else data
                 value = deepcopy(cached['value']) if cached else expand_assessment(self.invoke((MODERN_ASSESS_PROMPT if modern else ASSESS_PROMPT)+task_instructions()+('\n'+content_impl.PROMPT if modern else '')+('\n'+narrative.ASSESS_GUIDANCE if rich else '')+('\n'+CONDITION_GUIDANCE if modern else '')+answer_policy, scenario_input({**context,
                     **({'ontology_bundles':ontology_payload['ontology_bundles']} if ontology_payload else {}),
@@ -630,6 +656,8 @@ class CompletionExecution:
                     break
                 if not attempt and output.repairable(exc) and not truncated:
                     feedback = {'errors': str(exc), 'validation':output.diagnostics(exc), 'rejected_assessment': assessment_links.repair_proposal(source_work_review.repair_proposal(value,judgment_context,options))}
+                    choices=final_judgment.repair_choices(value,exc)
+                    if choices:feedback['decision_repair_choices']=choices
                     continue
                 if modern and (judgment_context is not None or requirement_context is not None):
                     final_judgment.independent_research(self,exc,value,schema,

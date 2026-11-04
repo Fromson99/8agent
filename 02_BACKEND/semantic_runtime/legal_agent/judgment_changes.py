@@ -81,3 +81,41 @@ def validate_changes(value,ctx,options,fail):
                 selected_gaps=[gaps[g-1] for g in p['gap_indices'] if 1<=g<=len(gaps)]
                 if not selected_gaps or len(selected_gaps)!=len(p['gap_indices']) or p['claim_refs'] or any(not g['material'] or g['issue_id'] not in origin['issue_refs'] for g in selected_gaps):
                     invalid('FINAL_REVIEW_PURPOSE_GAP',{'issue_refs':origin['issue_refs'],'material_gap_required':True})
+
+
+JOIN_PROMPT = """change_review.purpose_reviews에는 claim_refs를 반복 생성하지 않는다. COVERED_ELSEWHERE를 선택했을 때 이번 claims에서 목적과 같은 쟁점을 다루고 선택한 basis_refs를 실제 evidence_refs로 인용하는 주장만 서버가 연결한다. 해당 주장이 없으면 미해결 검토 오류다. ROLE_ONLY/REINTERPRETED/UNRESOLVED의 주장 연결은 비어 있으며 상태·원문·gap·이유는 모델 판단을 그대로 보존한다."""
+
+
+def claim_projection(schema, ctx):
+    out = deepcopy(schema)
+    review = out['properties'].get('read_judgment_review', {})
+    if not (ctx or {}).get('change_review'):
+        return schema, deepcopy
+    def omit(node):
+        if isinstance(node, dict):
+            props = node.get('properties', {})
+            if 'purpose_id' in props and 'status' in props:
+                props.pop('claim_refs', None)
+                node['required'] = [k for k in node.get('required', []) if k != 'claim_refs']
+            for child in node.values(): omit(child)
+        elif isinstance(node,list):
+            for child in node: omit(child)
+    omit(review)
+    heads = {h['id']: h for h in ctx['judgments']}
+    def expand(raw):
+        from .output_contract import validate_shape
+        validate_shape(raw, out)
+        value = deepcopy(raw)
+        for row in value['read_judgment_review']['judgments']:
+            change = row.get('change_review')
+            if not isinstance(change,dict): continue
+            purposes = {p['id']:p for p in heads.get(row['id'], {}).get('review_purposes', [])}
+            for purpose in change['purpose_reviews']:
+                origin = purposes.get(purpose['purpose_id'], {})
+                purpose['claim_refs'] = [c['claim_id'] for c in value['claims']
+                    if purpose['status'] == 'COVERED_ELSEWHERE'
+                    and set(origin.get('issue_refs', [])).intersection(c['issue_refs'])
+                    and set(purpose['basis_refs']).intersection(c['evidence_refs'])]
+        validate_shape(value, schema)
+        return value
+    return out, expand

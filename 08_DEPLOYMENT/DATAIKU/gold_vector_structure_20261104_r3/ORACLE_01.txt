@@ -1,0 +1,21 @@
+{"phase": "JDBC_BLOCK", "sql_bytes": 16121, "render_s": 0.0006, "sql_sha256": "fcc1b4ac382b15d257b1f49f01eed2f8988d5f0b215fc07feca5b4b90062ce80", "value_encoding": "UTF8_HEX_GZIP_BASE64", "rollback": false, "binds": [{"name": "payload", "type": "CLOB", "bytes": 51938}, {"name": "dim", "type": "NUMBER", "bytes": null}], "elapsed_seconds": 0.036}
+{"phase": "JDBC_BLOCK", "sql_bytes": 9477, "render_s": 0.0001, "sql_sha256": "2cffd5468984556c2036a0f513d17bfb7e192e835267004dceb5d06dca38cf77", "value_encoding": "UTF8_HEX_GZIP_BASE64", "rollback": false, "binds": [{"name": "payload", "type": "CLOB", "bytes": 4168}, {"name": "dim", "type": "NUMBER", "bytes": null}], "elapsed_seconds": 0.04}
+{
+  "status": "PASS",
+  "models": 0,
+  "field_dataiku": false,
+  "existing_data_mutated": false,
+  "checks": [
+    "actual_gzip_jdbc_insert_512x1024_float32_unicode_clob",
+    "test_only_exact_meta_and_float32_vector_readback",
+    "pending_primary_keys_all_none_partial",
+    "duplicate_pk_rolls_back_entire_batch",
+    "oracle_dimension_mismatch_rollback",
+    "publication_insert_ack_and_pending_key"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "test_schema": "A8_VS3_A19B863599",
+  "payload_bytes": 13282949,
+  "rendered_sql_bytes": 6665917,
+  "test_schema_removed": true
+}

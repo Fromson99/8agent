@@ -112,7 +112,14 @@ def from_env(kind: str, *, environ=None) -> tuple[Endpoint, str]:
 
     direct = (settings.get(f"{prefix}_URL") or "").strip()
     serving_id = value("SERVING_ID")
+    token = value("KEY")
     base = direct or (settings.get("GENOS_BASE_URL") or "").strip()
+    if kind == "embed":
+        # Accept the existing field integration names without requiring users
+        # to duplicate their serving ID or credential under a second name.
+        serving_id = value("ID") or serving_id
+        token = value("TOKEN") or token
+        base = base or (settings.get("GENOS_URL") or "").strip()
     if not base:
         raise ValueError(f"{prefix} endpoint is not configured")
     if not direct and not serving_id:
@@ -123,7 +130,7 @@ def from_env(kind: str, *, environ=None) -> tuple[Endpoint, str]:
     target = endpoint(
         base,
         serving_id="" if direct else serving_id,
-        token=value("KEY"),
+        token=token,
         user_id=(
             (settings.get("GENOS_USER_ID") or "").strip()
             if kind == "llm"

@@ -42,6 +42,29 @@ def load_origin_projection(root,config,store):
         if value.get(k)!=store.manifest[k]:raise ValueError('stale origin projection')
     return value
 
+def _catalogue_rows(store, columns):
+    if getattr(store,'is_oracle_query',False):
+        query="SELECT document_id,name,json_extract(json,'$.document_category') category,json_extract(json,'$.document_kind') kind,json_extract(json,'$.origin') origin,json_extract(json,'$.document_metadata') metadata FROM document"
+        yield from store.db.execute(query)
+        return
+    # Parse each local document once; retain the artifact hash in the same scan.
+    # Oracle keeps its registered server-side projection and bounded request port.
+    query = ('SELECT document_id,name,json,source_artifact_sha256 FROM document'
+             if 'source_artifact_sha256' in columns else
+             'SELECT document_id,name,json,NULL AS source_artifact_sha256 FROM document')
+    def sqlite_value(value):
+        if isinstance(value,(dict,list)):return json.dumps(value,ensure_ascii=False,separators=(',',':'))
+        return int(value) if isinstance(value,bool) else value
+    for row in store.db.execute(query):
+        value=json.loads(row['json'])
+        yield {'document_id':row['document_id'],'name':row['name'],
+               'category':sqlite_value(value.get('document_category')),
+               'kind':sqlite_value(value.get('document_kind')),
+               'origin':sqlite_value(value.get('origin')),
+               'metadata':sqlite_value(value.get('document_metadata')),
+               'source_artifact_sha256':row['source_artifact_sha256']}
+
+
 def bind_catalogue(matcher,store,projection=None):
     """Origin projection supplied explicitly; old stores remain unknown without provenance."""
     projection_hash = hashlib.sha256(json.dumps(projection,sort_keys=True,ensure_ascii=False).encode()).hexdigest() if projection is not None else None
@@ -60,8 +83,7 @@ def bind_catalogue(matcher,store,projection=None):
         origins=projection['documents']
     catalogue={}
     columns={r[1] for r in store.db.execute('PRAGMA table_info(document)')}
-    query="SELECT document_id,name,json_extract(json,'$.document_category') category,json_extract(json,'$.document_kind') kind,json_extract(json,'$.origin') origin,json_extract(json,'$.document_metadata') metadata FROM document"
-    for row in store.db.execute(query):
+    for row in _catalogue_rows(store,columns):
         did=row['document_id'];raw=row['category'];kind=row['kind'];origin=origins.get(did)
         if origin is None and row['origin']:
             origin=json.loads(row['origin'])
@@ -92,7 +114,8 @@ def bind_catalogue(matcher,store,projection=None):
                 record.update(category='unknown',tags=[],classification_basis='ambiguous/unverified origin')
             else:
                 if 'source_artifact_sha256' in columns:
-                    expected=store.db.execute('SELECT source_artifact_sha256 FROM document WHERE document_id=?',(did,)).fetchone()[0]
+                    expected=(store.db.execute('SELECT source_artifact_sha256 FROM document WHERE document_id=?',(did,)).fetchone()[0]
+                              if getattr(store,'is_oracle_query',False) else row['source_artifact_sha256'])
                     if origin.get('source_artifact_sha256')!=expected:raise ValueError('origin source artifact mismatch')
                 record.update(classify_path(origin['raw_relative_path']));record['origin']=deepcopy(origin)
         catalogue[did]=record

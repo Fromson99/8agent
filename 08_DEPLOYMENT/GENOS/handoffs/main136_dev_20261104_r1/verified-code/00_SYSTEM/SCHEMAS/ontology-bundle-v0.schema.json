@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ontology-bundle-v0.schema.json",
+  "title": "MVP ontology bundle: every provision is its node's own blocks only",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle_id", "revision", "status", "concept", "provisions", "relations", "review_notes", "evidence_judgments", "proposed_by", "history"],
+  "properties": {
+    "schema_version": {"const": "ontology-bundle-v0"},
+    "bundle_id": {"type": "string", "pattern": "^cb-[a-zA-Z0-9_-]{1,80}$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["CANDIDATE", "APPROVED", "REJECTED", "ON_HOLD", "SIMULATED", "MAPPED", "LOADED"]},
+    "concept": {
+      "type": "object", "additionalProperties": false,
+      "required": ["label", "glossary_ref", "kind"],
+      "properties": {
+        "label": {"$ref": "#/$defs/label"},
+        "glossary_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
+        "kind": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "provisions": {"type": "array", "minItems": 1, "maxItems": 128, "items": {"$ref": "#/$defs/provision"}},
+    "relations": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/relation"}},
+    "review_notes": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/note"}},
+    "evidence_judgments": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/judgment"}},
+    "proposed_by": {
+      "type": "object", "additionalProperties": false, "required": ["model", "run_id", "at"],
+      "properties": {
+        "model": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
+        "run_id": {"$ref": "#/$defs/identifier"},
+        "at": {"type": "string", "format": "date-time", "maxLength": 80}
+      }
+    },
+    "history": {"type": "array", "maxItems": 128, "items": {"type": "object"}}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S"},
+    "label": {"type": "string", "minLength": 1, "maxLength": 1000, "pattern": "\\S"},
+    "note": {"type": "string", "minLength": 1, "maxLength": 4000, "pattern": "\\S"},
+    "anchor": {
+      "type": "object", "additionalProperties": false,
+      "description": "content_sha256 hashes UTF-8 own-block text in stored order, joined by newline. Children and ancestors require separate provisions.",
+      "required": ["document_id", "version", "unit_id", "content_sha256", "label"],
+      "properties": {
+        "document_id": {"$ref": "#/$defs/identifier"},
+        "version": {"$ref": "#/$defs/identifier"},
+        "unit_id": {"$ref": "#/$defs/identifier"},
+        "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "label": {"$ref": "#/$defs/label"}
+      }
+    },
+    "value": {
+      "type": "object", "additionalProperties": false,
+      "required": ["number", "unit", "display", "comparison", "basis", "qualifier"],
+      "properties": {
+        "number": {"type": "string", "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 128},
+        "unit": {"$ref": "#/$defs/identifier"},
+        "display": {"$ref": "#/$defs/label"},
+        "comparison": {"enum": ["LT", "LTE", "GT", "GTE", "EQ"]},
+        "basis": {"$ref": "#/$defs/note"},
+        "qualifier": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "provision": {
+      "type": "object", "additionalProperties": false, "required": ["anchor", "role", "value", "note"],
+      "properties": {
+        "anchor": {"$ref": "#/$defs/anchor"},
+        "role": {"enum": ["DEFINITION", "SCOPE", "REQUIREMENT", "THRESHOLD", "EXCEPTION", "PROCEDURE", "EFFECT"]},
+        "value": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/value"}]},
+        "note": {"type": "string", "maxLength": 4000}
+      }
+    },
+    "relation": {
+      "type": "object", "additionalProperties": false, "required": ["from", "type", "to", "target_status"],
+      "properties": {
+        "from": {"$ref": "#/$defs/label"},
+        "to": {"$ref": "#/$defs/label"},
+        "type": {"enum": ["CITES", "BASED_ON", "APPLIES_MUTATIS_MUTANDIS", "USES_DEFINITION", "DELEGATES_TO", "SPECIFIES_DELEGATED_CASES_OF", "EXCLUDES", "HAS_EXCEPTION", "DEEMS", "VIOLATION_SANCTIONED_BY", "TEMPORAL", "ANNEX_STANDARD", "ANNEX_FORM", "UNKNOWN"]},
+        "target_status": {"const": "CONFIRMED"}
+      }
+    },
+    "judgment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["judgment_id", "session_id", "turn", "kind"],
+      "properties": {
+        "judgment_id": {"$ref": "#/$defs/identifier"},
+        "session_id": {"$ref": "#/$defs/identifier"},
+        "turn": {"type": "integer", "minimum": 1},
+        "kind": {"$ref": "#/$defs/label"},
+        "decision": {"$ref": "#/$defs/note"},
+        "reason": {"$ref": "#/$defs/note"},
+        "instruction": {"$ref": "#/$defs/note"},
+        "result": {"$ref": "#/$defs/note"}
+      }
+    }
+  }
+}

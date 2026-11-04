@@ -1,0 +1,79 @@
+# 개발계에 빈 프로젝트 LEGAL_RAG_DEV_TEST를 만들고 실행하세요.
+# 그 프로젝트의 Managed Folder GOLD_TEST_CODE에 코드 ZIP을 그대로 업로드합니다.
+# 아래 네 값은 실제 개발계 값으로 입력합니다. 나머지는 모델/실행환경이 다를 때만 변경합니다.
+PARAMS = {
+    'CODE_FOLDER_ID': '',        # GOLD_TEST_CODE의 ID (표시 이름 아님)
+    'ORACLE_CONNECTION': '',     # 개발계 Oracle 연결명
+    'EXPECTED_DB_USER': '',      # 그 연결의 실제 접속 계정, 대문자
+    'GOLD_OWNER': '',            # 테스트 테이블을 만들 스키마, 대문자
+    'WORK_DIR': '',              # 빈 값: 같은 DSS 호스트 /tmp. 컨테이너 실행은 공유 영속경로 필수.
+    'EMBED_MODEL': 'openai:genos-embedding:embedding-kure-v1',
+    'EMBED_DIMENSIONS': 1024,    # 실제 개발계 임베딩 모델의 차원과 같아야 함
+    'DEVELOPMENT_ONLY': True,
+    'TARGET_MODE': 'GOLD',
+    'TABLE_PREFIX': 'TST_B003_LGL_',
+    'TABLE_NAMES': {},
+    'EXPECTED_ARCHIVE': 'gold-dev-sample.zip',
+    'EXPECTED_PARTS': 2,
+    'ACTIVATE_NEW_VECTOR_HEAD': True,
+    'RUN_AFTER_INSTALL': False,
+}
+
+import hashlib
+import io
+import json
+from pathlib import Path, PurePosixPath
+import stat
+import sys
+import tempfile
+import zipfile
+import dataiku
+
+ZIP_NAME = 'DATAIKU_GOLD_DEV_TEST_20261104_R1.zip'
+ZIP_SHA256 = '40ad6d716ea6fec26960f356ddf0b075618c47ec28d86fdfb057e953812581e0'
+
+
+def open_package():
+    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])
+    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]
+    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)
+    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)
+    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')
+    root = Path(tempfile.gettempdir()) / ('gold-zip-flow-code-'+ZIP_SHA256[:16])
+    root.mkdir(exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))
+        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:
+            raise ValueError('CODE_ZIP_MEMBERS')
+        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if p.is_absolute() or '..' in p.parts or '\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):
+                raise ValueError('CODE_ZIP_PATH')
+            dest = root.joinpath(*p.parts)
+            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')
+            content = z.read(item)
+            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:
+                raise ValueError('CODE_FILE_HASH')
+            if dest.exists():
+                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')
+            else:
+                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)
+    sys.path.insert(0,str(root))
+    return root
+
+
+FLOW_PACKAGE = open_package()
+
+for _name in ("zip_config","zip_runtime","zip_pipeline","dev_guard","dev_install","dev_pipeline",
+              "dev_watch","run_full","gold_io","fast_loader","vector_stage","jdbc_transport"):
+    _loaded = sys.modules.get(_name)
+    if _loaded is not None:
+        _origin = Path(getattr(_loaded,"__file__","")).resolve()
+        if FLOW_PACKAGE.resolve() not in _origin.parents:
+            raise RuntimeError("RESTART_KERNEL_PACKAGE_CONFLICT:"+_name)
+
+from dev_install import install
+FLOW_CONFIG = install(PARAMS, 'import hashlib\nimport io\nimport json\nfrom pathlib import Path, PurePosixPath\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\nZIP_NAME = \'DATAIKU_GOLD_DEV_TEST_20261104_R1.zip\'\nZIP_SHA256 = \'40ad6d716ea6fec26960f356ddf0b075618c47ec28d86fdfb057e953812581e0\'\n\n\ndef open_package():\n    folder = dataiku.Folder(PARAMS[\'CODE_FOLDER_ID\'])\n    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]\n    if len(names) != 1: raise ValueError(\'UPLOAD_ONE_CODE_ZIP:\'+ZIP_NAME)\n    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)\n    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError(\'CODE_ZIP_HASH\')\n    root = Path(tempfile.gettempdir()) / (\'gold-zip-flow-code-\'+ZIP_SHA256[:16])\n    root.mkdir(exist_ok=True)\n    with zipfile.ZipFile(io.BytesIO(raw)) as z:\n        names = z.namelist(); manifest = json.loads(z.read(\'FLOW_MANIFEST.json\'))\n        if len(names)!=len(set(names)) or set(names)!=set(manifest[\'files\'])|{\'FLOW_MANIFEST.json\'}:\n            raise ValueError(\'CODE_ZIP_MEMBERS\')\n        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError(\'CODE_ZIP_SIZE\')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if p.is_absolute() or \'..\' in p.parts or \'\\\\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):\n                raise ValueError(\'CODE_ZIP_PATH\')\n            dest = root.joinpath(*p.parts)\n            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError(\'CODE_PATH_ESCAPE\')\n            content = z.read(item)\n            if item.filename!=\'FLOW_MANIFEST.json\' and hashlib.sha256(content).hexdigest()!=manifest[\'files\'][item.filename]:\n                raise ValueError(\'CODE_FILE_HASH\')\n            if dest.exists():\n                if dest.read_bytes()!=content: raise ValueError(\'EXTRACTED_CODE_CHANGED\')\n            else:\n                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)\n    sys.path.insert(0,str(root))\n    return root\n\n\nFLOW_PACKAGE = open_package()\n\nfor _name in ("zip_config","zip_runtime","zip_pipeline","dev_guard","dev_install","dev_pipeline",\n              "dev_watch","run_full","gold_io","fast_loader","vector_stage","jdbc_transport"):\n    _loaded = sys.modules.get(_name)\n    if _loaded is not None:\n        _origin = Path(getattr(_loaded,"__file__","")).resolve()\n        if FLOW_PACKAGE.resolve() not in _origin.parents:\n            raise RuntimeError("RESTART_KERNEL_PACKAGE_CONFLICT:"+_name)\n')
+
+# 별도 셀에서 관찰: from dev_watch import watch; watch(FLOW_CONFIG)

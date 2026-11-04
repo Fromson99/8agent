@@ -1,0 +1,29 @@
+{
+  "to": "hyungjininfocz.son@partner.samsung.com",
+  "from": "fromson99@gmail.com",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "oracle-development-vector-20261104-r1",
+    "generation": 138,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/oracle-development-vector-20261104-r1/release.json",
+    "release_manifest_sha256": "2bffa1fabf215b0d6c3a2f3743772c00d4cc0a423430078229faf1cab0cbb695",
+    "activated_at": "2026-11-04T04:49:00.996043+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "7d4aabc44dbe00dccf6dc6bc72833b040f79ff7cd25bca6e9ee231f68f210a0c"
+  },
+  "serving_files": 525,
+  "attachment_code_files": 527,
+  "existing_required_files": [
+    {
+      "path": "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js",
+      "sha256": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+      "bytes": 8534,
+      "reason": "Existing unchanged JavaScript asset; excluded from email by user attachment preference"
+    }
+  ],
+  "original_zip_sha256": "ee79cce58273b03c4bbdca14448c69206f98712c9563ccaa9dac1b75b71142f1",
+  "email_zip_sha256": "9eb7075eb2bce51ae94e62f5372b1971538b9b363cbafa5c6c969190e92dca48",
+  "field_deployed": false
+}

@@ -1,0 +1,24 @@
+{"phase": "JDBC_BLOCK", "sql_bytes": 16121, "render_s": 0.0006, "sql_sha256": "4b1e3365f97ada383a72b82abe41c67488b472d19ba13a164875c36104de83ec", "value_encoding": "UTF8_HEX_GZIP_BASE64", "rollback": false, "binds": [{"name": "payload", "type": "CLOB", "bytes": 51938}, {"name": "dim", "type": "NUMBER", "bytes": null}], "elapsed_seconds": 0.014}
+{"phase": "JDBC_BLOCK", "sql_bytes": 9477, "render_s": 0.0001, "sql_sha256": "49a5873f8c210422f07d295b2eaa1396c0b7e51ecf76249fff41e0f818c79d85", "value_encoding": "UTF8_HEX_GZIP_BASE64", "rollback": false, "binds": [{"name": "payload", "type": "CLOB", "bytes": 4168}, {"name": "dim", "type": "NUMBER", "bytes": null}], "elapsed_seconds": 0.039}
+{"phase": "JDBC_BLOCK", "sql_bytes": 961, "render_s": 0.0, "sql_sha256": "34434ccd408f8366b322372ddd0313964a5acbd15287a6cb825f4f5dd8eccffb", "value_encoding": "UTF8_HEX_GZIP_BASE64", "rollback": false, "binds": [{"name": "p", "type": "VARCHAR2", "bytes": 64}], "elapsed_seconds": 0.006}
+{
+  "status": "PASS",
+  "models": 0,
+  "field_dataiku": false,
+  "existing_data_mutated": false,
+  "checks": [
+    "actual_gzip_jdbc_insert_512x1024_float32_unicode_clob",
+    "test_only_exact_meta_and_float32_vector_readback",
+    "pending_primary_keys_all_none_partial",
+    "duplicate_pk_rolls_back_entire_batch",
+    "oracle_dimension_mismatch_rollback",
+    "publication_insert_ack_and_pending_key",
+    "actual_reset_active_publication_refused",
+    "actual_reset_scoped_to_old_publication_preserves_r3_other_rows_and_idempotent"
+  ],
+  "oracle_version": "23.26.3.0.0",
+  "test_schema": "A8_VS3_F5C2A8B1FF",
+  "payload_bytes": 13282949,
+  "rendered_sql_bytes": 6665917,
+  "test_schema_removed": true
+}

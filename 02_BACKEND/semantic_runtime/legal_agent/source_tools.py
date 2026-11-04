@@ -28,6 +28,10 @@ class SourceSession:
         self.store, self.tools, self.glossary, self.matcher = store, tools, glossary, matcher
         self.repo, self.context, self.profile = repo, context, profile
         self.scope = context.query['scope']['document_version_ids']
+        request = getattr(store, 'oracle_request', None)
+        mapping = getattr(getattr(getattr(request, 'sql', None), 'client', None), 'schema_map', None)
+        if getattr(mapping, 'profile', None) == 'gold':
+            self.ontology_repository = mapping.ontology_repository(request.restrict(self.scope), glossary)
         self._progress_read_locations = set()
         with obs.step(log, 'sources.navigator'):
             self.navigator = FolderNavigator(matcher, store)

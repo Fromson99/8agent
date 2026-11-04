@@ -1,0 +1,91 @@
+{
+  "passed": true,
+  "exact_no_argument_bash_tested": true,
+  "HOME_environment_unmodified": true,
+  "temporary_HOME_DEV_symlink_removed": true,
+  "physical_target_resolved": true,
+  "duplicate_install_verified": true,
+  "renamed_TXT_verified": true,
+  "required_JS_mismatch_rejected_before_replace": true,
+  "original_files_restored": 527,
+  "actual_MAIN_unchanged": true,
+  "field_executed": false,
+  "steps": [
+    {
+      "args": [],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 1,
+      "expected_success": false
+    },
+    {
+      "args": [],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [],
+      "file": "MAIN140_ONECLICK_R1 (1).txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "status"
+      ],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "stage"
+      ],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "gate-code"
+      ],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "undo",
+        "--backup",
+        "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261104-main140-oneclick-r1/physical-checkout/09_ARTIFACTS/BACKUPS/code-replacement/20261104T060224Z-b7b5574c"
+      ],
+      "file": "MAIN140_ONECLICK_R1.txt",
+      "exit_code": 0,
+      "expected_success": true
+    }
+  ],
+  "main_generation": 140,
+  "technical_contracts": 27,
+  "existing_fixture_failures": 1,
+  "baseline_existing_fixture_failures": 1,
+  "new_clean_startup_checks": 6,
+  "prepared_contracts": 6,
+  "counts_overlap": true,
+  "selected_MAIN_checks": 16,
+  "Gold_same_engine_checks": 9,
+  "native_SQL_plans_unchanged": 639,
+  "engine_preflight": {
+    "engines": 30,
+    "files": 497
+  },
+  "profile_hash_env_required": false,
+  "gateway_model_env_required": false,
+  "real_GENOS_embedding_calls": 0,
+  "real_Oracle_calls_this_revision": 0
+}

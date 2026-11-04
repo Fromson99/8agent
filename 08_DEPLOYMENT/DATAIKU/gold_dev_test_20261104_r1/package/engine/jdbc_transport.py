@@ -1,0 +1,122 @@
+"""JDBC value encoding adapter. Fixed SQL and transaction boundaries stay unchanged.
+
+Only ASCII hex or base64 is embedded. UTF-8 is reconstructed in Oracle;
+backslashes, quotes and SQL-looking source text never enter the SQL lexer.
+"""
+import base64
+import hashlib
+import gzip
+import json
+import re
+import time
+
+TOKEN=re.compile(r"'(?:''|[^'])*'|\"(?:\"\"|[^\"])*\"|--[^\n]*(?:\n|$)|/\*[\s\S]*?\*/|:([A-Za-z][A-Za-z0-9_]*)")
+CHUNK_BYTES=1800
+PACKED_CHUNK_BYTES=2700  # 3600 ASCII base64 characters, below 4000-byte SQL literal limit.
+
+
+def utf8_chunks(value,limit=CHUNK_BYTES):
+    raw=value.encode('utf-8');start=0
+    while start<len(raw):
+        end=min(start+limit,len(raw))
+        while end<len(raw) and raw[end]&0xC0==0x80:end-=1
+        yield raw[start:end];start=end
+
+
+def expression(raw):
+    return "UTL_I18N.RAW_TO_CHAR(HEXTORAW('"+raw.hex().upper()+"'),'AL32UTF8')"
+
+
+def render(statement,binds,*,write=False):
+    values={};declarations=[];initializers=[];cleanup=[]
+    for index,(name,value,kind) in enumerate(binds):
+        if not re.fullmatch('[A-Za-z][A-Za-z0-9_]*',name) or name in values:
+            raise ValueError('JDBC_BIND_DUPLICATE_OR_INVALID')
+        if value is None:values[name]='NULL';continue
+        if kind=='NUMBER':
+            if type(value) is not int:raise ValueError('JDBC_INTEGER_REQUIRED')
+            values[name]=str(value)
+        elif kind in {'VARCHAR2','CLOB'}:
+            if type(value) is not str or '\0' in value:raise ValueError('JDBC_TEXT_REQUIRED')
+            encoded=value.encode('utf-8')
+            if kind=='VARCHAR2':
+                if len(encoded)>4000:raise ValueError('JDBC_VARCHAR2_LIMIT')
+                chunks=list(utf8_chunks(value))
+                values[name]='('+' || '.join(expression(raw) for raw in chunks)+')' if chunks else 'NULL'
+            else:
+                if not write:raise ValueError('JDBC_CLOB_REQUIRES_BLOCK')
+                var='g8_lob_'+str(index)
+                values[name]=var;declarations.append(var+' CLOB;')
+                initializers.append('DBMS_LOB.CREATETEMPORARY('+var+',TRUE,DBMS_LOB.CALL);')
+                if len(encoded)>32768:
+                    # Transfer large JSON as gzip bytes, then reconstruct the
+                    # identical UTF-8 CLOB before executing the original SQL.
+                    packed=gzip.compress(encoded,compresslevel=6,mtime=0)
+                    blob='g8_zip_'+str(index);plain='g8_raw_'+str(index);prefix='g8_'+str(index)
+                    declarations.extend([blob+' BLOB;',plain+' BLOB;',prefix+'_d INTEGER:=1;',
+                                         prefix+'_s INTEGER:=1;',prefix+'_c INTEGER:=0;',prefix+'_w INTEGER;'])
+                    initializers.append('DBMS_LOB.CREATETEMPORARY('+blob+',TRUE,DBMS_LOB.CALL);')
+                    for offset in range(0,len(packed),PACKED_CHUNK_BYTES):
+                        piece=packed[offset:offset+PACKED_CHUNK_BYTES]
+                        payload=base64.b64encode(piece).decode('ascii')
+                        initializers.append('DBMS_LOB.WRITEAPPEND('+blob+','+str(len(piece))+",UTL_ENCODE.BASE64_DECODE(UTL_RAW.CAST_TO_RAW('"+payload+"')));")
+                    initializers.append(plain+':=UTL_COMPRESS.LZ_UNCOMPRESS('+blob+');')
+                    initializers.append('DBMS_LOB.FREETEMPORARY('+blob+'); '+blob+':=NULL;')
+                    initializers.append('DBMS_LOB.CONVERTTOCLOB('+var+','+plain+',DBMS_LOB.LOBMAXSIZE,'+
+                                        prefix+'_d,'+prefix+"_s,NLS_CHARSET_ID('AL32UTF8'),"+prefix+'_c,'+prefix+'_w);')
+                    initializers.append('IF '+prefix+"_w<>0 THEN RAISE_APPLICATION_ERROR(-20063,'JDBC_UTF8_CONVERSION_WARNING'); END IF;")
+                    initializers.append('DBMS_LOB.FREETEMPORARY('+plain+'); '+plain+':=NULL;')
+                    for item in (blob,plain):cleanup.append('IF DBMS_LOB.ISTEMPORARY('+item+')=1 THEN DBMS_LOB.FREETEMPORARY('+item+'); END IF;')
+                else:
+                    for raw in utf8_chunks(value):
+                        initializers.append('DBMS_LOB.APPEND('+var+',TO_CLOB('+expression(raw)+'));')
+                cleanup.append('IF DBMS_LOB.ISTEMPORARY('+var+')=1 THEN DBMS_LOB.FREETEMPORARY('+var+'); END IF;')
+        else:raise ValueError('JDBC_UNSUPPORTED_BIND_TYPE')
+    used=set()
+    def replace(match):
+        name=match.group(1)
+        if name is None:return match.group()
+        if name not in values:raise ValueError('JDBC_BIND_MISSING:'+name)
+        used.add(name);return values[name]
+    compiled=TOKEN.sub(replace,statement)
+    if used!=set(values):raise ValueError('JDBC_BIND_UNUSED')
+    if declarations:
+        free='\n'.join(cleanup)
+        compiled='DECLARE\n'+'\n'.join(declarations)+'\nBEGIN\n'+'\n'.join(initializers)+'\n'+compiled+'\n'+free+'\nEXCEPTION WHEN OTHERS THEN\n'+free+'\nRAISE;\nEND;'
+    return compiled
+
+
+def block(db,sql,binds=(),rollback=False,transaction_managed=False):
+    prepared=time.monotonic()
+    rendered=render(sql,binds,write=True)
+    raw=rendered.encode()
+    render_s=time.monotonic()-prepared
+    db.calls+=1;started=time.monotonic()
+    # Metadata only: neither SQL values nor source text enter error logs.
+    metadata={'phase':'JDBC_BLOCK','sql_bytes':len(raw),'render_s':round(render_s,4),
+              'sql_sha256':hashlib.sha256(raw).hexdigest(),
+              'value_encoding':'UTF8_HEX_GZIP_BASE64','rollback':rollback,
+              'binds':[{'name':n,'type':t,'bytes':len(v.encode()) if isinstance(v,str) else None}
+                       for n,v,t in binds]}
+    try:
+        frame=db.executor.query_to_df('SELECT 1 AS OK FROM DUAL',pre_queries=[rendered],
+                                     post_queries=[] if transaction_managed else ['ROLLBACK' if rollback else 'COMMIT'])
+        if len(frame)!=1 or int(frame.iloc[0]['OK'])!=1:
+            raise RuntimeError('WRITE_RESPONSE_UNCONFIRMED')
+        elapsed=time.monotonic()-started
+        db.last_transport={'mode':'DATAIKU_JDBC_LITERAL','render_s':round(render_s,4),'sql_bytes':len(raw),
+                           'sql_sha256':hashlib.sha256(raw).hexdigest(),'request_s':round(elapsed,4),
+                           'payload_bytes':sum(len(v.encode('utf-8')) for _,v,_ in binds if isinstance(v,str)),
+                           'native_binds':False}
+        return elapsed
+    except BaseException:
+        metadata['elapsed_seconds']=round(time.monotonic()-started,3)
+        print(json.dumps(metadata),flush=True)
+        raise
+
+
+def install(loader):
+    if getattr(loader.Database,'_g8_transport',False):return
+    loader.Database.close=lambda db:None
+    loader.Database.block=block
+    loader.Database._g8_transport=True

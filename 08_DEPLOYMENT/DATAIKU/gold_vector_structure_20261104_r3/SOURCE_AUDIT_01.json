@@ -1,0 +1,28 @@
+{
+  "source_root": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation",
+  "field_generation_equal": "UNCONFIRMED",
+  "sources": 33443,
+  "segments": 87264,
+  "errors": [
+    {
+      "source_id": "article:5e307eb98a96b04ea2b821b9",
+      "type": "Stop",
+      "message": "VECTOR_STRUCTURAL_SENTENCE_TOO_LONG:article:5e307eb98a96b04ea2b821b9:8287:chars=7683:limit=6000"
+    },
+    {
+      "source_id": "article:ece90cebd331af86ba0de8cd",
+      "type": "Stop",
+      "message": "VECTOR_STRUCTURAL_SENTENCE_TOO_LONG:article:ece90cebd331af86ba0de8cd:2039:chars=6810:limit=6000"
+    }
+  ],
+  "extent_counts": {
+    "source": 33088,
+    "unit_own": 378,
+    "unit_subtree": 53657,
+    "sentences": 141
+  },
+  "max_input_chars": 6000,
+  "live_model_calls": 0,
+  "oracle_calls": 0,
+  "elapsed_s": 16.48
+}

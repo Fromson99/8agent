@@ -1,0 +1,53 @@
+{
+  "status": "LOCAL_PASS_FIELD_UNVERIFIED",
+  "format": "one Python notebook cell, no Flow/scenario/Managed Folder creation",
+  "sample_parts": 2,
+  "unit_checks": {
+    "passed": 10,
+    "failed": 0
+  },
+  "actual_oracle": {
+    "status": "PASS",
+    "checks": [
+      "storage_failure_before_any_oracle_or_model_call",
+      "exact_delivered_notebook_existing_project_one_folder_all_stages",
+      "committed_source_response_loss_resumed_without_duplicates",
+      "same_cell_replay_without_additional_embedding",
+      "existing_upload_bytes_preserved_scoped_parts_logs_and_receipts",
+      "missing_local_workspace_stops_before_oracle_and_embedding",
+      "populated_tables_without_ownership_receipt_rejected",
+      "fresh_process_source_vector_acl_and_profile_readback"
+    ],
+    "external_models": 0,
+    "dataiku_sdk": "LOCAL_SUBSTITUTE",
+    "cleaned": true,
+    "counts": {
+      "DOC_VER": 2,
+      "DOC_UNIT": 3,
+      "DOC_BLK": 3,
+      "SRCH_ROW": 112,
+      "VCTR_ITEM": 3
+    },
+    "synthetic_embedding_calls": 1,
+    "sql_calls": 601,
+    "code_sha256": "d1c32fb5eb0c9c65679100c01c9fc7d7ef83b69b9f22b9c5d4cd2030285fec0b",
+    "flow_api_calls": 0
+  },
+  "engine_files_preserved": 83,
+  "field_Dataiku_OBS_or_embedding_executed": false,
+  "actual_notebook_UI_tested": false,
+  "actual_Oracle_test_evidence": "09_ARTIFACTS/AUDITS/20261104-gold-oneclick/real-oracle-001/result.json",
+  "evidence_sha256": "b6886dbe80cb19b6aa137886b0eca7ad9e5ea9dbe7fa9cff8fb28f34a7bdb0d8",
+  "known_limitations": [
+    "Only bundled two-part sample is supported",
+    "Native VECTOR and test table/index creation privileges required",
+    "Actual LLM Mesh uses user selected model; local validation used synthetic 4D",
+    "Same host workspace must remain available for resume"
+  ],
+  "unchanged": [
+    "selected MAIN",
+    "existing Gold data",
+    "previous sent packages",
+    "field projects and managed folders"
+  ]
+}

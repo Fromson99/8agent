@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "environment": "local Jupyter kernel / Python 3.9.25",
+  "field_dataiku": false,
+  "model_calls": 0,
+  "oracle_calls": 0,
+  "cases": [
+    {
+      "case": "success",
+      "display_data": 1,
+      "update_display_data": 3,
+      "same_display_id": true,
+      "stream_messages": 0,
+      "raw_lines_retained": 1003,
+      "result": "COMPLETE",
+      "process_exit": 0
+    },
+    {
+      "case": "failure",
+      "display_data": 1,
+      "update_display_data": 3,
+      "same_display_id": true,
+      "stream_messages": 0,
+      "raw_lines_retained": 1003,
+      "result": "FAILED_OR_STOPPED",
+      "process_exit": 1
+    }
+  ]
+}

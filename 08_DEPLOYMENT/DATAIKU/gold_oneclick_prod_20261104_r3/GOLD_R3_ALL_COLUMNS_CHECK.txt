@@ -1,0 +1,108 @@
+# R3의 기대 정의로 13테이블 전체를 비교합니다. R2 커널에서도 실행할 수 있습니다.
+# R2 또는 R3를 실행한 같은 노트북 커널의 새 셀에서 이 TXT 전체를 실행합니다.
+# PARAMS/FLOW_PACKAGE를 그대로 사용합니다. 커널 재시작이나 적재 재실행은 필요 없습니다.
+# 13개 대상 테이블의 컬럼 메타데이터만 SELECT 1회 조회합니다.
+# DB/파일/S3 쓰기, 모델 호출, 자동 수정은 없습니다.
+import hashlib
+import json
+from pathlib import Path
+import re
+import dataiku
+
+
+def gold_schema_diagnosis(params, package):
+    path = Path(package) / 'registration_current.json'
+    raw = path.read_bytes()
+    loaded_sha = hashlib.sha256(raw).hexdigest()
+    expected_sha = '547570af14eb484bce6305a17046dd2fa05cc3ba0814398aacb2bb6a53851244'
+    if loaded_sha not in {'4fbdddf61804b8032403c712ada47fe4ca84f3b426d75037e6b558891f59e0f1', expected_sha}:
+        raise ValueError('R2_OR_R3_REGISTRATION_REQUIRED: R2 또는 R3를 실행한 같은 커널에서 실행하세요.')
+    registered = json.loads(raw)
+    if loaded_sha != expected_sha:
+        registered['tables']['SRCH_ROW']['columns']['SRCH_DATA_HASH_VALU']['name'] = 'RFRN_DTA_HASH_VALU'
+        registered['tables']['SRCH_ROW']['columns']['SRCH_DATA_CTNT']['name'] = 'RFRN_DTA_CTNT'
+    expected_bytes = (json.dumps(registered, ensure_ascii=False, indent=2) + '\n').encode()
+    if hashlib.sha256(expected_bytes).hexdigest() != expected_sha:
+        raise ValueError('R3_EXPECTED_MAPPING_HASH_MISMATCH')
+    tables = registered['tables']
+    owner = params['GOLD_OWNER']
+    overrides = params.get('TABLE_NAMES', {})
+    if not isinstance(overrides, dict) or set(overrides) - set(tables):
+        raise ValueError('TABLE_NAMES_INVALID')
+    names = {key: overrides.get(key) or params.get('TABLE_PREFIX', 'IDD_B003_LGL_') + key
+             for key in tables}
+    for name in [owner] + list(names.values()):
+        if not isinstance(name, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,29}', name):
+            raise ValueError('ORACLE_IDENTIFIER_INVALID: ' + str(name))
+    if len(set(names.values())) != len(names):
+        raise ValueError('TABLE_NAME_COLLISION')
+    connection = params['ORACLE_CONNECTION']
+    if not isinstance(connection, str) or not connection.strip():
+        raise ValueError('ORACLE_CONNECTION_REQUIRED')
+    sql = (
+        'SELECT TABLE_NAME,COLUMN_ID,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,CHAR_USED,'
+        'CHAR_LENGTH,DATA_PRECISION,DATA_SCALE,NULLABLE,DATA_DEFAULT '
+        "FROM ALL_TAB_COLUMNS WHERE OWNER='" + owner + "' AND TABLE_NAME IN (" +
+        ','.join("'" + name + "'" for name in names.values()) +
+        ') ORDER BY TABLE_NAME,COLUMN_ID')
+    frame = dataiku.SQLExecutor2(connection=connection).query_to_df(
+        sql, infer_from_schema=True, parse_dates=False)
+    frame = frame.astype(object).where(frame.notna(), None)
+    rows = [{str(k).upper(): v.item() if hasattr(v, 'item') else v
+             for k, v in row.items()} for row in frame.to_dict(orient='records')]
+    results = []
+    for key, table in tables.items():
+        actual_rows = [r for r in rows if r['TABLE_NAME'] == names[key]]
+        found = {r['COLUMN_NAME']: r for r in actual_rows}
+        expected = {c['name']: c for c in table['columns'].values()}
+        changes = []
+        for name, column in expected.items():
+            if name not in found:
+                continue
+            actual = found[name]
+            typ = column['type']
+            required = {'DATA_TYPE':typ, 'NULLABLE':'N' if column['required'] else 'Y'}
+            if typ.startswith(('VARCHAR2(', 'CHAR(')):
+                required.update(DATA_TYPE=typ.split('(')[0],
+                                DATA_LENGTH=int(re.search(r'\((\d+)', typ)[1]), CHAR_USED='B')
+            elif typ.startswith('NUMBER'):
+                required.update(DATA_TYPE='NUMBER',
+                                DATA_PRECISION=int(re.search(r'\((\d+)', typ)[1]), DATA_SCALE=0)
+            elif typ.startswith('VECTOR'):
+                required['DATA_TYPE'] = 'VECTOR'
+            elif typ.startswith('TIMESTAMP'):
+                required['DATA_TYPE'] = 'TIMESTAMP(6) WITH TIME ZONE'
+            different = {field:{'expected':value, 'actual':actual.get(field)}
+                         for field, value in required.items() if actual.get(field) != value}
+            # R3와 같은 비교 조건. 조회한 원래 값은 actual_columns에 보존합니다.
+            if (actual.get('DATA_DEFAULT') or '').strip().upper() != (column['default'] or ''):
+                different['DATA_DEFAULT'] = {'expected':column['default'],
+                                             'actual':actual.get('DATA_DEFAULT')}
+            if different:
+                changes.append({'column':name, 'differences':different})
+        missing = sorted(set(expected) - set(found))
+        extra = sorted(set(found) - set(expected))
+        duplicate = len(found) != len(actual_rows)
+        status = ('TABLE_NOT_VISIBLE_OR_NO_COLUMNS' if not actual_rows else
+                  'COLUMN_DIFFERENCE' if missing or extra or changes or duplicate else
+                  'NO_COLUMN_DIFFERENCE')
+        results.append({'table':owner + '.' + names[key], 'status':status,
+                        'missing_expected_columns':missing, 'unexpected_actual_columns':extra,
+                        'definition_differences':changes, 'duplicate_metadata':duplicate,
+                        'expected_column_names':list(expected), 'actual_column_names':list(found),
+                        'actual_columns':actual_rows})
+    result = {'connection':connection, 'expected_registration_sha256':expected_sha,
+              'tables_checked':len(results), 'tables_with_differences':sum(
+                  r['status'] != 'NO_COLUMN_DIFFERENCE' for r in results), 'tables':results,
+              'scope':'컬럼 이름·자료형·길이·NULL·기본값만 확인. PK/인덱스/트리거/권한/적재 성공은 별도.'}
+    # 화면에는 차이가 있는 테이블을 표시하고 전체 원본은 반환 변수에 유지합니다.
+    screen = {k:v for k,v in result.items() if k != 'tables'}
+    screen['differences'] = [{k:v for k,v in row.items() if k != 'actual_columns'}
+                             for row in results if row['status'] != 'NO_COLUMN_DIFFERENCE']
+    print(json.dumps(screen, ensure_ascii=False, indent=2, default=str))
+    return result
+
+
+if 'PARAMS' not in globals() or 'FLOW_PACKAGE' not in globals():
+    raise RuntimeError('R2 또는 R3를 실행한 같은 노트북 커널의 새 셀에서 실행하세요. PARAMS/FLOW_PACKAGE가 필요합니다.')
+GOLD_SCHEMA_DIAGNOSIS = gold_schema_diagnosis(PARAMS, FLOW_PACKAGE)

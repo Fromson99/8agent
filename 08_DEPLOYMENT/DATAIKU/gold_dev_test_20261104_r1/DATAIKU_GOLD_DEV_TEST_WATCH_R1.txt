@@ -1,0 +1,4 @@
+# 설치한 같은 노트북의 새 셀에 붙여 넣으세요. Scenarios의 Run 후 실행합니다.
+# 관찰 중단은 작업을 중단하지 않습니다. 10분 뒤 필요하면 이 셀만 재실행하세요.
+from dev_watch import watch
+watch(FLOW_CONFIG, seconds=600, interval=3)

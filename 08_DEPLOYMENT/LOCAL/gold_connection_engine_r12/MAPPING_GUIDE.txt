@@ -1,4 +1,43 @@
-2026-10-30 MAIN125 Oracle 범위 수정: 엔진 선택은 README.txt의 현재 안내를 따른다. R18 물리 매핑과 DB 내용은 이번 통합에서 바꾸지 않았다.
+2026-11-04 최신 코드 연결: Gold R5 물리 매핑 + ZIP Flow 게시본
+- B003 실행 매핑 mapping_registration_b003_r5.json 추가. owner는 명시 설정합니다.
+- 로컬 기본값은 ACTIVE_MAPPING.json → mapping_local_chan_no_current.json(B03)을 유지합니다.
+- 명시 외부 매핑은 release_id 또는 channel과 호스트가 인증한 documents를 함께 전달합니다.
+  해당 게시본 범위를 검사하며 로컬 CM21 목록으로 외부 문서를 제한하지 않습니다.
+- packed 로컬 게시본과 ZIP Flow의 일반 검색 게시본을 모두 읽습니다.
+- 새 plain_vector.py는 외부 게시본에 명시 embedding 함수/embedding_profile을 사용합니다.
+  기존 로컬 packed 벡터 포트는 유지합니다. 프로필 불일치·권한 밖·빈 범위를 검사합니다.
+- 원문·검색·벡터 적재 Flow: 08_DEPLOYMENT/DATAIKU/gold_zip_flow_20261104_r1/사용방법.txt
+- 선택 MAIN136 및 원문/기존 게시본은 유지하고 maintained connector 해시만 binding에 갱신했습니다.
+- 실제 로컬 92SQL/8내용해시 동일, 임시 B003 원문·FTS·벡터·온톨로지와 ZIP Flow 전체 통과.
+- 상세: 09_ARTIFACTS/AUDITS/20261104-gold-r5-code-integration/수정과_검증결과.txt
+아래 내용은 각 작업 시점의 이력입니다. 명시 매핑의 문서 범위는 위 최신 설명을 따릅니다.
+
+2026-11-04 최신 변경: SRCH_CHNL/ONTL_HEAD/VCTR_HEAD 3컬럼의 CHAN_ORD → CHAN_NO 실제 변경 완료.
+현재 활성은 mapping_local_chan_no_current.json이며 앞선 문서ID100/RGSN_ASTM/RFRN_DATA_* 정정을 포함한다.
+직전 mapping_local_rfrn_current.json은 CHAN_ORD였던 이력이며 현재 DB에서 사용하지 않는다.
+변경·검증: 09_ARTIFACTS/AUDITS/20261104-gold-chan-no/변경과_검증결과.txt
+
+2026-11-04 최신 변경: 조회자료해시값/조회자료내용의 물리명은 RFRN_DATA_HASH_VALU/RFRN_DATA_CTNT이다.
+SRCH_ROW의 SRCH_DATA_HASH_VALU/SRCH_DATA_CTNT를 실제 Oracle에서 변경했고 현재 활성은 mapping_local_chan_no_current.json이다.
+기존 두 SRCH_DATA_* 논리키는 호환용이며 매핑의 물리 name으로 새 컬럼을 조회·적재한다.
+최신 엑셀: 09_ARTIFACTS/AUDITS/20261104-gold-chan-no/Gold_B003_최신컬럼_CHAN_NO_R5_20261104.xlsx
+변경·검증: 09_ARTIFACTS/AUDITS/20261104-gold-search-rfrn/변경과_검증결과.txt
+
+2026-11-04 앞선 변경: SRC_POST의 실제 컬럼 RGSN_AITM → RGSN_ASTM.
+내부 RGSN_AITM은 엔진 호환 논리키이며 SQL은 RGSN_ASTM을 사용한다.
+TIMESTAMP(6) WITH TIME ZONE / NOT NULL / DEFAULT SYSTIMESTAMP와 기존 등록일시는 유지했다.
+변경 기록: 09_ARTIFACTS/AUDITS/20261104-gold-src-post-rgsn-astm/변경과_검증결과.txt
+
+2026-11-04 로컬 규정문서ID 길이 변경
+DOC_VER/DOC_UNIT/DOC_BLK/SRCH_ROW/ONTL_ANC/VCTR_ITEM의 RGLT_DOC_ID를 실제 Oracle에서
+VARCHAR2(1000 BYTE) → VARCHAR2(100 BYTE)로 변경했다. 이 변경은 현재 mapping_local_chan_no_current.json에도 유지한다.
+로컬 테이블은 기존 IDD_B03_LGL_*이며, 사용자 확인한 현장 등록명 IDD_B003_LGL_*와 구분한다.
+현장 등록 최신 비교 자료는 09_ARTIFACTS/AUDITS/20261104-current-gold-workbook/registration_b003_chan_no_r5.json이다.
+이는 등록 비교용 자료이며 로컬 연결기의 --mapping 파일로 사용하지 않는다.
+아래 R18/R14 등록 모델 설명은 이전 시점 이력이다. 현재 로컬에서 R18 매핑을 사용하지 않는다.
+변경 기록: 09_ARTIFACTS/AUDITS/20261104-gold-docid100-local/로컬_문서ID100_변경결과.txt
+
+2026-10-30 MAIN125 Oracle 범위 수정: 엔진 선택은 현재 binding.json을 따른다. 엔진 선택과 물리 매핑 선택은 별도다.
 
 골드 컬럼 매핑 사용 안내 — 2026-10-30
 
@@ -9,13 +48,16 @@
 명세해시값 후속 정정: 사용자 지시에 따라 명세해시값은 DTLS_HASH_VALU이다.
 신청 대상은 mapping_r18_registration.json을 사용한다. 과거 사진 매핑의 MNFST_HASH_VALU보다 이 정정이 우선한다.
 후속 사용자 요청으로 실제 로컬 DB의 4개 명세 컬럼도 DTLS_HASH_VALU로 변경했다.
-기본 연결은 mapping_local_vctr_current.json을 사용하며, 신청용 매핑은 R14 크기를 적용한 대상 DB용이다.
+기본 연결은 mapping_local_chan_no_current.json을 사용한다. 과거 신청용 R18 매핑은 R14 크기를 적용한 대상 DB용이다.
 
 현재 로컬 적용: 사진 이름9종/16위치 변경 후 명세해시값1종/4위치와 벡터구간ID1종/1위치를 추가 변경했다.
-기본 선택은 ACTIVE_MAPPING.json → mapping_local_vctr_current.json이다.
-테이블13개는 등록된 B03 이름과 이미 일치한다. 데이터 타입·크기는 이름 변경 전 값을 보존했다.
+기본 선택은 ACTIVE_MAPPING.json → mapping_local_chan_no_current.json이다.
+테이블13개는 로컬 B03 이름을 유지한다. 규정문서ID 6컬럼의 길이는 100 BYTE이며 나머지 타입·크기는 보존했다.
 mapping_r18_registration.json은 사진+DTLS+벡터구간ID 정정 이름과 R14 크기를 적용한 등록 모델용 파일이며,
-현재 로컬의 보존한 실제 크기를 반영한 파일은 mapping_local_vctr_current.json이다.
+현재 로컬의 실제 이름·크기를 반영한 파일은 mapping_local_chan_no_current.json이다.
+mapping_local_rgsn_astm_current.json은 조회자료 두 컬럼 RFRN 변경 전 이력이며 현재 DB에서 사용하지 않는다.
+mapping_local_docid100_current.json은 SRC_POST의 RGSN_ASTM 변경 전 이력이며 현재 DB에서 사용하지 않는다.
+mapping_local_vctr_current.json은 규정문서ID 1000 BYTE였던 변경 전 이력이며 현재 DB에서 사용하지 않는다.
 mapping_local_current.json은 DTLS 변경 전 이력으로 보존하며 현재 DB에서 사용하지 않는다.
 
 사진 6장의 고유 물리명38개를 13테이블·60컬럼에 반영했다.
@@ -24,6 +66,8 @@ mapping_local_current.json은 DTLS 변경 전 이력으로 보존하며 현재 D
 원문·검색·용어·벡터·온톨로지의 내부 논리 키와 JSON 내용·해시는 유지한다.
 
 사진 및 사용자 후속 정정 기준 주요 변경
+SRCH_ROW: SRCH_DATA_HASH_VALU → RFRN_DATA_HASH_VALU / SRCH_DATA_CTNT → RFRN_DATA_CTNT
+SRC_POST: RGSN_AITM → RGSN_ASTM
 VCTR_SEG_ID → VCTR_SCTN_ID
 MNFST_HASH_VALU → DTLS_HASH_VALU
 DOC_ID → RGLT_DOC_ID
@@ -31,7 +75,7 @@ DOC_NAME → RGLT_DOC_NAME
 ADD_INFO_TEXT_OMIT_YN → ADDN_IFMN_UN_APPN_YN
 DOC_POST_HASH_VALU → BODY_POST_HASH_VALU
 DOC_POST_IFMN_CTNT → BODY_POST_IFMN_CTNT
-CHAN_NO → CHAN_ORD
+CHAN_ORD → CHAN_NO (2026-11-04 최종 정정)
 SRC_UNIT_ID → BODY_UNIT_ID
 VCTR_META_CTNT → VCTR_DTLS_IFMN_CTNT
 EMBD_VCTR_VALU → EMBD_VCTR
@@ -54,7 +98,7 @@ ALL_TAB_COLUMNS에서 이름·타입·BYTE 길이·정밀도·NULL 허용 여부
 
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/connect.py health
 
-명시하려면 --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_vctr_current.json을 지정한다.
+명시하려면 --mapping 08_DEPLOYMENT/LOCAL/gold_connection_engine_r12/mapping_local_chan_no_current.json을 지정한다.
 mapping_r12_local.json 및 --config config_b03.json은 변경 전 이름용이다. 현재 DB에서 사용하지 않는다.
 
 2. 사진+DTLS+벡터구간ID 정정 이름과 R14 크기를 적용해 별도로 생성한 DB에는 다음 파일을 지정한다.

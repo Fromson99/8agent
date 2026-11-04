@@ -1,0 +1,56 @@
+# PROD R1에서 오류가 난 같은 노트북의 새 셀에 이 TXT 전체를 붙여 넣고 실행합니다.
+# 기존 PARAMS의 연결/owner/테이블명을 사용합니다. PARAMS를 다시 정의하지 않습니다.
+# Oracle 메타데이터 SELECT만 실행하며 적재/임베딩/파일 쓰기는 하지 않습니다.
+import json
+import re
+import dataiku
+
+
+def check_gold_column(params):
+    owner = params['GOLD_OWNER']
+    table = params.get('TABLE_NAMES', {}).get(
+        'DOC_BLK', params.get('TABLE_PREFIX', 'IDD_B003_LGL_') + 'DOC_BLK')
+    for value in (owner, table):
+        if not isinstance(value, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,29}', value):
+            raise ValueError('OWNER_OR_TABLE_INVALID:' + str(value))
+    connection = params['ORACLE_CONNECTION']
+    if not isinstance(connection, str) or not connection.strip():
+        raise ValueError('ORACLE_CONNECTION_REQUIRED')
+    column = 'ADDN_IFMN_UN_APPN_YN'
+    sql = (
+        'SELECT OWNER,TABLE_NAME,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,CHAR_USED,'
+        'CHAR_LENGTH,DATA_PRECISION,DATA_SCALE,NULLABLE,DATA_DEFAULT '
+        "FROM ALL_TAB_COLUMNS WHERE OWNER='" + owner + "' AND TABLE_NAME='" + table +
+        "' AND COLUMN_NAME='" + column + "'")
+    executor = dataiku.SQLExecutor2(connection=connection)
+    frame = executor.query_to_df(sql, infer_from_schema=True, parse_dates=False)
+    frame = frame.astype(object).where(frame.notna(), None)
+    rows = [{str(k).upper(): v.item() if hasattr(v, 'item') else v
+             for k, v in row.items()} for row in frame.to_dict(orient='records')]
+    expected = {'DATA_TYPE': 'CHAR', 'DATA_LENGTH': 1, 'CHAR_USED': 'B',
+                'NULLABLE': 'Y', 'DATA_DEFAULT': None}
+    result = {'connection': connection, 'target': owner + '.' + table + '.' + column,
+              'expected_PROD_R1': expected, 'actual': rows}
+    if len(rows) != 1:
+        result['status'] = 'COLUMN_NOT_VISIBLE_OR_NOT_UNIQUE'
+        result['next'] = '연결 대상·owner·테이블명·메타데이터 조회 권한 확인 필요'
+    else:
+        actual = rows[0]
+        differences = []
+        for key, value in expected.items():
+            current = actual.get(key)
+            # 전달 R1 gold_io.py:125와 같은 비교. 원래 기본값은 actual에 보존합니다.
+            matches = ((current or '').strip().upper() == '' if key == 'DATA_DEFAULT'
+                       else current == value)
+            if not matches:
+                differences.append({'field': key, 'expected': value, 'actual': current})
+        result['differences'] = differences
+        result['status'] = 'COLUMN_MISMATCH' if differences else 'COLUMN_MATCHES_PROD_R1'
+        result['scope'] = '이 컬럼만 확인. 전체 스키마·적재·서빙 성공 판정은 아님.'
+    print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+    return result
+
+
+if 'PARAMS' not in globals() or not isinstance(PARAMS, dict):
+    raise RuntimeError('기존 PROD R1을 실행했던 같은 노트북 커널에서 실행하세요. PARAMS가 필요합니다.')
+GOLD_COLUMN_DIAGNOSIS = check_gold_column(PARAMS)

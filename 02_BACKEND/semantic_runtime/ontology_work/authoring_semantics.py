@@ -25,7 +25,8 @@ ACCUMULATION_PROMPT = ('\nsource_analysis는 과거 판단을 보지 않고 원�
     '각 comparisons.semantic_check에서 양태·행위 전체·적용조건의 일치/불일치/미확인을 명시한다. '
     '행위 일부를 빠뜨리거나 의무를 조건으로 바꾼 관찰은 일치가 아니다. 식별자만 있는 관찰은 UNKNOWN이다. '
     'SUPPORTED는 관련 항목 모두 MATCH일 때만 가능하고, 불일치가 있으면 CONTRADICTED 또는 PARTIAL을 선택한다. '
-    '모든 EFFECT는 norm_links로 source_analysis의 원문ID/norm_index에 연결한다. '
+    '각 EFFECT 노드의 source_norm에 source_analysis의 원문ID/source와 norm_index를 하나 선택한다. '
+    'norm_links 배열은 생성하지 않는다. CALCULATION 등 다른 종류 노드에는 source_norm을 넣지 않는다. '
     'EFFECT의 action/modality는 출력하지 않는다. 선택한 규범의 행위 전체/양태를 서버가 그대로 채운다. '
     'EFFECT.conditions로 참조하는 CONDITION마다 condition_links를 적고, 해당 source_analysis의 '
     'applicability_conditions 또는 performance_requirements 중 정확한 항목을 선택한다. '
@@ -64,18 +65,24 @@ def validate_source(proposal, schema, originals):
 def request_schema(canonical_schema, analysis):
     schema = deepcopy(canonical_schema)
     selection = {'source':{'enum':list(analysis)},'norm_index':{'type':'integer','minimum':0}}
-    schema['properties']['norm_links'] = arr(obj({'node_id':deepcopy(REF),**selection}))
+    norm_choices = [obj({'source':{'const':source},'norm_index':{'const':index}})
+                    for source,row in analysis.items() for index,_ in enumerate(row['norms'])]
     schema['properties']['condition_links'] = arr(obj({'node_id':deepcopy(REF),**selection,
         'part':{'enum':['applicability_conditions','performance_requirements']},
         'item_index':{'type':'integer','minimum':0}}))
-    schema['required'].extend(['norm_links','condition_links'])
+    schema['required'].append('condition_links')
     variants = schema['properties']['graph']['properties']['nodes']['items']['anyOf']
     for node in variants:
         if node['properties']['kind']['const'] == 'EFFECT':
+            node['properties']['source_norm'] = {'anyOf':deepcopy(norm_choices)}
+            node['required'].append('source_norm')
             slots = node['properties']['slots']
             for key in ('action','modality'):
                 slots['properties'].pop(key,None)
                 if key in slots['required']:slots['required'].remove(key)
+    if not norm_choices:
+        variants[:] = [node for node in variants if node['properties']['kind']['const'] != 'EFFECT']
+        if not variants:raise ContractError('source analysis offers no norm for an effect-only graph')
     comparisons = schema['properties']['comparisons']['items']
     comparisons['properties']['semantic_check'] = obj({key:{'enum':['MATCH','MISMATCH','UNCLEAR','NOT_APPLICABLE']} for key in AXES})
     comparisons['required'].append('semantic_check')
@@ -85,7 +92,11 @@ def request_schema(canonical_schema, analysis):
 def restore(proposal, schema, analysis, originals):
     validate(proposal, schema)
     result = deepcopy(proposal)
-    norm_links = result.pop('norm_links'); condition_links = result.pop('condition_links')
+    embedded = 'norm_links' not in schema['properties']
+    norm_links = ([{'node_id':node['id'], **node.pop('source_norm')}
+                   for node in result['graph']['nodes'] if node['kind']=='EFFECT']
+                  if embedded else result.pop('norm_links'))
+    condition_links = result.pop('condition_links')
     nodes = {n['id']:n for n in result['graph']['nodes']}
     effects = {key for key,n in nodes.items() if n['kind']=='EFFECT'}
     links = {}
@@ -129,6 +140,6 @@ def restore(proposal, schema, analysis, originals):
         if row['verdict']=='CONTRADICTED' and 'MISMATCH' not in values:
             raise ContractError('CONTRADICTED requires a declared semantic mismatch')
         checks.append({'observation_ref':row['observation_ref'],**check})
-    return result, {'version':'source-first-assembly-v1','source_analysis_sha256':digest(analysis),
+    return result, {'version':'source-first-assembly-v2' if embedded else 'source-first-assembly-v1','source_analysis_sha256':digest(analysis),
         'originals_sha256':digest(originals),'proposal_sha256':digest(proposal),'canonical_sha256':digest(result),
         'norm_links':norm_links,'condition_links':condition_links,'semantic_checks':checks}

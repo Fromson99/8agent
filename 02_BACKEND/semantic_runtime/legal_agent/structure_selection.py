@@ -5,6 +5,9 @@ determine membership and order. No question regex, invented intermediate node,
 body scan, model call or persistent corpus cache belongs here.
 """
 from copy import deepcopy
+from collections import OrderedDict
+import json
+import threading
 from jsonschema import validate, ValidationError
 
 from lawrag.core.legal_coordinate import LegalCoordinate, MOK_LETTERS
@@ -125,8 +128,22 @@ class Nodes:
         if hasattr(values, 'children_for'):
             rows = values.children_for(self.did, parent)
         else:
-            rows = values.for_document(self.did) if hasattr(values, 'for_document') else (
-                (key, v) for key, v in values.items() if key[0] == self.did)
+            prepared = getattr(self.m, 'prepared_structure', None)
+            if prepared is not None and values is prepared['units']:
+                from .structure_query import document_tree
+                ids = document_tree(self.m, self.did)['children'].get(parent, ())
+                rows = (((self.did, uid), values[(self.did, uid)]) for uid in ids)
+            else:
+                # Mutable/test adapters get one fresh index per resolution, never a stale cache.
+                if not hasattr(self, '_children_index'):
+                    index = {}
+                    source = values.for_document(self.did) if hasattr(values, 'for_document') else (
+                        (key, unit) for key, unit in values.items() if key[0] == self.did)
+                    for key, unit in source:
+                        owner = unit.get('parent')
+                        index.setdefault(str(owner) if owner is not None else None, []).append((key, unit))
+                    self._children_index = index
+                rows = self._children_index.get(parent, ())
         out = []
         for (_, uid), unit in rows:
             p = unit.get('parent')
@@ -244,10 +261,73 @@ class Nodes:
         return chosen
 
 
+class _ResolutionCache:
+    """Small successful-result memo owned by one immutable bound matcher."""
+    def __init__(self):
+        self.values = OrderedDict()
+        self.bytes = 0
+        self.lock = threading.Lock()
+
+    def get(self, key):
+        with self.lock:
+            return self._get(key)
+
+    def _get(self, key):
+        if key not in self.values:
+            return False, None
+        self.values.move_to_end(key)
+        return True, deepcopy(self.values[key][0])
+
+    def put(self, key, value):
+        with self.lock:
+            return self._put(key, value)
+
+    def _put(self, key, value):
+        size = len(json.dumps(value, ensure_ascii=False).encode())
+        if size > 1024 * 1024:
+            return
+        if key in self.values:
+            self.bytes -= self.values.pop(key)[1]
+        while self.values and (len(self.values) >= 128 or self.bytes + size > 1024 * 1024):
+            _, (_, removed) = self.values.popitem(last=False)
+            self.bytes -= removed
+        self.values[key] = (deepcopy(value), size)
+        self.bytes += size
+
+
+def _resolution_cache(matcher):
+    prepared = getattr(matcher, 'prepared_structure', None)
+    store = getattr(matcher, '_structure_store', None)
+    if (prepared is not None and store is not None
+            and matcher.units is prepared['units']
+            and matcher.stored_coordinates is prepared.get('coordinates')):
+        store.check_unchanged()
+        cache = getattr(matcher, '_selection_resolution_cache', None)
+        if cache is None:
+            cache = matcher._selection_resolution_cache = _ResolutionCache()
+        return cache
+    # Published Oracle metadata has a request-owned, version/ACL/deadline-bound cache.
+    from ..oracle_query_matcher import Units, Coordinates
+    if (isinstance(matcher.units, Units) and isinstance(matcher.stored_coordinates, Coordinates)
+            and matcher.stored_coordinates.units is matcher.units
+            and hasattr(matcher.units.request, 'release_id')):
+        from ..oracle_query_cache import for_request
+        return for_request(matcher.units.request)
+    return None
+
+
 def resolve(selection, matcher, did, authorized):
     validate(selection, SCHEMA)
     if did not in authorized:
         raise ContractError('structure selection outside authorization')
+    cache = _resolution_cache(matcher)
+    cache_key = ('structure-selection-v1', id(matcher.units), id(matcher.stored_coordinates),
+                 digest(getattr(matcher, 'structure_binding', None)), did,
+                 digest(sorted(authorized)), digest(selection))
+    if cache is not None:
+        hit, saved = cache.get(cache_key)
+        if hit:
+            return saved
     nodes = Nodes(matcher, did, selection['coordinate_scope'])
     included = set(); excluded = set()
     for group in selection['groups']:
@@ -292,7 +372,13 @@ def resolve(selection, matcher, did, authorized):
         'unit_ids': sorted(selected, key=nodes.order), 'excluded_unit_ids': sorted(excluded, key=nodes.order),
         'metadata_hash': digest(nodes.seen), 'content_read': False,
         'membership_gaps': list({digest(gap):gap for gap in nodes.gaps}.values())}
-    return {**record, 'hash': digest(record)}
+    result = {**record, 'hash': digest(record)}
+    if cache is not None:
+        # Recheck source/version before publishing a successful memo entry.
+        if _resolution_cache(matcher) is not cache:
+            raise ContractError('structure selection binding changed')
+        cache.put(cache_key, result)
+    return result
 
 
 def verify(record, matcher, authorized):

@@ -12,6 +12,8 @@ from . import output_contract
 VERSION = 'read-candidate-pages-v2'
 NEXT = 'NEXT_READ_CANDIDATES'
 PREVIOUS = 'PREV_READ_CANDIDATES'
+PROGRESS_VERSION = 'read-candidate-page-progress-v1'
+NO_PROGRESS = 'READ_CANDIDATE_PAGE_NO_PROGRESS'
 
 
 def enabled(inv):
@@ -44,6 +46,44 @@ def page_view(data, schema, page, page_size):
     return view, wire
 
 
+def progress_state(inv, data, checkpoint):
+    """Bind display history to the same immutable input and durable cursor.
+
+    An old three-field pager starts history at its current page. New originals,
+    judgments or candidates belong to a new bound menu; merely restarting the
+    same selector does not grant another cycle.
+    """
+    state = inv.p.get('read_candidate_page_progress')
+    if state is not None:
+        if (not isinstance(state, dict) or state.get('version') != PROGRESS_VERSION
+                or state.get('state_hash') != digest({k:v for k,v in state.items() if k != 'state_hash'})):
+            raise ContractError('read candidate progress hash/version mismatch')
+        if state['menu'] == checkpoint['binding']:
+            if state['input_hash'] != digest(data) or state['checkpoint'] != checkpoint:
+                raise ContractError('read candidate progress input/checkpoint mismatch')
+            return deepcopy(state)
+    state = {'version': PROGRESS_VERSION, 'menu': checkpoint['binding'],
+             'input_hash': digest(data), 'checkpoint': deepcopy(checkpoint),
+             'visited': [checkpoint['page']], 'edges': [], 'halt': None}
+    save_progress(inv, state)
+    return state
+
+
+def save_progress(inv, state):
+    state['state_hash'] = digest({k:v for k,v in state.items() if k != 'state_hash'})
+    inv.p['read_candidate_page_progress'] = deepcopy(state)
+    inv.save()
+
+
+def require_progress(state):
+    if state['halt']:
+        # The investigation owner preserves originals and runs its existing
+        # bounded-result/final-assessment path. This is not a FINISH proposal
+        # or an approval of legal sufficiency.
+        from .answer_progress import ProgressHandoff
+        raise ProgressHandoff(NO_PROGRESS)
+
+
 def move(inv, data, choice, *, expected_state, actor=None):
     """Apply one display transition, including an already committed replay."""
     if choice not in (NEXT, PREVIOUS):
@@ -61,11 +101,33 @@ def move(inv, data, choice, *, expected_state, actor=None):
     after = {**before, 'page': target, 'sequence': before['sequence'] + 1}
     current = inv.p.get('read_candidate_pager')
     if current == after:
+        require_progress(progress_state(inv, data, after))
         return after
     if current != before:
         raise ContractError('read candidate page checkpoint changed before selection')
+    progress = progress_state(inv, data, before)
+    require_progress(progress)
+    edge = [before['page'], target]
+    if edge in progress['edges']:
+        progress['halt'] = {'choice': choice, 'from_page': before['page'] + 1,
+                            'to_page': target + 1, 'sequence': before['sequence']}
+        save_progress(inv, progress)
+        inv.s.repo.event('READ_CANDIDATE_PAGE_HANDOFF', {
+            'reason': NO_PROGRESS, 'menu': before['binding'], **progress['halt'],
+            'visited_pages': [p + 1 for p in progress['visited']],
+            'originals_preserved': True, 'legal_sufficiency_approved': False,
+            'final_assessment_required': True, 'actor': actor or 'selector'})
+        require_progress(progress)
+    if target not in progress['visited']:
+        progress['visited'] = sorted([*progress['visited'], target])
+        progress['edges'] = []
+    else:
+        progress['edges'].append(edge)
+    progress['checkpoint'] = deepcopy(after)
     inv.p['read_candidate_pager'] = after
-    inv.save()
+    # Cursor and history use one checkpoint commit, so a resumed accepted
+    # response cannot reset the cycle or apply its page transition twice.
+    save_progress(inv, progress)
     receipt = {'menu': before['binding'], 'from_page': before['page'] + 1,
         'to_page': target + 1, 'sequence': after['sequence'],
         'detail_policy':'first-visit-bounded-revisit-cached',
@@ -86,6 +148,8 @@ def choose(inv, data, schema, invoke, expand, *, key, correction_scope=None, pre
     elif (set(state) != {'binding', 'page', 'sequence'} or type(state['sequence']) is not int
           or state['sequence'] < 0):
         raise ContractError('read candidate checkpoint is malformed')
+    page_view(data, schema, state['page'], page_size)
+    require_progress(progress_state(inv, data, state))
     # The snapshot was prepared once by the investigation owner. All ordinary
     # responses still expand/validate against that original canonical menu.
     while True:

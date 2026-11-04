@@ -252,7 +252,15 @@ class Records:
                 raise DPError('QUERY_CURSOR: cursor belongs to another query')
             where.append("NLSSORT(ROW_ID,'NLS_SORT=BINARY')>NLSSORT(:after,'NLS_SORT=BINARY')")
             binds.append(('after', pin(after['row_id']), 'VARCHAR2'))
-        rows = self.sql.query(f'SELECT ROW_ID,ROW_SHA256,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,TO_CLOB(VALUE_JSON) AS VALUE,DBMS_LOB.GETLENGTH(VALUE_JSON) AS N FROM {ROW} WHERE '+ ' AND '.join(where) +
+        # A packed Gold publication already exposes a trusted kind-specific view.
+        # Select it before JSON expansion; keep the outer release/kind/ACL/filter
+        # predicates and all envelope/hash/cursor checks below unchanged.
+        table = ROW
+        mapping = getattr(self.sql, 'gold_config', None)
+        published = getattr(mapping, 'manifest', None)
+        if isinstance(published, dict) and published.get('extension', {}).get('schema_version') == 'r12-packed-extension-v1':
+            table = mapping.names('query_row', only_kind=kind).table
+        rows = self.sql.query(f'SELECT ROW_ID,ROW_SHA256,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,TO_CLOB(VALUE_JSON) AS VALUE,DBMS_LOB.GETLENGTH(VALUE_JSON) AS N FROM {table} WHERE '+ ' AND '.join(where) +
                               f" ORDER BY NLSSORT(ROW_ID,'NLS_SORT=BINARY') FETCH FIRST {limit} ROWS ONLY", binds, limit=limit)
         ids = [pin(row['ROW_ID']) for row in rows]
         if ids != sorted(set(ids)) or (after and any(i <= after['row_id'] for i in ids)):

@@ -1,0 +1,21 @@
+{
+  "directory": "08_DEPLOYMENT/GENOS/handoffs/gold_b003_20261104_r1",
+  "zip": "GOLD_B003_FULL_ORACLE_20261104_R1.zip",
+  "zip_sha256": "6f5246051861fbb768659b1fc0af74ee29ad6b369b95cffb774826e266082b27",
+  "run": "GOLD_B003_ONECLICK_R1.txt",
+  "run_sha256": "edcdee54b458c7704aaa0fda01de1d50d611487558c32fae4a6d822860b6f247",
+  "zip_payload_files": 530,
+  "candidate_code_files": 528,
+  "base_MAIN": 140,
+  "selected_MAIN_changed": false,
+  "field_deployed": false,
+  "email_sent": false,
+  "required_existing_files": [
+    {
+      "path": "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js",
+      "sha256": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b",
+      "bytes": 8534,
+      "reason": "Existing unchanged JavaScript asset; excluded from email by user attachment preference"
+    }
+  ]
+}

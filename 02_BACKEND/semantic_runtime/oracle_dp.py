@@ -35,13 +35,13 @@ def enabled(environment=None):
 
 def environment_binding(environment=None):
     env=os.environ if environment is None else environment
-    names=('DP','DP_RELEASE_ID','DP_CACHE_DIR','ORACLE_ORDS_BASE_URL','LLMOPS_ORDS_BASE_URL',
+    names=('DP','DP_RELEASE_ID','DP_CACHE_DIR','GENOS_ORACLE_GOLD_OWNER','ORACLE_ORDS_BASE_URL','LLMOPS_ORDS_BASE_URL',
            'ORACLE_ORDS_SCHEMA','ORACLE_ORDS_CLIENT_ID','ORACLE_ORDS_CLIENT_SECRET')
     return digest({k:env.get(k,'') for k in names})
 
 
 def client_from_environment():
-    from genos.ords import ORDSClient
+    from .oracle_ords import create_client
     required=('ORACLE_ORDS_SCHEMA','ORACLE_ORDS_CLIENT_ID','ORACLE_ORDS_CLIENT_SECRET')
     missing=[k for k in required if not os.environ.get(k,'').strip()]
     if missing:raise DPError('DP_CONFIG: missing '+', '.join(missing))
@@ -51,14 +51,22 @@ def client_from_environment():
     if os.environ.get('ORACLE_ORDS_BASE_URL','').strip():
         options['base_url']=os.environ['ORACLE_ORDS_BASE_URL'].strip()
     try:
-        client=ORDSClient(**options)
+        client=create_client(**options)
         physical_mode=os.environ.get('GENOS_ORACLE_TABLE_MAPPING','mapped').strip().lower()
-        if physical_mode not in ('mapped','legacy'):
-            raise DPError('DP_CONFIG: GENOS_ORACLE_TABLE_MAPPING must be mapped or legacy')
-        if (enabled() and physical_mode=='mapped') or os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
+        if physical_mode not in ('mapped','legacy','development_g19_1','gold'):
+            raise DPError('DP_CONFIG: GENOS_ORACLE_TABLE_MAPPING must be mapped, legacy, development_g19_1 or gold')
+        if physical_mode=='gold':
+            from .oracle_gold_mapping import GoldMapping
+            client.schema_map=GoldMapping.load(owner=os.environ.get('GENOS_ORACLE_GOLD_OWNER',''))
+        elif physical_mode=='development_g19_1':
+            from .oracle_development_mapping import DevelopmentMapping
+            client.schema_map=DevelopmentMapping.load()
+        elif (enabled() and physical_mode=='mapped') or os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
             from .physical_mapping import SchemaMap
             client.schema_map=SchemaMap.load(Path(__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/physical_mapping.yaml')
         return client
+    except DPError:
+        raise
     except Exception as exc:raise DPError('DP_CONNECT: '+type(exc).__name__) from None
 
 

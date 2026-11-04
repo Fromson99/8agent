@@ -254,8 +254,24 @@ def search_sources(session):
     from .law_candidates import allowed
     if not active(session):
         return allowed(session)
-    docs = set(documents(session))
-    return frozenset(sid for sid in allowed(session) if session.tools.sources[sid]['document_id'] in docs)
+    docs = frozenset(documents(session))
+    sources = session.tools.sources
+    scoped = getattr(sources, 'ids_for_documents', None)
+    if scoped is not None:
+        verify = getattr(sources, 'cache_binding', None)
+        if verify is None:
+            return scoped(docs)
+        binding = verify()
+        key = (id(sources), binding, frozenset(session.scope), docs)
+        cached = getattr(session, '_direct_search_sources', None)
+        if cached is None or cached[0] != key:
+            ids = scoped(docs)
+            if verify and verify() != binding:
+                raise ContractError('search source binding changed')
+            session._direct_search_sources = (key, ids)
+        # Retain Oracle SourceScope: fulltext pushes its document predicate to SQL.
+        return session._direct_search_sources[1]
+    return frozenset(sid for sid in allowed(session) if sources[sid]['document_id'] in docs)
 
 
 def fulltext(session):

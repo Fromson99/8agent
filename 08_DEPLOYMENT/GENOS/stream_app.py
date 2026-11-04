@@ -19,14 +19,14 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+BACKEND = ROOT / "02_BACKEND"
+if str(BACKEND) not in sys.path:
+    sys.path.insert(0, str(BACKEND))
 from genos_diagnostics import install as install_system_logging
 install_system_logging("http")
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-BACKEND = ROOT / "02_BACKEND"
-if str(BACKEND) not in sys.path:
-    sys.path.insert(0, str(BACKEND))
 from semantic_runtime.observability import configure, new_request_id, event as log_event, get_logger  # noqa: E402
 from semantic_runtime.progress import capture, REVISION as PROGRESS_REVISION  # noqa: E402
 from semantic_runtime.legal_agent.answer_stream import capture as capture_answer, REVISION as ANSWER_REVISION  # noqa: E402

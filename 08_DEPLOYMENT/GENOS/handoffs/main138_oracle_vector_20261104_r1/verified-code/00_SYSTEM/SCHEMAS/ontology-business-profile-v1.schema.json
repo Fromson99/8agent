@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:ontology-business-profile-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "runtime_enabled",
+    "profile_id",
+    "revision",
+    "display_name",
+    "parent",
+    "glossary",
+    "document_scope",
+    "selected_purposes",
+    "comparison_axes",
+    "selected_review_rules",
+    "additional_review_questions",
+    "instruction_example_refs",
+    "approval_ref",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ontology-business-profile-v1"
+    },
+    "status": {
+      "const": "DRAFT"
+    },
+    "runtime_enabled": {
+      "const": false
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "revision",
+        "sha256"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "glossary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_source",
+        "selected_concept_refs",
+        "empty_selection_policy",
+        "vocabulary_definitions"
+      ],
+      "properties": {
+        "binding_source": {
+          "const": "authenticated_task_selected_snapshot.glossary"
+        },
+        "selected_concept_refs": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "node_id",
+              "concept_id",
+              "binding"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "node_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "concept_id": {
+                "type": "string",
+                "pattern": "^concept:[0-9a-f]{24}$"
+              },
+              "binding": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "snapshot",
+                  "manifest_sha256",
+                  "dictionary_sha256",
+                  "compiler_sha256"
+                ],
+                "properties": {
+                  "snapshot": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "manifest_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "dictionary_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "compiler_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "empty_selection_policy": {
+          "const": "USE_AUTHORIZED_SNAPSHOT_CANDIDATES"
+        },
+        "vocabulary_definitions": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "document_scope": {
+      "const": "AUTHENTICATED_TASK_ALLOWED_DOCUMENTS"
+    },
+    "selected_purposes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "comparison_axes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "selected_review_rules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "additional_review_questions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "instruction_example_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "approval_ref": {
+      "type": "null"
+    },
+    "notes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

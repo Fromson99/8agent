@@ -1,0 +1,28 @@
+GENOS Gold B003 선택 — 이번 코드 적용 후 설정
+
+DP=oracle
+GENOS_ORACLE_TABLE_MAPPING=gold
+GENOS_ORACLE_GOLD_OWNER=<실제 IDD_B003_LGL_* 테이블 소유자 스키마명>
+
+Gold 스키마명은 대문자 실제 Oracle owner를 입력합니다. 꺾쇠 설명을 그대로 입력하지 않습니다.
+ORDS 접속 별칭·OAuth Client ID와 테이블 소유자 스키마는 서로 다른 값입니다.
+기존 ORACLE_ORDS_SCHEMA/CLIENT_ID/CLIENT_SECRET/BASE_URL 설정을 유지합니다.
+
+조회 게시 선택: DP_QUERY_CHANNEL=<실제 Gold 채널> 또는 DP_QUERY_RELEASE_ID=<완료된 Gold 검색 게시ID>.
+둘 중 하나만 지정하며, 둘 다 없으면 기존 기본 채널 main을 사용합니다.
+실버 게시ID를 그대로 Gold에 지정하지 말고 Gold 적재 완료 보고서의 query_release_id/채널을 확인합니다.
+
+임베딩은 기존 GENOS_EMBED_ID/TOKEN을 사용합니다. GENOS_RAG_INITIAL_SEARCH=vector도 유지 가능합니다.
+Gold에 적재한 모델과 같은 임베딩 모델을 사용합니다. 게시 프로필·차원·권한 검사는 유지됩니다.
+기존 답변 모델, NFS 상세 로그, GENOS_ORACLE_AGENT_NAMESPACE 설정도 유지합니다.
+
+Gold 데이터: 지정한 owner의 IDD_B003_LGL_* 13개 테이블을 조회합니다.
+실행기록: 기존 SIDDA.LGL_AGT_RUN_A_1 / LGL_AGT_REC_A_1 / LGL_AGT_BODY_A_1 / LGL_EXEC_ST_A_1을 사용합니다.
+Gold 테이블 선택만으로 기존 실버 대화·조사 기록이 Gold 판본으로 이관되는 것은 아닙니다.
+Gold 데이터 SELECT와 기존 실행기록 저장 권한이 각각 필요합니다. 서빙은 테이블을 생성하지 않습니다.
+
+개발계 실버로 되돌릴 때:
+GENOS_ORACLE_TABLE_MAPPING=development_g19_1
+GENOS_ORACLE_GOLD_OWNER는 비우고 실버 게시채널/게시ID를 복원합니다.
+설정 변경은 코드서빙 환경 설정에 저장한 뒤 새 프로세스/리비전에 적용합니다.
+터미널 export만으로 코드서빙 설정이 변경되지는 않습니다.

@@ -1,0 +1,56 @@
+{
+  "schema_version": "comparison-fields-v1",
+  "fields": {
+    "subject": "대상",
+    "obligation": "의무",
+    "procedure": "절차·담당",
+    "authority": "전결·권한",
+    "condition": "조건",
+    "exceptions": "예외",
+    "date": "기준일",
+    "definition": "정의",
+    "numerator": "분자",
+    "denominator": "분모",
+    "unit": "단위",
+    "period": "산정 기간",
+    "direction": "기준 방향",
+    "value": "기준 수치"
+  },
+  "profiles": {
+    "general": [
+      "subject",
+      "obligation",
+      "condition",
+      "exceptions",
+      "date"
+    ],
+    "procedure": [
+      "subject",
+      "obligation",
+      "procedure",
+      "condition",
+      "exceptions",
+      "date"
+    ],
+    "authority": [
+      "subject",
+      "authority",
+      "condition",
+      "exceptions",
+      "date"
+    ],
+    "ratio": [
+      "subject",
+      "definition",
+      "numerator",
+      "denominator",
+      "unit",
+      "period",
+      "date",
+      "value",
+      "direction",
+      "condition",
+      "exceptions"
+    ]
+  }
+}

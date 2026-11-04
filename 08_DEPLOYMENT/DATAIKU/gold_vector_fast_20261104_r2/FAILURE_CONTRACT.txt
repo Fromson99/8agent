@@ -1,0 +1,6 @@
+입력/소비자: 기존 vector_stage.execute → 임베딩 캐시 → rows_for → 동일 Oracle INSERT 및 완료 명세.
+실패: Python zip strict 키워드 미지원. 인프라 SQL 오류나 모델 응답 실패와 구분.
+수정: 같은 길이 검사 후 위치순 결합. 의미·좌표·SQL·모델·원문 불변.
+재개: 정확한 R1 코드 해시 + 나머지 binding 전체 동일인 경우만 잠금 안에서 state 백업 후 코드 binding 이행. 다른 해시/원문/설정 거절.
+예산: 호출수·최초 deadline·max_calls·cursor·pending·캐시 유지. UNKNOWN 자동 재호출 금지.
+종료/검증: 기존 완료 상태 유지. 구버전 zip 실패→캐시 재사용, 개수 불일치, 부분 DB 기록·모델 UNKNOWN·변조·예산·동시 잠금 및 실제 실행문 모의 검증. 현장 실행 미확인.

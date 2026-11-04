@@ -1,0 +1,204 @@
+운영계 Gold 34조각 원큐 적재 — PROD R1 / 2026-11-04
+
+1. 이번에 사용할 파일
+
+  DATAIKU_GOLD_ONECLICK_PROD_20261104_R1.zip  실행 코드
+  DATAIKU_GOLD_PROD_RUN_R1.txt               셀에 붙여 넣을 전체 Python
+  DATAIKU_GOLD_PROD_RUN_R1.py                위 TXT와 동일한 Python 원본
+  GUIDE.txt                                 이 안내서
+  VALIDATION.json                           로컬 검증 결과와 미확인 범위
+  EMAIL_SHA256SUMS.txt                       위 첨부의 SHA256
+
+이번 PROD R1은 이전 운영용 ZIP Flow와 예시 2조각 ONECLICK SAMPLE을 대체하는 실행본입니다.
+이전 코드 ZIP을 수정하거나 덮어쓰지 않습니다. 이번 ZIP과 이번 실행 TXT를 한 쌍으로 사용합니다.
+기존 적재 엔진 83파일은 운영용 gold_zip_flow_20261104_r1과 내용이 같습니다.
+Flow/레시피/시나리오/데이터셋/Managed Folder 생성 없이 Python 셀에서 8단계를 순서대로 실행합니다.
+내장 예시 데이터는 없습니다. 이미 보유한 실제 데이터 34조각을 읽습니다.
+
+2. 어디에 업로드하고 어디서 실행하는가
+
+  대상: 운영계 Dataiku DSS의 기존 LEGAL_RAG 프로젝트
+        실제 프로젝트 Key가 다르더라도 현재 프로젝트를 자동 사용합니다.
+  폴더: 그 프로젝트에서 실제 업로드·다운로드가 되는 기존 Managed Folder
+        예: 기존 LEGAL_RAG_UPLOAD. 표시 이름이 아니라 실제 폴더 ID를 사용합니다.
+  실행: 같은 프로젝트의 Python 노트북
+        새 노트북 이름 제안: 02_GOLD_PROD_ONECLICK
+
+기존 S3 연결·버킷·Path in bucket 설정을 이 스크립트가 바꾸지 않습니다.
+새 결과 Managed Folder를 만들지 않습니다. 코드 폴더 안의 전용 하위 경로에 결과를 씁니다.
+코드 ZIP을 읽을 수 있어도 쓰기 권한이 없을 수 있으므로 시작 시 작은 파일의 쓰기/읽기를 확인합니다.
+이 검사가 실패하면 Oracle 적재를 시작하지 않습니다. 새 폴더만 만드는 것으로 버킷 오류가 해결되지는 않습니다.
+
+코드와 데이터를 같은 폴더의 맨 위에 넣는 경우 필요한 파일은 총 37개입니다.
+
+  DATAIKU_GOLD_ONECLICK_PROD_20261104_R1.zip                   1개, 풀지 않고 업로드
+  genos-rag-data-20261007T002029Z-7c0b050f.zip.part000000
+  ...
+  genos-rag-data-20261007T002029Z-7c0b050f.zip.part000033      34개
+  PARTS.sha256                                               1개
+  ORIGINAL.sha256                                            1개
+
+34조각과 SHA파일이 이미 올라가 있으면 그대로 사용합니다. 다시 업로드할 필요 없습니다.
+실행 TXT/안내서는 데이터 폴더에 올릴 필요 없습니다.
+PARTS.sha256와 ORIGINAL.sha256는 위 정확한 이름을 사용합니다.
+단일 데이터 ZIP이나 예시 2조각을 대신 넣지 않습니다.
+실제 34조각과 SHA파일은 이번 메일에 재첨부하지 않았습니다.
+
+데이터가 다른 Managed Folder에 있다면 이동하지 말고 INPUT_FOLDER_ID에 그 폴더 ID를 넣습니다.
+그 폴더의 맨 위에 34조각과 SHA파일2개가 있어야 합니다.
+입력 데이터는 읽기만 하며 결과는 CODE_FOLDER_ID의 전용 하위 경로에 씁니다.
+
+3. 입력값 — 이번 실행 TXT 맨 위 PARAMS만 편집
+
+  CODE_FOLDER_ID: ''
+    필수. 이번 코드 ZIP을 올린 운영계 Managed Folder의 실제 ID를 입력합니다.
+    이전 프로젝트 ID, 표시 이름 LEGAL_RAG_UPLOAD, S3 주소를 넣지 않습니다.
+
+  INPUT_FOLDER_ID: ''
+    같은 폴더면 빈 문자열 그대로 둡니다. 자동으로 CODE_FOLDER_ID를 사용합니다.
+    데이터34조각이 별도 폴더에 있으면 그 폴더 ID만 입력합니다.
+
+  ORACLE_CONNECTION: 'AIDP'
+    이전 운영 전달본의 Oracle 연결 이름입니다. 운영계 연결 이름이 다르면 실제 값으로 변경합니다.
+    S3 연결 이름 OBS를 넣는 칸이 아닙니다.
+
+  EXPECTED_DB_USER: 'PIDD2APP'
+    Oracle에 로그인하는 계정입니다. 테이블 owner와 구분합니다.
+    실행 시 SESSION_USER를 조회하여 일치하는지 확인합니다.
+
+  GOLD_OWNER: 'SIDDS'
+    사용자가 확인한 owner를 기본값으로 넣었습니다.
+    운영계의 IDD_B003_LGL_* 등록 테이블도 SIDDS 소유인지 확인하고 다르면 실제 owner로 변경합니다.
+    owner가 SIDDS여도 접속 계정이 PIDD2APP이면 EXPECTED_DB_USER는 PIDD2APP를 유지합니다.
+
+  TABLE_PREFIX: 'IDD_B003_LGL_'
+    이전 운영 전달본의 등록명입니다. 예: SIDDS.IDD_B003_LGL_DOC_VER.
+    테스트 접두어 TST_B003_LGL_와 구분합니다.
+    등록 이름이 다르면 전체 공통 접두어를 바꾸거나 TABLE_NAMES에 개별 이름을 적습니다.
+
+  TABLE_NAMES: {}
+    기본은 그대로 둡니다. 개별 테이블명이 다를 때만 예: {'DOC_VER':'실제_테이블명'}.
+    값은 owner를 제외한 대문자 Oracle 테이블 이름입니다.
+
+  EMBED_MODEL: 'openai:genos-embedding:embedding-kure-v1'
+  EMBED_DIMENSIONS: 1024
+    기존 전달값입니다. 운영 프로젝트에 등록된 실제 모델 ID와 차원이 같은지 확인합니다.
+    다른 경우 두 값을 해당 모델에 맞게 변경합니다. 임베딩은 Dataiku 내부 연결을 사용합니다.
+
+  WORK_DIR: ''
+    빈 값이면 같은 DSS 실행 호스트의 /tmp/gold-oneclick-production/<설정별ID>를 사용합니다.
+    운영 재개를 위해 쓰기 가능한 영속 Linux 경로가 제공돼 있으면 그 절대경로를 넣습니다.
+    예시 경로를 임의로 정하지 않았습니다. S3 URI/버킷/Managed Folder ID를 넣는 칸이 아닙니다.
+    지정한 경로 아래에도 <설정별ID> 하위 폴더가 붙습니다.
+    진행 중 변경하지 않습니다. /tmp 정리·컨테이너/호스트 교체로 로컬 기록이 없어지면 재개할 수 없습니다.
+    S3 결과 기록만으로 로컬 체크포인트와 임베딩 캐시가 복원되는 것은 아닙니다.
+
+이전 Flow의 RUN_AFTER_INSTALL, EXPECTED_PROJECT 등 설정을 섞어 넣지 않습니다.
+이 실행본은 실제 데이터 파일명과 34조각 수를 내부 고정하므로 별도 입력하지 않습니다.
+
+4. 실행 순서
+
+  ① 기존 Flow/시나리오와 다른 적재 셀이 실행 중이지 않은지 확인합니다.
+  ② 기존 Managed Folder에 이번 코드 ZIP을 업로드합니다. 데이터34조각과 SHA파일2개를 확인합니다.
+  ③ 같은 프로젝트에서 Python 노트북을 엽니다.
+  ④ 이전 Flow/예시 로더를 실행했던 커널이면, 기존 작업이 종료된 상태에서 Kernel → Restart를 한 번 합니다.
+     커널 재시작은 로컬/S3 체크포인트 삭제가 아닙니다.
+  ⑤ DATAIKU_GOLD_PROD_RUN_R1.txt 전체를 셀 하나에 붙여넣습니다.
+  ⑥ PARAMS의 폴더 ID와 운영계 실제 값을 확인·입력합니다.
+  ⑦ 셀을 한 번 실행합니다. Scenario Run이나 별도 설치 명령은 없습니다.
+
+한 셀에서 진행하는 순서:
+  코드 ZIP 해시 확인 → 기존 폴더 결과 경로 쓰기/읽기 → 작업 기록 결속
+  → 조각 목록/Gold 테이블·인덱스·권한 검사
+  → 34조각 해시 확인·ZIP 병합·세대 복원
+  → 원문/검색 적재 자료 준비·필드 길이 검사
+  → 원문 적재 → 검색 자료 적재 → 원문/검색 게시
+  → 구조 단위 임베딩·벡터 적재 → 결과 행수/게시 기록 확인·결과 저장
+
+하나의 상태판에 단계·확인된 처리량·로그 경로를 표시합니다.
+전체량을 아직 모르는 단계는 진행률과 ETA를 미확정으로 표시합니다.
+전체 로그는 로컬 logs/<run_id>.log에 보존하고, 단계 경계와 종료 시 S3에 나누어 저장합니다.
+강제 프로세스 종료 직전의 로그는 S3보다 로컬 로그가 최신일 수 있습니다.
+
+5. 운영 테이블과 권한
+
+자동 CREATE/ALTER/DROP/TRUNCATE하지 않습니다. 테이블/인덱스가 사전 등록되어 있어야 합니다.
+기존 R5 등록 구조: 문서ID100 BYTE, RGSN_ASTM, RFRN_DATA_*, CHAN_NO, native VECTOR를 검사합니다.
+Oracle 연결 계정은 다음 13테이블에 대한 조회/메타데이터 접근이 필요합니다.
+실제 쓰는 10테이블에는 INSERT 권한이 필요합니다.
+
+  조회·INSERT: DOC_VER, DOC_UNIT, DOC_BLK, SRC_POST, SRCH_ROW, SRCH_POST, SRCH_CHNL,
+              VCTR_ITEM, VCTR_POST, VCTR_HEAD
+  구조 확인:  ONTL_POST, ONTL_ANC, ONTL_HEAD
+
+각 이름 앞에 GOLD_OWNER와 TABLE_PREFIX가 붙습니다. TABLE_NAMES 지정 시 그 이름을 사용합니다.
+새 테스트 테이블을 만들던 예시 실행본과 달리 CREATE TABLE 권한을 요구하지 않습니다.
+권한 검사는 실제 INSERT를 실행하지 않는 IF FALSE 분기로 먼저 수행합니다.
+기존 테이블의 데이터나 기존 서비스 채널을 지우거나 교체하지 않습니다.
+동일 판본 데이터가 이미 있는데 이번 작업의 원래 체크포인트가 없으면 적재 전에 중단합니다.
+
+6. 완료 확인과 결과 위치
+
+최종 표시:
+  PRODUCTION_GOLD_LOADED
+
+코드가 풀렸거나 진행률이 100%인 것만으로 완료가 아닙니다.
+최종 Oracle 행수/게시 기록과 결과 파일 저장까지 성공해야 위 표시를 냅니다.
+
+결과 위치:
+  CODE_FOLDER_ID / _gold_oneclick_prod_r1/<설정별ID>/result/
+
+  report.json                 status=GOLD_LOADED, 실제 행수와 게시 ID
+  latest.json                 status=SUCCESS, 작업 경로와 단계별 결과
+  serving-mapping.json        실제 owner/등록명을 사용한 조회 매핑
+  documents.json              이번 게시본 문서 범위
+  embedding-profile.json      이번 임베딩 설정
+  runs/                      실행별 상태와 나눈 로그
+  workspace.json             로컬 작업 경로 결속 기록
+
+<설정별ID>와 실제 경로는 실행 결과/상태판에 표시됩니다.
+처리한 행수와 게시 기록을 확인하며, 모든 CLOB 값의 전수 재비교를 했다고 표시하지 않습니다.
+원문·검색·벡터 적재 범위입니다. 온톨로지 게시는 포함하지 않습니다.
+이번 검색 게시본에만 VCTR_HEAD를 등록합니다. 기존 서비스가 사용하는 채널은 자동 전환하지 않습니다.
+GENOS 서비스 코드 배포/환경변수 변경과 운영 검색 채널 연결은 별도 작업입니다.
+
+7. 중단과 재개
+
+  - 실행 중 같은 셀을 다시 누르거나 다른 노트북/호스트에서 동시에 실행하지 않습니다.
+  - 작업 종료를 확인한 뒤 같은 코드 ZIP·PARAMS·작업 호스트/WORK_DIR로 같은 셀을 재실행합니다.
+  - 체크포인트와 응답이 확정된 임베딩 캐시를 재사용합니다. 자동 재시작은 없습니다.
+  - DB 커밋 후 응답이 유실된 묶음은 기존 엔진의 보류 키 확인 후 재개합니다.
+  - 임베딩 호출 결과가 불명확한 경우 자동 재호출하지 않고 상태를 남깁니다.
+  - owner 등 대상 설정을 고치면 로컬과 S3의 작업 범위가 함께 분리됩니다. 이전 기록은 보존됩니다.
+    이미 적재한 판본을 설정 변경으로 새 작업처럼 중복 적재하지는 않습니다.
+  - 기존 Flow 또는 예시 실행본의 체크포인트를 이번 폴더로 복사해 합치지 않습니다.
+  - 로컬/S3 체크포인트를 삭제하거나, 새 폴더 ID로 바꾸어 중복 보호를 우회하지 않습니다.
+  - 일부 적재 후 중단되었다면 원래 기록으로 재개합니다. 자동 데이터 삭제/롤백은 없습니다.
+
+대표 오류:
+  RESTART_KERNEL_OTHER_LOADER
+    이전 코드 모듈이 남았습니다. 작업 종료 확인 후 Kernel → Restart하고 이번 TXT 전체를 실행합니다.
+  STORAGE_CHECK_FAILED
+    CODE_FOLDER_ID의 실제 버킷·namespace·읽기/쓰기 권한을 확인합니다. DB 적재 전 중단입니다.
+  OBJECT_IDENTITY_INCOMPLETE / RESUME_TABLE_MISSING / RESUME_INDEX_MISSING
+    운영 테이블/인덱스가 없거나 계정에 보이지 않습니다. owner·등록명·조회 권한을 확인합니다.
+  ORA-01031 / ORA-00942
+    등록 테이블에 대한 접속 계정의 SELECT·INSERT 권한과 실제 owner를 확인합니다.
+  PART_HASH / WHOLE_ZIP_HASH
+    해당 원본 조각을 확인해 다시 올립니다. SHA파일 값을 임의로 수정하지 않습니다.
+  CHECKPOINT_WORKSPACE_MISSING_OR_CHANGED / WORKSPACE_CONFIG_CHANGED
+    원래 WORK_DIR·로컬 기록과 S3 작업 기록이 일치하는지 확인합니다.
+  EXISTING_RELEASE_REQUIRES_ORIGINAL_CHECKPOINT
+    동일 판본의 기존 행이 확인됐습니다. 이전 적재 기록을 확인하고 원래 체크포인트로 재개해야 합니다.
+  EMBEDDING_OUTCOME_UNKNOWN_NO_AUTOMATIC_RETRY
+    임베딩 결과가 불명확합니다. 로그·캐시·pending을 보존해 확인합니다.
+
+8. 검증 범위
+
+로컬 계약 검사 20개 통과. 전달 TXT 그대로 실제 로컬 Oracle의 임시 스키마에서 12개 시나리오 통과.
+owner와 접속 계정을 분리하고, 로더의 DDL을 차단한 상태에서 합성 ZIP 34조각의 전 단계를 실행했습니다.
+S3 실패, INSERT 권한 부족, 손상 조각, 커밋 응답 유실, 최종 결과 저장 실패, 재실행,
+작업 기록 유실/기존 판본 충돌, 새 프로세스의 원문/벡터·권한 조회를 확인했습니다.
+검증 중 만든 임시 Oracle 계정/테이블은 정리했습니다.
+Dataiku SDK/S3와 임베딩은 로컬 대역이며 임베딩은 고정 4차원입니다. 외부 모델 호출은 없습니다.
+현장 운영계 Dataiku/Oracle/내부 임베딩과 실제 전체34조각의 용량·시간은 여기서 실행·인증하지 않았습니다.

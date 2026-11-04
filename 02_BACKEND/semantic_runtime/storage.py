@@ -2,6 +2,7 @@
 import json
 import sqlite3
 import threading
+from collections import OrderedDict
 from pathlib import Path
 from .contracts import sha, write, digest
 
@@ -84,6 +85,9 @@ def publish(root, source_store, output, *, data_status='DRAFT', export_allowed=F
 
 class Store:
     def __init__(self,path,*,verify=True):
+        self._source_cache = OrderedDict()
+        self._source_cache_bytes = 0
+        self._source_cache_lock = threading.Lock()
         self.path=Path(path).resolve()
         self.manifest=json.loads((self.path/'manifest.json').read_text())
         from .search_selection import Selection
@@ -112,7 +116,11 @@ class Store:
             self.db.close()
             raise
 
-    def close(self):self.db.close()
+    def close(self):
+        with self._source_cache_lock:
+            self._source_cache.clear()
+            self._source_cache_bytes = 0
+        self.db.close()
 
     def binding_signature(self):
         states = []
@@ -128,9 +136,27 @@ class Store:
 
     def source(self,did,bid):
         self.check_unchanged()
-        r=self.db.execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?',(did,str(bid))).fetchone()
+        key = (did, str(bid))
+        with self._source_cache_lock:
+            if key in self._source_cache:
+                self._source_cache.move_to_end(key)
+                return dict(self._source_cache[key][0])
+        r=self.db.execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?',key).fetchone()
         if not r:raise KeyError((did,bid))
-        return dict(r)
+        value = dict(r)
+        self.check_unchanged()
+        size = len(json.dumps(value, ensure_ascii=False).encode())
+        if size <= 4 * 1024 * 1024:
+            with self._source_cache_lock:
+                if key in self._source_cache:
+                    self._source_cache_bytes -= self._source_cache.pop(key)[1]
+                while self._source_cache and (len(self._source_cache) >= 512
+                        or self._source_cache_bytes + size > 4 * 1024 * 1024):
+                    _, (_, removed) = self._source_cache.popitem(last=False)
+                    self._source_cache_bytes -= removed
+                self._source_cache[key] = (dict(value), size)
+                self._source_cache_bytes += size
+        return value
 
     def sources(self, did, bids):
         """Bounded batch read preserving caller order, duplicates and missing-ID errors."""

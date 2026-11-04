@@ -1,0 +1,58 @@
+--- R1/vector_stage.py
++++ R2/vector_stage.py
+@@ -106,9 +106,13 @@
+ 
+ 
+ def rows_for(publication, items, vectors):
++    # Both inputs are bounded lists, including when restored from the cache.
++    # Keep strict pairing without the Python 3.10-only zip keyword.
++    if len(items) != len(vectors):
++        raise Stop('VECTOR_EMBED_COUNT_MISMATCH')
+     return [{'VCTR_POST_ID': publication, 'VCTR_SEG_ID': i['id'], 'DOC_ID': i['meta']['document_id'],
+              'SRC_UNIT_ID': i['meta']['source_id'], 'VCTR_META_CTNT': canonical(i['meta']),
+-             'EMBD_VCTR_VALU': canonical(v)} for i, v in zip(items, vectors, strict=True)]
++             'EMBD_VCTR_VALU': canonical(v)} for i, v in zip(items, vectors)]
+ 
+ 
+ def check_coordinates(contract, items, allowed):
+@@ -145,8 +149,30 @@
+             'embedding_calls': 0, 'next_batch': 0, 'rows': 0, 'cursor': None, 'chain': '0'*64,
+             'pending': None, 'embedding_pending': None, 'insert_requests': 0, 'pending_key_queries': 0}
+         if self.state['binding'] != binding:
++            self.upgrade_python_compat(binding)
++        self.next_guard = 0
++
++    def upgrade_python_compat(self, binding):
++        """Called under the existing parent locks; only the sealed R1 may resume."""
++        parent = loader.read(loader.HERE/'VECTOR_RESUME_PARENT.json')
++        expected = dict(binding, code=parent['code_binding'])
++        if self.state['binding'] != expected:
+             raise Stop('VECTOR_JOB_BINDING_CHANGED')
+-        self.next_guard = 0
++        backup = self.work/('state-before-python-compat-'+parent['code_binding']+'.json')
++        if backup.exists():
++            if loader.read(backup) != self.state:
++                raise Stop('VECTOR_COMPAT_BACKUP_CONFLICT')
++        else:
++            loader.atomic(backup, self.state)
++        # Do not change counters, deadline, cursor, pending intents or caches.
++        updated = dict(self.state, binding=binding)
++        updated['code_upgrades'] = list(self.state.get('code_upgrades', []))+[{
++            'from': parent['code_binding'], 'to': binding['code'],
++            'reason': 'python-zip-compat-r2', 'backup': backup.name}]
++        loader.atomic(self.path, updated)
++        self.state = updated
++        self.progress.emit('VECTOR_PYTHON_COMPAT_RESUMED', backup=str(backup),
++                           rows=self.state['rows'], sdk_calls=self.state['embedding_calls'])
+ 
+     def save(self):
+         loader.atomic(self.path, self.state)
+@@ -361,7 +387,7 @@
+                 sys.argv[1] if len(sys.argv)>1 else 'vector')
+     except BaseException as exc:
+         from error_diagnostics import event, banner
+-        value = event(exc, {'stage': 'VECTOR_FAST_R1'})
++        value = event(exc, {'stage': 'VECTOR_FAST_R2'})
+         output = os.environ.get('G19_DIAGNOSTIC_FILE')
+         if output:
+             with open(output, 'a', encoding='utf-8') as stream:

@@ -175,11 +175,12 @@ def schema_issues(errors):
         if error.validator in ('anyOf','oneOf') and error.context:
             selected = None
             if isinstance(error.instance,dict):
-                for key in ('choice','next_action','operation','kind','status','disposition'):
+                for key in ('method_id','choice','next_action','operation','kind','status','disposition','id','target_id','issue_id'):
                     if key not in error.instance:continue
                     matches = [n for n,branch in enumerate(error.validator_value)
                         if isinstance(branch,dict) and
-                        branch.get('properties',{}).get(key,{}).get('const',object()) == error.instance[key]]
+                        (branch.get('properties',{}).get(key,{}).get('const',object()) == error.instance[key] or
+                         error.instance[key] in branch.get('properties',{}).get(key,{}).get('enum',[]))]
                     if len(matches)==1:
                         selected=matches[0];break
             if selected is not None:
@@ -461,6 +462,7 @@ def bounded_decision(repo, owner, data, schema, invoke, validate, *, identity=No
             value = invoke(payload, attempt)
             validate(value)
         except (ProposalError, ValidationError) as exc:
+            value=deepcopy(getattr(exc,'proposal',value))
             retry=not attempt and repairable(exc) and (can_repair is None or can_repair())
             journal.reject(attempt, exc, value,can_retry=retry,correction_budget=shared)
             if not retry:

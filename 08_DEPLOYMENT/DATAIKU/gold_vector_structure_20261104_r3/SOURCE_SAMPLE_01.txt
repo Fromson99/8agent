@@ -1,0 +1,12 @@
+{"id": "cd04b3f586f58d1cc52a6454a24371be7f58fbf1476ac4170c1acab769bc910a", "extent": "source", "chars": 414, "body_spans": 5, "source": "article:0000f43998ae39589fac4ddb"}
+{"id": "a7e57f5e18799ff2c5b72df822682fa81c24bccffd41be88aef700fa295184fd", "extent": "source", "chars": 219, "body_spans": 1, "source": "article:00013364bbd4e6611816f946"}
+{"id": "11e7303c24ad558d78347d49c30ec977579641aacac9f79d98e03d0485f23612", "extent": "source", "chars": 613, "body_spans": 5, "source": "article:000386ed1954ceb3559989da"}
+Traceback (most recent call last):
+  File "<stdin>", line 10, in <module>
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_structure_20261104_r3/package/structure_segments.py", line 184, in segments
+    items = source_segments(store, source, version, migration)
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_structure_20261104_r3/package/structure_segments.py", line 88, in source_segments
+    units = units_for(store, did, {root} | {p['unit_id'] for p in parts})
+  File "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_structure_20261104_r3/package/structure_segments.py", line 33, in units_for
+    raise Stop('VECTOR_STRUCTURE_UNIT_MISSING:'+did)
+gold_io.Stop: VECTOR_STRUCTURE_UNIT_MISSING:5a4df93bbbb084a8

@@ -22,6 +22,8 @@ def resources(agent,scope):
         matcher.fulltext=matcher.unit_fulltext=UnitIndex(tools.request)
         matcher.fulltext_db=matcher.unit_fulltext_db=matcher.fulltext
         from .initial_vector import Retriever,mode
+        if getattr(getattr(getattr(tools.request.sql, 'client', None), 'schema_map', None), 'vector_contract', False):
+            from .oracle_query_vector import Retriever
         if mode()!='keyword':matcher.initial_vector=Retriever(tools.request)
         yield index,tools,glossary,matcher
         store.check_unchanged();glossary.check_unchanged()

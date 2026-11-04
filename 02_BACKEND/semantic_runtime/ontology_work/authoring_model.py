@@ -13,16 +13,20 @@ class AuthoringFailure(ContractError):
 def generate(store, prompt, context, schema):
     from ..genos import from_env, advertised_model
     from ..provider import _structured_genos_value
+    from ..contracts import digest
+    from ..legal_agent.model_contract import structured_request, REVISION as grammar_revision
     from lawrag.core.request_deadline import post_json
     target, configured = from_env('llm'); model = advertised_model(target, configured)
     seconds = context['call_budget']['absolute_deadline'] - time.time()
-    request = {'model': model, 'messages': [{'role': 'system', 'content': prompt},
-               {'role': 'user', 'content': json.dumps(context, ensure_ascii=False)}],
-               'temperature': 0, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
-               'response_format': {'type': 'json_schema', 'json_schema': {'name': 'domain_profile', 'strict': True, 'schema': schema}}}
+    # Use the same provider grammar adapter as other structured GENOS calls.
+    # The workflow retains and validates the original schema (including uniqueness).
+    request = structured_request(model=model, max_tokens=None, schema_name='domain_profile', schema=schema,
+               messages=[{'role': 'system', 'content': prompt},
+                         {'role': 'user', 'content': json.dumps(context, ensure_ascii=False)}])
+    contract = {'grammar_adapter_revision': grammar_revision, 'validation_schema_sha256': digest(schema)}
     from ..legal_agent.wire_schema import project_request
     request, projection = project_request(request)
-    key = store.put({'request': request, 'schema_projection': projection, 'status': 'SENT_ONCE'})
+    key = store.put({'request': request, 'schema_projection': projection, 'authoring_contract': contract, 'status': 'SENT_ONCE'})
     response = post_json(target.url('/chat/completions'), headers=target.headers, json_body=request,
                          deadline=time.monotonic() + min(180, seconds))
     # HTTP refusal is known; a broken connection before a response remains UNKNOWN.
@@ -37,6 +41,7 @@ def generate(store, prompt, context, schema):
         raise AuthoringFailure('INVALID_RESPONSE', {'store_hash': saved, 'physical_calls': 1})
     saved = store.put({'request_hash': key, 'response': raw, 'status': 'RESPONSE_RECEIVED'})
     receipt = {'store_hash': saved, 'requested_model': model, 'physical_calls': 1,
+               'authoring_contract': contract,
                'schema_projection': projection,
                'usage': raw.get('usage') if isinstance(raw, dict) else None}
     if isinstance(raw, dict) and raw.get('error'):

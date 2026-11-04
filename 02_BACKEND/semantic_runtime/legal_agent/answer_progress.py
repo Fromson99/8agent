@@ -16,8 +16,13 @@ class ProgressHandoff(Exception):
     """Retain verified originals and use the existing assessment/publication path."""
 
 
+SCOPE_GUIDANCE = '질문에 없는 구체 날짜·기한·회사 사정을 새 완료 조건으로 추가하지 않는다. 원문이 일반 시기·원칙을 정했다면 그 원칙으로 요청에 답할 수 있는지 먼저 판단한다. 다른 문서에 위임했다는 설명은 실제 위임 문구가 있을 때만 한다. 조항 번호나 구체 기한이 있을 것이라는 기억·추정을 필수 부족이나 검색 근거로 삼지 않는다.'
+from .connection_scope import FINISH_GUIDANCE
+SCOPE_GUIDANCE += '\n' + FINISH_GUIDANCE
+
 # One response updates the goals and chooses the tool. No separate planner/reviewer.
 PROMPT = '''다음 행동을 고르는 이 응답 안에서 answer_progress.goals를 먼저 갱신한다. 별도의 검토나 답변 생성 요청이 아니다.
+질문에 없는 구체 날짜·기한·회사 사정을 새 완료 조건으로 추가하지 않는다. 원문이 일반 시기·원칙을 정했다면 그 원칙으로 요청에 답할 수 있는지 먼저 판단한다. 다른 문서에 위임했다는 설명은 실제 위임 문구가 있을 때만 한다. 조항 번호나 구체 기한이 있을 것이라는 기억·추정을 필수 부족이나 검색 근거로 삼지 않는다.
 issues의 사용자 요구마다 정확히 한 행을 쓴다. 요구를 새로 만들거나 삭제·축소하지 않는다. 처음에는 질문의 답에 필요한 내용을 정리하고, 이후에는 이전 goal 의견과 실제 행동 결과·현재 원문을 비교한다. 과거 의견은 정답이나 근거가 아니다.
 answer_so_far에는 지금 원문으로 답할 수 있는 내용을 짧게, basis_refs에는 현재 sources의 근거를 쓴다. material_need에는 그 요구의 답을 바꿀 구체적인 필수 부족만, next_answer_change에는 다음 조회 후 무엇이 확정·수정될지 쓴다. 요구별 상태는 다음과 같다.
 ANSWERABLE: 요청한 내용을 현재 원문으로 설명할 수 있다. material_need와 next_answer_change는 빈 문자열이다. 그 요구로 추가 도구를 고르지 않는다. 모든 요구가 ANSWERABLE이면 FINISH한다.

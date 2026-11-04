@@ -54,6 +54,8 @@ class CaseRepository(Memory):
         self.executor.__dict__.pop('request_entry',None)
         self._entry_body=body
         self._entry_principal=principal
+        # ShortcutCases resolves before Memory._execute; bind this request now.
+        self._resolve_request={'body':body,'principal':principal}
         self.identity(body['session_id'],principal)
         old=self.db.execute('SELECT status,input_hash FROM request WHERE id=?',(self.request_key(body,principal),)).fetchone()
         recovered=False

@@ -1,0 +1,36 @@
+{
+  "schema_version": "legal-agent-domain-catalogue-v1",
+  "catalogue_id": "source-investigation-system-v1",
+  "legal_coverage": "DISCOVERY_UNTIL_REVIEWED_IMPORT",
+  "concepts": [
+    {
+      "id": "system:question",
+      "status": "SYSTEM",
+      "definition": "현재 질문 목적과 조건; 법률 개념 정본이 아님"
+    },
+    {
+      "id": "system:original",
+      "status": "SYSTEM",
+      "definition": "현재 허용 문서의 버전·좌표·해시로 확인한 원문"
+    },
+    {
+      "id": "system:judgment",
+      "status": "SYSTEM",
+      "definition": "현재 질문의 사실과 읽은 원문에 의존하는 적용 판단"
+    }
+  ],
+  "relations": [
+    {
+      "id": "system:supported_by",
+      "source": "system:judgment",
+      "target": "system:original",
+      "status": "SYSTEM"
+    },
+    {
+      "id": "system:applies_to",
+      "source": "system:judgment",
+      "target": "system:question",
+      "status": "SYSTEM"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+from common import *
+import shutil
+DES.mkdir(exist_ok=False)
+P=ROOT/'04_EXPERIMENTS/ADR/ADR-1352-ontology-content-review-contract/artifacts'
+f=read(P/'design/candidate-repaired.json');before={n:sha(ROOT/n) for n in f['selected_files']};assert before==f['selected_files']
+put(DES/'working-before.json',before);put(DES/'baseline.json',read(P/'design/baseline.json'));put(DES/'candidate-parent.json',f)
+criteria={'hypothesis':'Keep EXCLUDED exploration decisions while independently retaining exact acquired original spans; place a model-owned norm choice only on EFFECT nodes to prevent redundant wrong-kind links.',
+'success':['EXCLUDED status and exclusion reason unchanged; same branch/offer original history can supply verified expected spans and arrivals without another read','Missing/partial/foreign/tampered originals remain unacquired or rejected; full canonical final review still required','Each generated EFFECT has one selected source/norm field; non-EFFECT cannot generate a norm link; canonical restored graph and source checks unchanged','Native API and compiler contract checks pass; integrate only tested changed files with528 hashes and MAIN142 unchanged'],
+'failure':['No automatic legal USE/EXCLUDE or claim changes','No truncation, no validator removal, no production publication','No new model calls after1352 UNKNOWN; final Qwen certification remains unconfirmed'],
+'limits':{'model_calls':0,'heavy_workers':1,'rss_GiB':5,'available_start_GiB':5,'available_stop_GiB':3,'swap_growth_MiB':128},
+'failure_owner':'Existing WIKI_PROJECT one repair; investigation current receipt refresh. No new retry owner, no replay afterUNKNOWN. Existing failure states and journal retained.'}
+put(DES/'criteria.json',criteria);cases=[{'id':'excluded-acquisition','input':'Exact branch/offer history + model exclusion; missing, partial and tampered controls'},{'id':'effect-norm-link','input':'Typed EFFECT selection, wrong-kind legacy response rejection, compiler/API consumers'}];put(DES/'cases.json',cases)
+m=read(ADR/'실험/manifest.json');m['lineage']['hypothesis_delta']=criteria['hypothesis'];m['design'].update(hypothesis=criteria['hypothesis'],primary_metric='Exact acquisition facts and norm binding; no semantic status correction',success_criteria=criteria['success'],failure_criteria=criteria['failure'],criteria_frozen_before_run=True,criteria_freeze_evidence={'path':str((DES/'criteria.json').relative_to(ROOT)),'sha256':sha(DES/'criteria.json')});m['design']['arms'][0].update(changes='Completed1352 with acquisition-exclusion and wrong node-kind norm link failures',controls='Reference only, no model replay');m['design']['arms'][1].update(changes='Preserve EXCLUDED but populate verified arrivals; EFFECT-local selected norm expansion',controls='Same528/source/model policy; new model0 dueUNKNOWN stop')
+m['dataset'].update(name='Exact acquired history and source norm contract fixtures',version='20261104-r1',frozen_source=str((DES/'cases.json').relative_to(ROOT)),sha256=sha(DES/'cases.json'));m['runs'][0].update(arm_ids=['repaired'],selection_rule='Synthetic contracts and saved failed response checks only; no model calls',artifact_path=str((RUN/'result.json').relative_to(ROOT)));m['llm_policy']['llm_calls']=[]
+for v in (m['retrieval_accounting'],m['retrieval_accounting']['stage_ledger']):v['not_applicable_reason']='No new retrieval or model run; source receipt reconstruction and generation-schema tests only'
+put(ADR/'실험/manifest.json',m)
+sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'));import adr_candidate as ac
+can=ac.snapshot(ADR,'repaired',list(before),experiment_id=m['experiment_id'],arm_id='repaired',run_ids=['run-001'])
+put(DES/'candidate-path.json',{'candidate':str(can.relative_to(ROOT)),'files':list(before),'product_files':['02_BACKEND/semantic_runtime/legal_agent/source_goal_control.py','02_BACKEND/semantic_runtime/ontology_work/authoring_semantics.py']})
+put(ART/'STOP_EXTERNAL_INHERITED.json',{'source':str((P/'STOP_EXTERNAL.json').relative_to(ROOT)),'sha256':sha(P/'STOP_EXTERNAL.json'),'reason':'Unknown remote completion; no new calls in this follow-up','user_request':'Fix remaining errors and verify with Qwen; actual verification ran in1352, final follow-up verification not certified'})
+print(can/'snapshot')

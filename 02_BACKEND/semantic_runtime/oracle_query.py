@@ -132,15 +132,10 @@ class SourceReader:
         mapping=getattr(self.sql.client,'schema_map',None)
         if mapping is not None:
             from .physical_mapping import CONTRACT_COLUMNS
-            from sqlglot import Dialect
-            from sqlglot.tokens import TokenType as T
+            from .oracle_sql_tokens import mapped_columns
             n=mapping.names(kind)
             def physical(expression):
-                tokens=Dialect.get_or_raise('oracle').tokenize(expression)
-                for i,t in reversed(list(enumerate(tokens))):
-                    if t.text in CONTRACT_COLUMNS[kind].split() and t.token_type in (T.VAR,T.IDENTIFIER) and (not i or tokens[i-1].token_type!=T.COLON):
-                        expression=expression[:t.start]+n.c(t.text)+expression[t.end+1:]
-                return expression
+                return mapped_columns(expression,n,CONTRACT_COLUMNS[kind].split())
             where,order=physical(where),physical(order)
         rows = read_rows(self.sql, kind, where, [*base, *binds],
                          limit=_page_size(limit), order=order)
@@ -158,6 +153,33 @@ class SourceReader:
         r = rows[0]
         return {'document_id': did, 'name': r['NAME'],
                 'source_artifact_sha256': r['SOURCE_ARTIFACT_SHA256'], 'json': r['SOURCE_JSON']}
+
+    def unit_ids(self, did, *, after=None, limit=MAX_PAGE):
+        """Read candidate IDs from the authorized source index, never evidence.
+
+        Callers must fetch and verify the corresponding published native rows.
+        Avoid fetching/parsing source JSON when only the indexed identity is used.
+        """
+        from .oracle_dp_io import names, OWNER, TABLES
+        _, binds = self._where(did)
+        limit = _page_size(limit)
+        n = names(self.sql, 'source_unit', OWNER+'.'+TABLES['source_unit'])
+        where = n.c('DATASET_VERSION')+'=:version AND '+n.c('DOCUMENT_ID')+'=:document'
+        order = "NLSSORT("+n.c('UNIT_ID')+",'NLS_SORT=BINARY')"
+        if after is not None:
+            checked_id(after, 'after_unit_id')
+            where += " AND "+order+">NLSSORT(:after_unit,'NLS_SORT=BINARY')"
+            binds.append(('after_unit',after,'VARCHAR2'))
+        projection = ','.join(n.select(c) for c in ('DATASET_VERSION','DOCUMENT_ID','UNIT_ID'))
+        rows = self.sql.query(f'SELECT {projection} FROM {n.table} WHERE {where} ORDER BY {order} FETCH FIRST {limit} ROWS ONLY',binds,limit=limit)
+        ids=[]
+        for row in rows:
+            if row['DATASET_VERSION']!=self.snapshot.dataset_version or row['DOCUMENT_ID']!=did:
+                raise DPError('QUERY_ROW_BINDING: unit ID belongs to another document/version')
+            ids.append(checked_id(row['UNIT_ID'],'unit_id'))
+        if ids!=sorted(set(ids)) or (after is not None and any(uid<=after for uid in ids)):
+            raise DPError('QUERY_PAGE_ORDER: invalid source unit ID page')
+        return {'rows':ids,'next':ids[-1] if len(ids)==limit else None}
 
     def unit(self, did, uid):
         uid = checked_id(str(uid), 'unit_id')

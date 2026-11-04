@@ -1,0 +1,163 @@
+{
+  "base_MAIN": 140,
+  "candidate_files": 528,
+  "candidate_changed_files": 39,
+  "candidate_product_files_equal_working": 7,
+  "selected_MAIN_changed": false,
+  "candidate_unique_passed_after_isolation": 107,
+  "combined_regression": {
+    "passed": 105,
+    "failed_isolation": 1,
+    "skipped_optional_native": 33
+  },
+  "G19_isolated_passed": 1,
+  "Gold_final_passed": 1,
+  "working_duplicate_passed": 31,
+  "native_plans_unchanged": 639,
+  "candidate_and_working_engine_files": 500,
+  "candidate_and_working_engines": 30,
+  "runtime_archive_sha256": "899ba3fb2398e4ac2508f8550dcad2106d54b58192c5af2d9667f6378c345dbc",
+  "runtime_files": 419,
+  "temporary_schemas": [
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-oracle-r5/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_GOLD_S_02863C",
+        "A8_GOLD_A_9B27B5"
+      ],
+      "dropped": [
+        "A8_GOLD_S_02863C",
+        "A8_GOLD_A_9B27B5"
+      ],
+      "sql_count": 103
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-oracle-final/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_GOLD_S_92CFF1",
+        "A8_GOLD_A_92C441"
+      ],
+      "dropped": [
+        "A8_GOLD_S_92CFF1",
+        "A8_GOLD_A_92C441"
+      ],
+      "sql_count": 103
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/working-contract-api/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_GOLD_S_875F2A",
+        "A8_GOLD_A_CF5C06"
+      ],
+      "dropped": [
+        "A8_GOLD_S_875F2A",
+        "A8_GOLD_A_CF5C06"
+      ],
+      "sql_count": 103
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-regression/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_V1317_S_21B129",
+        "A8_V1317_A_BE8C77"
+      ],
+      "dropped": [
+        "A8_V1317_S_21B129",
+        "A8_V1317_A_BE8C77"
+      ],
+      "sql_count": 0
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-oracle-r2/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_GOLD_S_58D7B1",
+        "A8_GOLD_A_ADF0B2"
+      ],
+      "dropped": [
+        "A8_GOLD_S_58D7B1",
+        "A8_GOLD_A_ADF0B2"
+      ],
+      "sql_count": 92
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-g19-isolated/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_V1317_S_3FD0EE",
+        "A8_V1317_A_51B3B1"
+      ],
+      "dropped": [
+        "A8_V1317_S_3FD0EE",
+        "A8_V1317_A_51B3B1"
+      ],
+      "sql_count": 92
+    },
+    {
+      "evidence": "09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/candidate-oracle-r3/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+      "created": [
+        "A8_GOLD_S_F042CA",
+        "A8_GOLD_A_D761CF"
+      ],
+      "dropped": [
+        "A8_GOLD_S_F042CA",
+        "A8_GOLD_A_D761CF"
+      ],
+      "sql_count": 103
+    }
+  ],
+  "install": {
+    "passed": true,
+    "steps": [
+      {
+        "args": [],
+        "exit_code": 0
+      },
+      {
+        "args": [],
+        "exit_code": 0
+      },
+      {
+        "args": [
+          "status"
+        ],
+        "exit_code": 0
+      },
+      {
+        "args": [
+          "stage"
+        ],
+        "exit_code": 0
+      },
+      {
+        "args": [
+          "gate-code"
+        ],
+        "exit_code": 0
+      },
+      {
+        "args": [
+          "undo",
+          "--backup",
+          "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261104-genos-gold-mapping/install-validation/physical-checkout/09_ARTIFACTS/BACKUPS/code-replacement/20261104T074815Z-0fd8771f"
+        ],
+        "exit_code": 0
+      }
+    ],
+    "restored_files": 529,
+    "exact_no_argument_bash": true,
+    "physical_symlink_target": true,
+    "repeat_and_status": true,
+    "git_stage_and_gate": true,
+    "undo_removed_new_files": true,
+    "env_and_data_preserved": true,
+    "HOME_environment_unchanged": true,
+    "DEV_link_removed": true,
+    "field_executed": false
+  },
+  "field_deployed": false,
+  "model_calls": 0,
+  "email_sent": false,
+  "unrelated_working_changes_preserved": [
+    "02_BACKEND/semantic_runtime/legal_agent/review_explanation.py",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+  ]
+}

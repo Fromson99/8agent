@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "actions": [
+    {
+      "action": "check",
+      "exit_code": 1,
+      "expected_success": false
+    },
+    {
+      "action": "check",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "apply",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "apply",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "status",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "stage",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "gate-code",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "action": "undo",
+      "exit_code": 1,
+      "expected_success": false
+    },
+    {
+      "action": "undo",
+      "exit_code": 0,
+      "expected_success": true
+    }
+  ],
+  "original_files_restored": 526,
+  "data_env_preserved": true,
+  "JavaScript_excluded_and_existing_hash_enforced": true,
+  "nested_archives": 0,
+  "field_executed": false,
+  "actual_workspace_modified": false
+}

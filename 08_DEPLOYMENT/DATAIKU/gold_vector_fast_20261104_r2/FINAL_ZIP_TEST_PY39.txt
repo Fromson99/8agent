@@ -1,0 +1,19 @@
+
+==================================== ERRORS ====================================
+_ ERROR collecting 08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/test_vector_fast.py _
+ImportError while importing test module '/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/test_vector_fast.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/test_vector_fast.py:21: in <module>
+    from lawrag.pipeline import oracle_migration as migration
+/tmp/vector-r2-final-d7i7s76c/vendor/02_BACKEND/lawrag/pipeline/oracle_migration.py:11: in <module>
+    from semantic_runtime.physical_mapping import names
+/tmp/vector-r2-final-d7i7s76c/vendor/02_BACKEND/semantic_runtime/physical_mapping.py:11: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+=========================== short test summary info ============================
+ERROR 08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/test_vector_fast.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.17s

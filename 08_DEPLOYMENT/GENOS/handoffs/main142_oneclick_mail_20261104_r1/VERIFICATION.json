@@ -1,0 +1,46 @@
+{
+  "main_generation": 142,
+  "release_id": "gold-workflow-review-20261104-r1",
+  "release_manifest_sha256": "93c63931bc298b5193c11a454a54054f8364b19bf6c38890c87b4c0106487b45",
+  "serving_files": 528,
+  "serving_bytes_equal_to_selected_MAIN142": true,
+  "archive_code_files": 530,
+  "archive_members": 531,
+  "zip_sha256": "332133a3a50acfa96fb399000089d1fcf4410b44837b248e0078e91cba3e94f1",
+  "workflow_file": "MAIN142_WORKFLOW.py",
+  "workflow_sha256": "ee2468afe1dc45f43edef239706a0339a35435c0ae6c6f8604d179c308d8cc42",
+  "workflow_equals_MAIN142": true,
+  "javascript_attachments": 0,
+  "nested_archives": 0,
+  "existing_required_javascript_checked_before_install": true,
+  "prior_MAIN142_validation": {
+    "contracts": 110,
+    "actual_main_checks": 16,
+    "gold_binding_checks": 9,
+    "source": "04_EXPERIMENTS/ADR/ADR-1336-gold-workflow-review-main"
+  },
+  "installer": {
+    "commands": 7,
+    "passed": true,
+    "default_command": "bash MAIN142_ONECLICK_R1.txt",
+    "no_required_flags_or_exports": true,
+    "actual_home_DEV_symlink": true,
+    "default_python3": true,
+    "original_files_restored": 532,
+    "synthetic_data_env_runtime_preserved": true,
+    "stage_commit_code_gate": true,
+    "user_checkout_modified": false
+  },
+  "syntax": {
+    "bash": true,
+    "installer_python311": true,
+    "workflow_python310_and311": true
+  },
+  "initial_fixture_failure": "Empty synthetic Git repository treated all existing files as new; four unchanged trailing-whitespace lines failed diff --check. Failure preserved, fixture corrected with an existing MAIN140 commit; product bytes unchanged.",
+  "new_model_calls": 0,
+  "new_Oracle_calls": 0,
+  "field_commit": null,
+  "field_revision": null,
+  "field_deployed": false,
+  "quality_certified": false
+}

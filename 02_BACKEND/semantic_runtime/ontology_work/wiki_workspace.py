@@ -228,15 +228,36 @@ class Workspace(DomainWorkflow):
                     ids.append(bid); items.append(self.item(bid))
                     if len(ids) > 128: raise ContractError('workspace proposal reference limit')
         expected = {d['bundle_id']: {k: d[k] for k in ('revision', 'work_hash')} for d in items}
-        context = {'raw_records': raws, 'items': items, 'candidate_search': search,
+        # Offer original business content once. Stored envelopes/indexes are
+        # provenance, not additional observations for the model to turn into facts.
+        raw_pins = {bid: {k: row[k] for k in ('revision', 'work_hash')} for bid, row in raws.items()}
+        record_view = {bid: {k: deepcopy(row['raw'][k]) for k in ('payload', 'format_description', 'origin')}
+                       for bid, row in raws.items()}
+        context = {'raw_records': record_view, 'raw_record_bindings': raw_pins,
+                   'items': items, 'candidate_search': search,
                    'originals': list(originals), 'change_id': change_id}
+        schema, expand = wc.proposal_contract(raws, items, originals)
+        contract = wc.PROPOSAL_VERSION
+        prompt = wc.PROMPT
+        if raws and not items:
+            schema, expand, materials = wc.content_selection_contract(raws, originals)
+            context.pop('raw_records')
+            context['material_options'] = materials
+            contract = wc.CONTENT_VERSION
+            prompt = wc.CONTENT_PROMPT
+        context['proposal_contract'] = contract
         def unchanged():
+            for bid, pin in raw_pins.items():
+                current = self.load(bid)
+                if any(current[k] != value for k, value in pin.items()):
+                    raise ContractError('workspace proposal raw record changed')
             for bid, pin in expected.items():
                 current = self.item(bid)
                 if any(current[k] != v for k, v in pin.items()):
                     raise ContractError('workspace proposal input changed')
             if originals: self._originals(list(originals))
-        def verify(value):
+        def verify(raw):
+            value = expand(raw)
             wc.validate(value, wc.CHANGE_SCHEMA)
             if any(o['op'] in ('MARK_DISPUTED', 'RETRACT') for o in value['operations']):
                 raise ContractError('model cannot withdraw active knowledge')
@@ -253,9 +274,12 @@ class Workspace(DomainWorkflow):
                         raise ContractError('model workspace source was not offered')
             self.apply(change_id=change_id, operations=value['operations'], expected=expected,
                        raw_ids=list(raw_ids), _validate_only=True)
-        value, receipt = self._job('WIKI_PROPOSE', context, wc.PROMPT, wc.CHANGE_SCHEMA, verify, unchanged)
+        raw, receipt = self._job('WIKI_PROPOSE', context, prompt, schema, verify, unchanged)
+        value = expand(raw)
         return {'change_id': change_id, 'operations': value['operations'], 'expected': expected,
-                'raw_ids': list(raw_ids), 'proposal_receipt': {'model': receipt, 'candidate_search': search}}
+                'raw_ids': list(raw_ids), 'proposal_receipt': {'model': receipt, 'candidate_search': search,
+                    'contract': contract, 'original_proposal_hash': digest(raw),
+                    'canonical_proposal_hash': digest(value)}}
 
     def lint(self, bid):
         doc = self.item(bid); missing = []

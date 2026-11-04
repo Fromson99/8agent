@@ -5,7 +5,7 @@ METHODS={
  'STATE_RESTORE':{'action':'CORRECT','stage':'NONE','purpose':'기록된 특정 이벤트의 조건을 정확히 복원한다'},
  'PURPOSE_REVISE':{'action':'CORRECT','stage':'INTENT','purpose':'질문 자체의 수행 목적을 변경한다'},
  'RESEARCH_REPLAN':{'action':'CORRECT','stage':'PLAN','purpose':'문서 범위·검색 계획과 필요한 조건을 수정한다'},
- 'RESEARCH_REENTER':{'action':'FOLLOW','stage':None,'purpose':'사용자가 지정한 조사 단계부터 다시 검토한다'},
+ 'RESEARCH_REENTER':{'action':'FOLLOW','stage':None,'purpose':'기존 원문을 재사용해 지정된 조사 단계 또는 실패한 검토 단계부터 다시 확인한다'},
  'ANSWER_PRESENT':{'action':'PRESENT','stage':'COMPOSE','purpose':'판단과 조건을 유지하고 최종 표현만 바꾼다'},
  'HISTORY_EXPLAIN':{'action':'INSPECT','stage':'NONE','purpose':'실제 정정 이벤트와 현재 판단 근거를 조회해 설명한다'},
  'EXPERIENCE_CONFIRM':{'action':'FINALIZE','stage':'NONE','purpose':'사용자가 확인한 현재 최종 판단 묶음을 발행한다'},
@@ -14,6 +14,49 @@ METHODS={
  'NEED_TARGET':{'action':'CLARIFY','stage':'NONE','purpose':'기록에서 요청 대상을 특정할 수 없어 확인한다'},
 }
 FIELDS=('task','source_category','document_ids','facts','queries')
+
+
+def review_recovery(assessment):
+    """Expose verified record diagnostics; not a legal or automatic retry choice."""
+    proposal = assessment.get('model_proposal') or {}
+    failure = proposal.get('failure')
+    if not isinstance(failure, dict):
+        return None
+    from copy import deepcopy
+    eligible = bool(assessment.get('source_excerpt_reply')
+        and proposal.get('review_status') == 'INCOMPLETE'
+        and proposal.get('failure_code') == 'ASSESSMENT_CONTRACT_UNRESOLVED'
+        and failure.get('category') in (
+            'FINAL_READ_REVIEW_INVALID', 'REQUIREMENT_REVIEW_INVALID', 'OUTPUT_SHAPE_INVALID')
+        and failure.get('repairable'))
+    incomplete_acquisition = eligible and any(isinstance(row,dict) and
+        row.get('code') == 'SCOPE_ACQUISITION_INCOMPLETE' for row in (failure.get('issues') or []))
+    return {'failure': deepcopy(failure), 'available': eligible,
+        'restart_stage': ('SELECT' if incomplete_acquisition else 'ASSESS') if eligible else None,
+        'requires_source_completion': bool(incomplete_acquisition),
+        'all_requested_sources_acquired': False if incomplete_acquisition else None,
+        'source_acquisition_confirmed': bool(assessment.get('source_excerpt_reply')),
+        'does_not_establish_missing_source': eligible and not incomplete_acquisition,
+        'automatic_retry': False, 'requires_new_user_request': True,
+        'legal_conclusion_confirmed': False}
+
+
+def literal_repeat_target(context, body, principal):
+    """Exact request/state identity, never semantic similarity or answer truth."""
+    if body.get('question') != context['utterance']:return None
+    events = [(e, g) for g in context['goals'] for e in g.get('events', []) if e.get('after')]
+    if not events:return None
+    event, goal = max(events, key=lambda pair:pair[0]['id'])
+    state = goal['state']
+    if (goal.get('status') != 'READY' or not goal.get('command_ready') or goal.get('pending')
+            or state.get('scenario_context') or event.get('after') != state
+            or event.get('utterance') != context['utterance']
+            or state.get('task') != context['utterance']):return None
+    allowed = set(principal.get('document_ids', []))
+    requested = set(body.get('document_ids') or allowed)
+    if set(state['document_ids']) != requested or not requested <= allowed:return None
+    return goal['id']
+
 
 def offered(context):
     """Expose only commands with at least one currently valid host-owned target."""
@@ -32,6 +75,10 @@ def offered(context):
         from .tool_policy import assess_availability
         if assess_availability('memory',name,binding=None,reason=None if targets else 'NO_VALID_TARGET').offered:
             result[name]={**method,'targets':targets}
+    repeat = context.get('literal_repeat_target')
+    if repeat:
+        result = {name:{**item,'targets':[repeat]} for name,item in result.items()
+                  if name in ('ANSWER_PRESENT','RESEARCH_REENTER','NEED_TARGET') and repeat in item['targets']}
     return result
 
 def require_offered(command,context):
@@ -84,6 +131,72 @@ def normalize(c,context):
     elif c.get('restore_fields') or c.get('restore_event') is not None:raise ValueError('restore fields require STATE_RESTORE')
     if key=='CASE_START' and c.get('target') is not None:raise ValueError('new case target must be null')
     return c
+
+def command_branch(schema, name, context):
+    """Expose the same mechanical field constraints enforced by normalize.
+
+    Semantic intent, authorization and restoration receipts are still checked
+    after the proposal; this function never chooses a method or a legal scope.
+    Persisted legacy EXPLICIT commands remain readable by normalize.
+    """
+    from copy import deepcopy
+    branch = deepcopy(schema)
+    props = branch['properties']
+    props['method_id'] = {'type':'string', 'const':name}
+    targets = offered(context)[name]['targets']
+    choices = ([{'type':'string','enum':[t for t in targets if t is not None]}]
+               if any(t is not None for t in targets) else [])
+    if None in targets:choices.append({'type':'null'})
+    props['target'] = {'anyOf':choices}
+    if name not in ('CASE_START','EXPERIENCE_REUSE','RESEARCH_REPLAN'):
+        props['document_scope_mode'] = {'type':'string','const':'KEEP'}
+    if name == 'EXPERIENCE_REUSE':
+        branch['allOf'] = [{'anyOf':[
+            {'properties':{'target':{'type':'null'}}},
+            {'properties':{'document_scope_mode':{'const':'KEEP'}}}]}]
+    if name not in ('CASE_START','PURPOSE_REVISE','RESEARCH_REPLAN'):
+        props['search_scope_change'] = {'type':'object',
+            'properties':{'operation':{'const':'KEEP'},'targets':{'type':'array','maxItems':0},
+                          'user_quote':{'const':''}},
+            'required':['operation','targets','user_quote'],'additionalProperties':False}
+    if name != 'STATE_RESTORE':
+        props['restore_event'] = {'type':'null'}
+        props['restore_fields'] = {'type':'array','maxItems':0}
+    if name in ('ANSWER_PRESENT','HISTORY_EXPLAIN','EXPERIENCE_CONFIRM','WIKI_RELINK','RESEARCH_REENTER','FACT_UPDATE'):
+        for field in FIELDS:
+            if name == 'FACT_UPDATE' and field == 'facts':continue
+            props[field] = {'const':'KEEP'} if field == 'source_category' else {'type':'null'}
+    if name == 'FACT_UPDATE':props['facts']['type'] = 'array'
+    if name == 'PURPOSE_REVISE':props['task'].update(type='string',minLength=1)
+    if name == 'RESEARCH_REENTER':
+        props['stage'] = {'enum':['INTENT','PLAN','RECALL','READ','SELECT','ASSESS','COMPOSE']}
+    if name in ('EXPERIENCE_REUSE','WIKI_RELINK'):
+        props['knowledge_id'] = {'type':'string','enum':[k['id'] for k in context['knowledge']]}
+    return branch
+
+
+def repair_schema(schema, payload, context):
+    """A mechanical field correction cannot replace a valid action/target.
+
+    Semantic command-check or admission failures retain the full decision menu.
+    No default command, inferred intent, or implicit field correction is applied.
+    """
+    from copy import deepcopy
+    prior = payload.get('rejected_decision')
+    if not isinstance(prior,dict) or prior.get('check') is not None:return schema
+    raw = prior.get('command')
+    if not isinstance(raw,dict):return schema
+    item = offered(context).get(raw.get('method_id'))
+    if not item or raw.get('target') not in item['targets']:return schema
+    issues = payload.get('repair_contract',{}).get('validation',{}).get('issues',[])
+    if not issues or any(not i.get('code','').startswith('SCHEMA_') or
+        i.get('path','/') in ('/','/method_id','/target') for i in issues):return schema
+    value = deepcopy(schema)
+    value['properties']['method_id'] = {'const':raw['method_id']}
+    value['properties']['target'] = {'const':raw['target']}
+    value['description'] = '필드 형식 보완: 원래 method_id와 target을 유지한다. 새로운 목표로 바꾸지 않는다.'
+    return value
+
 
 def history_projection(events):
     out=[]

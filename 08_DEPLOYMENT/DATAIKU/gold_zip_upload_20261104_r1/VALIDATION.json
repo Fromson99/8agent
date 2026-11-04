@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-04",
+  "status": "LOCAL_VERIFIED_FIELD_NOT_RUN",
+  "notebook_tests": {
+    "passed": 9,
+    "failed": 0,
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/gold_zip_upload_20261104_r1/test_notebook.py"
+  },
+  "parent_contract_tests": {
+    "passed": 17,
+    "failed": 0,
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/gold_zip_flow_20261104_r1/test_contracts.py"
+  },
+  "python39_syntax": "PASS (AST parser, not Python 3.9 runtime)",
+  "tested": [
+    "Delivered TXT + exact packaged ZIP + real Flow installer with local Dataiku API substitute",
+    "Eight recipes, thirteen external datasets, eight result folders, one scenario trigger",
+    "Existing upload bytes preserved; same project/folders reused on reinstall",
+    "Missing/nested parts, absent checksum file, changed code ZIP, wrong project, blank owner rejected before Flow creation",
+    "Ambiguous scenario launch raises without automatic retry"
+  ],
+  "code_zip_sha256": "39a2fce28bff353a83e1ed2fc0385b75cf391ac158d39565e295e62099d2bedf",
+  "parent_code_unchanged": true,
+  "new_oracle_calls": 0,
+  "new_embedding_calls": 0,
+  "new_email_sent": false,
+  "not_verified": [
+    "Actual Dataiku server SDK/permissions/runtime",
+    "Full original 34 parts",
+    "Field Oracle and actual embedding model"
+  ],
+  "previous_oracle_verification": "09_ARTIFACTS/AUDITS/20261104-gold-r5-code-integration/수정과_검증결과.txt (prior work; not rerun)",
+  "input_identity_evidence": {
+    "mail_id": "1a156f58b6638d64",
+    "archive": "genos-rag-data-20261007T002029Z-7c0b050f.zip",
+    "parts": 34
+  },
+  "field_owner": "USER_CONFIGURATION_REQUIRED",
+  "notes": [
+    "Upload preflight checks file presence only. The original Flow validates checksum metadata and actual content before INSERT.",
+    "Initial build showed a Python invalid escape warning; source template changed to raw string before tests. Generated TXT bytes were unchanged."
+  ]
+}

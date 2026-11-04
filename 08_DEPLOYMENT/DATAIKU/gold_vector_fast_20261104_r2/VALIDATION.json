@@ -1,0 +1,75 @@
+{
+  "version": "vector-python-compat-validation-v1",
+  "date": "2026-11-04",
+  "root": "/home/jin/8-AGENT/08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/package",
+  "tested_extracted_root": "/tmp/vector-r2-final-rw2qtu1m",
+  "extracted_root_cleaned_after_tests": true,
+  "zip_sha256": "60efc0e8f874c144ce8da126c8c61ec9fec70c3666b43cbf76a95ee7cddfc777",
+  "manifest_sha256": "c66e75f5e4de680b91a1419d5ff56d16779afe43608c36ec5fcdcdd5c0a0d0e1",
+  "code_binding": "502c8890f58c9cb3d1ceb8bba5d3a5eaf0c56e8c75543466f17643425e5697a4",
+  "parent_code_binding": "ef95af6a32473f016fe1ecec9d88a9544ec46982e37a78591cc7daac565a7e4a",
+  "parent_zip_sha256": "3052c3fcee26a75f536108b6c570bffd56bb9149f64701e810acb421c3068310",
+  "changed_existing_files": [
+    "vector_stage.py"
+  ],
+  "added_files": [
+    "VECTOR_RESUME_PARENT.json"
+  ],
+  "package_files_including_manifest": 75,
+  "vector_stage_sha256": "41dfa398bc9c27644dacdaad6c13c26df9b9961d060175f1fde194837c5f2265",
+  "prior_vector_stage_sha256": "61d39fb66ad3c12903afa06f7a8d92dc9d1e8a1e3c35b033730b250faf01e7a1",
+  "original_r1_unchanged": true,
+  "test_results": {
+    "python_3_14_4_working": {
+      "passed": 47,
+      "failed": 0
+    },
+    "python_3_9_25_working": {
+      "passed": 47,
+      "failed": 0
+    },
+    "python_3_9_25_final_zip": {
+      "passed": 47,
+      "failed": 0
+    },
+    "counts_overlap_do_not_sum": true,
+    "original_python_3_9_failure_reproduced": true,
+    "test_setup_failures": [
+      {
+        "file": "TEST_PY39_01.txt",
+        "reason": "Isolated test environment lacked PyYAML; collection stopped before tests."
+      },
+      {
+        "file": "FINAL_ZIP_TEST_PY39.txt",
+        "reason": "Same missing test dependency; preserved. Fixed test environment only, no product code change."
+      }
+    ]
+  },
+  "live_model_calls": 0,
+  "live_oracle_calls": 0,
+  "dataiku_mesh": "fixture_only",
+  "selected_generation_path": "UNCONFIRMED_FIELD_ENVIRONMENT",
+  "selected_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "git_commit_push": "NOT_PERFORMED",
+  "field_deployment": "NOT_PERFORMED",
+  "main_changed": false,
+  "validation_commands": [
+    [
+      "uv",
+      "run",
+      "--python",
+      "3.9",
+      "--with",
+      "pytest==8.4.2",
+      "--with",
+      "pyyaml",
+      "--no-project",
+      "python",
+      "-m",
+      "pytest",
+      "-q",
+      "08_DEPLOYMENT/DATAIKU/gold_vector_fast_20261104_r2/test_vector_fast.py"
+    ]
+  ]
+}

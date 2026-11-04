@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "checks": [
+    "S3_failure_before_Oracle_or_model",
+    "missing_registered_tables_blocked_without_DDL",
+    "different_owner_SELECT_only_login_rejected_before_any_rows",
+    "corrupt_part_rejected_before_first_insert_or_embedding",
+    "final_result_upload_failure_not_reported_as_success",
+    "exact_delivered_TXT_34_parts_all_stages_no_DDL_no_Flow",
+    "committed_source_response_loss_resumed_without_duplicates",
+    "same_cell_and_final_upload_resume_no_new_embedding",
+    "all_original_uploads_preserved_scoped_status_and_logs",
+    "missing_local_workspace_blocks_before_Oracle_and_embedding",
+    "existing_release_without_original_checkpoint_rejected",
+    "fresh_process_source_vector_acl_and_profile_readback"
+  ],
+  "external_models": 0,
+  "dataiku_sdk": "LOCAL_SUBSTITUTE",
+  "field_execution": false,
+  "full_production_corpus": false,
+  "cleaned": true,
+  "counts": {
+    "DOC_VER": 2,
+    "DOC_UNIT": 3,
+    "DOC_BLK": 3,
+    "SRCH_ROW": 112,
+    "VCTR_ITEM": 3
+  },
+  "synthetic_embedding_calls": 1,
+  "sql_calls": 843,
+  "code_sha256": "71e34b52551f5bfd32841b7e3c949a51d07ee6f3fed6df3cab84b83e261803ab",
+  "flow_api_calls": 0,
+  "loader_DDL_calls": 0,
+  "distinct_owner_and_login": true,
+  "unit_tests": {
+    "passed": 20,
+    "failed": 0,
+    "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261104_r1/test_production.py"
+  },
+  "parent_engine": {
+    "path": "gold_zip_flow_20261104_r1/package/engine",
+    "unchanged_files": 83
+  },
+  "scope": "Production one-cell 34-part loader; precreated registered Gold tables; no Flow or DDL"
+}

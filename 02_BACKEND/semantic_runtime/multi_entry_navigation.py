@@ -32,11 +32,16 @@ def bind_structure(matcher,store,origin_projection=None):
                 sources[source['document_id']].append((ordinal,sid))
             value = {'units':units, 'unit_index':MappingProxyType({d:tuple(v) for d,v in by_document.items()}),
                      'source_index':MappingProxyType({d:tuple(v) for d,v in sources.items()}),
+                     'coordinates':MappingProxyType(dict(bound.stored_coordinates)),
                      'validated':frozenset(), 'lock':threading.Lock()}
             _PREPARED.clear()
             _PREPARED[key] = value
         bound.units = value['units']
         bound.prepared_structure = value
+        bound.stored_coordinates = value['coordinates']
+        bound._structure_store = store
+        # A bound matcher owns successful selection reuse; never share mutable request results.
+        bound._selection_resolution_cache = None
     return bound
 
 
@@ -56,10 +61,22 @@ class FrozenList(list):
     def __deepcopy__(self,memo):return [deepcopy(v,memo) for v in self]
 
 
-def freeze(value):
-    if isinstance(value,dict):return FrozenDict({k:freeze(v) for k,v in value.items()})
-    if isinstance(value,list):return FrozenList(freeze(v) for v in value)
-    return value
+def freeze(value, memo=None, active=None):
+    # Stored fields and raw_structure often share the same lists/dicts.
+    # Freeze each shared object once within one unit, without cross-unit lifetime.
+    if not isinstance(value, (dict, list)):return value
+    memo = {} if memo is None else memo
+    active = set() if active is None else active
+    identity = id(value)
+    if identity in active:raise ValueError('cyclic generation metadata')
+    if identity in memo:return memo[identity]
+    active.add(identity)
+    try:
+        frozen = (FrozenDict({k:freeze(v,memo,active) for k,v in value.items()})
+                  if isinstance(value,dict) else FrozenList(freeze(v,memo,active) for v in value))
+        memo[identity] = frozen
+        return frozen
+    finally:active.remove(identity)
 
 
 def validate_structure(matcher, scope):

@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "exact_no_argument_bash_tested": true,
+  "HOME_environment_unmodified": true,
+  "temporary_HOME_DEV_symlink_removed": true,
+  "physical_target_resolved": true,
+  "duplicate_install_verified": true,
+  "renamed_TXT_verified": true,
+  "required_JS_mismatch_rejected_before_replace": true,
+  "original_files_restored": 526,
+  "actual_MAIN_unchanged": true,
+  "field_executed": false,
+  "steps": [
+    {
+      "args": [],
+      "file": "MAIN138_ONECLICK_R2.txt",
+      "exit_code": 1,
+      "expected_success": false
+    },
+    {
+      "args": [],
+      "file": "MAIN138_ONECLICK_R2.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [],
+      "file": "MAIN138_ONECLICK_R2.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [],
+      "file": "MAIN138_ONECLICK_R2 (1).txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "status"
+      ],
+      "file": "MAIN138_ONECLICK_R2.txt",
+      "exit_code": 0,
+      "expected_success": true
+    },
+    {
+      "args": [
+        "undo",
+        "--backup",
+        "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261104-main138-oneclick-r2/physical-checkout/09_ARTIFACTS/BACKUPS/code-replacement/20261104T051947Z-c1516cd8"
+      ],
+      "file": "MAIN138_ONECLICK_R2.txt",
+      "exit_code": 0,
+      "expected_success": true
+    }
+  ]
+}

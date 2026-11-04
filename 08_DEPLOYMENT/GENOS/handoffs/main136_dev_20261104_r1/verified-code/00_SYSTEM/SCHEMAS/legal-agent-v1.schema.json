@@ -1,0 +1,2729 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-agent-v1",
+  "$defs": {
+    "ToolAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "list_documents"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string"
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "query",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "list_structure"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "document",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "read_node"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "node": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "node",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "search_text"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "document": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "query",
+                "document",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "search_subtree"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "node": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "query",
+                "node",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "locate_provision"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "coordinate": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "document",
+                "coordinate",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "lookup_definition"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "query",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "follow_reference"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "evidence_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "outgoing",
+                    "incoming"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "evidence_id",
+                "direction",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "inspect_work"
+            },
+            "args": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InvestigateDecision": {
+      "type": "object",
+      "properties": {
+        "updates": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "create_issue"
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "question_piece_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "question",
+                          "source_trigger"
+                        ]
+                      },
+                      "evidence_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 0,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "question_piece_ids",
+                      "required",
+                      "origin",
+                      "evidence_ids"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "op",
+                  "temp_id",
+                  "issue"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "revise_issue"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "issue": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "question_piece_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "question",
+                          "source_trigger"
+                        ]
+                      },
+                      "evidence_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 0,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "question_piece_ids",
+                      "required",
+                      "origin",
+                      "evidence_ids"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "issue_id",
+                  "expected_version",
+                  "issue",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "split_issue"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "replacements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "temp_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "issue": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "question_piece_ids": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "minItems": 1,
+                              "maxItems": 64,
+                              "uniqueItems": true
+                            },
+                            "required": {
+                              "type": "boolean"
+                            },
+                            "origin": {
+                              "type": "string",
+                              "enum": [
+                                "question",
+                                "source_trigger"
+                              ]
+                            },
+                            "evidence_ids": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "minItems": 0,
+                              "maxItems": 64,
+                              "uniqueItems": true
+                            }
+                          },
+                          "required": [
+                            "text",
+                            "question_piece_ids",
+                            "required",
+                            "origin",
+                            "evidence_ids"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "temp_id",
+                        "issue"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 8
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "issue_id",
+                  "expected_version",
+                  "replacements",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "merge_issue"
+                  },
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "issue_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "expected_version": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "issue_id",
+                        "expected_version"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 8
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "question_piece_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "question",
+                          "source_trigger"
+                        ]
+                      },
+                      "evidence_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 0,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "question_piece_ids",
+                      "required",
+                      "origin",
+                      "evidence_ids"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "targets",
+                  "temp_id",
+                  "issue",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "supersede_issue"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "question_piece_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "question",
+                          "source_trigger"
+                        ]
+                      },
+                      "evidence_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 0,
+                        "maxItems": 64,
+                        "uniqueItems": true
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "question_piece_ids",
+                      "required",
+                      "origin",
+                      "evidence_ids"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "issue_id",
+                  "expected_version",
+                  "temp_id",
+                  "issue",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "assess"
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "evidence_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  },
+                  "relation": {
+                    "type": "string",
+                    "enum": [
+                      "supports",
+                      "qualifies",
+                      "contradicts",
+                      "irrelevant"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "temp_id",
+                  "issue_id",
+                  "evidence_ids",
+                  "relation",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "retract_assessment"
+                  },
+                  "assessment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "assessment_id",
+                  "expected_version",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "propose_finding"
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "assessment_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  },
+                  "fact_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "applicability": {
+                    "type": "string",
+                    "enum": [
+                      "source_only",
+                      "conditional",
+                      "current"
+                    ]
+                  }
+                },
+                "required": [
+                  "op",
+                  "temp_id",
+                  "issue_id",
+                  "assessment_ids",
+                  "fact_ids",
+                  "text",
+                  "applicability"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "attach_fact"
+                  },
+                  "temp_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "stated",
+                      "unknown"
+                    ]
+                  },
+                  "question_piece_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "op",
+                  "temp_id",
+                  "issue_id",
+                  "name",
+                  "status",
+                  "question_piece_ids"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "mark_unresolved"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "observation_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "issue_id",
+                  "expected_version",
+                  "observation_ids",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "op": {
+                    "const": "mark_not_applicable"
+                  },
+                  "issue_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "finding_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 64,
+                    "uniqueItems": true
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "op",
+                  "issue_id",
+                  "expected_version",
+                  "finding_ids",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "reads": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "list_documents"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string"
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "list_structure"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "document": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "document",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "read_node"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "node": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "node",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "search_text"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "document": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "document",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "search_subtree"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "node": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "node",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "locate_provision"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "document": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "coordinate": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "document",
+                      "coordinate",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "lookup_definition"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "follow_reference"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "evidence_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "direction": {
+                        "type": "string",
+                        "enum": [
+                          "outgoing",
+                          "incoming"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "evidence_id",
+                      "direction",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "inspect_work"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONTINUE",
+            "DRAFT"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "updates",
+        "reads",
+        "intent",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Draft": {
+      "type": "object",
+      "properties": {
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "finding_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "text",
+              "finding_ids",
+              "evidence_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "paragraphs",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "Review": {
+      "type": "object",
+      "properties": {
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "claim_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "SUPPORTED",
+                  "NEEDS_RESEARCH",
+                  "NEEDS_REWRITE",
+                  "UNCERTAIN"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "follow_up_reads": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "list_documents"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string"
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "list_structure"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "document": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "document",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "read_node"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "node": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "node",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "search_text"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "document": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "document",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "search_subtree"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "node": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "node",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "locate_provision"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "document": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "coordinate": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "document",
+                            "coordinate",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "lookup_definition"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "follow_reference"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "evidence_id": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "direction": {
+                              "type": "string",
+                              "enum": [
+                                "outgoing",
+                                "incoming"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "evidence_id",
+                            "direction",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "inspect_work"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {},
+                          "required": [],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "claim_id",
+              "claim_version",
+              "verdict",
+              "reason",
+              "evidence_ids",
+              "follow_up_reads"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "question_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question_piece_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "RESOLVED",
+                  "UNRESOLVED",
+                  "MISSING"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "follow_up_reads": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "list_documents"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string"
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "list_structure"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "document": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "document",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "read_node"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "node": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "node",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "search_text"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "document": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "document",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "search_subtree"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "node": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "node",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "locate_provision"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "document": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "coordinate": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "document",
+                            "coordinate",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "lookup_definition"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "follow_reference"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "evidence_id": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "direction": {
+                              "type": "string",
+                              "enum": [
+                                "outgoing",
+                                "incoming"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "evidence_id",
+                            "direction",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "inspect_work"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {},
+                          "required": [],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "question_piece_id",
+              "claim_ids",
+              "status",
+              "reason",
+              "follow_up_reads"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "whole_question": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "RESOLVED",
+                "UNRESOLVED",
+                "MISSING"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "follow_up_reads": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "list_documents"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "query": {
+                            "type": "string"
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "list_structure"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "document": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "document",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "read_node"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "node": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "node",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "search_text"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "query": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "document": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "document",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "search_subtree"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "query": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "node": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "node",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "locate_provision"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "document": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "coordinate": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "document",
+                          "coordinate",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "lookup_definition"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "query": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "follow_reference"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {
+                          "evidence_id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": [
+                              "outgoing",
+                              "incoming"
+                            ]
+                          },
+                          "cursor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "evidence_id",
+                          "direction",
+                          "cursor"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tool": {
+                        "const": "inspect_work"
+                      },
+                      "args": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": false
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "args",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "status",
+            "reason",
+            "follow_up_reads"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "claims",
+        "question_checks",
+        "whole_question"
+      ],
+      "additionalProperties": false
+    },
+    "Control": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "FINAL",
+            "RESEARCH",
+            "RECOMPOSE"
+          ]
+        },
+        "gate": {
+          "type": "string",
+          "enum": [
+            "READY",
+            "BOUNDED",
+            "CLARIFY"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "decision",
+        "gate",
+        "reason",
+        "state_revision",
+        "evidence_revision"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

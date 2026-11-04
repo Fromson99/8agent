@@ -14,7 +14,7 @@ from .output_contract import OutputContractError, issue
 VERSION = 'request-requirement-coverage-v1'
 FIELD = 'requirement_review'
 LINK_RULE = 'PRESERVE_UNLINKED_MATERIAL_GAPS_BY_REFERENCE_V2'
-PROMPT = '''requirement_context는 초기 쟁점 목록과 별개로 사용자 질문 전체를 보존한 검토 대상이다. 이 ASSESS 응답의 requirement_review에서 질문이 실제로 요구한 주체·대상·조건·절차·예외를 의미별로 나누고, 각 요구를 현재 원문과 대조한다. request_parts의 R번호는 문장/문단 위치이며 법률 쟁점의 정답 목록이 아니다. 한 문장에 여러 요구가 있으면 여러 행으로 나눈다. 초기 issues에 빠진 요구도 생략하지 말고 가장 관련된 기존 issue_refs에 연결한다. 단순 관련 규정이나 모든 예외를 새 필수 요구로 만들지 않는다.
+PROMPT = '''이미 답한 요구는 SATISFIED이며 EXCLUDED는 답변 완료 표시가 아니다. EXCLUDED는 이번 질문 범위에서 제외하기로 직접 판단한 요구에만 사용한다. requirement_context는 초기 쟁점 목록과 별개로 사용자 질문 전체를 보존한 검토 대상이다. 이 ASSESS 응답의 requirement_review에서 질문이 실제로 요구한 주체·대상·조건·절차·예외를 의미별로 나누고, 각 요구를 현재 원문과 대조한다. request_parts의 R번호는 문장/문단 위치이며 법률 쟁점의 정답 목록이 아니다. 한 문장에 여러 요구가 있으면 여러 행으로 나눈다. 초기 issues에 빠진 요구도 생략하지 말고 가장 관련된 기존 issue_refs에 연결한다. 단순 관련 규정이나 모든 예외를 새 필수 요구로 만들지 않는다.
 모든 request_parts와 issues를 적어도 한 번 연결한다. SATISFIED는 실제 claims의 claim_refs와 같은 현재 evidence_options의 basis_refs가 필요하다. 읽었다는 사실이나 제목·위임 위치만으로 구체 내용까지 충족했다고 하지 않는다. EXCLUDED는 요청 밖이라는 의견과 원문 basis_refs 또는 사용자가 직접 범위를 한정한 현재 발언 scope_quote가 필요하며 이유만으로 제외하지 않는다. 요청 문구를 인용했다는 사실만으로 제외가 맞다는 뜻은 아니다.
 필요한 원문이나 사실을 확인하지 못했다면 UNRESOLVED로 쓰고 같은 응답 gaps의 material=true 항목에 gap_indices로 연결한다(배열의 첫 항목은1). 새로 필요한 본문·위임·예외도 기존 gaps에 기록한다. gap.kind와 suggested_action은 기존 원문 조사/실제 사실 구분을 따른다. 알려진 위치만 missing_target에 쓰고 모르면 빈 문자열과 구체적인 부족 이유를 쓴다. 이미 확보한 claims는 유지한다. 같은 요구의 일부만 충족되면 충족 부분과 미해결 부분을 따로 쓴다. 의미상 불확실성만으로 불필요한 조사나 사용자 사실 질문을 만들지 않는다.'''
 

@@ -1,0 +1,21 @@
+{
+  "checks_passed": 11,
+  "checks": [
+    "matches",
+    "varchar",
+    "width",
+    "chars",
+    "not_null",
+    "default_N",
+    "explicit_NULL",
+    "lowercase_keys",
+    "missing",
+    "missing_params",
+    "invalid_owner"
+  ],
+  "execution": "local pandas + Dataiku substitute; no Oracle connection",
+  "field_execution": false,
+  "database_writes": 0,
+  "product_changes": 0,
+  "artifact_sha256": "e943f2adb04a14dacf3593dbcaf3379559f9a7625672bf7eb318f72dc614bc7c"
+}

@@ -238,6 +238,7 @@ class Memory:
                 compose=previous.get('COMPOSE',{}).get('payload',{})
                 select=previous.get('SELECT',{}).get('payload',{})
                 assessment=previous.get('ASSESS',{}).get('payload',{})
+                from .memory_methods import review_recovery
                 g['previous_response']={'text':str(compose.get('text',''))[:2000],
                     'limitations':compose.get('limitations',[])[:6],
                     'investigation_status':select.get('status'),
@@ -245,6 +246,7 @@ class Memory:
                     'review_status':assessment.get('model_proposal',{}).get('review_status'),
                     'stop_reason':assessment.get('stop_reason'),
                     'answer_coverage':assessment.get('answer_coverage'),
+                    'review_recovery':review_recovery(assessment),
                     'legal_conclusion_confirmed':bool(assessment.get('claims')),
                     'missing_fact_questions':[r['text'] for r in assessment.get('limitation_items',[])
                                               if r.get('kind')=='MISSING_FACT']}
@@ -292,10 +294,20 @@ class Memory:
         self.db.execute('INSERT INTO event(goal,request,utterance,command,kind) VALUES(NULL,?,?,?,?)',
             (value['decision_key'],'',encoded({'row':value,'hash':digest(value)}),'OUTPUT_DECISION_STATE'))
     def resolve(self,context):
-        from .law_candidates import answer_first
-        agent=getattr(getattr(getattr(self.executor,'model',None),'pipeline',None),'term_agent',None)
-        continuation = ('''\n같은 조문·제도·사건을 두고 적용 조건, 예외, 제외 사유, 근거를 추가로 묻는 후속 요청은 제공된 기존 goal을 보완한다. 질문 문장이 달라졌거나 확인 범위가 넓어졌다는 이유만으로 CASE_START를 선택하지 않는다. 기존 목표와 관계없는 별도 주제, 사용자가 별도 새 질문으로 시작하도록 요청한 경우에 CASE_START를 사용한다.
-같은 goal의 요청 범위가 바뀌면 그 target을 선택하고 PURPOSE_REVISE로 task를 현재 요청에 맞게 수정한다. 검색계획도 바꿔야 하면 RESEARCH_REPLAN으로 task와 queries를 함께 갱신할 수 있다. 실제로 변하지 않은 facts와 문서 범위는 유지한다. 예전 답변을 현재 후속 질문의 답으로 반복하지 않는다. 현재 요청의 대상과 기존 goal의 관계를 근거로 판단하며, 확정할 수 없는 대상을 추측하지 않는다. 이 정책은 기존 원문·이력을 검증해 재사용할 수 있도록 같은 조사에 연결하는 것이고, 이전 결론을 정답으로 승인하는 것이 아니다.''' if answer_first(getattr(agent,'profile',{})) else '')
+        # Conversation continuity is independent of navigation/answer-first policy.
+        continuation = '''\n같은 조문·제도·사건을 두고 적용 조건, 예외, 제외 사유, 근거를 추가로 묻는 후속 요청은 제공된 기존 goal을 보완한다. 질문 문장이 달라졌거나 확인 범위가 넓어졌다는 이유만으로 CASE_START를 선택하지 않는다. 기존 목표와 관계없는 별도 주제, 사용자가 별도 새 질문으로 시작하도록 요청한 경우에 CASE_START를 사용한다.
+같은 goal의 요청 범위가 바뀌면 그 target을 선택하고 PURPOSE_REVISE로 task를 현재 요청에 맞게 수정한다. 검색계획도 바꿔야 하면 RESEARCH_REPLAN으로 task와 queries를 함께 갱신할 수 있다. 실제로 변하지 않은 facts와 문서 범위는 유지한다. 예전 답변을 현재 후속 질문의 답으로 반복하지 않는다. 현재 요청의 대상과 기존 goal의 관계를 근거로 판단하며, 확정할 수 없는 대상을 추측하지 않는다. 이 정책은 기존 원문·이력을 검증해 재사용할 수 있도록 같은 조사에 연결하는 것이고, 이전 결론을 정답으로 승인하는 것이 아니다.'''
+        continuation += '''
+previous_response.review_recovery.available=true는 원문을 확보했지만 최종 형식·연결 검토에서 실패했다는 실행 기록이다. 그 자체를 법률 근거나 자료 부족으로 해석하지 않는다. 사용자가 같은 질문을 반복하고 목적·사실·문서 범위를 바꾸지 않았다면 RESEARCH_REENTER로 같은 goal을 재개하며 stage는 review_recovery.restart_stage를 따른다. requires_source_completion=true이면 기존 범위의 미확보 원문을 SELECT에서 이어 읽고, 그 외 ASSESS에서 기존 원문을 다시 검토한다. 확보된 부분 원문을 전체 확보로 해석하지 않는다. task/facts/queries는 null, 범위는 KEEP으로 유지한다. 검토 오류의 failure.issues를 먼저 확인하며 근거 없는 새 조문·기한을 검색 계획에 추가하지 않는다. 사용자가 새 자료 조사나 범위 변경을 요구했다면 그 의도에 맞는 명령을 선택한다. 실제 미확인 내용은 검토 단계에서 원문과 대조해 기존 gap 절차로 남긴다. UNKNOWN·시간초과를 이 검토 복구로 취급하지 않는다.'''
+        from .memory_methods import literal_repeat_target
+        request=getattr(self,'_resolve_request',{})
+        repeat=literal_repeat_target(context,request.get('body',{}),request.get('principal',{}))
+        if repeat:
+            route=self.route(repeat);previous=self.parts(repeat)
+            if (route and route['payload']['binding']==self.executor.binding
+                    and previous.get('READ',{}).get('payload',{}).get('binding')==self.executor.binding):
+                context={**context,'literal_repeat_target':repeat}
+        continuation += '\nliteral_repeat_target은 현재 요청 원문·최신 목표·사실·범위가 그대로라는 서버 기록이다. 해당 목표의 답변을 다시 보여주는 ANSWER_PRESENT를 선택할 수 있으며, 기존 검토가 실패했거나 재판단이 필요하면 RESEARCH_REENTER를 선택한다. 이전 답변의 정답 여부를 보증하지 않는다. CASE_START로 새 목표를 만들지 않는다. 서로 다른 주제·행위·쟁점은 같은 법령에 속해도 별도 목표다. 새로운 주제로 전환한 요청을 이전 목표의 RESEARCH_REPLAN으로 덮어쓰지 말고 CASE_START로 시작한다. 이전 질문의 조건·예외·근거를 보완하는 요청과 구분한다.'
         context={**context,'offered_methods':offered(context)}
         visible=model_context(context)
         data=visible
@@ -309,17 +321,8 @@ class Memory:
         for field,ids in [('target',[g['id'] for g in context['goals']]),('knowledge_id',[k['id'] for k in context['knowledge']])]:
             closed['properties'][field]={'anyOf':[{'type':'string','enum':ids},{'type':'null'}]} if ids else {'type':'null'}
         # Couple each method to its own executable targets, not the union of all goals.
-        branches=[]
-        for name,method in context['offered_methods'].items():
-            branch=json.loads(encoded(closed))
-            branch['properties']['method_id']={'type':'string','const':name}
-            targets=method['targets'];choices=[]
-            if any(t is not None for t in targets):choices.append({'type':'string','enum':[t for t in targets if t is not None]})
-            if None in targets:choices.append({'type':'null'})
-            branch['properties']['target']={'anyOf':choices}
-            if name in ('EXPERIENCE_REUSE','WIKI_RELINK'):
-                branch['properties']['knowledge_id']={'type':'string','enum':[k['id'] for k in context['knowledge']]}
-            branches.append(branch)
+        from .memory_methods import command_branch, repair_schema
+        branches=[command_branch(closed,name,context) for name in context['offered_methods']]
         closed['properties']['method_id']={'type':'string','enum':list(context['offered_methods'])}
         closed['anyOf']=branches
         from . import output_contract as output
@@ -339,8 +342,14 @@ class Memory:
                 raise output.OutputContractError(str(exc),[output.issue('COMMAND_ADMISSION_CONFLICT')],category='DECISION_CONFLICT') from exc
             return command
         def propose(payload,attempt):
-            raw=self.invoke(RESOLVE+SCOPE_PROMPT+continuation+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때만 명시 요청을 따른다. 나머지는 서버가 method에 맞게 결정한다.',payload,closed,'memory-resolve' if not attempt else 'memory-resolve-repair')
-            command=prepare(raw)
+            current_schema=repair_schema(closed,payload,context) if attempt else closed
+            raw=self.invoke(RESOLVE+SCOPE_PROMPT+continuation+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때 명시 요청 또는 제공된 review_recovery의 실패 단계를 따른다. 나머지는 서버가 method에 맞게 결정한다.',payload,current_schema,'memory-resolve' if not attempt else 'memory-resolve-repair')
+            try:
+                output.validate_shape(raw,current_schema)
+                command=prepare(raw)
+            except (output.OutputContractError, ValidationError) as exc:
+                exc.proposal={'command':deepcopy(raw),'check':None}
+                raise
             check=self.invoke(VERIFY_COMMAND+SCOPE_PROMPT+continuation,{'context':visible,'command':model_context(command),'execution_contract':{'stage_means':'restart entry, never a stopping point','requested_entry':command['stage'],'ordered_stages':STAGES,'success_ends_at':'COMPOSE','dependency_recovery_may_start_earlier':True}},CHECK,'memory-command-check')
             return {'command':raw,'check':check}
         def verify(value):

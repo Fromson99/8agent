@@ -1,0 +1,65 @@
+Dataiku Gold ZIP R1 — S3 결과 폴더 경로 복구
+2026-11-04 / 사진의 설치 정보 upload_stream 버킷404 상황용
+
+확인된 차이
+  업로드 폴더 LEGAL_RAG_UPLOAD: OBS / /dataiku/${projectKey}/${odbId}
+  자동 결과 REPORT 폴더:     OBS / /LEGAL_RAG/gold_zip_flow_20261104_r1/report
+기존 설치 코드가 연결의 기본 경로 규칙 대신 별도 경로를 지정했습니다.
+이번 셀은 결과8폴더의 연결/버킷 지정 방식/경로 규칙을 업로드 폴더에 맞춥니다.
+경로 차이가 실제404의 유일 원인이라는 뜻은 아닙니다.
+버킷/namespace/권한 문제가 남으면 읽기·쓰기 검사에서 실패로 남습니다.
+
+사용 순서
+1. 기존 오류가 난 설치 셀은 다시 실행하지 않습니다.
+2. 같은 LEGAL_RAG 프로젝트 Python 노트북의 새 셀에
+   DATAIKU_GOLD_S3_REPAIR_RUN_R1.txt 전체를 붙이고 한 번 실행합니다.
+   기존 Flow 레시피에서 폴더ID/설정/시나리오를 읽으므로 ID를 다시 입력하지 않습니다.
+3. S3_REPAIR_COMPLETE가 출력되는지 확인합니다.
+   이 표시는 결과8폴더에서 작은 파일 쓰기·읽기와 installation.json 저장을 확인한 뜻입니다.
+   Gold 데이터 적재 성공을 뜻하지 않습니다.
+4. Scenarios → G19ZIP_RUN_ALL · ZIP부터 Gold 벡터까지 → Run을 한 번 누릅니다.
+5. 시나리오 성공 후 G19ZIP_07_REPORT_RESULT의 report.json을 확인합니다.
+
+이 셀의 변경 범위
+  기존 결과 폴더8개의 S3 위치 메타데이터만 수정합니다. 폴더 ID는 그대로입니다.
+  /dataiku/${projectKey}/${odbId} 규칙을 각 폴더 자체 ID로 해석하므로 결과들이 분리됩니다.
+  업로드 폴더에 bucket이 명시돼 있으면 같은 값을 쓰고, 상속 방식이면 결과도 상속합니다.
+  작은 확인 파일과 설치 정보, 복구 기록을 씁니다. 원문 파일 이동·삭제는 없습니다.
+  Oracle SQL·모델 호출·레시피 변경·시나리오 자동 시작은 하지 않습니다.
+  기존 코드 ZIP·데이터34조각·SHA파일은 그대로 사용하며 다시 올리지 않습니다.
+
+실패·재개
+  중간에 실패하면 같은 복구 셀을 다시 실행해 진행할 수 있습니다.
+  기존 설치 셀을 실행하면 옛 경로를 기대하여 EXISTING_FOLDER_CONFLICT가 납니다.
+  복구 셀에서 계속 bucket404가 나면 경로 변경만으로 해결되지 않은 것입니다.
+  화면의 오류와 출력된 업로드/결과 폴더의 실제 bucket/root를 기준으로 OBS 연결을 확인합니다.
+  연결 비밀번호/접근키는 출력하지 않습니다.
+
+기존 실행 보호
+  이미 시나리오 실행 이력이 있거나 workspace/결과 데이터가 확인되면 자동 복구하지 않습니다.
+  이 도구는 사진처럼 최초 설치의 installation.json 저장에서 실패한 상태용입니다.
+  이전 경로의 목록 조회 자체가 버킷404이면 내용은 미확인으로 기록하고 그 위치의 파일은 보존합니다.
+  실제 데이터를 이미 쓴 작업의 경로 이관 도구가 아닙니다.
+  복구 중 다른 사용자가 시나리오/레시피를 실행하지 않도록 합니다.
+
+원복
+  셀이 출력하는 로컬 repair-state.json에 수정 전 위치 설정이 저장됩니다.
+  모든 검사가 성공하면 REPORT의 _gold_zip_s3_repair/에도 백업을 저장합니다.
+  아직 시나리오를 시작하지 않았고 같은 호스트의 백업 파일이 남아 있다면,
+  복구 TXT 첫 줄 근처 MODE = "REPAIR"를 MODE = "ROLLBACK"으로 바꾸어 같은 셀을 실행합니다.
+  원복도 위치 설정만 되돌리며 새/옛 위치의 파일을 삭제하지 않습니다.
+  시나리오 실행 후에는 이 원복 셀을 적용하지 않습니다.
+
+검증 범위
+  원래 R1 설치기를 로컬 Dataiku/S3 대역으로 실행해 같은 업로드 지점의 실패를 재현했습니다.
+  전달 TXT 전체 실행·기존ID/레시피/업로드 보존·8폴더 읽기쓰기·부분실패 재개·원복·
+  실행 이력/코드변경/기존 체크포인트 차단 등10검사가 통과했습니다.
+  Python3.9 구문 검사이며 실제 현장 Dataiku14.7.3/OBS/Oracle 실행 인증은 아닙니다.
+
+공식 참고
+  연결 기본 경로와 관리 폴더 위치:
+  https://doc.dataiku.com/dss/14/connecting/s3.html
+  Managed Folder 설정/접근정보 API:
+  https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
+  Scenario 실행 이력 조회 API:
+  https://developer.dataiku.com/latest/api-reference/python/scenarios.html

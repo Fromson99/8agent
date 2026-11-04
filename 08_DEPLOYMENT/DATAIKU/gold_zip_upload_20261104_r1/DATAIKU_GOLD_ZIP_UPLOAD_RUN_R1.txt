@@ -1,0 +1,79 @@
+# LEGAL_RAG 프로젝트 > Notebooks > 새 Python 노트북 > 셀 하나에 전체 붙여넣기
+# 코드 ZIP과 데이터 조각34개 + SHA파일2개를 ehA8dpVm 루트에 업로드합니다.
+# 이 셀은 Flow를 설치하고 시나리오를 한 번 시작합니다. 완료는 Scenario 실행 결과로 확인합니다.
+EXPECTED_PROJECT = 'LEGAL_RAG'
+PARAMS = {
+    'CODE_FOLDER_ID': 'ehA8dpVm',
+    'INPUT_FOLDER_ID': 'ehA8dpVm',  # 데이터가 다른 폴더에 있으면 그 폴더 ID만 입력
+    'ORACLE_CONNECTION': 'AIDP',
+    'EXPECTED_DB_USER': 'PIDD2APP',
+    'TARGET_MODE': 'GOLD',
+    'GOLD_OWNER': '',              # 필수: IDD_B003_LGL_* 테이블의 실제 소유 스키마명
+    'TABLE_PREFIX': 'IDD_B003_LGL_',
+    'TABLE_NAMES': {},
+    'WORK_DIR': '',                # 권장: 모든 레시피가 공유하는 영속 Linux 절대경로
+    'EMBED_MODEL': 'openai:genos-embedding:embedding-kure-v1',
+    'EMBED_DIMENSIONS': 1024,
+    'ACTIVATE_NEW_VECTOR_HEAD': True,
+    'EXPECTED_ARCHIVE': 'genos-rag-data-20261007T002029Z-7c0b050f.zip',
+    'EXPECTED_PARTS': 34,
+    'ORIGINAL_SHA_FILE': '',
+    'PARTS_SHA_FILE': '',
+    'RUN_AFTER_INSTALL': True,     # False이면 Flow 생성까지만 실행
+}
+
+import re
+import sys
+from pathlib import Path
+import dataiku
+
+def check_upload_settings(params, expected_project):
+    project = dataiku.api_client().get_default_project()
+    if project.project_key != expected_project:
+        raise ValueError('프로젝트 불일치: 현재=' + project.project_key + ', 지정=' + expected_project)
+    if not params['GOLD_OWNER']:
+        raise ValueError('GOLD_OWNER에 실제 Gold 테이블의 소유 스키마명을 입력하세요. 접속 계정과 다를 수 있습니다.')
+    if params['WORK_DIR'] and not Path(params['WORK_DIR']).is_absolute():
+        raise ValueError('WORK_DIR는 모든 레시피가 공유하는 Linux 절대경로여야 합니다.')
+    if not params['INPUT_FOLDER_ID']:
+        raise ValueError('INPUT_FOLDER_ID에 데이터 조각을 업로드한 Managed Folder ID를 입력하세요.')
+    folder = dataiku.Folder(params['INPUT_FOLDER_ID'])
+    names = [p[1:] if p.startswith('/') else p for p in folder.list_paths_in_partition()]
+    if len(names) != len(set(names)):
+        raise ValueError('업로드 목록에 중복 경로가 있습니다.')
+    expected = {params['EXPECTED_ARCHIVE'] + '.part%06d' % i for i in range(params['EXPECTED_PARTS'])}
+    missing = sorted(expected - set(names))
+    extra = sorted(n for n in names if n.startswith(params['EXPECTED_ARCHIVE'] + '.part') and n not in expected)
+    if missing or extra:
+        if params['EXPECTED_ARCHIVE'] in names and missing:
+            raise ValueError('이 실행문은 발송한 34조각용입니다. 통합 ZIP 한 개만으로는 실행하지 않습니다. 기존 part000000~part000033과 SHA파일2개를 올리세요.')
+        raise ValueError('데이터 폴더 ' + params['INPUT_FOLDER_ID'] + '의 루트에 파일을 확인하세요. 누락=' + str(missing) + ', 추가조각=' + str(extra))
+    for key, stem in [('ORIGINAL_SHA_FILE', 'ORIGINAL'), ('PARTS_SHA_FILE', 'PARTS')]:
+        explicit = params.get(key, '')
+        matches = [explicit] if explicit else [n for n in names if re.fullmatch(stem + r'(?: \([0-9]+\))?\.sha256', n)]
+        if not matches or any(n not in names for n in matches):
+            raise ValueError('데이터 폴더에 ' + stem + '.sha256를 업로드하세요.')
+    print('업로드 목록 확인:', params['INPUT_FOLDER_ID'], '/', len(expected), '조각 + SHA파일2종')
+    print('내용 해시는 시나리오의 ZIP 병합 단계에서 검증합니다.')
+    if not params['WORK_DIR']:
+        print('WORK_DIR 미지정: 같은 DSS 호스트의 /tmp를 사용합니다. 다른 컨테이너/호스트 실행이나 /tmp 삭제 후에는 재개할 수 없습니다.')
+    return project
+
+PROJECT = check_upload_settings(PARAMS, EXPECTED_PROJECT)
+
+BOOTSTRAP = "import hashlib\nimport io\nimport json\nfrom pathlib import Path, PurePosixPath\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\nZIP_NAME = 'DATAIKU_GOLD_ZIP_FLOW_20261104_R1.zip'\nZIP_SHA256 = '39a2fce28bff353a83e1ed2fc0385b75cf391ac158d39565e295e62099d2bedf'\n\n\ndef open_package():\n    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])\n    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]\n    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)\n    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)\n    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')\n    root = Path(tempfile.gettempdir()) / ('gold-zip-flow-code-'+ZIP_SHA256[:16])\n    root.mkdir(exist_ok=True)\n    with zipfile.ZipFile(io.BytesIO(raw)) as z:\n        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))\n        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:\n            raise ValueError('CODE_ZIP_MEMBERS')\n        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if p.is_absolute() or '..' in p.parts or '\\\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):\n                raise ValueError('CODE_ZIP_PATH')\n            dest = root.joinpath(*p.parts)\n            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')\n            content = z.read(item)\n            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:\n                raise ValueError('CODE_FILE_HASH')\n            if dest.exists():\n                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')\n            else:\n                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)\n    sys.path.insert(0,str(root))\n    return root\n\n\nFLOW_PACKAGE = open_package()\n"
+exec(BOOTSTRAP, globals())
+
+# 새 노트북에서도 이전 커널의 다른 패키지가 import 캐시에 남아 있으면 재시작합니다.
+for module_name in ('zip_config', 'zip_install'):
+    loaded = sys.modules.get(module_name)
+    if loaded is not None and Path(getattr(loaded, '__file__', '')).resolve().parent != FLOW_PACKAGE.resolve():
+        raise RuntimeError('다른 Gold Flow 코드가 로드되어 있습니다. Kernel Restart 후 이 셀을 실행하세요.')
+from zip_config import validate
+validate(PARAMS)
+from zip_install import install
+FLOW_CONFIG = install(PARAMS, BOOTSTRAP)
+print('입력 폴더:', FLOW_CONFIG['input_folder'])
+print('결과 폴더:', FLOW_CONFIG['folders']['report'])
+print('시나리오 ID:', FLOW_CONFIG['scenario'])
+print('Scenarios에서 실행 상태와 00_INPUT~07_REPORT 결과를 확인하세요. 셀 종료는 적재 완료를 뜻하지 않습니다.')

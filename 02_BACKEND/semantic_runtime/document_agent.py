@@ -1,5 +1,5 @@
 """Request-local serving adapter for document tools and reviewed multi-source answers."""
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -68,13 +68,16 @@ class ServingDocumentAgent(ServingNavigationAgent):
             # The current HTTP contract has no authenticated user/session identity.
             # Keep interpretation proposals inside this request; never share aliases.
             temporary_root=None
-            if getattr(self.pipeline.store,'is_oracle_query',False):
+            if use_llm and getattr(self.pipeline.store,'is_oracle_query',False):
                 temporary_root=self.pipeline.runtime_dir/'request-mappings'
                 temporary_root.mkdir(parents=True,exist_ok=True)
-            with TemporaryDirectory(prefix='rag-document-request-',dir=temporary_root) as folder:
+            # Metadata-only retrieval never reads or writes a mapping ledger.
+            # Oracle runtime identifiers are not local tempfile directories.
+            directory = TemporaryDirectory(prefix='rag-document-request-',dir=temporary_root) if use_llm else nullcontext(None)
+            with directory as folder:
                 agent = MappedAgent(self.pipeline, glossary, index, matcher,
                                     self.config.get('limits'),
-                                    ledger=Path(folder)/'mappings.sqlite', actor=plan['id'],
+                                    ledger=Path(folder)/'mappings.sqlite' if folder is not None else None, actor=plan['id'],
                                     mapping_persistence='REQUEST_ONLY')
                 agent.navigator = FolderNavigator(matcher, self.pipeline.store)
                 if use_llm:

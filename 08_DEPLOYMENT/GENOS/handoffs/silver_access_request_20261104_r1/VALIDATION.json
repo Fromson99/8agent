@@ -1,0 +1,39 @@
+{
+  "prepared_at": "2026-11-04T16:14:22.789413+09:00",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "subject": "[권한 요청] 개발계 GENOS Silver(SIDDS S_1) 10개 테이블 SELECT 권한",
+  "silver_count": 10,
+  "tables": [
+    "SIDDS.LGL_G19_DOC_VER_S_1",
+    "SIDDS.LGL_G19_DOC_UNIT_S_1",
+    "SIDDS.LGL_G19_DOC_BLK_S_1",
+    "SIDDS.LGL_G19_SRC_POST_S_1",
+    "SIDDS.LGL_G19_SRCH_POST_S_1",
+    "SIDDS.LGL_G19_SRCH_ROW_S_1",
+    "SIDDS.LGL_G19_SRCH_CHNL_S_1",
+    "SIDDS.LGL_G19_VCTR_POST_S_1",
+    "SIDDS.LGL_G19_VCTR_ITEM_S_1",
+    "SIDDS.LGL_G19_VCTR_HEAD_S_1"
+  ],
+  "mapping_sha256": "a839fadb8cf86864c375fd447f4fbd00124da27c37fab5e6cdce7570dc5d9d85",
+  "MAIN140_mapping_equal": true,
+  "Dataiku_R4_silver_contract_equal": true,
+  "requested_permission": "SELECT",
+  "grantee_db_identity": "DBA confirmation required",
+  "field_permission_verified": false,
+  "product_files_changed": false,
+  "attachments": [
+    {
+      "name": "GENOS_SILVER_S1_SELECT_REQUEST_20261104_R1.txt",
+      "bytes": 3342,
+      "sha256": "1e5b6a6e3bb4e8ff231acf0d268544f0d5c193dd27a869d01d2cda8f4e19adb6"
+    },
+    {
+      "name": "GENOS_SILVER_S1_TABLES_20261104_R1.csv",
+      "bytes": 942,
+      "sha256": "2855cb6da2ecca2f5d08fd09d9219ce997ad8747f5a2bd83b847ba5876fea263"
+    }
+  ],
+  "attachment_check": "Exact byte roundtrip for both attachments via base64url",
+  "pre_send_correction": "Initial text-payload check found CSV CRLF normalization; switched both attachments to exact-byte base64url before sending."
+}

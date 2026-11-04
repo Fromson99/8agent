@@ -1,0 +1,69 @@
+운영계 Gold 적재 PROD R3 — SRCH_ROW의 실제 DTA 컬럼명 반영
+2026-11-04
+
+1. 이번 변경과 대상
+기존 PROD R2가 실행된 운영계 Dataiku DSS의 같은 프로젝트·Python 노트북에서 사용합니다.
+사진의 IDD_B003_LGL_SRCH_ROW 컬럼정보에서 아래 이름을 확인했습니다.
+  R2 기대 이름                  현장 이름 / R3 기대 이름
+  RFRN_DATA_HASH_VALU           RFRN_DTA_HASH_VALU
+  RFRN_DATA_CTNT                RFRN_DTA_CTNT
+
+위 두 물리 이름만 바꿨습니다. 내부 논리키 SRCH_DATA_HASH_VALU/SRCH_DATA_CTNT,
+원문/검색 내용과 해시, 원래 판본 식별 방법은 유지합니다.
+R2에서 수정한 DOC_BLK.ADDN_IFMN_UN_APPN_YN의 VARCHAR2(1 BYTE)도 유지합니다.
+사진의 9개 컬럼명·타입·길이·PK 3개는 R3 계약과 대조했습니다.
+NULL/기본값/BYTE 구분은 이번 사진에 보이지 않아 원래 DB 사전 검사를 유지합니다.
+실제 ALL_TAB_COLUMNS 결과는 아직 받지 않았습니다.
+
+2. 사용할 파일
+  DATAIKU_GOLD_ONECLICK_PROD_20261104_R3.zip  실행 코드
+  DATAIKU_GOLD_PROD_RUN_R3.txt               셀에 붙여 넣는 전체 Python
+  GUIDE.txt                                 이 안내서
+  VALIDATION.json                           로컬 검증 결과와 범위
+  SHA256SUMS.txt                            실행/안내/검증/조회 TXT의 SHA256
+  GOLD_R3_ALL_COLUMNS_CHECK.txt             R3 기준 전체13테이블 컬럼 차이 조회
+ZIP과 TXT는 R3 한 쌍을 사용합니다. R1/R2 ZIP/TXT는 이전 이력입니다.
+
+3. 실행 순서
+① 기존 노트북 PARAMS 값을 복사해 둡니다.
+   CODE_FOLDER_ID, INPUT_FOLDER_ID, ORACLE_CONNECTION, EXPECTED_DB_USER,
+   GOLD_OWNER, TABLE_PREFIX, TABLE_NAMES, EMBED_MODEL, EMBED_DIMENSIONS, WORK_DIR를
+   기존 현장 값 그대로 사용합니다. TXT의 예시 owner를 현장값으로 오인하지 않습니다.
+② 기존 PARAMS['CODE_FOLDER_ID']에 해당하는 Managed Folder에 R3 ZIP을 업로드합니다.
+   ZIP은 풀지 않습니다. 기존 데이터 34조각과 SHA파일 2개는 재업로드하지 않습니다.
+③ 기존 적재 셀이 종료된 상태에서 노트북 Kernel -> Restart를 한 번 합니다.
+④ R3 실행 TXT 전체를 셀 하나에 붙여 넣고 PARAMS에 기존 실제 값을 입력합니다.
+⑤ 셀을 실행하고 최종 PRODUCTION_GOLD_LOADED와 결과 보고서까지 확인합니다.
+
+작업 기준 경로는 기존 WORK_DIR를 유지합니다. 빈 값이면 기존 실행기 기본 경로입니다.
+계약이 바뀌므로 설정별 작업 하위 폴더와 S3 결과 하위 경로는 R2와 달라집니다.
+코드 추출 경로는 ZIP SHA로 구분됩니다. 임의 경로나 환경변수를 추가할 필요 없습니다.
+
+4. 중단·재실행·기존 기록
+사진처럼 조각·스키마 확인 단계에서 멈춘 R2의 후속용입니다.
+R1/R2 ZIP·TXT·로컬/S3 실패 기록과 기존 데이터는 그대로 보존합니다.
+사전 검사 이후 적재까지 진행한 다른 R1/R2 실행이 있다면 원래 체크포인트를
+임의 삭제하거나 R3에 복사하지 않습니다. 기존 판본 행이 있으면 원래 중복 적재
+보호 검사로 중단합니다. 새 코드로 기존 작업의 호출 예산을 초기화하지 않습니다.
+R3 자체의 중단/재실행은 같은 PARAMS/WORK_DIR와 R3 체크포인트로 이어집니다.
+임베딩 결과 UNKNOWN은 자동 재호출하지 않으며 원래 로그와 pending을 확인합니다.
+
+5. 검증과 미확인 범위
+VALIDATION.json을 참조합니다. 임시 실제 로컬 Oracle, 합성 34조각,
+로컬 Dataiku SDK/임베딩 대역으로 검사합니다. 현장 내부 모델·전량 적재 완료는 별개입니다.
+자동 CREATE/ALTER/DROP/TRUNCATE/데이터 삭제나 스키마 검사 우회는 없습니다.
+R3는 결과의 serving-mapping.json에도 DTA 이름을 기록하며, 이를 명시해 읽는 후속
+조회기의 연결을 검사합니다.
+
+별도 GENOS MAIN142 배포본의 기본 Gold 매핑은 RFRN_DATA_*와 기존 CHAR 기대값이므로
+이 현장 구조와 차이가 남아 있습니다. Dataiku R3를 실행해도 GENOS 배포본은 바뀌지
+않습니다. 이 문서는 GENOS MAIN142의 해당 현장 구조 조회 성공을 인증하지 않습니다.
+이번 작업은 Dataiku 적재 패키지이며 GENOS 매핑·엔진 pin·서빙 리비전 변경은 별도입니다.
+
+현장 실행은 아직 수행하지 않았습니다. 메일 발송 기록은 별도로 보존합니다.
+
+추가 조회 TXT는 R2 또는 R3를 실행한 같은 노트북 커널의 새 셀에서 실행합니다.
+PARAMS와 FLOW_PACKAGE가 남아 있어야 합니다. 커널 재시작 없이 실행하며,
+R3 기준으로 13개 테이블의 컬럼명/타입/길이/NULL/기본값 차이를 표시합니다.
+메타데이터 SELECT 1회뿐이며 DB/파일/S3 쓰기와 모델 호출은 없습니다.
+컬럼 검사이므로 PK/인덱스/트리거/권한/전체 적재 완료를 인증하지 않습니다.

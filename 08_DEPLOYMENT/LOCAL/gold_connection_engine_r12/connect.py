@@ -91,6 +91,7 @@ def load_runtime():
   raise RuntimeError('Use a dedicated fresh process for this connector')
  os.environ.setdefault('PYTHONDONTWRITEBYTECODE','1');sys.dont_write_bytecode=True
  sys.path.insert(0,str(ROOT/binding['adapter_root']))
+ sys.path.insert(0,str(HERE))
  spec=importlib.util.spec_from_file_location('engine_common',HERE/'engine_common.py')
  common=importlib.util.module_from_spec(spec)
  common.REPOSITORY_ROOT=ROOT;common.ENGINE_BINDING=binding
@@ -104,6 +105,10 @@ def load_runtime():
 def open_mapped_engine(runtime,connection,cfg,*,documents,release_id,channel,seconds,max_calls):
  """The same fixed engine entry with the physical mapping in the request pin."""
  import time
+ class PlainMapping:
+  def __init__(self):self.config=cfg;self.manifest=None
+  def __getattr__(self,name):return getattr(cfg,name)
+  def names(self,key,only_kind=None):return cfg.names(key)
  config=runtime.Overlay(cfg);transport=runtime.TracedTransport(connection,config)
  class GoldSQL(runtime.QuerySQL):
   def query(self,statement,binds=(),*,limit=100):
@@ -112,17 +117,22 @@ def open_mapped_engine(runtime,connection,cfg,*,documents,release_id,channel,sec
    'physical_mapping':cfg.target_sha256}),deadline=time.monotonic()+seconds,max_calls=max_calls)
  sql.gold_config=config
  selected=runtime.select_release(sql,release_id=release_id,channel=channel);manifest=selected['manifest']
- parent=runtime.read_release(sql,manifest['extension']['base_query_id'])
- config.bind(selected['release_id'],manifest,parent)
+ if 'extension' in manifest:
+  parent=runtime.read_release(sql,manifest['extension']['base_query_id'])
+  config.bind(selected['release_id'],manifest,parent)
+ else:
+  config=PlainMapping();config.manifest=manifest
+  transport.schema_map=config;sql.gold_config=config
  snapshot=runtime.Snapshot.open(sql,manifest['source_release_id'])
  if snapshot.manifest!=manifest['source_manifest'] or snapshot.dataset_version!=manifest['dataset_version']:
   raise runtime.GoldError('ENGINE_SOURCE_BINDING')
  allowed=frozenset(documents)
- if not allowed or not allowed<=set(manifest['documents']):raise runtime.GoldError('ENGINE_SCOPE')
+ corpus=set(manifest.get('documents',manifest['source_manifest']['scope']['document_version_ids']))
+ if not allowed or not allowed<=corpus:raise runtime.GoldError('ENGINE_SCOPE')
  return runtime._request(sql,selected['release_id'],selected['revision'],snapshot,manifest,allowed),transport
 
 @contextmanager
-def open_store(*,ontology_settings=None,config=None,mapping=None,mapping_sha256=None,owner=None,credentials=None,documents=None,release_id=None,channel=None,seconds=1800,max_calls=10000):
+def open_store(*,ontology_settings=None,config=None,mapping=None,mapping_sha256=None,owner=None,credentials=None,documents=None,release_id=None,channel=None,seconds=1800,max_calls=10000,embedding=None,embedding_profile=None):
  """Yield the selected engine's Oracle Store; scope can only be narrowed.
 
  Parameters are trusted host configuration, not an end-user authorization.
@@ -133,16 +143,25 @@ def open_store(*,ontology_settings=None,config=None,mapping=None,mapping_sha256=
  oracledb.defaults.fetch_lobs=False
  if config and mapping:raise ValueError('Choose config or mapping')
  if (owner or mapping_sha256) and not mapping:raise ValueError('owner/mapping_sha256 requires mapping')
- if not config and not mapping:mapping,mapping_sha256=active_mapping()
+ external=bool(config or mapping)
+ if not config and not mapping:
+  mapping,mapping_sha256=active_mapping()
+  if mapping is None:raise ValueError('Active Gold mapping required')
  cfg=load_mapping(mapping,owner=owner,expected_sha256=mapping_sha256) if mapping else runtime.GoldConfig.load(config or HERE/'config_b03.json',ROOT)
  credential_path=Path(credentials).expanduser() if credentials else Path.home()/'.local/state/8-agent/gold-r12-1208/readonly-connection.json'
  if credential_path.stat().st_mode & 0o077:raise RuntimeError('Credentials must be owner-readable only')
  if release_id and channel:raise ValueError('Choose release_id or channel')
+ if external and (documents is None or not (release_id or channel)):
+  raise ValueError('Explicit target requires authorized documents and release_id or channel')
  release_id=release_id or (None if channel else binding['query_release_id'])
  allowed=runtime.docs() if documents is None else list(documents)
- if not allowed or not set(allowed)<=set(runtime.docs()):raise ValueError('Document scope outside verified Gold corpus')
+ if not allowed or any(not isinstance(d,str) or not d for d in allowed):raise ValueError('Document scope required')
+ if not external and not set(allowed)<=set(runtime.docs()):raise ValueError('Document scope outside verified Gold corpus')
+ if (embedding is None)!=(embedding_profile is None):raise ValueError('embedding and embedding_profile required together')
  runtime.guard();restore=runtime.install_vector_port()
  try:
+  from plain_vector import install as install_plain_vector
+  install_plain_vector(runtime,embedding,embedding_profile)
   with oracledb.connect(**read(credential_path)) as connection:
    connection.call_timeout=60000
    checked=cfg.preflight(connection) if mapping else None

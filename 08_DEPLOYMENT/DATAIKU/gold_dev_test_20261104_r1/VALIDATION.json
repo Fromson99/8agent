@@ -1,0 +1,83 @@
+{
+  "status": "LOCAL_PASS_FIELD_NOT_RUN",
+  "hand_off": "gold-dev-test-20261104-r1",
+  "project_key": "LEGAL_RAG_DEV_TEST",
+  "code_zip": {
+    "name": "DATAIKU_GOLD_DEV_TEST_20261104_R1.zip",
+    "bytes": 348054,
+    "sha256": "40ad6d716ea6fec26960f356ddf0b075618c47ec28d86fdfb057e953812581e0",
+    "members": 99,
+    "nested_zip": false,
+    "javascript_files": false
+  },
+  "sample": {
+    "source": "existing synthetic contract fixture; no production corpus",
+    "documents": 2,
+    "source_units": 3,
+    "source_blocks": 3,
+    "query_rows": 112,
+    "vector_units": 3,
+    "archive_bytes": 24121,
+    "archive_sha256": "2c96eea6901baebee2acc8086fd784d4b52b4dc5cc78b72686c4beae84efd4d5",
+    "parts": 2,
+    "files": {
+      "ORIGINAL.sha256": "35ef83dd9f586cdcdfbfc351db58caac79fa799e8112b72ae2e2abe5c6cff08d",
+      "PARTS.sha256": "ec03057e0ac51550add9769b702caeabbac51be45bab0c38822e6efe68db7f3e",
+      "gold-dev-sample.zip.part000000": "8c8fff680d5c04249621b8678c45d4bea040e15ddca374a21ae7748e14aba746",
+      "gold-dev-sample.zip.part000001": "941428405e50e914e6841ec5b140e7849a91e37737bd8f7ff6c824755d3d3d29"
+    }
+  },
+  "delivered_notebook_tests": {
+    "passed": 13,
+    "failed": 0,
+    "dataiku_api": "LOCAL_SUBSTITUTE"
+  },
+  "actual_oracle": {
+    "status": "PASS",
+    "checks": [
+      "committed_source_batch_resumed_without_duplicate_insert",
+      "two_parts_create_test_tables_restore_source_search_publish_vector_head_report",
+      "runtime_folder_status_logs_and_workspace_receipts",
+      "all_stages_replayed_without_new_embedding",
+      "vector_document_id_100_byte_and_utf8_boundary",
+      "fresh_selected_main_source_vector_acl_and_profile"
+    ],
+    "counts": {
+      "DOC_BLK": 3,
+      "DOC_UNIT": 3,
+      "DOC_VER": 2,
+      "SRCH_ROW": 112,
+      "VCTR_ITEM": 3
+    },
+    "sql_calls": 443,
+    "temporary_schema_cleaned": true,
+    "dataiku_sdk": "LOCAL_SUBSTITUTE",
+    "embedding": "SYNTHETIC_4D",
+    "external_model_calls": 0,
+    "synthetic_embedding_calls": 1
+  },
+  "reused_loader_files_unchanged": 83,
+  "zip_pipeline_unchanged": true,
+  "limitations": [
+    "Field Dataiku 14.7.3 GUI / OBS connection / field Oracle not accessed",
+    "Actual Dataiku LLM Mesh embeddings not executed locally",
+    "No actual IPython kernel available locally; monitor tested through read-only snapshots and render output",
+    "Small sample is not a full-corpus capacity/performance or legal-answer-quality certification"
+  ],
+  "prior_attempt": {
+    "path": "09_ARTIFACTS/AUDITS/20261104-gold-dev-test/real-oracle-001",
+    "outcome": "data loaded and replayed; harness referenced flow.Stop after expected document-width error",
+    "correction": "test harness catches gold_io.Stop; product loader unchanged",
+    "evidence_preserved": true
+  },
+  "local_evidence": {
+    "result": "09_ARTIFACTS/AUDITS/20261104-gold-dev-test/real-oracle-002/result.json",
+    "result_sha256": "ce1f32c7d5a008bb4feb0a77310d96b471b82551515e43fc92c8e032340778a1",
+    "raw_log": "09_ARTIFACTS/AUDITS/20261104-gold-dev-test/real-oracle-002.log"
+  },
+  "scope": {
+    "existing_MAIN_modified": false,
+    "existing_production_Gold_modified": false,
+    "field_executed": false
+  }
+}

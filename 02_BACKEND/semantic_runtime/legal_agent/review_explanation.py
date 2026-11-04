@@ -73,6 +73,20 @@ def build(assessment, sources):
                   or assessment.get('model_proposal', {}).get('review_status') == 'INCOMPLETE')
     failure = assessment.get('model_proposal', {}).get('failure', {})
     explanations = {
+        'SCOPE_USE_UNSUPPORTED_RANGE':'사용한 것으로 표시한 원문 구간 중 실제 답변의 근거로 연결되지 않은 구간이 있습니다.',
+        'SCOPE_CLAIM_EVIDENCE':'원문 구간에 연결한 주장과 그 주장이 실제 인용한 근거가 맞지 않습니다.',
+        'SCOPE_TARGET_COVERAGE':'확인 대상 원문 범위 중 최종 검토에서 빠지거나 중복된 대상이 있습니다.',
+        'SCOPE_RANGE_COVERAGE':'확보한 원문 구간의 사용·제외·미확인 검토가 빠졌거나 중복됐습니다.',
+        'SCOPE_FOREIGN_EVIDENCE':'검토 대상 범위 밖의 원문이 근거로 연결됐습니다.',
+        'SCOPE_REVIEW_REASON_ISSUE':'원문 구간의 검토 이유 또는 질문 쟁점 연결이 빠졌습니다.',
+        'SCOPE_QUOTE_INVALID':'원문 범위를 제외하는 근거로 제시한 문구가 현재 질문과 일치하지 않습니다.',
+        'SCOPE_USE_LINK':'사용할 원문과 실제 답변 주장의 연결을 완료하지 못했습니다.',
+        'SCOPE_EXCLUSION_LINK':'제외한 원문에 사용 주장이나 미확인 항목이 함께 연결돼 있습니다.',
+        'SCOPE_EXCLUDED_ADOPTED':'제외한 것으로 표시한 원문을 답변에서 동시에 사용했습니다.',
+        'SCOPE_OPEN_GAP':'미확인으로 남긴 원문 구간이 해당 질문의 미해결 항목과 연결되지 않았습니다.',
+        'SCOPE_ACQUISITION_INCOMPLETE':'답변에 필요한 원문 범위의 확보가 끝나지 않았습니다.',
+        'SCOPE_REVIEW_INCOMPLETE':'확보한 원문 범위 중 최종 검토가 끝나지 않은 부분이 있습니다.',
+        'FINAL_REVIEW_PURPOSE_CHANGE':'이전에 사용한 근거의 판단을 바꾸면서 변경 이유와 실제 근거를 연결하지 못했습니다.',
         'REQUIREMENT_GAP_COVERAGE':'미확인 사항은 기록됐으나 요구사항 검토표와의 연결을 완료하지 못했습니다.',
         'REQUIREMENT_COVERAGE_MISSING':'질문의 일부 요구사항 또는 쟁점에 대한 검토가 빠졌습니다.',
         'REQUIREMENT_MATERIAL_GAP':'요구사항과 해당 미확인 사항의 연결이 맞지 않습니다.',

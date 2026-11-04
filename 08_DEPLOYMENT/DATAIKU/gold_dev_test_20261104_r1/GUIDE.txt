@@ -1,0 +1,199 @@
+개발계 전용 Gold 예시 Flow — 2조각 / R1 / 2026-11-04
+
+이번에 사용할 파일
+  DATAIKU_GOLD_DEV_TEST_20261104_R1.zip       실행 코드 + 예시 데이터 2조각 포함
+  DATAIKU_GOLD_DEV_TEST_RUN_R1.txt           설치용 Python 노트북 셀 전체
+  DATAIKU_GOLD_DEV_TEST_WATCH_R1.txt         진행 상태 관찰용 Python 셀
+  GUIDE.txt                                이 안내
+  VALIDATION.json                          로컬 검증 범위
+  EMAIL_SHA256SUMS.txt                      첨부 파일 해시
+
+이번 시험에는 위 DEV_TEST 파일만 사용합니다.
+앞서 보낸 운영계 34조각용 ZIP/TXT와 S3_REPAIR TXT를 섞어 실행하지 않습니다.
+코드 ZIP 안에 다른 ZIP을 넣지 않았습니다. 예시 데이터는 .part000000/.part000001 두 파일입니다.
+
+1. 처음 준비 — 개발계 Dataiku에서
+
+  빈 프로젝트를 하나 만듭니다.
+    프로젝트 이름: LEGAL_RAG_DEV_TEST
+    프로젝트 key:  LEGAL_RAG_DEV_TEST (반드시 이 값)
+
+  이 프로젝트의 Flow에서 Managed Folder 하나를 만듭니다.
+    표시 이름: GOLD_TEST_CODE
+    Type: Amazon S3
+    Connection: 실제 개발계에서 읽기/쓰기 가능한 연결
+
+  S3 버킷·경로는 연결의 기본 설정을 그대로 둡니다.
+  예를 들어 기본값이 /dataiku/${projectKey}/${odbId}라면 그대로 둡니다.
+  운영계 사진에 나온 OBS라는 이름이 개발계에서도 맞는지는 현장에서 확인합니다.
+  새 버킷이나 /LEGAL_RAG/... 경로를 임의로 만들 필요가 없습니다.
+
+  GOLD_TEST_CODE의 Contents에 DATAIKU_GOLD_DEV_TEST_20261104_R1.zip 하나를 그대로 업로드합니다.
+  압축을 직접 풀지 않습니다. 조각을 따로 올리지 않아도 됩니다.
+  이 Managed Folder의 ID를 복사합니다. 표시 이름 GOLD_TEST_CODE와 ID는 다릅니다.
+
+2. 설치 — 같은 프로젝트의 Python 노트북
+
+  노트북 이름 예: 01_INSTALL_GOLD_DEV_TEST
+  DATAIKU_GOLD_DEV_TEST_RUN_R1.txt 내용 전체를 한 셀에 붙입니다.
+  맨 위 PARAMS에서 다음 네 값만 실제 개발계 값으로 입력합니다.
+
+    CODE_FOLDER_ID       : 방금 만든 GOLD_TEST_CODE의 ID
+    ORACLE_CONNECTION    : 개발계 Oracle 연결명
+    EXPECTED_DB_USER     : 그 연결의 실제 접속 계정(대문자)
+    GOLD_OWNER           : 테스트 테이블을 만들 실제 스키마명(대문자)
+
+  접속 계정과 스키마가 같으면 EXPECTED_DB_USER와 GOLD_OWNER를 같은 값으로 입력합니다.
+  비밀번호·S3 비밀키를 이 셀에 입력하지 않습니다. Dataiku의 기존 연결을 사용합니다.
+
+  임베딩 기본값:
+    EMBED_MODEL       = openai:genos-embedding:embedding-kure-v1
+    EMBED_DIMENSIONS  = 1024
+  개발계에서 선택 가능한 모델 ID나 실제 차원이 다를 때만 해당 값도 수정합니다.
+  실제 전체 시험은 Dataiku 임베딩 모델을 사용합니다. 모의 벡터를 현장에 적재하지 않습니다.
+
+  실행 위치:
+    레시피는 같은 DSS 호스트의 같은 Python 환경에서 실행합니다.
+    WORK_DIR='' 기본값이면 /tmp/legal-gold-zip-flow/LEGAL_RAG_DEV_TEST를 사용합니다.
+    이 경로는 DSS 서버 경로이며 개인 PC의 폴더나 S3 경로가 아닙니다.
+    컨테이너/Kubernetes/여러 호스트에서 레시피가 실행된다면 모든 레시피가 함께 보는
+    영속 작업 경로를 WORK_DIR에 먼저 입력해야 합니다. 없는 공유 경로를 추정해 쓰지 않습니다.
+    입력 예시 전체는 약24KB이고 복원 자료도 작지만, 작업 폴더는 재개를 위해 보존합니다.
+
+  셀을 실행합니다. 자동으로 다음을 수행합니다.
+    - 프로젝트·테이블 접두어·코드 ZIP 해시 확인
+    - 연결 기본 경로를 사용하는 입력/결과 Managed Folder 생성
+    - 폴더별 실제 저장 위치가 겹치지 않는지 확인
+    - 결과 폴더 전체의 목록 조회·작은 파일 저장·다시 읽기 확인
+    - 예시 2조각과 체크섬2개 자동 업로드·내용 검증
+    - 여섯 업무 구역, 실행코드 구역, 8개 Python 레시피, 시나리오 구성
+
+  TEST_FLOW_READY가 나오면 설치 성공입니다.
+  이 시점에는 Oracle 테이블 생성·데이터 적재·임베딩 호출을 시작하지 않았습니다.
+  마지막 출력의 입력 폴더 ID와 결과 폴더 ID를 확인합니다.
+
+3. Flow 보기
+
+  Flow에서 Zones 표시를 켜고 '모두 접기 / Collapse all'를 선택합니다.
+  다음 순서로 여섯 구역을 보면 됩니다. 필요한 구역만 펼칩니다.
+
+    01 예시 입력·연결 확인
+       ↓
+    02 복원·적재 준비
+       ↓
+    03 원문·검색 적재
+       ↓
+    04 게시 기록
+       ↓
+    05 벡터 적재
+       ↓
+    06 결과 확인
+
+  '90 실행 코드'는 접어 둡니다.
+  데이터 폴더뿐 아니라 레시피도 해당 구역에 배치했고 레시피에 한국어 설명을 붙였습니다.
+  코드/입력 의존선은 실제 의존관계를 보존하므로 펼치면 보일 수 있습니다.
+  미사용 온톨로지3개는 Flow 노드에서 제외했습니다. DB 구조 검증은13테이블 전체를 합니다.
+
+4. 전체 시험 실행
+
+  Scenarios → GTEST_RUN_ALL · 예시 2조각 전체 시험 → Run
+
+  첫 단계에서 접속 계정과 native VECTOR 지원을 확인합니다.
+  GOLD_OWNER 스키마 아래 TST_B003_LGL_ 접두어의 테스트13테이블과 인덱스를 생성합니다.
+  운영 등록명 IDD_B003_LGL_* 또는 기존 *_1 테이블을 사용하지 않습니다.
+  기존 데이터가 있는 테스트 테이블을 처음 발견하면 자동 삭제/교체 없이 중단합니다.
+  이미 이번 시험의 준비 기록과 체크포인트가 있으면 동일 대상인지 검증해 재사용합니다.
+
+  전제 조건:
+    - 실제 개발계 연결을 선택해야 합니다. 이름만으로 DB의 개발/운영 구분을 판별할 수는 없습니다.
+    - 지정 스키마에 테스트 테이블·인덱스를 만들 권한과 공간이 필요합니다.
+    - Gold와 같은 컬럼/PK/인덱스 계약 및 native VECTOR를 지원해야 합니다.
+    - 기존 Oracle19처럼 native VECTOR가 없는 DB는 벡터 포함 전체 시험을 통과할 수 없습니다.
+    - Python 환경에 Dataiku SDK, pandas, 원본 로더에서 사용하는 numpy가 필요합니다.
+      이 패키지가 현장에서 pip 설치를 하거나 Oracle 클라이언트를 새로 설치하지 않습니다.
+
+  8개 레시피가 순서대로 실행됩니다.
+    00_INPUT → 01_RESTORE → 02_PREPARE → 03_SOURCE
+    → 04_SEARCH → 05_PUBLISH → 06_VECTOR → 07_REPORT
+
+  진행 화면을 한 곳에서 보려면 설치 노트북의 새 셀에 WATCH TXT 전체를 붙여 실행합니다.
+  같은 화면을 갱신하며 각 단계의 최근 성공/실패·실행 시간과 결과를 보여줍니다.
+  로그는 각 RESULT 폴더의 runs/에 따로 남습니다.
+  관찰 셀만 중단해도 시나리오는 중단되지 않습니다. 실제 중단은 Dataiku에서 처리합니다.
+  상태 기록만으로 현재 실행 여부를 확정할 수 없을 때는 Scenarios 상태도 확인합니다.
+
+5. 무엇이 들어가는가 / 완료 기준
+
+  예시 전용 입력 폴더 GTEST_SAMPLE_2_PARTS의 파일은 정확히4개입니다.
+    gold-dev-sample.zip.part000000    12,061 bytes
+    gold-dev-sample.zip.part000001    12,060 bytes
+    PARTS.sha256
+    ORIGINAL.sha256
+
+  ZIP 안 sample/에도 같은 파일을 포함했습니다. 수동 확인이 필요하면 여기서 찾으면 됩니다.
+  조각2개는 별개의 ZIP이 아니라, 하나의 작은 ZIP을 이진 분할한 파일입니다.
+
+  기존 기술검증용 합성 데이터이며 실제 사내 문서나 법률 정답 자료가 아닙니다.
+    - 모의승인규정: 원칙상 승인 및 위임 예외를 다루는 2개 조항
+    - 다른문서: 범위 밖 자료라는 내용의 1개 조항
+    - 문서2개 / 원문단위3개 / 원문블록3개
+    - 검색자료112행 (문서112개라는 뜻이 아님)
+    - 구조 단위 임베딩·벡터3개
+
+  완료 확인:
+    1) 시나리오8단계 SUCCESS
+    2) GTEST_07_REPORT_RESULT의 report.json에서 status = GOLD_LOADED
+    3) counts: DOC_VER=2, DOC_UNIT=3, DOC_BLK=3, SRCH_ROW=112, VCTR_ITEM=3
+    4) row_counts_and_publications_verified = true
+
+  서비스 연결은 자동 전환하지 않습니다. 생성된 serving-mapping.json은 시험 결과 자료입니다.
+  온톨로지 게시/법률 답변 품질/전체 운영자료의 용량·성능 검증은 이 작은 적재 시험의 범위 밖입니다.
+
+6. 실패했을 때
+
+  S3 bucket/namespace/권한 오류:
+    사진의404는 경로 차이만으로 원인을 확정할 수 없습니다.
+    개발계 저장 연결의 실제 버킷·namespace·목록/읽기/쓰기 권한을 확인합니다.
+    설치 단계에서 실패하면 Oracle 적재를 시작하지 않습니다.
+    연결을 수정한 뒤 같은 코드/설정/폴더로 설치 셀을 다시 실행할 수 있습니다.
+    이 버전은 연결의 기본 경로를 임의의 /LEGAL_RAG/... 경로로 덮어쓰지 않습니다.
+
+  RESTART_KERNEL_PACKAGE_CONFLICT:
+    다른 코드 패키지가 이미 로드된 노트북입니다. 커널을 재시작하고 이 RUN TXT만 실행합니다.
+
+  테이블 생성 권한 없음 / 스키마·타입 불일치:
+    해당 오류와 스키마명을 DBA에게 확인합니다. 기존 표의 삭제·이름변경으로 우회하지 않습니다.
+    일부 빈 테스트 테이블이 생성된 경우에도 동일 이름/구조를 검사한 뒤 누락분만 생성합니다.
+
+  CHECKPOINT_WORKSPACE_MISSING_OR_CHANGED:
+    이전 WORK_DIR와 그 체크포인트가 필요합니다. 결과 폴더의 workspace.json만 삭제하지 않습니다.
+    레시피가 서로 다른 호스트/컨테이너에서 실행된 것은 아닌지 먼저 확인합니다.
+
+  실제 적재 중 중단/오류:
+    원래 설정·폴더·WORK_DIR와 체크포인트를 보존합니다.
+    Dataiku에서 이전 실행이 끝났는지 확인하고 원인을 해결한 뒤 같은 시나리오를 Run 합니다.
+    확정 완료된 배치는 기존 체크포인트로 재사용합니다. 임베딩 응답 결과가 불명인 경우에는
+    기존 로더의 확인 절차가 중단시킬 수 있으며 무조건 재호출하지 않습니다.
+    설치 셀을 다시 실행하는 것만으로 시나리오를 자동 재시작하지 않습니다.
+    동시에 두 개의 시험 실행을 시작하지 않습니다.
+
+  예시를 직접 바꾸고 싶을 때:
+    이번 패키지는 동봉한2조각의 해시를 고정합니다. 임의 CSV/PDF나 운영34조각을 같은 폴더에
+    넣으면 차단합니다. 별도 원문 전처리로 생성한 정규 세대 ZIP과 새 체크섬/시험 구성이 필요합니다.
+    우선 동봉 예시로 환경을 확인한 뒤 별도 데이터 시험을 진행합니다.
+
+7. 검증 범위
+
+  로컬 실제 임시 Oracle에서 테스트13테이블 생성 → 2조각 복원 → 원문·검색·벡터 적재,
+  결과·로그 저장, 저장응답 유실 후 중복 없는 재개, 전체 재실행 시 추가 임베딩 없음,
+  새 프로세스에서 원문/벡터/문서권한/임베딩 프로필 조회를 확인했습니다.
+  Dataiku 저장/SDK는 로컬 대역, 임베딩은 검증용 고정4차원입니다.
+  현장의 Dataiku14.7.3 화면·OBS·Oracle·1024차원 내부 임베딩 성공을 대신하지 않습니다.
+  최초 로컬 검증 실행의 예외 클래스 참조 오류도 기록을 보존하고 검증기를 고친 뒤 재확인했습니다.
+
+  참고 공식 문서:
+    Flow Zones: https://doc.dataiku.com/dss/14/flow/zones.html
+    S3 연결: https://doc.dataiku.com/dss/14/connecting/s3.html
+    Folder API: https://developer.dataiku.com/latest/api-reference/python/managed-folders.html
+
+기존 운영 프로젝트·기존 전달본·MAIN·기존 Gold 데이터는 이 패키지 준비 과정에서 변경하지 않았습니다.

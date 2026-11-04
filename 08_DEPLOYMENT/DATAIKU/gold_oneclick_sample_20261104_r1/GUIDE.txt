@@ -1,0 +1,148 @@
+Gold 예시2조각 원큐 적재 — ONECLICK R1 / 2026-11-04
+
+기존 프로젝트의 Python 노트북에서 셀 하나를 실행하면 바로 적재합니다.
+Flow·레시피·시나리오·Oracle 데이터셋·새 Managed Folder를 만들지 않습니다.
+앞서 보낸 DEV_TEST Flow 설치 TXT 대신 이번 ONECLICK TXT를 사용하세요.
+
+첨부파일
+  DATAIKU_GOLD_ONECLICK_SAMPLE_20261104_R1.zip : 실행 코드 + 예시 데이터2조각
+  DATAIKU_GOLD_ONECLICK_RUN_R1.txt           : 노트북에 붙여 실행할 Python 코드 전체
+  DATAIKU_GOLD_ONECLICK_RUN_R1.py            : 위 TXT와 동일한 Python 파일
+  GUIDE.txt                                : 이 안내
+  VALIDATION.json                          : 검증 결과와 현장 미확인 범위
+  EMAIL_SHA256SUMS.txt                      : 첨부 해시
+
+딱 이렇게 실행하세요
+
+1) 지금 쓰는 개발계 Dataiku 프로젝트를 그대로 엽니다.
+   프로젝트 이름/키는 무엇이든 됩니다. 새 프로젝트를 만들 필요가 없습니다.
+
+2) 이미 업로드·저장이 잘 되는 Managed Folder에
+   DATAIKU_GOLD_ONECLICK_SAMPLE_20261104_R1.zip 하나를 그대로 업로드합니다.
+   ZIP을 직접 풀거나 조각을 따로 업로드하지 않습니다.
+   이전 코드 ZIP이나 다른 파일이 함께 있어도 됩니다. 이번 정확한 파일명이 필요합니다.
+
+3) 같은 프로젝트의 Python 노트북에서 ONECLICK RUN TXT 전체를 한 셀에 붙입니다.
+   맨 위 PARAMS만 맞추고 셀을 한 번 실행합니다.
+
+   PARAMS = {
+       'CODE_FOLDER_ID': '코드ZIP을_올린_기존폴더ID',
+       'ORACLE_CONNECTION': 'AIDP',
+       'EXPECTED_DB_USER': 'PIDD2APP',
+       'GOLD_OWNER': '실제_개발계_테스트스키마',
+       'EMBED_MODEL': 'openai:genos-embedding:embedding-kure-v1',
+       'EMBED_DIMENSIONS': 1024,
+       'WORK_DIR': '',
+   }
+
+   CODE_FOLDER_ID와 GOLD_OWNER는 직접 입력합니다.
+   AIDP / PIDD2APP는 이전 전달 기본값이므로, 현재 개발계에서도 같은 연결/계정일 때 사용합니다.
+   GOLD_OWNER는 접속 계정과 다를 수 있습니다. 테스트 테이블 생성이 가능한 실제 스키마를 넣습니다.
+   임베딩 ID/차원은 개발계에서 사용하는 실제 값과 다르면 바꿉니다.
+   비밀번호나 S3 비밀키는 입력하지 않습니다. Dataiku에 설정된 연결을 사용합니다.
+   개발계/운영계 DB 구분은 선택한 연결에 달려 있으므로 실제 개발계 연결을 선택합니다.
+
+   이후 Scenarios Run이나 Flow Build는 없습니다. 이 셀이 적재 완료까지 실행합니다.
+   .py 파일도 같은 내용입니다. 외부 PC의 일반 Python에서 실행하는 파일은 아니며
+   Dataiku SDK·접속 문맥이 있는 같은 프로젝트의 Python 환경에서 사용합니다.
+
+무엇을 자동 실행하는가
+
+  코드 ZIP·파일 해시 확인
+  → 기존 업로드 폴더 안 결과 경로의 쓰기/읽기 확인
+  → 예시2조각 자동 배치
+  → 개발계 접속계정·Gold 계약·native VECTOR 확인
+  → TST_B003_LGL_ 접두어의 테스트13테이블/인덱스 생성·검증
+  → ZIP 병합/복원 → 적재자료 준비 → 원문 → 검색 → 게시 기록
+  → 실제 개발계 모델로 임베딩·벡터 적재 → 행수·게시·결과 파일 확인
+
+  모든 단계가 성공한 경우만 ONECLICK_GOLD_LOADED를 표시합니다.
+  첫 단계에서 테이블 생성이 진행될 수 있습니다. 지정 스키마의 테이블·인덱스 생성 권한과
+  공간이 필요하고 native VECTOR를 지원하는 Oracle이어야 합니다.
+  생성 권한이나 native VECTOR 지원이 없으면 해당 오류로 중단합니다.
+
+예시와 결과 위치
+
+  예시: 기존과 같은 가상 문서2개, 원문단위3개, 원문블록3개입니다.
+  약24KB ZIP을 12,061 / 12,060 bytes의 두 조각으로 나눴습니다.
+  실제 사내 원문이나 법률 정답 데이터가 아닙니다.
+
+  기존 Managed Folder 안에서 다음 상대경로만 사용합니다.
+    _gold_oneclick_sample_r1/input/
+      gold-dev-sample.zip.part000000
+      gold-dev-sample.zip.part000001
+      PARTS.sha256
+      ORIGINAL.sha256
+
+    _gold_oneclick_sample_r1/result/
+      report.json                최종 적재 결과
+      latest.json                가장 최근 시도의 실행 상태/오류
+      runs/                      실행별 상태와 전체 로그 조각
+      workspace.json             로컬 체크포인트 연결 정보
+      test-db-ready.json         테스트 테이블 준비/동일 대상 확인 기록
+      serving-mapping.json       시험 대상 매핑 (서비스 자동 전환 없음)
+      documents.json
+      embedding-profile.json
+
+  위 경로는 기존 Managed Folder 안의 파일 경로입니다. Dataiku에 새 폴더 객체를 만들거나
+  다른 버킷/연결/기본 경로를 설정하지 않습니다. 기존 코드 ZIP과 다른 파일도 보존합니다.
+  앞서 실패한 GTEST 결과 Managed Folder는 이 실행본에서 사용하지 않습니다.
+
+완료 확인
+
+  화면: ONECLICK_GOLD_LOADED
+  latest.json: status = SUCCESS
+  report.json: status = GOLD_LOADED
+  행수: DOC_VER=2 / DOC_UNIT=3 / DOC_BLK=3 / SRCH_ROW=112 / VCTR_ITEM=3
+  row_counts_and_publications_verified = true
+
+  노트북에서는 같은 상태판이 갱신되고 원시 로그는 별도 파일에 보존됩니다.
+  작업량을 확정할 수 없는 단계에서는 진행률/ETA를 만들어 표시하지 않습니다.
+  실제 임베딩 결과와 벡터 차원은 검사하지만, 법률 답변 품질·전체 운영자료의 용량/속도나
+  온톨로지 게시를 인증하는 시험은 아닙니다. 서비스 연결도 자동 전환하지 않습니다.
+
+작업 경로와 재개
+
+  WORK_DIR=''이면 같은 노트북 서버의 /tmp/gold-oneclick-sample/<자동식별자>를 사용합니다.
+  화면과 latest.json에 정확한 경로를 남깁니다. 이것은 PC나 S3 경로가 아닙니다.
+  노트북 서버/커널의 작업 파일이 삭제되면 재개할 수 없으므로, 오래 두고 재개하려면
+  실제 쓰기 가능한 영속 Linux 절대경로를 WORK_DIR에 미리 입력합니다.
+  이번에는 한 프로세스에서 모두 처리하므로 여러 레시피의 작업 경로를 공유할 필요가 없습니다.
+
+  오류 원인을 해결한 뒤 같은 설정·같은 WORK_DIR로 같은 셀을 다시 실행합니다.
+  확정 완료 배치는 체크포인트로 재사용하며, 자동 재실행/무조건 임베딩 재호출은 하지 않습니다.
+  현재 노트북 실행이 끝나기 전에 다른 노트북에서 같은 대상을 동시에 실행하지 않습니다.
+  커널 Interrupt는 중단 요청이며 이미 DB/모델로 전달된 호출이 취소됐다고 단정할 수 없습니다.
+  로그·체크포인트·원래 오류를 보존한 채 기존 로더의 재개 검사를 따릅니다.
+
+오류별 처리
+
+  STORAGE_CHECK_FAILED:
+    이번 버전은 기존 코드 업로드 폴더 안에서만 읽고 씁니다. 오류에 함께 나온 원래 예외를
+    확인합니다. 버킷/권한 오류라면 그 폴더의 실제 저장 연결을 점검해야 합니다.
+    이 단계에서 실패하면 DB 적재를 시작하지 않습니다.
+
+  TEST_TABLE_ALREADY_HAS_DATA:
+    해당 테스트 테이블에 데이터가 있지만 이번 실행본의 준비 기록이 없습니다.
+    기존 시험의 데이터를 자동으로 지우거나 강제로 이어받지 않습니다.
+    앞선 Flow가 S3 확인에서만 실패했다면 그 실행은 Oracle 테이블을 만들지 않았습니다.
+
+  CHECKPOINT_WORKSPACE_MISSING_OR_CHANGED:
+    이전 WORK_DIR와 체크포인트를 복구해야 합니다. S3의 workspace.json만 지워 우회하지 않습니다.
+
+  RESTART_KERNEL_OTHER_LOADER:
+    같은 커널에서 다른 적재 엔진이 이미 실행됐습니다. 커널을 재시작하고 ONECLICK TXT만 실행합니다.
+    이전 Flow의 설치 단계에서만 실패한 경우에는 이름을 분리했으므로 보통 영향을 받지 않습니다.
+
+검증 결과와 범위
+
+  실제 전달 TXT를 로컬 임시 Oracle에서 실행했습니다.
+  기존 프로젝트/기존 Managed Folder1개 → 전체 적재·결과 저장 통과,
+  저장 실패 시 Oracle/모델 호출0, 실제 커밋 뒤 응답유실 재개, 재실행 시 추가 임베딩0,
+  기존 업로드 파일 보존, 로컬 체크포인트 유실/알 수 없는 기존 데이터 차단,
+  새 프로세스의 원문/벡터/문서권한/임베딩프로필 조회를 확인했습니다.
+  Flow 생성 API 호출은0입니다.
+  Dataiku SDK/저장소는 로컬 대역이고 임베딩은 고정4차원입니다.
+  실제 개발계 Dataiku·OBS·내부 임베딩과 노트북 UI는 현장에서 확인해야 합니다.
+
+이 패키지는 지금 요청하신 예시2조각 시험 전용입니다. 전체34조각 운영 적재본은 아닙니다.

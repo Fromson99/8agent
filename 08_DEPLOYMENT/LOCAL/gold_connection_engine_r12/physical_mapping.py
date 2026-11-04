@@ -87,7 +87,7 @@ class GoldMapping:
     def __init__(self, value, *, owner=None, file_sha256=None):
         value = deepcopy(value)
         _exact(value, ('schema_version', 'revision', 'owner', 'variant', 'tables'), 'ROOT')
-        if value['schema_version'] != 'gold-physical-map-v1' or value['variant'] not in ('B03', 'B05'):
+        if value['schema_version'] != 'gold-physical-map-v1' or value['variant'] not in ('B03', 'B05', 'B003'):
             raise MappingError('GOLD_MAP_VERSION')
         self.owner = identifier(owner if owner is not None else value['owner'])
         self.variant = value['variant']

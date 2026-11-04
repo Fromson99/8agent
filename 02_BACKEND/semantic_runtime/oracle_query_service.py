@@ -53,7 +53,10 @@ def request_context():
 
 def environment_binding():
     names=('GENOS_ORACLE_AGENT_NAMESPACE','GENOS_ORACLE_AGENT_MEMORY_MIB','GENOS_ORACLE_TABLE_MAPPING','GENOS_STATE_DIR','GENOS_JOURNAL_STORAGE','GENOS_RUNTIME_LIMIT_MIB','GENOS_RUNTIME_RESERVE_MIB','GENOS_RUNTIME_MIN_FREE_MIB','GENOS_RAG_INITIAL_SEARCH','GENOS_EMBED_URL','GENOS_BASE_URL','GENOS_EMBED_SERVING_ID','GENOS_EMBED_KEY','DP','DP_QUERY_RELEASE_ID','DP_QUERY_CHANNEL','GENOS_RUNTIME_DIR','GENOS_SHARED_LOG_DIR','GENOS_DETAIL_LOG_DIR','GENOS_SYSTEM_LOG_DIR',
-           'ORACLE_ORDS_BASE_URL','LLMOPS_ORDS_BASE_URL','ORACLE_ORDS_SCHEMA',
+           'GENOS_EMBED_PROFILE_SHA256','GENOS_EMBED_MODEL','GENOS_EMBED_API_PREFIX','GENOS_GATEWAY_API_PREFIX',
+           'GENOS_EMBED_ID','GENOS_EMBED_TOKEN','GENOS_URL',
+           'GENOS_EMBED_TENANT_ID','GENOS_EMBED_TIMEOUT','GENOS_EMBED_CONNECT_TIMEOUT',
+           'GENOS_ORACLE_GOLD_OWNER','ORACLE_ORDS_BASE_URL','LLMOPS_ORDS_BASE_URL','ORACLE_ORDS_SCHEMA',
            'ORACLE_ORDS_CLIENT_ID','ORACLE_ORDS_CLIENT_SECRET')
     return digest({name:os.environ.get(name,'') for name in names})
 
@@ -113,6 +116,10 @@ class Factory:
                       'record_computation':'request-local-memory',
                       'query_channel':self.channel,'query_release_id':self.release_id,
                       'dp_environment_binding':self.environment,'service_entry_sha256':host._sha(Path(host.__file__))}
+        mapping=getattr(self.client,'schema_map',None)
+        if mapping is not None:
+            self.binding.update(physical_mapping_profile=mapping.profile,
+                                physical_mapping_sha256=mapping.target_sha256)
         self.recovery_started=False
         self.recovery_lock=threading.Lock()
         self.agent_schema_verified=False
@@ -135,6 +142,12 @@ class Factory:
             raise DPError('QUERY_CONFIG_CHANGED: restart after changing Oracle connection/runtime selection')
         external_runtime()
         records=self.record_provider()
+        with self.agent_schema_lock:
+            if not self.agent_schema_verified:
+                schema=getattr(self.client,'schema_map',None)
+                if getattr(schema,'profile',None) in ('development_g19_1','gold'):
+                    schema.preflight(records.sql)
+                records.preflight();self.agent_schema_verified=True
         from .oracle_runtime_paths import roots
         for root in roots():
             migration=records.state('a1:head:'+digest({'migration_root':root}))

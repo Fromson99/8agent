@@ -42,9 +42,14 @@ def pin(value):
     return value
 
 
+def record_tables(client):
+    mapping = getattr(client, 'schema_map', None)
+    return getattr(mapping, 'agent_tables', None) or {'body': BODY, 'record': RECORD, 'run': RUN, 'state': STATE}
+
+
 class RecordSQL(StateSQL):
     def mutate(self, statement, binds):
-        if not statement.startswith(('DECLARE ', 'BEGIN ')) or not any(t in statement for t in (BODY, RECORD, STATE)):
+        if not statement.startswith(('DECLARE ', 'BEGIN ')) or not any(t in statement for t in record_tables(self.client).values()):
             raise DPError('AGENT_SQL: maintained Agent transaction required')
         value = SQL.request(self, statement, binds, write=True, limit=1)
         if time.monotonic() >= self.deadline:
@@ -57,6 +62,8 @@ class AgentRecords:
         if not isinstance(namespace, str) or not namespace or len(namespace.encode()) > 128:
             raise DPError('AGENT_NAMESPACE: nonempty bounded operator namespace required')
         self.sql = sql
+        tables = record_tables(getattr(sql,'client',None))
+        self.body_table, self.record, self.run, self.state_table = (tables[k] for k in ('body','record','run','state'))
         self.scope = digest({'format': 'oracle-agent-namespace-v1', 'namespace': namespace})
         self.verified_bodies = {}
 
@@ -69,21 +76,21 @@ class AgentRecords:
     def preflight(self):
         h='VARCHAR2:64';n='NUMBER:18';t='TIMESTAMP WITH TIME ZONE'
         expected={
-            BODY:{'SCOPE_HASH_VAL':h,'BODY_HASH_VAL':h,'PART_SEQ_NO':n,'PART_JSON_CN':'CLOB'},
-            RECORD:{'SCOPE_HASH_VAL':h,'OWNER_KEY_HASH_VAL':h,'REC_KIND_CD':'VARCHAR2:64','REC_KEY_HASH_VAL':h,
+            self.body_table:{'SCOPE_HASH_VAL':h,'BODY_HASH_VAL':h,'PART_SEQ_NO':n,'PART_JSON_CN':'CLOB'},
+            self.record:{'SCOPE_HASH_VAL':h,'OWNER_KEY_HASH_VAL':h,'REC_KIND_CD':'VARCHAR2:64','REC_KEY_HASH_VAL':h,
                     'REC_REV_NO':n,'ORD_SEQ_NO':n,'LOOKUP_HASH_VAL':h,'BODY_HASH_VAL':h},
-            RUN:{'SCOPE_HASH_VAL':h,'RUN_KEY_HASH_VAL':h,'SESS_KEY_HASH_VAL':h,'REQ_KEY_HASH_VAL':h,'PRNT_RUN_KEY_HASH_VAL':h,
+            self.run:{'SCOPE_HASH_VAL':h,'RUN_KEY_HASH_VAL':h,'SESS_KEY_HASH_VAL':h,'REQ_KEY_HASH_VAL':h,'PRNT_RUN_KEY_HASH_VAL':h,
                  'ST_CD':'VARCHAR2:32','STRT_DTTM':t,'CHG_DTTM':t,'BODY_HASH_VAL':h},
-            STATE:{'SCOPE_HASH_VAL':h,'ST_KEY_ID':'VARCHAR2:128','CHG_SEQ_NO':n,'ST_HASH_VAL':h,'ST_JSON_CN':'CLOB'}}
+            self.state_table:{'SCOPE_HASH_VAL':h,'ST_KEY_ID':'VARCHAR2:128','CHG_SEQ_NO':n,'ST_HASH_VAL':h,'ST_JSON_CN':'CLOB'}}
         nullable={'SESS_KEY_HASH_VAL','PRNT_RUN_KEY_HASH_VAL','LOOKUP_HASH_VAL'}
-        pks={BODY:['SCOPE_HASH_VAL','BODY_HASH_VAL','PART_SEQ_NO'],
-             RECORD:['SCOPE_HASH_VAL','OWNER_KEY_HASH_VAL','REC_KIND_CD','REC_KEY_HASH_VAL','REC_REV_NO'],
-             RUN:['SCOPE_HASH_VAL','RUN_KEY_HASH_VAL'],STATE:['SCOPE_HASH_VAL','ST_KEY_ID']}
+        pks={self.body_table:['SCOPE_HASH_VAL','BODY_HASH_VAL','PART_SEQ_NO'],
+             self.record:['SCOPE_HASH_VAL','OWNER_KEY_HASH_VAL','REC_KIND_CD','REC_KEY_HASH_VAL','REC_REV_NO'],
+             self.run:['SCOPE_HASH_VAL','RUN_KEY_HASH_VAL'],self.state_table:['SCOPE_HASH_VAL','ST_KEY_ID']}
         for table, columns in expected.items():
-            name = table.split('.')[1]
+            owner, name = table.split('.')
             found = self.sql.query('SELECT COLUMN_NAME,DATA_TYPE,DATA_LENGTH,DATA_PRECISION,DATA_SCALE,CHAR_USED,NULLABLE '
                                    'FROM ALL_TAB_COLUMNS WHERE OWNER=:owner AND TABLE_NAME=:name ORDER BY COLUMN_ID',
-                                   [('owner', OWNER, 'VARCHAR2'), ('name', name, 'VARCHAR2')], limit=100)
+                                   [('owner', owner, 'VARCHAR2'), ('name', name, 'VARCHAR2')], limit=100)
             if {r['COLUMN_NAME'] for r in found} != set(columns):
                 raise DPError('AGENT_SCHEMA: create/verify ' + table + ' using the Dataiku SQL package')
             for r in found:
@@ -99,13 +106,13 @@ class AgentRecords:
             keys=self.sql.query('SELECT K.COLUMN_NAME FROM ALL_CONSTRAINTS C JOIN ALL_CONS_COLUMNS K '
                 'ON C.OWNER=K.OWNER AND C.CONSTRAINT_NAME=K.CONSTRAINT_NAME '
                 "WHERE C.OWNER=:owner AND C.TABLE_NAME=:name AND C.CONSTRAINT_TYPE='P' AND C.STATUS='ENABLED' ORDER BY K.POSITION",
-                [('owner',OWNER,'VARCHAR2'),('name',name,'VARCHAR2')],limit=100)
+                [('owner',owner,'VARCHAR2'),('name',name,'VARCHAR2')],limit=100)
             if [r['COLUMN_NAME'] for r in keys]!=pks[table]:raise DPError('AGENT_SCHEMA_PK: '+table)
-        return {'owner': OWNER, 'tables': 4, 'user_columns': 26, 'state_storage': 'oracle', 'persistent_sqlite': False}
+        return {'owner': self.body_table.split('.')[0], 'tables': 4, 'user_columns': 26, 'state_storage': 'oracle', 'persistent_sqlite': False}
 
     def state(self, key):
         found = self._query(f'SELECT CHG_SEQ_NO,ST_HASH_VAL,DBMS_LOB.SUBSTR(ST_JSON_CN,4000,1) AS VALUE '
-                            f'FROM {STATE} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key', [('key', key, 'VARCHAR2')], limit=1)
+                            f'FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key', [('key', key, 'VARCHAR2')], limit=1)
         if not found:
             return None
         row = found[0]
@@ -132,7 +139,7 @@ class AgentRecords:
             if kind:
                 binds.append(('kind', kind, 'VARCHAR2'))
             page = self._query(f'SELECT * FROM (SELECT REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,LOOKUP_HASH_VAL,BODY_HASH_VAL '
-                f'FROM {RECORD} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner AND REC_REV_NO=0' + where +
+                f'FROM {self.record} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner AND REC_REV_NO=0' + where +
                 ' AND (:first_page=1 OR REC_KIND_CD>:after_kind OR (REC_KIND_CD=:after_kind AND REC_KEY_HASH_VAL>:after_key)) '
                 'ORDER BY REC_KIND_CD,REC_KEY_HASH_VAL) WHERE ROWNUM<=100', binds)
             result.extend(page)
@@ -141,7 +148,7 @@ class AgentRecords:
             after_kind, after_key = page[-1]['REC_KIND_CD'], page[-1]['REC_KEY_HASH_VAL']
 
     def exact(self, owner, kind, key, *, revision=0):
-        found = self._query(f'SELECT BODY_HASH_VAL,ORD_SEQ_NO,LOOKUP_HASH_VAL FROM {RECORD} '
+        found = self._query(f'SELECT BODY_HASH_VAL,ORD_SEQ_NO,LOOKUP_HASH_VAL FROM {self.record} '
             'WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner AND REC_KIND_CD=:kind '
             'AND REC_KEY_HASH_VAL=:key AND REC_REV_NO=:revision',
             [('owner', pin(owner), 'VARCHAR2'), ('kind', kind, 'VARCHAR2'), ('key', pin(key), 'VARCHAR2'), ('revision', revision, 'NUMBER')], limit=1)
@@ -154,7 +161,7 @@ class AgentRecords:
             group = ordered[offset:offset + 50]; after_hash = ''; after_part = -1; first = True
             while True:
                 page = self._query(f'SELECT * FROM (SELECT B.BODY_HASH_VAL,B.PART_SEQ_NO,DBMS_LOB.SUBSTR(B.PART_JSON_CN,4000,1) AS PART '
-                    f"FROM {BODY} B JOIN JSON_TABLE(:hashes,'$[*]' COLUMNS(HASH VARCHAR2(64) PATH '$')) J ON J.HASH=B.BODY_HASH_VAL "
+                    f"FROM {self.body_table} B JOIN JSON_TABLE(:hashes,'$[*]' COLUMNS(HASH VARCHAR2(64) PATH '$')) J ON J.HASH=B.BODY_HASH_VAL "
                     'WHERE B.SCOPE_HASH_VAL=:scope AND (:first_page=1 OR B.BODY_HASH_VAL>:after_hash OR '
                     '(B.BODY_HASH_VAL=:after_hash AND B.PART_SEQ_NO>:after_part)) ORDER BY B.BODY_HASH_VAL,B.PART_SEQ_NO) WHERE ROWNUM<=100',
                     [('hashes', canonical(group), 'CLOB'), ('first_page', int(first), 'NUMBER'),
@@ -310,8 +317,8 @@ class AgentRecords:
         manifests.sort(key=lambda m: (m['hash'] in recipes, m['hash']))
         statement = ("DECLARE v_old CLOB; v_same NUMBER; BEGIN FOR r IN (SELECT h,n,j FROM JSON_TABLE(:parts,'$[*]' "
             "COLUMNS(h VARCHAR2(64) PATH '$.hash',n NUMBER PATH '$.seq',j CLOB FORMAT JSON PATH '$.json'))) LOOP "
-            f'BEGIN INSERT INTO {BODY}(SCOPE_HASH_VAL,BODY_HASH_VAL,PART_SEQ_NO,PART_JSON_CN) VALUES(:scope,r.h,r.n,r.j); '
-            f'EXCEPTION WHEN DUP_VAL_ON_INDEX THEN SELECT PART_JSON_CN INTO v_old FROM {BODY} '
+            f'BEGIN INSERT INTO {self.body_table}(SCOPE_HASH_VAL,BODY_HASH_VAL,PART_SEQ_NO,PART_JSON_CN) VALUES(:scope,r.h,r.n,r.j); '
+            f'EXCEPTION WHEN DUP_VAL_ON_INDEX THEN SELECT PART_JSON_CN INTO v_old FROM {self.body_table} '
             'WHERE SCOPE_HASH_VAL=:scope AND BODY_HASH_VAL=r.h AND PART_SEQ_NO=r.n; '
             "SELECT CASE WHEN JSON_EQUAL(v_old,r.j) THEN 1 ELSE 0 END INTO v_same FROM DUAL; "
             "IF v_same<>1 THEN RAISE_APPLICATION_ERROR(-20041,'AGENT_BODY_COLLISION'); END IF; END; END LOOP; "
@@ -339,34 +346,34 @@ class AgentRecords:
         payload = {'owner': owner, 'expected': expected, 'head': state, 'rows': changes, 'operation': operation,
                    'receipt_hash': sha(receipt), 'leases': list(ACTIVE_LEASES.get()), 'run': run}
         statement = ('DECLARE v_revision NUMBER; v_token VARCHAR2(64); v_expiry NUMBER; v_exists NUMBER; v_run_id VARCHAR2(64); BEGIN '
-            f'SELECT COUNT(*) INTO v_exists FROM {RECORD} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner '
+            f'SELECT COUNT(*) INTO v_exists FROM {self.record} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner '
             "AND REC_KIND_CD='OPERATION' AND REC_KEY_HASH_VAL=:operation AND REC_REV_NO=1; "
             'IF v_exists=0 THEN '
-            f'IF :expected=0 THEN BEGIN INSERT INTO {STATE}(SCOPE_HASH_VAL,ST_KEY_ID,CHG_SEQ_NO,ST_HASH_VAL,ST_JSON_CN) '
+            f'IF :expected=0 THEN BEGIN INSERT INTO {self.state_table}(SCOPE_HASH_VAL,ST_KEY_ID,CHG_SEQ_NO,ST_HASH_VAL,ST_JSON_CN) '
             'VALUES(:scope,:head_key,:revision,:head_hash,:head_json); EXCEPTION WHEN DUP_VAL_ON_INDEX THEN '
             "RAISE_APPLICATION_ERROR(-20042,'AGENT_HEAD_CONFLICT'); END; ELSE "
-            f'SELECT CHG_SEQ_NO INTO v_revision FROM {STATE} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:head_key FOR UPDATE; '
+            f'SELECT CHG_SEQ_NO INTO v_revision FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:head_key FOR UPDATE; '
             "IF v_revision<>:expected THEN RAISE_APPLICATION_ERROR(-20042,'AGENT_HEAD_CONFLICT'); END IF; "
-            f'UPDATE {STATE} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:head_hash,ST_JSON_CN=:head_json '
+            f'UPDATE {self.state_table} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:head_hash,ST_JSON_CN=:head_json '
             'WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:head_key; END IF; '
             'FOR l IN (SELECT k,t FROM JSON_TABLE(:payload,\'$.leases[*]\' COLUMNS(k VARCHAR2(128) PATH \'$.key\',t VARCHAR2(64) PATH \'$.token\'))) LOOP '
             f'SELECT JSON_VALUE(ST_JSON_CN,\'$.token\'),JSON_VALUE(ST_JSON_CN,\'$.expires\' RETURNING NUMBER) INTO v_token,v_expiry '
-            f'FROM {STATE} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=l.k FOR UPDATE; '
+            f'FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=l.k FOR UPDATE; '
             f"IF v_token<>l.t OR v_expiry<={UTC_SECONDS} THEN RAISE_APPLICATION_ERROR(-20043,'AGENT_LEASE_LOST'); END IF; END LOOP; "
             'FOR r IN (SELECT k,t,o,l,b,d,w FROM JSON_TABLE(:payload,\'$.rows[*]\' COLUMNS(k VARCHAR2(64) PATH \'$.key\', '
             't VARCHAR2(64) PATH \'$.kind\',o NUMBER PATH \'$.order\',l VARCHAR2(64) PATH \'$.lookup\', '
             'b VARCHAR2(64) PATH \'$.body\',d NUMBER PATH \'$.deleted\',w VARCHAR2(64) PATH \'$.owner\'))) LOOP '
-            f'INSERT INTO {RECORD}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,LOOKUP_HASH_VAL,BODY_HASH_VAL) '
+            f'INSERT INTO {self.record}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,LOOKUP_HASH_VAL,BODY_HASH_VAL) '
             'VALUES(:scope,NVL(r.w,:owner),r.t,r.k,:revision,r.o,r.l,r.b); '
-            f'DELETE FROM {RECORD} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=NVL(r.w,:owner) AND REC_KIND_CD=r.t AND REC_KEY_HASH_VAL=r.k AND REC_REV_NO=0; '
-            f'IF r.d=0 THEN INSERT INTO {RECORD}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,LOOKUP_HASH_VAL,BODY_HASH_VAL) '
+            f'DELETE FROM {self.record} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=NVL(r.w,:owner) AND REC_KIND_CD=r.t AND REC_KEY_HASH_VAL=r.k AND REC_REV_NO=0; '
+            f'IF r.d=0 THEN INSERT INTO {self.record}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,LOOKUP_HASH_VAL,BODY_HASH_VAL) '
             'VALUES(:scope,NVL(r.w,:owner),r.t,r.k,0,r.o,r.l,r.b); END IF; END LOOP; '
-            f'INSERT INTO {RECORD}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,BODY_HASH_VAL) '
+            f'INSERT INTO {self.record}(SCOPE_HASH_VAL,OWNER_KEY_HASH_VAL,REC_KIND_CD,REC_KEY_HASH_VAL,REC_REV_NO,ORD_SEQ_NO,BODY_HASH_VAL) '
             "VALUES(:scope,:owner,'OPERATION',:operation,1,:revision,:receipt_hash); "
             "SELECT JSON_VALUE(:payload,'$.run.id') INTO v_run_id FROM DUAL; IF v_run_id IS NOT NULL THEN "
-            f'SELECT COUNT(*) INTO v_exists FROM {RUN} WHERE SCOPE_HASH_VAL=:scope AND RUN_KEY_HASH_VAL=JSON_VALUE(:payload,\'$.run.id\'); '
+            f'SELECT COUNT(*) INTO v_exists FROM {self.run} WHERE SCOPE_HASH_VAL=:scope AND RUN_KEY_HASH_VAL=JSON_VALUE(:payload,\'$.run.id\'); '
             "IF :expected=0 AND v_exists>0 THEN RAISE_APPLICATION_ERROR(-20044,'AGENT_RUN_ID_COLLISION'); END IF; "
-            f'MERGE INTO {RUN} d USING (SELECT :scope s,JSON_VALUE(:payload,\'$.run.id\') r FROM DUAL) j '
+            f'MERGE INTO {self.run} d USING (SELECT :scope s,JSON_VALUE(:payload,\'$.run.id\') r FROM DUAL) j '
             'ON (d.SCOPE_HASH_VAL=j.s AND d.RUN_KEY_HASH_VAL=j.r) WHEN MATCHED THEN UPDATE SET '
             'd.ST_CD=JSON_VALUE(:payload,\'$.run.status\'),d.CHG_DTTM=SYSTIMESTAMP,d.BODY_HASH_VAL=:receipt_hash '
             'WHEN NOT MATCHED THEN INSERT(SCOPE_HASH_VAL,RUN_KEY_HASH_VAL,SESS_KEY_HASH_VAL,REQ_KEY_HASH_VAL,PRNT_RUN_KEY_HASH_VAL,ST_CD,STRT_DTTM,CHG_DTTM,BODY_HASH_VAL) '
@@ -404,9 +411,9 @@ class AgentRecords:
             value = {'token': token, 'expires': int(clock) + ttl, 'fence': expected + 1}
             state = self._state_value(key, expected + 1, value)
             statement = ('BEGIN '
-                f'IF :expected=0 THEN INSERT INTO {STATE}(SCOPE_HASH_VAL,ST_KEY_ID,CHG_SEQ_NO,ST_HASH_VAL,ST_JSON_CN) '
+                f'IF :expected=0 THEN INSERT INTO {self.state_table}(SCOPE_HASH_VAL,ST_KEY_ID,CHG_SEQ_NO,ST_HASH_VAL,ST_JSON_CN) '
                 'VALUES(:scope,:key,:revision,:hash,:value); ELSE '
-                f'UPDATE {STATE} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:hash,ST_JSON_CN=:value '
+                f'UPDATE {self.state_table} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:hash,ST_JSON_CN=:value '
                 'WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key AND CHG_SEQ_NO=:expected; '
                 "IF SQL%ROWCOUNT<>1 THEN RAISE_APPLICATION_ERROR(-20045,'AGENT_LEASE_CONFLICT'); END IF; END IF; "
                 'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
@@ -427,13 +434,13 @@ class AgentRecords:
             if active is not None: ACTIVE_LEASES.reset(active)
             released = {**value, 'expires': 0, 'token': None}
             state = self._state_value(key, expected + 2, released)
-            statement = (f'BEGIN UPDATE {STATE} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:hash,ST_JSON_CN=:value '
+            statement = (f'BEGIN UPDATE {self.state_table} SET CHG_SEQ_NO=:revision,ST_HASH_VAL=:hash,ST_JSON_CN=:value '
                 "WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key AND JSON_VALUE(ST_JSON_CN,'$.token')=:token; "
                 'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
             self._mutate(statement, [('key', key, 'VARCHAR2'), ('token', token, 'VARCHAR2'), ('revision', expected + 2, 'NUMBER'),
                                     ('hash', state['hash'], 'VARCHAR2'), ('value', state['json'], 'CLOB')])
             if ephemeral:
-                self._mutate(f'BEGIN DELETE FROM {STATE} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key AND CHG_SEQ_NO=:revision '
+                self._mutate(f'BEGIN DELETE FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key AND CHG_SEQ_NO=:revision '
                     "AND JSON_VALUE(ST_JSON_CN,'$.token') IS NULL; COMMIT; END;",
                     [('key', key, 'VARCHAR2'), ('revision', expected + 2, 'NUMBER')])
 
@@ -448,7 +455,7 @@ class AgentRecords:
                 clock = self.sql.query('SELECT ' + UTC_SECONDS + ' AS SECONDS FROM DUAL', limit=1)[0]['SECONDS']
                 writer = self.state(writer_key)
                 writer_active = bool(writer and writer['value'].get('token') and writer['value']['expires'] > clock)
-                readers = self._query(f'SELECT COUNT(*) AS N FROM {STATE} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID LIKE :prefix '
+                readers = self._query(f'SELECT COUNT(*) AS N FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID LIKE :prefix '
                     f"AND JSON_VALUE(ST_JSON_CN,'$.token') IS NOT NULL AND JSON_VALUE(ST_JSON_CN,'$.expires' RETURNING NUMBER)>{UTC_SECONDS}",
                     [('prefix', prefix + '%', 'VARCHAR2')], limit=1)[0]['N'] if exclusive else 0
                 if not writer_active and not readers:
@@ -468,5 +475,5 @@ class AgentRecords:
             held.__exit__(None, None, None)
 
     def allocated_bytes(self):
-        row = self._query(f'SELECT NVL(SUM(DBMS_LOB.GETLENGTH(PART_JSON_CN)),0) AS N FROM {BODY} WHERE SCOPE_HASH_VAL=:scope', limit=1)
+        row = self._query(f'SELECT NVL(SUM(DBMS_LOB.GETLENGTH(PART_JSON_CN)),0) AS N FROM {self.body_table} WHERE SCOPE_HASH_VAL=:scope', limit=1)
         return row[0]['N']

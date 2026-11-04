@@ -1,0 +1,44 @@
+{
+  "status": "LOCAL_SUBSTITUTE_PASS_FIELD_NOT_RUN",
+  "tests_passed": 10,
+  "tests_failed": 0,
+  "command": ".venv/bin/python -m pytest -q 08_DEPLOYMENT/DATAIKU/gold_zip_s3_repair_20261104_r1/test_repair.py",
+  "syntax": "Python3.9 AST passed; not Python3.9 runtime",
+  "field_evidence": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a4ab-ad5e-7641-a2b3-ff419c22e337/893A6725-0F00-4D82-86D3-ADE5128CF59E/1-사진-1.jpg",
+      "sha256": "7d30621e86c80029fb59b044e118ae1cfc60d6cee900b30e21ccf2e5302a0acd"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a4ab-ad5e-7641-a2b3-ff419c22e337/880089A8-4635-4783-A3A9-586BE34789D7/1-사진-1.jpg",
+      "sha256": "34ef68aa6bfa3b497af305f41bc7334f56f1c4dbe8baecdd1f56ce80e57b86ad"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a4ab-ad5e-7641-a2b3-ff419c22e337/888BF0D7-F2A0-4D60-8CB9-DA1B611513CC/1-사진-1.jpg",
+      "sha256": "cc0e6c2a4dc435a9c2eafab2903da0174720abbd4198a9e4a74343dca7081b98"
+    }
+  ],
+  "confirmed_difference": {
+    "input_path": "/dataiku/${projectKey}/${odbId}",
+    "report_path": "/LEGAL_RAG/gold_zip_flow_20261104_r1/report",
+    "connection": "OBS"
+  },
+  "cause_status": "Path override confirmed in code/screenshots; actual bucket404 cause not proven.",
+  "preserved_original_code_zip_sha256": "39a2fce28bff353a83e1ed2fc0385b75cf391ac158d39565e295e62099d2bedf",
+  "original_notebook_unchanged": true,
+  "oracle_calls": 0,
+  "model_calls": 0,
+  "field_mutation": false,
+  "email_sent": false,
+  "limitations": [
+    "Pre-scenario installation repair only; refuses any scenario history or observed runtime state.",
+    "If old path listing returns bucket404, old content is unknown and untouched; configuration backup retained.",
+    "Original install cell must not be rerun after repair. Use existing scenario after REPAIR_COMPLETE.",
+    "OBS bucket/namespace/permissions failure may persist after path correction."
+  ],
+  "files": {
+    "repair.py": "13c713e18ec294ad92c63d278d06f6ef33402a558af02eb5f75ce9829948dabb",
+    "DATAIKU_GOLD_S3_REPAIR_RUN_R1.txt": "da2902c286be107dab5a8626651d072027699a0f2391a84bef2880030264df70",
+    "GUIDE.txt": "eac424d54c4537ba92705b2984a4f5bdb2c19d9008bb92ee6cc4eb00c9f93e87"
+  }
+}
