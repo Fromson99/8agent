@@ -64,3 +64,7 @@ tmp/pdfs/legal-rag-review/** -text -eol
 # November 5 production Gold handoff tables are bound by their original CRLF bytes.
 08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261105_r4/package/engine/TABLES.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261105_r5/package/engine/TABLES.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Integration answer-review CSVs keep their reviewed Excel CRLF bytes.
+08_DEPLOYMENT/GENOS/handoffs/integration_external_20261105_r4/payload/*.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+08_DEPLOYMENT/GENOS/handoffs/integration_ontology_20261105_r2/payload/*.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

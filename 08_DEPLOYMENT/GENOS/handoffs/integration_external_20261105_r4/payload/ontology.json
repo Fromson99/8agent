@@ -1,0 +1,2485 @@
+{
+  "version": "reviewed-integration-ontology-v1",
+  "namespace": "cb-it35-r1-",
+  "purpose": "USER_REQUESTED_PREBUILT_IN_SAMPLE_TEST_KNOWLEDGE",
+  "entries": [
+    {
+      "bundle_id": "cb-it35-r1-5be4de51a89dc664-a3",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "자본시장과 금융투자업에 관한 법률 제3조 등록 문언",
+        "originals": [
+          {
+            "id": "S10",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "10",
+              "label": "자본시장과 금융투자업에 관한 법률 제3조제2항",
+              "content_sha256": "facad1738d2312f24f3e6cb5fe71920e744be08ce341a22df782555af50ea1cc"
+            },
+            "text": "② 제1항의 금융투자상품은 다음 각 호와 같이 구분한다."
+          },
+          {
+            "id": "S11",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "11",
+              "label": "자본시장과 금융투자업에 관한 법률 제3조제2항제1호",
+              "content_sha256": "9d3612b6c0528c554b1d2e6b325a8026526be60044f47b8eac861169d3c68adb"
+            },
+            "text": "1. 증권"
+          },
+          {
+            "id": "S12",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "12",
+              "label": "자본시장과 금융투자업에 관한 법률 제3조제2항제2호",
+              "content_sha256": "fef859192f88d372d32236357259535569e58e8932a7304cfe29816e1bbb6161"
+            },
+            "text": "2. 파생상품"
+          },
+          {
+            "id": "S13",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "13",
+              "label": "자본시장과 금융투자업에 관한 법률 제3조제2항제2호가목",
+              "content_sha256": "3ee47febc5c92f62e2581583781ba143f2109db0913d258707b1b09d34db62f6"
+            },
+            "text": "가. 장내파생상품"
+          },
+          {
+            "id": "S14",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "14",
+              "label": "자본시장과 금융투자업에 관한 법률 제3조제2항제2호나목",
+              "content_sha256": "7aa1e2136155d239535e7641dc9788a0949986167c16d01baf6a8394043b58b0"
+            },
+            "text": "나. 장외파생상품"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U10_11_12_13_14-SCOPE",
+            "text": "제3조 제2항에서 다루는 대상·범위: 금융투자상품",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S10",
+                "quote": "금융투자상품"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S10",
+            "text": "② 제1항의 금융투자상품은 다음 각 호와 같이 구분한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S10",
+                "quote": "② 제1항의 금융투자상품은 다음 각 호와 같이 구분한다."
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S11",
+            "text": "1. 증권",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S11",
+                "quote": "1. 증권"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S12",
+            "text": "2. 파생상품",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S12",
+                "quote": "2. 파생상품"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S13",
+            "text": "가. 장내파생상품",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S13",
+                "quote": "가. 장내파생상품"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S14",
+            "text": "나. 장외파생상품",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S14",
+                "quote": "나. 장외파생상품"
+              }
+            ]
+          },
+          {
+            "id": "U10_11_12_13_14-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S10",
+                "quote": "② 제1항의 금융투자상품은 다음 각 호와 같이 구분한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U10_11_12_13_14",
+            "title": "자본시장과 금융투자업에 관한 법률 제3조 제2항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제3조 제2항의 금융투자상품에 관한 등록 문언 확인",
+            "conditions": [
+              "U10_11_12_13_14-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S10",
+              "TEXT-S11",
+              "TEXT-S12",
+              "TEXT-S13",
+              "TEXT-S14"
+            ],
+            "notes": [
+              "U10_11_12_13_14-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "acbbd496aa3e2fe9221c8ccbaf663f175a52fe1452a51a03645c27cb1e3569a0",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "560313a42ed4da8e377f2919904498a829e2946a8f05758c8faa28dece205298"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-5be4de51a89dc664-a6",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "자본시장과 금융투자업에 관한 법률 제6조 등록 문언",
+        "originals": [
+          {
+            "id": "S60",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "60",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항",
+              "content_sha256": "7faaa25c973380abd9f9c463493a859dd4b775124cd5bc2469aa7b5b710eee11"
+            },
+            "text": "① 이 법에서 \"금융투자업\"이란 이익을 얻을 목적으로 계속적이거나 반복적인 방법으로 행하는 행위로서 다음 각 호의 어느 하나에 해당하는 업(業)을 말한다."
+          },
+          {
+            "id": "S61",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "61",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제1호",
+              "content_sha256": "b15d1dfdf211778fcef9b90af01b59a18bcad5c007991460ced64783ce4855f4"
+            },
+            "text": "1. 투자매매업"
+          },
+          {
+            "id": "S62",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "62",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제2호",
+              "content_sha256": "20af74cfd1f7a0843c6e8e42b9464fc30c3abf4d2270190177e136f50bb50067"
+            },
+            "text": "2. 투자중개업"
+          },
+          {
+            "id": "S63",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "63",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제3호",
+              "content_sha256": "8bcfa1c0d5076286a85e8b73608de308ea94ce8bcd07feaf1f9e13f7c245b671"
+            },
+            "text": "3. 집합투자업"
+          },
+          {
+            "id": "S64",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "64",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제4호",
+              "content_sha256": "687497002d3fbae5cf33b85502c5178b0bf8d82614c44fb66783729d9c2d7228"
+            },
+            "text": "4. 투자자문업"
+          },
+          {
+            "id": "S65",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "65",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제5호",
+              "content_sha256": "c3849f4787a35bf33ea09b98de21efe792f210dc4e434c9f72e38e2b4c15c0a4"
+            },
+            "text": "5. 투자일임업"
+          },
+          {
+            "id": "S66",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "66",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제1항제6호",
+              "content_sha256": "64c716d0127192b1122c8eb8d613b0ccd6e59b9f2a15e001bf1c7f6b76e0b8d7"
+            },
+            "text": "6. 신탁업"
+          },
+          {
+            "id": "S67",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "67",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제2항",
+              "content_sha256": "efcb1fc8102e08845ed6cbccc20e6a3a01aa9b50f666be092c4ae2b06e077142"
+            },
+            "text": "② 이 법에서 \"투자매매업\"이란 누구의 명의로 하든지 자기의 계산으로 금융투자상품의 매도ㆍ매수, 증권의 발행ㆍ인수 또는 그 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다."
+          },
+          {
+            "id": "S68",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "68",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제3항",
+              "content_sha256": "f328060baf771544723e37f64edc9528c189d3fb5581bee5533c9878e943fdfd"
+            },
+            "text": "③ 이 법에서 \"투자중개업\"이란 누구의 명의로 하든지 타인의 계산으로 금융투자상품의 매도ㆍ매수, 그 중개나 청약의 권유, 청약, 청약의 승낙 또는 증권의 발행ㆍ인수에 대한 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다. <개정 2013.5.28>"
+          },
+          {
+            "id": "S89",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "89",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제7항",
+              "content_sha256": "a90838f781d8bd5141398e7d3eef48e7f655cb5658192bfe8f955f459ea6587c"
+            },
+            "text": "⑦ 이 법에서 \"투자자문업\"이란 금융투자상품, 그 밖에 대통령령으로 정하는 투자대상자산(이하 \"금융투자상품등\"이라 한다)의 가치 또는 금융투자상품등에 대한 투자판단(종류, 종목, 취득ㆍ처분, 취득ㆍ처분의 방법ㆍ수량ㆍ가격 및 시기 등에 대한 판단을 말한다. 이하 같다)에 관한 자문에 응하는 것을 영업으로 하는 것을 말한다. <개정 2013.5.28, 2018.3.27>"
+          },
+          {
+            "id": "S91",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "91",
+              "label": "자본시장과 금융투자업에 관한 법률 제6조제9항",
+              "content_sha256": "87b8e15745dfef2b982309ac161c209ac3645b9a5357246a243141aea9e435f6"
+            },
+            "text": "⑨ 이 법에서 \"신탁업\"이란 신탁을 영업으로 하는 것을 말한다. <개정 2018.3.27>"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U60_61_62_63_64_65_66-SCOPE",
+            "text": "제6조 제1항에서 다루는 대상·범위: 금융투자업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "금융투자업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S60",
+            "text": "① 이 법에서 \"금융투자업\"이란 이익을 얻을 목적으로 계속적이거나 반복적인 방법으로 행하는 행위로서 다음 각 호의 어느 하나에 해당하는 업(業)을 말한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "① 이 법에서 \"금융투자업\"이란 이익을 얻을 목적으로 계속적이거나 반복적인 방법으로 행하는 행위로서 다음 각 호의 어느 하나에 해당하는 업(業)을 말한다."
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S61",
+            "text": "1. 투자매매업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S61",
+                "quote": "1. 투자매매업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S62",
+            "text": "2. 투자중개업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S62",
+                "quote": "2. 투자중개업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S63",
+            "text": "3. 집합투자업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S63",
+                "quote": "3. 집합투자업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S64",
+            "text": "4. 투자자문업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S64",
+                "quote": "4. 투자자문업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S65",
+            "text": "5. 투자일임업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S65",
+                "quote": "5. 투자일임업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S66",
+            "text": "6. 신탁업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S66",
+                "quote": "6. 신탁업"
+              }
+            ]
+          },
+          {
+            "id": "U60_61_62_63_64_65_66-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "① 이 법에서 \"금융투자업\"이란 이익을 얻을 목적으로 계속적이거나 반복적인 방법으로 행하는 행위로서 다음 각 호의 어느 하나에 해당하는 업(業)을 말한다."
+              }
+            ]
+          },
+          {
+            "id": "U67-SCOPE",
+            "text": "제6조 제2항에서 다루는 대상·범위: 투자매매업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S67",
+                "quote": "투자매매업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S67",
+            "text": "② 이 법에서 \"투자매매업\"이란 누구의 명의로 하든지 자기의 계산으로 금융투자상품의 매도ㆍ매수, 증권의 발행ㆍ인수 또는 그 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S67",
+                "quote": "② 이 법에서 \"투자매매업\"이란 누구의 명의로 하든지 자기의 계산으로 금융투자상품의 매도ㆍ매수, 증권의 발행ㆍ인수 또는 그 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다."
+              }
+            ]
+          },
+          {
+            "id": "U67-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S67",
+                "quote": "② 이 법에서 \"투자매매업\"이란 누구의 명의로 하든지 자기의 계산으로 금융투자상품의 매도ㆍ매수, 증권의 발행ㆍ인수 또는 그 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다."
+              }
+            ]
+          },
+          {
+            "id": "U68-SCOPE",
+            "text": "제6조 제3항에서 다루는 대상·범위: 투자중개업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S68",
+                "quote": "투자중개업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S68",
+            "text": "③ 이 법에서 \"투자중개업\"이란 누구의 명의로 하든지 타인의 계산으로 금융투자상품의 매도ㆍ매수, 그 중개나 청약의 권유, 청약, 청약의 승낙 또는 증권의 발행ㆍ인수에 대한 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다. <개정 2013.5.28>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S68",
+                "quote": "③ 이 법에서 \"투자중개업\"이란 누구의 명의로 하든지 타인의 계산으로 금융투자상품의 매도ㆍ매수, 그 중개나 청약의 권유, 청약, 청약의 승낙 또는 증권의 발행ㆍ인수에 대한 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다. <개정 2013.5.28>"
+              }
+            ]
+          },
+          {
+            "id": "U68-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S68",
+                "quote": "③ 이 법에서 \"투자중개업\"이란 누구의 명의로 하든지 타인의 계산으로 금융투자상품의 매도ㆍ매수, 그 중개나 청약의 권유, 청약, 청약의 승낙 또는 증권의 발행ㆍ인수에 대한 청약의 권유, 청약, 청약의 승낙을 영업으로 하는 것을 말한다. <개정 2013.5.28>"
+              }
+            ]
+          },
+          {
+            "id": "U89-SCOPE",
+            "text": "제6조 제7항에서 다루는 대상·범위: 투자자문업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S89",
+                "quote": "투자자문업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S89",
+            "text": "⑦ 이 법에서 \"투자자문업\"이란 금융투자상품, 그 밖에 대통령령으로 정하는 투자대상자산(이하 \"금융투자상품등\"이라 한다)의 가치 또는 금융투자상품등에 대한 투자판단(종류, 종목, 취득ㆍ처분, 취득ㆍ처분의 방법ㆍ수량ㆍ가격 및 시기 등에 대한 판단을 말한다. 이하 같다)에 관한 자문에 응하는 것을 영업으로 하는 것을 말한다. <개정 2013.5.28, 2018.3.27>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S89",
+                "quote": "⑦ 이 법에서 \"투자자문업\"이란 금융투자상품, 그 밖에 대통령령으로 정하는 투자대상자산(이하 \"금융투자상품등\"이라 한다)의 가치 또는 금융투자상품등에 대한 투자판단(종류, 종목, 취득ㆍ처분, 취득ㆍ처분의 방법ㆍ수량ㆍ가격 및 시기 등에 대한 판단을 말한다. 이하 같다)에 관한 자문에 응하는 것을 영업으로 하는 것을 말한다. <개정 2013.5.28, 2018.3.27>"
+              }
+            ]
+          },
+          {
+            "id": "U89-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S89",
+                "quote": "⑦ 이 법에서 \"투자자문업\"이란 금융투자상품, 그 밖에 대통령령으로 정하는 투자대상자산(이하 \"금융투자상품등\"이라 한다)의 가치 또는 금융투자상품등에 대한 투자판단(종류, 종목, 취득ㆍ처분, 취득ㆍ처분의 방법ㆍ수량ㆍ가격 및 시기 등에 대한 판단을 말한다. 이하 같다)에 관한 자문에 응하는 것을 영업으로 하는 것을 말한다. <개정 2013.5.28, 2018.3.27>"
+              }
+            ]
+          },
+          {
+            "id": "U91-SCOPE",
+            "text": "제6조 제9항에서 다루는 대상·범위: 신탁업",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S91",
+                "quote": "신탁업"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S91",
+            "text": "⑨ 이 법에서 \"신탁업\"이란 신탁을 영업으로 하는 것을 말한다. <개정 2018.3.27>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S91",
+                "quote": "⑨ 이 법에서 \"신탁업\"이란 신탁을 영업으로 하는 것을 말한다. <개정 2018.3.27>"
+              }
+            ]
+          },
+          {
+            "id": "U91-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S91",
+                "quote": "⑨ 이 법에서 \"신탁업\"이란 신탁을 영업으로 하는 것을 말한다. <개정 2018.3.27>"
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U60_61_62_63_64_65_66",
+            "title": "자본시장과 금융투자업에 관한 법률 제6조 제1항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제6조 제1항의 금융투자업에 관한 등록 문언 확인",
+            "conditions": [
+              "U60_61_62_63_64_65_66-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S60",
+              "TEXT-S61",
+              "TEXT-S62",
+              "TEXT-S63",
+              "TEXT-S64",
+              "TEXT-S65",
+              "TEXT-S66"
+            ],
+            "notes": [
+              "U60_61_62_63_64_65_66-NOTE"
+            ]
+          },
+          {
+            "id": "U67",
+            "title": "자본시장과 금융투자업에 관한 법률 제6조 제2항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제6조 제2항의 투자매매업에 관한 등록 문언 확인",
+            "conditions": [
+              "U67-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S67"
+            ],
+            "notes": [
+              "U67-NOTE"
+            ]
+          },
+          {
+            "id": "U68",
+            "title": "자본시장과 금융투자업에 관한 법률 제6조 제3항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제6조 제3항의 투자중개업에 관한 등록 문언 확인",
+            "conditions": [
+              "U68-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S68"
+            ],
+            "notes": [
+              "U68-NOTE"
+            ]
+          },
+          {
+            "id": "U89",
+            "title": "자본시장과 금융투자업에 관한 법률 제6조 제7항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제6조 제7항의 투자자문업에 관한 등록 문언 확인",
+            "conditions": [
+              "U89-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S89"
+            ],
+            "notes": [
+              "U89-NOTE"
+            ]
+          },
+          {
+            "id": "U91",
+            "title": "자본시장과 금융투자업에 관한 법률 제6조 제9항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제6조 제9항의 신탁업에 관한 등록 문언 확인",
+            "conditions": [
+              "U91-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S91"
+            ],
+            "notes": [
+              "U91-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "ccc9e6ef9b05e65bd713d59b38d8097b85e10b779ba6b8531e17d1d9abeefcb4",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "42e957d649ed1d9c77f81e909c9500334a5284749924f46846eb06fc28dd9490"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-5be4de51a89dc664-a9",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "자본시장과 금융투자업에 관한 법률 제9조 등록 문언",
+        "originals": [
+          {
+            "id": "S138",
+            "anchor": {
+              "document_id": "5be4de51a89dc664",
+              "version": "5be4de51a89dc664cb532237c8a890350178cad96c0184fba106ff3a80199a33",
+              "unit_id": "138",
+              "label": "자본시장과 금융투자업에 관한 법률 제9조제2항",
+              "content_sha256": "1b00a4c21e2a0dab565ae5d8a599361f093c94a4b8b256bf33126908eafb8af5"
+            },
+            "text": "② 이 법에서 \"임원\"이란 이사 및 감사를 말한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U138-SCOPE",
+            "text": "제9조 제2항에서 다루는 대상·범위: 임원",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S138",
+                "quote": "임원"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S138",
+            "text": "② 이 법에서 \"임원\"이란 이사 및 감사를 말한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S138",
+                "quote": "② 이 법에서 \"임원\"이란 이사 및 감사를 말한다."
+              }
+            ]
+          },
+          {
+            "id": "U138-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S138",
+                "quote": "② 이 법에서 \"임원\"이란 이사 및 감사를 말한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U138",
+            "title": "자본시장과 금융투자업에 관한 법률 제9조 제2항",
+            "business_use": "자본시장과 금융투자업에 관한 법률 제9조 제2항의 임원에 관한 등록 문언 확인",
+            "conditions": [
+              "U138-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S138"
+            ],
+            "notes": [
+              "U138-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "c99bbae04517114856afdc55f3013e41bc37f923a1d2856297dc75e83d5a11bd",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "9dd4d612d7abbc2fd9eb78425779590392f559f67a7bb6c91cbe8426289cf98b"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a362",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제362조 등록 문언",
+        "originals": [
+          {
+            "id": "S1374",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1374",
+              "label": "상법 제362조",
+              "content_sha256": "a1528e0d42a149483ec9e5c846c0a079a2f168767b6a7a3d979a38d6fa29424c"
+            },
+            "text": "제362조(소집의 결정) 총회의 소집은 본법에 다른 규정이 있는 경우 외에는 이사회가 이를 결정한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1374-SCOPE",
+            "text": "제362조에서 다루는 대상·범위: 총회의 소집",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1374",
+                "quote": "총회의 소집"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1374",
+            "text": "제362조(소집의 결정) 총회의 소집은 본법에 다른 규정이 있는 경우 외에는 이사회가 이를 결정한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1374",
+                "quote": "제362조(소집의 결정) 총회의 소집은 본법에 다른 규정이 있는 경우 외에는 이사회가 이를 결정한다."
+              }
+            ]
+          },
+          {
+            "id": "U1374-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1374",
+                "quote": "제362조(소집의 결정) 총회의 소집은 본법에 다른 규정이 있는 경우 외에는 이사회가 이를 결정한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1374",
+            "title": "상법 제362조",
+            "business_use": "상법 제362조의 총회의 소집에 관한 등록 문언 확인",
+            "conditions": [
+              "U1374-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1374"
+            ],
+            "notes": [
+              "U1374-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "26d079153514ef825fc40c302f7867ae90f47a3f6be0329f5853ba0b2cebb308",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "5c3f1b3de1e9dd458304c5bdc6a33a43bd6fb29d3ccc74e34ec1e5102519b7b6"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a363",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제363조 등록 문언",
+        "originals": [
+          {
+            "id": "S1376",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1376",
+              "label": "상법 제363조제1항",
+              "content_sha256": "43d4c3a8c2a6a8d415d8be371ad38f94351e5439f31dca535582abdd3874f015"
+            },
+            "text": "① 주주총회를 소집할 때에는 주주총회일의 2주 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송하여야 한다. 다만, 그 통지가 주주명부상 주주의 주소에 계속 3년간 도달하지 아니한 경우에는 회사는 해당 주주에게 총회의 소집을 통지하지 아니할 수 있다."
+          },
+          {
+            "id": "S1377",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1377",
+              "label": "상법 제363조제2항",
+              "content_sha256": "2136608e1766fd4d1ddbc4d4adefb886f58aa77f820e961f522c5bc6c7bd4c28"
+            },
+            "text": "② 제1항의 통지서에는 회의의 목적사항을 적어야 한다."
+          },
+          {
+            "id": "S1378",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1378",
+              "label": "상법 제363조제3항",
+              "content_sha256": "43d55d553bd03f85e1f3f61f4ccf4dee4bef9a388d860c862b26c78794ec9dd4"
+            },
+            "text": "③ 제1항에도 불구하고 자본금 총액이 10억원 미만인 회사가 주주총회를 소집하는 경우에는 주주총회일의 10일 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송할 수 있다. <개정 2014.5.20>"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1376-SCOPE",
+            "text": "제363조 제1항에서 다루는 대상·범위: 주주총회를 소집할 때",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1376",
+                "quote": "주주총회를 소집할 때"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1376",
+            "text": "① 주주총회를 소집할 때에는 주주총회일의 2주 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송하여야 한다. 다만, 그 통지가 주주명부상 주주의 주소에 계속 3년간 도달하지 아니한 경우에는 회사는 해당 주주에게 총회의 소집을 통지하지 아니할 수 있다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1376",
+                "quote": "① 주주총회를 소집할 때에는 주주총회일의 2주 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송하여야 한다. 다만, 그 통지가 주주명부상 주주의 주소에 계속 3년간 도달하지 아니한 경우에는 회사는 해당 주주에게 총회의 소집을 통지하지 아니할 수 있다."
+              }
+            ]
+          },
+          {
+            "id": "U1376-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1376",
+                "quote": "① 주주총회를 소집할 때에는 주주총회일의 2주 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송하여야 한다. 다만, 그 통지가 주주명부상 주주의 주소에 계속 3년간 도달하지 아니한 경우에는 회사는 해당 주주에게 총회의 소집을 통지하지 아니할 수 있다."
+              }
+            ]
+          },
+          {
+            "id": "U1377-SCOPE",
+            "text": "제363조 제2항에서 다루는 대상·범위: 통지서",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1377",
+                "quote": "통지서"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1377",
+            "text": "② 제1항의 통지서에는 회의의 목적사항을 적어야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1377",
+                "quote": "② 제1항의 통지서에는 회의의 목적사항을 적어야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1377-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1377",
+                "quote": "② 제1항의 통지서에는 회의의 목적사항을 적어야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1378-SCOPE",
+            "text": "제363조 제3항에서 다루는 대상·범위: 자본금 총액이 10억원 미만인 회사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1378",
+                "quote": "자본금 총액이 10억원 미만인 회사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1378",
+            "text": "③ 제1항에도 불구하고 자본금 총액이 10억원 미만인 회사가 주주총회를 소집하는 경우에는 주주총회일의 10일 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송할 수 있다. <개정 2014.5.20>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1378",
+                "quote": "③ 제1항에도 불구하고 자본금 총액이 10억원 미만인 회사가 주주총회를 소집하는 경우에는 주주총회일의 10일 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송할 수 있다. <개정 2014.5.20>"
+              }
+            ]
+          },
+          {
+            "id": "U1378-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1378",
+                "quote": "③ 제1항에도 불구하고 자본금 총액이 10억원 미만인 회사가 주주총회를 소집하는 경우에는 주주총회일의 10일 전에 각 주주에게 서면으로 통지를 발송하거나 각 주주의 동의를 받아 전자문서로 통지를 발송할 수 있다. <개정 2014.5.20>"
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1376",
+            "title": "상법 제363조 제1항",
+            "business_use": "상법 제363조 제1항의 주주총회를 소집할 때에 관한 등록 문언 확인",
+            "conditions": [
+              "U1376-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1376"
+            ],
+            "notes": [
+              "U1376-NOTE"
+            ]
+          },
+          {
+            "id": "U1377",
+            "title": "상법 제363조 제2항",
+            "business_use": "상법 제363조 제2항의 통지서에 관한 등록 문언 확인",
+            "conditions": [
+              "U1377-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1377"
+            ],
+            "notes": [
+              "U1377-NOTE"
+            ]
+          },
+          {
+            "id": "U1378",
+            "title": "상법 제363조 제3항",
+            "business_use": "상법 제363조 제3항의 자본금 총액이 10억원 미만인 회사에 관한 등록 문언 확인",
+            "conditions": [
+              "U1378-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1378"
+            ],
+            "notes": [
+              "U1378-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "f0b04c2944418afa29d421de9cbec4a8bad5be9197adf1d24f2d2cf8cda5e11b",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "9f81af8af927dd143da9cfd3588613092b6742028d7b802e6a1f9d3154aa9ec9"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a365",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제365조 등록 문언",
+        "originals": [
+          {
+            "id": "S1389",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1389",
+              "label": "상법 제365조제1항",
+              "content_sha256": "795cbf741be7a2cc4d14a6603019e9d7774cc2f015144fc07731dc13a03c0d5d"
+            },
+            "text": "①정기총회는 매년 1회 일정한 시기에 이를 소집하여야 한다."
+          },
+          {
+            "id": "S1390",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1390",
+              "label": "상법 제365조제2항",
+              "content_sha256": "3b5c993e9ad7037fbde7a8a2d4f120de7893037cc89f783b4d7110b31f7f6dd7"
+            },
+            "text": "②연 2회 이상의 결산기를 정한 회사는 매기에 총회를 소집하여야 한다."
+          },
+          {
+            "id": "S1391",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1391",
+              "label": "상법 제365조제3항",
+              "content_sha256": "eaa2085bda4077de0d62487472c96e4a6454fb7cf57ebbdb42d0efb8cd34e22a"
+            },
+            "text": "③임시총회는 필요있는 경우에 수시 이를 소집한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1389-SCOPE",
+            "text": "제365조 제1항에서 다루는 대상·범위: 정기총회",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1389",
+                "quote": "정기총회"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1389",
+            "text": "①정기총회는 매년 1회 일정한 시기에 이를 소집하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1389",
+                "quote": "①정기총회는 매년 1회 일정한 시기에 이를 소집하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1389-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1389",
+                "quote": "①정기총회는 매년 1회 일정한 시기에 이를 소집하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1390-SCOPE",
+            "text": "제365조 제2항에서 다루는 대상·범위: 연 2회 이상의 결산기를 정한 회사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1390",
+                "quote": "연 2회 이상의 결산기를 정한 회사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1390",
+            "text": "②연 2회 이상의 결산기를 정한 회사는 매기에 총회를 소집하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1390",
+                "quote": "②연 2회 이상의 결산기를 정한 회사는 매기에 총회를 소집하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1390-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1390",
+                "quote": "②연 2회 이상의 결산기를 정한 회사는 매기에 총회를 소집하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1391-SCOPE",
+            "text": "제365조 제3항에서 다루는 대상·범위: 임시총회",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1391",
+                "quote": "임시총회"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1391",
+            "text": "③임시총회는 필요있는 경우에 수시 이를 소집한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1391",
+                "quote": "③임시총회는 필요있는 경우에 수시 이를 소집한다."
+              }
+            ]
+          },
+          {
+            "id": "U1391-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1391",
+                "quote": "③임시총회는 필요있는 경우에 수시 이를 소집한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1389",
+            "title": "상법 제365조 제1항",
+            "business_use": "상법 제365조 제1항의 정기총회에 관한 등록 문언 확인",
+            "conditions": [
+              "U1389-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1389"
+            ],
+            "notes": [
+              "U1389-NOTE"
+            ]
+          },
+          {
+            "id": "U1390",
+            "title": "상법 제365조 제2항",
+            "business_use": "상법 제365조 제2항의 연 2회 이상의 결산기를 정한 회사에 관한 등록 문언 확인",
+            "conditions": [
+              "U1390-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1390"
+            ],
+            "notes": [
+              "U1390-NOTE"
+            ]
+          },
+          {
+            "id": "U1391",
+            "title": "상법 제365조 제3항",
+            "business_use": "상법 제365조 제3항의 임시총회에 관한 등록 문언 확인",
+            "conditions": [
+              "U1391-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1391"
+            ],
+            "notes": [
+              "U1391-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "e879848b1dd64dbf771a80a366f857d081c9071d5c8e244eab8ae62967c01963",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "6f3f37acdc1194294c7bd34b73d7127b5d1672b3a365a2f02be72bd718932323"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a368",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제368조 등록 문언",
+        "originals": [
+          {
+            "id": "S1404",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1404",
+              "label": "상법 제368조제1항",
+              "content_sha256": "28ecacad2d7c48c7123026db3cb2bbda073104155e5739702f608703b4991745"
+            },
+            "text": "①총회의 결의는 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는 출석한 주주의 의결권의 과반수와 발행주식총수의 4분의 1 이상의 수로써 하여야 한다. <개정 1995.12.29>"
+          },
+          {
+            "id": "S1405",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1405",
+              "label": "상법 제368조제2항",
+              "content_sha256": "7429426530a2cc397c748ddbdd56f5c444f3446a8f29972939a05f5bccdc3149"
+            },
+            "text": "②주주는 대리인으로 하여금 그 의결권을 행사하게 할 수 있다. 이 경우에는 그 대리인은 대리권을 증명하는 서면을 총회에 제출하여야 한다. <개정 2014.5.20>"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1404-SCOPE",
+            "text": "제368조 제1항에서 다루는 대상·범위: 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1404",
+                "quote": "이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1404",
+            "text": "①총회의 결의는 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는 출석한 주주의 의결권의 과반수와 발행주식총수의 4분의 1 이상의 수로써 하여야 한다. <개정 1995.12.29>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1404",
+                "quote": "①총회의 결의는 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는 출석한 주주의 의결권의 과반수와 발행주식총수의 4분의 1 이상의 수로써 하여야 한다. <개정 1995.12.29>"
+              }
+            ]
+          },
+          {
+            "id": "U1404-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1404",
+                "quote": "①총회의 결의는 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는 출석한 주주의 의결권의 과반수와 발행주식총수의 4분의 1 이상의 수로써 하여야 한다. <개정 1995.12.29>"
+              }
+            ]
+          },
+          {
+            "id": "U1405-SCOPE",
+            "text": "제368조 제2항에서 다루는 대상·범위: 대리인",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1405",
+                "quote": "대리인"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1405",
+            "text": "②주주는 대리인으로 하여금 그 의결권을 행사하게 할 수 있다. 이 경우에는 그 대리인은 대리권을 증명하는 서면을 총회에 제출하여야 한다. <개정 2014.5.20>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1405",
+                "quote": "②주주는 대리인으로 하여금 그 의결권을 행사하게 할 수 있다. 이 경우에는 그 대리인은 대리권을 증명하는 서면을 총회에 제출하여야 한다. <개정 2014.5.20>"
+              }
+            ]
+          },
+          {
+            "id": "U1405-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1405",
+                "quote": "②주주는 대리인으로 하여금 그 의결권을 행사하게 할 수 있다. 이 경우에는 그 대리인은 대리권을 증명하는 서면을 총회에 제출하여야 한다. <개정 2014.5.20>"
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1404",
+            "title": "상법 제368조 제1항",
+            "business_use": "상법 제368조 제1항의 이 법 또는 정관에 다른 정함이 있는 경우를 제외하고는에 관한 등록 문언 확인",
+            "conditions": [
+              "U1404-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1404"
+            ],
+            "notes": [
+              "U1404-NOTE"
+            ]
+          },
+          {
+            "id": "U1405",
+            "title": "상법 제368조 제2항",
+            "business_use": "상법 제368조 제2항의 대리인에 관한 등록 문언 확인",
+            "conditions": [
+              "U1405-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1405"
+            ],
+            "notes": [
+              "U1405-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "312f7ec625fa4c9ad7784e324e4b40fc30334571e90e14237f01b8fa55f8dd38",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "f323f40c1cd7f46dd02e557ea9125c3ff5b755c10c996a93285978d13386a6fd"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a369",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제369조 등록 문언",
+        "originals": [
+          {
+            "id": "S1421",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1421",
+              "label": "상법 제369조제1항",
+              "content_sha256": "b3652c8dc22c3f3c1a74b95d9aa972e3cc1dc4b48a85e61d1cb5e0fc4380a954"
+            },
+            "text": "①의결권은 1주마다 1개로 한다."
+          },
+          {
+            "id": "S1422",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1422",
+              "label": "상법 제369조제2항",
+              "content_sha256": "71891993659f2654a8dcff86633b13deed430ebf10b29c70b50d821c354c8a8d"
+            },
+            "text": "②회사가 가진 자기주식은 의결권이 없다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1421-SCOPE",
+            "text": "제369조 제1항에서 다루는 대상·범위: 의결권",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1421",
+                "quote": "의결권"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1421",
+            "text": "①의결권은 1주마다 1개로 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1421",
+                "quote": "①의결권은 1주마다 1개로 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1421-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1421",
+                "quote": "①의결권은 1주마다 1개로 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1422-SCOPE",
+            "text": "제369조 제2항에서 다루는 대상·범위: 회사가 가진 자기주식",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1422",
+                "quote": "회사가 가진 자기주식"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1422",
+            "text": "②회사가 가진 자기주식은 의결권이 없다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1422",
+                "quote": "②회사가 가진 자기주식은 의결권이 없다."
+              }
+            ]
+          },
+          {
+            "id": "U1422-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1422",
+                "quote": "②회사가 가진 자기주식은 의결권이 없다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1421",
+            "title": "상법 제369조 제1항",
+            "business_use": "상법 제369조 제1항의 의결권에 관한 등록 문언 확인",
+            "conditions": [
+              "U1421-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1421"
+            ],
+            "notes": [
+              "U1421-NOTE"
+            ]
+          },
+          {
+            "id": "U1422",
+            "title": "상법 제369조 제2항",
+            "business_use": "상법 제369조 제2항의 회사가 가진 자기주식에 관한 등록 문언 확인",
+            "conditions": [
+              "U1422-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1422"
+            ],
+            "notes": [
+              "U1422-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "673bd8ca0d7ed4b952f1273e9f369034d57b26a00e1ff7239d4fb410eb9f312f",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "5a65e45116f6aee1ddbbe2d9ff35332ecb3d0ed36ad4bdb052bac6d5484212ef"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a373",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제373조 등록 문언",
+        "originals": [
+          {
+            "id": "S1432",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1432",
+              "label": "상법 제373조제1항",
+              "content_sha256": "9014fc5123dd3b5524fd06e8114654d54b3763d8dd78f27591c4599e67b1e8d8"
+            },
+            "text": "①총회의 의사에는 의사록을 작성하여야 한다."
+          },
+          {
+            "id": "S1433",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1433",
+              "label": "상법 제373조제2항",
+              "content_sha256": "1dfd325e505f2f0ac8ccb72da812a2673b6930f684428cc34db3cfd800990a4f"
+            },
+            "text": "②의사록에는 의사의 경과요령과 그 결과를 기재하고 의장과 출석한 이사가 기명날인 또는 서명하여야 한다. <개정 1995.12.29>"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1432-SCOPE",
+            "text": "제373조 제1항에서 다루는 대상·범위: 총회의 의사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1432",
+                "quote": "총회의 의사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1432",
+            "text": "①총회의 의사에는 의사록을 작성하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1432",
+                "quote": "①총회의 의사에는 의사록을 작성하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1432-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1432",
+                "quote": "①총회의 의사에는 의사록을 작성하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1433-SCOPE",
+            "text": "제373조 제2항에서 다루는 대상·범위: 의사록",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1433",
+                "quote": "의사록"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1433",
+            "text": "②의사록에는 의사의 경과요령과 그 결과를 기재하고 의장과 출석한 이사가 기명날인 또는 서명하여야 한다. <개정 1995.12.29>",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1433",
+                "quote": "②의사록에는 의사의 경과요령과 그 결과를 기재하고 의장과 출석한 이사가 기명날인 또는 서명하여야 한다. <개정 1995.12.29>"
+              }
+            ]
+          },
+          {
+            "id": "U1433-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1433",
+                "quote": "②의사록에는 의사의 경과요령과 그 결과를 기재하고 의장과 출석한 이사가 기명날인 또는 서명하여야 한다. <개정 1995.12.29>"
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1432",
+            "title": "상법 제373조 제1항",
+            "business_use": "상법 제373조 제1항의 총회의 의사에 관한 등록 문언 확인",
+            "conditions": [
+              "U1432-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1432"
+            ],
+            "notes": [
+              "U1432-NOTE"
+            ]
+          },
+          {
+            "id": "U1433",
+            "title": "상법 제373조 제2항",
+            "business_use": "상법 제373조 제2항의 의사록에 관한 등록 문언 확인",
+            "conditions": [
+              "U1433-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1433"
+            ],
+            "notes": [
+              "U1433-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "ab6098b04be3623bb0ac6208f3528d96b14cd33e3e2372ae4fac7adc63aaecf0",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "3a7b35faa1907ee7fdefd60c9637c0c91691b7eebaac89ca89105a5fed46f356"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a433_434",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "상법 제433조·제434조 등록 문언",
+        "originals": [
+          {
+            "id": "S1770",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1770",
+              "label": "상법 제433조제1항",
+              "content_sha256": "b78714b92066aa942513d020edab33974fe59a5b45d0c1a6c02292e8ca429ca8"
+            },
+            "text": "①정관의 변경은 주주총회의 결의에 의하여야 한다."
+          },
+          {
+            "id": "S1772",
+            "anchor": {
+              "document_id": "7bbe815ff43b6635",
+              "version": "7bbe815ff43b663530eb665278cbc07c5e20389d7c448dc81fc49dc1f618652d",
+              "unit_id": "1772",
+              "label": "상법 제434조",
+              "content_sha256": "359c1818e885023708e00770be4e0f8bd38d2b303d590a9e09cf2d4adf4a8541"
+            },
+            "text": "제434조(정관변경의 특별결의) 제433조제1항의 결의는 출석한 주주의 의결권의 3분의 2 이상의 수와 발행주식총수의 3분의 1 이상의 수로써 하여야 한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U1770-SCOPE",
+            "text": "제433조 제1항에서 다루는 대상·범위: 정관의 변경",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1770",
+                "quote": "정관의 변경"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1770",
+            "text": "①정관의 변경은 주주총회의 결의에 의하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1770",
+                "quote": "①정관의 변경은 주주총회의 결의에 의하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1770-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1770",
+                "quote": "①정관의 변경은 주주총회의 결의에 의하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1772-SCOPE",
+            "text": "제434조에서 다루는 대상·범위: 제433조제1항의 결의",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1772",
+                "quote": "제433조제1항의 결의"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S1772",
+            "text": "제434조(정관변경의 특별결의) 제433조제1항의 결의는 출석한 주주의 의결권의 3분의 2 이상의 수와 발행주식총수의 3분의 1 이상의 수로써 하여야 한다.",
+            "requires": [
+              "TEXT-S1770"
+            ],
+            "basis": [
+              {
+                "source": "S1772",
+                "quote": "제434조(정관변경의 특별결의) 제433조제1항의 결의는 출석한 주주의 의결권의 3분의 2 이상의 수와 발행주식총수의 3분의 1 이상의 수로써 하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U1772-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S1772",
+                "quote": "제434조(정관변경의 특별결의) 제433조제1항의 결의는 출석한 주주의 의결권의 3분의 2 이상의 수와 발행주식총수의 3분의 1 이상의 수로써 하여야 한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U1770",
+            "title": "상법 제433조 제1항",
+            "business_use": "상법 제433조 제1항의 정관의 변경에 관한 등록 문언 확인",
+            "conditions": [
+              "U1770-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1770"
+            ],
+            "notes": [
+              "U1770-NOTE"
+            ]
+          },
+          {
+            "id": "U1772",
+            "title": "상법 제434조",
+            "business_use": "상법 제434조의 제433조제1항의 결의에 관한 등록 문언 확인",
+            "conditions": [
+              "U1772-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S1772"
+            ],
+            "notes": [
+              "U1772-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "11754e3a42307d3d5cfb9d754acf3a66b6226948cb0cf61cc2873ce2fa5f2745",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "cc9d781ec939d71ef78e4f1a67a45baf1a5f29213d50c0e93a93437100d1afb9"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-92089b5873b2ccc0-a8",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "주식회사 등의 외부감사에 관한 법률 제8조 등록 문언",
+        "originals": [
+          {
+            "id": "S60",
+            "anchor": {
+              "document_id": "92089b5873b2ccc0",
+              "version": "92089b5873b2ccc0ea853f261416df0443f86d9986953367e952db11e951c73a",
+              "unit_id": "60",
+              "label": "주식회사 등의 외부감사에 관한 법률 제8조제3항",
+              "content_sha256": "325b6fd305b584c93602b5b557c685f1cd9fb732d7e18737acf3df523da43ced"
+            },
+            "text": "③ 회사의 대표자는 내부회계관리제도의 관리ㆍ운영을 책임지며, 이를 담당하는 상근이사(담당하는 이사가 없는 경우에는 해당 이사의 업무를 집행하는 자를 말한다) 1명을 내부회계관리자(이하 \"내부회계관리자\"라 한다)로 지정하여야 한다."
+          },
+          {
+            "id": "S61",
+            "anchor": {
+              "document_id": "92089b5873b2ccc0",
+              "version": "92089b5873b2ccc0ea853f261416df0443f86d9986953367e952db11e951c73a",
+              "unit_id": "61",
+              "label": "주식회사 등의 외부감사에 관한 법률 제8조제4항",
+              "content_sha256": "4c56ceafe1e6c432b96c0a6971bc0f6a4facc6802874d01777c2b0a16c244a6f"
+            },
+            "text": "④ 회사의 대표자는 사업연도마다 주주총회, 이사회 및 감사(감사위원회가 설치된 경우에는 감사위원회를 말한다. 이하 이 조에서 같다)에게 해당 회사의 내부회계관리제도의 운영실태를 보고하여야 한다. 다만, 회사의 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다."
+          },
+          {
+            "id": "S62",
+            "anchor": {
+              "document_id": "92089b5873b2ccc0",
+              "version": "92089b5873b2ccc0ea853f261416df0443f86d9986953367e952db11e951c73a",
+              "unit_id": "62",
+              "label": "주식회사 등의 외부감사에 관한 법률 제8조제5항",
+              "content_sha256": "cb90dbd043958fe23931f35445c3f4db1c383887fb528cf42b25ddb80fea7190"
+            },
+            "text": "⑤ 회사의 감사는 내부회계관리제도의 운영실태를 평가하여 이사회에 사업연도마다 보고하고 그 평가보고서를 해당 회사의 본점에 5년간 비치하여야 한다. 이 경우 내부회계관리제도의 관리ㆍ운영에 대하여 시정 의견이 있으면 그 의견을 포함하여 보고하여야 한다."
+          },
+          {
+            "id": "S64",
+            "anchor": {
+              "document_id": "92089b5873b2ccc0",
+              "version": "92089b5873b2ccc0ea853f261416df0443f86d9986953367e952db11e951c73a",
+              "unit_id": "64",
+              "label": "주식회사 등의 외부감사에 관한 법률 제8조제7항",
+              "content_sha256": "6bb197a505cc1ed3e94ffca3f6c702097379a3b325267d347454e31725d7fb00"
+            },
+            "text": "⑦ 제6항에 따라 검토 또는 감사를 한 감사인은 그 검토결과 또는 감사결과에 대한 종합의견을 감사보고서에 표명하여야 한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U60-SCOPE",
+            "text": "제8조 제3항에서 다루는 대상·범위: 회사의 대표자",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "회사의 대표자"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S60",
+            "text": "③ 회사의 대표자는 내부회계관리제도의 관리ㆍ운영을 책임지며, 이를 담당하는 상근이사(담당하는 이사가 없는 경우에는 해당 이사의 업무를 집행하는 자를 말한다) 1명을 내부회계관리자(이하 \"내부회계관리자\"라 한다)로 지정하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "③ 회사의 대표자는 내부회계관리제도의 관리ㆍ운영을 책임지며, 이를 담당하는 상근이사(담당하는 이사가 없는 경우에는 해당 이사의 업무를 집행하는 자를 말한다) 1명을 내부회계관리자(이하 \"내부회계관리자\"라 한다)로 지정하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U60-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S60",
+                "quote": "③ 회사의 대표자는 내부회계관리제도의 관리ㆍ운영을 책임지며, 이를 담당하는 상근이사(담당하는 이사가 없는 경우에는 해당 이사의 업무를 집행하는 자를 말한다) 1명을 내부회계관리자(이하 \"내부회계관리자\"라 한다)로 지정하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U61-SCOPE",
+            "text": "제8조 제4항에서 다루는 대상·범위: 회사의 대표자",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S61",
+                "quote": "회사의 대표자"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S61",
+            "text": "④ 회사의 대표자는 사업연도마다 주주총회, 이사회 및 감사(감사위원회가 설치된 경우에는 감사위원회를 말한다. 이하 이 조에서 같다)에게 해당 회사의 내부회계관리제도의 운영실태를 보고하여야 한다. 다만, 회사의 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S61",
+                "quote": "④ 회사의 대표자는 사업연도마다 주주총회, 이사회 및 감사(감사위원회가 설치된 경우에는 감사위원회를 말한다. 이하 이 조에서 같다)에게 해당 회사의 내부회계관리제도의 운영실태를 보고하여야 한다. 다만, 회사의 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다."
+              }
+            ]
+          },
+          {
+            "id": "U61-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S61",
+                "quote": "④ 회사의 대표자는 사업연도마다 주주총회, 이사회 및 감사(감사위원회가 설치된 경우에는 감사위원회를 말한다. 이하 이 조에서 같다)에게 해당 회사의 내부회계관리제도의 운영실태를 보고하여야 한다. 다만, 회사의 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다."
+              }
+            ]
+          },
+          {
+            "id": "U62-SCOPE",
+            "text": "제8조 제5항에서 다루는 대상·범위: 회사의 감사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S62",
+                "quote": "회사의 감사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S62",
+            "text": "⑤ 회사의 감사는 내부회계관리제도의 운영실태를 평가하여 이사회에 사업연도마다 보고하고 그 평가보고서를 해당 회사의 본점에 5년간 비치하여야 한다. 이 경우 내부회계관리제도의 관리ㆍ운영에 대하여 시정 의견이 있으면 그 의견을 포함하여 보고하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S62",
+                "quote": "⑤ 회사의 감사는 내부회계관리제도의 운영실태를 평가하여 이사회에 사업연도마다 보고하고 그 평가보고서를 해당 회사의 본점에 5년간 비치하여야 한다. 이 경우 내부회계관리제도의 관리ㆍ운영에 대하여 시정 의견이 있으면 그 의견을 포함하여 보고하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U62-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S62",
+                "quote": "⑤ 회사의 감사는 내부회계관리제도의 운영실태를 평가하여 이사회에 사업연도마다 보고하고 그 평가보고서를 해당 회사의 본점에 5년간 비치하여야 한다. 이 경우 내부회계관리제도의 관리ㆍ운영에 대하여 시정 의견이 있으면 그 의견을 포함하여 보고하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U64-SCOPE",
+            "text": "제8조 제7항에서 다루는 대상·범위: 검토 또는 감사를 한 감사인",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S64",
+                "quote": "검토 또는 감사를 한 감사인"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S64",
+            "text": "⑦ 제6항에 따라 검토 또는 감사를 한 감사인은 그 검토결과 또는 감사결과에 대한 종합의견을 감사보고서에 표명하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S64",
+                "quote": "⑦ 제6항에 따라 검토 또는 감사를 한 감사인은 그 검토결과 또는 감사결과에 대한 종합의견을 감사보고서에 표명하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U64-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S64",
+                "quote": "⑦ 제6항에 따라 검토 또는 감사를 한 감사인은 그 검토결과 또는 감사결과에 대한 종합의견을 감사보고서에 표명하여야 한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U60",
+            "title": "주식회사 등의 외부감사에 관한 법률 제8조 제3항",
+            "business_use": "주식회사 등의 외부감사에 관한 법률 제8조 제3항의 회사의 대표자에 관한 등록 문언 확인",
+            "conditions": [
+              "U60-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S60"
+            ],
+            "notes": [
+              "U60-NOTE"
+            ]
+          },
+          {
+            "id": "U61",
+            "title": "주식회사 등의 외부감사에 관한 법률 제8조 제4항",
+            "business_use": "주식회사 등의 외부감사에 관한 법률 제8조 제4항의 회사의 대표자에 관한 등록 문언 확인",
+            "conditions": [
+              "U61-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S61"
+            ],
+            "notes": [
+              "U61-NOTE"
+            ]
+          },
+          {
+            "id": "U62",
+            "title": "주식회사 등의 외부감사에 관한 법률 제8조 제5항",
+            "business_use": "주식회사 등의 외부감사에 관한 법률 제8조 제5항의 회사의 감사에 관한 등록 문언 확인",
+            "conditions": [
+              "U62-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S62"
+            ],
+            "notes": [
+              "U62-NOTE"
+            ]
+          },
+          {
+            "id": "U64",
+            "title": "주식회사 등의 외부감사에 관한 법률 제8조 제7항",
+            "business_use": "주식회사 등의 외부감사에 관한 법률 제8조 제7항의 검토 또는 감사를 한 감사인에 관한 등록 문언 확인",
+            "conditions": [
+              "U64-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S64"
+            ],
+            "notes": [
+              "U64-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "e18010656ef688bc2bcd009683abdd08f551054d9646535ff951b197e6955073",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "96f72b55229bb6cf7e58aa9882537ace0bf3a1b44d9cd405cb6d5c4f706443b7"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a21",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "금융회사의 지배구조에 관한 법률 제21조 등록 문언",
+        "originals": [
+          {
+            "id": "S177",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "177",
+              "label": "금융회사의 지배구조에 관한 법률 제21조",
+              "content_sha256": "045b5d8131bfbf263543d2d55a553ffdc2d28657a78bde018ad0b3b50db6a301"
+            },
+            "text": "제21조(위험관리위원회) 위험관리위원회는 다음 각 호에 관한 사항을 심의ㆍ의결한다."
+          },
+          {
+            "id": "S178",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "178",
+              "label": "금융회사의 지배구조에 관한 법률 제21조제1호",
+              "content_sha256": "eb27e400573233dda254b8d3ba77bc3a89e8f8fa46d599e9f12ff49609323c29"
+            },
+            "text": "1. 위험관리의 기본방침 및 전략 수립"
+          },
+          {
+            "id": "S179",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "179",
+              "label": "금융회사의 지배구조에 관한 법률 제21조제2호",
+              "content_sha256": "5e58278d09dcc5bc6e23273d817bf1e7800e1957d0b099f0b17f8c9bd060e517"
+            },
+            "text": "2. 금융회사가 부담 가능한 위험 수준 결정"
+          },
+          {
+            "id": "S180",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "180",
+              "label": "금융회사의 지배구조에 관한 법률 제21조제3호",
+              "content_sha256": "8e789ffc1c1daa9cc2e99301be4153d779f3376471a8433263811d61b067a187"
+            },
+            "text": "3. 적정투자한도 및 손실허용한도 승인"
+          },
+          {
+            "id": "S181",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "181",
+              "label": "금융회사의 지배구조에 관한 법률 제21조제4호",
+              "content_sha256": "14c1369773afdfb3db22362dd2c828aba4056891e7106d7904ecf3b0a3c8f223"
+            },
+            "text": "4. 제27조에 따른 위험관리기준의 제정 및 개정"
+          },
+          {
+            "id": "S182",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "182",
+              "label": "금융회사의 지배구조에 관한 법률 제21조제5호",
+              "content_sha256": "34a72589daacab9d8b9b27ab4ef9aff3551aa081ebc25259c6f41ee611152cb0"
+            },
+            "text": "5. 그 밖에 금융위원회가 정하여 고시하는 사항"
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U177_178_179_180_181_182-SCOPE",
+            "text": "제21조에서 다루는 대상·범위: 위험관리위원회",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S177",
+                "quote": "위험관리위원회"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S177",
+            "text": "제21조(위험관리위원회) 위험관리위원회는 다음 각 호에 관한 사항을 심의ㆍ의결한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S177",
+                "quote": "제21조(위험관리위원회) 위험관리위원회는 다음 각 호에 관한 사항을 심의ㆍ의결한다."
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S178",
+            "text": "1. 위험관리의 기본방침 및 전략 수립",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S178",
+                "quote": "1. 위험관리의 기본방침 및 전략 수립"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S179",
+            "text": "2. 금융회사가 부담 가능한 위험 수준 결정",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S179",
+                "quote": "2. 금융회사가 부담 가능한 위험 수준 결정"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S180",
+            "text": "3. 적정투자한도 및 손실허용한도 승인",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S180",
+                "quote": "3. 적정투자한도 및 손실허용한도 승인"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S181",
+            "text": "4. 제27조에 따른 위험관리기준의 제정 및 개정",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S181",
+                "quote": "4. 제27조에 따른 위험관리기준의 제정 및 개정"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S182",
+            "text": "5. 그 밖에 금융위원회가 정하여 고시하는 사항",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S182",
+                "quote": "5. 그 밖에 금융위원회가 정하여 고시하는 사항"
+              }
+            ]
+          },
+          {
+            "id": "U177_178_179_180_181_182-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S177",
+                "quote": "제21조(위험관리위원회) 위험관리위원회는 다음 각 호에 관한 사항을 심의ㆍ의결한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U177_178_179_180_181_182",
+            "title": "금융회사의 지배구조에 관한 법률 제21조",
+            "business_use": "금융회사의 지배구조에 관한 법률 제21조의 위험관리위원회에 관한 등록 문언 확인",
+            "conditions": [
+              "U177_178_179_180_181_182-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S177",
+              "TEXT-S178",
+              "TEXT-S179",
+              "TEXT-S180",
+              "TEXT-S181",
+              "TEXT-S182"
+            ],
+            "notes": [
+              "U177_178_179_180_181_182-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "428d7dfe71ddc5e0597bacb67e9b5a614d31003d57f5f3830c233be4132e587d",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "43aef3b1579ce00d3fcacd0825f4efd9b3f9fa33ea661e90e46989725150e5d0"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a27",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "금융회사의 지배구조에 관한 법률 제27조 등록 문언",
+        "originals": [
+          {
+            "id": "S230",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "230",
+              "label": "금융회사의 지배구조에 관한 법률 제27조제1항",
+              "content_sha256": "7a55d0a0be6b6680e48b42028bb846932ef6a919ebc19c3ce618526a2170c643"
+            },
+            "text": "① 금융회사는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 제때에 인식ㆍ평가ㆍ감시ㆍ통제하는 등 위험관리를 위한 기준 및 절차(이하 \"위험관리기준\"이라 한다)를 마련하여야 한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U230-SCOPE",
+            "text": "제27조 제1항에서 다루는 대상·범위: 금융회사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S230",
+                "quote": "금융회사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S230",
+            "text": "① 금융회사는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 제때에 인식ㆍ평가ㆍ감시ㆍ통제하는 등 위험관리를 위한 기준 및 절차(이하 \"위험관리기준\"이라 한다)를 마련하여야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S230",
+                "quote": "① 금융회사는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 제때에 인식ㆍ평가ㆍ감시ㆍ통제하는 등 위험관리를 위한 기준 및 절차(이하 \"위험관리기준\"이라 한다)를 마련하여야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U230-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S230",
+                "quote": "① 금융회사는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 제때에 인식ㆍ평가ㆍ감시ㆍ통제하는 등 위험관리를 위한 기준 및 절차(이하 \"위험관리기준\"이라 한다)를 마련하여야 한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U230",
+            "title": "금융회사의 지배구조에 관한 법률 제27조 제1항",
+            "business_use": "금융회사의 지배구조에 관한 법률 제27조 제1항의 금융회사에 관한 등록 문언 확인",
+            "conditions": [
+              "U230-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S230"
+            ],
+            "notes": [
+              "U230-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "2604afe8c70ef6549913a2987f3ca104a5e97f2cec435ebdf2124894fe0b75aa",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "b24137199fa1e0ac88668178f6b5a439ec8b705d89caada67f28210bcede95ca"
+      }
+    },
+    {
+      "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a28",
+      "input": {
+        "version": "ontology-work-v1",
+        "concept": "금융회사의 지배구조에 관한 법률 제28조 등록 문언",
+        "originals": [
+          {
+            "id": "S234",
+            "anchor": {
+              "document_id": "9ff3d75bd44e546b",
+              "version": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7",
+              "unit_id": "234",
+              "label": "금융회사의 지배구조에 관한 법률 제28조제1항",
+              "content_sha256": "8df215d4fb5fe319ee8dd35411b09e99b2aa46f1a0d485603c2b56991c918780"
+            },
+            "text": "① 금융회사(자산규모 및 영위하는 업무 등을 고려하여 대통령령으로 정하는 투자자문업자 및 투자일임업자는 제외한다)는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 점검하고 관리하는 위험관리책임자를 1명 이상 두어야 한다."
+          }
+        ],
+        "judgments": [],
+        "origin": {
+          "run_id": "integration-b03-b05-20261105-r1",
+          "author": "codex:source-reviewed-test-fixture",
+          "source_kind": "registered-original",
+          "scope": "사용자가 요청한 통합시험용 사전 지식. 지정 판본의 문언만 검토; 현행성·개별 사건 적합성 별도."
+        }
+      },
+      "proposal": {
+        "components": [
+          {
+            "id": "U234-SCOPE",
+            "text": "제28조 제1항에서 다루는 대상·범위: 금융회사",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S234",
+                "quote": "금융회사"
+              }
+            ]
+          },
+          {
+            "id": "TEXT-S234",
+            "text": "① 금융회사(자산규모 및 영위하는 업무 등을 고려하여 대통령령으로 정하는 투자자문업자 및 투자일임업자는 제외한다)는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 점검하고 관리하는 위험관리책임자를 1명 이상 두어야 한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S234",
+                "quote": "① 금융회사(자산규모 및 영위하는 업무 등을 고려하여 대통령령으로 정하는 투자자문업자 및 투자일임업자는 제외한다)는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 점검하고 관리하는 위험관리책임자를 1명 이상 두어야 한다."
+              }
+            ]
+          },
+          {
+            "id": "U234-NOTE",
+            "text": "등록된 지정 조문 문언의 확인 범위이다. 본문 안의 단서·제외·의무와 재량을 그대로 읽는다. 다른 조문·정관·대통령령 및 개별 사실에 따른 전체 적용 판단은 추가 검토한다.",
+            "requires": [],
+            "basis": [
+              {
+                "source": "S234",
+                "quote": "① 금융회사(자산규모 및 영위하는 업무 등을 고려하여 대통령령으로 정하는 투자자문업자 및 투자일임업자는 제외한다)는 자산의 운용이나 업무의 수행, 그 밖의 각종 거래에서 발생하는 위험을 점검하고 관리하는 위험관리책임자를 1명 이상 두어야 한다."
+              }
+            ]
+          }
+        ],
+        "paths": [
+          {
+            "id": "U234",
+            "title": "금융회사의 지배구조에 관한 법률 제28조 제1항",
+            "business_use": "금융회사의 지배구조에 관한 법률 제28조 제1항의 금융회사에 관한 등록 문언 확인",
+            "conditions": [
+              "U234-SCOPE"
+            ],
+            "calculations": [],
+            "outcomes": [
+              "TEXT-S234"
+            ],
+            "notes": [
+              "U234-NOTE"
+            ]
+          }
+        ],
+        "unused_components": {}
+      },
+      "preview_package_sha256": "762848725bd8df533c48ec3fd8c10ae010e639ad6c960fb32420acfeea7a4ca0",
+      "review": {
+        "decision": "APPROVED_FOR_TEST_DATA",
+        "reviewer": "codex:source-review",
+        "reason": "등록 원문을 직접 확인하고 조건·주체·수치·예외·열거·조문 좌표를 보존했다. 답변 정답표는 제품 입력에서 분리했다.",
+        "entry_sha256": "a8d06d7f7a11ab2851f86acb03d97ffdd298fa4b5ae3bd49ea84e7e53f59e525"
+      }
+    }
+  ]
+}

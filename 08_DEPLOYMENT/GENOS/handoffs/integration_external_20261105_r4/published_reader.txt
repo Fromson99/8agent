@@ -1,0 +1,59 @@
+
+def _published_sqlite(cfg):
+    """Sealed NFS snapshot: serving can read; workflow writes remain forbidden."""
+    import hashlib
+    from ..oracle_dp import enabled
+    if enabled():
+        raise ContractError('DP=oracle requires Oracle ontology; SQLite fallback is forbidden')
+    if cfg.get('environment') != 'genos-nfs':
+        raise ContractError('published SQLite requires explicit GENOS NFS configuration')
+    binding = cfg['source_generation']
+    selected = os.environ.get('GENOS_GENERATION', '').strip()
+    pointer_hash = None
+    if not selected:
+        root = Path(os.environ.get('GENOS_DATA_ROOT', ''))
+        if not root.is_absolute():
+            raise ContractError('published ontology requires selected GENOS generation')
+        pointer = json.loads((root/'generations/CURRENT.json').read_text())
+        if pointer.get('schema_version') != 'genos-current-generation-v1':
+            raise ContractError('generation pointer version')
+        selected = pointer['path']; pointer_hash = pointer['manifest_sha256']
+        Path(selected).resolve().relative_to(root.resolve())
+    generation = Path(selected)
+    if not generation.is_absolute() or generation.is_symlink() or not generation.is_dir():
+        raise ContractError('invalid selected generation')
+    if str(generation.resolve()) != binding['path']:
+        raise ContractError('ontology belongs to another generation; reinstall against current sources')
+    db = cfg['database']; path = Path(db['path'])
+    if not path.is_absolute() or path.is_symlink():
+        raise ContractError('published ontology path')
+    expected = db['sha256']
+    class PublishedRepository(Repository):
+        @contextmanager
+        def session(self, write=False):
+            if write:
+                raise ContractError('published SQLite ontology is read-only')
+            with super().session(False) as cursor:
+                yield cursor
+    def connect():
+        # A repository object must not outlive a changed environment/CURRENT pointer.
+        current = os.environ.get('GENOS_GENERATION', '').strip()
+        if not current:
+            root = Path(os.environ.get('GENOS_DATA_ROOT', ''))
+            if not root.is_absolute():raise ContractError('selected generation removed')
+            pointer = json.loads((root/'generations/CURRENT.json').read_text())
+            if pointer.get('schema_version') != 'genos-current-generation-v1' or pointer.get('manifest_sha256') != binding['manifest_sha256']:
+                raise ContractError('ontology generation pointer changed')
+            current = pointer['path']
+        if not Path(current).is_absolute() or Path(current).is_symlink() or str(Path(current).resolve()) != binding['path']:
+            raise ContractError('ontology selected generation changed')
+        actual = hashlib.sha256((generation/'manifest.json').read_bytes()).hexdigest()
+        if actual != binding['manifest_sha256'] or (pointer_hash and actual != pointer_hash):
+            raise ContractError('ontology source generation changed')
+        if not path.is_file() or path.is_symlink() or any(Path(str(path)+s).exists() for s in ('-wal','-shm','-journal')):
+            raise ContractError('published SQLite must be a sealed standalone database')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise ContractError('published SQLite content changed')
+        return sqlite3.connect(path.as_uri()+'?mode=ro&immutable=1', uri=True, timeout=10)
+    return _guarded_repository(PublishedRepository(connect), cfg)
+

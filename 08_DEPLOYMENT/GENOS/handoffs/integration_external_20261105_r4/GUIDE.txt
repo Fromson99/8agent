@@ -1,0 +1,82 @@
+과제3·과제5 외규 전용 통합시험 — 온톨로지 R4 / 질문표 R5
+
+이번 실행에는 INTEGRATION_EXTERNAL_B03_B05_R4.zip을 사용한다.
+이 ZIP은 독립 실행본이며 이전 R2 ZIP이나 R3 FIND/BIND는 필요 없다.
+원문 store.sqlite와 generation manifest는 수정하지 않는다.
+
+질문 변경
+- 과제3 30개: 기존 외규 검색·화면·출처 확인 유지.
+- 과제5 30개: 내규 답변18개와 비교1개를 로컬 R4의 외규 질문으로 교체.
+  내규 선택·출처 열기·전체/대사 선택도 외규 확인으로 교체.
+- 총60항목 = 답변50 + 화면/출처10. 서로 다른 답변 질문은30개이며 두 과제 간 재사용한다.
+- 상법, 외부감사법, 자본시장법, 금융회사지배구조법 4문서의 44단위/14묶음/29경로.
+- 새 질문표: Agent8_과제3_외규통합테스트_30개_20261105_R5.xlsx,
+  Agent8_과제5_외규통합테스트_30개_20261105_R5.xlsx.
+  같은 파일과 작성데이터.json, 정답검토표.csv가 ZIP의 payload/에도 있다.
+- 과거 R4 실모델 실행기/결과는 보존했다. 이번 시험에는 위 R5 질문표를 사용한다.
+  기존 실모델 실행기의 질문 세트가 자동 교체되었다는 뜻은 아니다.
+- 정답은 로컬 등록 원문을 직접 대조했다. 새 모델/현장 답변의 통과 기록은 아니다.
+
+지금 실행 — GENOS NFS SQLite
+1. ~/DEV/TRANSFER/에 다음 두 파일을 업로드한다.
+   INTEGRATION_EXTERNAL_B03_B05_R4.zip
+   GENOS_EXTERNAL_SQLITE_R4.txt
+2. 코드스페이스 bash 터미널에서:
+   cd ~/DEV/TRANSFER
+   bash GENOS_EXTERNAL_SQLITE_R4.txt
+   실제 checkout ~/DEV가 링크여도 자동 해석한다.
+   generation은 IT35_GENERATION, GENOS_GENERATION, 아래 사진 경로 순서로 선택한다.
+   /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+   다른 경로가 실제 서빙 대상이면 다음처럼 지정한다.
+   IT35_GENERATION='<실제 코드서빙 GENOS_GENERATION 절대경로>' bash GENOS_EXTERNAL_SQLITE_R4.txt
+3. ZIP/원문44단위/기존 코드 pin 검증 후 generation/ontology/integration-external-b03-b05-r4/
+   아래 별도 봉인 SQLite와 설정을 배치하고 실제 ~/DEV에 호환 reader와 해당 pin을 반영한다.
+   이전 R2 설치가 source mismatch로 끝났다면 별도 원복 없이 실행한다.
+   이미 동일 reader가 설치됐으면 코드 패치는 재사용한다.
+   외규 원문의 판본·블록·본문이 다르면 쓰기 전에 중단한다. 해시 강제치환은 하지 않는다.
+4. 완료: CHECKOUT_ONTOLOGY_READY 및 GENOS_EXTERNAL_ONTOLOGY_PREPARED.
+   ~/DEV/TRANSFER/EXTERNAL_R4_RESULT/에 INSTALL_RECEIPT.json, DEPLOY_CODE.zip,
+   SERVING_ENV.txt, HANDOFF.json 및 필요한 코드 백업이 남는다.
+5. 실제 checkout에서 git diff --check와 변경 파일을 검토하고 해당 변경을 commit한다.
+   기존 다른 staged 변경을 함께 섞지 않는다. 설치기는 commit/push를 자동 실행하지 않는다.
+   commit 뒤 실제 generation으로 배포 게이트를 실행한다.
+   python3 ~/DEV/06_TOOLS/COMMANDS/genos_release_gate.py --code-zip ~/DEV/TRANSFER/EXTERNAL_R4_RESULT/DEPLOY_CODE.zip --deploy-root ~/DEV --generation '<실제 GENOS_GENERATION 절대경로>'
+   구 checkout에 게이트가 없으면 기존 genos_generation_e2e.py와
+   lawrag.pipeline.term_serving_bundle.verify_assets 및 전달 코드의 전체 해시 대조를 수행한다.
+6. 통과한 commit을 push하고 새 코드서빙 리비전을 적용한다. 기존 generation/runtime 값 유지.
+   코드서빙 환경변수:
+   DP=nfs
+   GENOS_RAG_ONTOLOGY_ENABLED=on
+   GENOS_RAG_ONTOLOGY_CONFIG=<SERVING_ENV.txt에 출력된 runtime_config.json 절대경로>
+   추가 모델 키는 필요 없다. 코드스페이스 export만으로 코드서빙 변수는 바뀌지 않는다.
+7. 새 리비전에서 R5 질문표로 원문 출처와 실제 답변을 확인한다.
+   설치 사전검사 완료와 실제 코드서빙 응답 성공은 별도다.
+
+재개·원복
+- 같은 파일·경로의 재실행은 동일 DB와 코드를 재사용한다. 후속 변경은 덮어쓰지 않는다.
+- 코드 반영 중 중단되면 압축 해제된 external-r4-* 폴더의 genos_install.py로:
+  python3 '<압축해제 경로>/genos_install.py' --code-root ~/DEV --output ~/DEV/TRANSFER/EXTERNAL_R4_RESULT --rollback-code
+  code-before.json이 있는 경우에만 코드 원복이 필요하다. 후속 코드 수정이 있으면 원복도 중단한다.
+  복구 후 재시도에는 IT35_OUT으로 새 결과 폴더를 지정한다.
+- 기존 리비전과 온톨로지 환경변수를 보관한다. 시험을 끄려면 ENABLED=off를 새 리비전에 적용한다.
+- 기존 R2/R3 DB와 원문 generation을 삭제하거나 수정하지 않는다.
+
+나중에 실행 — Dataiku Oracle
+1. 같은 R4 ZIP을 기존 관리 폴더에 올리고 DATAIKU_EXTERNAL_INSERT_R4.txt 전체를
+   해당 프로젝트 Python 노트북의 한 셀에 붙인다.
+2. FOLDER_ID=그 관리 폴더 ID, ORACLE_CONNECTION=기존 Oracle 연결명으로 바꾼다.
+   기본 PROFILE=B003(운영 IDD_B003), 개발 LGL_G19는 G19.
+   SOURCE_OWNER=SIDDS, ONTOLOGY_OWNER=SIDDA, AGENT_OWNER=SIDDA를 실제 owner와 대조한다.
+   DATASET_VERSION 빈 값은 정확한 네 판본이 모두 있는 유일한 세대만 선택한다.
+   없거나 여러 개이면 실제 원문 게시 세대를 직접 지정한다.
+3. 기존 대상5표가 필요하다. 없으면 ORACLE_TABLES_B003.sql / ORACLE_TABLES_G19.sql을
+   현장 등록 구조와 대조해 먼저 준비한다. 적재 셀은 DDL을 실행하지 않는다.
+4. APPLY=False는 읽기 전용 사전검사, 기본 True는 전체 원문 확인 후 외규14묶음 INSERT.
+   기존 원문이나 내규 지식을 삭제하지 않는다. 기존 다른 게시/철회는 보존하고 충돌 시 중단한다.
+   R2와 동일한 외규 행/게시ID를 유지하므로 이미 동일 행이 있으면 재사용한다.
+5. 완료: ORACLE_IMPORT_COMPLETE. 관리 폴더 _integration_external_r4/에 영수증,
+   objects/에 승인 작업 JSON을 보관한다. 응답 유실 시 자동 재전송하지 않는다.
+   영수증 확인 후 같은 셀 명시 재실행으로 이미 반영된 묶음을 대조·재사용한다.
+
+현장 GENOS/NFS/Dataiku는 직접 접근하지 못하므로 실제 적용·서빙은 위 명령의 결과로 확인한다.
+검증 범위와 결과는 별도 VALIDATION.json에 기록한다.

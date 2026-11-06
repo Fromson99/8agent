@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "delivery": {
+    "archive": "09_ARTIFACTS/DELIVERABLES/INTEGRATION_ONTOLOGY_B03_B05_R2.zip",
+    "sha256": "1bfc357186c44890b58159aabb703ffee573cd21b07721d7b2ac4405a048ff34",
+    "bytes": 160259,
+    "files": 46,
+    "sidecars": {
+      "GENOS_ONTOLOGY_SQLITE_R2.txt": "a0895b1f7161ebe3823f25dc235311cfd530480ebc0a1cfc3c435092837a6910",
+      "DATAIKU_ONTOLOGY_INSERT_R2.txt": "e978db38160571a3832048b22d02d634b98ecd0d31be9b4bd24b7138f224fff2"
+    }
+  },
+  "sqlite_contracts": 14,
+  "exact_genos_txt": "PASS, original full generation clone and selected MAIN148 code",
+  "exact_dataiku_txt": "PASS, actual Oracle B003 with local SDK substitute",
+  "oracle_checks": {
+    "B003": 9,
+    "G19": 8
+  },
+  "same_path_body_sha256_count": 46,
+  "unchanged_selected_release_files": {
+    "reason-decision-review-20261105-r1": 530,
+    "multiturn-state-review-20261105-r1": 530
+  },
+  "working_product_configuration_unchanged": true,
+  "original_generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+  "full_release_gate": "PASS in committed isolated checkout with same selected generation assets",
+  "current_active_observed": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "annex-dash-coordinate-20261105-r1",
+    "generation": 149,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/annex-dash-coordinate-20261105-r1/release.json",
+    "release_manifest_sha256": "c66e3705b7b156c393522998353bd63dabafe7bf140f4b7a1b65eb0d27d8ef6c",
+    "activated_at": "2026-11-05T06:24:02.213412+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "71e82d1e59b67e672373215bce04558d290adbdb37697255a1da384757fa99d5"
+  },
+  "new_models": 0,
+  "field_execution": false,
+  "production_writes": 0,
+  "email": 0
+}

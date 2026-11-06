@@ -1,0 +1,98 @@
+{
+  "status": "PASS",
+  "scope": "prebuilt source-verified test data and DB import/consumer contracts",
+  "cases_total": 60,
+  "source_verified_answers": 50,
+  "manual_ui_cases": 10,
+  "bundles": 24,
+  "paths": 46,
+  "source_documents": 5,
+  "source_units": 61,
+  "source_blocks": 66,
+  "sqlite": {
+    "file": "01_DATA/ONTOLOGY_WORK/integration_b03_b05_20261105_r1/ontology.sqlite",
+    "integrity_check": "ok",
+    "runtime_configuration_lookup_bundles": 24,
+    "counts": {
+      "LGL_ONT_WORK_A": 24,
+      "LGL_ONT_EVT_A": 72,
+      "LGL_ONT_PUB_A": 24,
+      "LGL_ONT_HEAD_A": 24,
+      "LGL_ONT_ANC_A": 61
+    },
+    "contract_tests_per_code_release": 10,
+    "code_releases_tested": [
+      146,
+      147
+    ],
+    "cli_initial_and_idempotent_repeat": true
+  },
+  "oracle": {
+    "status": "PASS",
+    "owner": "A8_IT35_20261105",
+    "source_kind": "exact registered SQLite source subset copied to temporary Oracle Gold tables",
+    "source_generation": "test-it35-d4d1d8b4266a075ad430fa150cac3fe0",
+    "existing_source_writes": 0,
+    "existing_knowledge_writes": 0,
+    "model_calls": 0,
+    "oracle_version": "23.26.3.0.0",
+    "bundles": 24,
+    "bound_paths": 46,
+    "original_units": 61,
+    "source_documents": 5,
+    "source_blocks": 66,
+    "repeat_duplicate_rows": 0,
+    "acl_denials_checked": 24,
+    "mapping_sha256": "0babaf981202afd95796f53de64246efb040415235c505ba80ebab8a1b02a779",
+    "temporary_schema_removed": true
+  },
+  "database_equivalence": {
+    "same_path_ids_and_body_hashes": 46,
+    "same_bundle_ids": 24,
+    "approval_and_publication_ids": "environment-specific, not compared"
+  },
+  "binding": {
+    "build_main": 146,
+    "consumer_main_tested": [
+      146,
+      147
+    ],
+    "initial_release_files_verified": 528,
+    "main147_files_verified": 530,
+    "active_pointer_written": false,
+    "active_changed_during_task": true,
+    "product_files_modified": 0,
+    "ontology_sha256": "6f59340bdc8a22dc26d33c7f7cdfb3976ef6f237e195d578b4cf33b8ec541d20"
+  },
+  "limits": {
+    "new_product_model_calls": 0,
+    "new_end_to_end_model_answer_tests": 0,
+    "historical_public_answer_records_consulted": 31,
+    "current_law_global_certification": false,
+    "oracle19_field_execution": false,
+    "genos_field_deployment": false,
+    "active_runtime_connection_changed_by_this_task": false,
+    "production_db_writes": 0
+  },
+  "preserved_failures": [
+    {
+      "log": "sqlite-check-01.log",
+      "reason": "test assumed unit1 contains only block7; actual unit also includes header block6. Test corrected. Importer now closes each read connection explicitly."
+    },
+    {
+      "log": "oracle-check-01.log",
+      "reason": "existing Gold grant lacks part of five-document scope; blocked before schema creation. Later Oracle tests use labeled isolated source copies."
+    },
+    {
+      "log": "final-check-01.json",
+      "reason": "final active-pointer assertion detected concurrent MAIN146→147 cutover. Original binding preserved; MAIN147 then tested separately."
+    }
+  ],
+  "evidence": [
+    "sqlite-check-main147.log",
+    "sqlite-import-final.jsonl",
+    "oracle-check-main147.log",
+    "oracle-result-04.json",
+    "oracle-paths-04.json"
+  ]
+}

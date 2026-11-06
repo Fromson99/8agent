@@ -1,0 +1,345 @@
+{
+  "status": "LOCAL_VALIDATION_PASS_FIELD_PENDING",
+  "sqlite_contracts_passed": 14,
+  "genos_code_compatibility": {
+    "MAIN142": "shipped code plus unchanged required JavaScript: installer and 46-path consumer PASS",
+    "MAIN147": "installer, 46-path consumer and committed checkout full release gate PASS",
+    "MAIN148": "parallel selection observed: installer and 46-path consumer PASS"
+  },
+  "product_patch": "configuration.py plus 30 engine manifests and PIPELINE pin, generated against actual verified checkout",
+  "oracle": {
+    "B003": {
+      "status": "PASS",
+      "profile": "B003",
+      "checks": [
+        "unique source generation resolved",
+        "last source mismatch blocked before every insert",
+        "mid-bundle database failure rolled back every row",
+        "lost acknowledgement stopped after one committed bundle",
+        "24 bundles resumed and repeated without duplicate writes",
+        "actual mapped consumer bound 46 paths and enforced document scope",
+        "withdrawn publication preserved without reactivation",
+        "writer login cannot insert original documents"
+      ],
+      "oracle": "actual local isolated schema",
+      "Dataiku": "SDK/connection substitute",
+      "source": "exact registered 5-document 61-unit subset",
+      "field": false,
+      "model_calls": 0,
+      "oracle_version": "23.26.3.0.0",
+      "import_receipt": {
+        "status": "ORACLE_IMPORT_COMPLETE",
+        "source_generation": "it35-r2-fixture",
+        "source_units": 61,
+        "profile": "B003",
+        "tables": {
+          "work": "A8_I35R2_B2ECF1FF.LGL_ONT_WORK_A",
+          "event": "A8_I35R2_B2ECF1FF.LGL_ONT_EVT_A",
+          "publication": "A8_I35R2_B2ECF1FF.IDD_B003_LGL_ONTL_POST",
+          "head": "A8_I35R2_B2ECF1FF.IDD_B003_LGL_ONTL_HEAD",
+          "anchor": "A8_I35R2_B2ECF1FF.IDD_B003_LGL_ONTL_ANC"
+        },
+        "existing_bundles": 1,
+        "bundles": 24,
+        "paths": 46,
+        "source_writes": 0,
+        "ddl": 0,
+        "model_calls": 0,
+        "automatic_retries": 0,
+        "completed": [
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a1",
+            "reused": true
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a10",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a2",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a3",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a4",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a5",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a6",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a7",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a8",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a9",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a3",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a6",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a9",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a362",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a363",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a365",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a368",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a369",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a373",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a433_434",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-92089b5873b2ccc0-a8",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a21",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a27",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a28",
+            "reused": false
+          }
+        ],
+        "receipt_path": "_integration_ontology_r2/7e749991817a4d71a734c7ea1564f5fb/receipt.json",
+        "sql_requests": 632
+      },
+      "counts": {
+        "work": 24,
+        "event": 72,
+        "publication": 24,
+        "head": 24,
+        "anchor": 61
+      },
+      "bound_paths": 46,
+      "registered_documents": 5,
+      "registered_blocks": 66,
+      "automatic_retry": 0,
+      "temporary_schemas_removed": true
+    },
+    "G19": {
+      "status": "PASS",
+      "profile": "G19",
+      "checks": [
+        "unique source generation resolved",
+        "last source mismatch blocked before every insert",
+        "mid-bundle database failure rolled back every row",
+        "lost acknowledgement stopped after one committed bundle",
+        "24 bundles resumed and repeated without duplicate writes",
+        "actual mapped consumer bound 46 paths and enforced document scope",
+        "withdrawn publication preserved without reactivation",
+        "writer login cannot insert original documents"
+      ],
+      "oracle": "actual local isolated schema",
+      "Dataiku": "SDK/connection substitute",
+      "source": "exact registered 5-document 61-unit subset",
+      "field": false,
+      "model_calls": 0,
+      "oracle_version": "23.26.3.0.0",
+      "import_receipt": {
+        "status": "ORACLE_IMPORT_COMPLETE",
+        "source_generation": "it35-r2-fixture",
+        "source_units": 61,
+        "profile": "G19",
+        "tables": {
+          "work": "A8_I35R2_F2A16969.LGL_ONT_WORK_A",
+          "event": "A8_I35R2_F2A16969.LGL_ONT_EVT_A",
+          "publication": "A8_I35R2_F2A16969.LGL_G19_ONTL_POST_A_1",
+          "head": "A8_I35R2_F2A16969.LGL_G19_ONTL_HEAD_A_1",
+          "anchor": "A8_I35R2_F2A16969.LGL_G19_ONTL_ANC_A_1"
+        },
+        "existing_bundles": 1,
+        "bundles": 24,
+        "paths": 46,
+        "source_writes": 0,
+        "ddl": 0,
+        "model_calls": 0,
+        "automatic_retries": 0,
+        "completed": [
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a1",
+            "reused": true
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a10",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a2",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a3",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a4",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a5",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a6",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a7",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a8",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-11478916f48b00e5-a9",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a3",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a6",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-5be4de51a89dc664-a9",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a362",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a363",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a365",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a368",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a369",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a373",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-7bbe815ff43b6635-a433_434",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-92089b5873b2ccc0-a8",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a21",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a27",
+            "reused": false
+          },
+          {
+            "bundle_id": "cb-it35-r1-9ff3d75bd44e546b-a28",
+            "reused": false
+          }
+        ],
+        "receipt_path": "_integration_ontology_r2/b99556e6bf4544318e83cd106de10969/receipt.json",
+        "sql_requests": 632
+      },
+      "counts": {
+        "work": 24,
+        "event": 72,
+        "publication": 24,
+        "head": 24,
+        "anchor": 61
+      },
+      "bound_paths": 46,
+      "registered_documents": 5,
+      "registered_blocks": 66,
+      "automatic_retry": 0,
+      "temporary_schemas_removed": true
+    }
+  },
+  "ontology": {
+    "bundles": 24,
+    "paths": 46,
+    "source_documents": 5,
+    "source_units": 61,
+    "source_blocks": 66,
+    "ontology_json_sha256": "6f59340bdc8a22dc26d33c7f7cdfb3976ef6f237e195d578b4cf33b8ec541d20",
+    "snapshot_sha256": "b37dad4e43aafcb5dd7eb5f8c296713e248d4cd984fcb2957eada55f40038f89",
+    "prior_R1_bytes_preserved": true
+  },
+  "preserved_failures": [
+    "Oracle initial readback compared decoded JSON to strings; canonical JSON comparison repaired; failed logs retained",
+    "MAIN142 ZIP fixture initially omitted the documented unchanged JavaScript dependency; exact required bytes supplied",
+    "release-only fixture omitted offline verification Python dependencies; exact helper files supplied for full gate",
+    "broad verification dependency copy stopped and audit-only copy removed; rg-filtered helper files used",
+    "test report path first resolved to handoff directory through a wildcard import; moved to audit and test path made explicit before final packaging"
+  ],
+  "limits": {
+    "physical_oracle": "actual local Oracle 23.26.3 isolated schemas, removed afterward",
+    "Dataiku_SDK": "local substitute; actual DSS server not executed",
+    "NFS": "local generation clone with identical original assets; actual field mount not executed",
+    "models": 0,
+    "new_product_answer_tests": 0,
+    "field_deployments": 0,
+    "production_writes": 0,
+    "main_pointer_writes": 0,
+    "email": 0
+  },
+  "delivery_wrapper_validation": "Exact ZIP/TXT execution receipts are recorded separately in the R2 audit; no field success is implied"
+}

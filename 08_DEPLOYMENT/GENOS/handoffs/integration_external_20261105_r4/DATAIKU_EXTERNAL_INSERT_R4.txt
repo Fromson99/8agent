@@ -1,0 +1,46 @@
+# Dataiku Python 노트북에서 이 파일 전체를 한 셀로 실행한다.
+# ZIP을 올린 기존 관리 폴더 ID와 기존 Oracle 연결 이름을 설정한다.
+IT35_OPTIONS = globals().get('IT35_OPTIONS', {
+    'FOLDER_ID': 'ZIP을_올린_관리폴더_ID',
+    'ORACLE_CONNECTION': 'AIDP',
+    'PROFILE': 'B003',  # 운영 IDD_B003. 개발 LGL_G19이면 G19.
+    'SOURCE_OWNER': 'SIDDS',
+    'ONTOLOGY_OWNER': 'SIDDA',
+    'AGENT_OWNER': 'SIDDA',
+    'DATASET_VERSION': '',  # 정확한 네 판본이 모두 있는 유일한 세대만 자동 선택.
+    'APPLY': True,          # False는 전체 읽기 전용 사전검사만 수행.
+})
+import dataiku
+from pathlib import Path, PurePosixPath
+import hashlib,io,json,sys,tempfile,zipfile
+folder=dataiku.Folder(IT35_OPTIONS['FOLDER_ID'])
+archive_name='INTEGRATION_EXTERNAL_B03_B05_R4.zip'
+matches=[p for p in folder.list_paths_in_partition() if p.rsplit('/',1)[-1]==archive_name]
+if len(matches)!=1:raise ValueError('관리 폴더에 해당 ZIP이 정확히 하나 있어야 합니다: '+archive_name)
+with folder.get_download_stream(matches[0]) as stream:raw=stream.read(32*1024*1024+1)
+if hashlib.sha256(raw).hexdigest()!='263894f7f81b4dcd52c3dc5b4ace41ebea4794ca5f4e7d5e7ab52966f1917fd5':raise ValueError('ZIP SHA256 mismatch')
+with tempfile.TemporaryDirectory(prefix='it35-external-r4-') as tmp:
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names=z.namelist()
+        if len(names)!=len(set(names)) or sum(i.file_size for i in z.infolist())>64*1024*1024:raise ValueError('ZIP inventory/size')
+        for name in names:
+            p=PurePosixPath(name)
+            if p.is_absolute() or '..' in p.parts or '\\' in name or str(p)!=name:raise ValueError('Unsafe ZIP path')
+        manifest=json.loads(z.read('PACKAGE_MANIFEST.json'))['files']
+        if set(names)!=(set(manifest)|{'PACKAGE_MANIFEST.json'}):raise ValueError('ZIP inventory')
+        for name,expected in manifest.items():
+            if hashlib.sha256(z.read(name)).hexdigest()!=expected:raise ValueError('ZIP file changed: '+name)
+        z.extractall(tmp)
+    # Notebook repeats use the verified code from this exact ZIP, not cached earlier modules.
+    for name in ('it35_common','it35_mapping','it35_jdbc','it35_dataiku_import'):sys.modules.pop(name,None)
+    sys.path.insert(0,tmp)
+    try:
+        from it35_dataiku_import import run
+        IT35_RESULT=run(dataiku.SQLExecutor2(connection=IT35_OPTIONS['ORACLE_CONNECTION']),folder,
+            profile=IT35_OPTIONS['PROFILE'],source_owner=IT35_OPTIONS['SOURCE_OWNER'],
+            target_owner=IT35_OPTIONS['ONTOLOGY_OWNER'],agent_owner=IT35_OPTIONS['AGENT_OWNER'],
+            dataset_version=IT35_OPTIONS['DATASET_VERSION'],apply=IT35_OPTIONS['APPLY'])
+    finally:sys.path.remove(tmp)
+print(json.dumps(IT35_RESULT,ensure_ascii=False,indent=2))
+# 완료: ORACLE_IMPORT_COMPLETE. 기존 SQLite 코드서빙 환경변수는 이 셀에서 변경하지 않는다.
+# 실패/응답 유실이면 자동 재송신하지 않는다. 영수증 확인 뒤 같은 셀을 명시 재실행한다.

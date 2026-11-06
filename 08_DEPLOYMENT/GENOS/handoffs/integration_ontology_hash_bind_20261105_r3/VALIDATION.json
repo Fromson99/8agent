@@ -1,0 +1,24 @@
+{
+  "status": "LOCAL_CONTRACTS_PASS_FIELD_CONFIRMATION_PENDING",
+  "tests_passed": 10,
+  "source_fixture": "exact reviewed originals and coordinates, changed document ID/hash/unit IDs/block IDs",
+  "selected_hash": "operator must explicitly provide a 64-character hash returned by name search",
+  "name_search": "whitespace-insensitive document.name lookup; all candidates, no automatic selection",
+  "binding": "same legal coordinate plus exact unmodified text, unique 17-unit mapping; all 61 public/internal units validated",
+  "workflow": "existing save/review/publish; 24 bundles and 46 consumer paths; repeated sealed DB preserved",
+  "guards": [
+    "no hash supplied",
+    "wrong hash",
+    "duplicate hash",
+    "changed text",
+    "wrong legal coordinate",
+    "duplicate exact unit",
+    "changed public source",
+    "tampered original R2 ZIP"
+  ],
+  "original_source_writes": 0,
+  "model_calls": 0,
+  "field_execution": false,
+  "actual_field_hash_confirmed": false,
+  "delivery_validation": "Exact ZIP/TXT execution receipt is retained separately in the R3 audit."
+}

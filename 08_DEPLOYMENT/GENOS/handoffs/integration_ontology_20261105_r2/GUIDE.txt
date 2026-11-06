@@ -1,0 +1,75 @@
+과제3·과제5 사전 온톨로지 — GENOS NFS SQLite / Dataiku Oracle R2
+
+먼저 SQLite로 사용
+사진의 GENOS_GENERATION 값은 그대로 사용한다. GENOS 코드스페이스에서
+GENOS_INSTALL_R2.txt의 명령을 실행하면 기존 generation 아래에 다음 두 파일을 붙인다.
+
+  <기존 GENOS_GENERATION>/ontology/integration-b03-b05-r2/ontology.sqlite
+  <기존 GENOS_GENERATION>/ontology/integration-b03-b05-r2/runtime_config.json
+
+원문 store.sqlite, 탐색 인덱스, manifest.json은 수정하지 않는다.
+원문 SQLite에 온톨로지 테이블을 직접 INSERT하는 방식은 원문 해시를 바꾸므로 사용하지 않는다.
+기존 구조화 원문과 새 온톨로지는 문서 ID·판본·조항·본문 해시로 연결된다.
+검증된 24묶음/46경로의 게시본은 NFS에서 읽기 전용으로 사용한다.
+다른 온톨로지가 이미 설정돼 있다면 기존 GENOS_RAG_ONTOLOGY_CONFIG 값을 보관한다.
+이번 설정은 통합시험용 연결로 전환하는 것이며, 기존 다른 지식을 합치거나 삭제하지 않는다.
+
+코드서빙 환경변수
+  DP=nfs
+  GENOS_RAG_ONTOLOGY_ENABLED=on
+  GENOS_RAG_ONTOLOGY_CONFIG=<설치 결과 SERVING_ENV.txt에 출력된 절대경로>
+
+DP가 이미 nfs/SQLite 모드라면 그대로 둔다. DP=oracle이면 nfs로 변경한다.
+GENOS_GENERATION과 GENOS_RUNTIME_DIR은 현재 값을 유지한다.
+모델 주소·서빙 ID·키는 이 온톨로지 연결 때문에 추가할 필요가 없다.
+코드스페이스 export는 코드서빙의 환경변수 설정을 바꾸지 않는다.
+현재 코드의 SQLite 온톨로지 읽기는 로컬 전용이므로 환경변수만 넣어서는 동작하지 않는다.
+동봉 설치기는 configuration.py와 해당 파일을 가리키는 엔진 pin만 반영한다.
+기존 코드를 commit → 배포 게이트 → push → 새 코드서빙 리비전 순서로 적용한다.
+새 리비전의 commit·GENOS_GENERATION·위 세 설정을 대조하고 실제 출처 질문으로 확인한다.
+패키지 준비/로컬 검증과 현장 배포 완료는 별개다.
+
+설치기가 확인하는 원문
+상법 / 외부감사법 / 자본시장법 / 금융회사의 지배구조에 관한 법률 /
+위험관리위원회운영준칙의 지정 판본, 5문서·61단위·66블록이다.
+원문 전체 store 해시와 위 61단위의 버전·블록·본문이 맞아야 첫 쓰기를 한다.
+기존 generation에 문서가 없거나 판본/내용이 다르면 중단한다. 정답 지식의 원문을 임의로 바꾸지 않는다.
+현재 코드와 engine pin이 이미 불일치하거나 지원하지 않는 configuration.py이면 자동 덮어쓰지 않는다.
+반복 설치는 같은 NFS 파일을 재사용한다. 내용이 다른 기존 파일은 보존하고 중단한다.
+generation을 나중에 바꾸면 새 원문에 대해 설치·검증하고 연결 설정을 새로 선택한다.
+봉인 DB에 쓰기/WAL을 만들거나 직접 내용을 수정하면 읽기가 차단된다.
+
+나중에 Oracle / Dataiku로 적재
+같은 ZIP을 Dataiku 관리 폴더에 올리고 DATAIKU_INSERT_R2.txt 전체를 Python 노트북 셀에서 실행한다.
+FOLDER_ID는 ZIP을 올린 기존 관리 폴더, ORACLE_CONNECTION은 기존 SQL 연결 이름이다.
+비밀번호/DSN을 코드에 넣거나 GENOS 코드서빙에 Oracle 적재용 키를 추가하지 않는다.
+PROFILE=B003은 운영 IDD_B003 물리명, G19는 개발 LGL_G19 물리명이다.
+SOURCE_OWNER=SIDDS, ONTOLOGY_OWNER=SIDDA, AGENT_OWNER=SIDDA가 기본이며 실제 등록 owner에 맞춘다.
+DATASET_VERSION을 비워 두면 다섯 문서의 정확한 판본이 모두 있는 유일한 세대만 선택한다.
+없거나 복수면 멈춘다. 그때 사용 중인 원문 게시의 dataset version을 명시한다.
+
+대상은 기존 Agent 작업/이벤트 2표와 Gold 온톨로지 게시/활성/좌표 3표다.
+미생성 테이블은 ORACLE_TABLES_B003.sql 또는 ORACLE_TABLES_G19.sql을 등록 구조와 대조하여 먼저 생성한다.
+기본 SQL 파일은 SIDDA 대상으로 작성돼 있다. 적재기는 DDL을 자동 실행하지 않는다.
+Dataiku 연결 계정에는 원문 2표 SELECT, 대상 5표 SELECT/INSERT/UPDATE 권한이 필요하다.
+소스/대상 모든 표·61단위·기존 동일 ID 상태를 먼저 확인하고 객체 JSON을 같은 관리 폴더 objects/에 보존한다.
+기존 승인/게시 영수증과 payload를 그대로 옮기며 새 정답을 생성하지 않는다.
+Oracle에는 한 묶음씩 원자적으로 INSERT한다. 중간 SQL 오류는 그 묶음을 ROLLBACK한다.
+응답 유실이면 자동 재전송하지 않고 멈춘다. 같은 셀을 명시적으로 다시 실행하면 저장된 묶음을 대조해 재사용한다.
+철회된 활성 포인터, 다른 내용, 일부만 있는 기존 묶음은 덮어쓰지 않는다.
+완료 표시는 ORACLE_IMPORT_COMPLETE이며 영수증은 관리 폴더 _integration_ontology_r2/ 아래에 남는다.
+이 적재가 현재 SQLite 코드서빙을 Oracle 모드로 바꾸지는 않는다.
+Oracle로 서빙을 전환할 때는 기존 Gold 연결의 물리 매핑/원문 게시/권한을 별도로 선택한다.
+
+원복
+SQLite 시험만 끄기: 코드서빙 GENOS_RAG_ONTOLOGY_ENABLED=off 후 해당 설정의 리비전 적용.
+이전 지식 연결 복구: 보관한 GENOS_RAG_ONTOLOGY_CONFIG와 이전 코드서빙 리비전으로 복귀.
+코드스페이스 파일 원복: genos_install.py --code-root <checkout> --output <설치 OUT> --rollback-code
+후속 수정이 있으면 덮어쓰지 않는다. 원문 generation과 온톨로지 사본은 원복 명령에서 삭제하지 않는다.
+Oracle 철회는 기존 온톨로지 승인/철회 Workflow에서 수행한다. 재적재로 철회를 되돌리지 않는다.
+
+정답·검증 범위
+R1의 원문 대조 정답 데이터를 그대로 사용했다. 60항목 중 답변50, 화면·출처열기10 별도다.
+원문 대조 정답과 새 Qwen 실제 답변 통과를 혼동하지 않는다. 이번 새 모델 호출은 0회다.
+정답표 CSV/answer_review.json은 참고 파일이며 RAG 입력으로 주입하지 않는다.
+패키지/코드/데이터 검증은 VALIDATION.json을 참고한다. 현장 GENOS와 실제 Dataiku 서버는 미실행이다.

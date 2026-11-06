@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e
+# 현재 generation의 문서명 검색 / 사용자가 확인한 해시로 연결. 실제 코드 ~/DEV 기본.
+IT35_TRANSFER="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+python3 - "$IT35_TRANSFER" 'find' "$@" <<'IT35_R3_PY'
+from pathlib import Path, PurePosixPath
+import hashlib,json,subprocess,sys,tempfile,zipfile
+folder=Path(sys.argv[1]);mode=sys.argv[2];arguments=sys.argv[3:]
+archive=folder/'INTEGRATION_ONTOLOGY_HASH_BIND_R3.zip'
+if hashlib.sha256(archive.read_bytes()).hexdigest()!='12c9ad0f916132a707ab7fce003e764119a3f1c37cb79a7c409e390836820c6d':raise SystemExit('R3 ZIP SHA256 mismatch')
+with tempfile.TemporaryDirectory(prefix='it35-r3-') as tmp:
+    with zipfile.ZipFile(archive) as z:
+        names=z.namelist()
+        if len(names)!=len(set(names)) or sum(i.file_size for i in z.infolist())>4*1024*1024:raise SystemExit('R3 ZIP inventory/size')
+        for name in names:
+            p=PurePosixPath(name)
+            if p.is_absolute() or '..' in p.parts or chr(92) in name or str(p)!=name:raise SystemExit('R3 ZIP path')
+        checks=json.loads(z.read('PACKAGE_MANIFEST.json'))['files']
+        if set(names)!=set(checks)|{'PACKAGE_MANIFEST.json'}:raise SystemExit('R3 ZIP inventory')
+        for name,expected in checks.items():
+            if hashlib.sha256(z.read(name)).hexdigest()!=expected:raise SystemExit('R3 ZIP file changed')
+        z.extractall(tmp)
+    command=[sys.executable,'-B',str(Path(tmp)/'hash_bind.py'),mode,*arguments,'--archive',str(folder/'INTEGRATION_ONTOLOGY_B03_B05_R2.zip')]
+    raise SystemExit(subprocess.run(command).returncode)
+IT35_R3_PY

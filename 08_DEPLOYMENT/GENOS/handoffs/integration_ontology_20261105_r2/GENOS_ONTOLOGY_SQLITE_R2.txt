@@ -1,0 +1,45 @@
+# GENOS 코드스페이스의 bash 터미널에서 실행. python3 / 실제 checkout ~/DEV 사용.
+# ZIP은 ~/DEV/TRANSFER/에 업로드한다.
+# 코드스페이스에 GENOS_GENERATION이 없다면 IT35_GENERATION에 사진의 값을 입력한다.
+IT35_GENERATION="${IT35_GENERATION:-${GENOS_GENERATION:-}}"
+IT35_CODE="${IT35_CODE:-$HOME/DEV}"
+IT35_ZIP="${IT35_ZIP:-$HOME/DEV/TRANSFER/INTEGRATION_ONTOLOGY_B03_B05_R2.zip}"
+IT35_OUT="${IT35_OUT:-$HOME/DEV/TRANSFER/ONTOLOGY_R2_RESULT}"
+
+python3 - "$IT35_ZIP" "$IT35_CODE" "$IT35_GENERATION" "$IT35_OUT" <<'IT35_PY'
+from pathlib import Path, PurePosixPath
+import hashlib,json,subprocess,sys,tempfile,zipfile
+archive,code,generation,output=sys.argv[1:]
+if not generation:raise SystemExit('IT35_GENERATION에 코드서빙의 기존 GENOS_GENERATION 값을 넣어 실행하십시오.')
+raw=Path(archive).read_bytes()
+if hashlib.sha256(raw).hexdigest()!='1bfc357186c44890b58159aabb703ffee573cd21b07721d7b2ac4405a048ff34':raise SystemExit('ZIP SHA256 mismatch')
+unpacked=Path(tempfile.mkdtemp(prefix='ontology-r2-',dir=Path(archive).resolve().parent))
+with zipfile.ZipFile(archive) as z:
+    names=z.namelist()
+    if len(names)!=len(set(names)) or sum(i.file_size for i in z.infolist())>64*1024*1024:raise SystemExit('ZIP inventory/size')
+    for name in names:
+        p=PurePosixPath(name)
+        if p.is_absolute() or '..' in p.parts or '\\' in name or str(p)!=name:raise SystemExit('Unsafe ZIP path')
+    manifest=json.loads(z.read('PACKAGE_MANIFEST.json'))['files']
+    if set(names)!=(set(manifest)|{'PACKAGE_MANIFEST.json'}):raise SystemExit('ZIP inventory')
+    for name,expected in manifest.items():
+        if hashlib.sha256(z.read(name)).hexdigest()!=expected:raise SystemExit('ZIP file changed: '+name)
+    z.extractall(unpacked)
+subprocess.run([sys.executable,'-B',str(unpacked/'genos_install.py'),'--code-root',code,'--generation',generation,'--output',output,'--apply'],check=True)
+receipt=json.loads((Path(output)/'INSTALL_RECEIPT.json').read_text())
+subprocess.run([sys.executable,'-B',str(unpacked/'genos_verify.py'),'--code-root',code,'--config',receipt['environment']['GENOS_RAG_ONTOLOGY_CONFIG']],check=True)
+(Path(output)/'HANDOFF.json').write_text(json.dumps({'unpacked':str(unpacked),'archive_sha256':'1bfc357186c44890b58159aabb703ffee573cd21b07721d7b2ac4405a048ff34','code_root':str(Path(code).resolve())},indent=2)+'\n')
+print('\nGENOS_ONTOLOGY_PREPARED (코드서빙 배포 완료 표시는 아님)')
+print((Path(output)/'SERVING_ENV.txt').read_text())
+print('원복 명령의 스크립트: '+str(unpacked/'genos_install.py'))
+IT35_PY
+
+# 여기까지는 NFS 사본과 checkout 패치 준비다. 기존 서비스는 새 리비전을 적용하기 전까지 그대로다.
+# INSTALL_RECEIPT.json의 code_files_to_change를 git diff --check / git diff로 검토하고 commit한다.
+# 원래 staged 변경이 있으면 먼저 구분한다. 설치기는 commit/push를 자동 실행하지 않는다.
+# commit 후 아래 배포 게이트를 실제 checkout에서 실행한다.
+# python3 "$IT35_CODE/06_TOOLS/COMMANDS/genos_release_gate.py" --code-zip "$IT35_OUT/DEPLOY_CODE.zip" --deploy-root "$IT35_CODE" --generation "$IT35_GENERATION"
+# 게이트가 없는 구 checkout은 기존 genos_generation_e2e.py와 term_serving_bundle.verify_assets 및 코드 해시 대조를 수행한다.
+# PASS한 commit을 push하고 새 코드서빙 리비전에 SERVING_ENV.txt의 3개 설정을 적용한다.
+# GENOS_GENERATION / GENOS_RUNTIME_DIR은 현재 값 유지. 쉘 export만으로 코드서빙 환경변수는 바뀌지 않는다.
+# 새 리비전에서 출처 열기와 과제3/5 질문을 확인한다. 현장 모델 응답은 별도 검증 대상이다.
