@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "sql_sha256": "451733d9e6deb972763f4a9a9c8f039f6a532ff588e4c6578839accc9250f564",
+  "oracle_validation": {
+    "status": "PASS",
+    "oracle_version": "23.26.3.0.0",
+    "owner": "A8_AGENTA_3DD75C82",
+    "checks": [
+      {
+        "name": "incompatible_existing_table_refused_before_ddl",
+        "passed": true
+      },
+      {
+        "name": "mismatch_did_not_create_remaining_tables",
+        "passed": true
+      },
+      {
+        "name": "single_block_created_four_exact_tables_and_pks",
+        "passed": true
+      },
+      {
+        "name": "all_seven_indexes_created",
+        "passed": true
+      },
+      {
+        "name": "identical_rerun_keeps_object_ids_and_rows",
+        "passed": true
+      },
+      {
+        "name": "missing_index_resumed_without_table_recreation",
+        "passed": true
+      },
+      {
+        "name": "actual_gold_agent_consumer_preflight",
+        "passed": true
+      },
+      {
+        "name": "existing_extra_column_refused",
+        "passed": true
+      },
+      {
+        "name": "existing_nullability_refused",
+        "passed": true
+      },
+      {
+        "name": "existing_disabled_pk_refused",
+        "passed": true
+      },
+      {
+        "name": "same_index_name_wrong_table_refused",
+        "passed": true
+      },
+      {
+        "name": "same_index_name_wrong_columns_refused",
+        "passed": true
+      },
+      {
+        "name": "new_state_revision_and_json_constraints_enforced",
+        "passed": true
+      },
+      {
+        "name": "protected_gold_and_a1_rows_preserved",
+        "passed": true
+      },
+      {
+        "name": "final_runtime_preflight_after_negative_cases",
+        "passed": true
+      },
+      {
+        "name": "existing_real_local_schemas_unchanged",
+        "passed": true
+      }
+    ],
+    "field_execution": false,
+    "external_models": 0,
+    "owner_substitution_only": true,
+    "temporary_schema_removed": true,
+    "sql_sha256": "451733d9e6deb972763f4a9a9c8f039f6a532ff588e4c6578839accc9250f564"
+  },
+  "contract_checks": 62,
+  "service_checks": 3,
+  "local_main": 157,
+  "field_execution": false,
+  "details": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/VALIDATION.json"
+}

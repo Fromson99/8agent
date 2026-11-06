@@ -1,0 +1,310 @@
+{
+  "version": "agent-gold-layer-sql-20261105-r1",
+  "profile": "gold",
+  "source_zip": "08_DEPLOYMENT/GENOS/handoffs/main152_oneclick_mail_20261105_r1/MAIN152_FULL_20261105_R1.zip",
+  "source_zip_sha256": "20c52ba08ffa2f57f408aeb973825f5b5312f981cf387def21e6e13ea1e2e6b6",
+  "source_files": {
+    "00_SYSTEM/ORACLE/development_g19_1.json": "a839fadb8cf86864c375fd447f4fbd00124da27c37fab5e6cdce7570dc5d9d85",
+    "02_BACKEND/semantic_runtime/oracle_gold_mapping.py": "e896884bb270b6b22c74826447067195a6b316ba256a4245a33bce2efb08150b",
+    "02_BACKEND/semantic_runtime/oracle_agent_records.py": "dd0f2d4290b00cd752c7aaaf59a2adda65b97025365d2c25c96da8d09713c587"
+  },
+  "tables": {
+    "AGT_BODY": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_BODY_A_1",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "PART_SEQ_NO": {
+          "name": "PART_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "PART_JSON_CN": {
+          "name": "PART_JSON_CN",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "BODY_HASH_VAL",
+        "PART_SEQ_NO"
+      ]
+    },
+    "AGT_REC": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_REC_A_1",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "OWNER_KEY_HASH_VAL": {
+          "name": "OWNER_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_KIND_CD": {
+          "name": "REC_KIND_CD",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_KEY_HASH_VAL": {
+          "name": "REC_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "REC_REV_NO": {
+          "name": "REC_REV_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "ORD_SEQ_NO": {
+          "name": "ORD_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "LOOKUP_HASH_VAL": {
+          "name": "LOOKUP_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_KEY_HASH_VAL",
+        "REC_REV_NO"
+      ]
+    },
+    "AGT_RUN": {
+      "owner": "SIDDA",
+      "name": "LGL_AGT_RUN_A_1",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RUN_KEY_HASH_VAL": {
+          "name": "RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SESS_KEY_HASH_VAL": {
+          "name": "SESS_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "REQ_KEY_HASH_VAL": {
+          "name": "REQ_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "PRNT_RUN_KEY_HASH_VAL": {
+          "name": "PRNT_RUN_KEY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "ST_CD": {
+          "name": "ST_CD",
+          "type": "VARCHAR2(32 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRT_DTTM": {
+          "name": "STRT_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": null
+        },
+        "CHG_DTTM": {
+          "name": "CHG_DTTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": null
+        },
+        "BODY_HASH_VAL": {
+          "name": "BODY_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ]
+    },
+    "EXEC_ST": {
+      "owner": "SIDDA",
+      "name": "LGL_EXEC_ST_A_1",
+      "columns": {
+        "SCOPE_HASH_VAL": {
+          "name": "SCOPE_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ST_KEY_ID": {
+          "name": "ST_KEY_ID",
+          "type": "VARCHAR2(128 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CHG_SEQ_NO": {
+          "name": "CHG_SEQ_NO",
+          "type": "NUMBER(18)",
+          "required": true,
+          "default": null
+        },
+        "ST_HASH_VAL": {
+          "name": "ST_HASH_VAL",
+          "type": "VARCHAR2(64 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ST_JSON_CN": {
+          "name": "ST_JSON_CN",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "SCOPE_HASH_VAL",
+        "ST_KEY_ID"
+      ]
+    }
+  },
+  "indexes": [
+    {
+      "name": "LGL_AR01_I1_A_1",
+      "table": "LGL_AGT_RUN_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "SESS_KEY_HASH_VAL",
+        "STRT_DTTM",
+        "RUN_KEY_HASH_VAL"
+      ]
+    },
+    {
+      "name": "LGL_AR01_I2_A_1",
+      "table": "LGL_AGT_RUN_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "REQ_KEY_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ]
+    },
+    {
+      "name": "LGL_AR01_I3_A_1",
+      "table": "LGL_AGT_RUN_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "PRNT_RUN_KEY_HASH_VAL",
+        "RUN_KEY_HASH_VAL"
+      ]
+    },
+    {
+      "name": "LGL_AR01_I4_A_1",
+      "table": "LGL_AGT_RUN_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "ST_CD",
+        "CHG_DTTM",
+        "RUN_KEY_HASH_VAL"
+      ]
+    },
+    {
+      "name": "LGL_AR02_I1_A_1",
+      "table": "LGL_AGT_REC_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_REV_NO",
+        "ORD_SEQ_NO",
+        "REC_KEY_HASH_VAL"
+      ]
+    },
+    {
+      "name": "LGL_AR02_I2_A_1",
+      "table": "LGL_AGT_REC_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "OWNER_KEY_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_REV_NO",
+        "LOOKUP_HASH_VAL",
+        "ORD_SEQ_NO"
+      ]
+    },
+    {
+      "name": "LGL_AR02_I3_A_1",
+      "table": "LGL_AGT_REC_A_1",
+      "columns": [
+        "SCOPE_HASH_VAL",
+        "REC_KIND_CD",
+        "REC_REV_NO",
+        "LOOKUP_HASH_VAL",
+        "REC_KEY_HASH_VAL",
+        "OWNER_KEY_HASH_VAL"
+      ]
+    }
+  ],
+  "sql_files": {
+    "00_CHECK_EXISTING.sql": "4625c5abc25cb8cf272838edb91c45aad9c585cce7545f63f0533594277f1268",
+    "01_CREATE_LGL_AGT_BODY_A_1.sql": "40a2183d4f165bfc96f61421fc5a1ac33e9777777295bf7fc1ebef256d6ee7a3",
+    "02_CREATE_LGL_AGT_REC_A_1.sql": "98836ce75fa9c858567f9fd17dfe2588baa2c037ada6a1f9d522e69824c6d002",
+    "03_CREATE_LGL_AGT_RUN_A_1.sql": "bbec0b6633215bdf5a7316723439081c99455568eb12d591972e39dbbc5d0416",
+    "04_CREATE_LGL_EXEC_ST_A_1.sql": "9d21b7e912ba04d03cfcdec7db146225b6897328fb39c42289856787143153eb",
+    "05_CREATE_LGL_AR01_I1_A_1.sql": "12938e75aed8a6acdcb31133150c32fe948c573dd4e5d514c4a86a81cf8f1ee9",
+    "06_CREATE_LGL_AR01_I2_A_1.sql": "c41c045f098bad0235b82ecbf994cc357bdce3c9ac46d1391039c80e05e17649",
+    "07_CREATE_LGL_AR01_I3_A_1.sql": "a3dbfa118cca9bc49cd9caed7558f54763f6238a55cbfefb5c7c300983cc32b6",
+    "08_CREATE_LGL_AR01_I4_A_1.sql": "46085d6690cc2137457994e52dcb7511151527b35695e9043f7806ba0ab114f5",
+    "09_CREATE_LGL_AR02_I1_A_1.sql": "af52c6178c918acd7a6d8730fe76f9ef64326a5b00e89b250e249ac3f715fa5e",
+    "10_CREATE_LGL_AR02_I2_A_1.sql": "50ebe563af0ddaf77055b9c990bfb23405336525d64aeabe50ea58633f7e3f73",
+    "11_CREATE_LGL_AR02_I3_A_1.sql": "a0197d2ff887290bb1fd0aa408bffe45e402ba73d0c0d9f6a1679143eec8ffc2",
+    "12_VERIFY_TABLES.sql": "656b312e34b9d6ec8aa6e5da70e049871f83e821c36cda39715fbb5d9243bc0d",
+    "13_VERIFY_INDEXES.sql": "84a2e9a7e630b9b8cf83ed9b8a27e0723ccb8c91e87d7bfd697cb3324bec9397"
+  },
+  "zip_sha256": "67aeac856381e7f2afc399d13f570fecc339a10329aab22f5344364b16af790e",
+  "ddl_tables": 4,
+  "ddl_indexes": 7,
+  "gold_table_changes": 0,
+  "product_code_changes": 0
+}

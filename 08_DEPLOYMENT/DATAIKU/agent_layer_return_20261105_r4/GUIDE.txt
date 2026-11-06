@@ -1,0 +1,110 @@
+GENOS 비동기 결과 반환 · Dataiku Agent Layer 저장 R4
+
+이번에는 GENOS에서 결과를 받은 Dataiku가 기존 AIDP 연결로 SIDDA에 저장합니다.
+승호님 integration의 전처리 호출과 Dataiku 적재 책임을 확인해 반영했습니다.
+Dataiku 원문 → GENOS 비동기 계산 → Dataiku 결과 수신 → SIDDA Agent Layer
+→ Dataiku가 Agent Layer 재조회 → 개발 SIDDS Silver 적재 순서입니다.
+
+R4의 두 코드 ZIP과 두 실행 TXT를 함께 사용합니다.
+이전에 받은 R2/R3 설치 TXT는 이번 설치에서 R4 TXT로 교체합니다.
+LAW_SAMPLE_R2.zip과 SAMPLE_SUPPORT_R2.zip은 이미 보낸 예시 원본과 같은 바이트입니다.
+
+1. GENOS 파이프라인 코드서빙 교체
+
+해당 파이프라인 코드스페이스의 TRANSFER에 아래 두 첨부를 놓습니다.
+  GENOS_AGENT_RETURN_R4.zip
+  GENOS_DEPLOY_R4.txt
+
+TRANSFER 터미널에서 실행합니다.
+  bash ./GENOS_DEPLOY_R4.txt
+
+기본 ~/DEV 링크를 실제 경로로 풀고, 기존 파일 백업과 코드 교체·해시 검사를 수행합니다.
+기존 pipeline 원격 저장소를 확인하여 패키지 파일만 commit/push합니다.
+알려진 pipeline 761 및 pipeline 원격 이름을 우선 선택합니다.
+RAG 원격 623/701 및 risk_team/financial_team은 선택에서 제외합니다.
+자동 판별이 안 되면 저장소 상태를 확인하고 멈춥니다. 임의 원격으로 push하지 않습니다.
+로컬 HEAD와 기존 stage는 보존하며 비패키지 파일도 보존합니다.
+
+GENOS_CODE_PUSHED 옆 커밋으로 GENOS 화면에서 새 파이프라인 코드서빙 리비전을 배포합니다.
+진입점은 루트 service.py의 async service(config, data)입니다.
+기존 파이프라인 계산 이미지·requirements.txt, worker 1개·replica 1개를 사용합니다.
+기존 R10 계산 환경 기준 CPU 1·메모리 16GB입니다.
+이번 GENOS 코드는 Oracle 접속 없이 결과를 인증된 READ 요청으로 반환합니다.
+샘플 지원 파일은 Dataiku가 전송하므로 별도 지원 파일 마운트 설정은 생략합니다.
+Git push와 화면의 리비전 배포는 각각 완료해야 합니다.
+
+2. Dataiku에 ZIP 세 개 그대로 업로드
+
+실험 프로젝트의 업로드 가능한 Managed Folder 최상단에 세 첨부를 올립니다.
+  DATAIKU_AGENT_FLOW_R4.zip
+  LAW_SAMPLE_R2.zip
+  SAMPLE_SUPPORT_R2.zip
+
+법령 예시는 로컬에서 압축한 「중소기업기본법」 전체 본문 XML 1건입니다.
+샘플 경로는 업로드한 ZIP 원본을 그대로 전송합니다.
+Dataiku에서 다시 압축하거나 문서를 재저장하지 않습니다.
+SAMPLE_SUPPORT_R2.zip은 이 법령 한 건에 해시로 결속한 개발 시험용 용어집·카탈로그입니다.
+
+3. 노트북 실행
+
+같은 Dataiku 프로젝트의 새 Python 노트북 커널을 엽니다.
+DATAIKU_SETUP_R4.txt 전체를 한 셀에 붙이고 맨 위 한 곳을 수정합니다.
+  CODE_FOLDER_ID = '세 ZIP을 올린 폴더의 실제 ID'
+
+Oracle 연결은 기존 AIDP, 실제 로그인은 PIDD2APP, 생성 대상은 SIDDA로 들어 있습니다.
+계정 비밀번호는 Dataiku에 등록된 AIDP 연결이 관리합니다.
+셀을 실행하면 같은 AIDP 연결로 SIDDA.LGL_PIPE_RESULT_A를 만들고 구조를 확인합니다.
+이어서 실험 Flow 구역과 레시피 3개·결과 폴더 3개·수동 시나리오를 생성합니다.
+동일한 셀의 재실행은 테이블과 Flow를 확인해 재사용합니다.
+완료 출력은 AGENT_LAYER_READY, FLOW_INSTALLED LGL_AGENT_R4_DEV_RUN_ALL입니다.
+
+Silver 원문·검색·벡터는 이전에 등록한 G19 개발 테이블과 AIDP 권한을 사용합니다.
+임베딩 기본값도 기존 openai:genos-embedding:embedding-kure-v1, 1024차원입니다.
+첫 셀에서 DB 오류가 나면 AIDP의 실제 권한과 메시지를 확인합니다.
+이 코드는 사용자를 생성하거나 권한을 자동 부여하지 않습니다.
+
+4. 코드서빙 URL·토큰으로 실행
+
+프로젝트 변수에서 새 파이프라인 코드서빙의 아래 두 값을 사용합니다.
+  AGENT_PIPELINE_URL    새 R4 리비전의 HTTPS 호출 URL
+  AGENT_PIPELINE_TOKEN  해당 코드서빙의 토큰
+기존 LEGAL_PIPELINE_URL / LEGAL_PIPELINE_TOKEN 한 쌍도 지원합니다.
+두 쌍을 섞지 않습니다. 새 R4 파이프라인의 URL과 그 토큰으로 맞춥니다.
+토큰은 현장의 변수·비밀값 관리 방식으로 설정합니다.
+
+Scenarios에서 LGL_AGENT_R4_DEV_RUN_ALL을 수동 Run합니다.
+  01_SUBMIT       원본 ZIP 해시 확인·업로드·비동기 RUN
+  02_WAIT_AGENT   POLL 완료 확인·결과 READ·AIDP로 SIDDA 조각 저장·완료 행 게시
+  03_LOAD         SIDDA 조각 재조회·해시 대조·개발 Silver 적재·건수와 게시 상태 재조회
+
+LGL_AGENT_R4_DEV_03_LOAD_OUT 결과 폴더의 trial-001/report.json을 확인합니다.
+DEV_LOADED, target_layer=Silver, input_documents=1, checks=true가 완료 기준입니다.
+실제 게시 ID와 원문·검색·벡터 건수도 같은 파일에 남습니다.
+
+5. 중단 후 재개와 실제 낱개 문서
+
+같은 프로젝트·trial·작업 디렉터리에서 실패한 레시피를 재실행합니다.
+기본 작업 디렉터리는 실행 사용자 홈의 .dataiku-agent-work입니다.
+노트북과 Python 레시피는 이 디렉터리를 함께 볼 수 있는 DSS 실행 환경에서 실행합니다.
+기존 공유 작업 경로가 프로젝트 변수 AGENT_FLOW_WORK_DIR에 있으면 그 경로를 사용합니다.
+결과 ZIP은 로컬에 검증 후 보존하며, SIDDA 저장 응답이 유실돼도 같은 조각을 대조해 이어갑니다.
+READY 이후의 wait/load는 GENOS가 종료된 상태에서도 진행할 수 있습니다.
+새 계산을 별도로 하려면 AGENT_FLOW_TRIAL에 새 이름을 지정합니다.
+완료 전 원래 작업 디렉터리가 없어지면 재계산 없이 중단합니다.
+GENOS pod가 바뀌어 핸들이 없어졌고 SIDDA READY도 없으면 기존 실패를 보존한 뒤 새 trial로 제출합니다.
+
+기본 노트북은 이 법령 샘플의 개발 Silver 실험을 만듭니다.
+Flow 코드에는 INPUT_MODE='LOOSE'의 기존 낱개 문서 입력과 ENVIRONMENT='PROD'의 Gold 매핑도 유지했습니다.
+실제 문서용 설치는 flow_install.install의 INPUT_FOLDER_ID를 별도 낱개 폴더로,
+DOCUMENT_PREFIX를 기존 원천·팀 경로로 맞추고 실제 R10 지원 파일·카탈로그를 사용합니다.
+샘플 지원 ZIP은 실제 전량 문서용 지원 자료로 사용할 수 없습니다.
+운영 Gold는 현장의 GOLD_OWNER와 운영 연결을 명시해 별도 Flow로 만듭니다.
+
+로컬 검증은 전달 코드와 동일한 pin, 실제 Oracle 23.26.3, Dataiku API와 임베딩 대역으로 수행했습니다.
+법령1·원문단위290·블록356·검색8698·벡터65 및 중단/중복/해시 오류 차단을 확인했습니다.
+망분리 GENOS 리비전 배포, 현장 Oracle·DRM 및 실제 임베딩 호출은 현장 실행으로 확인합니다.
+
+GENOS 작업 파일 원복은 같은 TRANSFER에서 실행합니다.
+  bash ./GENOS_DEPLOY_R4.txt --restore-local
+원래 파일은 ~/DEV 실제 checkout의 .git/genos-agent-return-r4/original에 보관됩니다.
+이 옵션은 작업 파일을 복구합니다. 원격 커밋과 이미 배포한 리비전은 별도로 선택합니다.

@@ -1,0 +1,56 @@
+낱개 원문에서 Agent Layer를 거쳐 Silver·Gold에 적재하는 실험 R1
+
+시작할 때
+개발계에서 과거에 적재하지 않은 작은 DOCX 한 건으로 시작합니다. 새 GENOS 파이프라인 코드서빙 하나와 Dataiku의 새 Flow 구역 하나를 사용합니다. 경로는 다음과 같습니다.
+
+원문 Managed Folder → 01_SUBMIT → GENOS 비동기 구조화·검색색인 → SIDDA.LGL_PIPE_RESULT_A
+→ 02_WAIT_AGENT → 03_LOAD → 개발 SIDDS Silver 또는 운영 B003 Gold
+
+01은 작업 번호를 받고 종료합니다. GENOS는 RUN을 한 번 받은 뒤 Dataiku가 폴링을 멈춰도 원래 기한까지 계산을 진행합니다. GENOS가 작업 결과 ZIP을 Agent Layer에 기록한 뒤 마지막에 완료 행을 씁니다. 02는 같은 작업 번호의 완료를 확인합니다. 03은 Agent Layer만 읽어서 파일을 복원·검증합니다. Dataiku가 대상 테이블 형식에 맞게 원문·검색행을 만들고, Dataiku LLM Mesh로 임베딩을 계산해 벡터를 적재합니다. GENOS와 Dataiku 사이에 결과 ZIP을 직접 다운로드하는 단계는 없습니다.
+
+1. Oracle 준비
+DBA가 실험 환경에 AGENT_STAGE.sql을 적용합니다. 신규 표는 SIDDA.LGL_PIPE_RESULT_A 한 개입니다.
+GENOS ORDS 계정에는 이 표의 SELECT·INSERT, Dataiku AGENT_CONNECTION에는 SELECT를 줍니다.
+개발 대상은 기존 G19 S_1 배치, 운영 대상은 사전 생성한 실제 owner의 IDD_B003_LGL_* 배치입니다. Dataiku TARGET_CONNECTION에는 매핑 13표의 SELECT와 원문·검색·벡터 적재 대상의 INSERT가 필요합니다. Flow는 대상 DDL을 실행하지 않습니다.
+중간 표에는 원문과 색인을 복원할 수 있는 데이터가 들어갑니다. 원문을 볼 수 있는 실험 계정으로 조회 권한을 제한합니다. 판본당 압축 결과의 base64 행과 Oracle LOB 공간이 필요하므로 작은 입력으로 실제 용량을 확인합니다.
+
+2. 새 GENOS 코드서빙
+기존 RAG 또는 계산 서비스와 별도인 새 Git checkout을 준비합니다. 빈 checkout이나 같은 코드 재설치를 지원합니다. 플랫폼 템플릿과 다른 동명 파일이 있으면 설치기가 파일명을 출력합니다. 새 checkout에서 해당 템플릿을 먼저 다른 이름으로 보존합니다.
+GENOS_AGENT_ASYNC_R1.zip과 GENOS_INSTALL_R1.txt를 올린 TRANSFER 폴더에서 아래 명령을 실행합니다. 마지막 인자는 실제 새 checkout 루트로 바꿉니다.
+
+bash ./GENOS_INSTALL_R1.txt check /실제/새/checkout
+bash ./GENOS_INSTALL_R1.txt apply /실제/새/checkout
+bash ./GENOS_INSTALL_R1.txt verify /실제/새/checkout
+
+새 checkout의 service.py 안 async service(config, data)가 진입점입니다. 기존 R10 계산 이미지 호환 환경, requirements.txt, worker 1개·replica 1개로 설정합니다. 데이터 처리는 실행마다 만들어지는 임시 작업 공간에서 수행합니다. 새 저장소에 해당 파일만 커밋한 뒤 같은 checkout에서 verify를 다시 실행하고, 그 커밋으로 리비전을 배포합니다. 커밋/리비전 ID를 실험 기록에 보관합니다. 전용 서비스는 RAG 기본 generation 경로를 필요로 하지 않습니다.
+GENOS에는 기존 ORDS 접속용 ORACLE_ORDS_SCHEMA, ORACLE_ORDS_CLIENT_ID, ORACLE_ORDS_CLIENT_SECRET을 설정합니다. SDK 기본 주소를 쓰지 않는 환경은 ORACLE_ORDS_BASE_URL을 설정합니다. 키는 Flow·노트북·Git에 쓰지 않습니다.
+
+3. 용어집·카탈로그 한 번 준비
+이번 원문은 낱개 파일입니다. 기존 R10의 PIPELINE_SUPPORT.zip은 그 원문을 색인할 때 사용하는 공통 용어집·카탈로그입니다. 아래 두 가지 중 실제 환경에 맞는 경로 하나를 선택합니다.
+- 권장. 이 ZIP을 새 GENOS 서비스가 계속 읽을 수 있는 볼륨에 놓고 AGENT_PIPELINE_SUPPORT_ZIP에 절대경로, AGENT_PIPELINE_SUPPORT_SHA256에 원본 영수증의 sha256을 지정합니다. Dataiku SUPPORT_FOLDER_ID는 빈 값입니다. 01은 원문만 전송합니다.
+- 기존 Dataiku에 지원 ZIP이 있다면 SUPPORT_FOLDER_ID에 해당 폴더 ID를 입력합니다. 폴더에는 PIPELINE_SUPPORT.zip과 PIPELINE_SUPPORT.zip.receipt.json이 있어야 합니다. 이 경우 GENOS의 지원 ZIP 환경변수 두 개는 비워둡니다.
+기존 ZIP이 없고 원래 R10 용어집·카탈로그 파일을 갖고 있다면 새 checkout에서 다음 명령으로 지원 ZIP을 한 번 만들 수 있습니다. 첫 인자는 기존 LEXICON과 CATALOG가 있는 01_DATA 디렉터리입니다. 출력은 새 파일명이어야 합니다.
+python3 prepare_support.py /실제/기존/01_DATA /실제/지원볼륨/PIPELINE_SUPPORT.zip
+
+4. Dataiku Flow 설치
+새 Flow를 만들 프로젝트에서 원문 Managed Folder와 코드 업로드용 Managed Folder를 각각 준비합니다. 작업은 해당 프로젝트에서 접근 가능한 폴더 ID를 사용합니다. 원문 폴더에는 처리할 문서와 관련 메타데이터만 둡니다.
+코드 폴더에 DATAIKU_AGENT_FLOW_R1.zip을 그대로 올립니다. Python 노트북 새 커널에 INSTALL_DATAIKU_R1.txt를 한 셀로 붙여 넣고 맨 위 PARAMS를 입력합니다.
+- CODE_FOLDER_ID와 INPUT_FOLDER_ID는 코드 폴더와 낱개 원문 폴더의 실제 ID입니다.
+- DOCUMENT_PREFIX는 실제 원문 출처입니다. 평면 내규 폴더라면 internal/실제팀, 외규라면 실제 소스(law, krx, kofia, expc, fsc, moleg, prec 중 하나)를 입력합니다. 이미 internal/팀/... 또는 law/... 같은 RAW 하위 폴더 구조이면 빈 값으로 둡니다. 하위 경로와 파일명은 그대로 보존합니다.
+- ENVIRONMENT 기본값 DEV는 개발 SIDDS Silver입니다. 운영용 새 Flow는 PROD와 실제 GOLD_OWNER를 지정합니다. AGENT_CONNECTION, TARGET_CONNECTION과 EXPECTED_DB_USER는 각 환경의 실제 Dataiku 연결명·적재 계정입니다. GENOS ORDS 스키마 별칭과 구분합니다.
+- WORK_DIR은 세 레시피가 같은 파일 잠금·경로를 공유하는 영속 POSIX 디렉터리입니다. 서비스 임시 폴더, 개인 PC 경로 또는 실행마다 사라지는 /tmp는 사용하지 않습니다. 실행 계정 전용 권한·복원/재개에 필요한 디스크 공간이 필요합니다.
+- EMBED_MODEL과 EMBED_DIMENSIONS는 해당 Dataiku 프로젝트의 등록 모델·차원에 맞춥니다.
+Dataiku 실행 시 get_custom_variables()에서 AGENT_PIPELINE_URL(새 코드서빙 HTTPS 호출 URL), AGENT_PIPELINE_TOKEN을 읽을 수 있게 설정합니다. 토큰은 기존 보안 변수 전달 방식을 사용합니다. AGENT_FLOW_TRIAL은 예를 들어 docx-001입니다. 같은 입력 재개 시 같은 값을 사용합니다.
+셀을 한 번 실행하면 LGL_AGENT_R1_DEV 또는 LGL_AGENT_R1_PROD 구역에 레시피 3개와 결과 폴더, 수동 실행 시나리오 하나가 생성됩니다. 데이터 적재는 시나리오를 Run할 때 시작합니다.
+
+5. 실행·확인
+개발은 Scenarios → LGL_AGENT_R1_DEV_RUN_ALL → Run입니다. 운영용은 이름의 DEV가 PROD입니다.
+01_SUBMIT_OUT/<trial>/submitted.json에서 job을 확인합니다. 원문 파일별 경로·크기·SHA는 DSS WORK_DIR의 해당 trial/documents.json에 남습니다.
+02_WAIT_AGENT_OUT/<trial>/ready.json에는 같은 job과 Agent Layer 결과 크기·조각 수·전체 SHA가 있습니다. 완료 전 조각만 보이는 상태는 적재하지 않습니다.
+03_LOAD_OUT/<trial>/report.json에는 target_layer, input_documents, coverage, 원문·단위·구간·검색·벡터 행 수, 게시 ID가 있습니다. 기존 R10의 최신 문서 선택과 PDF 처리 생략 정책이 적용됩니다. PDF만 있거나 처리 성공 원문이 0건이면 적재를 진행하지 않습니다. 혼합 입력의 보류 내역은 WORK_DIR의 load-*/restored/audit/excluded-documents.csv에 있습니다.
+검증된 source/query 게시와 시험 query 채널을 기록합니다. 서비스 조회 채널 전환과 벡터 head 활성화는 별도입니다.
+
+재개와 정리
+네트워크가 끊기면 같은 trial·WORK_DIR로 해당 레시피를 다시 실행합니다. READY가 있으면 GENOS가 종료되어도 03_LOAD부터 다시 실행할 수 있습니다. 입력 내용·경로가 바뀌었으면 새 trial을 사용합니다. 기존 대상 판본이 이미 있고 원래 적재 체크포인트가 없으면 중단합니다.
+RUN 이전 업로드용 핸들의 기본 유효시간은 15분입니다. RUN 이후에는 원래 기한(최대 7일)을 사용합니다. Pod가 재시작되어 READY가 없고 기존 핸들이 사라졌다면 같은 작업을 자동 재계산하지 않습니다. 제출 기록·의심 작업의 완료 행과 실패 로그를 확인한 뒤 새 trial로 재제출합니다. 미완료 조각은 진단용으로 남습니다.
+시험 종료 시 전용 시나리오 실행을 멈추고 신규 서비스 리비전을 내리면 됩니다. DB에 이미 적재한 행은 보존됩니다. 중간 결과 제거는 DBA가 완료·소비 여부와 보존 정책을 확인한 작업 ID에 한해 별도 수행합니다.

@@ -1,0 +1,39 @@
+{
+  "ref": "infocz/fde/seungho/integration",
+  "commit": "002dcf07705688c637bc878b4b6f372231cb2c3c",
+  "reviewed_files": {
+    "02-els-qa/dataiku/project_config/recipes/compute_ELS_QA_FALLBACK.py": {
+      "sha256": "6220439ab91668711968e30881ac095517b56c5ab5dd3de00afe3ee6a5a28274",
+      "lines": 92
+    },
+    "02-els-qa/dataiku/project_config/lib/python/els_dku/preprocess.py": {
+      "sha256": "9a3b055217ea949d6871f8876bf06d6a35446499a9e2d2cf3c91997cafa5819a",
+      "lines": 1093
+    },
+    "02-els-qa/preprocessor/adapter.py": {
+      "sha256": "5f13cc65505d76196f97e237439d4810bcfee15f3656308463724a409f5d926d",
+      "lines": 201
+    },
+    "02-els-qa/dataiku/project_config/recipes/compute_ELS_QA_LOAD.py": {
+      "sha256": "1f38b5eed84fe6879cf59e0ca1452287c2cf98e21d6f5b943d1825a9edb449b7",
+      "lines": 36
+    },
+    "02-els-qa/dataiku/project_config/lib/python/els_dku/load.py": {
+      "sha256": "449ad5fb5214f9407f610307e0f8bceeb1aaae93f00bf0b3afcc1f6405f31ce2",
+      "lines": 745
+    }
+  },
+  "verified_flow": [
+    "Dataiku fallback recipe reads serving URL/token",
+    "preprocess.call_preprocess sends file_content_base64 with Bearer token",
+    "adapter returns rdb result without Oracle write",
+    "Dataiku load recipe uses SQLExecutor2 from table connection"
+  ],
+  "r4_change": "GENOS returns asynchronous result; Dataiku AIDP creates and writes SIDDA staging, then rereads to Silver",
+  "base_versions_retained": [
+    "R1",
+    "R2",
+    "R3"
+  ],
+  "new_GENOS_DB_account_input": false
+}

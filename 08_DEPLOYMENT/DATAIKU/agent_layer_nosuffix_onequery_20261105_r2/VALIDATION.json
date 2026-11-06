@@ -1,0 +1,103 @@
+{
+  "status": "PASS_LOCAL",
+  "oracle_version": "23.26.3.0.0",
+  "checks": [
+    {
+      "name": "single_execute_creates_four_tables_26_columns_and_pks",
+      "passed": true
+    },
+    {
+      "name": "seven_secondary_indexes_created",
+      "passed": true
+    },
+    {
+      "name": "original_product_consumer_preflight_passes",
+      "passed": true
+    },
+    {
+      "name": "same_block_rerun_has_no_object_changes",
+      "passed": true
+    },
+    {
+      "name": "existing_body_row_preserved",
+      "passed": true
+    },
+    {
+      "name": "partially_missing_run_table_and_indexes_recreated",
+      "passed": true
+    },
+    {
+      "name": "extra_column_rejected",
+      "passed": true
+    },
+    {
+      "name": "extra_column_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "missing_column_rejected",
+      "passed": true
+    },
+    {
+      "name": "missing_column_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "type_drift_stops_before_creating_missing_index",
+      "passed": true
+    },
+    {
+      "name": "type_drift_stops_before_creating_missing_index_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "nullability_drift_rejected",
+      "passed": true
+    },
+    {
+      "name": "nullability_drift_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "disabled_pk_rejected",
+      "passed": true
+    },
+    {
+      "name": "disabled_pk_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "wrong_existing_index_columns_rejected",
+      "passed": true
+    },
+    {
+      "name": "wrong_existing_index_columns_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "final_product_consumer_passes",
+      "passed": true
+    },
+    {
+      "name": "suffix1_table_and_data_untouched",
+      "passed": true
+    },
+    {
+      "name": "view_name_collision_rejected",
+      "passed": true
+    },
+    {
+      "name": "view_name_collision_rejected_existing_objects_unchanged",
+      "passed": true
+    },
+    {
+      "name": "existing_real_schema_objects_unchanged",
+      "passed": true
+    }
+  ],
+  "sql_sha256": "5b559155839ae9c994ed346787c61834ebad2f97eaf17571b4b2e0606392a753",
+  "scope": "Exact single SQL block; only SIDDA owner replaced with isolated local test owner.",
+  "field_Dataiku_tested": false,
+  "field_Genos_tested": false,
+  "test_schema_removed": true
+}

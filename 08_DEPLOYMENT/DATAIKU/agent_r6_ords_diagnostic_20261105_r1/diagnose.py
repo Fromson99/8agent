@@ -1,0 +1,160 @@
+"""Read-only ORDS diagnosis using the exact installed R6 client and preflight.
+
+No RUN/PUBLISH, schema changes, real INSERT, model call or automatic retry.
+Outputs only fixed diagnostic tags, HTTP/ORA codes and database identity fields.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sys
+import time
+import uuid
+
+EXPECTED_PIN = '4d3c4a797ec21f910fe8b99c9c2d4858d715f000e70acd9d03c64fc980a759db'
+REQUIRED = ('ORACLE_ORDS_SCHEMA', 'ORACLE_ORDS_CLIENT_ID', 'ORACLE_ORDS_CLIENT_SECRET')
+TAGS = {'READ_FAILED','ORACLE_ERROR','RESPONSE_SHAPE','JOURNAL_BINDING','DP_CONFIG','DP_CONNECT',
+        'BUDGET_PAUSED','ORDS_AUTH_HTTP','ORDS_SQL_HTTP','ORDS_AUTH_TRANSPORT','ORDS_SQL_TRANSPORT',
+        'ORDS_AUTH_JSON','ORDS_SQL_JSON','ORDS_AUTH_SIZE','ORDS_SQL_SIZE','ORDS_TIMEOUT',
+        'ORDS_AUTH_TOKEN','ORDS_REQUEST','PARTIAL_READ','RESPONSE_ROW','READ_ONLY',
+        'AGENT_ORDS_CONFIGURATION_REQUIRED','EXACT_R6_CODE_ROOT_NOT_FOUND','R6_CODE_FILE_MISMATCH'}
+
+
+def error_codes(value):
+    return sorted(set(re.findall(r'ORA-\d{5}', str(value)[:65536])))[:8]
+
+
+def safe_error(exc):
+    tags, codes, http = set(), set(), set()
+    current, seen = exc, set()
+    for _ in range(5):
+        if current is None or id(current) in seen: break
+        seen.add(id(current))
+        # Inspect text for allowlisted tokens only; never emit the message itself.
+        text = str(current)[:65536]
+        tags.update(t for t in TAGS if re.search(r'\b'+t+r'\b', text))
+        codes.update(error_codes(text))
+        for token in re.findall(r'ORDS_(?:AUTH|SQL)_HTTP:\s*(\d{3})', text): http.add(int(token))
+        response = getattr(current, 'response', None)
+        status = getattr(response, 'status_code', None)
+        if type(status) is int and 100 <= status <= 599: http.add(status)
+        current = current.__cause__ or current.__context__
+    return {'exception_type': type(exc).__name__, 'tags': sorted(tags), 'oracle_codes': sorted(codes)[:8], 'http_status': sorted(http)}
+
+
+def safe_response(response):
+    body = response if isinstance(response, dict) else getattr(response, 'raw', None)
+    if not isinstance(body, dict): return {'shape':'NON_DICT_WRAPPER','oracle_codes':[]}
+    items = body.get('items')
+    shape = 'SINGLE_ITEM' if isinstance(items,list) and len(items)==1 else 'ITEMS_NOT_SINGLE'
+    codes = set()
+    for item in [body] + (items if isinstance(items,list) else []):
+        if not isinstance(item,dict): continue
+        number = str(item.get('errorCode',''))
+        if re.fullmatch(r'-?\d{1,5}',number) and int(number): codes.add('ORA-'+str(abs(int(number))).zfill(5))
+        for key in ('errorMessage','errorDetails'):
+            if isinstance(item.get(key),str): codes.update(error_codes(item[key]))
+    return {'shape':shape,'oracle_codes':sorted(codes)[:8],
+            'result_present':isinstance(items,list) and len(items)==1 and isinstance(items[0],dict) and 'result' in items[0],
+            'result_set_present':isinstance(items,list) and len(items)==1 and isinstance(items[0],dict) and 'resultSet' in items[0]}
+
+
+class Observer:
+    def __init__(self, client):
+        self.client, self.SQL_PATH, self.events = client, client.SQL_PATH, []
+
+    def request(self, method, path, json):
+        try:
+            result = self.client.request(method,path,json=json)
+        except Exception as exc:
+            self.events.append({'transport_error':safe_error(exc)})
+            raise
+        self.events.append(safe_response(result))
+        return result
+
+
+def run_checks(sql, agent, h, pin):
+    output = []
+    original = agent.connection
+    agent.connection = lambda *_args: sql
+    checks = [
+        ('DB_IDENTITY', lambda:sql.query("SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS SESSION_USER, "
+             "SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS CURRENT_SCHEMA, "
+             "SYS_CONTEXT('USERENV','DB_UNIQUE_NAME') AS DB_NAME FROM DUAL",limit=1)),
+        ('AGENT_SELECT', lambda:sql.query('SELECT JOB_ID FROM SIDDA.LGL_PIPE_RESULT_A WHERE 1=0',limit=1)),
+        ('R6_EXACT_PREFLIGHT', lambda:agent.preflight(h,pin)),
+    ]
+    try:
+        for name, action in checks:
+            before = len(sql.client.events)
+            try:
+                value = action()
+            except Exception as exc:
+                item = {'check':name,'status':'FAILED',**safe_error(exc)}
+            else:
+                item = {'check':name,'status':'PASS'}
+                if name=='DB_IDENTITY':
+                    if not isinstance(value,list) or len(value)!=1:
+                        item['status']='UNCONFIRMED'
+                    else:
+                        item['identity'] = {k:v if isinstance(v,str) and re.fullmatch(r'[A-Za-z0-9_$#.-]{1,128}',v)
+                            else 'NON_STANDARD_VALUE' for k,v in value[0].items() if k in ('SESSION_USER','CURRENT_SCHEMA','DB_NAME')}
+            item['response_metadata'] = sql.client.events[before:]
+            output.append(item)
+            if item['status'] != 'PASS':
+                break
+    finally:
+        agent.connection = original
+    return output
+
+
+def code_root(explicit):
+    candidates = [Path(explicit)] if explicit else [Path.cwd(),Path.home()/'DEV',Path.cwd().parent]
+    for candidate in candidates:
+        root = candidate.resolve()
+        path = root/'CODE_PINS.json'
+        if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==EXPECTED_PIN:
+            pins = json.loads(path.read_text())
+            for name,expected in pins['files'].items():
+                member = (root/name).resolve(strict=True)
+                if root not in member.parents or hashlib.sha256(member.read_bytes()).hexdigest()!=expected:
+                    raise ValueError('R6_CODE_FILE_MISMATCH')
+            return root
+    raise ValueError('EXACT_R6_CODE_ROOT_NOT_FOUND')
+
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--code-root')
+    args=parser.parse_args()
+    report={'format':'agent-r6-ords-diagnostic-v1','environment_scope':'This execution environment; compare its ORDS settings with the failing code-serving revision',
+            'python_version':sys.version.split()[0],
+            'expected_code_pin':EXPECTED_PIN,'real_DML_rows':0,'automatic_retries':0,'model_calls':0,
+            'configuration_present':{k:bool(os.environ.get(k,'').strip()) for k in REQUIRED},
+            'base_url_present':bool(os.environ.get('ORACLE_ORDS_BASE_URL','').strip() or os.environ.get('LLMOPS_ORDS_BASE_URL','').strip())}
+    try:
+        root=code_root(args.code_root)
+        report['code_root']=str(root)
+        sys.path[:0]=[str(root),str(root/'02_BACKEND')]
+        import agent_ords
+        directory=Path.cwd()/('r6-ords-diagnostic-'+time.strftime('%Y%m%dT%H%M%SZ',time.gmtime())+'-'+uuid.uuid4().hex[:6])
+        directory.mkdir(mode=0o700)
+        report['saved_report']=str(directory/'diagnostic.json')
+        h={'folder':directory,'id':uuid.uuid4().hex,'archives':{},'deadline':time.time()+180}
+        sql=agent_ords.connection(h,EXPECTED_PIN)
+        sql.max_calls=3
+        report['transport_class']=type(sql.client).__module__+'.'+type(sql.client).__name__
+        sql.client=Observer(sql.client)
+        report['checks']=run_checks(sql,agent_ords,h,EXPECTED_PIN)
+        report['sql_calls']=sql.calls
+        report['status']='PASS' if all(c['status']=='PASS' for c in report['checks']) else 'FAILED'
+    except Exception as exc:
+        report.update(status='SETUP_FAILED',error=safe_error(exc))
+    if report.get('saved_report'):
+        Path(report['saved_report']).write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+    print('ORDS_DIAGNOSTIC '+json.dumps(report,ensure_ascii=False,sort_keys=True))
+
+
+if __name__=='__main__':main()

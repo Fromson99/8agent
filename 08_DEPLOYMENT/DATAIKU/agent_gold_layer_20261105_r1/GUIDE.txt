@@ -1,0 +1,60 @@
+Gold 매핑의 Agent 기록 테이블 추가 SQL R1
+
+실행 위치
+기존 Gold 작업의 Dataiku SQL 노트북에서 Oracle 연결을 선택합니다.
+Python 노트북·Bash·GENOS 코드 교체는 사용하지 않습니다.
+SQL 대상은 현재 Gold 매핑에 고정된 SIDDA의 다음 네 테이블입니다.
+  LGL_AGT_BODY_A_1  : 4컬럼 / 기록 본문
+  LGL_AGT_REC_A_1   : 8컬럼 / 기록 키·연결
+  LGL_AGT_RUN_A_1   : 9컬럼 / 실행 상태
+  LGL_EXEC_ST_A_1   : 5컬럼 / 상태·변경 버전
+Gold 데이터의 owner 설정과 Agent owner SIDDA는 별도입니다.
+이번 SQL로 Gold 데이터 테이블이나 GENOS 매핑을 바꾸지 않습니다.
+
+첨부와 실행 순서
+AGENT_GOLD_SQL_20261105_R1.zip: 실행 SQL 14개만 들어 있습니다.
+AGENT_GOLD_SQL_RUN_R1.txt: 동일 SQL 전체를 번호별로 모은 텍스트입니다.
+ZIP을 풀어 필요한 SQL 파일의 내용을 복사하거나 TXT의 해당 번호 부분을 복사합니다.
+Dataiku SQL 노트북의 별도 Query마다 한 SQL문씩 실행합니다. TXT 전체를 한 Query에 넣지 않습니다.
+개별 SQL 파일은 끝 세미콜론·SQL*Plus 명령 없이 바로 실행하는 형식입니다.
+
+1. 00_CHECK_EXISTING.sql을 실행해 접속 계정·DB와 대상 객체를 확인합니다.
+   기존 객체가 있다면 먼저 12/13번으로 구조를 비교하고 해당 CREATE문은 제외합니다.
+   ALL_OBJECTS에 보이지 않는 경우에는 실제 부재인지 해당 연결의 조회 권한 문제인지 확인합니다.
+2. 미생성 테이블의 01~04_CREATE_*.sql을 번호순으로 각각 실행합니다.
+3. 미생성 인덱스의 05~11_CREATE_*.sql을 번호순으로 각각 실행합니다.
+4. 12_VERIFY_TABLES.sql을 실행합니다.
+   네 행 모두 COLUMNS_RESULT=PASS, PK_RESULT=PASS이어야 합니다.
+   ACTUAL_COLUMNS는 BODY4 / REC8 / RUN9 / STATE5, 합계26입니다.
+   MISMATCH_COLUMNS가 있으면 해당 이름과 실제 등록 구조를 확인합니다.
+5. 13_VERIFY_INDEXES.sql을 실행합니다.
+   인덱스7개 모두 STATUS=VALID, UNIQUENESS=NONUNIQUE를 확인합니다.
+   각 순서의 EXPECTED_COLUMN과 ACTUAL_COLUMN이 같아야 합니다.
+   시간 컬럼 STRT_DTTM/CHG_DTTM은 Oracle이 숨김 컬럼으로 만들므로
+   COLUMN_EXPRESSION이 각각 SYS_EXTRACT_UTC("STRT_DTTM"), SYS_EXTRACT_UTC("CHG_DTTM")인지 확인합니다.
+
+이미 존재하거나 중간에 실패한 경우
+CREATE는 기존 테이블이나 데이터를 덮어쓰지 않습니다. ORA-00955는 이미 존재한다는 뜻이며,
+12/13의 구조 확인 없이 전체 성공으로 처리하지 않습니다. DROP/ALTER로 맞추지 않습니다.
+앞서 성공한 DDL은 남으므로, 확인 후 미생성 SQL문부터 이어서 실행합니다.
+실패 원인이 권한이면 기존 SIDDA 객체 생성 담당 연결/계정으로 처리합니다.
+이 SQL에는 계정 생성·GRANT·권한 우회·Gold 수정·데이터 INSERT가 없습니다.
+
+서빙 확인
+Dataiku의 테이블 생성 성공과 GENOS ORDS 계정의 이용 가능 여부는 별도입니다.
+실제 ORDS 실행 계정에는 기존 정책에 따른 Agent 기록 조회·저장 권한이 필요합니다.
+완료 후 기존 GENOS 워크플로우 테스트 화면에서 새 요청으로 확인합니다.
+사용자 확인 설정은 GENOS_ORACLE_TABLE_MAPPING=gold입니다.
+이 SQL은 _A_1 테이블을 만듭니다. 이후 로그가 계속 _1 없는 AGT_BODY_A를 찾으면,
+같은 요청의 배포 리비전과 실제 매핑 적용을 확인해야 합니다.
+
+검증
+MAIN152 전달 ZIP의 Gold 코드 및 development_g19_1.json 중 Agent4 정의와 대조했습니다.
+로컬 Oracle 23.26.3의 격리 스키마에서 전달 SQL을 실행하고 원래 AgentRecords.preflight까지 통과했습니다.
+부분 생성, 중복 생성 거절·기존 행 보존, 컬럼·NULL·PK 이상 차단 등 19개 검사 통과.
+로컬 시험의 owner만 임시 스키마로 바꿨으며 실제 SIDDA/Gold 객체는 변경하지 않았습니다.
+Dataiku/GENOS 현장 실행·ORDS 계정 권한·질문 답변 성공은 아직 미확인입니다.
+
+검증 파일: VALIDATION.json
+첨부 해시: SHA256SUMS.txt
+Dataiku SQL 노트북 공식 안내: https://doc.dataiku.com/dss/latest/notebooks/sql-notebook.html

@@ -1,0 +1,8 @@
+{
+  "scope": "installer test fixture only",
+  "exception": "FileNotFoundError",
+  "reason": "Inherited R4 test looked for .git/genos-agent-return-r4/original instead of the R5 backup path",
+  "fix": "Use .git/genos-agent-ords-r5 in the installer test adapter",
+  "runtime_products_changed": false,
+  "followup": "installer-test02 PASS"
+}

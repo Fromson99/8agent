@@ -1,0 +1,279 @@
+{
+  "status": "SAMPLE_ZIP_TO_GOLD_LOCAL_PASS_FIELD_UNVERIFIED",
+  "created_utc": "2026-11-05T04:23:06.355263+00:00",
+  "user_confirmed_input": "Previously supplied LAW_SAMPLE_R2.zip and SAMPLE_SUPPORT_R2.zip, unchanged bytes",
+  "default_entrypoint": "DATAIKU_SETUP_R6.txt; CODE_FOLDER_ID selects the folder containing code/data/support ZIPs",
+  "pipeline": "Dataiku existing ZIP -> GENOS received-offset upload -> native processing -> ORDS Agent -> Dataiku Gold",
+  "integration": {
+    "status": "PASS",
+    "checks": [
+      "exact_R6_notebook_installs_data_ZIP_to_PROD_Gold_flow",
+      "repeat_install_three_recipes_one_disabled_scenario",
+      "existing_LEGAL_PIPELINE_variable_pair_supported",
+      "incomplete_credential_pair_rejected",
+      "GENOS_health_ORDS_Agent_configuration",
+      "Dataiku_existing_ZIP_upload_ACK_loss_resumes_received_offset",
+      "exact_public_law_ZIP_async_compute_and_ORDS_Agent_batch",
+      "duplicate_submit_one_RUN",
+      "local_ZIP_byte_identical_and_original_XML_hash",
+      "ORDS_commit_ACK_loss_no_READY_no_automatic_retransmit",
+      "explicit_PUBLISH_same_saved_result_without_recompute_or_HTTP_READ",
+      "SIDDA_READY_readback_and_repeat_wait",
+      "ten_parts_three_ORDS_writes_exact_byte_restore",
+      "repeat_batch_preserves_row_count",
+      "conflicting_body_rollback_preserves_original",
+      "changed_source_has_no_READY",
+      "cancelled_write_sends_no_request",
+      "GENOS_Agent_writer_has_no_Gold_privilege",
+      "PROD_counts_publications_duplicate_resume_without_GENOS",
+      "changed_binding_rejected",
+      "corrupt_chunk_rejected",
+      "partial_job_invisible",
+      "changed_Dataiku_ZIP_rejected_before_new_GENOS_request"
+    ],
+    "diagnostics": {
+      "service_operations": [
+        "HEALTH",
+        "OPEN",
+        "PUT",
+        "POLL",
+        "PUT",
+        "RUN",
+        "POLL",
+        "POLL",
+        "POLL",
+        "POLL",
+        "POLL",
+        "PUBLISH",
+        "POLL"
+      ],
+      "PROD": {
+        "status": "PROD_LOADED",
+        "target_layer": "Gold",
+        "job": "53343709bf5b45699dbab2b8a4f2ee7c",
+        "input_documents": 1,
+        "archive": {
+          "bytes": 431909,
+          "parts": 6,
+          "sha256": "17e73ef4d76c5eae52a96187f18be092318bd15371b2ddad1f6574d503dc8893"
+        },
+        "coverage": {
+          "schema_version": "dataiku-partial-structure-v1",
+          "coverage": "COMPLETE",
+          "selected_count": 1,
+          "omitted_count": 0,
+          "attempted_count": 1,
+          "original_structure_ok": true,
+          "bypassed_count": 0,
+          "failed_count": 0,
+          "preprocessor_enabled": false
+        },
+        "counts": {
+          "DOC_VER": 1,
+          "DOC_UNIT": 290,
+          "DOC_BLK": 356,
+          "SRCH_ROW": 8698,
+          "VCTR_ITEM": 65
+        },
+        "query_release_id": "a01fcf1d89a9df9a9cf65dd97a1722713163b8565099beaa2a237e458cb179d0",
+        "source_release_id": "92374a9218a3f3ed0c078fece759134b35108d3b8242c85cef031b9c4440aa47",
+        "vector_publication_id": "3e7365a8d51623f18576f674cdfe3ed0fd63e8b7e827bf1f512d3eb16d211ab7",
+        "checks": true
+      },
+      "ords_requests": [
+        {
+          "write": false,
+          "binds": 0
+        },
+        {
+          "write": true,
+          "binds": 196
+        },
+        {
+          "write": true,
+          "binds": 196
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 36
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 36
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 260
+        }
+      ],
+      "installed_recipe_names": [
+        "LGL_AGENT_R6_PROD_01_SUBMIT",
+        "LGL_AGENT_R6_PROD_02_WAIT_AGENT",
+        "LGL_AGENT_R6_PROD_03_LOAD"
+      ],
+      "oracle_connections": [
+        "AIDP"
+      ],
+      "GENOS_env_has_ORDS": true
+    },
+    "native_python_and_recipe_sources_same": true,
+    "release_pin": "4d3c4a797ec21f910fe8b99c9c2d4858d715f000e70acd9d03c64fc980a759db",
+    "fixture_pin": "4d3c4a797ec21f910fe8b99c9c2d4858d715f000e70acd9d03c64fc980a759db",
+    "fixture_glossary_policy_rebound": false,
+    "GENOS_Oracle_access": true,
+    "ORDS_environment": true,
+    "oracle": "23.26.3.0.0",
+    "field_execution": false,
+    "dataiku_sdk": "local API fixture",
+    "ords_sdk": "request adapter executing real Oracle SQL",
+    "embedding": "local deterministic substitute"
+  },
+  "zip_input_contracts": {
+    "status": "PASS",
+    "cases": [
+      "multi_megabyte_existing_ZIP_exact_byte_copy",
+      "same_trial_same_ZIP_reused",
+      "changed_ZIP_does_not_replace_saved_original",
+      "invalid_or_non_ZIP_source_name_rejected",
+      "ordinary_RAW_ZIP_unpacked_only_in_GENOS_with_exact_document_bytes",
+      "ordinary_ZIP_input_audit_and_repeat_identity",
+      "existing_R4_data_transport_ZIP_supported_unchanged",
+      "traversal_blocked_before_extraction",
+      "ZIP_symlink_blocked",
+      "duplicate_canonical_RAW_path_blocked",
+      "orphan_sidecar_blocked"
+    ]
+  },
+  "installer": {
+    "reproduced": "OCCUPIED_NEW_CHECKOUT:02_BACKEND/lawrag/pipeline/oracle_full_package.py",
+    "previous_fixture": "GENOS_EXISTING_NFS_20261029_R1.zip",
+    "archive_sha256": "e69b97218141705bda9a47350aa5b0b7a7fdc31c98199794427a5e8710c77fec",
+    "installer_sha256": "68915af9be130a1e533a24daf8f42f0068a579433ad6b23b1d97e99eb474f914",
+    "verified_files": 1286,
+    "local_remote_commit": "22eff78c9c74dc4817d00a1e615c5e8dd757758c",
+    "field_deployment": false,
+    "cases": [
+      "same TRANSFER command and HOME/DEV symlink",
+      "old version and untracked collision backed up",
+      "missing package member installed",
+      "all committed blobs equal ZIP",
+      "only pipeline remote advanced",
+      "user index, private commit and other work preserved",
+      "idempotent retry",
+      "RAG origin rejected",
+      "post-backup edit preserved",
+      "working-file rollback and reapply"
+    ]
+  },
+  "archive_integrity_and_syntax": {
+    "GENOS_AGENT_ZIP_R6.zip": {
+      "member_hashes": 1285,
+      "python_3_11_files": 880
+    },
+    "DATAIKU_ZIP_AGENT_GOLD_FLOW_R6.zip": {
+      "member_hashes": 103,
+      "python_3_11_files": 88
+    }
+  },
+  "first_fixture_failure": {
+    "scope": "upload acknowledgement-loss test fixture",
+    "reason": "Expected the injected error text, but the existing Wire intentionally returns only its hashed public diagnostic",
+    "fix": "Assert the exact GENOS_REPLY digest; production code and ZIP hashes unchanged",
+    "attempt": "test01",
+    "followup": "test02 PASS"
+  },
+  "raw_logs": [
+    {
+      "path": "local_checks/integration-test01.log.gz",
+      "uncompressed_sha256": "44a2f4e282019629ded51653d4ad17c455422701e2d084f471206cb4d38c6b9f",
+      "gzip_sha256": "fa8e8fa8d0f3066ef44c9c564a7cede03b8d7762bcdcf2c074a74ba97370970b"
+    },
+    {
+      "path": "local_checks/integration-test02.log.gz",
+      "uncompressed_sha256": "aaa4fd9465a5c9380c74a65862f959812bb64b4a6766f052b430b235fda02cb0",
+      "gzip_sha256": "ce7cf636a3215770047ce31b578734788a4cf87eafa950b9741c9b5372d6a33d"
+    }
+  ],
+  "release": {
+    "actual_checkout_commit": null,
+    "agent_table": "SIDDA.LGL_PIPE_RESULT_A",
+    "code_pin": "4d3c4a797ec21f910fe8b99c9c2d4858d715f000e70acd9d03c64fc980a759db",
+    "code_zip": "e69b97218141705bda9a47350aa5b0b7a7fdc31c98199794427a5e8710c77fec",
+    "data_generation": "per-job Dataiku data ZIP and support ZIP digests",
+    "database_writer": "GENOS ORDS",
+    "dataiku_recompress": false,
+    "field_revision": null,
+    "flow_files": 104,
+    "flow_zip": "5201fb6d85eb627849187a8224325105a33e365bf5b97b7669833872aa4d7e39",
+    "gold_writer": "Dataiku AIDP",
+    "input_mode": "ZIP",
+    "parent": "agent_layer_ords_20261105_r5",
+    "pipeline_sha256": "7b4b027efb233872c69fbf096a18e83d00ff8b284d864a33a90daa3671fa2ded",
+    "protocol": "genos-agent-zip-v1",
+    "sample": {
+      "document": "01_DATA/RAW/external/sample_team/law/중소기업기본법/중소기업기본법 본문.xml",
+      "document_sha256": "8f93eda174f029746665892b6e8c0f804c2196087d7345ed903db64053621e98",
+      "raw": {
+        "bytes": 16437,
+        "file": "LAW_SAMPLE_R2.zip",
+        "sha256": "2871a145d2cdac71ec15087b0bd92f5ac989bd1945e8a8333db4cf755c14f7bb"
+      },
+      "support": {
+        "bytes": 7627,
+        "file": "SAMPLE_SUPPORT_R2.zip",
+        "sha256": "a8cbad59c476ef19b4c453f81c914505e23ecb20663db1e9cbb14adae98ebcf4"
+      }
+    },
+    "server_files": 1286
+  },
+  "validated_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-zip-r6-test02/server",
+  "validated_generations": [
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-zip-r6-test02/work/agent-layer-zip-r6/LOCAL_TEST/PROD/trial-001/load-98eaa76cad65cfbd32b6f47a/restored/generation",
+      "manifest_sha256": "23b2ebb637a6ef6093470a4760a84067403ee1a3c3c00500ef93719462fff90c"
+    }
+  ],
+  "fixtures": {
+    "ORDS": "SDK request adapter executing actual Oracle SQL; no actual ORDS HTTP server",
+    "Dataiku": "local managed-folder, project and connection API fixtures",
+    "embedding": "deterministic 1024-dimensional fixture; no real model call",
+    "target": "disposable STG_GOLD schema; exact original public law sample"
+  },
+  "field": {
+    "GENOS_push": false,
+    "revision": null,
+    "actual_checkout_commit": null,
+    "ORDS_endpoint": false,
+    "Dataiku_execution": false,
+    "actual_embedding": false,
+    "production_data": false
+  },
+  "selected_MAIN_changed": false,
+  "historical_R4_R5_preserved": true,
+  "disposable_test_database_removed": true,
+  "performance": "Not measured; no throughput or latency improvement claim"
+}

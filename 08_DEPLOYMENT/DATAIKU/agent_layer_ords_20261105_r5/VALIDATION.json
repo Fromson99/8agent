@@ -1,0 +1,286 @@
+{
+  "status": "LOCAL_CONTRACTS_PASS_FIELD_UNVERIFIED",
+  "created_utc": "2026-11-05T04:07:30.238707+00:00",
+  "protocol": "genos-agent-ords-v1",
+  "integration": {
+    "status": "PASS",
+    "checks": [
+      "exact_R5_notebook_installs_PROD_LOOSE_Gold_flow",
+      "repeat_install_three_recipes_one_disabled_scenario",
+      "existing_LEGAL_PIPELINE_variable_pair_supported",
+      "incomplete_credential_pair_rejected",
+      "GENOS_health_ORDS_Agent_configuration",
+      "exact_public_law_ZIP_async_compute_and_ORDS_Agent_batch",
+      "duplicate_submit_one_RUN",
+      "local_ZIP_byte_identical_and_original_XML_hash",
+      "ORDS_commit_ACK_loss_no_READY_no_automatic_retransmit",
+      "explicit_PUBLISH_same_saved_result_without_recompute_or_HTTP_READ",
+      "SIDDA_READY_readback_and_repeat_wait",
+      "ten_parts_three_ORDS_writes_exact_byte_restore",
+      "repeat_batch_preserves_row_count",
+      "conflicting_body_rollback_preserves_original",
+      "changed_source_has_no_READY",
+      "cancelled_write_sends_no_request",
+      "GENOS_Agent_writer_has_no_Gold_privilege",
+      "DEV_counts_publications_duplicate_resume_without_GENOS",
+      "PROD_counts_publications_duplicate_resume_without_GENOS",
+      "changed_binding_rejected",
+      "corrupt_chunk_rejected",
+      "partial_job_invisible",
+      "changed_uploaded_sample_ZIP_rejected"
+    ],
+    "diagnostics": {
+      "service_operations": [
+        "HEALTH",
+        "OPEN",
+        "PUT",
+        "PUT",
+        "RUN",
+        "POLL",
+        "POLL",
+        "POLL",
+        "POLL",
+        "POLL",
+        "PUBLISH",
+        "POLL"
+      ],
+      "DEV": {
+        "status": "DEV_LOADED",
+        "target_layer": "Silver",
+        "job": "04dac9d609414635b7bc9124edf88804",
+        "input_documents": 1,
+        "archive": {
+          "bytes": 431840,
+          "parts": 6,
+          "sha256": "e07ddd9aff4ff2261b38cdf3465485b66d712c2a4a35697b073ac5484b6d8bca"
+        },
+        "coverage": {
+          "schema_version": "dataiku-partial-structure-v1",
+          "coverage": "COMPLETE",
+          "selected_count": 1,
+          "omitted_count": 0,
+          "attempted_count": 1,
+          "original_structure_ok": true,
+          "bypassed_count": 0,
+          "failed_count": 0,
+          "preprocessor_enabled": false
+        },
+        "counts": {
+          "DOC_VER": 1,
+          "DOC_UNIT": 290,
+          "DOC_BLK": 356,
+          "SRCH_ROW": 8698,
+          "VCTR_ITEM": 65
+        },
+        "query_release_id": "b5b58ed03064f3042aa6eb5d65ecca5f0b28a3e5754935522aefaafa795fed7d",
+        "source_release_id": "6302a3ddf19e57c514d0b7fe6cf4f1b4edb139ac4324d511dbcf37c41464a9e7",
+        "vector_publication_id": "9b5fb80fef06a59960f62f8fc47a44766194ab2dff380f8bb1d5978b39c9a7f8",
+        "checks": true
+      },
+      "PROD": {
+        "status": "PROD_LOADED",
+        "target_layer": "Gold",
+        "job": "04dac9d609414635b7bc9124edf88804",
+        "input_documents": 1,
+        "archive": {
+          "bytes": 431840,
+          "parts": 6,
+          "sha256": "e07ddd9aff4ff2261b38cdf3465485b66d712c2a4a35697b073ac5484b6d8bca"
+        },
+        "coverage": {
+          "schema_version": "dataiku-partial-structure-v1",
+          "coverage": "COMPLETE",
+          "selected_count": 1,
+          "omitted_count": 0,
+          "attempted_count": 1,
+          "original_structure_ok": true,
+          "bypassed_count": 0,
+          "failed_count": 0,
+          "preprocessor_enabled": false
+        },
+        "counts": {
+          "DOC_VER": 1,
+          "DOC_UNIT": 290,
+          "DOC_BLK": 356,
+          "SRCH_ROW": 8698,
+          "VCTR_ITEM": 65
+        },
+        "query_release_id": "b5b58ed03064f3042aa6eb5d65ecca5f0b28a3e5754935522aefaafa795fed7d",
+        "source_release_id": "6302a3ddf19e57c514d0b7fe6cf4f1b4edb139ac4324d511dbcf37c41464a9e7",
+        "vector_publication_id": "9b5fb80fef06a59960f62f8fc47a44766194ab2dff380f8bb1d5978b39c9a7f8",
+        "checks": true
+      },
+      "ords_requests": [
+        {
+          "write": false,
+          "binds": 0
+        },
+        {
+          "write": true,
+          "binds": 196
+        },
+        {
+          "write": true,
+          "binds": 196
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 36
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 36
+        },
+        {
+          "write": true,
+          "binds": 4
+        },
+        {
+          "write": true,
+          "binds": 260
+        },
+        {
+          "write": true,
+          "binds": 260
+        }
+      ],
+      "installed_recipe_names": [
+        "LGL_AGENT_R5_DEV_01_SUBMIT",
+        "LGL_AGENT_R5_DEV_02_WAIT_AGENT",
+        "LGL_AGENT_R5_DEV_03_LOAD",
+        "LGL_AGENT_R5_PROD_01_SUBMIT",
+        "LGL_AGENT_R5_PROD_02_WAIT_AGENT",
+        "LGL_AGENT_R5_PROD_03_LOAD"
+      ],
+      "oracle_connections": [
+        "AIDP"
+      ],
+      "GENOS_env_has_ORDS": true
+    },
+    "native_python_and_recipe_sources_same": true,
+    "release_pin": "1138279c6ecdf2ec9af0cd57760077c2ed6e63569fc70a81e32cd360297951f9",
+    "fixture_pin": "1138279c6ecdf2ec9af0cd57760077c2ed6e63569fc70a81e32cd360297951f9",
+    "fixture_glossary_policy_rebound": false,
+    "GENOS_Oracle_access": true,
+    "ORDS_environment": true,
+    "oracle": "23.26.3.0.0",
+    "field_execution": false,
+    "dataiku_sdk": "local API fixture",
+    "ords_sdk": "request adapter executing real Oracle SQL",
+    "embedding": "local deterministic substitute"
+  },
+  "installer": {
+    "reproduced": "OCCUPIED_NEW_CHECKOUT:02_BACKEND/lawrag/pipeline/oracle_full_package.py",
+    "previous_fixture": "GENOS_EXISTING_NFS_20261029_R1.zip",
+    "archive_sha256": "dd950062412ee948fab733b5920d62cb29486898fe38c97fa9c971590ad33eec",
+    "installer_sha256": "47432685f2e123fd44db9cc43dd4925af6fd2c27ede6bbda2290f53011d1a434",
+    "verified_files": 1285,
+    "local_remote_commit": "4748b3f1c37d1167499903f8a13dd688ff8d89ff",
+    "field_deployment": false,
+    "cases": [
+      "same TRANSFER command and HOME/DEV symlink",
+      "old version and untracked collision backed up",
+      "missing package member installed",
+      "all committed blobs equal ZIP",
+      "only pipeline remote advanced",
+      "user index, private commit and other work preserved",
+      "idempotent retry",
+      "RAG origin rejected",
+      "post-backup edit preserved",
+      "working-file rollback and reapply"
+    ]
+  },
+  "archive_integrity_and_syntax": {
+    "GENOS_AGENT_ORDS_R5.zip": {
+      "member_hashes": 1284,
+      "python_3_11_files": 879
+    },
+    "DATAIKU_AGENT_GOLD_FLOW_R5.zip": {
+      "member_hashes": 102,
+      "python_3_11_files": 87
+    }
+  },
+  "source_review": "R4 SOURCE_REVIEW.json retained; parser/worker/native target loader unchanged",
+  "first_installer_fixture_failure": {
+    "scope": "installer test fixture only",
+    "exception": "FileNotFoundError",
+    "reason": "Inherited R4 test looked for .git/genos-agent-return-r4/original instead of the R5 backup path",
+    "fix": "Use .git/genos-agent-ords-r5 in the installer test adapter",
+    "runtime_products_changed": false,
+    "followup": "installer-test02 PASS"
+  },
+  "validated_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-ords-r5-test01/server",
+  "validated_generations": [
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-ords-r5-test01/work/agent-layer-ords-r5/LOCAL_TEST/DEV/trial-001/load-d9504716fb6e9f0a98aff3c9/restored/generation",
+      "manifest_sha256": "c98e8997e6e266b5b00620eeb634db06828ac992dde99a5f9d0282af48b0debc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-ords-r5-test01/work/agent-layer-ords-r5/LOCAL_TEST/PROD/trial-001/load-8fdc88a5cc92b65b41a7a763/restored/generation",
+      "manifest_sha256": "c98e8997e6e266b5b00620eeb634db06828ac992dde99a5f9d0282af48b0debc"
+    }
+  ],
+  "release": {
+    "actual_checkout_commit": null,
+    "agent_table": "SIDDA.LGL_PIPE_RESULT_A",
+    "code_pin": "1138279c6ecdf2ec9af0cd57760077c2ed6e63569fc70a81e32cd360297951f9",
+    "code_zip": "dd950062412ee948fab733b5920d62cb29486898fe38c97fa9c971590ad33eec",
+    "data_generation": "per-job raw/support digest binding",
+    "database_writer": "GENOS ORDS",
+    "field_revision": null,
+    "flow_files": 103,
+    "flow_zip": "092d06e0f7bc5b53574e72d45e3dcd286f74b366416a91cd14440be0f637e9a4",
+    "gold_owner": "SIDDS (explicit PARAMS)",
+    "gold_writer": "Dataiku AIDP",
+    "parent": "agent_layer_return_20261105_r4",
+    "pipeline_sha256": "e6a8d5ec98a6e833bf7d5465d25fc99c024725c1e9615c0b25a26760a398cc0f",
+    "pipeline_spec": "PIPELINE.json",
+    "protocol": "genos-agent-ords-v1",
+    "server_files": 1285
+  },
+  "integration_log": {
+    "path": "local_checks/integration.log.gz",
+    "uncompressed_sha256": "f0c0ab4802134e43963e5a4a7d4cb3cbce18fa6cb0e78f89ad87234d28014c5b",
+    "gzip_sha256": "dccb51482672149f41051113430101892304e3fdc26aeeb12e55ee3a1c3ecc3c"
+  },
+  "fixtures": {
+    "native_worker": "exact delivered code; no fixture policy rebinding",
+    "ords": "SDK request adapter executes real Oracle SQL; actual ORDS server untested",
+    "dataiku": "local API fixture",
+    "embedding": "deterministic 1024-dimensional fixture",
+    "Gold_data": "Native public-law sample archive in disposable STG_GOLD schema; no production data"
+  },
+  "field": {
+    "GENOS_push": false,
+    "serving_revision": null,
+    "actual_checkout_commit": null,
+    "ORDS_endpoint": false,
+    "Dataiku_Flow_execution": false,
+    "production_data": false,
+    "actual_embedding": false
+  },
+  "unchanged": {
+    "R4_archives": true,
+    "selected_local_MAIN": true,
+    "RAG_code": true,
+    "existing_pipeline_declarations": true
+  },
+  "performance": "Not measured; no throughput or latency improvement claim",
+  "disposable_test_database_removed": true
+}

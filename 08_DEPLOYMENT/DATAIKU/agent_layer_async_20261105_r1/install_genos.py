@@ -1,0 +1,59 @@
+"""Run from TRANSFER. Copy only into the operator's explicitly selected new Git checkout."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import zipfile
+
+ZIP = 'GENOS_AGENT_ASYNC_R1.zip'
+EXPECTED = '@@ARCHIVE_SHA@@'
+
+
+def install(action,checkout):
+    root=checkout.resolve(strict=True)
+    git=Path(subprocess.check_output(['git','-C',str(root),'rev-parse','--show-toplevel'],text=True).strip())
+    if root!=git.resolve():
+        raise ValueError('SELECT_NEW_CHECKOUT_ROOT')
+    path=Path.cwd()/ZIP
+    if hashlib.sha256(path.read_bytes()).hexdigest()!=EXPECTED:
+        raise ValueError('SERVER_ZIP_HASH')
+    with zipfile.ZipFile(path) as z:
+        raw=z.read('CODE_PINS.json')
+        files=dict(json.loads(raw)['files'],**{'CODE_PINS.json':hashlib.sha256(raw).hexdigest()})
+        if set(files)!=set(z.namelist()) or len(files)!=len(z.infolist()):
+            raise ValueError('PACKAGE_MEMBERS')
+        for name,sha in files.items():
+            dest=root/name
+            if (root not in dest.resolve().parents or any(p.is_symlink() for p in [dest,*dest.parents]) or
+                    hashlib.sha256(z.read(name)).hexdigest()!=sha):
+                raise ValueError('INVALID_MEMBER:'+name)
+            if dest.exists() and (not dest.is_file() or hashlib.sha256(dest.read_bytes()).hexdigest()!=sha):
+                raise ValueError('OCCUPIED_NEW_CHECKOUT:'+name)
+            if action=='verify' and not dest.is_file():
+                raise ValueError('CHECKOUT_MISSING:'+name)
+        if action=='apply':
+            for name in files:
+                dest=root/name
+                if dest.is_file():
+                    continue
+                dest.parent.mkdir(parents=True,exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=dest.parent,delete=False) as f:
+                    f.write(z.read(name))
+                try:
+                    os.link(f.name,dest)
+                    os.chmod(dest,0o644)
+                finally:
+                    os.unlink(f.name)
+            install('verify',checkout)
+    print(action,root,len(files),'server_pin',files['CODE_PINS.json'])
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('action',choices=['check','apply','verify'])
+    parser.add_argument('checkout',type=Path)
+    a=parser.parse_args()
+    install(a.action,a.checkout)

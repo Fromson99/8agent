@@ -1,0 +1,139 @@
+{
+  "status": "PASS",
+  "protocol": "dataiku-agent-return-v1",
+  "integration": {
+    "status": "PASS",
+    "checks": [
+      "exact_notebook_folder_id_only_created_SIDDA_with_AIDP_PIDD2APP",
+      "repeat_install_three_recipes_one_disabled_scenario",
+      "existing_LEGAL_PIPELINE_variable_pair_supported",
+      "incomplete_credential_pair_rejected",
+      "GENOS_health_no_Oracle_access",
+      "exact_public_law_ZIP_async_compute_and_HTTP_result_READ",
+      "duplicate_submit_one_RUN",
+      "local_ZIP_byte_identical_and_original_XML_hash",
+      "DSS_AIDP_commit_ACK_loss_invisible_until_READY",
+      "DSS_resume_from_saved_result_without_GENOS_or_duplicate_compute",
+      "SIDDA_READY_readback_and_repeat_wait",
+      "DEV_counts_publications_duplicate_resume_without_GENOS",
+      "changed_binding_rejected",
+      "corrupt_chunk_rejected",
+      "partial_job_invisible",
+      "changed_uploaded_sample_ZIP_rejected"
+    ],
+    "diagnostics": {
+      "service_operations": [
+        "HEALTH",
+        "OPEN",
+        "PUT",
+        "PUT",
+        "RUN",
+        "POLL",
+        "POLL",
+        "POLL",
+        "POLL",
+        "READ"
+      ],
+      "DEV": {
+        "status": "DEV_LOADED",
+        "target_layer": "Silver",
+        "job": "b29cb4dd19d44a07b6d5146f545fe868",
+        "input_documents": 1,
+        "archive": {
+          "bytes": 431762,
+          "parts": 6,
+          "sha256": "ab61ac17c9723dcf898f10f839bc249ab30e54921fe18af6b81f3cf4d9845e00"
+        },
+        "coverage": {
+          "schema_version": "dataiku-partial-structure-v1",
+          "coverage": "COMPLETE",
+          "selected_count": 1,
+          "omitted_count": 0,
+          "attempted_count": 1,
+          "original_structure_ok": true,
+          "bypassed_count": 0,
+          "failed_count": 0,
+          "preprocessor_enabled": false
+        },
+        "counts": {
+          "DOC_VER": 1,
+          "DOC_UNIT": 290,
+          "DOC_BLK": 356,
+          "SRCH_ROW": 8698,
+          "VCTR_ITEM": 65
+        },
+        "query_release_id": "81030f5dddfbe4c1cb9fb3765f7ee133555b2d5a9f70f359e79079a6bcaa6122",
+        "source_release_id": "c4d656b9d7962210ebce2c940d414376d378c7fc09553e35aa90d42d2a1e1bef",
+        "vector_publication_id": "a9ad6e04f0d2e77f1789027d58f4624da231a18377d9b00383816c5fd083dcdc",
+        "checks": true
+      },
+      "installed_recipe_names": [
+        "LGL_AGENT_R4_DEV_01_SUBMIT",
+        "LGL_AGENT_R4_DEV_02_WAIT_AGENT",
+        "LGL_AGENT_R4_DEV_03_LOAD"
+      ],
+      "oracle_connections": [
+        "AIDP"
+      ],
+      "GENOS_env_has_ORDS": false
+    },
+    "native_python_and_recipe_sources_same": true,
+    "release_pin": "edf50a1925b58bf9148fd9f74b1e766c15f465f2bb25427d010b7d7c8ce41d8e",
+    "fixture_pin": "edf50a1925b58bf9148fd9f74b1e766c15f465f2bb25427d010b7d7c8ce41d8e",
+    "fixture_glossary_policy_rebound": false,
+    "GENOS_Oracle_access": false,
+    "ORDS_environment": false,
+    "oracle": "23.26.3.0.0",
+    "field_execution": false,
+    "dataiku_sdk": "local API fixture",
+    "ords_sdk": "forbidden trap, never called",
+    "embedding": "local deterministic substitute"
+  },
+  "installer": {
+    "reproduced": "OCCUPIED_NEW_CHECKOUT:02_BACKEND/lawrag/pipeline/oracle_full_package.py",
+    "previous_fixture": "GENOS_EXISTING_NFS_20261029_R1.zip",
+    "archive_sha256": "0488bd8c0546217f916815250a87cbb0328f0cc74a5a6353371711ff1e00e8af",
+    "installer_sha256": "565f258fde64cfec8fcfb28cfcbf5693f41eb920896677d7a286244fc06a5709",
+    "verified_files": 1284,
+    "local_remote_commit": "aa3f2ae6d5b2f7ceb8dfbef62ad157ea3f27d05d",
+    "field_deployment": false,
+    "cases": [
+      "same TRANSFER command and HOME/DEV symlink",
+      "old version and untracked collision backed up",
+      "missing package member installed",
+      "all committed blobs equal ZIP",
+      "only pipeline remote advanced",
+      "user index, private commit and other work preserved",
+      "idempotent retry",
+      "RAG origin rejected",
+      "post-backup edit preserved",
+      "working-file rollback and reapply"
+    ]
+  },
+  "result_transfer": {
+    "status": "PASS",
+    "cases": [
+      "partial_download_resumes_exact_offset",
+      "completed_download_reused_without_READ",
+      "bad_chunk_digest_rejected_before_publish",
+      "whole_result_digest_rejected_before_publish",
+      "original_deadline_blocks_new_READ"
+    ]
+  },
+  "prior_failure": {
+    "path": "08_DEPLOYMENT/DATAIKU/agent_layer_return_20261105_r4/local_checks/agent-return-r4-test01.log",
+    "reason": "Fixture PIDD2APP lacked CREATE ANY INDEX for SIDDA primary key creation. Added only in disposable fixture grants; delivered code unchanged."
+  },
+  "source_review": "08_DEPLOYMENT/DATAIKU/agent_layer_return_20261105_r4/SOURCE_REVIEW.json",
+  "final_zip_pin": "edf50a1925b58bf9148fd9f74b1e766c15f465f2bb25427d010b7d7c8ce41d8e",
+  "validated_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-return-r4-test02/server",
+  "data_generation": "per-job uploaded sample snapshot, bound by raw/support hashes",
+  "field": {
+    "GENOS_push": false,
+    "serving_revision": null,
+    "actual_checkout_commit": null,
+    "Oracle": false,
+    "Dataiku_Flow_execution": false,
+    "actual_embedding": false
+  }
+}

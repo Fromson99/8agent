@@ -1,0 +1,48 @@
+SIDDA Agent 기록 테이블 — 접미사 _1 없는 SQL R1
+
+대상 테이블
+  SIDDA.LGL_AGT_BODY_A  : 4컬럼
+  SIDDA.LGL_AGT_REC_A   : 8컬럼
+  SIDDA.LGL_AGT_RUN_A   : 9컬럼
+  SIDDA.LGL_EXEC_ST_A   : 5컬럼
+총 4테이블·26컬럼·조회 인덱스 7개입니다.
+기존 전달 SQL에서 테이블·제약·인덱스 이름의 _A_1만 _A로 변경했습니다.
+컬럼명·타입·NULL 허용·기본키·CHECK 조건은 그대로입니다.
+
+사용 파일
+  SIDDA_AGENT_NO1_SQL_20261105_R1.zip : 개별 SQL 14개
+  SIDDA_AGENT_NO1_RUN_R1.txt         : 같은 SQL 전체를 번호별로 수록
+
+실행 위치와 순서
+Dataiku SQL 노트북에서 기존 Oracle 연결을 선택합니다.
+각 번호의 SQL 한 문장씩 별도 Query에서 실행합니다.
+TXT 전체를 한 Query에 붙이지 않습니다. Python/Bash 실행 파일이 아닙니다.
+
+1. 00_CHECK_EXISTING.sql로 접속 계정·DB·대상 객체를 확인합니다.
+   ALL_OBJECTS에 안 보이면 실제 부재 또는 해당 연결의 조회 권한 문제를 확인합니다.
+2. 이미 있는 테이블은 12_VERIFY_TABLES.sql로 먼저 구조를 비교합니다.
+   없는 테이블의 01~04 CREATE만 실행합니다.
+3. 기존 인덱스는 13_VERIFY_INDEXES.sql로 확인하고 없는 인덱스의 05~11만 실행합니다.
+4. 12_VERIFY_TABLES.sql에서 네 행 모두 COLUMNS_RESULT=PASS, PK_RESULT=PASS인지 확인합니다.
+   ACTUAL_COLUMNS는 BODY=4, REC=8, RUN=9, STATE=5입니다.
+5. 13_VERIFY_INDEXES.sql에서 인덱스 7개가 STATUS=VALID, UNIQUENESS=NONUNIQUE인지 확인합니다.
+   EXPECTED_COLUMN과 ACTUAL_COLUMN이 일치해야 합니다.
+   STRT_DTTM/CHG_DTTM은 Oracle 내부 숨김 컬럼이 표시될 수 있으므로
+   COLUMN_EXPRESSION이 각각 SYS_EXTRACT_UTC("STRT_DTTM"), SYS_EXTRACT_UTC("CHG_DTTM")인지 확인합니다.
+
+부분 실행과 기존 객체
+CREATE 성공분은 남습니다. 이미 성공한 CREATE는 빼고 나머지를 실행합니다.
+ORA-00955는 같은 이름의 객체가 있다는 뜻이며 구조 검사 성공을 대신하지 않습니다.
+기존 객체의 DROP/ALTER/TRUNCATE나 자동 GRANT는 없습니다.
+기존 _A_1 테이블·내용 및 Gold 데이터 테이블은 이 SQL의 변경 대상이 아닙니다.
+이 SQL은 신규 빈 테이블을 만듭니다. _A_1의 기존 기록을 복사하지 않습니다.
+
+적용 범위
+사용자가 제공한 AGENT_SCHEMA 오류의 SIDDA.LGL_AGT_BODY_A 이름에 맞춘 생성 SQL입니다.
+MAIN142의 정상 gold 매핑은 여전히 SIDDA.*_A_1을 사용합니다.
+이 SQL은 GENOS 매핑·환경변수·배포 리비전을 변경하지 않으며 Gold 연결 해결을 보장하지 않습니다.
+생성 완료와 실제 ORDS 실행 계정의 조회·저장 권한은 별도입니다.
+현장 실행 및 질문 성공 여부는 미확인입니다.
+
+검증 결과: VALIDATION.json
+파일 해시: SHA256SUMS.txt

@@ -1,0 +1,315 @@
+"""Delivered code, native sample worker, ORDS SQL and Agent-to-Gold integration.
+
+Uses a disposable Oracle, loopback HTTPS and DSS/ORDS SDK adapters. Embeddings
+are deterministic fixtures. No external model, field database or deployment.
+"""
+from pathlib import Path
+import argparse
+import asyncio
+import hashlib
+import importlib.util
+import io
+import json
+import os
+import secrets
+import shutil
+import subprocess
+import sys
+import threading
+import time
+import types
+import zipfile
+
+HERE=Path(__file__).resolve().parent
+REPO=HERE.parents[2]
+FIX=REPO/'09_ARTIFACTS/TEMP/single-cpu-r10-native/test_actual_native_flow_withou1'
+CONTAINER='a8-agent-ords-r5'
+PARENT=HERE.parent/'agent_layer_return_20261105_r4'
+
+
+def main(out):
+    import oracledb
+    import pandas as pd
+    oracledb.defaults.fetch_lobs=False
+    settings=json.loads(subprocess.check_output(['docker','inspect',CONTAINER]))[0]
+    assert settings['Config']['Labels']['a8.task']=='agent-ords-r5'
+    port=settings['NetworkSettings']['Ports']['1521/tcp'][0]
+    assert port['HostIp']=='127.0.0.1'
+    dsn='127.0.0.1:'+port['HostPort']+'/FREEPDB1'
+    pw=dict(v.split('=',1) for v in settings['Config']['Env'])['ORACLE_PASSWORD']
+    admin=oracledb.connect(user='system',password=pw,dsn=dsn)
+    out.mkdir(exist_ok=False,parents=True)
+    server,flow=out/'server',out/'flow'
+    for name,d in [('GENOS_AGENT_ORDS_R5.zip',server),('DATAIKU_AGENT_GOLD_FLOW_R5.zip',flow)]:
+        with zipfile.ZipFile(HERE/name) as z:z.extractall(d)
+    pin=hashlib.sha256((server/'CODE_PINS.json').read_bytes()).hexdigest()
+    assert (flow/'SERVER_PIN.txt').read_text().strip()==pin
+    testpin=pin
+    sys.path[:0]=[str(server),str(flow),str(flow/'engine'),str(flow/'engine/vendor'),str(flow/'engine/vendor/02_BACKEND')]
+    spec=importlib.util.spec_from_file_location('agent_api',server/'service.py')
+    api=importlib.util.module_from_spec(spec);spec.loader.exec_module(api)
+    import agent_stage,agent_ords,flow_runtime as runtime,prod_pipeline,prod_config
+    secret=secrets.token_hex(20)
+    users=('SIDDA','SIDDS','STG_GOLD','PIDD2APP','STG_WRITER')
+    added=[]
+    checks=[]
+    diagnostics={}
+    embed_calls=[]
+    def login(user):
+        return oracledb.connect(user=user,password=secret,dsn=dsn)
+    try:
+        with admin.cursor() as c:
+            for user in users:
+                c.execute(f'CREATE USER {user} IDENTIFIED BY "{secret}" DEFAULT TABLESPACE USERS QUOTA 512M ON USERS')
+                added.append(user)
+                c.execute('GRANT CREATE SESSION TO '+user)
+            c.execute('GRANT CREATE ANY TABLE, CREATE ANY INDEX, SELECT ANY TABLE, INSERT ANY TABLE TO PIDD2APP')
+        fail_ack=[False]
+        ords_calls=[]
+        class ORDS:
+            SQL_PATH='/_/sql'
+            def __init__(self,**opts): pass
+            def request(self,method,path,json):
+                assert method=='POST' and path==self.SQL_PATH
+                statement=json['statementText']
+                binds={v['name']:v['value'] for v in json.get('binds',[])}
+                assert all(v['data_type']!='VARCHAR2' or len(v['value'].encode())<=3000 for v in json.get('binds',[]))
+                ords_calls.append({'write':'JSON_TABLE' in statement,'binds':len(binds)})
+                with login('STG_WRITER') as db,db.cursor() as c:
+                    c.execute(statement,binds)
+                    if fail_ack[0] and 'JSON_TABLE' in statement:
+                        fail_ack[0]=False
+                        raise OSError('FIXTURE_ORDS_COMMIT_ACK_LOST')
+                return {'items':[{'result':1}]}
+        genos=types.ModuleType('genos'); genos.__path__=[]
+        ords=types.ModuleType('genos.ords'); ords.ORDSClient=ORDS
+        sys.modules.update({'genos':genos,'genos.ords':ords})
+        os.environ.update(ORACLE_ORDS_SCHEMA='stage',ORACLE_ORDS_CLIENT_ID='fixture',
+                          ORACLE_ORDS_CLIENT_SECRET='fixture',HF_HUB_OFFLINE='1')
+        # Service API is called across a loopback HTTPS socket using the packaged wire transport.
+        import ssl
+        from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+        cert,key=out/'cert.pem',out/'key.pem'
+        subprocess.run(['openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-keyout',str(key),'-out',str(cert),
+                        '-subj','/CN=localhost','-addext','subjectAltName=IP:127.0.0.1'],check=True,capture_output=True)
+        calls=[]
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self,*a): pass
+            def do_POST(self):
+                assert self.headers['Authorization']=='Bearer fixture'
+                req=json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+                calls.append(req['API_TYPE'])
+                res=json.dumps(asyncio.run(api.service({},req))).encode()
+                self.send_response(200);self.send_header('Content-Length',str(len(res)));self.end_headers();self.wfile.write(res)
+        http=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+        ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);ctx.load_cert_chain(cert,key)
+        http.socket=ctx.wrap_socket(http.socket,server_side=True)
+        threading.Thread(target=http.serve_forever,daemon=True).start()
+        os.environ['SSL_CERT_FILE']=str(cert)
+        variables={'AGENT_PIPELINE_URL':'https://127.0.0.1:'+str(http.server_port),'AGENT_PIPELINE_TOKEN':'fixture'}
+        class Folder:
+            def __init__(self,k,*a,**kw):
+                self.path=out/'folders'/k
+                self.path.mkdir(parents=True,exist_ok=True)
+            def get_info(self,sensitive_info=False):return {'type':'Filesystem','path':str(self.path)}
+            def list_paths_in_partition(self):return ['/'+p.relative_to(self.path).as_posix() for p in self.path.rglob('*') if p.is_file()]
+            def get_download_stream(self,p):return (self.path/p.lstrip('/')).open('rb')
+            def upload_stream(self,p,s):
+                dest=self.path/p;dest.parent.mkdir(exist_ok=True,parents=True)
+                with dest.open('wb') as f:shutil.copyfileobj(s,f)
+        class Executor:
+            def __init__(self,connection):
+                assert connection=='AIDP';self.user='PIDD2APP'
+            def query_to_df(self,query,pre_queries=(),post_queries=(),**kw):
+                with login(self.user) as conn,conn.cursor() as c:
+                    for item in pre_queries:c.execute(item)
+                    c.execute(query)
+                    frame=pd.DataFrame(c.fetchall(),columns=[d[0] for d in c.description])
+                    for item in post_queries:c.execute(item)
+                    assert not any('INSERT INTO SIDDA.LGL_PIPE_RESULT_A' in s and 'IF FALSE' not in s for s in pre_queries)
+                    return frame
+        class Embed:
+            def __init__(self):self.texts=[]
+            def add_text(self,t):self.texts.append(t)
+            def execute(self):
+                embed_calls.append(len(self.texts))
+                return types.SimpleNamespace(get_embeddings=lambda:[[1.]+[0.]*1023 for _ in self.texts])
+        project=types.SimpleNamespace(project_key='LOCAL_TEST',get_llm=lambda name:types.SimpleNamespace(new_embeddings=lambda **kw:Embed()))
+        by_id={}
+        recipes={}
+        scenarios={}
+        zones={}
+        class Object:
+            def __init__(self,name):
+                self.name=name;self.id=name
+                self.type='Filesystem';self.ins=[];self.outs=[];self.code=None
+            def get_settings(self):return self
+            def get_raw_params(self):return {'connection':'filesystem'}
+            def move_to_zone(self,z):self.zone=z
+            def get_info(self,sensitive_info):return {'type':self.type,'path':str(work/self.id)}
+            def get_download_stream(self,p):return (HERE/p.lstrip('/')).open('rb')
+            def list_paths_in_partition(self):return ['/DATAIKU_AGENT_FLOW_R1.zip']
+            def get_code(self):return self.code
+            def get_flat_input_refs(self):return self.ins
+            def get_flat_output_refs(self):return self.outs
+            def with_input(self,x):self.ins.append(x);return self
+            def with_output(self,x,append):assert append;self.outs.append(x);return self
+            def with_script(self,code):self.code=code;return self
+            def create(self):recipes[self.name]=self;return self
+            def set_code_env(self,inherit):assert inherit
+            def save(self):pass
+        def create(store,name,**kw):
+            assert name not in store
+            store[name]=Object(name);return store[name]
+        for key in ('code','docs'):create(by_id,key)
+        project=types.SimpleNamespace(project_key='DEMO',get_managed_folder=by_id.__getitem__,
+            get_flow=lambda:types.SimpleNamespace(list_zones=lambda:list(zones.values()),create_zone=lambda n:create(zones,n)),
+            list_managed_folders=lambda:[{'name':n,'id':n} for n in by_id],
+            create_managed_folder=lambda n,**kw:create(by_id,n),new_recipe=lambda kind,n:Object(n),
+            list_recipes=lambda:[{'name':n} for n in recipes],get_recipe=recipes.__getitem__,
+            list_scenarios=lambda:[{'name':n,'id':n} for n in scenarios],get_scenario=scenarios.__getitem__,
+            create_scenario=lambda n,kind:create(scenarios,n))
+        project.project_key='LOCAL_TEST'
+        project.get_llm=lambda name:types.SimpleNamespace(new_embeddings=lambda **kw:Embed())
+        dku=types.ModuleType('dataiku');dku.Folder=Folder;dku.SQLExecutor2=Executor;dku.get_custom_variables=lambda:variables
+        dku.api_client=lambda:types.SimpleNamespace(get_default_project=lambda:project,get_project=lambda k:project)
+        sys.modules['dataiku']=dku
+        variables['AGENT_FLOW_WORK_DIR']=str(out/'work')
+        shutil.copyfile(HERE/'DATAIKU_AGENT_GOLD_FLOW_R5.zip',Folder('code').path/'DATAIKU_AGENT_GOLD_FLOW_R5.zip')
+        for name in ('LAW_SAMPLE_R2.zip','SAMPLE_SUPPORT_R2.zip'):
+            shutil.copyfile(PARENT/name,Folder('code').path/name)
+        text=(HERE/'DATAIKU_SETUP_R5.txt').read_text().replace("'CODE_FOLDER_ID': ''","'CODE_FOLDER_ID': 'code'").replace("'INPUT_FOLDER_ID': ''","'INPUT_FOLDER_ID': 'docs'").replace("'SUPPORT_FOLDER_ID': ''","'SUPPORT_FOLDER_ID': 'code'")
+        for _ in range(2):
+            ns={};exec(compile(text,'DATAIKU_SETUP_R4.txt','exec'),ns)
+        assert len(recipes)==3 and len(scenarios)==1 and len(by_id)==5
+        installed=ns['cfg']
+        assert installed['ENVIRONMENT']=='PROD' and installed['INPUT_MODE']=='LOOSE' and installed['GOLD_OWNER']=='SIDDS'
+        # The labelled native sample is run in DEV. Its resulting archive is also
+        # consumed by the unchanged Gold loader in this isolated fixture below.
+        from sample_setup import install_sample
+        cfg=install_sample('code',ns['BOOTSTRAP'])
+        folders=cfg['folders']
+        for recipe in recipes.values():compile(recipe.code,recipe.name,'exec')
+        assert not next(iter(scenarios.values())).active
+        checks+=['exact_R5_notebook_installs_PROD_LOOSE_Gold_flow',
+                 'repeat_install_three_recipes_one_disabled_scenario']
+        with admin.cursor() as c:
+            c.execute('GRANT SELECT, INSERT ON SIDDA.LGL_PIPE_RESULT_A TO STG_WRITER')
+        from stage_wire import Wire
+        alias=runtime.wire({'LEGAL_PIPELINE_URL':variables['AGENT_PIPELINE_URL'],'LEGAL_PIPELINE_TOKEN':'fixture'})
+        assert alias.url==runtime.wire(variables).url
+        try:runtime.wire({'AGENT_PIPELINE_URL':variables['AGENT_PIPELINE_URL'],'LEGAL_PIPELINE_TOKEN':'fixture'})
+        except ValueError:pass
+        else:raise AssertionError('mixed credential pair accepted')
+        assert api.handle({'API_TYPE':'HEALTH'})['agent_layer']['configured'] is True
+        checks+=['existing_LEGAL_PIPELINE_variable_pair_supported','incomplete_credential_pair_rejected','GENOS_health_ORDS_Agent_configuration']
+        for mode in ('DEV_1','GOLD'):
+            definition=prod_config.target({'TARGET_MODE':mode,'GOLD_OWNER':'STG_GOLD'})
+            path=out/(mode+'.json');path.write_text(json.dumps(definition))
+            contract=prod_pipeline.Contract(path)
+            with admin.cursor() as c:
+                for k in contract.tables:
+                    c.execute(contract.ddl(k))
+                    for stmt in contract.indexes(k):c.execute(stmt)
+                    c.execute('GRANT SELECT, INSERT ON '+contract.table(k)+' TO PIDD2APP')
+        fail_ack[0]=True
+        intent=runtime.run('submit',cfg)
+        assert calls.count('RUN')==1
+        runtime.run('submit',cfg)
+        assert calls.count('RUN')==1 and calls.count('PUT')==2
+        try:runtime.run('wait',cfg)
+        except ValueError as exc:assert str(exc)=='AGENT_STAGE_PENDING_EXPLICIT_RESUME_REQUIRED'
+        except BaseException:
+            h=api.HANDLES[intent['job']]
+            shutil.copyfile(h['folder']/'compute.log',out/'worker.log')
+            raise
+        else:raise AssertionError('ACK loss did not interrupt ORDS publish')
+        query=runtime.layer_query('AIDP')
+        assert not agent_stage.ready(query,intent['job'],intent['binding'])
+        assert query('SELECT COUNT(*) AS N FROM SIDDA.LGL_PIPE_RESULT_A')[0]['N']>0
+        h=api.HANDLES[intent['job']]
+        shutil.copyfile(h['folder']/'compute.log',out/'worker.log')
+        source=next((h['folder']/'workspace/01_DATA/RAW/external/sample_team/law').rglob('*.xml'))
+        expected=json.loads((PARENT/'RELEASE.json').read_text())['sample']
+        assert hashlib.sha256(source.read_bytes()).hexdigest()==expected['document_sha256']
+        assert (h['folder']/'raw.zip').read_bytes()==(PARENT/'LAW_SAMPLE_R2.zip').read_bytes()
+        assert 'READ' not in calls and calls.count('RUN')==1 and 'PUBLISH' not in calls
+        # Explicitly resume saved bytes after an ambiguous ORDS acknowledgement.
+        ready=runtime.run('resume',cfg)
+        assert calls.count('RUN')==1 and calls.count('PUBLISH')==1
+        http.shutdown();http.server_close()
+        calls_before=list(calls)
+        ready=runtime.run('wait',cfg)
+        assert runtime.run('wait',cfg)==ready and calls==calls_before
+        receipt=agent_stage.ready(query,intent['job'],intent['binding'])
+        assert receipt and receipt['sha256']==h['result']['sha256']
+        checks+=['exact_public_law_ZIP_async_compute_and_ORDS_Agent_batch',
+                 'duplicate_submit_one_RUN','local_ZIP_byte_identical_and_original_XML_hash',
+                 'ORDS_commit_ACK_loss_no_READY_no_automatic_retransmit',
+                 'explicit_PUBLISH_same_saved_result_without_recompute_or_HTTP_READ',
+                 'SIDDA_READY_readback_and_repeat_wait']
+        from verify_stage import check_stage
+        checks.extend(check_stage(agent_ords,agent_stage,ORDS(),query,out,login))
+        # The real DSS load recipe and GENOS are separate interpreters. Release the
+        # completed server's package cache before importing the DSS vendor modules.
+        for name in list(sys.modules):
+            if name.split('.')[0] in {'semantic_runtime','lawrag'}:
+                del sys.modules[name]
+        sys.path[:0]=[str(flow/'engine/vendor/02_BACKEND')]
+        diagnostics['service_operations']=calls
+        for mode in ('DEV','PROD'):
+            cfg['ENVIRONMENT']=mode
+            if mode=='PROD':
+                # Same test database and receipt, distinct DSS project/flow output namespaces in deployment.
+                cfg['folders']=dict(folders,load='load-prod')
+                cfg['INPUT_MODE']='LOOSE'
+                cfg['GOLD_OWNER']='STG_GOLD'
+                # Target namespace is independent of the immutable Agent receipt.
+                paths=Path(cfg['WORK_DIR'])/'agent-layer-ords-r5'/cfg['project']/mode/'trial-001'
+                paths.mkdir(parents=True,exist_ok=True)
+            result=runtime.run('load',cfg)
+            n=len(embed_calls)
+            assert runtime.run('load',cfg)==result and len(embed_calls)==n
+            assert result['checks'] and result['coverage']['selected_count']==1 and result['counts']['VCTR_ITEM']>0
+            diagnostics[mode]=result
+            checks.append(mode+'_counts_publications_duplicate_resume_without_GENOS')
+        query=runtime.layer_query('AIDP')
+        j,b=intent['job'],intent['binding']
+        receipt=agent_stage.ready(query,j,b)
+        assert agent_stage.ready(query,j,'0'*64) is None
+        # Simulate corruption, then an incomplete header in the dedicated test database.
+        with admin.cursor() as c:
+            c.execute("UPDATE SIDDA.LGL_PIPE_RESULT_A SET DATA_HASH=:h WHERE JOB_ID=:j AND SEQ_NO=1",h='0'*64,j=j)
+            admin.commit()
+        try:agent_stage.restore(query,j,b,receipt,out/'bad.zip')
+        except ValueError as err:assert 'STAGE_PART_HASH' in str(err)
+        else:raise AssertionError('corruption accepted')
+        with admin.cursor() as c:
+            c.execute('DELETE FROM SIDDA.LGL_PIPE_RESULT_A WHERE JOB_ID=:j AND SEQ_NO=0',j=j);admin.commit()
+        assert not agent_stage.ready(query,j,b)
+        checks+=['changed_binding_rejected','corrupt_chunk_rejected','partial_job_invisible']
+        doc=Folder('code').path/'LAW_SAMPLE_R2.zip'
+        with doc.open('ab') as f:f.write(b'changed')
+        cfg.update(ENVIRONMENT='DEV',INPUT_MODE='SAMPLE_ZIP',folders=folders)
+        try:runtime.run('submit',cfg)
+        except ValueError as err:assert 'SAMPLE_ZIP_CHANGED' in str(err)
+        else:raise AssertionError('same trial accepted different input')
+        checks.append('changed_uploaded_sample_ZIP_rejected')
+        result={'status':'PASS','checks':checks,'diagnostics':diagnostics,'native_python_and_recipe_sources_same':True,
+                'release_pin':pin,'fixture_pin':testpin,'fixture_glossary_policy_rebound':False,'GENOS_Oracle_access':True,'ORDS_environment':True,
+                'oracle':admin.version,'field_execution':False,'dataiku_sdk':'local API fixture','ords_sdk':'request adapter executing real Oracle SQL','embedding':'local deterministic substitute'}
+        diagnostics['ords_requests']=ords_calls
+        diagnostics['installed_recipe_names']=sorted(recipes)
+        diagnostics['oracle_connections']=['AIDP']
+        diagnostics['GENOS_env_has_ORDS']=any(k.startswith('ORACLE_ORDS_') for k in os.environ)
+        (out/'validation.json').write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n')
+    finally:
+        http.shutdown();http.server_close()
+        with admin.cursor() as c:
+            for user in reversed(added):c.execute('DROP USER '+user+' CASCADE')
+        admin.close()
+
+
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('output',type=Path)
+    main(p.parse_args().output.resolve())

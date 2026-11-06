@@ -1,0 +1,163 @@
+{
+  "status": "PASS_LOCAL",
+  "requested_names": "SIDDA Agent table names without trailing _1",
+  "agent_tables": [
+    "SIDDA.LGL_AGT_BODY_A",
+    "SIDDA.LGL_AGT_REC_A",
+    "SIDDA.LGL_AGT_RUN_A",
+    "SIDDA.LGL_EXEC_ST_A"
+  ],
+  "table_count": 4,
+  "column_count": 26,
+  "secondary_indexes": 7,
+  "sql_count": 14,
+  "sql_file_sha256": {
+    "00_CHECK_EXISTING.sql": "1d883cb24d75e9213db55f0849e44f7e96ac23ec5f9afbca127fc81694117125",
+    "01_CREATE_LGL_AGT_BODY_A.sql": "03fa809c0b21ebb5dee012777872434b553dd570dbe8670529f95aa1adab3495",
+    "02_CREATE_LGL_AGT_REC_A.sql": "ee2b919ee35cfc11a4f3526a31b47e281fb831c0dc1b7ed2971e3cddad469651",
+    "03_CREATE_LGL_AGT_RUN_A.sql": "c7be17a8536152069c347396682e78654ab606ddcbe3732d3146a4eb42fbe6c5",
+    "04_CREATE_LGL_EXEC_ST_A.sql": "b411b5c6e65faeeba0ab38912369bbc0fd071eb9b678fa30d9c08463152ff5bc",
+    "05_CREATE_LGL_AR01_I1_A.sql": "29b41c8b508576bc8aaefee01f7f73a9731c67be9a9fa82cdd72463c63725ed6",
+    "06_CREATE_LGL_AR01_I2_A.sql": "63b7181f18a04ba90be89bf4abff7ce86d96af88656d1d81f9d62c58af2ef73e",
+    "07_CREATE_LGL_AR01_I3_A.sql": "689a59979096745fefa0058718a1937053f156734cabb06d518203fb30fa2d31",
+    "08_CREATE_LGL_AR01_I4_A.sql": "7c292830936170be4765b7482328e31a85afdf60612a0eb15adadef7407d192a",
+    "09_CREATE_LGL_AR02_I1_A.sql": "99c53133925f036a054dff19ee32122ebf35a47290d7681cd45c7f9b181e9059",
+    "10_CREATE_LGL_AR02_I2_A.sql": "c54c137424397074b65e45d2cb42f3d91fc0923aecaa7b71728475a46a525cd2",
+    "11_CREATE_LGL_AR02_I3_A.sql": "b1adad830c79212945670408c03d5f9b487052ee4b0b2ba8e2d38bc494c9743e",
+    "12_VERIFY_TABLES.sql": "dfd4c70fd1253d54868a98565cd24f4fbb48379d5f10f841a92cd00bc5a7ab98",
+    "13_VERIFY_INDEXES.sql": "05747bc386d2f415d3db05fa01d0ab511f056c2311603826a195d35888d7c4df"
+  },
+  "oracle_validation": {
+    "environment": "isolated schema in existing loopback-only local Oracle; Dataiku and GENOS not contacted",
+    "sql_owner_substitution_for_test": "A8_AGSQL_EA6C72698F",
+    "oracle_version": "23.26.3.0.0",
+    "checks": [
+      {
+        "name": "zip_only_14_plain_sql_files",
+        "passed": true
+      },
+      {
+        "name": "exact_sql_files_and_txt",
+        "passed": true
+      },
+      {
+        "name": "only_four_agent_tables_seven_indexes",
+        "passed": true
+      },
+      {
+        "name": "before_create_all_four_missing",
+        "passed": true
+      },
+      {
+        "name": "partial_creation_reported",
+        "passed": true
+      },
+      {
+        "name": "exact_delivery_ddl_tables_and_pk",
+        "passed": true,
+        "detail": [
+          {
+            "TABLE_NAME": "LGL_AGT_BODY_A",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 4,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_AGT_REC_A",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 8,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_AGT_RUN_A",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 9,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_EXEC_ST_A",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 5,
+            "MISMATCH_COLUMNS": null
+          }
+        ]
+      },
+      {
+        "name": "all_seven_indexes_valid",
+        "passed": true
+      },
+      {
+        "name": "index_columns_and_timestamp_expressions",
+        "passed": true
+      },
+      {
+        "name": "consumer_identical_to_exact_MAIN142_mail_code",
+        "passed": true
+      },
+      {
+        "name": "suffixless_consumer_defaults_match_exactly",
+        "passed": true
+      },
+      {
+        "name": "original_agent_records_preflight",
+        "passed": true
+      },
+      {
+        "name": "duplicate_create_refused_existing_row_preserved",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_extra_column",
+        "passed": true
+      },
+      {
+        "name": "original_consumer_rejects_column_drift",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_nullability_drift",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_disabled_pk",
+        "passed": true
+      },
+      {
+        "name": "state_revision_and_json_checks",
+        "passed": true
+      },
+      {
+        "name": "final_original_consumer_pass_after_negative_tests",
+        "passed": true
+      },
+      {
+        "name": "gold_and_suffix1_objects_preserved",
+        "passed": true
+      },
+      {
+        "name": "existing_local_schema_objects_unchanged",
+        "passed": true
+      }
+    ],
+    "status": "PASS",
+    "isolated_schema_removed": true
+  },
+  "field": {
+    "dataiku_execution": "NOT_RUN",
+    "genos_execution": "NOT_RUN",
+    "ords_privileges": "NOT_VERIFIED",
+    "product_code_changes": 0,
+    "gold_mapping_changes": 0,
+    "existing_suffix1_table_changes": 0,
+    "data_migration": 0,
+    "model_calls": 0,
+    "email_sent": false
+  },
+  "sql_only_archive": true,
+  "source_main142_agent_records_byte_equal": true,
+  "automatic_drop_alter_truncate_grant": false
+}

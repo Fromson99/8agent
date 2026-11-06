@@ -1,0 +1,95 @@
+GENOS → ORDS → Oracle Agent Layer → Dataiku → Gold · R5
+
+변경 흐름
+Dataiku 원문 전송 → GENOS 비동기 전처리·구조화·색인 → ORDS로
+SIDDA.LGL_PIPE_RESULT_A에 결과 저장 → Dataiku가 Agent 완료 행 확인·재조회
+→ 운영 Gold 원문·검색·게시·벡터 적재 순서입니다.
+
+기존 Agent Layer 반환 R4에서 Dataiku가 결과 ZIP을 HTTP로 받아 Agent에 넣던
+단계를 GENOS의 직접 ORDS INSERT로 교체했습니다. 기존 테이블·조각 형식은 유지합니다.
+GENOS는 Gold에 쓰지 않습니다. Gold 적재는 기존 Dataiku 적재기가 담당합니다.
+조각은 각 72,000바이트이며 최대 8조각을 ORDS 요청 하나에 묶어 INSERT합니다.
+전체 조각의 저장 응답과 전체 파일 해시를 확인한 뒤 SEQ_NO=0 완료 행을 게시합니다.
+
+1. Dataiku 설치
+업로드 가능한 기존 코드 Managed Folder에 DATAIKU_AGENT_GOLD_FLOW_R5.zip을 올립니다.
+원문은 기존 낱개 문서 Managed Folder를 사용합니다. 실제 전량 처리용 지원 파일
+PIPELINE_SUPPORT.zip과 PIPELINE_SUPPORT.zip.receipt.json도 기존 폴더에서 사용합니다.
+이 전달본에는 개발 예시 원문·지원 ZIP을 운영 입력으로 넣지 않았습니다.
+
+Python 노트북 새 커널에서 DATAIKU_SETUP_R5.txt 전체를 한 셀에 붙이고 PARAMS를 설정합니다.
+  CODE_FOLDER_ID     코드 ZIP을 올린 실제 Managed Folder ID
+  INPUT_FOLDER_ID    실제 원문이 있는 별도 Managed Folder ID
+  SUPPORT_FOLDER_ID  실제 지원 ZIP·receipt가 있는 Managed Folder ID
+                    코드 폴더에 지원 파일도 있으면 CODE_FOLDER_ID와 같은 값
+  DOCUMENT_PREFIX    기존 원천·팀 경로. 폴더가 internal/팀/... 구조면 빈 값 유지
+  GOLD_OWNER         실제 운영 Gold 소유자. 기본 SIDDS
+  AGENT_CONNECTION / TARGET_CONNECTION  기존 Oracle 연결. 기본 AIDP
+  EXPECTED_DB_USER   해당 연결의 실제 로그인. 기본 PIDD2APP
+  EMBED_MODEL / EMBED_DIMENSIONS        기존 설정을 유지. 기본 KURE / 1024
+선택 WORK_DIR는 기존 공유 영속 절대경로입니다. 없으면 프로젝트 변수
+AGENT_FLOW_WORK_DIR 또는 ~/.dataiku-agent-work를 사용합니다.
+
+셀을 실행하면 기존 SIDDA.LGL_PIPE_RESULT_A의 구조와 Dataiku 접근을 확인합니다.
+테이블이 없는 경우에만 R4와 같은 정의로 생성합니다. 사용자·권한은 자동 생성하지 않습니다.
+운영 Gold 테이블은 기존 등록 테이블을 사용하며 생성·삭제하지 않습니다.
+LGL_AGENT_R5_PROD 구역, 레시피 3개, 비활성 수동 시나리오가 생성됩니다.
+이 설치 셀은 계산·실모델 호출·Gold 적재를 시작하지 않습니다.
+
+2. GENOS 파이프라인 코드 교체
+기존 pipeline 코드스페이스의 TRANSFER에 다음 두 파일을 놓습니다.
+  GENOS_AGENT_ORDS_R5.zip
+  GENOS_DEPLOY_R5.txt
+해당 폴더에서 실행합니다.
+  bash ./GENOS_DEPLOY_R5.txt
+
+실행 TXT는 ~/DEV의 기존 pipeline checkout을 확인하고 코드 바이트를 대조한 뒤
+해당 pipeline 원격에만 commit/push합니다. 기존 로컬 수정은 백업·보존합니다.
+GENOS 화면에서 새 커밋으로 pipeline 코드서빙 리비전을 별도로 배포합니다.
+단일 replica·단일 worker의 기존 설정을 유지합니다.
+
+pipeline 코드서빙에도 기존 GENOS의 ORDS 연결 설정을 적용합니다.
+  ORACLE_ORDS_SCHEMA
+  ORACLE_ORDS_CLIENT_ID
+  ORACLE_ORDS_CLIENT_SECRET
+  ORACLE_ORDS_BASE_URL  기존에 명시한 환경이면 유지
+ORDS 별칭·Client ID와 테이블 소유자 SIDDA는 서로 다른 값입니다.
+실제 ORDS 실행 계정에는 SIDDA.LGL_PIPE_RESULT_A의 SELECT·INSERT 권한이 필요합니다.
+GENOS는 계산 전에 두 권한을 실제 SQL로 확인하며, 권한이 없으면 중단합니다.
+권한 부여는 자동 실행하지 않습니다. 토큰·비밀값을 소스나 노트북에 쓰지 않습니다.
+HEALTH의 protocol=genos-agent-ords-v1, result_destination=SIDDA.LGL_PIPE_RESULT_A,
+agent_layer.configured=true를 확인합니다. 이 값은 실제 쓰기 성공의 증명은 아닙니다.
+
+3. 실행
+Dataiku 프로젝트의 AGENT_PIPELINE_URL / AGENT_PIPELINE_TOKEN을 새 R5 pipeline
+리비전의 URL·토큰으로 맞춥니다. 기존 LEGAL_PIPELINE_URL / TOKEN 한 쌍도 지원합니다.
+LGL_AGENT_R5_PROD_RUN_ALL 시나리오를 수동 실행합니다.
+  01_SUBMIT       원문·지원 입력 해시 확인, GENOS 업로드와 비동기 계산 시작
+  02_WAIT_AGENT   Oracle Agent 완료 행 확인. 결과 다운로드·Dataiku Agent INSERT 없음
+  03_LOAD         Agent 조각 재조회·전체 해시 검증, Gold 원문·검색·게시·벡터 적재
+LGL_AGENT_R5_PROD_03_LOAD_OUT의 trial-001/report.json에서 PROD_LOADED,
+target_layer=Gold, checks=true와 실제 게시 ID·건수를 확인합니다.
+임베딩은 기존 Dataiku 설정을 사용하므로 실제 실행 단계에서 호출됩니다.
+
+4. 중단·재개
+같은 프로젝트·AGENT_FLOW_TRIAL·WORK_DIR·원문·지원 입력을 유지합니다.
+기본 trial은 trial-001입니다. R5는 전용 작업 경로를 사용하며 R4 기록을 덮어쓰지 않습니다.
+Agent READY 이후에는 GENOS가 종료돼도 wait/load를 다시 실행할 수 있습니다.
+
+GENOS 계산은 끝났지만 ORDS 저장이 실패하거나 응답이 유실되면 STAGE_PENDING으로
+남습니다. 자동 재전송·재계산은 하지 않습니다. Agent 완료 행이 이미 있으면
+Dataiku wait가 그 행을 확인해 이어갑니다. 완료 행이 없으면 원래 실패와 권한·연결을
+확인한 뒤 R5 설치 셀의 cfg가 있는 같은 노트북에서 DATAIKU_RESUME_STAGE_R5.txt를
+한 번 실행합니다. 같은 job·입력·코드·결과 해시로 저장만 재개합니다.
+이미 들어간 조각은 바이트까지 대조하며 다른 내용은 덮어쓰지 않습니다.
+원래 기한·취소·해시 검사는 유지합니다. GENOS pod 교체나 핸들 만료로 저장 결과가
+없어졌으면 이 재개는 불가능하며, 기존 실패를 보존하고 새 trial로 제출합니다.
+Gold 단계 실패는 같은 trial에서 03_LOAD만 재실행합니다.
+
+5. 코드 원복
+같은 TRANSFER에서 bash ./GENOS_DEPLOY_R5.txt --restore-local을 실행합니다.
+원본은 실제 checkout의 .git/genos-agent-ords-r5/original에 보관됩니다.
+작업 파일 복구이며, 원격 커밋과 배포 리비전은 별도로 이전 것을 선택합니다.
+
+검증 범위는 VALIDATION.json에 기록합니다. 로컬 Oracle의 SQL·재개·Gold 소비와
+현장 GENOS/ORDS/Dataiku 리비전 배포·실제 운영 데이터 처리는 구분합니다.

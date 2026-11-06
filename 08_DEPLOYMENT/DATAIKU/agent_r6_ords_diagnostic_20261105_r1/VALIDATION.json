@@ -1,0 +1,42 @@
+{
+  "status": "DIAGNOSTIC_READY_FIELD_CAUSE_UNCONFIRMED",
+  "created_utc": "2026-11-05T05:15:49.593349+00:00",
+  "evidence": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a9d4-9388-7563-9552-5554f1581034/69D44276-40D6-47FA-BB48-302191C743F6/1-사진-1.jpg",
+      "sha256": "d1e3617aa3d472e33bbe4a583b07a1ba7e53c36b7d10c14df931441a7ceb78d7"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a9d4-9388-7563-9552-5554f1581034/69D44276-40D6-47FA-BB48-302191C743F6/2-사진-2.jpg",
+      "sha256": "55778f859fb9a1c30ffe2a61c55c5e8891fa43f18620727fa6902563430b74cf"
+    }
+  ],
+  "observed_progress": "01_SUBMIT succeeded; 02_WAIT_AGENT received FAILED/COMPUTE_FAILED_DPERROR; 03_LOAD not started",
+  "code_boundary": "Exact R6 service.run_compute calls agent_ords.preflight before spawning worker; publish errors use STAGE_PENDING/AGENT_WRITE_* instead",
+  "actual_Oracle_or_HTTP_failure": "Unknown: public error collapsed to DPError class; no privilege/network/response-format cause inferred as confirmed",
+  "diagnostic_scope": "Exact installed R6 code; execution environment only; same ORDS environment as failing revision is required for attribution",
+  "checks": {
+    "passed": 14,
+    "sealed_R6_SQL_parser_and_preflight_used": true,
+    "full_CLI_checked_with_exact_R6_root": true,
+    "SDK_and_network": "local fixtures"
+  },
+  "diagnostic_limits": {
+    "max_SQL_calls": 3,
+    "stop_at_first_failure": true,
+    "real_DML_rows": 0,
+    "DDL": 0,
+    "RUN_or_PUBLISH": 0,
+    "model_calls": 0,
+    "automatic_retry": 0
+  },
+  "diagnostic_output": "Fixed tags/HTTP status/ORA codes, database identity and code binding only; raw error bodies, credentials and source excluded",
+  "R6_mailed_10_files_unchanged": true,
+  "field": {
+    "actual_ORDS_diagnosis_executed": false,
+    "actual_cause_confirmed": false,
+    "model_calls": 0,
+    "mail_sent": false
+  },
+  "official_reference": "https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/25.1/orddg/rest-enabled-sql-service.html"
+}

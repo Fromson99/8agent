@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "checks": [
+    "exact_setup_TXT_created_SIDDA_table_and_grants",
+    "repeat_install_reused_table_three_recipes_one_scenario",
+    "exact_public_law_XML_local_ZIP_async_SUBMIT",
+    "duplicate_submit_one_RUN",
+    "GENOS_to_SIDDA_READY",
+    "DEV_counts_publications_duplicate_resume_without_GENOS",
+    "changed_binding_rejected",
+    "corrupt_chunk_rejected",
+    "partial_job_invisible",
+    "changed_uploaded_ZIP_rejected",
+    "local_ZIP_received_byte_for_byte_and_original_XML_verified"
+  ],
+  "diagnostics": {
+    "service_operations": [
+      "HEALTH",
+      "OPEN",
+      "PUT",
+      "PUT",
+      "RUN",
+      "POLL",
+      "POLL",
+      "POLL"
+    ],
+    "DEV": {
+      "status": "DEV_LOADED",
+      "target_layer": "Silver",
+      "job": "db0eccb1206848fd9997e034c7a9ce16",
+      "input_documents": 1,
+      "archive": {
+        "bytes": 431750,
+        "parts": 6,
+        "sha256": "33b18bb8daa1089f21699fb191410d612b86d4c1dca0a2bedb4d2f6a718ce5dc"
+      },
+      "coverage": {
+        "schema_version": "dataiku-partial-structure-v1",
+        "coverage": "COMPLETE",
+        "selected_count": 1,
+        "omitted_count": 0,
+        "attempted_count": 1,
+        "original_structure_ok": true,
+        "bypassed_count": 0,
+        "failed_count": 0,
+        "preprocessor_enabled": false
+      },
+      "counts": {
+        "DOC_VER": 1,
+        "DOC_UNIT": 290,
+        "DOC_BLK": 356,
+        "SRCH_ROW": 8698,
+        "VCTR_ITEM": 65
+      },
+      "query_release_id": "352d782c5a74fe9b97d836ac62b0469fada8c6e7b51bc506d4e9c8e85c0a8dc1",
+      "source_release_id": "c45bf33773b974bc1aee2d08f26565068e0fc8ffbd946cbd4cdae2f601db0a14",
+      "vector_publication_id": "6956f5d294c62131c7f15a0a2361d671ebba4cce1edfdeae363ea5af18b95ecd",
+      "checks": true
+    },
+    "published_commit_fixture": "GENOS_CODE_PUSHED main 67ac8577960313e8f1195d4061933e8f8b5c011c pin 02878fa366c0d4ba76b394b145ee7fc7c2d726ce603b886fc93d54f2471aa6cb"
+  },
+  "native_python_and_recipe_sources_same": true,
+  "release_pin": "02878fa366c0d4ba76b394b145ee7fc7c2d726ce603b886fc93d54f2471aa6cb",
+  "fixture_pin": "02878fa366c0d4ba76b394b145ee7fc7c2d726ce603b886fc93d54f2471aa6cb",
+  "fixture_glossary_policy_rebound": false,
+  "sample_policy_packaged_and_hash_bound": true,
+  "oracle": "23.26.3.0.0",
+  "field_execution": false,
+  "dataiku_ords_sdks": "local substitutes",
+  "embedding": "local deterministic substitute",
+  "attachments_archive_checks": {
+    "GENOS_AGENT_ASYNC_R2.zip": {
+      "files": 1284,
+      "JS": 0,
+      "nested_archives": 0,
+      "sha256": "8f197834305fdf1bfe29ff69ada903cfc4a57832dc5ce8a45a237aad03e58e3d"
+    },
+    "DATAIKU_AGENT_FLOW_R2.zip": {
+      "files": 100,
+      "JS": 0,
+      "nested_archives": 0,
+      "sha256": "da993fde1d7b54b8af96c5382ba9abfeb9cb39d815ef7835e2cb39088a797e6a"
+    },
+    "LAW_SAMPLE_R2.zip": {
+      "files": 4,
+      "JS": 0,
+      "nested_archives": 0,
+      "sha256": "2871a145d2cdac71ec15087b0bd92f5ac989bd1945e8a8333db4cf755c14f7bb"
+    },
+    "SAMPLE_SUPPORT_R2.zip": {
+      "files": 10,
+      "JS": 0,
+      "nested_archives": 0,
+      "sha256": "a8cbad59c476ef19b4c453f81c914505e23ecb20663db1e9cbb14adae98ebcf4"
+    }
+  },
+  "initial_test_issue": "공개 법령 샘플을 RAW/law에 두어 team-layout 계산기가 0문서로 중지했다. 샘플 경로와 카탈로그를 external/sample_team/law 및 원본 SHA로 연결한 최종본으로 시험했다.",
+  "remote_GENOS_deployment": false
+}

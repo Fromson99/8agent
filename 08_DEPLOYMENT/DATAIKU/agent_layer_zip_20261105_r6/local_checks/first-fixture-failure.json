@@ -1,0 +1,7 @@
+{
+  "scope": "upload acknowledgement-loss test fixture",
+  "reason": "Expected the injected error text, but the existing Wire intentionally returns only its hashed public diagnostic",
+  "fix": "Assert the exact GENOS_REPLY digest; production code and ZIP hashes unchanged",
+  "attempt": "test01",
+  "followup": "test02 PASS"
+}

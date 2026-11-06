@@ -1,0 +1,166 @@
+{
+  "status": "PASS_LOCAL",
+  "profile": "gold",
+  "field_mapping_user_confirmed": true,
+  "source_zip": "08_DEPLOYMENT/GENOS/handoffs/main152_oneclick_mail_20261105_r1/MAIN152_FULL_20261105_R1.zip",
+  "source_zip_sha256": "20c52ba08ffa2f57f408aeb973825f5b5312f981cf387def21e6e13ea1e2e6b6",
+  "source_file_hashes": {
+    "00_SYSTEM/ORACLE/development_g19_1.json": "a839fadb8cf86864c375fd447f4fbd00124da27c37fab5e6cdce7570dc5d9d85",
+    "02_BACKEND/semantic_runtime/oracle_gold_mapping.py": "e896884bb270b6b22c74826447067195a6b316ba256a4245a33bce2efb08150b",
+    "02_BACKEND/semantic_runtime/oracle_agent_records.py": "dd0f2d4290b00cd752c7aaaf59a2adda65b97025365d2c25c96da8d09713c587"
+  },
+  "agent_tables": [
+    "SIDDA.LGL_AGT_BODY_A_1",
+    "SIDDA.LGL_AGT_REC_A_1",
+    "SIDDA.LGL_AGT_RUN_A_1",
+    "SIDDA.LGL_EXEC_ST_A_1"
+  ],
+  "table_count": 4,
+  "column_count": 26,
+  "secondary_indexes": 7,
+  "sql_count": 14,
+  "sql_file_sha256": {
+    "00_CHECK_EXISTING.sql": "4625c5abc25cb8cf272838edb91c45aad9c585cce7545f63f0533594277f1268",
+    "01_CREATE_LGL_AGT_BODY_A_1.sql": "40a2183d4f165bfc96f61421fc5a1ac33e9777777295bf7fc1ebef256d6ee7a3",
+    "02_CREATE_LGL_AGT_REC_A_1.sql": "98836ce75fa9c858567f9fd17dfe2588baa2c037ada6a1f9d522e69824c6d002",
+    "03_CREATE_LGL_AGT_RUN_A_1.sql": "bbec0b6633215bdf5a7316723439081c99455568eb12d591972e39dbbc5d0416",
+    "04_CREATE_LGL_EXEC_ST_A_1.sql": "9d21b7e912ba04d03cfcdec7db146225b6897328fb39c42289856787143153eb",
+    "05_CREATE_LGL_AR01_I1_A_1.sql": "12938e75aed8a6acdcb31133150c32fe948c573dd4e5d514c4a86a81cf8f1ee9",
+    "06_CREATE_LGL_AR01_I2_A_1.sql": "c41c045f098bad0235b82ecbf994cc357bdce3c9ac46d1391039c80e05e17649",
+    "07_CREATE_LGL_AR01_I3_A_1.sql": "a3dbfa118cca9bc49cd9caed7558f54763f6238a55cbfefb5c7c300983cc32b6",
+    "08_CREATE_LGL_AR01_I4_A_1.sql": "46085d6690cc2137457994e52dcb7511151527b35695e9043f7806ba0ab114f5",
+    "09_CREATE_LGL_AR02_I1_A_1.sql": "af52c6178c918acd7a6d8730fe76f9ef64326a5b00e89b250e249ac3f715fa5e",
+    "10_CREATE_LGL_AR02_I2_A_1.sql": "50ebe563af0ddaf77055b9c990bfb23405336525d64aeabe50ea58633f7e3f73",
+    "11_CREATE_LGL_AR02_I3_A_1.sql": "a0197d2ff887290bb1fd0aa408bffe45e402ba73d0c0d9f6a1679143eec8ffc2",
+    "12_VERIFY_TABLES.sql": "656b312e34b9d6ec8aa6e5da70e049871f83e821c36cda39715fbb5d9243bc0d",
+    "13_VERIFY_INDEXES.sql": "84a2e9a7e630b9b8cf83ed9b8a27e0723ccb8c91e87d7bfd697cb3324bec9397"
+  },
+  "oracle_validation": {
+    "environment": "isolated schema in existing loopback-only local Oracle; Dataiku and GENOS not contacted",
+    "sql_owner_substitution_for_test": "A8_AGSQL_616A65361C",
+    "oracle_version": "23.26.3.0.0",
+    "checks": [
+      {
+        "name": "zip_only_14_plain_sql_files",
+        "passed": true
+      },
+      {
+        "name": "exact_sql_files_and_txt",
+        "passed": true
+      },
+      {
+        "name": "only_four_agent_tables_seven_indexes",
+        "passed": true
+      },
+      {
+        "name": "before_create_all_four_missing",
+        "passed": true
+      },
+      {
+        "name": "partial_creation_reported",
+        "passed": true
+      },
+      {
+        "name": "exact_delivery_ddl_tables_and_pk",
+        "passed": true,
+        "detail": [
+          {
+            "TABLE_NAME": "LGL_AGT_BODY_A_1",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 4,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_AGT_REC_A_1",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 8,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_AGT_RUN_A_1",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 9,
+            "MISMATCH_COLUMNS": null
+          },
+          {
+            "TABLE_NAME": "LGL_EXEC_ST_A_1",
+            "COLUMNS_RESULT": "PASS",
+            "PK_RESULT": "PASS",
+            "ACTUAL_COLUMNS": 5,
+            "MISMATCH_COLUMNS": null
+          }
+        ]
+      },
+      {
+        "name": "all_seven_indexes_valid",
+        "passed": true
+      },
+      {
+        "name": "index_columns_and_timestamp_expressions",
+        "passed": true
+      },
+      {
+        "name": "current_gold_consumer_mapping_exact",
+        "passed": true
+      },
+      {
+        "name": "original_agent_records_preflight",
+        "passed": true
+      },
+      {
+        "name": "duplicate_create_refused_existing_row_preserved",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_extra_column",
+        "passed": true
+      },
+      {
+        "name": "original_consumer_rejects_column_drift",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_nullability_drift",
+        "passed": true
+      },
+      {
+        "name": "verification_rejects_disabled_pk",
+        "passed": true
+      },
+      {
+        "name": "state_revision_and_json_checks",
+        "passed": true
+      },
+      {
+        "name": "final_original_consumer_pass_after_negative_tests",
+        "passed": true
+      },
+      {
+        "name": "gold_and_suffixless_objects_preserved",
+        "passed": true
+      },
+      {
+        "name": "existing_local_schema_objects_unchanged",
+        "passed": true
+      }
+    ],
+    "status": "PASS",
+    "isolated_schema_removed": true
+  },
+  "field": {
+    "dataiku_execution": "NOT_RUN",
+    "genos_execution": "NOT_RUN",
+    "ords_privileges": "NOT_VERIFIED",
+    "serving_revision": "UNKNOWN",
+    "gold_data_changes": 0,
+    "product_code_changes": 0,
+    "model_calls": 0
+  },
+  "sql_only_delivery": true,
+  "nested_zip_files": 0,
+  "javascript_files": 0,
+  "automatic_drop_alter_truncate_grant": false
+}

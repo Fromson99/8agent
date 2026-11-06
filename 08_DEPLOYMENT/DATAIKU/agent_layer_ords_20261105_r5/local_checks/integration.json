@@ -1,0 +1,183 @@
+{
+  "status": "PASS",
+  "checks": [
+    "exact_R5_notebook_installs_PROD_LOOSE_Gold_flow",
+    "repeat_install_three_recipes_one_disabled_scenario",
+    "existing_LEGAL_PIPELINE_variable_pair_supported",
+    "incomplete_credential_pair_rejected",
+    "GENOS_health_ORDS_Agent_configuration",
+    "exact_public_law_ZIP_async_compute_and_ORDS_Agent_batch",
+    "duplicate_submit_one_RUN",
+    "local_ZIP_byte_identical_and_original_XML_hash",
+    "ORDS_commit_ACK_loss_no_READY_no_automatic_retransmit",
+    "explicit_PUBLISH_same_saved_result_without_recompute_or_HTTP_READ",
+    "SIDDA_READY_readback_and_repeat_wait",
+    "ten_parts_three_ORDS_writes_exact_byte_restore",
+    "repeat_batch_preserves_row_count",
+    "conflicting_body_rollback_preserves_original",
+    "changed_source_has_no_READY",
+    "cancelled_write_sends_no_request",
+    "GENOS_Agent_writer_has_no_Gold_privilege",
+    "DEV_counts_publications_duplicate_resume_without_GENOS",
+    "PROD_counts_publications_duplicate_resume_without_GENOS",
+    "changed_binding_rejected",
+    "corrupt_chunk_rejected",
+    "partial_job_invisible",
+    "changed_uploaded_sample_ZIP_rejected"
+  ],
+  "diagnostics": {
+    "service_operations": [
+      "HEALTH",
+      "OPEN",
+      "PUT",
+      "PUT",
+      "RUN",
+      "POLL",
+      "POLL",
+      "POLL",
+      "POLL",
+      "POLL",
+      "PUBLISH",
+      "POLL"
+    ],
+    "DEV": {
+      "status": "DEV_LOADED",
+      "target_layer": "Silver",
+      "job": "04dac9d609414635b7bc9124edf88804",
+      "input_documents": 1,
+      "archive": {
+        "bytes": 431840,
+        "parts": 6,
+        "sha256": "e07ddd9aff4ff2261b38cdf3465485b66d712c2a4a35697b073ac5484b6d8bca"
+      },
+      "coverage": {
+        "schema_version": "dataiku-partial-structure-v1",
+        "coverage": "COMPLETE",
+        "selected_count": 1,
+        "omitted_count": 0,
+        "attempted_count": 1,
+        "original_structure_ok": true,
+        "bypassed_count": 0,
+        "failed_count": 0,
+        "preprocessor_enabled": false
+      },
+      "counts": {
+        "DOC_VER": 1,
+        "DOC_UNIT": 290,
+        "DOC_BLK": 356,
+        "SRCH_ROW": 8698,
+        "VCTR_ITEM": 65
+      },
+      "query_release_id": "b5b58ed03064f3042aa6eb5d65ecca5f0b28a3e5754935522aefaafa795fed7d",
+      "source_release_id": "6302a3ddf19e57c514d0b7fe6cf4f1b4edb139ac4324d511dbcf37c41464a9e7",
+      "vector_publication_id": "9b5fb80fef06a59960f62f8fc47a44766194ab2dff380f8bb1d5978b39c9a7f8",
+      "checks": true
+    },
+    "PROD": {
+      "status": "PROD_LOADED",
+      "target_layer": "Gold",
+      "job": "04dac9d609414635b7bc9124edf88804",
+      "input_documents": 1,
+      "archive": {
+        "bytes": 431840,
+        "parts": 6,
+        "sha256": "e07ddd9aff4ff2261b38cdf3465485b66d712c2a4a35697b073ac5484b6d8bca"
+      },
+      "coverage": {
+        "schema_version": "dataiku-partial-structure-v1",
+        "coverage": "COMPLETE",
+        "selected_count": 1,
+        "omitted_count": 0,
+        "attempted_count": 1,
+        "original_structure_ok": true,
+        "bypassed_count": 0,
+        "failed_count": 0,
+        "preprocessor_enabled": false
+      },
+      "counts": {
+        "DOC_VER": 1,
+        "DOC_UNIT": 290,
+        "DOC_BLK": 356,
+        "SRCH_ROW": 8698,
+        "VCTR_ITEM": 65
+      },
+      "query_release_id": "b5b58ed03064f3042aa6eb5d65ecca5f0b28a3e5754935522aefaafa795fed7d",
+      "source_release_id": "6302a3ddf19e57c514d0b7fe6cf4f1b4edb139ac4324d511dbcf37c41464a9e7",
+      "vector_publication_id": "9b5fb80fef06a59960f62f8fc47a44766194ab2dff380f8bb1d5978b39c9a7f8",
+      "checks": true
+    },
+    "ords_requests": [
+      {
+        "write": false,
+        "binds": 0
+      },
+      {
+        "write": true,
+        "binds": 196
+      },
+      {
+        "write": true,
+        "binds": 196
+      },
+      {
+        "write": true,
+        "binds": 4
+      },
+      {
+        "write": true,
+        "binds": 260
+      },
+      {
+        "write": true,
+        "binds": 36
+      },
+      {
+        "write": true,
+        "binds": 4
+      },
+      {
+        "write": true,
+        "binds": 260
+      },
+      {
+        "write": true,
+        "binds": 36
+      },
+      {
+        "write": true,
+        "binds": 4
+      },
+      {
+        "write": true,
+        "binds": 260
+      },
+      {
+        "write": true,
+        "binds": 260
+      }
+    ],
+    "installed_recipe_names": [
+      "LGL_AGENT_R5_DEV_01_SUBMIT",
+      "LGL_AGENT_R5_DEV_02_WAIT_AGENT",
+      "LGL_AGENT_R5_DEV_03_LOAD",
+      "LGL_AGENT_R5_PROD_01_SUBMIT",
+      "LGL_AGENT_R5_PROD_02_WAIT_AGENT",
+      "LGL_AGENT_R5_PROD_03_LOAD"
+    ],
+    "oracle_connections": [
+      "AIDP"
+    ],
+    "GENOS_env_has_ORDS": true
+  },
+  "native_python_and_recipe_sources_same": true,
+  "release_pin": "1138279c6ecdf2ec9af0cd57760077c2ed6e63569fc70a81e32cd360297951f9",
+  "fixture_pin": "1138279c6ecdf2ec9af0cd57760077c2ed6e63569fc70a81e32cd360297951f9",
+  "fixture_glossary_policy_rebound": false,
+  "GENOS_Oracle_access": true,
+  "ORDS_environment": true,
+  "oracle": "23.26.3.0.0",
+  "field_execution": false,
+  "dataiku_sdk": "local API fixture",
+  "ords_sdk": "request adapter executing real Oracle SQL",
+  "embedding": "local deterministic substitute"
+}

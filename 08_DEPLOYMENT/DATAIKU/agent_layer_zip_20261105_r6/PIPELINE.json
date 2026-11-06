@@ -1,0 +1,58 @@
+{
+  "dataiku_setup": "DATAIKU_SETUP_R6.txt",
+  "failure_contract": {
+    "automatic_write_retries": 0,
+    "conflicts": "Rollback; preserve original bytes; no UPDATE/DELETE/TRUNCATE",
+    "pod_loss_before_READY": "Original handle cannot be resumed; retain failure and use a new trial",
+    "ready_recovery": "DSS wait/load read Agent even when GENOS is unavailable",
+    "recompute_on_publish_resume": false,
+    "resume_entrypoint": "flow_runtime.run('resume', cfg) -> authenticated PUBLISH",
+    "retained": "Original deadline, job, code/input digests, computed result, SQL journal and partial rows"
+  },
+  "field_activation": "Explicit new GENOS revision and manual DSS scenario; no local RAG MAIN activation",
+  "input": "Previously supplied LAW_SAMPLE_R2.zip and SAMPLE_SUPPORT_R2.zip in Dataiku Managed Folder; original bytes and digests sent to GENOS",
+  "manual_scenario": "LGL_AGENT_R6_PROD_RUN_ALL",
+  "protocol": "genos-agent-zip-v1",
+  "schema_version": "agent-layer-gold-delivery-v1",
+  "server_entrypoint": "service.py:service",
+  "stages": [
+    {
+      "entrypoint": "archive_input.snapshot -> flow_runtime.submit PUT",
+      "order": 0,
+      "output": "Byte-identical existing data ZIP, SHA-256 binding, received-offset upload resume; no DSS unpack/recompress",
+      "recipe": "01_SUBMIT"
+    },
+    {
+      "entrypoint": "flow_runtime.run:submit",
+      "order": 1,
+      "output": "Bound raw/support upload and asynchronous GENOS job",
+      "recipe": "01_SUBMIT"
+    },
+    {
+      "batch_parts": 8,
+      "consumer": "02_WAIT_AGENT",
+      "entrypoint": "service.run_compute -> agent_ords.publish",
+      "order": 2,
+      "output": "SIDDA.LGL_PIPE_RESULT_A immutable parts; SEQ_NO=0 READY last",
+      "part_bytes": 72000,
+      "writer": "GENOS ORDS"
+    },
+    {
+      "entrypoint": "flow_runtime.run:wait -> agent_wait.receive",
+      "order": 3,
+      "output": "Oracle READY receipt; no result HTTP READ or DSS Agent INSERT",
+      "recipe": "02_WAIT_AGENT"
+    },
+    {
+      "entrypoint": "flow_runtime.run:load -> prod_pipeline.execute",
+      "order": 4,
+      "output": "Explicit owner Gold source/search/publication/vector tables and verified report.json",
+      "recipe": "03_LOAD",
+      "writer": "Dataiku TARGET_CONNECTION"
+    }
+  ],
+  "zip_formats": [
+    "legal-pipeline-files-v1 raw transport ZIP",
+    "ordinary raw-document ZIP with internal/team or declared external source paths"
+  ]
+}

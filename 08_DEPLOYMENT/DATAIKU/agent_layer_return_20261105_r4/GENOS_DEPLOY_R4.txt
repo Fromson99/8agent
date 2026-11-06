@@ -1,0 +1,300 @@
+set -eu
+python3 - "$@" <<'PY_PIPELINE'
+"""Overlay the pinned R4 return payload in the existing pipeline checkout and publish to its own remote."""
+import argparse
+import fcntl
+import hashlib
+import io
+import json
+import os
+from pathlib import Path, PurePosixPath
+import re
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import zipfile
+
+ZIP = 'GENOS_AGENT_RETURN_R4.zip'
+ZIP_SHA = '0488bd8c0546217f916815250a87cbb0328f0cc74a5a6353371711ff1e00e8af'
+PIN_SHA = 'edf50a1925b58bf9148fd9f74b1e766c15f465f2bb25427d010b7d7c8ce41d8e'
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def checked(root, name):
+    parts = PurePosixPath(name).parts
+    if not parts or name != '/'.join(parts) or any(p in ('.', '..', '.git') for p in parts) or name.startswith('/') or '\\' in name:
+        raise ValueError('UNSAFE_PATH: ' + name)
+    path = root
+    for part in parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError('SYMLINK: ' + str(path))
+    return path
+
+
+def current(path):
+    if path.exists() and not path.is_file():
+        raise ValueError('NOT_A_FILE: ' + str(path))
+    return sha(path) if path.exists() else None
+
+
+def atomic(path, stream, mode=0o644):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix='.pipeline-install-', suffix='.tmp', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as dst:
+            shutil.copyfileobj(stream, dst, 1024 * 1024)
+            dst.flush()
+            os.fsync(dst.fileno())
+            os.fchmod(dst.fileno(), mode)
+        os.replace(name, path)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def save(path, value):
+    from io import BytesIO
+    atomic(path, BytesIO((json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()), 0o600)
+
+
+def git(root, *args, env=None, data=None):
+    return subprocess.run(['git','-C',str(root),*args], input=data, env=env,
+                          stdout=subprocess.PIPE,check=True).stdout
+
+
+def target(root, requested):
+    remotes=git(root,'remote').decode().splitlines()
+    local_pin=checked(root,'CODE_PINS.json')
+    try:
+        old_files=json.loads(local_pin.read_bytes())['files']
+        pipeline={'worker.py','transport.py','service.py'} <= set(old_files)
+    except (OSError,KeyError,TypeError,ValueError):
+        pipeline=False
+    choices={}
+    for alias in remotes:
+        urls=git(root,'remote','get-url','--push','--all',alias).decode().splitlines()
+        if len(urls)!=1:
+            continue
+        addr=urls[0].rstrip('/')
+        leaf=re.split('[:/]',addr)[-1].removesuffix('.git').lower()
+        if leaf in {'623','701','risk_team','financial_team'} or alias.lower() in {'risk_team','financial_team'}:
+            continue
+        rank=2 if leaf=='761' else int('pipeline' in alias.lower() or 'pipeline' in leaf)
+        if rank or pipeline:
+            choices[alias]=(rank,addr)
+    if requested:
+        names=[requested] if requested in choices else []
+    elif choices:
+        best=max(v[0] for v in choices.values())
+        names=[k for k,v in choices.items() if v[0]==best]
+        if best==0 and len(remotes)!=1:
+            names=[]
+    else:
+        names=[]
+    if len(names)!=1:
+        raise ValueError('PIPELINE_REMOTE_NOT_UNIQUE: '+', '.join(choices)+'; select the existing pipeline alias using --remote')
+    name=names[0]
+    pushurl=choices[name][1]
+    fetchurl=git(root,'remote','get-url',name).decode().strip().rstrip('/')
+    # Push and verification must address the same repository.
+    if pushurl!=fetchurl:
+        raise ValueError('PIPELINE_FETCH_PUSH_URL_DIFFER:'+name)
+    return name,hashlib.sha256(pushurl.encode()).hexdigest()
+
+
+def remote_head(root,remote):
+    lines=git(root,'ls-remote','--symref',remote,'HEAD','refs/heads/*').decode().splitlines()
+    heads={b:a for a,b in (line.split('\t') for line in lines) if b.startswith('refs/heads/')}
+    ref=next((s.split('\t')[0][5:] for s in lines if s.startswith('ref: ') and s.endswith('\tHEAD')),None)
+    if not ref:
+        if not heads or 'refs/heads/main' in heads:
+            ref='refs/heads/main'
+        elif len(heads)==1:
+            ref=next(iter(heads))
+        else:
+            raise ValueError('PIPELINE_DEFAULT_BRANCH_UNKNOWN')
+    if not ref.startswith('refs/heads/') or (heads and ref not in heads):
+        raise ValueError('PIPELINE_DEFAULT_BRANCH_INVALID')
+    tip=heads.get(ref)
+    if tip:
+        git(root,'fetch','--no-tags',remote,ref)
+        if git(root,'rev-parse','FETCH_HEAD').decode().strip()!=tip:
+            raise ValueError('PIPELINE_BRANCH_CHANGED_DURING_FETCH')
+    return ref,tip
+
+
+def inventory(z):
+    pin=z.read('CODE_PINS.json')
+    if hashlib.sha256(pin).hexdigest()!=PIN_SHA:
+        raise ValueError('PIPELINE_CODE_PIN')
+    files=dict(json.loads(pin)['files'],**{'CODE_PINS.json':PIN_SHA})
+    if set(z.namelist())!=set(files) or len(z.infolist())!=len(files):
+        raise ValueError('ARCHIVE_INVENTORY')
+    for name,h in files.items():
+        if hashlib.sha256(z.read(name)).hexdigest()!=h:
+            raise ValueError('ARCHIVE_MEMBER_HASH:'+name)
+    return files
+
+
+def snapshot(root, audit, files, binding, initial):
+    receipt=audit/'backup.json'
+    if receipt.is_file():
+        record=json.loads(receipt.read_bytes())
+        if record['binding']!=binding or set(record['files'])!=set(files):
+            raise ValueError('EXISTING_BACKUP_BINDING_CHANGED')
+    else:
+        rows={}
+        for name,after in files.items():
+            dest=checked(root,name)
+            before=current(dest)
+            mode=stat.S_IMODE(dest.stat().st_mode) if before is not None else 0o644
+            rows[name]={'before':before,'mode':mode}
+            if before is not None and before!=after:
+                old=checked(audit/'original',name)
+                with dest.open('rb') as src:
+                    atomic(old,src,0o600)
+                if sha(old)!=before:
+                    raise ValueError('BACKUP_CHANGED:'+name)
+        record={'binding':binding,'original_remote':initial,'files':rows}
+        save(receipt,record)
+    # Complete all checks before replacing even one file.
+    for name,after in files.items():
+        before=record['files'][name]['before']
+        if current(checked(root,name)) not in (before,after):
+            raise ValueError('EDIT_AFTER_BACKUP:'+name)
+        if before is not None and before!=after and current(checked(audit/'original',name))!=before:
+            raise ValueError('BACKUP_HASH:'+name)
+    return record
+
+
+def overlay(root,audit,z,files,record,restore=False):
+    changes=0
+    for name,after in files.items():
+        row=record['files'][name]
+        dest=checked(root,name)
+        now=current(dest)
+        desired=row['before'] if restore else after
+        if now==desired:
+            continue
+        if now not in (row['before'],after):
+            raise ValueError('CONCURRENT_FILE_CHANGE:'+name)
+        if desired is None:
+            dest.unlink()
+        else:
+            src=(checked(audit/'original',name).open('rb') if restore else z.open(name))
+            with src:
+                atomic(dest,src,row['mode'])
+        changes+=1
+    for name,after in files.items():
+        wanted=record['files'][name]['before'] if restore else after
+        if current(checked(root,name))!=wanted:
+            raise ValueError('CHECKOUT_HASH:'+name)
+    return changes
+
+
+def publish(root,audit,files,remote,ref,tip,previous):
+    # Stage from this verified checkout into an independent index based on the
+    # pipeline's remote tip. Local staged files/commits from other work stay private.
+    with tempfile.TemporaryDirectory(dir=audit) as temp:
+        env=dict(os.environ,GIT_INDEX_FILE=str(Path(temp)/'index'))
+        if tip:
+            git(root,'read-tree',tip,env=env)
+        else:
+            git(root,'read-tree','--empty',env=env)
+        names=list(files)
+        for off in range(0,len(names),128):
+            git(root,'--literal-pathspecs','add','-f','--',*names[off:off+128],env=env)
+        tree=git(root,'write-tree',env=env).decode().strip()
+    base_tree=git(root,'rev-parse',tip+'^{tree}').decode().strip() if tip else None
+    if tree==base_tree:
+        commit=tip
+    elif previous and (previous['parent'],previous['tree'])==(tip,tree):
+        commit=previous['commit']
+    else:
+        parents=['-p',tip] if tip else []
+        commit=git(root,'commit-tree',tree,*parents,'-m','Deploy R4 Dataiku result-return pipeline').decode().strip()
+    changed=git(root,'diff-tree','--root','--no-commit-id','--no-renames','--name-only','-r','-z',commit)
+    if commit!=tip and (set(changed.decode().split('\0'))-{'',*files}):
+        raise ValueError('UNRELATED_COMMIT_PATHS')
+    entries={}
+    for entry in git(root,'ls-tree','-rz',commit).split(b'\0'):
+        if entry:
+            meta,path=entry.split(b'\t',1)
+            entries[path]=meta.split()
+    blobs={}
+    for name,expected in files.items():
+        mode,kind,oid=entries[os.fsencode(name)]
+        if mode not in {b'100644',b'100755'} or kind!=b'blob':
+            raise ValueError('COMMIT_MEMBER_TYPE:'+name)
+        blobs.setdefault(oid,set()).add(expected)
+    stream=io.BytesIO(git(root,'cat-file','--batch',data=b'\n'.join(blobs)+b'\n'))
+    for _ in blobs:
+        oid,kind,n=stream.readline().split()
+        if kind!=b'blob' or {hashlib.sha256(stream.read(int(n))).hexdigest()}!=blobs[oid] or stream.read(1)!=b'\n':
+            raise ValueError('COMMIT_HASH_MISMATCH')
+    for name,after in files.items():
+        if current(checked(root,name))!=after:
+            raise ValueError('CHECKOUT_CHANGED_BEFORE_PUSH:'+name)
+    if commit!=tip:
+        save(audit/'publish.json',{'parent':tip,'tree':tree,'commit':commit})
+        git(root,'-c','push.followTags=false','push',remote,commit+':'+ref)
+    confirmed=git(root,'ls-remote','--heads',remote,ref).decode().split()
+    if confirmed!=[commit,ref]:
+        raise ValueError('REMOTE_SHA_NOT_CONFIRMED')
+    save(audit/'sent.json',{'remote':remote,'ref':ref,'commit':commit,'pin':PIN_SHA})
+    print('GENOS_CODE_PUSHED',remote,ref,commit,'files',len(files),flush=True)
+    print('기존 pipeline 코드서빙에서 이 커밋으로 리비전을 배포하세요.')
+
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--root',type=Path,default=Path.home()/'DEV')
+    parser.add_argument('--remote',help='existing pipeline remote alias')
+    parser.add_argument('--restore-local',action='store_true')
+    args=parser.parse_args()
+    root=args.root.resolve(strict=True)
+    if Path(git(root,'rev-parse','--show-toplevel').decode().strip()).resolve()!=root:
+        raise ValueError('PIPELINE_CHECKOUT_ROOT_REQUIRED')
+    archive=Path.cwd()/ZIP
+    if sha(archive)!=ZIP_SHA:
+        raise ValueError('R4_ZIP_HASH_MISMATCH')
+    gitdir=Path(git(root,'rev-parse','--absolute-git-dir').decode().strip())
+    audit=checked(gitdir,'genos-agent-return-r4')
+    audit.mkdir(mode=0o700,exist_ok=True)
+    with checked(audit,'lock').open('a') as lock, zipfile.ZipFile(archive) as z:
+        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        files=inventory(z)
+        if args.restore_local:
+            record=json.loads(checked(audit,'backup.json').read_bytes())
+            if record['binding']['root']!=str(root) or record['binding']['zip']!=ZIP_SHA:
+                raise ValueError('BACKUP_BINDING_MISMATCH')
+            snapshot(root,audit,files,record['binding'],None)
+            overlay(root,audit,z,files,record,restore=True)
+            print('ORIGINAL_WORKTREE_RESTORED',root)
+            return
+        remote,url_hash=target(root,args.remote)
+        ref,tip=remote_head(root,remote)
+        binding={'root':str(root),'remote_sha256':url_hash,'ref':ref,'zip':ZIP_SHA}
+        record=snapshot(root,audit,files,binding,tip)
+        pub=audit/'publish.json'
+        previous=json.loads(pub.read_bytes()) if pub.exists() else None
+        if tip not in (record['original_remote'],previous['commit'] if previous else record['original_remote']):
+            raise ValueError('REMOTE_MOVED_AFTER_BACKUP: 기존 배포 후 원격 변경을 확인하세요.')
+        print('PIPELINE_BACKUP',audit,'remote',remote,ref,flush=True)
+        count=overlay(root,audit,z,files,record)
+        print('PIPELINE_CHECKOUT_VERIFIED',len(files),'changed',count,flush=True)
+        publish(root,audit,files,remote,ref,tip,previous)
+
+
+if __name__=='__main__':
+    main()
+PY_PIPELINE

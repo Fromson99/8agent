@@ -1,0 +1,112 @@
+기존 예시 ZIP → GENOS → ORDS → Oracle Agent → Dataiku → Gold · R6
+
+이번 실행의 시작 데이터
+앞서 드린 LAW_SAMPLE_R2.zip과 SAMPLE_SUPPORT_R2.zip을 그대로 사용합니다.
+LAW_SAMPLE_R2.zip은 중소기업기본법 원문 XML 1건이며, 지원 ZIP은 그 원문에
+정확히 결속된 예시 용어집·카탈로그입니다. 두 ZIP 모두 이전 전달본과 동일한 바이트입니다.
+낱개 문서를 새로 올리거나 ZIP을 풀고 다시 압축할 필요가 없습니다.
+
+전체 경로
+1. Dataiku Managed Folder에서 LAW_SAMPLE_R2.zip을 이름으로 선택하고 해시를 확인
+2. 기존 ZIP 바이트를 GENOS에 조각 전송하고 GENOS에서 원문을 복원·처리
+3. GENOS가 ORDS로 SIDDA.LGL_PIPE_RESULT_A에 처리 결과를 묶음 INSERT
+4. Agent 완료 행을 확인한 Dataiku가 결과를 재조회해 Gold 적재
+5. Gold 원문·검색·게시·벡터 건수와 게시 상태를 재조회해 report.json 기록
+
+예시 원문 1건의 실행 경로입니다. 이 지원 ZIP을 다른 실제 전량 문서에 사용하지 않습니다.
+R5의 운영 기본 입력은 LOOSE였으므로, 이번에는 아래 R6 코드·실행 TXT를 함께 사용합니다.
+R4/R5 코드·작업 기록은 보존합니다.
+
+1. GENOS 파이프라인 반입·배포
+기존 pipeline 코드스페이스의 TRANSFER에 아래 두 파일을 놓습니다.
+  GENOS_AGENT_ZIP_R6.zip
+  GENOS_DEPLOY_R6.txt
+그 폴더에서 실행합니다.
+  bash ./GENOS_DEPLOY_R6.txt
+실행 TXT가 기존 ~/DEV pipeline checkout의 바이트를 확인하고 백업한 뒤 해당
+pipeline 원격에만 commit/push합니다. GENOS 화면에서 이 커밋의 새 리비전을 배포합니다.
+단일 replica·단일 worker 설정과 기존 전처리 설정을 유지합니다.
+
+GENOS pipeline 코드서빙에서 기존 ORDS 설정을 사용합니다.
+  ORACLE_ORDS_SCHEMA
+  ORACLE_ORDS_CLIENT_ID
+  ORACLE_ORDS_CLIENT_SECRET
+  ORACLE_ORDS_BASE_URL  기존에 명시한 경우 유지
+실제 ORDS 실행 계정에는 SIDDA.LGL_PIPE_RESULT_A의 SELECT·INSERT가 필요합니다.
+GENOS는 계산 전에 두 권한을 확인하며, 테이블 생성·권한 부여는 하지 않습니다.
+HEALTH의 protocol은 genos-agent-zip-v1입니다.
+기존 R5 리비전과 섞이면 코드 pin·protocol 검사에서 중단합니다.
+
+2. Dataiku에 기존 예시 ZIP과 새 Flow 코드 ZIP 준비
+업로드 가능한 기존 Managed Folder 최상단에 아래 세 파일을 둡니다.
+  DATAIKU_ZIP_AGENT_GOLD_FLOW_R6.zip
+  LAW_SAMPLE_R2.zip
+  SAMPLE_SUPPORT_R2.zip
+예시 ZIP 두 개가 이미 있으면 같은 파일을 재사용하며, 중복 업로드하지 않습니다.
+데이터 ZIP과 실행 코드 ZIP은 이름으로 구분합니다.
+
+3. 노트북 설치
+해당 Dataiku 프로젝트의 새 Python 노트북 커널을 엽니다.
+DATAIKU_SETUP_R6.txt 전체를 한 셀에 붙이고 PARAMS의 CODE_FOLDER_ID 한 곳에
+세 ZIP을 둔 실제 Managed Folder ID를 입력합니다.
+
+기본값
+  DATA_ZIP_NAME     LAW_SAMPLE_R2.zip
+  DATA_ZIP_SHA256   이전 전달 샘플의 정확한 SHA-256
+  SUPPORT_ZIP_NAME  SAMPLE_SUPPORT_R2.zip
+  INPUT_FOLDER_ID / SUPPORT_FOLDER_ID  빈 값이면 CODE_FOLDER_ID와 같은 폴더 사용
+  GOLD_OWNER       SIDDS: 실제 Gold 소유자가 다르면 기존 확인값으로 변경
+  AGENT_CONNECTION / TARGET_CONNECTION  AIDP
+  EXPECTED_DB_USER PIDD2APP
+  EMBED_MODEL      openai:genos-embedding:embedding-kure-v1
+  EMBED_DIMENSIONS 1024
+
+Oracle 연결·실제 로그인·Gold owner는 현장의 기존 값을 유지합니다.
+WORK_DIR는 기존 프로젝트 변수 AGENT_FLOW_WORK_DIR 또는 ~/.dataiku-agent-work입니다.
+노트북과 레시피가 같은 영속 작업 디렉터리를 볼 수 있어야 합니다.
+
+설치 셀은 기존 Agent 테이블을 검사하고, 없을 때만 R4와 같은 정의로 생성합니다.
+Gold 테이블은 기존에 등록된 13테이블을 사용하며 생성·삭제하지 않습니다.
+설치 완료 출력은 FLOW_INSTALLED LGL_AGENT_R6_PROD_RUN_ALL입니다.
+설치만으로 계산·임베딩·Gold 적재를 시작하지 않습니다.
+
+4. ZIP 전송부터 전체 실행
+Dataiku 프로젝트 변수의 AGENT_PIPELINE_URL / AGENT_PIPELINE_TOKEN을 새 R6
+pipeline 리비전의 URL·토큰으로 설정합니다. 기존 LEGAL_PIPELINE_URL/TOKEN 한 쌍도 지원합니다.
+Scenarios에서 LGL_AGENT_R6_PROD_RUN_ALL을 수동 Run합니다.
+  01_SUBMIT       기존 예시 ZIP 해시 확인 → 원래 ZIP 바이트 GENOS 전송 → 비동기 처리 시작
+  02_WAIT_AGENT   GENOS가 ORDS로 저장한 Agent 완료 행 확인
+  03_LOAD         Agent 조각·전체 해시 대조 → Gold 원문·검색·게시·벡터 적재와 재조회
+
+LGL_AGENT_R6_PROD_03_LOAD_OUT의 trial-001/report.json에서
+PROD_LOADED, target_layer=Gold, input_documents=1, checks=true를 확인합니다.
+원문·검색·벡터 건수, source/query/vector 게시 ID도 이 파일에 남습니다.
+실제 현장 임베딩은 기존 Dataiku 모델 연결을 사용합니다.
+
+5. 중단·재개
+같은 프로젝트·AGENT_FLOW_TRIAL·WORK_DIR·두 예시 ZIP을 유지합니다.
+전송 응답이 유실되면 같은 01_SUBMIT를 다시 실행합니다. GENOS의 실제 수신 위치를
+확인해 이어 보내며, 이미 받은 조각을 무조건 다시 전송하지 않습니다.
+같은 trial의 ZIP 바이트·해시가 바뀌면 새 요청 전에 차단합니다.
+전송과 계산이 완료된 뒤 저장만 실패하면 STAGE_PENDING으로 남깁니다.
+자동 재전송·재계산은 하지 않습니다. 기존 오류와 권한·연결을 확인한 뒤,
+설치 셀의 cfg가 있는 노트북에서 DATAIKU_RESUME_STAGE_R6.txt를 한 번 실행하면
+같은 계산 결과의 Agent 저장만 명시적으로 재개합니다.
+Agent 완료 행이 있으면 GENOS가 없어도 wait/load를 재실행할 수 있습니다.
+Gold 단계 실패는 같은 trial의 03_LOAD부터 이어갑니다.
+원래 기한·입력/코드/결과 해시·중복 내용 검사는 유지합니다.
+Agent 완료 전 GENOS pod나 핸들이 없어졌으면 기존 실패를 보존하고 새 trial을 사용합니다.
+
+6. 원복
+같은 TRANSFER에서 bash ./GENOS_DEPLOY_R6.txt --restore-local을 실행합니다.
+원본은 실제 checkout의 .git/genos-agent-zip-r6/original에 보관됩니다.
+원격 커밋과 이미 배포한 리비전은 별도로 이전 것을 선택합니다.
+
+이 예시와 별도의 일반 원문 ZIP도 원천 경로를 보존한 경우 사용할 수 있습니다.
+일반 ZIP은 internal/팀/... 또는 external/원천/... 등의 RAW 경로를 보존하고,
+실제 지원 ZIP·receipt·DATA_ZIP_NAME·해시를 별도로 지정해야 합니다.
+이 모드는 기존 genos-rag-data 분할 34조각 세대 ZIP 이관과 별개입니다.
+이번 사용 대상과 검증 시작점은 위에서 지정한 기존 예시 ZIP 두 개입니다.
+
+로컬 검증 범위와 현장 미확인 항목은 VALIDATION.json에 기록합니다.
+실제 ORDS 서버·GENOS 리비전·Dataiku 프로젝트·운영 Gold 실행은 현장 결과로 확인합니다.

@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "checks": [
+    "native_DOCX_async_SUBMIT",
+    "duplicate_submit_one_RUN",
+    "GENOS_to_SIDDA_READY",
+    "DEV_counts_publications_duplicate_resume_without_GENOS",
+    "PROD_counts_publications_duplicate_resume_without_GENOS",
+    "changed_binding_rejected",
+    "corrupt_chunk_rejected",
+    "partial_job_invisible",
+    "same_trial_rejects_changed_loose_document"
+  ],
+  "diagnostics": {
+    "service_operations": [
+      "HEALTH",
+      "OPEN",
+      "PUT",
+      "RUN",
+      "POLL",
+      "POLL"
+    ],
+    "DEV": {
+      "status": "DEV_LOADED",
+      "target_layer": "Silver",
+      "job": "25de7316a9504ade87f6fbc2a3c8f2bc",
+      "input_documents": 1,
+      "archive": {
+        "bytes": 107440,
+        "parts": 2,
+        "sha256": "15aab858721a84f43315d96660b7332be433c87ea4c47065307e831f67683b78"
+      },
+      "coverage": {
+        "schema_version": "dataiku-partial-structure-v1",
+        "coverage": "COMPLETE",
+        "selected_count": 1,
+        "omitted_count": 0,
+        "attempted_count": 1,
+        "original_structure_ok": true,
+        "bypassed_count": 0,
+        "failed_count": 0,
+        "preprocessor_enabled": false
+      },
+      "counts": {
+        "DOC_VER": 1,
+        "DOC_UNIT": 2,
+        "DOC_BLK": 4,
+        "SRCH_ROW": 99,
+        "VCTR_ITEM": 2
+      },
+      "query_release_id": "23fdb8590e784061bfdf02f4accbd31456fff6e40d389f833ad10fcb9bf95cc7",
+      "source_release_id": "78ab6c18c10b784d22855be39aadc98cc62885cb4c31a08d21f97d96f7161c21",
+      "vector_publication_id": "b2b062e863572cf68d97b78745cecc4ad00a459fd1e44c9c36c3ebae4e5a5359",
+      "checks": true
+    },
+    "PROD": {
+      "status": "PROD_LOADED",
+      "target_layer": "Gold",
+      "job": "25de7316a9504ade87f6fbc2a3c8f2bc",
+      "input_documents": 1,
+      "archive": {
+        "bytes": 107440,
+        "parts": 2,
+        "sha256": "15aab858721a84f43315d96660b7332be433c87ea4c47065307e831f67683b78"
+      },
+      "coverage": {
+        "schema_version": "dataiku-partial-structure-v1",
+        "coverage": "COMPLETE",
+        "selected_count": 1,
+        "omitted_count": 0,
+        "attempted_count": 1,
+        "original_structure_ok": true,
+        "bypassed_count": 0,
+        "failed_count": 0,
+        "preprocessor_enabled": false
+      },
+      "counts": {
+        "DOC_VER": 1,
+        "DOC_UNIT": 2,
+        "DOC_BLK": 4,
+        "SRCH_ROW": 99,
+        "VCTR_ITEM": 2
+      },
+      "query_release_id": "23fdb8590e784061bfdf02f4accbd31456fff6e40d389f833ad10fcb9bf95cc7",
+      "source_release_id": "78ab6c18c10b784d22855be39aadc98cc62885cb4c31a08d21f97d96f7161c21",
+      "vector_publication_id": "b2b062e863572cf68d97b78745cecc4ad00a459fd1e44c9c36c3ebae4e5a5359",
+      "checks": true
+    }
+  },
+  "native_python_and_recipe_sources_same": true,
+  "release_pin": "b58266f9cd2ca1f567073804d10da07873f1796a7a0b696ee008164f989ff6d5",
+  "fixture_pin": "1962249d854a2e80f07ab7b6c36d95972cc569b21c4691206d70fe09ac9867bb",
+  "fixture_glossary_policy_rebound": true,
+  "oracle": "23.26.3.0.0",
+  "field_execution": false,
+  "dataiku_ords_sdks": "local substitutes",
+  "embedding": "local deterministic substitute",
+  "installer": {
+    "double_install_recipes": 3,
+    "install_conflict_rejected": true,
+    "installed_without_running": true,
+    "installer_test": "DSS API double",
+    "scenarios": 1,
+    "server_checkout_files": 1282,
+    "server_pin": "b58266f9cd2ca1f567073804d10da07873f1796a7a0b696ee008164f989ff6d5"
+  },
+  "release": {
+    "deployed_revision": null,
+    "field_generation": null,
+    "flow_manifest": "3ba7cbcfa17c57f49cd8af19c92748c753ced3861f4b5749f3e4f155836b6196",
+    "flow_zip": "296a785f7ab1f12954743c140336916793a57f7cddf40f1dd3cbd7b730e419e9",
+    "server_pin": "b58266f9cd2ca1f567073804d10da07873f1796a7a0b696ee008164f989ff6d5",
+    "server_zip": "f3188966270ec39e9845a0b98d2ff745600195bf0753495022d02a771eeb103d",
+    "service.py": "27dfed639dc32a336da015e9abef4b0a9c04bde492b32f7f9a6c20a8bd6ac095",
+    "target_checkout_commit": null,
+    "worker.py": "aba9d426773bfde590183834b5195c11510a79f1aa0e9d96aa687c3c47b806f1"
+  },
+  "tested_generation": {
+    "DEV": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-flow-1379-test04/work/agent-layer-r1/LOCAL_TEST/DEV/trial-001/load-85273d206cce5bcd18bb5278/restored/generation",
+      "manifest_sha256": "f45df2e0d6adb48bf4f1f38eb8e4b6bfc989dfeed7d70d96304be680c2747116"
+    },
+    "PROD": {
+      "path": "/home/jin/8-AGENT/09_ARTIFACTS/TEMP/agent-flow-1379-test04/work/agent-layer-r1/LOCAL_TEST/PROD/trial-001/load-aae5181ea82be8def03945e6/restored/generation",
+      "manifest_sha256": "f45df2e0d6adb48bf4f1f38eb8e4b6bfc989dfeed7d70d96304be680c2747116"
+    }
+  },
+  "scope": "로컬 Oracle과 실제 DOCX 처리 코드. DSS·ORDS SDK와 임베딩은 대역, 시험 용어집에 맞춰 정책 파일과 파생 pin만 교체. 망분리 현장과 전체 크기는 미실행.",
+  "first_harness_failure": "첫 시도에서 GENOS와 DSS를 한 테스트 인터프리터에 올려 Python 패키지 캐시가 충돌했다. 테스트에서 서버 종료 뒤 패키지 캐시를 분리했고 첫 실패 로그를 보관했다.",
+  "fixture_inputs": {
+    "09_ARTIFACTS/TEMP/single-cpu-r10-native/test_actual_native_flow_withou1/dev/01_DATA/RAW/internal/test_team/직접규정(20250101).docx": "c474f5aade139cd5ea36c8c5baa415529b3170a84552f510bbd846de377ec0d1",
+    "09_ARTIFACTS/TEMP/single-cpu-r10-native/test_actual_native_flow_withou1/export/PIPELINE_SUPPORT.zip": "ca347c33526c69ee704f7fcda9ca6c044aaf32f2a1aec2371fa53eb83dfe0e2c"
+  }
+}

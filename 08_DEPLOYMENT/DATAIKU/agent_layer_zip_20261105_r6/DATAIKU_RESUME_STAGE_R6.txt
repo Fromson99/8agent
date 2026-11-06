@@ -1,0 +1,4 @@
+# R6 설치 셀을 실행한 같은 프로젝트·trial에서 저장만 명시적으로 재개합니다.
+# 계산과 모델은 다시 실행하지 않습니다. cfg는 설치 셀의 기존 값을 사용합니다.
+from flow_runtime import run
+RESULT = run('resume', cfg)

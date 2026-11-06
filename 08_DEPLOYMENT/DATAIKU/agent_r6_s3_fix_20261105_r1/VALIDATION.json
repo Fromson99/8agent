@@ -1,0 +1,54 @@
+{
+  "status": "LOCAL_CONTRACTS_PASS_FIELD_UNVERIFIED",
+  "created_utc": "2026-11-05T04:59:04.124095+00:00",
+  "evidence": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a9d4-9388-7563-9552-5554f1581034/7FEEE00E-DFA5-4874-B121-47A5169C5E42/1-사진-1.jpg",
+      "sha256": "962c55e6db733014e1a96b4be8564790f43306a696d32deef5ab7300d5ef62cd"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a1a9d4-9388-7563-9552-5554f1581034/7FEEE00E-DFA5-4874-B121-47A5169C5E42/2-사진-2.jpg",
+      "sha256": "3ca6aeeb0eb4381e0a6a031a80256fc26d3aa86d44ef612fc64f53d2d42a5970"
+    }
+  ],
+  "observed_failure": "R6 flow_runtime.submit -> put(submit,intent.json) -> managed_folder.upload_stream -> S3 bucket/access 404 before OPEN/PUT in this invocation",
+  "code_finding": "R6 create_managed_folder inherits only connection name; explicit input bucket/path overrides are not copied",
+  "field_cause_boundary": "Actual source/result settings difference and bucket existence vs access denial remain unverified until the repair cell runs",
+  "repair": "Existing R6 output folder settings only, from actual readable input S3 bucket and per-folder path template; backups and write/read probes",
+  "checks": {
+    "passed": 16,
+    "exact_original_R6_installer_used": true,
+    "exact_delivered_TXT_executed": true,
+    "Dataiku_and_S3": "local fixtures"
+  },
+  "first_failure": {
+    "scope": "test fixture only",
+    "reason": "Old generic Recipe fixture lacked move_to_zone used by sealed R6 installer",
+    "fix": "Add fixture method; repair.py unchanged",
+    "preserved_log": "local_checks/test01.log.gz"
+  },
+  "local_tests_log": "local_checks/test02.log.gz",
+  "original_R6_10_mailed_files_unchanged": true,
+  "unchanged": [
+    "folder IDs",
+    "recipe and scenario code",
+    "source ZIPs",
+    "original request.json",
+    "GENOS deployment",
+    "Oracle and Gold tables",
+    "original S3 objects"
+  ],
+  "field": {
+    "Dataiku_repair_executed": false,
+    "actual_S3_verified": false,
+    "GENOS_calls": 0,
+    "Oracle_calls": 0,
+    "model_calls": 0,
+    "mail_sent": false
+  },
+  "official_references": [
+    "https://developer.dataiku.com/latest/api-reference/python/managed-folders.html",
+    "https://doc.dataiku.com/dss/latest/connecting/s3.html",
+    "https://developer.dataiku.com/latest/concepts-and-examples/jobs.html"
+  ]
+}

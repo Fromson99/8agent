@@ -1,0 +1,245 @@
+set -eu
+checkout=${1:-"$HOME/DEV"}
+remote=${2:-origin}
+python3 - check "$checkout" <<'PYINSTALL'
+"""Run from TRANSFER. Copy only into the operator's explicitly selected new Git checkout."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import zipfile
+
+ZIP = 'GENOS_AGENT_ASYNC_R2.zip'
+EXPECTED = '8f197834305fdf1bfe29ff69ada903cfc4a57832dc5ce8a45a237aad03e58e3d'
+
+
+def install(action,checkout):
+    root=checkout.resolve(strict=True)
+    git=Path(subprocess.check_output(['git','-C',str(root),'rev-parse','--show-toplevel'],text=True).strip())
+    if root!=git.resolve():
+        raise ValueError('SELECT_NEW_CHECKOUT_ROOT')
+    path=Path.cwd()/ZIP
+    if hashlib.sha256(path.read_bytes()).hexdigest()!=EXPECTED:
+        raise ValueError('SERVER_ZIP_HASH')
+    with zipfile.ZipFile(path) as z:
+        raw=z.read('CODE_PINS.json')
+        files=dict(json.loads(raw)['files'],**{'CODE_PINS.json':hashlib.sha256(raw).hexdigest()})
+        if set(files)!=set(z.namelist()) or len(files)!=len(z.infolist()):
+            raise ValueError('PACKAGE_MEMBERS')
+        for name,sha in files.items():
+            dest=root/name
+            if (root not in dest.resolve().parents or any(p.is_symlink() for p in [dest,*dest.parents]) or
+                    hashlib.sha256(z.read(name)).hexdigest()!=sha):
+                raise ValueError('INVALID_MEMBER:'+name)
+            if dest.exists() and (not dest.is_file() or hashlib.sha256(dest.read_bytes()).hexdigest()!=sha):
+                raise ValueError('OCCUPIED_NEW_CHECKOUT:'+name)
+            if action=='verify' and not dest.is_file():
+                raise ValueError('CHECKOUT_MISSING:'+name)
+        if action=='apply':
+            for name in files:
+                dest=root/name
+                if dest.is_file():
+                    continue
+                dest.parent.mkdir(parents=True,exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=dest.parent,delete=False) as f:
+                    f.write(z.read(name))
+                try:
+                    os.link(f.name,dest)
+                    os.chmod(dest,0o644)
+                finally:
+                    os.unlink(f.name)
+            install('verify',checkout)
+    print(action,root,len(files),'server_pin',files['CODE_PINS.json'])
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('action',choices=['check','apply','verify'])
+    parser.add_argument('checkout',type=Path)
+    a=parser.parse_args()
+    install(a.action,a.checkout)
+PYINSTALL
+python3 - apply "$checkout" <<'PYINSTALL'
+"""Run from TRANSFER. Copy only into the operator's explicitly selected new Git checkout."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import zipfile
+
+ZIP = 'GENOS_AGENT_ASYNC_R2.zip'
+EXPECTED = '8f197834305fdf1bfe29ff69ada903cfc4a57832dc5ce8a45a237aad03e58e3d'
+
+
+def install(action,checkout):
+    root=checkout.resolve(strict=True)
+    git=Path(subprocess.check_output(['git','-C',str(root),'rev-parse','--show-toplevel'],text=True).strip())
+    if root!=git.resolve():
+        raise ValueError('SELECT_NEW_CHECKOUT_ROOT')
+    path=Path.cwd()/ZIP
+    if hashlib.sha256(path.read_bytes()).hexdigest()!=EXPECTED:
+        raise ValueError('SERVER_ZIP_HASH')
+    with zipfile.ZipFile(path) as z:
+        raw=z.read('CODE_PINS.json')
+        files=dict(json.loads(raw)['files'],**{'CODE_PINS.json':hashlib.sha256(raw).hexdigest()})
+        if set(files)!=set(z.namelist()) or len(files)!=len(z.infolist()):
+            raise ValueError('PACKAGE_MEMBERS')
+        for name,sha in files.items():
+            dest=root/name
+            if (root not in dest.resolve().parents or any(p.is_symlink() for p in [dest,*dest.parents]) or
+                    hashlib.sha256(z.read(name)).hexdigest()!=sha):
+                raise ValueError('INVALID_MEMBER:'+name)
+            if dest.exists() and (not dest.is_file() or hashlib.sha256(dest.read_bytes()).hexdigest()!=sha):
+                raise ValueError('OCCUPIED_NEW_CHECKOUT:'+name)
+            if action=='verify' and not dest.is_file():
+                raise ValueError('CHECKOUT_MISSING:'+name)
+        if action=='apply':
+            for name in files:
+                dest=root/name
+                if dest.is_file():
+                    continue
+                dest.parent.mkdir(parents=True,exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=dest.parent,delete=False) as f:
+                    f.write(z.read(name))
+                try:
+                    os.link(f.name,dest)
+                    os.chmod(dest,0o644)
+                finally:
+                    os.unlink(f.name)
+            install('verify',checkout)
+    print(action,root,len(files),'server_pin',files['CODE_PINS.json'])
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('action',choices=['check','apply','verify'])
+    parser.add_argument('checkout',type=Path)
+    a=parser.parse_args()
+    install(a.action,a.checkout)
+PYINSTALL
+python3 - verify "$checkout" <<'PYINSTALL'
+"""Run from TRANSFER. Copy only into the operator's explicitly selected new Git checkout."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import zipfile
+
+ZIP = 'GENOS_AGENT_ASYNC_R2.zip'
+EXPECTED = '8f197834305fdf1bfe29ff69ada903cfc4a57832dc5ce8a45a237aad03e58e3d'
+
+
+def install(action,checkout):
+    root=checkout.resolve(strict=True)
+    git=Path(subprocess.check_output(['git','-C',str(root),'rev-parse','--show-toplevel'],text=True).strip())
+    if root!=git.resolve():
+        raise ValueError('SELECT_NEW_CHECKOUT_ROOT')
+    path=Path.cwd()/ZIP
+    if hashlib.sha256(path.read_bytes()).hexdigest()!=EXPECTED:
+        raise ValueError('SERVER_ZIP_HASH')
+    with zipfile.ZipFile(path) as z:
+        raw=z.read('CODE_PINS.json')
+        files=dict(json.loads(raw)['files'],**{'CODE_PINS.json':hashlib.sha256(raw).hexdigest()})
+        if set(files)!=set(z.namelist()) or len(files)!=len(z.infolist()):
+            raise ValueError('PACKAGE_MEMBERS')
+        for name,sha in files.items():
+            dest=root/name
+            if (root not in dest.resolve().parents or any(p.is_symlink() for p in [dest,*dest.parents]) or
+                    hashlib.sha256(z.read(name)).hexdigest()!=sha):
+                raise ValueError('INVALID_MEMBER:'+name)
+            if dest.exists() and (not dest.is_file() or hashlib.sha256(dest.read_bytes()).hexdigest()!=sha):
+                raise ValueError('OCCUPIED_NEW_CHECKOUT:'+name)
+            if action=='verify' and not dest.is_file():
+                raise ValueError('CHECKOUT_MISSING:'+name)
+        if action=='apply':
+            for name in files:
+                dest=root/name
+                if dest.is_file():
+                    continue
+                dest.parent.mkdir(parents=True,exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=dest.parent,delete=False) as f:
+                    f.write(z.read(name))
+                try:
+                    os.link(f.name,dest)
+                    os.chmod(dest,0o644)
+                finally:
+                    os.unlink(f.name)
+            install('verify',checkout)
+    print(action,root,len(files),'server_pin',files['CODE_PINS.json'])
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('action',choices=['check','apply','verify'])
+    parser.add_argument('checkout',type=Path)
+    a=parser.parse_args()
+    install(a.action,a.checkout)
+PYINSTALL
+python3 - "$checkout" "$remote" <<'PYPUBLISH'
+"""Publish only the verified files of the selected new pipeline checkout."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import zipfile
+
+def git(root,*args,check=True):
+    return subprocess.run(['git','-C',str(root),*args],check=check,stdout=subprocess.PIPE).stdout
+
+def main(root,remote):
+    root=Path(root).resolve(strict=True)
+    if not remote or remote.startswith('-') or remote not in git(root,'remote').decode().splitlines():
+        raise SystemExit('NEW_PIPELINE_REMOTE_REQUIRED')
+    branch=git(root,'symbolic-ref','--short','HEAD').decode().strip()
+    if git(root,'diff','--cached','--name-only','-z'):
+        raise SystemExit('PRESERVE_EXISTING_STAGED_CHANGES')
+    with zipfile.ZipFile('GENOS_AGENT_ASYNC_R2.zip') as z:
+        pins=json.loads(z.read('CODE_PINS.json'))['files']
+        pins['CODE_PINS.json']=hashlib.sha256(z.read('CODE_PINS.json')).hexdigest()
+    # Never publish an unrelated tracked edit. On a new checkout a committed template
+    # may exist. Conflicting member paths are refused by the installer.
+    changed=set(git(root,'diff','--name-only','-z').decode().split('\0'))-{''}
+    if changed-set(pins):raise SystemExit('UNRELATED_TRACKED_CHANGES')
+    for name,sha in pins.items():
+        if hashlib.sha256((root/name).read_bytes()).hexdigest()!=sha:raise SystemExit('CHECKOUT_CHANGED:'+name)
+    subprocess.run(['git','-C',str(root),'add','-f','--pathspec-from-file=-','--pathspec-file-nul'],
+                   input=b'\0'.join(n.encode() for n in pins)+b'\0',check=True)
+    staged=set(git(root,'diff','--cached','--name-only','-z').decode().split('\0'))-{''}
+    if staged-set(pins):raise SystemExit('UNRELATED_INDEX_CHANGES')
+    if staged:
+        subprocess.run(['git','-C',str(root),'commit','-m','Install GENOS Agent Layer pipeline R2'],check=True)
+    commit=git(root,'rev-parse','HEAD').decode().strip()
+    # Compare committed blob bytes with the release, including files affected by git filters.
+    ls=git(root,'ls-tree','-rz',commit)
+    blobs={s.split(b'\t',1)[1].decode():s.split(b'\t',1)[0].split()[-1] for s in ls.split(b'\0') if s}
+    unique={blobs[n] for n in pins}
+    payload=subprocess.run(['git','-C',str(root),'cat-file','--batch'],input=b'\n'.join(unique)+b'\n',capture_output=True,check=True).stdout
+    import io
+    stream=io.BytesIO(payload)
+    verified={}
+    for _ in unique:
+        oid,kind,length=stream.readline().split()
+        if kind!=b'blob':raise ValueError('COMMIT_MEMBER_TYPE')
+        verified[oid]=hashlib.sha256(stream.read(int(length))).hexdigest()
+        if stream.read(1)!=b'\n':raise ValueError('COMMIT_READ')
+    if any(verified[blobs[n]]!=h for n,h in pins.items()):raise SystemExit('COMMIT_HASH_MISMATCH')
+    ref='refs/heads/'+branch
+    git(root,'push',remote,commit+':'+ref)
+    if git(root,'ls-remote','--heads',remote,ref).decode().split()[:1]!=[commit]:
+        raise SystemExit('REMOTE_SHA_NOT_CONFIRMED')
+    print('GENOS_CODE_PUSHED',branch,commit,'pin',pins['CODE_PINS.json'])
+    print('GENOS 화면에서 이 커밋의 새 코드서빙 리비전을 배포하세요.')
+
+if __name__=='__main__':main(sys.argv[1],sys.argv[2])
+PYPUBLISH
