@@ -32,8 +32,8 @@ else:
 
 WORKFLOW_REVISION = "rag-applied-mode-20261027-r1"
 LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
-PROGRESS_DISPLAY_REVISION = "rag-source-provider-20261013-r2"
-ANSWER_DISPLAY_REVISION = "workflow-review-followup-20261104-r1"
+PROGRESS_DISPLAY_REVISION = "rag-live-judgment-cards-20261105-r1"
+ANSWER_DISPLAY_REVISION = "workflow-guided-explanation-20261105-r3"
 JUDGMENT_DISPLAY_REVISION = "judgment-evidence-svg-20261008-r10"
 HTTP_ERROR_DIAGNOSTICS_REVISION = "http-error-origin-20260928-r1"
 QUESTION_KEYS = ("question", "query", "chatInput", "input", "message", "prompt", "text")
@@ -572,6 +572,10 @@ class _ChatProgress:
             self.flow_events.append(detail)
         if not self.show_progress or self.answer_seq:
             return
+        if detail is not None and _decision_card(detail):
+            await self._flush_source_reads()
+            await self._append_source_card(detail['label'], detail.get('details') or [])
+            return
         if detail is not None and detail['basis'].get('kind') in {'WORKFLOW_CHECKPOINT', 'WORKFLOW_SOURCE_READ'} and detail['basis'].get('detail_mode') == 'activity':
             await self._flush_source_reads()
             await self._append_source_card(detail['label'], detail.get('details') or [])
@@ -926,18 +930,10 @@ def _public_answer_text(body):
     comparison = _comparison_answer_text(body)
     if comparison is not None:
         return comparison
+    if _guided_reply_text(body) is not None:
+        return _guided_reply_text(body)
     if _source_reply_has_originals(body):
-        agent = body['assembly']['term_agent']
-        message = ('원문은 확보했지만 답변의 주장과 근거를 연결하는 최종 검토에 실패했습니다. '
-                   '질문에 대한 설명은 아직 완료되지 않았습니다.'
-                   if agent.get('stop_reason') == 'ASSESSMENT_CONTRACT_UNRESOLVED' else
-                   '원문은 확보했지만 답변 생성이 끝나지 않아 설명을 완료하지 못했습니다.'
-                   if agent.get('stop_reason') == 'ASSESSMENT_OUTPUT_LIMIT' else
-                   '원문은 확보했지만 질문에 대한 결론을 확정할 만큼 검토를 마치지 못했습니다.')
-        limits = list(dict.fromkeys(row['reason'] for row in body['answer'].get('unresolved', [])
-                      if isinstance(row, dict) and isinstance(row.get('reason'), str) and row['reason'].strip()))
-        return message + ('\n\n**아직 확인하지 못한 내용**\n\n' + '\n'.join(
-            '- ' + _ChatProgress._plain(reason) for reason in limits) if limits else '')
+        return _source_reply_conversation(body)
     text = _without_review_diagnostics(body, _answer_text(body))
     if body.get("basis_review_text") and not body.get("workflow_id"):text += "\n"+str(body["basis_review_text"])
     answer = body.get('answer')
@@ -945,6 +941,17 @@ def _public_answer_text(body):
         return _without_inline_reference_numbers(text).strip()
     text = re.split(r"(?:^|\n)\s*확인 한계\s*:", text, maxsplit=1)[0]
     return _without_inline_reference_numbers(text).strip()
+
+
+def _guided_reply_text(body):
+    agent=(body.get('assembly') or {}).get('term_agent') or {}
+    reply=agent.get('guided_reply') or {}
+    text=_answer_text(body)
+    if (agent.get('text_integrity')=='GUIDED_SOURCE_EXPLANATION'
+            and reply.get('schema_version')=='guided-conversation-v1'
+            and reply.get('text_hash')==_workflow_display_digest(text)):
+        return text
+    return None
 
 
 def _source_reply_has_originals(body):
@@ -964,6 +971,36 @@ def _source_reply_has_originals(body):
             and isinstance(originals, list) and bool(originals)
             and all(isinstance(row, dict) and isinstance(row.get('text'), str)
                     and row['text'].strip() and row.get('content_read') is not False for row in originals))
+
+
+def _source_reply_conversation(body):
+    """Present an unresolved answer as a conversation, without new judgments.
+
+    Only sealed user-fact requests become specific questions. Failed proposals
+    and historical investigation notes cannot become a current legal answer.
+    Original bodies and document titles stay in the separate source cards.
+    """
+    agent = body['assembly']['term_agent']
+    view = agent.get('review_explanation')
+    if (not isinstance(view, dict) or view.get('schema_version') != 'review-explanation-v1'
+            or _workflow_display_digest({k:v for k,v in view.items() if k != 'content_sha256'})
+            != view.get('content_sha256')):
+        view = {}
+    actions = view.get('actions', [])
+    facts = list(dict.fromkeys(action['fact_name'].strip() for action in actions
+        if isinstance(action, dict) and action.get('kind') == 'REQUEST_FACT'
+        and action.get('actor') == 'USER' and action.get('enabled')
+        and isinstance(action.get('fact_name'), str) and action['fact_name'].strip()))
+    plain = _ChatProgress._plain
+    paragraphs = []
+    if facts:
+        paragraphs.append('질문하신 상황에 어떤 조건을 적용해야 할지는 아직 애매합니다. '
+                          '구체적으로 설명하려면 다음 내용을 더 알려주시겠어요? '
+                          + ' / '.join(plain(fact) for fact in facts[:3]))
+    else:
+        paragraphs.append('질문하신 상황의 적용 여부는 아직 확인이 필요합니다. '
+                          '이 자료와 관련해 어떤 대상이나 상황을 염두에 두셨는지 조금 더 설명해 주시겠어요?')
+    return '\n\n'.join(paragraphs)
 
 
 def _visible_review_limitations(stage):
@@ -2058,6 +2095,13 @@ def public_event(event):
     return out
 
 
+def _decision_card(event):
+    basis = event.get('basis') or {}
+    return (basis.get('detail_mode') == 'judgment'
+            or (event.get('kind') == 'decision' and basis.get('detail_mode') == 'activity'
+                and basis.get('kind') in {'LAW_SELECTION_DECISION', 'REFERENCE_GROUP_DECISION'}))
+
+
 _SUMMARY_ORDER = ('request', 'search', 'sources', 'answer', 'complete')
 _SUMMARIES = {
     'request': ('요청 확인', '질문과 확인할 사항을 정리합니다.'),
@@ -2516,6 +2560,10 @@ async def run(data):
 
 def _review_explanation_text(body, *, diagnostics=False):
     """Show failed checks and follow-up instructions without private diagnostics."""
+    if not diagnostics and (_source_reply_has_originals(body) or _guided_reply_text(body) is not None):
+        # The conversational answer already contains the questions and action.
+        # Keep the complete diagnostic projection available on explicit request.
+        return ''
     agent = (body.get('assembly') or {}).get('term_agent') or {}
     view = agent.get('review_explanation')
     if not isinstance(view, dict) or view.get('schema_version') != 'review-explanation-v1':
@@ -2539,14 +2587,10 @@ def _review_explanation_text(body, *, diagnostics=False):
         lines = ['**답변 검토에서 실패한 부분**', '', *('- '+safe(reason) for reason in checks)] if checks else []
         if checks:
             lines += ['', '이 실패만으로 원문이 없거나 질문이 잘못됐다는 뜻은 아닙니다.']
-        if any(action.get('kind') == 'REVIEW_AGAIN' and action.get('enabled')
-               for action in view.get('actions', [])):
+        if any(action.get('kind') == 'REVIEW_AGAIN' and action.get('item_id') == 'final-review'
+               and action.get('enabled') for action in view.get('actions', [])):
             lines += ['', '**같은 대화에서 이어서 요청하기**', '',
-                      '> 방금 실패한 답변 검토를 이미 확보한 원문을 재사용해서 다시 해줘. '
-                      '주장과 근거의 연결을 확인하고, 질문에 대한 설명과 남은 미확인을 함께 알려줘.', '',
-                      '위 문장을 새 메시지로 보내면 재검토를 요청할 수 있습니다. '
-                      '추가 사실이 필요한 항목은 아래 내용을 함께 알려주세요.' if facts else
-                      '위 문장을 새 메시지로 보내면 재검토를 요청할 수 있습니다.']
+                      '이 대화에 `검토 다시 하기`를 보내면 이미 확보한 원문을 재사용해 직전 답변을 다시 검토합니다.']
         if facts:
             lines += ['', '**추가로 필요한 정보**', '', *('- '+safe(action['fact_name']) for action in facts)]
         return '\n'.join(lines + _scenario_comparison_lines(agent, safe)).strip()

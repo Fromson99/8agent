@@ -3,8 +3,12 @@ import asyncio
 import importlib.util
 import io
 import json
+import sqlite3
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from contextlib import contextmanager
+
+import pytest
 
 from semantic_runtime.contracts import digest
 from semantic_runtime.legal_agent.readable_log import render_detail
@@ -13,6 +17,65 @@ from test_rag_key_progress import native, journal, read, evidence, commit
 from test_rag_flow_svg import body, workflow
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.parametrize('endpoint', ['stream_app', 'main_workflow'])
+def test_sse_capture_uses_the_same_default_oracle_runtime_as_service(monkeypatch, endpoint):
+    import main_workflow
+    from fastapi.testclient import TestClient
+    from semantic_runtime.oracle_runtime_paths import DEFAULT_ROOT
+
+    backend = main_workflow.backend
+    seen = []
+    @contextmanager
+    def capture(request_id, runtime, sink):
+        seen.append(str(runtime))
+        yield
+    async def service(config, data):
+        return {'status': 200, 'body': {'answer': {'text': '확인했습니다.'}}}
+    monkeypatch.setenv('DP', 'oracle')
+    monkeypatch.delenv('GENOS_RUNTIME_DIR', raising=False)
+    monkeypatch.setattr(backend, 'capture', capture)
+    monkeypatch.setattr(backend, 'service', service)
+    app = backend.app if endpoint == 'stream_app' else main_workflow.app
+    response = TestClient(app).post('/stream', json={'API_TYPE': 'LEGAL_AGENT', 'question': '모의'})
+    assert '"result"' in response.text
+    assert seen == [DEFAULT_ROOT]
+
+
+def test_live_assessment_binds_each_span_and_keeps_unreviewed_sources_out(native):
+    repo, projection, events = native
+    allowed = evidence()
+    allowed['metadata']['read_location'] = '제2조 제3항'
+    read(repo, allowed)
+    read(repo, evidence('other', 'private'))
+    claim = {'source_id':'s1', 'text':'검증된 조건', 'span_receipts':[
+        {'source_id':'s1', 'evidence_id':'e1'}]}
+    invalid = {**claim, 'text':'범위 밖 판단', 'evidence':[{'source_id':'sprivate'}]}
+    commit(repo, 'ASSESS', {'claims':[claim, invalid], 'limitations':[]})
+    projection.poll_journal()
+    detail = ' '.join(events[-1]['details'])
+    assert '검증된 조건' in detail and '제2조 제3항' in detail and '범위 밖' not in detail
+
+    commit(repo, 'ASSESS', {'claims':[], 'limitations':['내부 검토 이력'],
+        'limitation_items':[{'id':'L-review-incomplete','kind':'REVIEW_INCOMPLETE',
+                             'issue_id':None,'text':'내부 검토 이력'}]})
+    projection.poll_journal()
+    assert '확정한 결론이 없습니다' in events[-1]['label']
+    assert '내부 검토 이력' not in str(events[-1])
+
+
+def test_oracle_progress_reader_failure_does_not_fail_the_request(tmp_path, monkeypatch):
+    from semantic_runtime.oracle_dp_io import DPError
+    from semantic_runtime.progress import capture
+    calls = []
+    def unavailable():
+        calls.append(True)
+        raise DPError('synthetic observer read failure')
+    with capture('isolated', tmp_path, lambda event: None) as projection:
+        monkeypatch.setattr(projection, '_journal_path', unavailable)
+        projection.poll_journal()
+    assert projection.journal_unavailable and calls == [True]
 
 
 def test_all_committed_claims_and_selection_reasons_survive_without_private_sources(native):
@@ -28,20 +91,23 @@ def test_all_committed_claims_and_selection_reasons_survive_without_private_sour
     commit(repo, 'ASSESS', {'claims': claims + [{'source_id':'sprivate', 'text':'비공개 판단'}],
                            'limitations':['대상자의 신분은 미확인입니다']})
     projection.poll_journal()
-    # Public progress is deliberately compact. The detailed, committed journal
-    # remains available to the final projection and private request log below.
-    assert len(events) <= 5
     assert '비공개' not in json.dumps(events, ensure_ascii=False)
-    assert all(e['basis']['detail_mode'] == 'summary' for e in events)
     display = workflow()._ChatProgress({}); display.show_progress=True
     for event in events: asyncio.run(display.progress(event))
-    assert len(display.blocks) <= 5
-    assert long_claim.strip() not in json.dumps(display.blocks, ensure_ascii=False)
+    cards = '\n'.join(json.loads(b['data']['output']['content'])['visible_rationale'] for b in display.blocks)
+    assert all('현재 판단: '+str(i)+' '+long_claim.strip() in cards for i in range(12))
+    assert long_reason.strip() in cards and '비공개' not in cards
     assert any(long_reason.strip() in row[0] for row in repo.db.execute('SELECT payload_json FROM entity_version'))
-    stream = io.StringIO(); live = _LiveLog('r1', stream, repo.path.parent)
+    # The request log discovers journals from the same runtime layout as the service.
+    runtime = repo.path.parent / 'log-runtime'
+    saved = runtime / 'legal-agent/runs/day' / repo.context.run_id / 'journal.sqlite'
+    saved.parent.mkdir(parents=True)
+    with sqlite3.connect(saved) as db:
+        repo.db.backup(db)
+    stream = io.StringIO(); live = _LiveLog('r1', stream, runtime)
     try:
-        live.run_id = repo.context.run_id; live.journal_path=repo.path
-        live.poll_journal()
+        live.run_id = repo.context.run_id
+        live.poll_journal(drain=True)
         text=stream.getvalue()
         assert all('현재 판단: '+str(i)+' '+long_claim.strip() in text for i in range(12))
         assert '비공개 판단' not in text and '미확인입니다' in text

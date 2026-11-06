@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from contextlib import nullcontext
-import os
 import sys
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -27,6 +26,7 @@ from main import recover_ad_schedules
 import stream_app as backend
 from stream_app import http_health, install_http_diagnostics
 from semantic_runtime.chat_adapter import views
+from semantic_runtime.oracle_runtime_paths import runtime_directory
 
 
 REVISION = "genos-external-workflow-svg-20261008-r3"
@@ -44,8 +44,7 @@ async def _execute_rag(data, on_progress=None, on_answer=None):
             events.append(event)
         if on_progress is not None:
             on_progress(event)
-    runtime_value = os.environ.get('GENOS_RUNTIME_DIR', '').strip()
-    runtime = Path(runtime_value).resolve() if runtime_value else ROOT / '90_RUNTIME/semantic'
+    runtime = runtime_directory(ROOT / '90_RUNTIME/semantic')
     backend.configure()
     answer_context = backend.capture_answer(data['request_id'], on_answer) if on_answer is not None else nullcontext()
     with backend.capture(data['request_id'], runtime, sink), answer_context:

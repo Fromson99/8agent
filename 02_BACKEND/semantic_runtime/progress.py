@@ -11,6 +11,8 @@ import logging
 import hashlib
 import json
 from .oracle_runtime_paths import Path
+from .oracle_dp_io import DPError
+from .oracle_query_state import StateConflict
 import re
 from . import runtime_sqlite as sqlite3
 import threading
@@ -18,7 +20,7 @@ import time
 
 
 _RUN_ID = re.compile(r"[a-f0-9]{32}\Z")
-REVISION = "rag-workflow-journals-20261019-r1"
+REVISION = "rag-live-judgments-20261105-r1"
 _WORKFLOW_STAGES = {
     'INTAKE': '대사 요청과 비교 범위를 확인 중',
     'FIND_INTERNAL': '내규 원문을 조사 중',
@@ -48,6 +50,7 @@ _CASE_MODEL_STAGES = {
     "memory-resolve-repair": "질문·정정 요청에 맞게 실행 방법을 다시 확인 중",
     "memory-command-check": "요청에 맞는 실행 방법을 확인 중",
     "memory-intent": _CASE_STAGES["INTENT"][0],
+    "memory-guided-answer": "확인한 내용과 다음 질문을 정리 중",
     "memory-assess": _CASE_STAGES["ASSESS"][0],
     "memory-assess-check": "현재 판단이 원문과 조건에 맞는지 검토 중",
     "memory-assess-repair": "원문 검토 결과에 따라 현재 판단을 수정 중",
@@ -118,6 +121,7 @@ class ProgressCapture(logging.Handler):
         self.summary_stages = set()
         self.run_id = None
         self.journal_path = None
+        self.journal_unavailable = False
         self.last_journal_seq = 0
         self.last_model_phase = None
         self.last_wait_key = None
@@ -173,11 +177,14 @@ class ProgressCapture(logging.Handler):
         # private. _activity has already checked admitted document identities.
         source_activity = (isinstance(basis, dict) and basis.get('detail_mode') == 'activity'
             and basis.get('kind') in {'LAW_FULLTEXT_DIRECTORY', 'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_STARTED', 'WORKFLOW_CHECKPOINT', 'WORKFLOW_SOURCE_READ'})
-        event = (views().compact_event(event) if self.compact_public and not source_activity
-                 else views().public_event(event))
+        view = views()
+        event = view.public_event(event)
         if event is None:
             return
-        if self.compact_public and not source_activity:
+        if self.compact_public and not (source_activity or view._decision_card(event)):
+            event = view.compact_event(event)
+            if event is None:
+                return
             stage = event['basis']['stage']
             with self.sequence_lock:
                 order = views()._SUMMARY_ORDER
@@ -319,8 +326,20 @@ class ProgressCapture(logging.Handler):
         if not self.poll_lock.acquire(blocking=False):
             return
         try:
+            if self.journal_unavailable:
+                return
             self._poll_children()
             self._poll_journal()
+        except StateConflict:
+            return  # A newer Oracle snapshot can be read at the next poll.
+        except DPError as exc:
+            # Journal display is optional. Keep the answer and prior cards if
+            # the read-only observer loses access or exhausts its own budget.
+            self.journal_unavailable = True
+            from . import observability as obs
+            obs.event(obs.get_logger('progress'), 'progress.journal.unavailable',
+                      level=logging.WARNING, request_id=self.request_id,
+                      run_id=self.run_id, error_type=type(exc).__name__)
         finally:
             self.poll_lock.release()
         self._flush_reads()
@@ -746,6 +765,10 @@ class ProgressCapture(logging.Handler):
             count = len(payload.get('originals', []))
         elif stage == "SELECT":
             kind = "selected"
+            review_pending = bool((payload.get('investigation_state') or {}).get('read_judgments'))
+            action = '최종 검토에 전달' if review_pending else '근거 채택'
+            if review_pending and not rebound:
+                label = '근거 선택 · 최종 검토 대상을 정했습니다'
             reasons = {}
             navigation = payload.get('law_navigation') or {}
             law_reasons = {r.get('law_id'): _reason(r.get('reason'), None)
@@ -770,25 +793,52 @@ class ProgressCapture(logging.Handler):
                     names = self._case_source_names(db, source_id)
                 reason = reasons.get(source_id)
                 if names:
-                    details.append(names[0] + " · 근거 채택" + (" · 이유: " + reason if reason else ""))
+                    details.append(names[0] + " · " + action + (" · 이유: " + reason if reason else ""))
             count = len(details)
         elif stage == "ASSESS":
             kind = "decision"
             claims = _objects(payload.get('claims'))
             for claim in claims:
-                names = self._case_source_names(db, claim.get('source_id'))
-                if names and isinstance(claim.get('text'), str):
-                    details.append('현재 판단: ' + _reason(claim['text'], None) + ' · 근거: ' + names[0])
+                labels = self._claim_source_names(db, claim)
+                if labels and isinstance(claim.get('text'), str):
+                    names = ' / '.join(labels)
+                    details.append('현재 판단: ' + _reason(claim['text'], None) + ' · 근거: ' + names)
             count = len(details)
-            details += ['미확인 사항: ' + _reason(v, None) for v in payload.get('limitations', []) if isinstance(v, str)]
+            if not claims and not rebound:
+                label = '적용 판단 · 이번 검토에서 확정한 결론이 없습니다'
+            limits = payload.get('limitations', [])
+            if self.compact_public and 'limitation_items' in payload:
+                from .legal_agent.completion_contracts import public_limitations, USER_LIMITATION_PRESENTATION
+                limits = public_limitations(payload, {'limitation_presentation': USER_LIMITATION_PRESENTATION})
+            details += ['미확인 사항: ' + _reason(v, None) for v in limits if isinstance(v, str)]
         elif stage == "COMPOSE":
-            details = ['현재 확정된 판단과 근거를 답변에 배치했습니다']
+            if payload.get('source_excerpt_reply'):
+                label = '답변 작성 · 확인한 원문을 정리했습니다'
+            else:
+                details = ['현재 확정된 판단과 근거를 답변에 배치했습니다']
         if details:
             for start in range(0, len(details), 8):
                 self.publish(kind, label, count=count,
                              details=details[start:start+8], basis=basis)
         else:
             self.publish(kind, label, count=count, basis=basis)
+
+    def _claim_source_names(self, db, claim):
+        sources = dict.fromkeys([claim.get('source_id'), *(item.get('source_id')
+            for item in _objects(claim.get('evidence')))])
+        if 'span_receipts' not in claim:
+            groups = [self._case_source_names(db, source) for source in sources]
+            return list(dict.fromkeys(rows[0] for rows in groups)) if all(groups) else []
+        spans = _objects(claim['span_receipts'])
+        if {span.get('source_id') for span in spans} != sources.keys():
+            return []
+        labels = []
+        for span in spans:
+            source = self._source_label(db, span.get('evidence_id'))
+            if not source or source[0] != span.get('source_id'):
+                return []
+            labels.append(source[1])
+        return list(dict.fromkeys(labels))
 
     def _case_source_names(self, db, source_id):
         rows = db.execute("SELECT evidence_id FROM evidence_unit WHERE source_id=?",

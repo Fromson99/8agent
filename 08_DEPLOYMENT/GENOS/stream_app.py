@@ -29,6 +29,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from semantic_runtime.observability import configure, new_request_id, event as log_event, get_logger  # noqa: E402
 from semantic_runtime.progress import capture, REVISION as PROGRESS_REVISION  # noqa: E402
+from semantic_runtime.oracle_runtime_paths import runtime_directory  # noqa: E402
 from semantic_runtime.legal_agent.answer_stream import capture as capture_answer, REVISION as ANSWER_REVISION  # noqa: E402
 
 
@@ -153,8 +154,7 @@ async def stream_endpoint(request: Request):
         return public_http_failure(400)
     data = {**data, "request_id": new_request_id(data.get("request_id"))}
     async def execute(body,on_progress,on_answer):
-        runtime_value=os.environ.get('GENOS_RUNTIME_DIR','').strip()
-        runtime=Path(runtime_value).resolve() if runtime_value else ROOT/'90_RUNTIME/semantic'
+        runtime = runtime_directory(ROOT / '90_RUNTIME/semantic')
         with capture(body['request_id'],runtime,on_progress),capture_answer(body['request_id'],on_answer):
             return await service({},body)
     return await stream_response(data,execute)

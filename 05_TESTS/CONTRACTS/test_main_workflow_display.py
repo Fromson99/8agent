@@ -58,7 +58,7 @@ def test_main_workflow_result_has_r9_graph_and_compact_progress_without_mutating
     assert len(backend) == 1 and backend[0]['scope'] == {'document_version_ids': ['allowed']}
     assert provided['request_id'] == 'display-r1'
     assert provided['judgment_display_revision'] == 'judgment-evidence-svg-20261008-r10'
-    assert provided['progress_display_revision'] == 'rag-source-provider-20261013-r2'
+    assert provided['progress_display_revision'] == 'rag-live-judgment-cards-20261105-r1'
     assert provided['judgment_flow']['theme'] == 'graphite-evidence'
     assert image_xml(provided['text']).tag.endswith('svg')
     cards = provided['agentFlowExecutedData']
@@ -114,7 +114,7 @@ def test_non_rag_operations_and_workflow_mode_contract_are_preserved(backend):
     mode = client.get('/chat-mode').json()
     assert mode['mode'] == 'workflow' and mode['display_producer'] == 'main_workflow'
     assert mode['judgment_display_revision'] == 'judgment-evidence-svg-20261008-r10'
-    assert mode['progress_display_revision'] == 'rag-source-provider-20261013-r2'
+    assert mode['progress_display_revision'] == 'rag-live-judgment-cards-20261105-r1'
     assert mode['display_renderer_path'].endswith('/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
     assert len(backend) == 1
 

@@ -37,7 +37,8 @@ def test_accepted_judgment_and_normal_answer_remain():
  w=ca.views();display=w._ChatProgress({});display.enabled=False;display.show_progress=True
  e={'schema_version':'rag-progress-v1','kind':'decision','label':'승인 판단','basis':{'kind':'CASE_JUDGMENT_ACCEPTED','detail_mode':'judgment','state':'COMPLETED'},'details':['현재 판단: 모의 규정에 따른 답변']}
  asyncio.run(display.progress(e))
- assert display.blocks and '근거 검토·답변 작성' in json.dumps(display.blocks,ensure_ascii=False)
+ card = json.loads(display.blocks[0]['data']['output']['content'])['visible_rationale']
+ assert '승인 판단' in card and '현재 판단: 모의 규정에 따른 답변' in card
  assert '모의 규정' in json.dumps(display.flow_events,ensure_ascii=False)
  assert w.render({'answer':{'text':'정상 답변'}}).startswith('정상 답변')
 

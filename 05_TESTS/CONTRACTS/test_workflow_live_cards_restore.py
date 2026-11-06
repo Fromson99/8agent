@@ -110,8 +110,11 @@ def test_actual_sse_action_and_full_judgment_cards_arrive_before_result(monkeypa
         def __iter__(self):
             yield b': connected\n\n'
             for kind, label, details, basis in [
-                ('phase', '원문 확인 · 원문을 열람 중', [], {}),
-                ('decision', '적용 판단 · 현재 판단을 확인했습니다', [detail], {'detail_mode': 'judgment'})]:
+                ('phase', '원문 확인 · 원문을 열람 중', [],
+                 {'kind': 'WORKFLOW_CHECKPOINT', 'detail_mode': 'activity'}),
+                ('decision', '적용 판단 · 현재 판단을 확인했습니다', [detail],
+                 {'kind': 'CASE_JUDGMENT_ACCEPTED', 'stage': 'ASSESS',
+                  'detail_mode': 'judgment', 'state': 'COMPLETED'})]:
                 yield ('data: ' + json.dumps({'event': 'progress', 'data': {
                     'schema_version': 'rag-progress-v1', 'request_id': self.rid,
                     'kind': kind, 'label': label, 'details': details, 'basis': basis}},
@@ -134,12 +137,12 @@ def test_actual_sse_action_and_full_judgment_cards_arrive_before_result(monkeypa
             # The reader waits for each queued item, so a short event-loop turn
             # completes the current card emit without releasing the result.
             for _ in range(30):
-                if detail in cards(sent):
+                if any(detail.strip() in text for text in cards(sent)):
                     break
                 await asyncio.sleep(0.01)
             assert not task.done()
             assert any('원문을 열람 중' in text for text in cards(sent))
-            assert any(detail in text for text in cards(sent))
+            assert any(detail.strip() in text for text in cards(sent))
             assert not any(event == 'token' for event, value, room in sent)
         finally:
             release.set()
