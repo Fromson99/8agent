@@ -30,35 +30,36 @@ SOURCES = {'02_BACKEND/semantic_runtime/action_memory_store.py': '12bff2bbf7864d
  '02_BACKEND/semantic_runtime/fulltext.py': 'c556271e6552c3b11934fe3d757e5368d1be13922533662dfd2dd0664a6dda72',
  '02_BACKEND/semantic_runtime/genos_index.py': 'fba9f1c95596f38d854c9d0e8000262b4523e95a410914579152e5283cf72bd8',
  '02_BACKEND/semantic_runtime/learning_store.py': '4a6168d00da3b0b34a53560d2ff40b8404afc55d8e241b9a2be57e3c8d7bfe21',
- '02_BACKEND/semantic_runtime/legal_agent/case_repository.py': '85212c71c51051a0b026bb372b56cec874345c5ba7c96ee9058c218bb0418950',
+ '02_BACKEND/semantic_runtime/legal_agent/case_repository.py': 'a3d6a722e33fa7deda669a019ee6deeb39a9b8e8fb3d0570da24b8b8c7f7babf',
  '02_BACKEND/semantic_runtime/legal_agent/completion_budget.py': 'a5952ee08d739bc8e214b83386376381d6246f93284fb2ef4022d2bf0617e270',
- '02_BACKEND/semantic_runtime/legal_agent/completion_execution.py': '701eb4ccb6d05ff1898d69f8fd77f5d464ba37407cc8b8e199faee6e738de09d',
+ '02_BACKEND/semantic_runtime/legal_agent/completion_execution.py': 'ee00d90a4917b4fac9e3917c635aaad7d970344a419a5b1116ef0f5125142e2b',
  '02_BACKEND/semantic_runtime/legal_agent/conversation_linker.py': '0531e13016092c86325d34450d2e4477947c6ed4a99618680ba3168b77af64f9',
  '02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py': '46a58b8c15d45f773f4d030fc610a6b3a8f7de9a9a9233366ddd8eed95b66350',
- '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py': 'e133e24a1a90bca92590034ed4309a3779843ecf4a57bf7edb4721f7bdbed162',
+ '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py': '7a4ed04c1b926941dbaf9129a82458e75dfd5c97451aa90d55c232c87fdd5de2',
  '02_BACKEND/semantic_runtime/legal_agent/definition_entry.py': '11b39d2e781e456c7d55b74782862d87f87df6f86e37c9de5ebfdc21ffb5e43e',
  '02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py': '333722b24e891560a15c8b0de08ca5597100408cc6eca492262ca178837d97be',
  '02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py': 'f4d88646fed6929a50588bf692dbc96378d3a48e59a5e239b9167a04fb590ca4',
+ '02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py': 'e186157800d56381d7a906d0fae282c0489e5f3044e28cba50b3476fba38a4ec',
  '02_BACKEND/semantic_runtime/legal_agent/independent_read_recovery.py': '965d843cc59822540d94f0c000be12a1e4361a825297da1397e95ff2fd37d145',
  '02_BACKEND/semantic_runtime/legal_agent/investigation_leads.py': 'c9148cd494d3550ad389de29235856da7e1f7ecef8421a46992cb98ddd38a641',
  '02_BACKEND/semantic_runtime/legal_agent/journal_storage.py': '7f4cf6084a84cbad418c3d0d444934bee1bd1ab4cada4cdbe6a9b37da57df843',
  '02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py': '20d8a7f62b5052f957ba0dd3031d59561822d33ee837d0f22086a3d1e3c02a04',
- '02_BACKEND/semantic_runtime/legal_agent/memory_rag.py': '91268d51a7853afecad4d115dad46191947c7842798954e72bcb88668e152556',
+ '02_BACKEND/semantic_runtime/legal_agent/memory_rag.py': 'e78d37ea08024b222e7be83f5f5c5178f75b25a5b139418307c5dfffd825e5cf',
  '02_BACKEND/semantic_runtime/legal_agent/ontology_context.py': '92fe9802b9ddbd98b1e8cbeb74db6ede8b9ffcb5fa1e976ddf3d87a010b4cd3d',
  '02_BACKEND/semantic_runtime/legal_agent/ontology_io.py': 'c9cecc961fdcbb773d3735e4caf57841bfb5fc9ed94107bf03d48b9a6e08e21e',
- '02_BACKEND/semantic_runtime/legal_agent/output_contract.py': '56e26754b0138719cf397eaaf18e6ce7c70e820fec38575dd0ca142618c83b41',
+ '02_BACKEND/semantic_runtime/legal_agent/output_contract.py': 'cdd190c5518bc07814c8e7c0c15cda7f38c493cac610337b929ee46470a2adcd',
  '02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py': '43a2cb11796a3d4c8511084e7257c9ee48070115ea293310b9e202827aeaaaa5',
- '02_BACKEND/semantic_runtime/legal_agent/provider_routing.py': '5d23e1cc1c83036749c86bedf8e0d109ab5b9815ed786c44429e0f30129881e6',
+ '02_BACKEND/semantic_runtime/legal_agent/provider_routing.py': '42c046593fdbf545edddfe3031b21d195a83ec11b33278ee15b0908a73a33ac6',
  '02_BACKEND/semantic_runtime/legal_agent/publication.py': 'd335057c68e682b4e7735c8f70a4732259b6375383b29ebde71661af0e5e19f4',
  '02_BACKEND/semantic_runtime/legal_agent/question_obligations.py': '043152f27459df0f5f67377bd2015068ff201aee0a32f400c0ec00ab77e8d4a8',
  '02_BACKEND/semantic_runtime/legal_agent/relation_cards.py': '4524deb4c565ba4b3458f143f4f9e840b2cd5480215749ca94fbb6471278a53b',
  '02_BACKEND/semantic_runtime/legal_agent/relations_repository.py': '9e098af0453a9b7aa7d3c80ba1db5294c904218d88835e040c4bcbdf69353940',
  '02_BACKEND/semantic_runtime/legal_agent/relations_session.py': 'd5b0d6f2385f4c57587392dd68faa83deb7292668b5cb8c6f91428e8962e813e',
  '02_BACKEND/semantic_runtime/legal_agent/relations_tools.py': '2fa8f36d7c2a179e80dcf3c4ebd36a03148bec498e16df362106210266f38e3e',
- '02_BACKEND/semantic_runtime/legal_agent/repository.py': '6b44dc20a4142c323d5674107b1184e7782b81427f1a88707fddd30e434ce409',
+ '02_BACKEND/semantic_runtime/legal_agent/repository.py': 'f33fa40475ee05cf8c5dda3fe0226b77139bb59c46b05e65b1c54b363801acda',
  '02_BACKEND/semantic_runtime/legal_agent/reuse_policy.py': '23d5a31d77820742204bf756f201186d42e6e49c5ac750cd29889dd440dee993',
- '02_BACKEND/semantic_runtime/legal_agent/review_actions.py': '58cb28083a91940e8817733c6e1822a5f6d9220c834dd3b96b0b415d3c772b43',
- '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py': '70ed639c31c21c8ab45f196e0c3b08ba0553b6dfe8b68a38c6b47fd3d9eb2b62',
+ '02_BACKEND/semantic_runtime/legal_agent/review_actions.py': '5b9e30d00992cc547e0de885025cad0ca0c57328f49910893cabe9fcb5c84967',
+ '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py': '91bed6e4fb1a49a534cd28d7ff88508570c2ea4571806e7081b87d8b3f9d846b',
  '02_BACKEND/semantic_runtime/legal_agent/shortcut_commands.py': 'ae5d96ff04f5ffad0c1237f314d5acf26541fe988d5c0d0be338fe3f27f86ccc',
  '02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py': 'a8391c05239e0e68b609bd85574adf8b017690d5296d10ccf26b563d1882ada0',
  '02_BACKEND/semantic_runtime/legal_agent/source_bundle.py': '802caeed146afdbd27dadcdad87045d6ae3f2a33c21e6b04b804118eb5567743',
@@ -76,9 +77,9 @@ SOURCES = {'02_BACKEND/semantic_runtime/action_memory_store.py': '12bff2bbf7864d
  '02_BACKEND/semantic_runtime/legal_agent/tools_repository.py': 'e9ec5c0a234e2902552732b5034d707ba95e88081b1e30fd98bab86635353f46',
  '02_BACKEND/semantic_runtime/legal_agent/tools_session.py': '20c0305d574064b51c88ab27993b8ac5364707044a291736e81f177384a73a9b',
  '02_BACKEND/semantic_runtime/legal_agent/unified_publication.py': '793cc95d619e624f35b27672b2796f5f713aeec6dc5f52544edfee712af14044',
- '02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py': '076f550b501ad6d107691d540c54b0c9abdcdfc78bf888e4658dbb63efe65a51',
+ '02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py': 'a5b4dae15de5452a6d455133443a08a90d5be8387614a9238ab509ab3b9fcda9',
  '02_BACKEND/semantic_runtime/legal_agent/unit_reading.py': 'bb794851db71607d5b5a5616048c0e532877eba3c82c1d76f776fa48a83537b0',
- '02_BACKEND/semantic_runtime/legal_agent/unit_relations.py': '634c9e9cb1ccb05f62c6272434c2adbcdbd137a084fd704c9bee4b793b34543e',
+ '02_BACKEND/semantic_runtime/legal_agent/unit_relations.py': '98a9230e4bf432a554e578a96c44cf29f06f947fec7ee504382c955837e28ecd',
  '02_BACKEND/semantic_runtime/legal_agent/updates.py': '475dfaa15cbf0dfbebd9fd9650c335b8f5ebe6b92489e93322abeef8837b0d8d',
  '02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py': '33b80f8fb39c7bcbb31bef8ac587a2c80c61ca8174ef87b65aa6ac8c2db9f81c',
  '02_BACKEND/semantic_runtime/legal_agent/wiki_recall.py': 'ed4dbc9b76db1cbd48bb6a4b34e8b2ffc25ed864fcb4143113b1911f6002bd45',
@@ -98,7 +99,7 @@ SOURCES = {'02_BACKEND/semantic_runtime/action_memory_store.py': '12bff2bbf7864d
  '02_BACKEND/semantic_runtime/ontology_work/configuration.py': '291e20322f9c1a1c3bcdf32bec44f451266df178c2e97ca53fb7feafd4b6dfda',
  '02_BACKEND/semantic_runtime/ontology_work/glossary_binding.py': '9607a9bb130099b2553bb4944e5fdde1ba3b7cce574b1bb233662cf9a22c533f',
  '02_BACKEND/semantic_runtime/ontology_work/observations.py': '510da7d002b2ab11eca7bfbd882dacbce26e8d8f82f9b9787c8b1e9877412af6',
- '02_BACKEND/semantic_runtime/ontology_work/runtime.py': '9af5a03397151a1548d6b8bbeb097b73d0c0475bc1d77d035d66fc297b3f6a7a',
+ '02_BACKEND/semantic_runtime/ontology_work/runtime.py': '9712b101b5b89e3e6b40a03f43fef81f142bdd173dba1559aa4ebbf35b384140',
  '02_BACKEND/semantic_runtime/oracle_query_db.py': '906dddd1a2cb8e377a596a1f290ae20d5084bcaa8838135fe08b9f2f7e3acc99',
  '02_BACKEND/semantic_runtime/oracle_query_fulltext.py': 'e35fc2e60c3ac8dad540e388f54eae950398cd8b00b6eb67526aa6c3122ab9c0',
  '02_BACKEND/semantic_runtime/oracle_query_glossary.py': '2c52c08a08d12f7f9a92bbd55e672f511e017196db9abac7b4448507eb5492b2',
@@ -107,7 +108,7 @@ SOURCES = {'02_BACKEND/semantic_runtime/action_memory_store.py': '12bff2bbf7864d
  '02_BACKEND/semantic_runtime/oracle_record_sqlite.py': 'b42bf8acd3fb815e4f84c093099069607bbecf5b7e969aea85d0d32003f66a21',
  '02_BACKEND/semantic_runtime/oracle_records_migration.py': '048bd896da14ed225903f11e710012bb2961ebc32aff9891e80399b8aa28ccbc',
  '02_BACKEND/semantic_runtime/process_trace.py': '3cc280184727a36b53091a236203f1ea97d9550799d3ccb43ab47cf32e02de42',
- '02_BACKEND/semantic_runtime/progress.py': '6d6235f7dce98860bb3563fd3c87532b54759afb874957bc9bc6d12c82198293',
+ '02_BACKEND/semantic_runtime/progress.py': '78b9015612e76bedd6fa4305ce2943f946941baf8b3de03eb6cbbdc632a7412c',
  '02_BACKEND/semantic_runtime/reference_build.py': '945cf6166a59b8277db79fc8300b69fbcadedc02f88954c033dd7abb5f5b73e9',
  '02_BACKEND/semantic_runtime/reference_resolution_repository.py': '29ed7a4b9540154e6000c3aa05f4ae2426b22e2b343467b814b6ee403e69e03b',
  '02_BACKEND/semantic_runtime/relation_issues.py': '6573df4c0b1135c729931b556826aa6fb7e914bbfc045a1eb96905cb9d9e03c9',
@@ -210,7 +211,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:220']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:263']},
  '00d660822dc6eb74ea407ac20caed33dbba56f7646b5a8f453f7d52d47c5411d': {'sql': 'select text from source_block where '
                                                                              'document_id = :s0 and unit_id = :s1 '
                                                                              'order by cast ( block_id as integer )',
@@ -492,7 +493,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:803']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:853']},
  '03a3b93a4821d891ea8049f5371515c79963117b925ff0c2452d37032f728cd6': {'sql': 'select max ( created_seq ) from '
                                                                              'entity_version where kind = :s0 and '
                                                                              'entity_id = :s1',
@@ -522,7 +523,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:704']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:723']},
  '03e0ec4a3c846df2e62ad5af3161990d17d3a5cf379c3e0e07e5f40ee0b539dd': {'sql': 'select document_id from '
                                                                              'corpus_definition where id = :s0',
                                                                       'lists': [],
@@ -1284,7 +1285,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:367']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:451']},
  '0e321b68e560a4bbb40bad01c322ae468224d25915f139b9cabaf888d2801e18': {'sql': 'select id , text , ( ( instr ( text , '
                                                                              ':s0 ) > 0 ) + ( instr ( text , :s1 ) > 0 '
                                                                              ') + ( instr ( text , :s2 ) > 0 ) ) as '
@@ -2085,7 +2086,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:812']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:862']},
  '176c489fe63bc3bef0711851016991d175eed0746e3158acfad6c2b2c996c406': {'sql': 'select kind , entity , revision from '
                                                                              'ad_selection where session = :s0 order '
                                                                              'by ordinal',
@@ -2352,7 +2353,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:662']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:792']},
  '1ad7b834d99b3bca0cba8675e2d9166831f443a78edd4595cbb0fffb8456e265': {'sql': 'select json from edge',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -2604,7 +2605,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:304']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:311']},
  '1d32c545a6c76622ff6b749e94efe7b42423e22ee3898d53302a6a41ba8ae078': {'sql': 'select * from node where id = :s0',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -2621,7 +2622,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:214']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:257']},
  '1e201723d216c2c153a2887ec2c94724a15b8c9e44b2f5aafc028ae21375dadf': {'sql': 'select block_id , unit_id , text from '
                                                                              'source_block where document_id = :s0 and '
                                                                              'cast ( block_id as integer ) >= :s1 and '
@@ -3709,7 +3710,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:384']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:403']},
  '2bb1505269d8eb3f414eff6123213fe9ba7942de355e5cd4eef66480699fba36': {'sql': 'select observation_id , result_json from '
                                                                              'observation where request_key = :s0 and '
                                                                              'status in ( :s1 ) order by created_seq '
@@ -4180,7 +4181,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:498']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:517']},
  '3233accd7588a1bbbdea720d2c1c5488ca88f1506d065f4279e4841da45c57b4': {'sql': 'select * from route where goal = :s0 and '
                                                                              'revision = :s1 and status = :s2 order by '
                                                                              'id desc limit 1',
@@ -4348,7 +4349,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:507',
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:526',
                                                                                   '02_BACKEND/semantic_runtime/workflow_evidence.py:22',
                                                                                   '02_BACKEND/semantic_runtime/workflow_evidence.py:30']},
  '33869d01f74069bdd702b790527fe5f7ac34c320bd6ebde3afa6310da81e203f': {'sql': 'select handle from navigation_handle '
@@ -5041,7 +5042,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:254']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:302']},
  '39e1d82dd376016a795461840d27d1faf5eaf1aa3931a59db5c3b2707e5c5a0e': {'sql': 'select 1 from entry where id = :s0',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -5376,7 +5377,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:174']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:211']},
  '3e6fabbde5c2071aa11e7e452d5998cd66bbfc595c2253dc1143d36213bb24ea': {'sql': 'select payload_json from event where '
                                                                              'event_id = :s0',
                                                                       'lists': [],
@@ -5726,7 +5727,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:668']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:687']},
  '40eb4bada65bf28818edba2d9f35630080dc5cbd0ce51a9a3227b9bacad12b2a': {'sql': 'select status , count ( * ) from '
                                                                              'model_attempt group by status',
                                                                       'lists': [],
@@ -7084,8 +7085,8 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           False]],
                                                                                'limit': ['literal', '1', False],
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:451',
-                                                                                  '02_BACKEND/semantic_runtime/legal_agent/output_contract.py:333']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:470',
+                                                                                  '02_BACKEND/semantic_runtime/legal_agent/output_contract.py:338']},
  '54b78efa7f8110cb7e03d3b684202b60f028e7630a34bbd0f2103af5540bdcfb': {'sql': 'select status , input_hash from request '
                                                                              'where id = :s0',
                                                                       'lists': [],
@@ -7849,7 +7850,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:828']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:878']},
  '5e28cf9b53177ace197067bc4a1cd1310b4f698fbefe9684e03a16d00786df01': {'sql': 'select t . operation from '
                                                                              'ad_language_turn t join ad_operation o '
                                                                              'on o . id = t . operation where t . '
@@ -8021,7 +8022,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:241']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:251']},
  '60afc9486e6b4033420262435948e6b82e85997190830d7e85d05109abdfc5b7': {'sql': 'select r . id , r . session , s . owner '
                                                                              ', s . team from request r join session s '
                                                                              'on s . id = r . session where r . status '
@@ -8056,8 +8057,8 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:323',
-                                                                                  '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:229']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:334',
+                                                                                  '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:266']},
  '60cc6027de0399de4f47ffe0bfab0ccf8f8d4aaa19a06dba2b90936ecf3c5914': {'sql': 'select * from source_block where '
                                                                              'document_id = :s0 order by cast ( '
                                                                              'block_id as integer ) , block_id limit '
@@ -9164,7 +9165,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/review_actions.py:83']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/review_actions.py:151']},
  '681aae304ee9fbd1a2785fa31a45c9682bd2907e74fd6360e6c825585091457a': {'sql': 'select payload from node where id = :s0',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -9271,7 +9272,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:273']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:285']},
  '69c177b4bc5b36831c05ddd9fe7cfc939558664e3eb6f0c39d3acd30e3d5dfc3': {'sql': 'select text from reference_body where '
                                                                              'sha256 = :s0',
                                                                       'lists': [],
@@ -9982,7 +9983,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:467']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:486']},
  '71c0605005cc29aa7f8c0eebd5cd57da28a1bf7e1f0703d0ccdd0c37193d1616': {'sql': 'select count ( * ) from term where 1 = 1',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -10685,7 +10686,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:476']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:495']},
  '77fd2a36b8c1584b224638ee2d16bf123fd476dd1f896675895b726cf1fb352d': {'sql': 'select distinct r . json from reference '
                                                                              'r join reference_end e on e . '
                                                                              'reference_id = r . id where e . '
@@ -10809,7 +10810,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           False]],
                                                                                'limit': ['literal', '1', False],
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:193']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:194']},
  '7870c1c2112c5729a3e2a642978bae9560f912f6098666ee53bbf73e755d02c7': {'sql': 'select s . owner , s . team , g . state '
                                                                              'from goal g join session s on s . id = g '
                                                                              '. session where g . id = :s0',
@@ -10838,7 +10839,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:335']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:346']},
  '78b2c1aa783a2554874c4b802c22597ccfc80312fed1703b83b77413d76b6a7e': {'sql': 'select name from sqlite_master where '
                                                                              'type = :s0 and name in ( :s1 )',
                                                                       'lists': ['s1'],
@@ -11211,7 +11212,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'limit': None,
                                                                                'offset': None},
                                                                       'sources': ['02_BACKEND/semantic_runtime/ad_gateway.py:31',
-                                                                                  '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:202']},
+                                                                                  '02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:239']},
  '7f0fee90b0b1ca4fe6215e0991cb06ff1061d07b6f3efd1d65f114db84d8b0de': {'sql': 'select id , payload , hash from outbox '
                                                                              'where kind = :s0 and status = :s1',
                                                                       'lists': [],
@@ -11486,7 +11487,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           False]],
                                                                                'limit': ['literal', '1', False],
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:267']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:274']},
  '821cbd649105ce804337d8132c1bf59c02b05c8bf231e69a783bf3a5226b7414': {'sql': 'select status from sw_queue where id = '
                                                                              ':s0',
                                                                       'lists': [],
@@ -11559,7 +11560,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:614']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:744']},
  '83486329ed60d68388f2c2c982518d5f0223d152517613ded1fd6a86fffed164': {'sql': 'select trashed , review , '
                                                                              'reviewed_revision from ad_object where '
                                                                              'kind = :s0 and entity = :s1',
@@ -11644,6 +11645,66 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'limit': None,
                                                                                'offset': None},
                                                                       'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:471']},
+ '84b2bb0ce558066a2bc5db5ea0c528df15f7d1446647ea255b833fad38037ec3': {'sql': 'select e . id , e . utterance , e . '
+                                                                             'command from event e join request r on r '
+                                                                             '. id = e . request join session s on s . '
+                                                                             'id = r . session where r . session = :s0 '
+                                                                             'and s . owner = :s1 and s . team = :s2 '
+                                                                             'and e . kind = :s3 and r . status = :s4 '
+                                                                             'order by e . id desc limit 12',
+                                                                      'lists': [],
+                                                                      'plan': {'kind': 'select',
+                                                                               'columns': [[['column', 'e', 'id'],
+                                                                                            'id'],
+                                                                                           [['column',
+                                                                                             'e',
+                                                                                             'utterance'],
+                                                                                            'utterance'],
+                                                                                           [['column', 'e', 'command'],
+                                                                                            'command']],
+                                                                               'distinct': False,
+                                                                               'aggregate': False,
+                                                                               'from': ['table', 'e', 'event'],
+                                                                               'joins': [[['table', 'r', 'request'],
+                                                                                          '',
+                                                                                          ['eq',
+                                                                                           ['column', 'r', 'id'],
+                                                                                           ['column', 'e', 'request']],
+                                                                                          []],
+                                                                                         [['table', 's', 'session'],
+                                                                                          '',
+                                                                                          ['eq',
+                                                                                           ['column', 's', 'id'],
+                                                                                           ['column', 'r', 'session']],
+                                                                                          []]],
+                                                                               'where': ['and',
+                                                                                         ['and',
+                                                                                          ['and',
+                                                                                           ['and',
+                                                                                            ['eq',
+                                                                                             ['column', 'r', 'session'],
+                                                                                             ['slot', 's0']],
+                                                                                            ['eq',
+                                                                                             ['column', 's', 'owner'],
+                                                                                             ['slot', 's1']]],
+                                                                                           ['eq',
+                                                                                            ['column', 's', 'team'],
+                                                                                            ['slot', 's2']]],
+                                                                                          ['eq',
+                                                                                           ['column', 'e', 'kind'],
+                                                                                           ['slot', 's3']]],
+                                                                                         ['eq',
+                                                                                          ['column', 'r', 'status'],
+                                                                                          ['slot', 's4']]],
+                                                                               'having': None,
+                                                                               'group': [],
+                                                                               'order': [['order',
+                                                                                          ['column', 'e', 'id'],
+                                                                                          True,
+                                                                                          False]],
+                                                                               'limit': ['literal', '12', False],
+                                                                               'offset': None},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:227']},
  '853d4b4eeceade2b4bf424dad19b8e9d2d30209a77ddf7966e40d7982ac1e0af': {'sql': 'select * from model_view where view_id = '
                                                                              ':s0',
                                                                       'lists': [],
@@ -12033,7 +12094,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:281']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:293']},
  '86321edb8ecb29dab9c5ca6f783d1421410a3406c999c36c07dd9a96315d8368': {'sql': 'select s . document_id from '
                                                                              'reference_end e join source s on s . id '
                                                                              '= e . source_id where e . reference_id = '
@@ -12417,7 +12478,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'offset': None},
                                                                       'sources': ['02_BACKEND/semantic_runtime/basis_links/api.py:93',
                                                                                   '02_BACKEND/semantic_runtime/basis_links/chat.py:53',
-                                                                                  '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:107']},
+                                                                                  '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:108']},
  '8cc89e1af494b946ecfc74dc5ea8c3508d8dd0decdcdee414d9e999847d9ed7d': {'sql': 'select status from observation where '
                                                                              'observation_id = :s0',
                                                                       'lists': [],
@@ -12510,7 +12571,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:214']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:251']},
  '8ce1d793a962508e1f5e05c85ea77b8f2849dadfc2f3d561f2c30ca2cc9337ca': {'sql': 'select * from request where id = :s0',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -12527,7 +12588,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:425']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:525']},
  '8ce63c252de7b80ac90b59fdbaa226474206d1666774234d3576978c89b32fff': {'sql': 'select id , text , ( ( instr ( text , '
                                                                              ':s0 ) > 0 ) + ( instr ( text , :s1 ) > 0 '
                                                                              ') + ( instr ( text , :s2 ) > 0 ) + ( '
@@ -13003,7 +13064,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:675']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:694']},
  '8fe8059b930aa3d2a87d341018d1d20d5d75e533f2bb521ec808eeae565cf6aa': {'sql': 'select * from basis_lineage where '
                                                                              'version_id = :s0',
                                                                       'lists': [],
@@ -13074,7 +13135,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:456']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:558']},
  '9030c236e0498bb565c5fd5f6b31d70077533cc1c78394481e78bf745d0ceba7': {'sql': 'select * from sw_event where id = :s0 '
                                                                              'and scope = :s1',
                                                                       'lists': [],
@@ -13408,7 +13469,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:202',
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:203',
                                                                                   '02_BACKEND/semantic_runtime/legal_agent/unified_publication.py:112']},
  '97f8e612d721b5657cbd454de59c2605bea80a474529e9595d09bf7c01f9b897': {'sql': 'select payload_json , payload_hash from '
                                                                              'event where kind = :s0 and json_extract '
@@ -13588,7 +13649,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:230']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:273']},
  '999543fed52fbd285a5a5858e910ca05578b8f1be8774f47964208785a481ebb': {'sql': 'select scope from sw_investigation where '
                                                                              'id = :s0',
                                                                       'lists': [],
@@ -13609,7 +13670,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:198']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:235']},
  '99c1d04fa5ff193d9e6a4bc3eeef8b66ef8b267f79703e89097a7296d3082f1c': {'sql': 'select payload_json , payload_hash from '
                                                                              'event where kind = :s0',
                                                                       'lists': [],
@@ -13837,7 +13898,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:257']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:267']},
  '9ba4c9290addd41b1b28b53415158670dd0d4cb5b04d884c1cdbae3bba158311': {'sql': 'select count ( * )',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -15091,6 +15152,38 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'limit': None,
                                                                                'offset': None},
                                                                       'sources': ['oracle_query_index.py:SQLMap']},
+ 'ab844f8a3b104d7ddf6db34410fdbd4c7162c3ed9e8e2f06789dc46a509eb6c8': {'sql': 'select id , revision , payload , hash '
+                                                                             'from node where goal = :s0 and stage = '
+                                                                             ':s1 order by id',
+                                                                      'lists': [],
+                                                                      'plan': {'kind': 'select',
+                                                                               'columns': [[['column', '', 'id'], 'id'],
+                                                                                           [['column', '', 'revision'],
+                                                                                            'revision'],
+                                                                                           [['column', '', 'payload'],
+                                                                                            'payload'],
+                                                                                           [['column', '', 'hash'],
+                                                                                            'hash']],
+                                                                               'distinct': False,
+                                                                               'aggregate': False,
+                                                                               'from': ['table', 'node', 'node'],
+                                                                               'joins': [],
+                                                                               'where': ['and',
+                                                                                         ['eq',
+                                                                                          ['column', '', 'goal'],
+                                                                                          ['slot', 's0']],
+                                                                                         ['eq',
+                                                                                          ['column', '', 'stage'],
+                                                                                          ['slot', 's1']]],
+                                                                               'having': None,
+                                                                               'group': [],
+                                                                               'order': [['order',
+                                                                                          ['column', '', 'id'],
+                                                                                          False,
+                                                                                          True]],
+                                                                               'limit': None,
+                                                                               'offset': None},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py:207']},
  'abfae5df4329b531f2831304b24db8ca173782d1e35e2220e56f4b7cf99a5ee2': {'sql': 'select document_id , id , json from '
                                                                              'definition',
                                                                       'lists': [],
@@ -15273,7 +15366,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': ['slot', 's2'],
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:339']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:350']},
  'ae9bba3719f056e3ec42bc2062e25937a7490c4cf04f42dc5744223550450440': {'sql': 'select payload , hash , read_state from '
                                                                              'stage_progress_evidence where goal = :s0 '
                                                                              'and input_hash = :s1',
@@ -15305,7 +15398,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:593']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:723']},
  'af2c02dc061dcd2aa77c39ca3ab44f0ecb63ef8446f9051261083c7d0c1d9ceb': {'sql': 'select id , text , ( ( instr ( text , '
                                                                              ':s0 ) > 0 ) ) as score from '
                                                                              'source_literal where document_id in ( '
@@ -15595,7 +15688,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:267']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/case_repository.py:277']},
  'b2471e0b5183f2b444d9f5eaa0c3ddb20577da6c362b0c4eac0a237b2a66a6ba': {'sql': 'select case_ids_json from model_view '
                                                                              'where view_id = :s0',
                                                                       'lists': [],
@@ -16142,7 +16235,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:483']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:502']},
  'b8a26a26095d476eb28476ff5149343e6bf93d8ddf374b3dbbdbb27355f2541d': {'sql': 'select payload , hash from '
                                                                              'stage_progress where goal = :s0 and '
                                                                              'input_hash = :s1',
@@ -16170,8 +16263,8 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:584',
-                                                                                  '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:573']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:714',
+                                                                                  '02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:703']},
  'b8d4a772cd30f9d1edfa47b1b19640dc721510152ccfb883cf4dc55a1531ab4d': {'sql': 'select term_id , key , text from '
                                                                              'term_surface where ( length ( key ) >= 2 '
                                                                              'and instr ( :s0 , key ) > 0 ) or ( '
@@ -16463,7 +16556,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:181']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:182']},
  'bc773b4e50f811a1c04a57158e9124eff014acdcdaeb4caab528284f5a8513c8': {'sql': 'select distinct investigation from '
                                                                              'sw_session_link where scope = :s0 and '
                                                                              'session = :s1 and detached is null',
@@ -18288,7 +18381,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:209']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:252']},
  'cf33880066d3f9580433d42933d2407bb5d5609bc553f8e1f1396b1742ddd6bd': {'sql': 'select version from entity_head where '
                                                                              'kind = :s0 and entity_id = :s1',
                                                                       'lists': [],
@@ -18539,7 +18632,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:178',
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:179',
                                                                                   '02_BACKEND/semantic_runtime/legal_agent/unified_publication.py:40']},
  'd1f024b3668f8786bf7255493c68ffb6d2d0a4f2e4ad870983fdc8d3aaef17e6': {'sql': 'select u . json',
                                                                       'lists': [],
@@ -18936,7 +19029,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           False]],
                                                                                'limit': ['literal', '1', False],
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:288']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:337']},
  'd7367d0e552ed75d535f4f47bdf5e7872087112103c70ad02207207352ef99cf': {'sql': 'select status from abstraction_state '
                                                                              'where kind = :s0 and id = :s1',
                                                                       'lists': [],
@@ -19201,7 +19294,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:212']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:215']},
  'db718c0a387d17ae22754d63afec67060e8f1b29413c49461c1736c9dd365e50': {'sql': 'select * from sw_event where id in ( '
                                                                              'select event from sw_intake where '
                                                                              'investigation = :s0 ) order by rowid',
@@ -19748,6 +19841,96 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'offset': None},
                                                                       'sources': ['02_BACKEND/semantic_runtime/legal_agent/definition_entry.py:76',
                                                                                   '02_BACKEND/semantic_runtime/legal_agent/ontology_context.py:204']},
+ 'e30b180d67ea58457aaaeab34890bfe91b9c10434fd3b08f5a73003b72a09c3e': {'sql': 'select p . investigation , p . status , '
+                                                                             'json_extract ( journal_text ( p . '
+                                                                             'response ) , :s0 ) as goal_id , '
+                                                                             'json_extract ( journal_text ( p . '
+                                                                             'response ) , :s1 ) as revision from '
+                                                                             'sw_intake i join sw_event c on c . id = '
+                                                                             'i . event join sw_event e on e . '
+                                                                             'aggregate_id = c . aggregate_id and e . '
+                                                                             'seq = c . seq - 1 join sw_intake p on p '
+                                                                             '. event = e . id and p . scope = i . '
+                                                                             'scope and p . session = i . session '
+                                                                             'where i . id = :s2',
+                                                                      'lists': [],
+                                                                      'plan': {'kind': 'select',
+                                                                               'columns': [[['column',
+                                                                                             'p',
+                                                                                             'investigation'],
+                                                                                            'investigation'],
+                                                                                           [['column', 'p', 'status'],
+                                                                                            'status'],
+                                                                                           [['json',
+                                                                                             ['sql',
+                                                                                              'JOURNAL_TEXT(__a8_slot_0__)',
+                                                                                              [['column',
+                                                                                                'p',
+                                                                                                'response']]],
+                                                                                             ['slot', 's0']],
+                                                                                            'goal_id'],
+                                                                                           [['json',
+                                                                                             ['sql',
+                                                                                              'JOURNAL_TEXT(__a8_slot_0__)',
+                                                                                              [['column',
+                                                                                                'p',
+                                                                                                'response']]],
+                                                                                             ['slot', 's1']],
+                                                                                            'revision']],
+                                                                               'distinct': False,
+                                                                               'aggregate': False,
+                                                                               'from': ['table', 'i', 'sw_intake'],
+                                                                               'joins': [[['table', 'c', 'sw_event'],
+                                                                                          '',
+                                                                                          ['eq',
+                                                                                           ['column', 'c', 'id'],
+                                                                                           ['column', 'i', 'event']],
+                                                                                          []],
+                                                                                         [['table', 'e', 'sw_event'],
+                                                                                          '',
+                                                                                          ['and',
+                                                                                           ['eq',
+                                                                                            ['column',
+                                                                                             'e',
+                                                                                             'aggregate_id'],
+                                                                                            ['column',
+                                                                                             'c',
+                                                                                             'aggregate_id']],
+                                                                                           ['eq',
+                                                                                            ['column', 'e', 'seq'],
+                                                                                            ['sql',
+                                                                                             '__a8_slot_0__ - '
+                                                                                             '__a8_slot_1__',
+                                                                                             [['column', 'c', 'seq'],
+                                                                                              ['literal',
+                                                                                               '1',
+                                                                                               False]]]]],
+                                                                                          []],
+                                                                                         [['table', 'p', 'sw_intake'],
+                                                                                          '',
+                                                                                          ['and',
+                                                                                           ['and',
+                                                                                            ['eq',
+                                                                                             ['column', 'p', 'event'],
+                                                                                             ['column', 'e', 'id']],
+                                                                                            ['eq',
+                                                                                             ['column', 'p', 'scope'],
+                                                                                             ['column', 'i', 'scope']]],
+                                                                                           ['eq',
+                                                                                            ['column', 'p', 'session'],
+                                                                                            ['column',
+                                                                                             'i',
+                                                                                             'session']]],
+                                                                                          []]],
+                                                                               'where': ['eq',
+                                                                                         ['column', 'i', 'id'],
+                                                                                         ['slot', 's2']],
+                                                                               'having': None,
+                                                                               'group': [],
+                                                                               'order': [],
+                                                                               'limit': None,
+                                                                               'offset': None},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/review_actions.py:27']},
  'e344e7ceb0a04771504b88df2f209eb1eeb76c59a6e8093a65ee15be59166161': {'sql': 'select coalesce ( max ( seq ) , 0 ) + 1 '
                                                                              'from checkpoint where run_id = :s0',
                                                                       'lists': [],
@@ -19803,7 +19986,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:550']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:569']},
  'e41c51d6048d13aa68de878d2fd4592ff0808d6dd03aa7451df86624ff9de868': {'sql': 'select document_id , block_id , unit_id '
                                                                              'from source_block where document_id in ( '
                                                                              ':s0 ) and instr ( legal_normalized ( '
@@ -19912,7 +20095,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:794']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:844']},
  'e5f0974ec9556f8fbfa9272b313c523752534627582e1449d89eaaff4a35c46f': {'sql': 'select * from case_record',
                                                                       'lists': [],
                                                                       'plan': {'kind': 'select',
@@ -20769,7 +20952,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:531']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:652']},
  'ed52a21a89060f4d594c559c19cce22dcda86a300c86c20d420302929e4b5ca8': {'sql': 'select * from candidate_record where '
                                                                              'case_id = :s0 order by ordinal',
                                                                       'lists': [],
@@ -21122,7 +21305,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:213']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:250']},
  'f1efa84ceb00c65743389de442cf406d16f8bfda370d0a54925877766cf503f7': {'sql': 'select task_id from system_task where '
                                                                              'status in ( :s0 )',
                                                                       'lists': ['s0'],
@@ -21394,7 +21577,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:699']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/progress.py:718']},
  'f85f0ffbe79f975be668118f19594d1d4f23d756d057d41c11be5590abf135e6': {'sql': 'select hash , payload from definition '
                                                                              'where id = :s0 and version = :s1',
                                                                       'lists': [],
@@ -21512,7 +21695,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                'order': [],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:173']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:174']},
  'fa6b24c49b3d44c02e23cb3759347ea6dacb74c8dde159838fe15e56887ec216': {'sql': 'select 1 from ad_view where id = :s0 and '
                                                                              'session = :s1',
                                                                       'lists': [],
