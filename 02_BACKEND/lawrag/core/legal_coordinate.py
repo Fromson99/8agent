@@ -20,7 +20,9 @@ ARTICLE_PATTERN = re.compile(
     r"제\s*(\d{1,4})(?:\s*-\s*(\d{1,4}))?\s*조(?:의\s*(\d{1,3}))?"
 )
 DIVISION_PATTERN = re.compile(rf"제\s*(\d{{1,3}})\s*([{UNITS}])")
-ANNEX_PATTERN = re.compile(r"(별표|별지)\s*(?:제\s*)?(\d{1,3})(?:\s*호)?")
+ANNEX_PATTERN = re.compile(
+    r"(별표|별지)\s*(?:제\s*)?(\d{1,3})(?:\s*-\s*(\d{1,3}))?(?:\s*호)?"
+)
 
 TAIL_PATTERNS = (
     ("항", re.compile(r"\s*제\s*(\d{1,3})\s*항")),
@@ -36,7 +38,7 @@ CONTINUATION_PATTERN = re.compile(
 
 LABEL_ARTICLE_PATTERN = re.compile("^" + ARTICLE_PATTERN.pattern)
 LABEL_DIVISION_PATTERN = re.compile("^" + DIVISION_PATTERN.pattern)
-LABEL_ANNEX_PATTERN = re.compile(r"^(별표|별지)\s*(?:제\s*)?(\d{1,3})")
+LABEL_ANNEX_PATTERN = re.compile("^" + ANNEX_PATTERN.pattern)
 LABEL_CLAUSE_PATTERN = re.compile(r"^제\s*(\d{1,3})\s*항")
 LABEL_ANGLE_CLAUSE_PATTERN = re.compile(r"^<\s*(\d{1,3})\s*>")
 LABEL_HO_PATTERN = re.compile(r"^제\s*(\d{1,3})\s*호")
@@ -62,7 +64,7 @@ def ordinal(token: str) -> int:
 class LegalCoordinate:
     """문서 종류와 무관한 법률 구조 좌표.
 
-    ``dash``는 행정규정의 ``제2-4조``를, ``sub``는 가지조문 ``제2조의4``를
+    ``dash``는 ``제2-4조``·``별표 17-1``의 붙임 번호를, ``sub``는 ``제2조의4``를
     나타낸다. 공개 ``key``는 기존 refs tuple 계약과 동일하다.
     """
 
@@ -77,7 +79,7 @@ class LegalCoordinate:
 
     def key(self) -> tuple:
         branch = (("dash", self.dash, self.sub)
-                  if self.unit == "조" and self.dash is not None else self.sub)
+                  if self.unit in {"조", "별표", "별지"} and self.dash is not None else self.sub)
         return (self.unit, self.n, branch)
 
     def replace_chain(self, chain: tuple[tuple[Optional[str], int], ...]
@@ -128,6 +130,8 @@ class LegalCoordinate:
             text = f"{MOK_LETTERS[self.n - 1]}목"
         elif self.unit in {"별표", "별지"}:
             text = f"{self.unit} {self.n}"
+            if self.dash is not None:
+                text += f"-{self.dash}"
         else:
             text = f"{self.unit or ''}{self.n}"
         if self.sub is not None:
@@ -193,7 +197,8 @@ def parse_label(label: str) -> Optional[LegalCoordinate]:
         return LegalCoordinate(match.group(2), int(match.group(1)))
     match = LABEL_ANNEX_PATTERN.match(text)
     if match:
-        return LegalCoordinate(match.group(1), int(match.group(2)))
+        return LegalCoordinate(match.group(1), int(match.group(2)),
+                               dash=int(match.group(3)) if match.group(3) else None)
     match = LABEL_CLAUSE_PATTERN.match(text) or LABEL_ANGLE_CLAUSE_PATTERN.match(text)
     if match:
         return LegalCoordinate("항", int(match.group(1)))
@@ -254,7 +259,8 @@ def find_coordinates(text: str) -> list[CoordinateOccurrence]:
         found.append(CoordinateOccurrence(
             coordinate, match.group(0), match.start(), match.end()))
     for match in ANNEX_PATTERN.finditer(source):
-        coordinate = LegalCoordinate(match.group(1), int(match.group(2)))
+        coordinate = LegalCoordinate(match.group(1), int(match.group(2)),
+                                     dash=int(match.group(3)) if match.group(3) else None)
         found.append(CoordinateOccurrence(
             coordinate, match.group(0), match.start(), match.end()))
     return sorted(found, key=lambda row: row.start)
