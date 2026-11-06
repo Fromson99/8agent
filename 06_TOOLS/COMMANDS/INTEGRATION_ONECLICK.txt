@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+integration_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$integration_root"
+if [[ ! -x .venv/bin/python ]]; then echo '기존 개발 환경의 .venv가 필요합니다.' >&2; exit 1; fi
+export PYTHONDONTWRITEBYTECODE=1
+exec .venv/bin/python 06_TOOLS/EXPERIMENTS/integration_oneclick/launcher.py "$@"

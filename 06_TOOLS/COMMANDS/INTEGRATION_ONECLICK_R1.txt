@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+integration_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$integration_root"
+if [[ ! -x .venv/bin/python ]]; then
+  echo '저장소 Python 실행 환경(.venv)이 없습니다. 기존 개발 환경에서 실행하세요.' >&2
+  exit 1
+fi
+export PYTHONDONTWRITEBYTECODE=1
+exec .venv/bin/python 06_TOOLS/EXPERIMENTS/adr_1351/matrix.py "$@"
