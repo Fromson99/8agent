@@ -60,3 +60,7 @@ tmp/pdfs/legal-rag-review/** -text -eol
 08_DEPLOYMENT/DATAIKU/gold_zip_flow_20261104_r1/package/GOLD_R19_MAPPING.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 08_DEPLOYMENT/DATAIKU/gold_zip_flow_20261104_r1/package/engine/TABLES.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 08_DEPLOYMENT/GENOS/handoffs/silver_access_request_20261104_r1/GENOS_SILVER_S1_TABLES_20261104_R1.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# November 5 production Gold handoff tables are bound by their original CRLF bytes.
+08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261105_r4/package/engine/TABLES.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261105_r5/package/engine/TABLES.csv -text -eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

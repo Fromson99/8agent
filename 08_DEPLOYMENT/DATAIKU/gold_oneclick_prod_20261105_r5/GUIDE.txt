@@ -1,0 +1,13 @@
+Dataiku 운영 Gold 적재 R5 · 2026-11-05
+
+사용 대상
+운영 R4가 스키마 검사 중 IDD_B003_LGL_VCTR_ITEM.BODY_UNIT_ID에서 TYPE_MISMATCH로 멈춘 노트북에 사용합니다. 운영 등록 화면의 본문단위ID 길이 100을 반영했습니다. R5는 기존 문자 컬럼 규약을 적용해 VARCHAR2(100 BYTE) NOT NULL, 기본값 없음을 검사합니다. 화면에는 BYTE/CHAR 단위가 표시되지 않아 물리 속성은 운영 사전 검사에서 확인합니다. R4의 원문 게시 등록일시 처리도 포함되어 있습니다.
+
+실행
+1. 기존 R4 노트북에서 실제 사용한 PARAMS 블록을 복사해 둡니다.
+2. 기존 CODE_FOLDER_ID의 Managed Folder에 DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip을 압축 상태로 올립니다. 이미 올린 입력 데이터 34조각과 SHA 파일 2개를 재사용합니다.
+3. 기존 작업이 종료됐는지 확인하고 노트북 커널을 재시작합니다. 새 셀에 DATAIKU_GOLD_PROD_RUN_R5.txt 전체를 붙여 넣고 맨 위 PARAMS 블록을 1번 값으로 교체합니다.
+4. 그 셀을 한 번 실행합니다. 최종 출력 PRODUCTION_GOLD_LOADED와 report.json의 건수를 확인합니다.
+
+재개
+R5 첫 실행은 R4와 별도 작업 기록을 사용합니다. 사진의 R4 실행은 inspect에서 멈췄습니다. R5가 시작된 뒤 중단되면 같은 설정과 WORK_DIR에서 R5 셀을 다시 사용합니다. 기존 상태와 로그를 보존합니다. 이미 적재한 판본에 대해 원래 체크포인트가 필요하다는 메시지가 나오면 원래 작업 기록을 확인합니다.

@@ -1,0 +1,135 @@
+# 사내 개발계 Dataiku Python 노트북 전용. 아래 네 값은 개발계 실제 값을 입력합니다.
+PARAMS = {
+    'CODE_FOLDER_ID': 'ehA8dpVm',       # 코드 ZIP을 업로드한 개발계 Managed Folder ID
+    'ORACLE_CONNECTION': 'AIDP',    # 개발계 Oracle 연결 이름
+    'EXPECTED_DB_USER': 'PIDD2APP',     # 해당 연결의 Oracle 접속 계정 (대문자)
+    'DEV_OWNER': 'SIDDS',            # 시험 테이블 생성 또는 적재가 허용된 개발 스키마 (대문자)
+}
+if any(not value.strip() for value in PARAMS.values()):
+    raise ValueError('개발계 설정 네 값을 모두 입력하세요.')
+
+import hashlib
+import io
+import json
+from pathlib import Path, PurePosixPath
+import stat
+import sys
+import tempfile
+import zipfile
+import dataiku
+
+ZIP_NAME = 'DATAIKU_GOLD_ONECLICK_PROD_20261105_R4.zip'
+ZIP_SHA256 = '6a9ec341321c6b2301498b7fb0b6c7d6e7fbae939f65a197413d050815106fab'
+
+
+def open_package():
+    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])
+    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]
+    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)
+    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)
+    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')
+    root = Path(tempfile.gettempdir()) / ('gold-oneclick-prod-code-'+ZIP_SHA256[:16])
+    root.mkdir(exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))
+        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:
+            raise ValueError('CODE_ZIP_MEMBERS')
+        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if p.is_absolute() or '..' in p.parts or '\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):
+                raise ValueError('CODE_ZIP_PATH')
+            dest = root.joinpath(*p.parts)
+            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')
+            content = z.read(item)
+            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:
+                raise ValueError('CODE_FILE_HASH')
+            if dest.exists():
+                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')
+            else:
+                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)
+    sys.path.insert(0,str(root))
+    return root
+
+
+FLOW_PACKAGE = open_package()
+
+# Restart the kernel once if a previous Flow/sample loader was imported.
+for _name in ("prod_run","prod_config","prod_pipeline","prod_guard","prod_storage","prod_state","prod_panel",
+              "run_full","gold_io","fast_loader","fast_insert","vector_stage","jdbc_transport","mesh_embedding"):
+    _loaded=sys.modules.get(_name)
+    if _loaded is not None and FLOW_PACKAGE.resolve() not in Path(getattr(_loaded,"__file__","")).resolve().parents:
+        raise RuntimeError("RESTART_KERNEL_OTHER_LOADER:"+_name)
+
+
+"""Single-table Dataiku notebook smoke test, using the verified R4 loader."""
+from pathlib import Path
+import json
+import sys
+from tempfile import TemporaryDirectory
+
+
+def run_one_table(params, package):
+    from prod_config import identifier, target
+    sys.path[:0] = [str(package/'engine'), str(package/'engine/vendor'),
+                    str(package/'engine/vendor/02_BACKEND')]
+    from prod_pipeline import Contract, code_binding, connection
+    from gold_io import Stop, canonical, digest, literal
+
+    code_binding()
+    owner = identifier(params['DEV_OWNER'])
+    expected_user = identifier(params['EXPECTED_DB_USER'])
+    if not params['ORACLE_CONNECTION'].strip():
+        raise ValueError('개발계 ORACLE_CONNECTION을 입력하세요.')
+    name = 'TST_B003_LGL_SRC_POST_R4'
+    cfg = target({'TARGET_MODE':'GOLD', 'GOLD_OWNER':owner, 'TABLE_NAMES':{'SRC_POST':name}})
+    db = connection({'params':params})
+    try:
+        login = db.query("SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS LOGIN_USER FROM DUAL")
+        if login != [{'LOGIN_USER':expected_user}]:
+            raise Stop('DEVELOPMENT_DB_USER_MISMATCH:' + str(login))
+        with TemporaryDirectory(prefix='gold-one-table-r4-') as directory:
+            path = Path(directory)/'contract.json'
+            path.write_text(json.dumps(cfg), encoding='utf-8')
+            contract = Contract(path)
+            table = contract.table('SRC_POST')
+            tables = db.query('SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER=' + literal(owner)
+                              + ' AND TABLE_NAME=' + literal(name))
+            if not tables:
+                ddl = ('CREATE TABLE ' + table + ' (BODY_POST_HASH_VALU VARCHAR2(100 BYTE) PRIMARY KEY,'
+                       ' DTLS_HASH_VALU VARCHAR2(100 BYTE) NOT NULL, BODY_POST_IFMN_CTNT CLOB NOT NULL,'
+                       ' RGSN_ASTM TIMESTAMP NOT NULL)')
+                db.block('BEGIN EXECUTE IMMEDIATE ' + literal(ddl) + '; END;')
+            profile = contract.bind_registration_time(db)
+            contract.preflight(db, 'SRC_POST')
+            if not profile['type'].startswith('TIMESTAMP(') or 'TIME ZONE' in profile['type']:
+                raise Stop('DEV_TEST_EXPECTS_PLAIN_TIMESTAMP:' + canonical(profile))
+            body = {'purpose':'Gold R4 등록일시 INSERT 시험', 'version':1}
+            row = {'DOC_POST_HASH_VALU':digest(body),
+                   'MNFST_HASH_VALU':digest('gold-registration-time-one-table-r4'),
+                   'DOC_POST_IFMN_CTNT':canonical(body)}
+            readback = ("SELECT BODY_POST_HASH_VALU, DTLS_HASH_VALU, BODY_POST_IFMN_CTNT,"
+                        " TO_CHAR(RGSN_ASTM,'YYYY-MM-DD HH24:MI:SS.FF9') AS REGISTERED_AT FROM "
+                        + table + ' WHERE BODY_POST_HASH_VALU=' + literal(row['DOC_POST_HASH_VALU']))
+            records = db.query(readback)
+            action = 'REUSED'
+            if not records:
+                sql, binds = contract.batch('SRC_POST', [row])
+                db.block(sql, binds, transaction_managed=True)
+                action = 'INSERTED'
+                records = db.query(readback)
+            if len(records) != 1:
+                raise Stop('DEV_REGISTRATION_ROW_COUNT:' + str(len(records)))
+            actual = dict(records[0])
+            stamp = actual.pop('REGISTERED_AT')
+            expected = {contract.col('SRC_POST', k):v for k,v in row.items()}
+            if actual != expected or not stamp:
+                raise Stop('DEV_REGISTRATION_ROW_MISMATCH:' + table)
+            return {'status':'DEV_ONE_TABLE_PASS', 'table':table, 'action':action,
+                    'registration_column':profile, 'sample_key':row['DOC_POST_HASH_VALU'],
+                    'registered_at':stamp, 'matching_rows':len(records)}
+    finally:
+        db.close()
+
+RESULT = run_one_table(PARAMS, FLOW_PACKAGE)
+print(json.dumps(RESULT, ensure_ascii=False, indent=2))

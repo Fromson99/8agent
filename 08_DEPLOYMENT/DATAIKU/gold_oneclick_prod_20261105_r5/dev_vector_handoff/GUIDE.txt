@@ -1,0 +1,36 @@
+사내 개발계 Dataiku · Gold R5 벡터 3개 테이블 시험
+
+1. 실행
+LEGAL_RAG 프로젝트의 Managed Folder ehA8dpVm에 DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip을 압축 상태로 올립니다. 같은 이름의 R5 ZIP을 이미 올렸으면 그 파일 한 개를 사용합니다.
+같은 프로젝트의 Python 노트북에서 새 커널을 열고 DATAIKU_GOLD_DEV_VECTOR_3TABLES_R5.txt 전체를 한 셀에 붙여 한 번 실행합니다.
+이전 개발계 설정을 채웠습니다. 폴더는 ehA8dpVm, Oracle 연결은 AIDP, 접속 계정은 PIDD2APP, 소유자는 지난 R4 시험이 성공한 SIDDA입니다. 별도 셸 명령·작업 폴더 설정은 없습니다.
+
+2. 시험 대상
+SIDDA.TST_B003_LGL_VCTR_ITEM_R5   한글 포함 100바이트 본문단위ID와 1024차원 소수 벡터 1행
+SIDDA.TST_B003_LGL_VCTR_POST_R5   같은 벡터 게시 ID의 게시 정보 1행
+SIDDA.TST_B003_LGL_VCTR_HEAD_R5   해당 게시 ID를 가리키는 채널 번호 1의 현재 버전 1행
+
+셀이 없는 시험 표와 해당 키·인덱스를 만들고, R5의 컬럼·PK·인덱스 검사를 수행합니다. 이미 있으면 같은 이름의 개발 시험 표를 다시 검사합니다. 처음 만드는 ITEM의 BODY_UNIT_ID는 VARCHAR2(100 BYTE) NOT NULL이며 EMBD_VCTR는 VECTOR NOT NULL입니다. 자료형의 세부 정의는 Oracle 사전 ALL_TAB_COLUMNS.VECTOR_INFO에서 읽습니다.
+고정된 합성 벡터를 R5의 실제 INSERT로 기록합니다. 원래 문자열과 LENGTHB 100, 저장 형식 FLOAT32, 차원 1024와 모든 좌표를 다시 읽어 비교합니다. POST의 본문과 HEAD가 가리키는 게시 ID·채널까지 일치해야 통과합니다. 34조각 데이터와 임베딩 모델은 사용하지 않습니다.
+
+3. 성공·재실행
+마지막 JSON의 status가 DEV_R5_VECTOR_3_TABLES_PASS, stored_id_bytes가 100, stored_dimensions가 1024, stored_format이 FLOAT32이고 matching_rows가 세 표 모두 1이면 성공입니다. 첫 신규 행은 INSERTED, 이미 정확한 행이 있으면 REUSED로 표시합니다. 시험 표와 행은 개발계에 남깁니다. 응답이 끊기면 같은 셀을 다시 실행해 저장된 키를 확인할 수 있습니다.
+DB에 표시된 실제 선언은 R5_ITEM_METADATA의 VECTOR_INFO, ID의 길이와 BYTE 여부는 DATA_LENGTH와 CHAR_USED(B)에서 확인합니다. 이 출력은 메시지에 표시된 시험 표를 대상으로 합니다.
+
+4. 멈추면 확인할 내용
+개발 셀은 VECTOR(*,*,DENSE), VECTOR(*,FLOAT32,DENSE), VECTOR(1024,FLOAT32,DENSE) 세 선언에서 시험을 진행합니다. VECTOR_INFO 조회가 지원되지 않거나 표가 보이지 않으면 권한·Oracle 사전 조회 오류를 표시합니다.
+DEV_VECTOR_DECLARATION_NOT_VERIFIED는 실제 선언이 위 세 가지와 다르다는 뜻입니다. 768차원 고정이나 INT8 고정의 경우 개발 셀은 시험 행을 쓰기 전에 멈춥니다. 운영 R5 자체의 첫 검사 범위는 자료형 이름 VECTOR까지입니다. 로컬 실제 Oracle에서 R5의 INSERT를 별도로 대조했을 때, 768 고정 열에는 ORA-51803이 발생했고 INT8 고정 열은 소수 값을 정수 형식으로 바꿔 저장했습니다.
+TYPE_MISMATCH가 BODY_UNIT_ID를 가리키면 R5의 기준 VARCHAR2(100 BYTE) NOT NULL과 실제 메타데이터를 대조하세요. R4의 기준 길이는 50바이트였습니다. 개발 R5 시험 성공은 운영 표의 물리 정의를 확인하는 별도 작업과 구분합니다.
+ORA-01031이 뜨면 위 세 표·인덱스 생성과 시험 표 SELECT/INSERT에 필요한 개발계 권한을 확인하세요. 다른 데이터나 기존 운영 테이블을 교체하지 않습니다.
+
+첨부파일
+DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip   검증된 R5 코드 원본
+DATAIKU_GOLD_DEV_VECTOR_3TABLES_R5.txt        개발용 시험 실행 셀
+GUIDE.txt                                    실행·결과 해석
+VALIDATION.json                              로컬 Oracle 시험 결과
+SHA256SUMS.txt                               첨부 파일 해시
+
+Oracle 참고 문서
+VECTOR 자료형 https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/Data-Types.html
+ALL_TAB_COLUMNS https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_TAB_COLUMNS.html
+ORA-51803 https://docs.oracle.com/en/error-help/db/ora-51803/

@@ -1,0 +1,147 @@
+# Paste ALL of this into a SEPARATE Dataiku Python notebook on the same DSS node.
+# The loading notebook is busy: another cell in that notebook will only queue.
+# Reads existing job JSON/logs; does not connect to DB or change/restart the loader.
+JOB_DIR = ''  # Optional: actual job directory containing config.json/prepared.json.
+PHOTO_RUN_ID = '20261105-092931-702353cf'
+PHOTO_FILE_ROWS = 6981746
+PREVIOUS_CHECK_ROWS = None  # Optional: previous SQL COMMITTED_SEARCH_ROWS (integer).
+
+import hashlib
+import json
+from pathlib import Path
+import re
+import tempfile
+
+
+def read_json(path, limit=64 * 1024**2):
+    with path.open('rb') as stream:
+        raw = stream.read(limit + 1)
+    if len(raw) > limit:
+        raise ValueError('METADATA_TOO_LARGE:' + str(path))
+    return json.loads(raw)
+
+
+def digest(value):
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True,
+                     separators=(',', ':'), allow_nan=False).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
+def identifier(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,29}', value):
+        raise ValueError('INVALID_ORACLE_IDENTIFIER')
+    return value
+
+
+def count(value):
+    if type(value) is not int or value < 0:
+        raise ValueError('INVALID_ROW_COUNT')
+    return value
+
+
+def inspect_job():
+    if JOB_DIR:
+        root = Path(JOB_DIR).expanduser().resolve(strict=True)
+    else:
+        parent = Path(tempfile.gettempdir()) / 'gold-oneclick-production'
+        matches = sorted(parent.glob('*/logs/' + PHOTO_RUN_ID + '.json'))
+        if len(matches) != 1:
+            raise ValueError('JOB_NOT_UNIQUE_ON_THIS_DSS_NODE: use the actual WORK_DIR/key '
+                             'from the loading notebook log path as JOB_DIR; found=' + str(len(matches)))
+        root = matches[0].parent.parent
+    cfg = read_json(root / 'config.json')
+    prepared = read_json(root / 'prepared.json')
+    state = read_json(root / 'load/state.json')
+    query_id = digest(prepared['query'])
+    source_id = digest(prepared['source'])
+    if state['binding']['query_release'] != query_id or state['binding']['source_release'] != source_id:
+        raise ValueError('JOB_PLAN_BINDING_MISMATCH')
+    table = cfg['target']['tables']['SRCH_ROW']
+    qualified = identifier(table['owner']) + '.' + identifier(table['name'])
+    release_column = identifier(table['columns']['RFRN_POST_HASH_VALU']['name'])
+    by_asset = {asset: 0 for asset in prepared['paths']}
+    for spec in prepared['query']['tables'].values():
+        by_asset[spec['asset']] += count(spec['rows'])
+    planned = sum(by_asset.values())
+    acknowledged = sum(count(v.get('rows', 0)) for v in state.get('query', {}).values())
+    for asset, value in state.get('query', {}).items():
+        if asset not in by_asset or count(value.get('rows', 0)) > by_asset[asset]:
+            raise ValueError('CHECKPOINT_OUTSIDE_PLAN')
+    if acknowledged > planned:
+        raise ValueError('CHECKPOINT_EXCEEDS_PLAN')
+
+    # Reconstruct the whole-job baseline at the photographed LOAD event.
+    # Completed files are logged before the current file is loaded.
+    log = root / 'logs' / (PHOTO_RUN_ID + '.log')
+    completed = set()
+    candidates = set()
+    paths = list(by_asset)
+    if log.is_file():
+        with log.open(encoding='utf-8') as stream:
+            for line in stream:
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(event, dict):
+                    continue
+                phase = event.get('phase')
+                if phase in ('QUERY_FILE_ACK', 'QUERY_FILE_CHECKPOINT_REUSED'):
+                    asset = event.get('asset')
+                    if asset not in by_asset:
+                        raise ValueError('LOG_ASSET_OUTSIDE_PLAN')
+                    if phase == 'QUERY_FILE_ACK' and event.get('rows') != by_asset[asset]:
+                        raise ValueError('LOG_ACK_PLAN_MISMATCH')
+                    completed.add(asset)
+                if (phase == 'LOAD' and event.get('table') == qualified
+                        and event.get('rows') == PHOTO_FILE_ROWS):
+                    if completed != set(paths[:len(completed)]) or len(completed) >= len(paths):
+                        raise ValueError('PHOTO_FILE_SEQUENCE_UNCONFIRMED')
+                    asset = paths[len(completed)]
+                    if PHOTO_FILE_ROWS > by_asset[asset]:
+                        raise ValueError('PHOTO_FILE_COUNT_EXCEEDS_PLAN')
+                    candidates.add((asset, sum(by_asset[p] for p in completed) + PHOTO_FILE_ROWS))
+    photo_total = next(iter(candidates))[1] if len(candidates) == 1 else None
+    source_counts = {k: count(v['rows']) for k, v in prepared['source']['source_rows'].items()}
+    result = {
+        'job_dir': str(root), 'table': qualified, 'query_release_id': query_id,
+        'planned_search_rows': planned,
+        'acknowledged_search_rows_at_state_read': acknowledged,
+        'remaining_search_rows_from_checkpoint': planned - acknowledged,
+        'source_planned_rows_by_kind': source_counts,
+        'photo_current_file_rows': PHOTO_FILE_ROWS,
+        'photo_total_search_rows': photo_total,
+        'photo_baseline_status': 'EXACT_LOG_EVENT_FOUND' if photo_total is not None else 'NOT_UNIQUELY_RECOVERED',
+        'pending_batch_exists': state.get('pending') is not None,
+        'checkpoint_note': 'acknowledged checkpoints; DB committed count is verified by the SQL below',
+        'completion_note': 'search remaining only; publication/vectors/final report follow',
+    }
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    baseline = 'NULL' if photo_total is None else str(photo_total)
+    previous = 'NULL' if PREVIOUS_CHECK_ROWS is None else str(count(PREVIOUS_CHECK_ROWS))
+    print('\nCopy this SELECT into a separate Oracle SQL notebook using the loading connection:')
+    print(f'''WITH P AS (
+    SELECT '{query_id}' AS QUERY_RELEASE_ID,
+           {planned} AS EXPECTED_ROWS,
+           CAST({baseline} AS NUMBER) AS PHOTO_TOTAL_ROWS,
+           CAST({previous} AS NUMBER) AS PREVIOUS_CHECK_ROWS
+    FROM DUAL
+), C AS (
+    SELECT COUNT(*) AS N FROM {qualified} R CROSS JOIN P
+    WHERE R.{release_column} = P.QUERY_RELEASE_ID
+)
+SELECT SYSTIMESTAMP AS CHECKED_AT, P.QUERY_RELEASE_ID,
+       C.N AS COMMITTED_SEARCH_ROWS,
+       P.EXPECTED_ROWS AS PLANNED_SEARCH_ROWS,
+       P.EXPECTED_ROWS - C.N AS REMAINING_SEARCH_ROWS,
+       ROUND(100 * C.N / NULLIF(P.EXPECTED_ROWS, 0), 2) AS SEARCH_PERCENT,
+       P.PHOTO_TOTAL_ROWS,
+       C.N - P.PHOTO_TOTAL_ROWS AS ADDED_AFTER_PHOTO,
+       C.N - P.PREVIOUS_CHECK_ROWS AS ADDED_SINCE_LAST_CHECK,
+       CASE WHEN C.N > P.EXPECTED_ROWS THEN 'ROW_COUNT_EXCEEDS_PLAN'
+            WHEN C.N = P.EXPECTED_ROWS THEN 'SEARCH_ROWS_MATCH_PLAN'
+            ELSE 'SEARCH_ROWS_REMAIN' END AS SEARCH_STATUS
+FROM P CROSS JOIN C;''')
+
+
+inspect_job()

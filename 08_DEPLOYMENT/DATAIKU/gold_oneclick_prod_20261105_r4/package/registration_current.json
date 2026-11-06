@@ -1,0 +1,557 @@
+{
+  "schema_version": "gold-physical-map-v1",
+  "revision": "20261104-b003-chan-no-registration-r5",
+  "owner": null,
+  "variant": "B003",
+  "tables": {
+    "DOC_VER": {
+      "name": "IDD_B003_LGL_DOC_VER",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_NAME": {
+          "name": "RGLT_DOC_NAME",
+          "type": "VARCHAR2(2250 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "DOC_ADDN_IFMN_CTNT": {
+          "name": "DOC_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID"
+      ],
+      "indexes": []
+    },
+    "DOC_UNIT": {
+      "name": "IDD_B003_LGL_DOC_UNIT",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "UPPR_STRC_UNIT_ID": {
+          "name": "UPPR_STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "STRC_UNIT_ADDN_IFMN_CTNT": {
+          "name": "STRC_UNIT_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "STRC_UNIT_ID"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "UPPR_STRC_UNIT_ID",
+          "STRC_UNIT_ID"
+        ]
+      ]
+    },
+    "DOC_BLK": {
+      "name": "IDD_B003_LGL_DOC_BLK",
+      "columns": {
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "BODY_SLC_ID": {
+          "name": "BODY_SLC_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_CTNT": {
+          "name": "BODY_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BODY_SLC_ADDN_IFMN_CTNT": {
+          "name": "BODY_SLC_ADDN_IFMN_CTNT",
+          "type": "CLOB",
+          "required": false,
+          "default": null
+        },
+        "ADD_INFO_TEXT_OMIT_YN": {
+          "name": "ADDN_IFMN_UN_APPN_YN",
+          "type": "VARCHAR2(1 BYTE)",
+          "required": false,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "MNFST_HASH_VALU",
+        "DOC_ID",
+        "BODY_SLC_ID"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_ID",
+          "STRC_UNIT_ID",
+          "BODY_SLC_ID"
+        ]
+      ]
+    },
+    "SRC_POST": {
+      "name": "IDD_B003_LGL_SRC_POST",
+      "columns": {
+        "DOC_POST_HASH_VALU": {
+          "name": "BODY_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "MNFST_HASH_VALU": {
+          "name": "DTLS_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_POST_IFMN_CTNT": {
+          "name": "BODY_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        },
+        "RGSN_AITM": {
+          "name": "RGSN_ASTM",
+          "type": "TIMESTAMP(6) WITH TIME ZONE",
+          "required": true,
+          "default": "SYSTIMESTAMP"
+        }
+      },
+      "primary_key": [
+        "DOC_POST_HASH_VALU"
+      ],
+      "indexes": [
+        [
+          "MNFST_HASH_VALU",
+          "DOC_POST_HASH_VALU"
+        ]
+      ]
+    },
+    "SRCH_POST": {
+      "name": "IDD_B003_LGL_SRCH_POST",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_POST_IFMN_CTNT": {
+          "name": "RFRN_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "indexes": []
+    },
+    "SRCH_ROW": {
+      "name": "IDD_B003_LGL_SRCH_ROW",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_DTA_TYPE_VALU": {
+          "name": "RFRN_DTA_TYPE_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_DTA_ID": {
+          "name": "RFRN_DTA_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "RFRN_DTA_IDNF_CTNT": {
+          "name": "RFRN_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "BLNG_DTA_IDNF_CTNT": {
+          "name": "BLNG_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "TAGT_DTA_IDNF_CTNT": {
+          "name": "TAGT_DTA_IDNF_CTNT",
+          "type": "VARCHAR2(3000 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "SRCH_DATA_HASH_VALU": {
+          "name": "RFRN_DTA_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SRCH_DATA_CTNT": {
+          "name": "RFRN_DTA_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU",
+        "RFRN_DTA_TYPE_VALU",
+        "RFRN_DTA_ID"
+      ],
+      "indexes": [
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "RFRN_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "BLNG_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "TAGT_DTA_IDNF_CTNT"
+        ],
+        [
+          "RFRN_POST_HASH_VALU",
+          "RFRN_DTA_TYPE_VALU",
+          "DOC_ID"
+        ]
+      ]
+    },
+    "SRCH_CHNL": {
+      "name": "IDD_B003_LGL_SRCH_CHNL",
+      "columns": {
+        "RFRN_CHNL_NAME": {
+          "name": "RFRN_CHNL_NAME",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_NO",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_CHNL_NAME"
+      ],
+      "indexes": []
+    },
+    "ONTL_POST": {
+      "name": "IDD_B003_LGL_ONTL_POST",
+      "columns": {
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "CNCP_GROP_ID": {
+          "name": "CNCP_GROP_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "WORK_VER_NO": {
+          "name": "WORK_VER_NO",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        },
+        "POST_CTNT_HASH_VALU": {
+          "name": "POST_CTNT_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "POST_KNWL_CTNT": {
+          "name": "POST_KNWL_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "ONTL_POST_ID"
+      ],
+      "indexes": [
+        [
+          "CNCP_GROP_ID",
+          "WORK_VER_NO"
+        ]
+      ]
+    },
+    "ONTL_HEAD": {
+      "name": "IDD_B003_LGL_ONTL_HEAD",
+      "columns": {
+        "CNCP_GROP_ID": {
+          "name": "CNCP_GROP_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_NO",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "CNCP_GROP_ID"
+      ],
+      "indexes": [
+        [
+          "ONTL_POST_ID",
+          "CNCP_GROP_ID"
+        ]
+      ]
+    },
+    "ONTL_ANC": {
+      "name": "IDD_B003_LGL_ONTL_ANC",
+      "columns": {
+        "ONTL_POST_ID": {
+          "name": "ONTL_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_LCT_HASH_VALU": {
+          "name": "DOC_LCT_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_HASH_VALU": {
+          "name": "DOC_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "STRC_UNIT_ID": {
+          "name": "STRC_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "ONTL_POST_ID",
+        "DOC_LCT_HASH_VALU"
+      ],
+      "indexes": [
+        [
+          "DOC_LCT_HASH_VALU",
+          "ONTL_POST_ID"
+        ]
+      ]
+    },
+    "VCTR_POST": {
+      "name": "IDD_B003_LGL_VCTR_POST",
+      "columns": {
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_POST_IFMN_CTNT": {
+          "name": "VCTR_POST_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "VCTR_POST_ID"
+      ],
+      "indexes": []
+    },
+    "VCTR_ITEM": {
+      "name": "IDD_B003_LGL_VCTR_ITEM",
+      "columns": {
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_SEG_ID": {
+          "name": "VCTR_SCTN_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "DOC_ID": {
+          "name": "RGLT_DOC_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "SRC_UNIT_ID": {
+          "name": "BODY_UNIT_ID",
+          "type": "VARCHAR2(50 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_META_CTNT": {
+          "name": "VCTR_DTLS_IFMN_CTNT",
+          "type": "CLOB",
+          "required": true,
+          "default": null
+        },
+        "EMBD_VCTR_VALU": {
+          "name": "EMBD_VCTR",
+          "type": "VECTOR(*,FLOAT32)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "VCTR_POST_ID",
+        "VCTR_SEG_ID"
+      ],
+      "indexes": [
+        [
+          "VCTR_POST_ID",
+          "DOC_ID",
+          "SRC_UNIT_ID",
+          "VCTR_SEG_ID"
+        ]
+      ]
+    },
+    "VCTR_HEAD": {
+      "name": "IDD_B003_LGL_VCTR_HEAD",
+      "columns": {
+        "RFRN_POST_HASH_VALU": {
+          "name": "RFRN_POST_HASH_VALU",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": true,
+          "default": null
+        },
+        "VCTR_POST_ID": {
+          "name": "VCTR_POST_ID",
+          "type": "VARCHAR2(100 BYTE)",
+          "required": false,
+          "default": null
+        },
+        "CHAN_NO": {
+          "name": "CHAN_NO",
+          "type": "NUMBER(30,0)",
+          "required": true,
+          "default": null
+        }
+      },
+      "primary_key": [
+        "RFRN_POST_HASH_VALU"
+      ],
+      "indexes": []
+    }
+  },
+  "owner_note": "Actual field Gold owner must be supplied; no local-test owner assumed."
+}

@@ -1,0 +1,105 @@
+{
+  "test": "R5 development vector three-table cell",
+  "local_oracle": "PASS",
+  "Dataiku_SDK": "local substitute",
+  "corporate_development_execution": "awaiting field run",
+  "zip_sha256": "f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0",
+  "execution_txt_sha256": "b2fc0f9f062e3a2f6020abb912467badd2f14e4ab85809f235a04ecb7c93e19d",
+  "archive_members": 92,
+  "R5_regression_tests_passed": 52,
+  "lost_item_commit_response_recovered_without_duplicates": true,
+  "cases": {
+    "VECTOR": {
+      "status": "DEV_R5_VECTOR_3_TABLES_PASS",
+      "vector_info": "VECTOR(*,*,DENSE)",
+      "stored_id_bytes": 100,
+      "stored_format": "FLOAT32",
+      "coordinates_verified": 1024,
+      "counts": {
+        "TST_B003_LGL_VCTR_HEAD_R5": 1,
+        "TST_B003_LGL_VCTR_ITEM_R5": 1,
+        "TST_B003_LGL_VCTR_POST_R5": 1
+      },
+      "rerun": {
+        "VCTR_ITEM": "REUSED",
+        "VCTR_POST": "REUSED",
+        "VCTR_HEAD": "REUSED"
+      }
+    },
+    "VECTOR(*,FLOAT32)": {
+      "status": "DEV_R5_VECTOR_3_TABLES_PASS",
+      "vector_info": "VECTOR(*,FLOAT32,DENSE)",
+      "stored_id_bytes": 100,
+      "stored_format": "FLOAT32",
+      "coordinates_verified": 1024,
+      "counts": {
+        "TST_B003_LGL_VCTR_HEAD_R5": 1,
+        "TST_B003_LGL_VCTR_ITEM_R5": 1,
+        "TST_B003_LGL_VCTR_POST_R5": 1
+      },
+      "rerun": {
+        "VCTR_ITEM": "REUSED",
+        "VCTR_POST": "REUSED",
+        "VCTR_HEAD": "REUSED"
+      }
+    },
+    "VECTOR(1024,FLOAT32)": {
+      "status": "DEV_R5_VECTOR_3_TABLES_PASS",
+      "vector_info": "VECTOR(1024,FLOAT32,DENSE)",
+      "stored_id_bytes": 100,
+      "stored_format": "FLOAT32",
+      "coordinates_verified": 1024,
+      "counts": {
+        "TST_B003_LGL_VCTR_HEAD_R5": 1,
+        "TST_B003_LGL_VCTR_ITEM_R5": 1,
+        "TST_B003_LGL_VCTR_POST_R5": 1
+      },
+      "rerun": {
+        "VCTR_ITEM": "REUSED",
+        "VCTR_POST": "REUSED",
+        "VCTR_HEAD": "REUSED"
+      }
+    },
+    "VECTOR(768,FLOAT32) / VARCHAR2(100 BYTE)": {
+      "dev_cell": "STOP_BEFORE_SAMPLE_WRITE",
+      "reason": "DEV_VECTOR_DECLARATION_NOT_VERIFIED",
+      "sample_writes": 0,
+      "raw_R5_check": {
+        "raw_R5_insert": "ORA-51803",
+        "rows": 0
+      }
+    },
+    "VECTOR(1024,INT8) / VARCHAR2(100 BYTE)": {
+      "dev_cell": "STOP_BEFORE_SAMPLE_WRITE",
+      "reason": "DEV_VECTOR_DECLARATION_NOT_VERIFIED",
+      "sample_writes": 0,
+      "raw_R5_check": {
+        "raw_R5_insert": "STORED_AS_INT8",
+        "dimensions": 1024,
+        "input_first_four": [
+          0.25,
+          0.75,
+          -1.75,
+          2.25
+        ],
+        "stored_first_four": [
+          0,
+          1,
+          -2,
+          2
+        ]
+      }
+    },
+    "VECTOR / VARCHAR2(50 BYTE)": {
+      "dev_cell": "STOP_BEFORE_SAMPLE_WRITE",
+      "reason": "TYPE_MISMATCH",
+      "sample_writes": 0
+    },
+    "VECTOR / VARCHAR2(100 CHAR)": {
+      "dev_cell": "STOP_BEFORE_SAMPLE_WRITE",
+      "reason": "TYPE_MISMATCH",
+      "sample_writes": 0
+    }
+  },
+  "models_called": 0
+}

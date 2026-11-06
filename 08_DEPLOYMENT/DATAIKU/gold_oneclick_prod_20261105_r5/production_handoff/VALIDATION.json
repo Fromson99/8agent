@@ -1,0 +1,29 @@
+{
+  "handoff": "production R5, full 34-part migration",
+  "operator_supplied_development_result": {
+    "status": "DEV_R5_VECTOR_3_TABLES_PASS",
+    "owner": "SIDDA",
+    "actions": {
+      "VCTR_ITEM": "INSERTED",
+      "VCTR_POST": "INSERTED",
+      "VCTR_HEAD": "INSERTED"
+    },
+    "matching_rows_per_table": 1,
+    "vector_info": "VECTOR(*,*,DENSE)",
+    "body_unit_id_bytes": 100,
+    "stored_dimensions": 1024,
+    "stored_format": "FLOAT32",
+    "coordinates_compared": 1024,
+    "head_channel": 1,
+    "screenshot_sha256": "c370af8d500ed534dbdc479e7ee5a057d1713c1a10bf62dcc0b43746cfa79f76"
+  },
+  "local_oracle": {
+    "synthetic_parts": 34,
+    "production_entry_all_eight_stages": "PASS",
+    "R5_regression_tests": 52,
+    "dataiku_sdk_and_embedding": "local substitutes"
+  },
+  "production_data_migration": "awaiting field run and PRODUCTION_GOLD_LOADED",
+  "production_zip_sha256": "f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0",
+  "production_cell_sha256": "9de5d825483b46ebc7c8fd4c4186b74ce4981d9e82ef9733c3cb3d55231ceeed"
+}

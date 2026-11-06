@@ -1,0 +1,21 @@
+{
+  "python_syntax": "PASS",
+  "oracle_sql_static_parse_statements": 4,
+  "helper_checks": [
+    "per_file_photo_baseline",
+    "checkpoint_remaining",
+    "pending_not_added",
+    "missing_photo_unknown",
+    "binding_mismatch_rejected",
+    "generated_oracle_select"
+  ],
+  "zip_members": [
+    "GOLD_LOAD_CHECK_R1.sql",
+    "GOLD_LOAD_PLAN_READONLY_R1.txt"
+  ],
+  "onsite_oracle_calls": 0,
+  "working528_before": "d063cbc906c56e7b6ee7d7626e311e1a5c127d7bf7002e34359cfd1f6fa4ad8b",
+  "working528_after": "d063cbc906c56e7b6ee7d7626e311e1a5c127d7bf7002e34359cfd1f6fa4ad8b",
+  "shared_files_unchanged": true,
+  "initial_validation_note": "SQL parser emitted a comment-only Semicolon node; checker now strips SQL comments before counting SELECT statements; delivered SQL unchanged"
+}

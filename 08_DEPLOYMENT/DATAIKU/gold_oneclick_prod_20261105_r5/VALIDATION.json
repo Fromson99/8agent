@@ -1,0 +1,92 @@
+{
+  "status": "LOCAL_VALIDATION_PASS",
+  "field_execution": false,
+  "field_photos_sha256": {
+    "1-사진-1.jpg": "bf6ed0d38509a373be5baa706699179e7c74045d23ed459080b4e2a48762ec92",
+    "2-사진-2.jpg": "c3370e89405463690f60ce02bd33bbb0fe359b44fe33a4ec4ab25d9fc20e8d9d",
+    "3-사진-3.jpg": "42b30f8498be69a5d4d4501e6e55225694c6647547b4b9888c2969708c1a0bbb"
+  },
+  "R4_sha256": "6a9ec341321c6b2301498b7fb0b6c7d6e7fbae939f65a197413d050815106fab",
+  "R5_sha256": "f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0",
+  "changed_zip_members": [
+    "FLOW_MANIFEST.json",
+    "prod_run.py",
+    "registration_current.json"
+  ],
+  "column_change": {
+    "table": "IDD_B003_LGL_VCTR_ITEM",
+    "column": "BODY_UNIT_ID",
+    "R4": "VARCHAR2(50 BYTE)",
+    "R5": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null
+  },
+  "field_evidence": "Registration screen shows VARCHAR2 length 100. BYTE/CHAR semantics and the live Oracle dictionary have not been independently confirmed.",
+  "unit_tests": 52,
+  "oracle_local": {
+    "oracle-01": {
+      "evidence": "09_ARTIFACTS/AUDITS/20261105-gold-prod-vector-id100/oracle-01/result.json",
+      "result_sha256": "b7d7a2ceaf40e7feeaf11c4bd2d8f4535dc8fd33739d96865078fd2f9b2376f3",
+      "checks": [
+        "S3_failure_before_Oracle_or_model",
+        "missing_registered_tables_blocked_without_DDL",
+        "R4_BODY_UNIT_ID_failure_reproduced_and_R5_three_vector_tables_pass",
+        "R3_SRC_POST_type_mismatch_reproduced",
+        "R1_CHAR_failure_reproduced_and_R3_VARCHAR2_preflight_passed_real_Oracle",
+        "R2_COLUMNS_MISMATCH_reproduced_and_R3_DTA_names_passed_real_Oracle",
+        "different_owner_SELECT_only_login_rejected_before_any_rows",
+        "corrupt_part_rejected_before_first_insert_or_embedding",
+        "final_result_upload_failure_not_reported_as_success",
+        "exact_delivered_TXT_34_parts_all_stages_no_DDL_no_Flow",
+        "committed_source_response_loss_resumed_without_duplicates",
+        "committed_SRC_POST_timestamp_preserved_once_across_retries",
+        "same_cell_and_final_upload_resume_no_new_embedding",
+        "all_original_uploads_preserved_scoped_status_and_logs",
+        "missing_local_workspace_blocks_before_Oracle_and_embedding",
+        "existing_release_without_original_checkpoint_rejected",
+        "exported_mapping_matches_Oracle_registration_column",
+        "100_byte_multibyte_id_written_exactly_and_mapping_exported"
+      ],
+      "counts": {
+        "DOC_VER": 2,
+        "DOC_UNIT": 3,
+        "DOC_BLK": 3,
+        "SRCH_ROW": 112,
+        "VCTR_ITEM": 3
+      }
+    },
+    "oracle-legacy-01": {
+      "evidence": "09_ARTIFACTS/AUDITS/20261105-gold-prod-vector-id100/oracle-legacy-01/result.json",
+      "result_sha256": "a196c30b28de77c6debf0f9a9b7b938d218ebd624fda76e56d89af9a12782f79",
+      "checks": [
+        "S3_failure_before_Oracle_or_model",
+        "missing_registered_tables_blocked_without_DDL",
+        "R4_BODY_UNIT_ID_failure_reproduced_and_R5_three_vector_tables_pass",
+        "R1_CHAR_failure_reproduced_and_R3_VARCHAR2_preflight_passed_real_Oracle",
+        "R2_COLUMNS_MISMATCH_reproduced_and_R3_DTA_names_passed_real_Oracle",
+        "different_owner_SELECT_only_login_rejected_before_any_rows",
+        "corrupt_part_rejected_before_first_insert_or_embedding",
+        "final_result_upload_failure_not_reported_as_success",
+        "exact_delivered_TXT_34_parts_all_stages_no_DDL_no_Flow",
+        "committed_source_response_loss_resumed_without_duplicates",
+        "committed_SRC_POST_timestamp_preserved_once_across_retries",
+        "same_cell_and_final_upload_resume_no_new_embedding",
+        "all_original_uploads_preserved_scoped_status_and_logs",
+        "missing_local_workspace_blocks_before_Oracle_and_embedding",
+        "existing_release_without_original_checkpoint_rejected",
+        "exported_mapping_matches_Oracle_registration_column",
+        "fresh_process_legacy_source_vector_acl_and_profile_readback",
+        "100_byte_multibyte_id_written_exactly_and_mapping_exported"
+      ],
+      "counts": {
+        "DOC_VER": 2,
+        "DOC_UNIT": 3,
+        "DOC_BLK": 3,
+        "SRCH_ROW": 112,
+        "VCTR_ITEM": 3
+      }
+    }
+  },
+  "dataiku_sdk": "local substitute",
+  "embedding": "local substitute"
+}

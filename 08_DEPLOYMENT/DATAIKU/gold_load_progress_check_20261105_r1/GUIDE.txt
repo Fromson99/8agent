@@ -1,0 +1,96 @@
+Dataiku Gold 적재 확인 R1 — 2026-11-05
+
+사진 해석
+사진은 Gold 검색 자료 적재 단계이며 rows=6,981,746입니다.
+R4/R5의 fast_loader.load_query는 파일별 through를 rows로 표시합니다.
+따라서 사진 값은 현재 파일 누적이며 이전 파일의 완료량이 포함된 전체 누적은 아닙니다.
+또 prod_run.tick은 검색 단계의 rows를 아래쪽 정보로만 표시하고 위쪽 done/total을
+갱신하지 않으므로 위쪽 0/전체량 미확정은 실제 DB 0행이라는 뜻이 아닙니다.
+아래쪽 rows까지 멈췄다면 화면만으로 적재 중단 여부를 판단할 수 없습니다.
+
+얼마나 남았는가
+이전 현장 준비 명세의 검색 목표는 60,971,724행입니다(2026-11-02 기록).
+이번 R5는 전체 projection을 사용하지만 native 파생행 등 구현이 달라 과거 계획을
+이번 목표로 확정할 수 없습니다. 사진에도 이번 전체 목표는 표시돼 있지 않습니다.
+따라서 60,971,724 - 6,981,746을 실제 잔여량으로 쓰면 안 됩니다.
+정확한 이번 검색 목표는 현재 작업의 prepared.json.query.tables[*].rows 합계이며,
+실제 남은 검색량은 그 목표 - 같은 query_release_id의 DB COUNT(*)입니다.
+검색 뒤 원문·검색 게시, 임베딩·벡터 적재, 최종 검증 단계가 남습니다.
+현재 진행 속도와 남은 벡터 계획이 없어 전체 종료 시각은 계산할 수 없습니다.
+
+첨부
+1. DATAIKU_GOLD_LOAD_CHECK_20261105_R1.zip
+   GOLD_LOAD_CHECK_R1.sql과 GOLD_LOAD_PLAN_READONLY_R1.txt 두 파일입니다.
+   기존 적재 코드 교체나 재업로드는 필요 없습니다. 로컬에서 열람/보관용으로 풀 수 있습니다.
+2. GOLD_LOAD_CHECK_SQL_R1.txt
+   SQL 원문 전체입니다. ZIP 안의 GOLD_LOAD_CHECK_R1.sql과 같은 내용입니다.
+3. GOLD_LOAD_PLAN_READONLY_R1.txt
+   정확한 목표/체크포인트/사진 시점 누적을 읽고 완성 SQL을 출력하는 Python 셀입니다.
+4. GUIDE.txt (이 문서)
+
+즉시 SQL 확인 — Python 없이 가능
+1. 현재 적재 노트북은 계속 실행시킵니다. 같은 Dataiku 프로젝트에서 별도 SQL 노트북을 엽니다.
+2. 기존 적재에 사용한 Oracle 연결을 선택합니다. 전달본 기본 연결은 AIDP였습니다.
+3. GOLD_LOAD_CHECK_SQL_R1.txt의 0번 SELECT들을 각각 실행해 접속 대상과 OWNER를 확인합니다.
+   사진/기존 현장 기록의 대상은 SIDDG.IDD_B003_LGL_SRCH_ROW입니다.
+   현재 실행 PARAMS/TABLE_NAMES가 다르면 해당 실제 owner/table을 사용합니다.
+4. 1번 SELECT를 한 문장으로 실행하고 CHECKED_AT, QUERY_RELEASE_ID, COMMITTED_SEARCH_ROWS를 기록합니다.
+5. 첫 조회가 끝난 뒤 2~5분 지나 같은 SELECT를 다시 실행합니다.
+   같은 QUERY_RELEASE_ID의 COMMITTED_SEARCH_ROWS가 늘면 그 사이 확정 적재가 진행됐습니다.
+   다른 판본끼리 비교하거나 모든 판본을 합치면 안 됩니다.
+   6,981,746보다 크다는 사실만으로 사진 이후 증가라고 판단하지 않습니다.
+
+Python 없이 이번 목표와 현재 판본 찾기
+코드 ZIP을 올린 기존 Managed Folder에서 현재 작업의
+_gold_oneclick_prod_r1/<실제 작업 key>/result/latest.json을 열 수 있습니다.
+run_id가 사진의 20261105-092931-702353cf인지 확인합니다.
+stages.prepare.result.query_rows가 이번 검색 목표이고,
+stages.prepare.result.query_release_id가 이번 판본 hash입니다.
+이 두 값을 SQL 2번의 EXPECTED_ROWS와 QUERY_RELEASE_ID에 넣으면
+이번 남은 검색량을 조회할 수 있습니다. PHOTO_TOTAL_ROWS는 모르면 NULL로 둡니다.
+latest.json은 단계 경계에서 저장되므로 진행 중 실시간 행 수는 SQL로 확인합니다.
+
+보조 셀로 정확한 남은 양과 사진 이후 증가 확인
+1. 적재 노트북이 실행되는 같은 DSS 노드의 별도 Python 노트북을 엽니다.
+   실행 중인 동일 노트북에 새 셀을 넣으면 현재 셀 뒤로 대기하므로 별도 노트북을 사용합니다.
+2. GOLD_LOAD_PLAN_READONLY_R1.txt 전체를 Python 셀 하나에 붙여 실행합니다.
+   업로드 폴더나 패키지 설치는 필요 없습니다. Python 표준 라이브러리만 사용합니다.
+3. 기본값은 사진 작업 ID 20261105-092931-702353cf의 기존 기록을 찾습니다.
+   못 찾으면 로딩 화면의 전체 로그 경로에서 /logs/ 앞부분을 JOB_DIR에 넣습니다.
+   WORK_DIR를 직접 지정했다면 그 기준 폴더 아래 실제 작업 key 디렉터리를 사용합니다.
+   다른 DSS 노드/컨테이너에는 해당 /tmp가 없을 수 있으므로 같은 노드에서 확인해야 합니다.
+4. 출력되는 planned_search_rows가 이번 정확한 검색 목표입니다.
+   remaining_search_rows_from_checkpoint는 읽은 체크포인트 기준의 잔여량입니다.
+   pending_batch_exists=true이면 아직 확인되지 않은 배치를 완료량에 더하지 않습니다.
+5. 아래에 출력되는 WITH P AS ... SELECT 전체를 별도 SQL 노트북에서 실행합니다.
+   실제 owner/컬럼/현재 판본 hash/목표량이 자동 반영됩니다.
+   REMAINING_SEARCH_ROWS: 현재 DB 확정 건수 기준으로 더 들어가야 할 검색행.
+   ADDED_AFTER_PHOTO: 사진 시점 전체 누적을 로그에서 유일하게 복원했을 때의 증가량.
+   이 값이 NULL이면 사진 기준 누적을 확정하지 못한 것이므로 2회 SQL 비교를 사용합니다.
+   PREVIOUS_CHECK_ROWS를 앞선 SQL 건수로 입력하고 보조 셀을 다시 실행하면
+   ADDED_SINCE_LAST_CHECK에 두 SQL 조회 사이 증가량도 나옵니다.
+
+결과 해석과 완료
+Oracle 별도 세션 SELECT는 확정된 행만 보므로 진행 중인 미확정 배치는 보이지 않습니다.
+한 SELECT는 하나의 시점 스냅샷입니다. 결과를 갱신하려면 새로 실행합니다.
+통계 NUM_ROWS나 Dataiku 미리보기 행 수로 현재 적재량을 대신하지 않습니다.
+COUNT(*)는 대량 인덱스/데이터를 읽을 수 있으므로 첫 조회가 끝난 뒤 간격을 두고 재조회합니다.
+한 번 값이 같다고 정지로 확정할 수 없습니다. 배치 준비/COMMIT 대기, 입력 파일 전환,
+검색 완료 후 후속 단계 전환도 로그와 함께 확인합니다.
+REMAINING_SEARCH_ROWS=0 또는 SEARCH_ROWS_MATCH_PLAN은 검색 건수만 맞았다는 뜻입니다.
+음수/ROW_COUNT_EXCEEDS_PLAN이면 대상/판본/명세 불일치를 점검합니다.
+전체 완료 기준은 기존 실행의 PRODUCTION_GOLD_LOADED와 최종 report.json입니다.
+SQL/보조 셀은 SELECT 또는 기존 파일 읽기만 수행합니다. 현재 적재 재개/중단 작업은 없습니다.
+
+검증 범위
+로컬에서 Python 구문/저장 기록 계산과 Oracle SQL 정적 문법을 확인했습니다.
+현재 세션은 사내 Dataiku/운영 Oracle에 접속할 수 없어 실제 DB 건수는 아직 조회하지 않았습니다.
+필요하면 조회 결과의 시각/판본/행 수와 보조 셀 요약만 회신하면 잔여량을 대조할 수 있습니다.
+
+근거
+로더: gold_oneclick_prod_20261105_r5/package/engine/fast_loader.py load_query
+화면: gold_oneclick_prod_20261105_r5/package/prod_run.py tick
+목표/최종검증: gold_oneclick_prod_20261105_r5/package/prod_pipeline.py prepare/report
+기존 현장 목표: 20261102-srch-row-count-diagnosis/현장_R2_사진결과.txt
+Oracle 공식 조회 일관성:
+https://docs.oracle.com/en/database/oracle/oracle-database/19/cncpt/data-concurrency-and-consistency.html

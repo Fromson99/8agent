@@ -1,0 +1,38 @@
+사내 개발계 Dataiku에서 Gold 등록일시 한 행 시험하기 · R4
+
+대상과 준비
+개발계 Dataiku DSS의 Python 노트북과 개발계 Oracle 연결을 사용합니다.
+목표는 사진의 원문게시내역과 같은 네 열을 가진 개발용 테이블에 R4 게시 INSERT로 한 행을 넣고, 실제 등록일시를 읽는 것입니다.
+최초 생성하는 RGSN_ASTM은 TIMESTAMP NOT NULL이며 기본값이 없습니다. 화면의 Null여부 미체크를 재현할 시험 조건으로 정했습니다. 실제 운영 DB의 NULL 제약과 기본값은 미확인입니다.
+테스트 이름은 TST_B003_LGL_SRC_POST_R4로 고정돼 있습니다. 기존 개발 프로젝트에서 이 이름을 시험용으로 쓸 수 있는 스키마를 선택하세요.
+
+첨부파일
+DATAIKU_GOLD_ONECLICK_PROD_20261105_R4.zip   R4 코드. 압축 상태로 업로드합니다.
+DATAIKU_GOLD_DEV_ONE_TABLE_RUN_R4.txt        개발 시험 전용 실행 셀 전체
+GUIDE.txt                                  이 안내서
+VALIDATION.json                            로컬 Oracle에서 확인한 결과
+SHA256SUMS.txt                             ZIP·실행 TXT·안내·검증 파일의 SHA256
+
+실행 순서
+1. 개발 프로젝트의 기존 Managed Folder에 첨부 ZIP 하나를 그대로 업로드합니다. 압축을 풀거나 데이터 34조각을 올릴 필요는 없습니다.
+2. 개발계 Python 노트북에서 새 커널을 사용합니다. 별도 작업 디렉터리나 셸 명령 설정은 필요 없습니다.
+3. DATAIKU_GOLD_DEV_ONE_TABLE_RUN_R4.txt 전체를 셀 하나에 붙이고 맨 위 네 값을 채웁니다.
+   CODE_FOLDER_ID       ZIP이 있는 개발계 Managed Folder의 ID
+   ORACLE_CONNECTION    사용할 개발계 Oracle 연결 이름
+   EXPECTED_DB_USER     해당 연결로 로그인되는 실제 Oracle 계정 (대문자)
+   DEV_OWNER            테스트용 테이블을 만들 개발 스키마 (대문자)
+4. 셀을 실행합니다. 접속 계정을 확인한 뒤 시험 테이블이 없으면 하나를 만듭니다. 구조와 PK·활성 트리거 유무를 확인한 뒤 고정된 합성 원문 게시 기록 한 행을 적재합니다.
+5. 마지막 JSON의 status가 DEV_ONE_TABLE_PASS, action이 INSERTED, matching_rows가 1이고 registered_at에 시각이 있으면 성공입니다. 같은 셀을 다시 실행하면 action이 REUSED이고 처음 등록일시가 그대로 나옵니다. 시험 뒤 테이블과 행은 조회용으로 남깁니다.
+
+권한·재개
+테스트 스키마에서 CREATE TABLE과 저장 공간, 해당 테이블에 대한 SELECT·INSERT 권한이 필요합니다. 테이블을 사전에 준비해 쓰는 개발계라면 승인된 담당자가 아래 정의로 생성할 수 있습니다. <DEV_OWNER>를 승인된 실제 개발 스키마명으로 바꿉니다.
+
+CREATE TABLE <DEV_OWNER>.TST_B003_LGL_SRC_POST_R4 (
+  BODY_POST_HASH_VALU VARCHAR2(100 BYTE) PRIMARY KEY,
+  DTLS_HASH_VALU      VARCHAR2(100 BYTE) NOT NULL,
+  BODY_POST_IFMN_CTNT CLOB NOT NULL,
+  RGSN_ASTM           TIMESTAMP NOT NULL
+);
+
+응답이 중간에 끊기면 같은 네 설정으로 같은 셀을 다시 실행합니다. 예상 키의 행이 있으면 저장된 키·해시·본문·등록일시를 읽어 확인합니다. 이미 있는 행과 시험 내용이 충돌하거나 다른 테이블 정의가 보이면 중단합니다.
+이 개발 셀의 범위는 TST_B003_LGL_SRC_POST_R4 한 테이블입니다. 모델 호출과 운영 데이터 적재는 없습니다.

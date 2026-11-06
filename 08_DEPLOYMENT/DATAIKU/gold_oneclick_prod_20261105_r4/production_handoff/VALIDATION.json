@@ -1,0 +1,76 @@
+{
+  "delivery": "production R4 replacing production R3",
+  "production_zip_sha256": "6a9ec341321c6b2301498b7fb0b6c7d6e7fbae939f65a197413d050815106fab",
+  "production_cell_sha256": "93fc256f952055ea49178d61926637d4b304cb329b4034d3c3f58e79bba2d109",
+  "source": "separate company development and local integration observations",
+  "company_development_screenshot": {
+    "status": "DEV_ONE_TABLE_PASS",
+    "table": "SIDDA.TST_B003_LGL_SRC_POST_R4",
+    "action": "INSERTED",
+    "matching_rows": 1,
+    "registered_at": "2026-11-05 08:44:23.926468000",
+    "column": {
+      "name": "RGSN_ASTM",
+      "type": "TIMESTAMP(6)",
+      "required": true,
+      "default": null
+    }
+  },
+  "local_oracle_production_entry": {
+    "input": "34 synthetic parts",
+    "dataiku_sdk": "local substitute",
+    "embedding": "local substitute",
+    "all_eight_stages_passed_profiles": [
+      {
+        "definition": "TIMESTAMP(6) WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL",
+        "status": "PASS",
+        "counts": {
+          "DOC_VER": 2,
+          "DOC_UNIT": 3,
+          "DOC_BLK": 3,
+          "SRCH_ROW": 112,
+          "VCTR_ITEM": 3
+        },
+        "SRC_POST_timestamp_retained_on_retry": true
+      },
+      {
+        "definition": "TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP NOT NULL",
+        "status": "PASS",
+        "counts": {
+          "DOC_VER": 2,
+          "DOC_UNIT": 3,
+          "DOC_BLK": 3,
+          "SRCH_ROW": 112,
+          "VCTR_ITEM": 3
+        },
+        "SRC_POST_timestamp_retained_on_retry": true
+      },
+      {
+        "definition": "TIMESTAMP",
+        "status": "PASS",
+        "counts": {
+          "DOC_VER": 2,
+          "DOC_UNIT": 3,
+          "DOC_BLK": 3,
+          "SRCH_ROW": 112,
+          "VCTR_ITEM": 3
+        },
+        "SRC_POST_timestamp_retained_on_retry": true
+      },
+      {
+        "definition": "TIMESTAMP NOT NULL",
+        "status": "PASS",
+        "counts": {
+          "DOC_VER": 2,
+          "DOC_UNIT": 3,
+          "DOC_BLK": 3,
+          "SRCH_ROW": 112,
+          "VCTR_ITEM": 3
+        },
+        "SRC_POST_timestamp_retained_on_retry": true
+      }
+    ],
+    "regression_tests_passed": 47
+  },
+  "company_production_full_run": "awaiting field run and PRODUCTION_GOLD_LOADED"
+}
