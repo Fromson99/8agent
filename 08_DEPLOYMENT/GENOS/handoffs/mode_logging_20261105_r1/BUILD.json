@@ -1,0 +1,24 @@
+{
+  "base_file": "08_DEPLOYMENT/GENOS/handoffs/main142_live_judgment_20261105_r1/MAIN142_LIVE_JUDGMENT_R1_WORKFLOW.py",
+  "base_sha256": "71c421b80b1c9e22e5a1bf049bc5cb2760650b4f2165115739590dede1ae953d",
+  "workflow_file": "GENOS_MODE_LOG_R1_WORKFLOW.py",
+  "workflow_sha256": "17db5200e7c00b18ccd67ef5147867a47f72df1a19735742acd725516068e9ff",
+  "diagnostic_revision": "workflow-mode-log-20261105-r1",
+  "modified_existing_functions": [
+    "_post_code_serving",
+    "_stream_code_serving",
+    "_workflow_settings",
+    "run"
+  ],
+  "added_functions": [
+    "_log_forwarded_mode",
+    "_log_received_mode"
+  ],
+  "mode_routing_request_and_render_unchanged": true,
+  "scope": "Standalone GENOS workflow Python editor only",
+  "backend_patch": false,
+  "main_pointer_changed": false,
+  "field_revision": null,
+  "field_generation": null,
+  "field_execution": false
+}

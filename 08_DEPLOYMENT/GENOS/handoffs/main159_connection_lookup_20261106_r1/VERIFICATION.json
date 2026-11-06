@@ -1,0 +1,66 @@
+{
+  "main_generation": 159,
+  "release_id": "connection-lookup-20261106-r1",
+  "release_manifest_sha256": "f6d60b4d6b0e7c895d9b6adfa239d6ce7307a75e60695e9201ad1724bc0aa332",
+  "serving_files": 532,
+  "supersedes": "MAIN158 guided-continue-20261106-r1",
+  "previous_active_for_rollback": "MAIN158 (MAIN157 rollback also preserved)",
+  "zip_sha256": "fa8f28adf6cb525948947f66057c024022a6d95d61e29285a8f63f6ec6d6e9dc",
+  "oneclick_sha256": "25782ea9c30ccafe5e112c9a1345784a7f5e6ba88bf3c6bd8dc69e64e484c91c",
+  "workflow_sha256": "dac69a34677f5f986c109a13dd411f62cf9be41f7bebb95b1523ac286be3fca8",
+  "workflow_equals_MAIN157": true,
+  "regression": {
+    "baseline_main157": {
+      "passed": 979,
+      "failed": 163,
+      "path": "baseline-main157.json",
+      "code": "MAIN157 bytes (swap, see 20261106-continue-connection-main158/swap.json)"
+    },
+    "working": {
+      "passed": 998,
+      "failed": 163,
+      "path": "working-r3.json"
+    },
+    "new_failures": [],
+    "new_contract_tests": 12,
+    "new_contract_tests_failed": 0
+  },
+  "staged_and_prepared_contracts": {
+    "staged": 12,
+    "prepared": 12
+  },
+  "entry_checks": 12,
+  "installer": {
+    "passed": true,
+    "commands": 15,
+    "original_files_restored": 528,
+    "full_generation_gate": true
+  },
+  "actual_qwen": {
+    "ADR-1416_MAIN157": {
+      "judged_turns": 3,
+      "passed_turns": 0,
+      "physical_calls": 18,
+      "unknown": 1,
+      "reported_cost_usd": 0.02218792
+    },
+    "ADR-1417_MAIN158": {
+      "judged_turns": 1,
+      "passed_turns": 0,
+      "physical_calls": 12,
+      "unknown": 0,
+      "reported_cost_usd": 0.0148436
+    },
+    "ADR-1418_MAIN159": {
+      "judged_turns": 3,
+      "passed_turns": 3,
+      "physical_calls": 19,
+      "unknown": 1,
+      "reported_cost_usd": 0.04131684
+    },
+    "limits": "Two formulations once each; ADR-1416 candidate arm stopped by frozen rule after provider UNKNOWN; ADR-1417 turn2 resource stops overlapped operator concurrent work and cell2 ran despite the stop rule (excluded); ADR-1418 433 turn2 provider UNKNOWN."
+  },
+  "field_deployed": false,
+  "quality_certified": false,
+  "genos_internal_model_checked": false
+}

@@ -1,0 +1,207 @@
+{
+  "status": "PASS",
+  "release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "agent-a-unified-20261105-r1",
+    "generation": 157,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1/release.json",
+    "release_manifest_sha256": "3cead3bc5a40ab827a996cda19663bfbfecbc1132e8d85e74a7f97b0f1e47930",
+    "activated_at": "2026-11-05T12:11:50.285592+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3c3c1abcde478f3b05026ff3a7ed55487b46e6b6a59faa7d1abdd351267fa2ec"
+  },
+  "inventory": {
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main157_agent_a_20261105_r1",
+    "zip_sha256": "b10ecd3169a3b417e9e5c3b8966b992f7d6c40403e892b3dda6f3494d9755d6e",
+    "code_files": 542,
+    "members": 543,
+    "excluded_required": {
+      "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+    },
+    "release": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "agent-a-unified-20261105-r1",
+      "generation": 157,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1/release.json",
+      "release_manifest_sha256": "3cead3bc5a40ab827a996cda19663bfbfecbc1132e8d85e74a7f97b0f1e47930",
+      "activated_at": "2026-11-05T12:11:50.285592+00:00",
+      "deployment_basis": "USER_DIRECTED_CUTOVER",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "3c3c1abcde478f3b05026ff3a7ed55487b46e6b6a59faa7d1abdd351267fa2ec"
+    },
+    "full_serving_match": true,
+    "workflow_sha256": "dac69a34677f5f986c109a13dd411f62cf9be41f7bebb95b1523ac286be3fca8",
+    "extras": [
+      "06_TOOLS/COMMANDS/genos_codespace_engine_preflight.py",
+      "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+      "06_TOOLS/COMMANDS/genos_release_gate.py",
+      "02_BACKEND/lawrag/pipeline/glossary_serving.py",
+      "02_BACKEND/lawrag/pipeline/glossary_knowledge.py",
+      "02_BACKEND/lawrag/pipeline/glossary_v1.py",
+      "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+      "02_BACKEND/lawrag/sources/moleg_knowledge.py",
+      "02_BACKEND/lawrag/sources/common.py",
+      "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py",
+      "02_BACKEND/lawrag/pipeline/term_serving_bundle.py"
+    ]
+  },
+  "install_verification": {
+    "passed": true,
+    "commands": [
+      {
+        "label": "git-init",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/git-init.log"
+      },
+      {
+        "label": "git-name",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/git-name.log"
+      },
+      {
+        "label": "git-email",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/git-email.log"
+      },
+      {
+        "label": "base-stage",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/base-stage.log"
+      },
+      {
+        "label": "base-commit",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/base-commit.log"
+      },
+      {
+        "label": "python311-syntax",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/python311-syntax.log"
+      },
+      {
+        "label": "default-apply",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/default-apply.log"
+      },
+      {
+        "label": "same-apply",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/same-apply.log"
+      },
+      {
+        "label": "status",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/status.log"
+      },
+      {
+        "label": "stage",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/stage.log"
+      },
+      {
+        "label": "diff-check",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/diff-check.log"
+      },
+      {
+        "label": "commit",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/commit.log"
+      },
+      {
+        "label": "gate-code",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/gate-code.log"
+      },
+      {
+        "label": "generation-gate",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/generation-gate.log"
+      },
+      {
+        "label": "undo",
+        "exit_code": 0,
+        "log": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/undo.log"
+      }
+    ],
+    "explicit_checkout_symlink": true,
+    "tested_command": "bash MAIN157_ONECLICK_R1.txt --root <isolated symlink>",
+    "original_files_restored": 528,
+    "preserved": {
+      ".env": "96424acd5ba304a4152992e7aea70a87cf793c752a5aa911c3ff0186d19a8334",
+      "01_DATA/preserve.txt": "13fc162e2eb9ef54ddafdab5ce3d4de38a714b536860180741cbdb0b2e6a5b6b",
+      "90_RUNTIME/preserve.txt": "d50fa1b5c9299e5f5b8ecd359ee4c479446017f0a82a02d7766d15ae225da36e"
+    },
+    "full_generation_gate": true,
+    "user_checkout_changed": false,
+    "new_model_calls": 0,
+    "field_deployed": false
+  },
+  "agent_validation": {
+    "status": "PASS",
+    "created_at": "2026-11-05T12:15:23.220023+00:00",
+    "request": "Unify four Agent record/state table names to _A and provide one-copy Dataiku Oracle DDL",
+    "active": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "agent-a-unified-20261105-r1",
+      "generation": 157,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1/release.json",
+      "release_manifest_sha256": "3cead3bc5a40ab827a996cda19663bfbfecbc1132e8d85e74a7f97b0f1e47930",
+      "activated_at": "2026-11-05T12:11:50.285592+00:00",
+      "deployment_basis": "USER_DIRECTED_CUTOVER",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "3c3c1abcde478f3b05026ff3a7ed55487b46e6b6a59faa7d1abdd351267fa2ec"
+    },
+    "release_files": 532,
+    "changed_files": 34,
+    "products": {
+      "00_SYSTEM/ORACLE/development_g19_1.json": "85876fa01cb6cefc5ba14f3c2a39e20be26e40562defc7ffbbb3d50c7c5f6e3a",
+      "02_BACKEND/semantic_runtime/oracle_development_mapping.py": "fe44b4b6b1142e5d0c452dbf1f51ad8c638459fa773e3c5e28a9198a92dd5348",
+      "02_BACKEND/semantic_runtime/oracle_gold_mapping.py": "88b3d7e98a18f09ebb3d521bffc7ad017d30f945de0fff97717c3924f6d20fbc"
+    },
+    "agent_tables": {
+      "AGT_BODY": "SIDDA.LGL_AGT_BODY_A",
+      "AGT_REC": "SIDDA.LGL_AGT_REC_A",
+      "AGT_RUN": "SIDDA.LGL_AGT_RUN_A",
+      "EXEC_ST": "SIDDA.LGL_EXEC_ST_A"
+    },
+    "gold_data_13_unchanged": true,
+    "development_data_13_unchanged": true,
+    "contract_checks": 62,
+    "working_and_prepared_repeat_checks": 62,
+    "repeat_checks_are_not_additional_unique_tests": true,
+    "actual_local_oracle_block_checks": 16,
+    "actual_local_oracle_service_checks": 3,
+    "oracle_version": "23.26.3.0.0",
+    "temporary_schema_removed": true,
+    "root_service_and_gold_binding_checks": 12,
+    "package_test_result": "09_ARTIFACTS/AUDITS/20261105-agent-a-unification/package-tests-r1/result.json",
+    "package_install_repeat_commit_gate_and_undo_passed": true,
+    "sql_sha256": "451733d9e6deb972763f4a9a9c8f039f6a532ff588e4c6578839accc9250f564",
+    "previous_release_preserved": true,
+    "a1_rows_preserved_in_tests": true,
+    "existing_history_migrated": false,
+    "sql_plans": {
+      "plans": 642,
+      "executable_plans_identical": true,
+      "source_metadata_updated": true,
+      "engines": 30,
+      "engine_files": 504,
+      "errors": [],
+      "code_root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261105-agent-a-unification/code"
+    },
+    "new_models": 0,
+    "field_db_execution": false,
+    "genos_field_deployed": false,
+    "email_sent": false,
+    "limitations": [
+      "Local Oracle 23.26.3, not field Dataiku/JDBC/Oracle verification.",
+      "A_1 history is not automatically copied or merged.",
+      "Only four Agent record/state tables change; Gold and G19 data tables stay unchanged."
+    ]
+  }
+}

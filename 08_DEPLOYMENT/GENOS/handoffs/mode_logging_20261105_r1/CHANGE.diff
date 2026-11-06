@@ -1,0 +1,87 @@
+--- MAIN142_LIVE_JUDGMENT_R1_WORKFLOW.py
++++ GENOS_MODE_LOG_R1_WORKFLOW.py
+@@ -31,6 +31,7 @@
+ 
+ 
+ WORKFLOW_REVISION = "rag-applied-mode-20261027-r1"
++MODE_LOG_REVISION = "workflow-mode-log-20261105-r1"
+ LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
+ PROGRESS_DISPLAY_REVISION = "rag-live-judgment-cards-20261105-r1"
+ ANSWER_DISPLAY_REVISION = "workflow-review-followup-20261104-r1"
+@@ -277,6 +278,7 @@
+     mode = _progress_mode()
+     settings = {
+         "workflow_revision": WORKFLOW_REVISION,
++        "mode_log_revision": MODE_LOG_REVISION,
+         "progress_display_revision": PROGRESS_DISPLAY_REVISION,
+         "judgment_display_revision": JUDGMENT_DISPLAY_REVISION,
+         "http_error_diagnostics_revision": HTTP_ERROR_DIAGNOSTICS_REVISION,
+@@ -338,6 +340,44 @@
+     "대사": "대사", "compare": "대사",
+ }
+ _MODE_PREFIX = re.compile(r"^\s*(전체 법령|전체|내규|외규|대사)\s*[:,：，]\s*")
++
++
++
++def _log_received_mode(data):
++    """Log only recognized selector values; never dump the chat payload."""
++    fields = data.get("applied_fields")
++    value = fields.get("mode") if isinstance(fields, dict) else None
++    selected = _MODE_LABELS.get(value.strip()) if isinstance(value, str) else None
++    if fields is None:
++        state = "NO_APPLIED_FIELDS"
++    elif not isinstance(fields, dict):
++        state = "INVALID_APPLIED_FIELDS"
++    elif "mode" not in fields:
++        state = "MISSING_MODE"
++    elif value is None or isinstance(value, str) and not value.strip():
++        state = "EMPTY_MODE"
++    elif not isinstance(value, str):
++        state = "INVALID_MODE_TYPE"
++    else:
++        state = "SELECTED" if selected else "UNRECOGNIZED_MODE"
++    _log_event("workflow.mode.received", request_id=data.get("request_id"),
++        mode_log_revision=MODE_LOG_REVISION, mode_status=state,
++        received_mode=value.strip() if selected else None, selected_mode=selected,
++        mode_present=isinstance(fields, dict) and "mode" in fields,
++        doctype_present=isinstance(fields, dict) and "doctype" in fields)
++
++
++def _log_forwarded_mode(body, transport):
++    """Report the actual legal request prefix immediately before HTTP send."""
++    if body.get("API_TYPE") != "LEGAL_AGENT":
++        return
++    question = body.get("question")
++    match = _MODE_PREFIX.match(question) if isinstance(question, str) else None
++    mode = _MODE_LABELS[match.group(1)] if match else None
++    _log_event("workflow.mode.forwarding", request_id=body.get("request_id"),
++        mode_log_revision=MODE_LOG_REVISION, outgoing_mode=mode,
++        source_category={"내규":"internal", "외규":"external", "전체 법령":"ALL"}.get(mode),
++        routing="compare" if mode == "대사" else "rag", transport=transport)
+ 
+ 
+ def _selected_question(question, data):
+@@ -433,6 +473,7 @@
+         timeout_seconds=timeout,
+         request_bytes=len(encoded),
+     )
++    _log_forwarded_mode(request_body, "json")
+     with urllib.request.urlopen(request, timeout=timeout) as response:
+         raw = response.read()
+         _log_event(
+@@ -810,6 +851,7 @@
+                    configured_json_timeout_seconds=configured_timeout,
+                    request_bytes=len(request.data))
+         try:
++            _log_forwarded_mode(body, "sse")
+             with urllib.request.urlopen(request, timeout=configured_timeout) as response:
+                 _log_event("code_serving.stream.response.opened", request_id=body["request_id"],
+                            http_status=getattr(response, "status", None),
+@@ -2515,6 +2557,7 @@
+     data['request_id'] = str(data.get('request_id') or data.get('messageId') or uuid.uuid4().hex)
+     _log_event('workflow.entry.received', request_id=data['request_id'],
+                input_keys=sorted(str(key) for key in data))
++    _log_received_mode(data)
+     try:
+         return await _run_once(data)
+     except Exception as exc:

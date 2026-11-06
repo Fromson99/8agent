@@ -1,0 +1,91 @@
+{
+  "status": "PASS",
+  "verified_at": "2026-11-05T12:52:57.054606+00:00",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "agent-a-unified-20261105-r1",
+    "generation": 157,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1/release.json",
+    "release_manifest_sha256": "3cead3bc5a40ab827a996cda19663bfbfecbc1132e8d85e74a7f97b0f1e47930",
+    "activated_at": "2026-11-05T12:11:50.285592+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3c3c1abcde478f3b05026ff3a7ed55487b46e6b6a59faa7d1abdd351267fa2ec"
+  },
+  "selected_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1/code",
+  "selected_code_files": 532,
+  "gold_loader_registration_sha256": "da9f0e64b72d224a14a6b0bcea066053b6d89dd5671f24798fd45e4f48d65d79",
+  "gold_loader_zip_sha256": "f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0",
+  "gold_tables": 13,
+  "gold_columns": 60,
+  "agent_tables": 4,
+  "agent_columns": 26,
+  "all_gold_table_column_type_key_index_definitions_identical": true,
+  "agent_targets": {
+    "AGT_BODY": "SIDDA.LGL_AGT_BODY_A",
+    "AGT_REC": "SIDDA.LGL_AGT_REC_A",
+    "AGT_RUN": "SIDDA.LGL_AGT_RUN_A",
+    "EXEC_ST": "SIDDA.LGL_EXEC_ST_A"
+  },
+  "contract_tests": {
+    "passed": 62,
+    "failed": 0
+  },
+  "root_service_binding_checks": 12,
+  "local_oracle": {
+    "version": "23.26.3.0.0",
+    "service_tests": 3,
+    "sql_per_variant": 92,
+    "timestamp_variants": [
+      "timezone6",
+      "plain6_nullable",
+      "plain3_required"
+    ],
+    "temporary_owners_removed": true,
+    "ords_http_mocked": true,
+    "embedding_mocked": true,
+    "model_calls": 0
+  },
+  "package": {
+    "zip_sha256": "b10ecd3169a3b417e9e5c3b8966b992f7d6c40403e892b3dda6f3494d9755d6e",
+    "run_sha256": "64e8568304883de76214f42bd2ac861959fb731728d22994f8a6227f8f6ae28e",
+    "members": 543,
+    "code_files": 542,
+    "serving_files_match": true,
+    "javascript_attachments": 0,
+    "nested_archives": 0,
+    "no_argument_actual_home_symlink_install_repeat_commit_gate_rollback_passed": true,
+    "verified_checkout": {
+      "root": "/home/jin/8-AGENT/09_ARTIFACTS/AUDITS/20261105-main157-gold-mail-review/package-tests-r1/checkout",
+      "commit": "9505c735db3745aa1ab008967700be029cc5a668",
+      "zip_sha256": "b10ecd3169a3b417e9e5c3b8966b992f7d6c40403e892b3dda6f3494d9755d6e",
+      "generation": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+      "generation_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+      "field_checkout": null,
+      "field_revision": null,
+      "field_verified": false
+    }
+  },
+  "agent_sql_r2": {
+    "sha256": "2a2ad2d57c558fedfe48b205b9ba02aa2856a41c6d0820d7a9591cd35222ac85",
+    "prior_validation_checks": 18,
+    "prior_validation_result": "09_ARTIFACTS/AUDITS/20261105-agent-a-dataiku-r2/oracle-20261105T123108.json",
+    "new_execution_this_review": false
+  },
+  "required_environment": {
+    "DP": "oracle",
+    "GENOS_ORACLE_TABLE_MAPPING": "gold",
+    "GENOS_ORACLE_GOLD_OWNER": "actual field Gold owner; not verified here"
+  },
+  "product_changes": 0,
+  "main_changes": 0,
+  "field_db_execution": false,
+  "field_deployed": false,
+  "quality_certified": false,
+  "limitations": [
+    "Field owner, ORDS permissions, deployed revision and model answer quality are unverified.",
+    "Existing _A_1 records are not migrated.",
+    "The separate LGL_PIPE_RESULT_A ingestion staging table is not a RAG mapping table."
+  ]
+}

@@ -1,0 +1,39 @@
+MAIN142용 GENOS 실시간 에이전트 판단 표시
+
+MAIN142 전체 반입본이 설치된 환경에서 사용합니다. 이번 수정은 서버가 검증한 질문 이해, 검색 계획, 근거 선택과 적용 판단을 답변 대기 중 GENOS 진행 카드로 보냅니다. 원문 선택 이유와 최종 검토에서 채택한 주장·근거를 구분해 표시합니다. 원문만 확보한 경우에는 결론을 확정하지 못했다고 표시합니다.
+
+1. 서버 코드 적용
+TRANSFER에 MAIN142_LIVE_JUDGMENT_R1.zip과 MAIN142_LIVE_JUDGMENT_R1_ONECLICK.txt를 함께 놓고 그 위치에서 실행합니다.
+
+  bash ./MAIN142_LIVE_JUDGMENT_R1_ONECLICK.txt
+
+실제 대상은 기존 ~/DEV Git checkout입니다. 스크립트는 적용 전 파일을 확인하고 백업 위치를 출력합니다. MAIN142 원본 또는 이 수정본의 해시와 다른 코드가 있으면 적용 전에 중단합니다. 로그는 실행 TXT 옆의 live-judgment-install-logs에 남습니다.
+
+  bash ./MAIN142_LIVE_JUDGMENT_R1_ONECLICK.txt stage
+  git -C ~/DEV diff --cached --check
+  git -C ~/DEV diff --cached --stat
+
+준비된 파일을 검토하고 현장 절차대로 commit한 뒤, TRANSFER에서 다음 검사를 실행합니다.
+
+  bash ./MAIN142_LIVE_JUDGMENT_R1_ONECLICK.txt gate-code
+
+이 검사는 commit한 checkout과 ZIP의 코드 해시를 대조합니다. DP=oracle은 현장에서 사용 중인 Oracle owner·게시 채널과 데이터 설정을 사용합니다. 파일 generation 방식이면 push할 checkout의 genos_release_gate.py로 실제 선택 경로까지 검사합니다.
+
+  python3 ~/DEV/06_TOOLS/COMMANDS/genos_release_gate.py --code-zip ./MAIN142_LIVE_JUDGMENT_R1.zip --deploy-root ~/DEV --generation "<실제 선택 generation 절대경로>"
+
+현장 절차대로 검증한 commit을 push하고 새 코드서빙 리비전을 배포합니다. 시작 명령은 python3 08_DEPLOYMENT/GENOS/start_sse.py 입니다.
+
+2. 워크플로우 Python 단계 적용
+GENOS 워크플로우 Python 편집기에 MAIN142_LIVE_JUDGMENT_R1_WORKFLOW.py 전체를 넣고 저장·배포합니다. 기존 코드서빙 주소와 인증 설정을 사용합니다.
+
+3. 현장 확인
+워크플로우 테스트에서 SSE_CHECK를 실행합니다. 결과의 progress_display_revision은 rag-live-judgment-cards-20261105-r1, stream_progress_revision은 rag-live-judgments-20261105-r1이어야 합니다. WORKFLOW_SETTINGS로 진행 모드도 확인할 수 있습니다. 실시간 접이식 카드를 표시하는 모드는 socketio이며 기본값입니다.
+실제 채팅에서 권한이 있는 법률 질문을 보냅니다. 예를 들어 “주식회사 정관 변경의 주주총회 결의요건은?”을 보내고 답변이 나오기 전에 진행 패널에서 근거 선택 이유와 적용 판단을 확인합니다. 확정한 단계부터 표시합니다. 검토 중인 법령을 고른 이유와 법률 결론은 다른 카드입니다.
+카드가 보이지 않으면 해당 응답의 request_id와 workflow_progress_delivery를 확인합니다. 실시간 전송에는 socket_client_id_present=true와 /stream 연결이 필요합니다. emitted_card_events는 전송 횟수이며, 현장 브라우저 표시 여부는 실제 화면에서 확인합니다.
+
+4. 복구
+checkout 파일 복구는 TRANSFER에서 적용 로그에 기록된 백업을 지정합니다.
+
+  bash ./MAIN142_LIVE_JUDGMENT_R1_ONECLICK.txt undo --backup "<BACKUP/RECOVERY에 표시된 절대경로>"
+
+배포 후 원복할 때는 기존 MAIN142 코드서빙 리비전으로 복귀하고 편집기에 이전 MAIN142_WORKFLOW.py를 다시 적용합니다. 이번 전달본의 현장 commit, 배포 리비전, 현장 데이터 바인딩과 브라우저 표시는 미확인입니다.

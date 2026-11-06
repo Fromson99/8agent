@@ -1,0 +1,168 @@
+{
+  "completed_at": "2026-11-05T11:45:24.970422+00:00",
+  "passed": true,
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "operating-gold-20261105-r1",
+    "generation": 156,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/operating-gold-20261105-r1/release.json",
+    "release_manifest_sha256": "292f067952b3dc530595e76756294763b36a104d50a01f81a8187ff8d38bae1d",
+    "activated_at": "2026-11-05T11:41:38.872563+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "551ba2a5f96a69e3a535b0b2e7af06f50fea67bf5f65eb0de93ce59a0fa6670b"
+  },
+  "baseline_main": 155,
+  "serving_files": 532,
+  "working_selected_files_identical": true,
+  "changed_files": 34,
+  "product_or_mapping_changes": 3,
+  "pin_changes": 31,
+  "executable_sql_plans": 642,
+  "executable_sql_unchanged": true,
+  "registration": {
+    "path": "08_DEPLOYMENT/DATAIKU/gold_oneclick_prod_20261105_r5/package/registration_current.json",
+    "sha256": "da9f0e64b72d224a14a6b0bcea066053b6d89dd5671f24798fd45e4f48d65d79",
+    "tables_exact": 13
+  },
+  "tests": {
+    "gold_contracts": 52,
+    "regression_passed": 69,
+    "regression_known_baseline_failures": 2,
+    "new_failures": 0,
+    "oracle_variants": [
+      {
+        "path": "09_ARTIFACTS/AUDITS/20261105-operating-gold-main/oracle-staged-r3/runtime/test_actual_main_oracle_source0/actual-oracle.json",
+        "sha256": "d211c7099a395c1b3a9781b5726e80c3322abd634ffafd5212ec8c0d2b6ca1d7",
+        "variant": "timezone6",
+        "oracle_version": "23.26.3.0.0",
+        "sql_count": 92,
+        "checks": [
+          "17_table_preflight",
+          "actual_service_health",
+          "actual_service_source",
+          "actual_service_search",
+          "same_service_vector_reader",
+          "Oracle_VECTOR_DISTANCE",
+          "source_coordinate",
+          "ACL",
+          "request_reuse",
+          "Oracle_record_commit_fresh_read"
+        ],
+        "temporary_owners_removed": true
+      },
+      {
+        "path": "09_ARTIFACTS/AUDITS/20261105-operating-gold-main/oracle-staged-r3/runtime/test_actual_main_oracle_source1/actual-oracle.json",
+        "sha256": "21bfe88eb4604ff15594df1ca7f0a3413ee686655d77a1689a5e6bbc41216469",
+        "variant": "plain6_nullable",
+        "oracle_version": "23.26.3.0.0",
+        "sql_count": 92,
+        "checks": [
+          "17_table_preflight",
+          "actual_service_health",
+          "actual_service_source",
+          "actual_service_search",
+          "same_service_vector_reader",
+          "Oracle_VECTOR_DISTANCE",
+          "source_coordinate",
+          "ACL",
+          "request_reuse",
+          "Oracle_record_commit_fresh_read"
+        ],
+        "temporary_owners_removed": true
+      },
+      {
+        "path": "09_ARTIFACTS/AUDITS/20261105-operating-gold-main/oracle-staged-r3/runtime/test_actual_main_oracle_source2/actual-oracle.json",
+        "sha256": "fcf252e700989cbe693094d28f312d0a95147dee8fc200bb220dd9e5fd5e80c2",
+        "variant": "plain3_required",
+        "oracle_version": "23.26.3.0.0",
+        "sql_count": 92,
+        "checks": [
+          "17_table_preflight",
+          "actual_service_health",
+          "actual_service_source",
+          "actual_service_search",
+          "same_service_vector_reader",
+          "Oracle_VECTOR_DISTANCE",
+          "source_coordinate",
+          "ACL",
+          "request_reuse",
+          "Oracle_record_commit_fresh_read"
+        ],
+        "temporary_owners_removed": true
+      }
+    ],
+    "prepared_recheck": 52,
+    "root_and_gold_checks": 12
+  },
+  "package": {
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main156_operating_gold_20261105_r1",
+    "zip_sha256": "9e6290786dfcb49387be5f4145de20dfbd3458c56c8c0bce8b16e762474d1ea6",
+    "code_files": 542,
+    "members": 543,
+    "excluded_required": {
+      "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+    },
+    "release": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "operating-gold-20261105-r1",
+      "generation": 156,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/operating-gold-20261105-r1/release.json",
+      "release_manifest_sha256": "292f067952b3dc530595e76756294763b36a104d50a01f81a8187ff8d38bae1d",
+      "activated_at": "2026-11-05T11:41:38.872563+00:00",
+      "deployment_basis": "USER_DIRECTED_CUTOVER",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "551ba2a5f96a69e3a535b0b2e7af06f50fea67bf5f65eb0de93ce59a0fa6670b"
+    },
+    "full_serving_match": true,
+    "workflow_sha256": "dac69a34677f5f986c109a13dd411f62cf9be41f7bebb95b1523ac286be3fca8",
+    "extras": [
+      "06_TOOLS/COMMANDS/genos_codespace_engine_preflight.py",
+      "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+      "06_TOOLS/COMMANDS/genos_release_gate.py",
+      "02_BACKEND/lawrag/pipeline/glossary_serving.py",
+      "02_BACKEND/lawrag/pipeline/glossary_knowledge.py",
+      "02_BACKEND/lawrag/pipeline/glossary_v1.py",
+      "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+      "02_BACKEND/lawrag/sources/moleg_knowledge.py",
+      "02_BACKEND/lawrag/sources/common.py",
+      "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py",
+      "02_BACKEND/lawrag/pipeline/term_serving_bundle.py"
+    ]
+  },
+  "evidence": {
+    "staged-verified.json": "e78657e75e6e449d71940397c920cc83c766ee36447e566e1d59d951ef9ba2a9",
+    "oracle-staged-r3.json": "67b2e1de663425072bd99ecba90d7b3fb7d105b101cdad413aaeb7c1906fa43e",
+    "regression.json": "3ecd5d112359ce28c29c09a2b3a7e2aafbd8510011748e8fb30062ba67e4fa32",
+    "baseline-regression.json": "242d91b8b858fd8fdb82a13b0508c68d0d9696bc91bfc736cb9d47a28d8508ff",
+    "known-baseline-failures.json": "456623a76a8365a7bf10a95f09f2353e1825419d8cdb9177af59d79c1b493d6b",
+    "prepared-tests.json": "56087ac08281c8830c67742b41999b4cb834713c0d30a0e28fc75746857c05af",
+    "entry-check.json": "2563164016ad80e9d1512599d42e6d40ae3890a42f1e5c4e3cb8c4afbae1a2e0",
+    "activation.json": "239af0861bc8a1804359ffe63a22a932b9ebf2b67f3391839405cdef26cd8922",
+    "package-tests-r1/result.json": "0b2321867e1a7781c8a55ab6dac75f97651bffbae42fa1adac36497e566ad2b7",
+    "package-tests-r1/validated-deployment-checkout.json": "2d0ece66eccc31833daa39a06d163d34610b13a904a24588ce4503e1ccae1470"
+  },
+  "field_deployed": false,
+  "field_checkout": null,
+  "field_commit": null,
+  "field_revision": null,
+  "remote_model_calls": 0,
+  "operating_database_modified": false,
+  "quality_certified": false,
+  "initial_test_harness_failures": [
+    "oracle-staged: pytest basetemp parent absent; no Oracle call",
+    "oracle-staged-r2: isolated owner map serialization failed; temporary owners removed",
+    "baseline-contracts: same basetemp parent error; rerun baseline-contracts-r2 preserved separately"
+  ],
+  "rollback": {
+    "main": "08_DEPLOYMENT/RELEASES/operating-gold-20261105-r1/rollback/ACTIVE_RELEASE.json",
+    "gold_binding": "09_ARTIFACTS/AUDITS/20261105-operating-gold-main/gold-before.json"
+  },
+  "email_prepared_at": "2026-11-05T11:53:29.997099+00:00",
+  "email_status": "PREPARED_FOR_USER_REQUESTED_SEND",
+  "email_recipient": "hyungjininfocz.son@partner.samsung.com",
+  "email_subject": "[GENOS MAIN156] 운영 Gold 수정 · 최신 전체 코드 / 한 줄 실행 / 워크플로우",
+  "runtime_zip_and_execution_txt_unchanged": true
+}

@@ -1,0 +1,10 @@
+<p>현재 활성 MAIN157의 Oracle 매핑을 최신 운영 Gold R5와 대조했고, 확인한 범위에서 매핑 불일치는 없습니다.</p>
+<ul><li>Gold 13개 테이블·60컬럼: 이름, 자료형, 기본키, 인덱스가 운영 R5와 일치</li>
+<li>Agent 4개 테이블·26컬럼: SIDDA.LGL_AGT_BODY_A / LGL_AGT_REC_A / LGL_AGT_RUN_A / LGL_EXEC_ST_A</li>
+<li>매핑 계약 62개, 실제 root service/Gold binding 12개 통과</li>
+<li>로컬 Oracle 23.26.3에서 게시시각 3형식별 92 SQL로 원문·검색·벡터·ACL·Agent 저장/재조회 통과</li>
+<li>첨부 ZIP/TXT의 실제 ~/DEV 임시 링크 무인수 설치·재실행·commit·전체 배포 gate·원복 통과</li></ul>
+<p>이전 MAIN156 코드 전달본 대신 이번 MAIN157 ZIP/TXT 쌍을 사용하세요. 실제 업로드한 TRANSFER 폴더에 ZIP과 실행 TXT를 함께 두고 <code>bash MAIN157_ONECLICK_R1.txt</code>를 실행합니다. 상세 순서는 GUIDE.txt에 있습니다.</p>
+<p>코드서빙 환경은 <code>DP=oracle</code>, <code>GENOS_ORACLE_TABLE_MAPPING=gold</code>, <code>GENOS_ORACLE_GOLD_OWNER=실제 운영 Gold 소유자</code>로 지정합니다. GENOS ORDS 계정에 해당 Gold 조회 및 SIDDA._A 4개 조회·저장 권한이 필요합니다.</p>
+<p>Agent 생성 SQL도 현재 R2를 첨부했습니다. 이전 R1 대신 R2 전체를 Dataiku Query 하나에 붙이고 부분선택 해제 후 RUN합니다. 이미 생성된 동일 구조는 그대로 유지합니다. 기존 _A_1 이력은 자동 이관하지 않습니다.</p>
+<p>이번 확인은 현재 선택 코드와 전달본, 로컬 Oracle 기준입니다. 현장 DB 권한·실제 Gold 소유자·GENOS 배포 리비전·실제 모델 답변은 별도 확인 대상입니다. 제품 코드·MAIN·운영 데이터는 변경하지 않았습니다.</p>
