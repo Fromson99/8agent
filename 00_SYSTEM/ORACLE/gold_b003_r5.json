@@ -1,6 +1,6 @@
 {
   "schema_version": "gold-physical-map-v1",
-  "revision": "20261104-b003-chan-no-registration-r5",
+  "revision": "20261105-b003-operating-r5",
   "owner": null,
   "variant": "B003",
   "tables": {
@@ -139,7 +139,7 @@
         },
         "ADD_INFO_TEXT_OMIT_YN": {
           "name": "ADDN_IFMN_UN_APPN_YN",
-          "type": "CHAR(1 BYTE)",
+          "type": "VARCHAR2(1 BYTE)",
           "required": false,
           "default": null
         }
@@ -263,13 +263,13 @@
           "default": null
         },
         "SRCH_DATA_HASH_VALU": {
-          "name": "RFRN_DATA_HASH_VALU",
+          "name": "RFRN_DTA_HASH_VALU",
           "type": "VARCHAR2(100 BYTE)",
           "required": true,
           "default": null
         },
         "SRCH_DATA_CTNT": {
-          "name": "RFRN_DATA_CTNT",
+          "name": "RFRN_DTA_CTNT",
           "type": "CLOB",
           "required": true,
           "default": null
@@ -495,7 +495,7 @@
         },
         "SRC_UNIT_ID": {
           "name": "BODY_UNIT_ID",
-          "type": "VARCHAR2(50 BYTE)",
+          "type": "VARCHAR2(100 BYTE)",
           "required": true,
           "default": null
         },

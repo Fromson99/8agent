@@ -1,4 +1,4 @@
-"""Explicit G19 suffix-1 read/record ports for the existing Oracle DP.
+"""Explicit G19 data ports and shared suffix-A Agent records for Oracle DP.
 
 The immutable ingestion contract is code, not a SQL/DDL instruction source.
 Original row keys, hashes and publication identities remain unchanged.
@@ -39,11 +39,14 @@ class DevelopmentMapping:
         raw = Path(path).read_bytes()
         value = json.loads(raw)
         tables = value['tables']
-        if value['version'] != 'gold-development-fresh-suffix-1-20261102-r1' or len(tables) != 17:
+        if value['version'] != 'gold-development-agent-a-20261105-r1' or len(tables) != 17:
             raise MappingError('DEV_G19_CONTRACT')
         for key, table in tables.items():
             identifier(table['owner']); identifier(table['name'])
-            if not table['name'].endswith('_1'):
+            if key in AGENTS.values():
+                if table['name'] != 'LGL_' + key + '_A':
+                    raise MappingError('DEV_G19_AGENT_TABLE')
+            elif not table['name'].endswith('_1'):
                 raise MappingError('DEV_G19_SUFFIX')
             for column in table['columns'].values():
                 identifier(column['name'])
@@ -88,17 +91,21 @@ class DevelopmentMapping:
             columns = {row['COLUMN_NAME']: row for row in rows}
             if set(columns) != {c['name'] for c in table['columns'].values()}:
                 raise MappingError(self.schema_error_prefix + '_SCHEMA_COLUMNS: ' + self.physical_table(key))
-            for column in table['columns'].values():
-                row = columns[column['name']]; typ = column['type']
-                import re
-                if typ.startswith(('VARCHAR2', 'CHAR')):
-                    good = row['DATA_TYPE'] == typ.split('(')[0] and row['DATA_LENGTH'] == int(re.search(r'\((\d+)', typ)[1]) and row['CHAR_USED'] == 'B'
-                elif typ.startswith('NUMBER'):
-                    good = row['DATA_TYPE'] == 'NUMBER' and row['DATA_PRECISION'] == int(re.search(r'\((\d+)', typ)[1]) and row['DATA_SCALE'] == 0
-                elif typ.startswith('TIMESTAMP'):
-                    good = row['DATA_TYPE'] in ('TIMESTAMP(6) WITH TIME ZONE', 'TIMESTAMP WITH TIME ZONE') and row['DATA_SCALE'] == 6
-                else:
-                    good = row['DATA_TYPE'] == ('VECTOR' if typ.startswith('VECTOR') else typ)
-                if not good or row['NULLABLE'] != ('N' if column['required'] else 'Y'):
+            for logical, column in table['columns'].items():
+                if not self.column_matches(key, logical, column, columns[column['name']]):
                     raise MappingError(self.schema_error_prefix + '_SCHEMA_TYPE: ' + self.physical_table(key) + '.' + column['name'])
         return {'profile': self.profile, 'tables': len(self.tables), 'mapping_sha256': self.file_sha256}
+
+    def column_matches(self, key, logical, column, row):
+        """Exact reader contract; profiles may specialize a named field only."""
+        import re
+        typ = column['type']
+        if typ.startswith(('VARCHAR2', 'CHAR')):
+            good = row['DATA_TYPE'] == typ.split('(')[0] and row['DATA_LENGTH'] == int(re.search(r'\((\d+)', typ)[1]) and row['CHAR_USED'] == 'B'
+        elif typ.startswith('NUMBER'):
+            good = row['DATA_TYPE'] == 'NUMBER' and row['DATA_PRECISION'] == int(re.search(r'\((\d+)', typ)[1]) and row['DATA_SCALE'] == 0
+        elif typ.startswith('TIMESTAMP'):
+            good = row['DATA_TYPE'] in ('TIMESTAMP(6) WITH TIME ZONE', 'TIMESTAMP WITH TIME ZONE') and row['DATA_SCALE'] == 6
+        else:
+            good = row['DATA_TYPE'] == ('VECTOR' if typ.startswith('VECTOR') else typ)
+        return good and row['NULLABLE'] == ('N' if column['required'] else 'Y')

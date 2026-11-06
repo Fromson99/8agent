@@ -20,13 +20,13 @@ def test_gold_uses_registered_r5_columns_and_separate_agent_records():
     assert sum(t['owner'] == 'APP_GOLD' for t in m.tables.values()) == 13
     assert m.names('document').table.startswith('(SELECT DTLS_HASH_VALU')
     assert 'APP_GOLD.IDD_B003_LGL_DOC_VER' in m.names('document').table
-    assert 'RFRN_DATA_HASH_VALU AS ROW_SHA256' in m.names('query_row').table
+    assert 'RFRN_DTA_HASH_VALU AS ROW_SHA256' in m.names('query_row').table
     assert 'RGSN_ASTM AS CREATED_AT' in m.names('source_release').table
     assert 'CHAN_NO AS REVISION' in m.names('query_active').table
     assert m.tables['DOC_VER']['columns']['DOC_ID']['type'] == 'VARCHAR2(100 BYTE)'
-    assert set(m.agent_tables.values()) == {'SIDDA.LGL_AGT_BODY_A_1', 'SIDDA.LGL_AGT_REC_A_1',
-                                          'SIDDA.LGL_AGT_RUN_A_1', 'SIDDA.LGL_EXEC_ST_A_1'}
-    assert m.names('query_state').table == 'SIDDA.LGL_EXEC_ST_A_1'
+    assert set(m.agent_tables.values()) == {'SIDDA.LGL_AGT_BODY_A', 'SIDDA.LGL_AGT_REC_A',
+                                          'SIDDA.LGL_AGT_RUN_A', 'SIDDA.LGL_EXEC_ST_A'}
+    assert m.names('query_state').table == 'SIDDA.LGL_EXEC_ST_A'
     with pytest.raises(TypeError):
         m.tables['DOC_VER']['owner'] = 'OTHER'
 
@@ -109,7 +109,8 @@ def test_schema_or_visibility_failure_remains_a_failure(change):
 
 @pytest.mark.parametrize('change',['table','column','variant','duplicate','missing_table','type'])
 def test_malformed_mapping_is_rejected(tmp_path,change):
-    source=Path(__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/gold_b003_r5.json'
+    import semantic_runtime.oracle_gold_mapping as module
+    source=Path(module.__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/gold_b003_r5.json'
     data=json.loads(source.read_text())
     if change=='table':data['tables']['DOC_VER']['name']='LGL_G19_DOC_VER_S_1'
     elif change=='column':data['tables']['DOC_VER']['columns']['DOC_ID']['name']='A;DROP'

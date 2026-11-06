@@ -1,7 +1,7 @@
-"""Explicit B003 R5 data tables over the existing GENOS ORDS transport.
+"""Operating B003 loader R5 tables over the existing GENOS ORDS transport.
 
 Gold contains the thirteen published data tables. The existing four SIDDA
-Agent A_1 tables continue to own mutable request records and state.
+Agent A tables own mutable request records and state in every mapping mode.
 """
 import hashlib
 import json
@@ -40,7 +40,7 @@ class GoldMapping(DevelopmentMapping):
         value = json.loads(raw, object_pairs_hook=unique_pairs)
         if (set(value) != {'schema_version', 'revision', 'owner', 'variant', 'tables'}
                 or value['schema_version'] != 'gold-physical-map-v1'
-                or value['revision'] != '20261104-b003-chan-no-registration-r5'
+                or value['revision'] != '20261105-b003-operating-r5'
                 or value['variant'] != 'B003' or value['owner'] is not None):
             raise MappingError('GOLD_B003_CONTRACT')
         development = DevelopmentMapping.load()
@@ -77,6 +77,17 @@ class GoldMapping(DevelopmentMapping):
                            'columns': {k: dict(v) for k, v in table['columns'].items()},
                            'primary_key': list(table['primary_key'])}
         return cls(_freeze(tables), hashlib.sha256(raw).hexdigest(), digest(tables), profile='gold')
+
+    def column_matches(self, key, logical, column, row):
+        # Operating R4/R5 binds this registration field to the existing plain
+        # TIMESTAMP precision/nullability. Serving reads the published JSON;
+        # it neither generates timestamps nor relies on the insert default.
+        # Keep Agent timestamps and every other metadata check exact.
+        if key == 'SRC_POST' and logical == 'RGSN_AITM':
+            match = re.fullmatch(r'TIMESTAMP\(([0-9])\)', row['DATA_TYPE'] or '')
+            if match:
+                return row['DATA_SCALE'] == int(match[1]) and row['NULLABLE'] in ('Y', 'N')
+        return super().column_matches(key, logical, column, row)
 
     def ontology_repository(self, request, glossary):
         from .oracle_gold_ontology import repository
