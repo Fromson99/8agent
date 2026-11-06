@@ -90,9 +90,12 @@ def result_port(pipeline,session,cases,result):
         if composition.get('source_excerpt_reply'):
             meta['text_integrity'] = 'VERIFIED_SOURCE_EXCERPTS'
             meta['source_reply_contract'] = composition['source_excerpt_reply']['schema_version']
+        if composition.get('guided_reply'):
+            meta['text_integrity']='GUIDED_SOURCE_EXPLANATION'
+            meta['guided_reply']={**composition['guided_reply'],'text_hash':digest(raw['text'])}
         if composition.get('composition_plan',{}).get('presentation'):
             meta['narrative_presentation']={'version':composition['composition_plan']['presentation'],
-                'streaming':('verified-complete-answer' if composition['composition_plan']['presentation'] == 'accepted-content-v1' else 'text-deltas-during-generation'), 'semantic_quality_certified':False}
+                'streaming':('verified-complete-answer' if composition['composition_plan']['presentation'] in ('accepted-content-v1','guided-conversation-v1') else 'text-deltas-during-generation'), 'semantic_quality_certified':False}
         assessment=parts['ASSESS']['payload']
         meta['accepted_outcome']={'schema_version':'accepted-outcome-v1',
             'basis':'committed-ASSESS-and-verified-COMPOSE','assessment_hash':digest(assessment),

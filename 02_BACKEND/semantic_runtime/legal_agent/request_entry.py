@@ -16,6 +16,7 @@ SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'\n현재 사건·기억 없는 �
 
 from .structure_selection import PROMPT as ENTRY_SELECTION_PROMPT
 ENTRY_SCOPE_PROMPT = ENTRY_SELECTION_PROMPT + """
+request_configuration의 source_category는 서버가 해석한 내규/외규/전체 선택이다. 이 접두어는 문서명이 아니며 scope_decision.targets에 넣지 않는다. question에는 접두어를 뺀 실제 요청이 있다. 원문 인용 선택지는 원래 요청을 그대로 보존하며 접두어를 포함할 수 있다.
 search.scope_decision은 이 최초 요청의 유일한 범위 판단이다. NAMED_SCOPE의 targets에는 실제 요청한 문서명과 구조만 넣고 user_quote는 현재 question의 연속 원문을 그대로 복사한다.
 생략·대명사·약칭이 가리키는 법령은 문맥을 보고 해석한 문서명으로 targets에 작성하고 reason에 해석 이유를 쓴다. user_quote에는 해석 전 현재 질문의 원문을 그대로 보존한다. 확인되지 않은 이름을 지어내지 않는다.
 문서 전체는 structure=null, selection=null이다. 단일 조문 번호도 selection으로 표현하고 structure=null이다. 예를 들어 본문 제2조는 coordinate_scope="body", groups=[{parent_path:[],unit:"조",include:[{kind:"SINGLE",value:{n:2}}],exclude:[]}]다. 부칙을 요청한 경우 본문으로 바꾸지 않고 해당 부칙 범위를 구분한다. 번호의 복수·범위·제외도 selection으로 표현한다. 번호 없는 목차 제목은 structure에 쓴다. 범위 없이 허용 자료에서 찾는 AUTHORIZED_SCOPE는 targets=[], user_quote=""다.
@@ -232,7 +233,29 @@ def eligible(repo,context):
     from .workflow_execution import task_context
     task=task_context()
     return ((profile.get('request_entry_policy','legacy')==POLICY or bool(task and 'issues' in task)) and cc.enabled(profile)
-        and not context['goals'] and not context.get('knowledge') and not getattr(repo,'resume_goal',None))
+        and not context['goals'] and not context.get('knowledge') and not context.get('recent_dialogue')
+        and not getattr(repo,'resume_goal',None))
+
+
+def request_view(utterance):
+    from ..pipeline import route_question
+    question,category=route_question(utterance)
+    return {'question':question,'request_configuration':{'source_category':category,
+        'source_prefix_is_document':False}}
+
+
+def validate_source_marker(value,utterance):
+    """Reject a UI-only prefix as a named document, never broaden its proposal."""
+    view=request_view(utterance)
+    if view['request_configuration']['source_category'] is None:return
+    import re
+    marker=re.split('[:,：，]',utterance,maxsplit=1)[0].strip()
+    if marker in view['question']:return
+    for target in ((value.get('search') or {}).get('scope_decision') or {}).get('targets',[]):
+        if target['document']==marker:
+            raise EntryConflict('Source category prefix is not a document name',[
+                output.issue('ENTRY_CATEGORY_AS_DOCUMENT','/search/scope_decision/targets',
+                    expected='Use request_configuration.source_category as category; choose document targets only from the actual question.')])
 
 def fresh_state(body,principal,command):
     state={'task':body['question'],'source_category':'ALL',
@@ -285,10 +308,41 @@ def accept(repo,context,value,*,scoped=False,admit=True):
     if admit:repo.admit(c,context)
     return routing,c,intent
 
+def validate_initial_selection(command, matcher, authorized, utterance):
+    """Reject an unresolved typed model path inside the existing repair owner.
+
+    No article extraction or replacement happens here. Unique stored metadata
+    resolves the proposal; the model alone may choose a corrected ancestor.
+    Document misses retain the existing lookup/clarification path. Integrity
+    and authorization errors are never converted to a model repair.
+    """
+    from . import query_scope as qs
+    from .structure_selection import SelectionError
+    change = (command or {}).get('search_scope_change')
+    if not change or not any(t.get('selection') is not None for t in change['targets']):
+        return
+    try:
+        qs.resolve(change, None, matcher, authorized, utterance, model_resolved=True)
+    except qs.UnresolvedScope as exc:
+        cause = exc.__cause__
+        if isinstance(cause, SelectionError) and cause.code in {
+                'AMBIGUOUS_PARENT', 'MISSING_PARENT', 'AMBIGUOUS_ENDPOINT',
+                'MISSING_ENDPOINT', 'MISSING_SELECTION_LEVEL', 'INVALID_SELECTION'}:
+            raise output.OutputContractError(str(exc), [output.issue(
+                'ENTRY_STRUCTURE_'+cause.code, '/search/scope_decision/targets',
+                expected='Preserve every explicitly requested ancestor in selection.groups[].parent_path. '
+                         'Reconsider the complete path from the same question; never invent or broaden a scope. '
+                         'An unresolved model path is not proof that the user omitted the article.')],
+                category='DECISION_CONFLICT') from exc
+        # Other unresolved scopes still use the established execution boundary.
+
+
 def run(repo,context):
-    data={'question':context['utterance'],'current_goals':[],
+    data={**request_view(context['utterance']),'current_goals':[],
         'capabilities':{**CAPABILITIES,'limitations':['등록되고 요청 범위에 허용된 자료만 조회']}}
     session=repo.executor.model.ensure();work=session.work
+    from .guided_navigation import enabled as guided_enabled
+    guided=guided_enabled(session.sources.profile)
     from .law_title_hints import hints
     scope=set(session.sources.scope)&set(repo._entry_principal['document_ids'])
     if repo._entry_body.get('document_ids'):scope &= set(repo._entry_body['document_ids'])
@@ -297,7 +351,7 @@ def run(repo,context):
     if category in ('internal', 'external'):scope={d for d in scope if session.sources.matcher.document_context.get(d,{}).get('source_category')==category}
     import time
     started=time.perf_counter()
-    repo._entry_title_hints=hints(context['utterance'],session.sources.matcher,scope)
+    repo._entry_title_hints=hints(data['question'],session.sources.matcher,scope)
     data['law_title_hints']=repo._entry_title_hints
     from . import knowledge_bridge
     knowledge = knowledge_bridge.prepare(repo.executor,work,context['utterance'],repo._entry_principal,scope)
@@ -342,7 +396,9 @@ def run(repo,context):
         if not from_host:output.validate_shape(raw,request_schema)
         value=deepcopy(raw);history_ids=value.pop('history_ids',[])
         try:
-            if not from_host:value=decode_scope(value,repo._entry_title_hints)
+            if not from_host:
+                validate_source_marker(value,context['utterance'])
+                value=decode_scope(value,repo._entry_title_hints)
             routing,command,intent=accept(repo,context,value,scoped=scoped,admit=False)
         except output.OutputContractError:
             raise
@@ -350,7 +406,13 @@ def run(repo,context):
             raise output.OutputContractError(str(exc),[output.issue('REQUEST_ENTRY_CONFLICT')],
                 category='DECISION_CONFLICT') from exc
         # Admission is outside the model-correction boundary for permission/state failures.
-        if command is not None:repo.admit(command,context)
+        if command is not None:
+            repo.admit(command,context)
+            if command.get('method_id') == 'CASE_START':
+                validate_initial_selection(command, session.sources.matcher, scope, context['utterance'])
+        if not from_host:
+            from .reason_decision_review import for_command
+            for_command(repo,data,raw,{'routing':routing,'command':command,'intent':intent})
         prepared.update(value=value,history_ids=history_ids,routing=routing,command=command,intent=intent,
             scope_decision=deepcopy((raw.get('search') or {}).get('scope_decision')))
     from .workflow_execution import entry_proposal
@@ -367,13 +429,21 @@ def run(repo,context):
         try:
             output.bounded_decision(repo,'request-entry',data,request_schema,propose,check,
                 identity={'request':repo._entry_body,'principal':repo._entry_principal,
-                    'binding':repo.executor.binding,'view':data})
+                    'binding':repo.executor.binding,'view':data},can_repair=lambda:not guided)
         except output.OutputContractError as exc:
+            if guided and output.repairable(exc):
+                # No legal state or scope is admitted from a rejected proposal.
+                work.event('REQUEST_ENTRY_GUIDANCE_REQUIRED',{'category':exc.category,'issues':exc.issues})
+                check({'routing':{'mode':'CASE','answer':'','reason':'모델 판단을 적용하지 않음'},
+                    'command':{'method_id':'NEED_TARGET','source_category':'ALL','facts':[],
+                        'queries':[],'format':'prose','reason':'요청을 조사 대상으로 정리하는 모델 판단이 맞지 않아 적용하지 않았습니다. 아직 원문 조사를 시작하지 않았습니다. 같은 요청으로 다시 시작할까요, 아니면 확인할 대상을 바꿀까요?'},
+                    'intent':None,'context_quotes':[],'search':None},from_host=True)
+            else:
             # The sole owner has already spent or denied its remaining repair.
             # Keep the cause/field diagnostics, but do not advertise a new retry.
-            raise output.OutputContractError(str(exc),
-                [{**row,'repairable':False} for row in exc.issues],
-                category=exc.category,repairable=False) from exc
+                raise output.OutputContractError(str(exc),
+                    [{**row,'repairable':False} for row in exc.issues],
+                    category=exc.category,repairable=False) from exc
     value=prepared['value'];routing=prepared['routing'];command=prepared['command'];intent=prepared['intent']
     if memory:wiki_recall.choose(repo.executor,prepared['history_ids'] if intent is not None else [],work.event)
     entry={'scope_decision':prepared.get('scope_decision'),'contract':POLICY,'request_hash':digest(repo._entry_body),

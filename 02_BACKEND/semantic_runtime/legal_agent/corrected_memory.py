@@ -14,6 +14,7 @@ from .. import runtime_sqlite as sqlite3
 from . import journal_storage
 import uuid
 from jsonschema import validate, ValidationError
+from .errors import ContractError
 from .memory_methods import METHODS, normalize, history_projection, history_answer, offered, require_offered
 
 STAGES = ['INTENT', 'PLAN', 'RECALL', 'READ', 'SELECT', 'ASSESS', 'COMPOSE']
@@ -205,6 +206,48 @@ class Memory:
             if e['kind']=='CORRECT': ordinal+=1; e['correction_ordinal']=ordinal
             out.append(e)
         return out
+    def record_dialogue(self,body,principal,result):
+        """Conversation is durable even when no goal transition was accepted."""
+        answer=result.get('answer')
+        text=answer.get('text','') if isinstance(answer,dict) else answer or result.get('reason','')
+        if not text:return
+        documents=set(principal['document_ids'])
+        if body.get('document_ids'):documents.intersection_update(body['document_ids'])
+        record={'version':'case-dialogue-v1','document_ids':sorted(documents),
+            'goal_id':result.get('goal_id'),'revision':result.get('revision'),
+            'status':result['status'],'text':text,
+            'clarification':result['status']=='CLARIFY' and
+                result.get('request_routing',{}).get('mode','CASE')=='CASE'}
+        # The request cache and this non-state event commit together. Neither
+        # creates a correction, a legal claim, or a reusable experience.
+        self.db.execute('INSERT INTO event(goal,request,utterance,command,kind) VALUES(NULL,?,?,?,?)',
+            (self.request_key(body,principal),body['question'],
+             encoded({'record':record,'hash':digest(record)}),'CONVERSATION_TURN'))
+    def recent_dialogue(self,session,principal):
+        rows=self.db.execute('''SELECT e.id,e.utterance,e.command FROM event e
+            JOIN request r ON r.id=e.request JOIN session s ON s.id=r.session
+            WHERE r.session=? AND s.owner=? AND s.team=? AND e.kind='CONVERSATION_TURN'
+            AND r.status='COMPLETE' ORDER BY e.id DESC LIMIT 12''',
+            (session,principal['user_id'],principal['team_id'])).fetchall()
+        allowed=set(principal['document_ids'])
+        request=getattr(self,'_resolve_request',{}).get('body',{})
+        if request.get('session_id')==session and request.get('document_ids'):
+            allowed.intersection_update(request['document_ids'])
+        out=[]
+        for row in reversed(rows):
+            envelope=json.loads(row['command']);record=envelope['record']
+            if digest(record)!=envelope['hash']:raise ContractError('Conversation record hash mismatch')
+            if not set(record['document_ids'])<=allowed:
+                # An inaccessible intervening turn is a conversation boundary;
+                # do not make an older clarification look like the latest one.
+                out=[]
+                continue
+            common={k:record[k] for k in ('goal_id','revision','status','clarification')}
+            common.update(event_id=row['id'],context_only=True)
+            out.extend([{**common,'speaker':'user','text':row['utterance']},
+                {**common,'speaker':'assistant','text':record['text'],
+                 'past_model_opinion_not_evidence':True}])
+        return out
     def route(self,gid):
         r=self.db.execute("SELECT * FROM route WHERE goal=? AND status='ACTIVE'",(gid,)).fetchone()
         if not r:return None
@@ -250,9 +293,15 @@ class Memory:
                     'legal_conclusion_confirmed':bool(assessment.get('claims')),
                     'missing_fact_questions':[r['text'] for r in assessment.get('limitation_items',[])
                                               if r.get('kind')=='MISSING_FACT']}
+                from .guided_navigation import dialogue
+                if assessment.get('guided_reply'):
+                    g['previous_response']['text']=str(compose.get('text',''))
+                    g['previous_response']['guidance']=deepcopy(assessment['guided_reply'])
+                    g['dialogue']=dialogue(self,g['id'])
 
         links={r['intent']:r['knowledge'] for r in self.db.execute('SELECT intent,knowledge FROM wiki WHERE owner=? AND team=?',(principal['user_id'],principal['team_id']))}
-        return {'utterance':utterance,'goals':[{**g,'events':self.events(g['id'])} for g in goals],
+        return {'utterance':utterance,'recent_dialogue':self.recent_dialogue(session,principal),
+            'goals':[{**g,'events':self.events(g['id'])} for g in goals],
             'wiki_links':links,
             'knowledge':[{'id':k['id'],'bundle':k['bundle'],'state':k['payload']['state'],'concepts':k['payload']['concepts']} for k in self.candidates(principal,utterance)],
             'allowed_documents':self.executor.catalogue(principal['document_ids'])}
@@ -294,6 +343,9 @@ class Memory:
         self.db.execute('INSERT INTO event(goal,request,utterance,command,kind) VALUES(NULL,?,?,?,?)',
             (value['decision_key'],'',encoded({'row':value,'hash':digest(value)}),'OUTPUT_DECISION_STATE'))
     def resolve(self,context):
+        self._resolved_transition=None
+        from .guided_navigation import enabled as guided_enabled
+        guided=guided_enabled(getattr(getattr(getattr(self.executor,'pipeline',None),'term_agent',None),'profile',{}))
         # Conversation continuity is independent of navigation/answer-first policy.
         continuation = '''\n같은 조문·제도·사건을 두고 적용 조건, 예외, 제외 사유, 근거를 추가로 묻는 후속 요청은 제공된 기존 goal을 보완한다. 질문 문장이 달라졌거나 확인 범위가 넓어졌다는 이유만으로 CASE_START를 선택하지 않는다. 기존 목표와 관계없는 별도 주제, 사용자가 별도 새 질문으로 시작하도록 요청한 경우에 CASE_START를 사용한다.
 같은 goal의 요청 범위가 바뀌면 그 target을 선택하고 PURPOSE_REVISE로 task를 현재 요청에 맞게 수정한다. 검색계획도 바꿔야 하면 RESEARCH_REPLAN으로 task와 queries를 함께 갱신할 수 있다. 실제로 변하지 않은 facts와 문서 범위는 유지한다. 예전 답변을 현재 후속 질문의 답으로 반복하지 않는다. 현재 요청의 대상과 기존 goal의 관계를 근거로 판단하며, 확정할 수 없는 대상을 추측하지 않는다. 이 정책은 기존 원문·이력을 검증해 재사용할 수 있도록 같은 조사에 연결하는 것이고, 이전 결론을 정답으로 승인하는 것이 아니다.'''
@@ -308,6 +360,8 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
                     and previous.get('READ',{}).get('payload',{}).get('binding')==self.executor.binding):
                 context={**context,'literal_repeat_target':repeat}
         continuation += '\nliteral_repeat_target은 현재 요청 원문·최신 목표·사실·범위가 그대로라는 서버 기록이다. 해당 목표의 답변을 다시 보여주는 ANSWER_PRESENT를 선택할 수 있으며, 기존 검토가 실패했거나 재판단이 필요하면 RESEARCH_REENTER를 선택한다. 이전 답변의 정답 여부를 보증하지 않는다. CASE_START로 새 목표를 만들지 않는다. 서로 다른 주제·행위·쟁점은 같은 법령에 속해도 별도 목표다. 새로운 주제로 전환한 요청을 이전 목표의 RESEARCH_REPLAN으로 덮어쓰지 말고 CASE_START로 시작한다. 이전 질문의 조건·예외·근거를 보완하는 요청과 구분한다.'
+        continuation += '\n직전 답변이 "이어서 읽어볼까요?", "더 찾아볼까요?"처럼 추가 조사를 제안했고 현재 발언이 짧은 동의·계속 요청("응", "계속해줘", "이어서 찾아줘")이면 RESEARCH_CONTINUE를 선택하고 target은 그 답변의 goal이다. task/facts/queries는 null, 범위는 KEEP이며 서버가 SELECT부터 조사를 이어간다. 목적을 다시 쓰거나 PURPOSE_REVISE/CASE_START로 바꾸지 않는다. 사용자가 다른 대상이나 새 측면을 함께 지정하면 그 의도에 맞는 명령을 고른다.'
+        continuation += '\nrecent_dialogue는 거절된 요청과 실제로 사용자에게 보낸 확인 질문까지 포함한 대화 기록이다. clarification=true인 턴의 명령은 적용되지 않았다. 사용자가 "그 목적으로 바꿔줘", "이어서 찾아줘"라고 답하면 직전 확인 질문과 그 앞의 구체적인 사용자 요청을 함께 보고 현재 목적을 정한다. 이미 명확히 지정한 대상을 다시 요구하지 않는다. 거절된 판단이나 과거 답변을 법률 근거·승인·실행 결과로 사용하지 않는다. 현재 요청이 모호하거나 대상을 여러 개로 해석할 수 있을 때만 NEED_TARGET이다.'
         context={**context,'offered_methods':offered(context)}
         visible=model_context(context)
         data=visible
@@ -322,6 +376,8 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             closed['properties'][field]={'anyOf':[{'type':'string','enum':ids},{'type':'null'}]} if ids else {'type':'null'}
         # Couple each method to its own executable targets, not the union of all goals.
         from .memory_methods import command_branch, repair_schema
+        from .memory_methods import (TRANSITION_CHECK, TRANSITION_PROMPT,
+            transition_preview, validate_transition)
         branches=[command_branch(closed,name,context) for name in context['offered_methods']]
         closed['properties']['method_id']={'type':'string','enum':list(context['offered_methods'])}
         closed['anyOf']=branches
@@ -343,26 +399,54 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             return command
         def propose(payload,attempt):
             current_schema=repair_schema(closed,payload,context) if attempt else closed
-            raw=self.invoke(RESOLVE+SCOPE_PROMPT+continuation+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때 명시 요청 또는 제공된 review_recovery의 실패 단계를 따른다. 나머지는 서버가 method에 맞게 결정한다.',payload,current_schema,'memory-resolve' if not attempt else 'memory-resolve-repair')
+            raw=self.invoke(RESOLVE+SCOPE_PROMPT+continuation+'\n같은 goal의 새로운 측면을 묻는 후속은 PURPOSE_REVISE/task 또는 RESEARCH_REPLAN/task로 현재 목적을 명시한다. RESEARCH_REENTER는 목적·사실을 그대로 재실행하므로 바뀐 질문에 쓰지 않는다. 검토 복구는 review_recovery.available=true인 실제 기록이 있을 때만 선택한다.'+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때 명시 요청 또는 제공된 review_recovery의 실패 단계를 따른다. 나머지는 서버가 method에 맞게 결정한다.',payload,current_schema,'memory-resolve' if not attempt else 'memory-resolve-repair')
             try:
                 output.validate_shape(raw,current_schema)
                 command=prepare(raw)
             except (output.OutputContractError, ValidationError) as exc:
                 exc.proposal={'command':deepcopy(raw),'check':None}
                 raise
-            check=self.invoke(VERIFY_COMMAND+SCOPE_PROMPT+continuation,{'context':visible,'command':model_context(command),'execution_contract':{'stage_means':'restart entry, never a stopping point','requested_entry':command['stage'],'ordered_stages':STAGES,'success_ends_at':'COMPOSE','dependency_recovery_may_start_earlier':True}},CHECK,'memory-command-check')
-            return {'command':raw,'check':check}
+            transition=transition_preview(command,context)
+            from . import reason_decision_review as reason_review
+            reviewed_execution={**model_context(command),'transition':model_context(transition)}
+            try:
+                receipt=reason_review.for_command(self,visible,raw,reviewed_execution)
+            except reason_review.ReviewConflict as exc:
+                exc.proposal={'command':deepcopy(raw),'check':None,'transition':transition}
+                raise
+            # Reason/action consistency and current-request intent are distinct
+            # contracts. A reason-review PASS cannot skip the state review.
+            check=self.invoke(VERIFY_COMMAND+SCOPE_PROMPT+continuation+TRANSITION_PROMPT,{'context':visible,'command':model_context(command),'transition':model_context(transition),'execution_contract':{'stage_means':'restart entry, never a stopping point','requested_entry':command['stage'],'ordered_stages':STAGES,'success_ends_at':'COMPOSE','dependency_recovery_may_start_earlier':True}},TRANSITION_CHECK,'memory-command-check')
+            return {'command':raw,'check':check,'transition':transition,'reason_review':receipt['decision'] if receipt else None}
         def verify(value):
-            prepare(value['command']);output.validate_shape(value['check'],CHECK)
-            if not value['check']['valid']:
-                raise output.OutputContractError(value['check']['reason'],[output.issue('COMMAND_INTENT_CONFLICT')],category='DECISION_CONFLICT')
+            command=prepare(value['command'])
+            transition=transition_preview(command,context)
+            if value['transition']!=transition:
+                from .errors import ContractError
+                raise ContractError('memory transition changed after review')
+            validate_transition(command,transition,value['check'])
+            from .reason_decision_review import for_command
+            receipt=for_command(self,visible,value['command'],
+                {**model_context(command),'transition':model_context(transition)})
+            if receipt and value['reason_review']!=receipt['decision']:
+                raise ContractError('command reason review receipt changed')
         try:
-            value=output.bounded_decision(self,'command-resolver',data,{'command':closed,'check':CHECK},propose,verify,
-                identity={'request':getattr(self,'_resolve_request',{}),'context':context,'binding':self.executor.binding})
+            from .reason_decision_review import VERSION as reason_review_version
+            value=output.bounded_decision(self,'command-resolver',data,{'command':closed,'check':TRANSITION_CHECK,'transition_version':'memory-command-transition-v1','reason_review':reason_review_version},propose,verify,
+                identity={'request':getattr(self,'_resolve_request',{}),'context':context,'binding':self.executor.binding},
+                can_repair=lambda:not guided)
+            self._resolved_transition=deepcopy(value['transition'])
             return prepare(value['command'])
         except output.OutputContractError as exc:
             if not output.repairable(exc):raise
-            return {'action':'CLARIFY','reason':str(exc)}
+            if guided:
+                goals=context.get('goals',[])
+                prior=goals[-1].get('state',{}).get('task') if goals else None
+                reason='이번 요청을 기존 조사에 연결하는 판단이 맞지 않아 적용하지 않았습니다. 이전 원문과 기록은 보존했습니다.'
+                if prior:reason+=' 이전 질문은 “'+prior+'”입니다.'
+                reason+=' 기존 질문의 조사를 이어갈까요, 아니면 이번에 확인할 목적을 바꿀까요?'
+                return {'action':'CLARIFY','reason':reason}
+            return {'action':'CLARIFY','reason':'요청을 어느 답변에서 이어갈지 확인하지 못했습니다. 다시 확인할 질문이나 내용을 알려주세요.'}
     def checked_knowledge(self,kid,principal):
         row=self.db.execute("SELECT * FROM knowledge WHERE id=? AND owner=? AND team=? AND status='ACTIVE'",
             (kid,principal['user_id'],principal['team_id'])).fetchone()
@@ -371,14 +455,30 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
         if digest(k['payload'])!=k['hash']:raise MemoryError('knowledge corrupt')
         if (not set(k['payload']['state']['document_ids'])<=set(principal['document_ids']) or
                 k['payload']['binding']!=self.executor.binding):raise MemoryError('knowledge retired, drifted or inaccessible')
-        self.executor.verify(k['payload']['parts']['READ']['payload'])
+        from ..ontology_work.runtime import PublicationChanged
+        try:self.verify_parts(k['payload']['parts'],principal)
+        except PublicationChanged as exc:
+            raise MemoryError('knowledge publication changed; reassessment required') from exc
         return k
+    def verify_parts(self,parts,principal):
+        """Originals and current publication authority survive every reuse boundary."""
+        read=parts['READ']['payload']
+        self.executor.verify(read)
+        selected=parts.get('SELECT',{}).get('payload',{}).get('selected_evidence',[])
+        if selected:self.executor.verify({'binding':read['binding'],'evidence':selected})
+        from ..ontology_work.runtime import assert_assessment
+        assert_assessment(parts['ASSESS']['payload'],principal['document_ids'])
     def finalize(self,g,principal):
         if g['state'].get('scenario_context'):
             raise MemoryError('hypothetical scenarios cannot become confirmed actual-case knowledge')
         route=self.route(g['id'])
         if g['status']!='READY' or not route or route['revision']!=g['revision']:raise Conflict('cannot confirm pending or stale route')
-        parts=self.parts(g['id']);self.executor.verify(parts['READ']['payload'])
+        parts=self.parts(g['id']);self.verify_parts(parts,principal)
+        assessment=parts['ASSESS']['payload']
+        if (assessment.get('guided_reply',{}).get('needs_guidance')
+                or not assessment.get('claims') or assessment.get('source_excerpt_reply')
+                or assessment.get('model_proposal',{}).get('review_status')=='INCOMPLETE'):
+            raise Conflict('cannot confirm an unsupported or incomplete judgment')
         payload={'schema_version':'corrected-route-ontology-v2','state':g['state'],'binding':self.executor.binding,
             'route':route['id'],'revision':g['revision'],'nodes':route['payload']['nodes'],'parts':parts,
             'concepts':parts['INTENT']['payload'].get('concepts',[g['state']['task']]),'approval':'USER_CONFIRMED_EXPERIENCE'}
@@ -435,7 +535,9 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
         except Exception as exc:
             self.db.execute("UPDATE request SET status='FAILED' WHERE id=?",(request_id,))
             raise
-        self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",(self.stored(result),request_id))
+        with self.transaction():
+            self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",(self.stored(result),request_id))
+            self.record_dialogue(body,principal,result)
         return result
     def _execute(self,body,principal):
         self._resolve_request={'body':body,'principal':principal}
@@ -445,7 +547,7 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
         if g and body.get('expected_revision') is not None and g['revision']!=body['expected_revision']:raise Conflict('stale expected revision')
         if c['action']=='INSPECT':
             if g['status']!='READY' or not self.route(g['id']):raise Conflict('history has no completed current judgment yet')
-            parts=self.parts(g['id']);self.executor.verify(parts['READ']['payload'])
+            parts=self.parts(g['id']);self.verify_parts(parts,principal)
             answer,history=history_answer(self.events(g['id']),parts['COMPOSE']['payload'])
             return {'status':g['status'],'goal_id':g['id'],'revision':g['revision'],'events':self.events(g['id']),'route':self.route(g['id']),'parts':parts,'answer':answer,'history':history,'method_id':c['method_id'],'executed':[]}
 
@@ -461,7 +563,7 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             # A corrected association must also recompute the dependent judgment.
             c={**c,'action':'REUSE','stage':'ASSESS'}
         scenario_seed=getattr(self,'_scenario_seed',None)
-        state=dict(g['state']) if g else {'task':body['question'],'source_category':'ALL','document_ids':body.get('document_ids') or list(principal['document_ids']),'facts':[],'queries':[]}
+        state=deepcopy(g['state']) if g else {'task':body['question'],'source_category':'ALL','document_ids':body.get('document_ids') or list(principal['document_ids']),'facts':[],'queries':[]}
         if g and c['document_scope_mode']=='AUTHORIZED' and c['method_id']=='RESEARCH_REPLAN':
             state['document_ids']=body.get('document_ids') or list(principal['document_ids'])
         for field in FIELDS:
@@ -473,9 +575,13 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             for field in c['restore_fields']:state[field]=origin['after'].get(field)
         from .query_scope import UnresolvedScope
         if hasattr(self.executor,'scope_state'):
-            try:state=self.executor.scope_state(state,c,body['question'])
+            try:state=self.executor.scope_state(state,c,body['question'],dialogue=context.get('recent_dialogue',[]))
             except UnresolvedScope as exc:
                 return {'status':'CLARIFY','answer':None,'reason':str(exc),'scope_preserved':True}
+        reviewed=getattr(self,'_resolved_transition',None)
+        if reviewed is not None:
+            from .memory_methods import assert_transition_applied
+            assert_transition_applied(reviewed,c,state)
         if scenario_seed:
             state=deepcopy(scenario_seed['state'])
         changed=[f for f in (*FIELDS,'search_scope') if g and state.get(f)!=g['state'].get(f)]
@@ -487,7 +593,15 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             if g:raise MemoryError('scenario seed cannot overwrite an existing case')
             previous=deepcopy(scenario_seed['parts']);start=STAGES.index('ASSESS')
         if g and g['status']!='READY':start=min(start,STAGES.index(g['pending'] or 'INTENT'))
-        if previous and previous.get('READ',{}).get('payload',{}).get('binding')!=self.executor.binding:start=min(start,1)
+        from .guided_navigation import waiting
+        if g and start<6 and waiting(previous.get('SELECT',{}).get('payload',{})):
+            start=min(start,STAGES.index('SELECT'))
+        previous_read=previous.get('READ',{}).get('payload')
+        if previous_read is not None and previous_read.get('binding')!=self.executor.binding:
+            # Old originals cannot be rebound into the current source/code
+            # generation. Keep their immutable nodes as history, rebuild all
+            # derived judgments instead of failing in bind_previous first.
+            start=0;previous={}
         reuse=None
         reuse_candidate=None
         if c['action']=='REUSE' or (c['action']=='START' and c['knowledge_id']):
@@ -513,6 +627,13 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
                 # The candidate supplies an investigation hint, never the old conclusion.
                 reuse=None;start=0;previous={}
             if c.get('method_id')=='WIKI_RELINK':start=min(start,5)
+        # A presentation request may only preserve a still-current assessment.
+        # Known publication withdrawal restarts its dependent legal judgment;
+        # unavailable authority checks and corrupt records are not retryable here.
+        if start>5 and previous:
+            from ..ontology_work.runtime import assert_assessment, PublicationChanged
+            try:assert_assessment(previous['ASSESS']['payload'],principal['document_ids'])
+            except PublicationChanged:start=5
         # Read verification happens even during representation-only requests.
         if start>3:self.executor.verify(previous['READ']['payload'])
         gid=g['id'] if g else 'G'+uuid.uuid4().hex
@@ -537,6 +658,15 @@ previous_response.review_recovery.available=true는 원문을 확보했지만 �
             # always belong to this goal, even across sessions.
             with self.executor.open(state,principal,body) as execution:
                 execution.history_records=history_projection(self.events(gid))
+                from .guided_navigation import dialogue
+                execution.guidance_dialogue=dialogue(self,gid)
+                if c.get('method_id')=='RESEARCH_CONTINUE':
+                    from .guided_navigation import continuation
+                    execution.continuation_request=continuation(previous,body['question'])
+                from .query_scope import pending_clarifications
+                pending_dialogue=pending_clarifications(context.get('recent_dialogue',[]))
+                if pending_dialogue:
+                    execution.guidance_dialogue[-1:-1]=deepcopy(pending_dialogue)
                 if hasattr(execution,'bind_previous'):execution.bind_previous(parts)
                 if reuse or scenario_seed:
                     parent=None

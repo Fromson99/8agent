@@ -4,7 +4,7 @@ import json
 from ..oracle_runtime_paths import Path
 from .case_repository import CaseRepository
 from .shortcut_repository import ShortcutRepository
-from .corrected_memory import Conflict, MemoryError, digest, encoded
+from .corrected_memory import Memory, Conflict, MemoryError, digest, encoded
 
 
 class ShortcutCases(CaseRepository):
@@ -98,22 +98,59 @@ class ShortcutCases(CaseRepository):
     def _execute(self,body,principal):
         if 'review_action' in body:
             return super()._execute(body,principal)
+        if not getattr(self, 'resume_goal', None):
+            from .review_actions import chat_review
+            review = chat_review(self, body, principal)
+            if review is not None:
+                return review
         context=self.context(body['session_id'],principal,body['question'])
+        if not getattr(self, 'resume_goal', None):
+            from .memory_methods import literal_repeat_target
+            target = literal_repeat_target(context, body, principal)
+            if target:
+                assessment = self.parts(target)['ASSESS']['payload']
+                # Re-display only a finished, supported answer. A repeated failed
+                # review still goes through the ordinary recovery decision.
+                if (assessment.get('disposition') == 'ANSWER' and assessment.get('answer_coverage') == 'COVERED'
+                        and assessment.get('claims') and not assessment.get('source_excerpt_reply')):
+                    goal = self.goal(target, body['session_id'])
+                    if body.get('expected_revision') not in (None, goal['revision']):
+                        raise Conflict('stale expected revision')
+                    from ..ontology_work.runtime import PublicationChanged
+                    try:result = self.committed_response(goal, body, principal, 'ANSWER_PRESENT')
+                    except PublicationChanged:
+                        if body.get('use_llm') is False:
+                            raise Conflict('knowledge publication changed; reassessment requires model execution')
+                        # This is the same literal question, same conditions and
+                        # current goal. Only the known stale judgment is reopened;
+                        # no new semantic command or replacement answer is inferred.
+                        self.resolved_command={'method_id':'RESEARCH_REENTER','action':'FOLLOW',
+                            'document_scope_mode':'KEEP','target':target,'knowledge_id':None,
+                            'stage':'ASSESS','task':None,'source_category':'KEEP','document_ids':None,
+                            'facts':None,'queries':None,'restore_event':None,'restore_fields':[],
+                            'format':'prose','reason':'이전 답변에 결속된 지식 게시 상태가 바뀌어 같은 조건으로 재검토'}
+                        try:return Memory._execute(self,body,principal)
+                        finally:self.resolved_command=None
+                    self.executor.model.ensure().work.event('LITERAL_REPEAT_REDISPLAY', {
+                        'goal_id':target, 'revision':goal['revision'], 'route_id':result['route_id'],
+                        'source':'committed-route', 'model_calls':0})
+                    return result
         direct=self.direct_request(context)
         if direct is not None:return direct
         # Never replay a new-case command over an existing goal/correction.
-        data={'utterance':context['utterance'],'allowed_documents':context['allowed_documents'],
+        data={'utterance':context['utterance'],'recent_dialogue':context.get('recent_dialogue',[]),
+              'allowed_documents':context['allowed_documents'],
               'goals':context['goals']}
         entry=getattr(self.executor,'request_entry',None)
         command=entry['command'] if entry else None
-        if command is None and not context['goals'] and not self.flags.get('core_evidence_route'):
+        if command is None and not context['goals'] and not context.get('recent_dialogue') and not self.flags.get('core_evidence_route'):
             command,_=self.procedure.lookup('command',context['utterance'],data)
         else:
             self.procedure.event('command',{'status':'DEVIATION','reason':'CURRENT_CASE_STATE_REQUIRES_DECISION',
                                           'actual_input':data})
         if command is None:
             command=super().resolve(context)
-            if not context['goals'] and command['action']=='START' and not self.flags.get('core_evidence_route'):
+            if not context['goals'] and not context.get('recent_dialogue') and command['action']=='START' and not self.flags.get('core_evidence_route'):
                 self.procedure.save('command',context['utterance'],data,command,decision='MODEL_AND_COMMAND_VALIDATOR')
         # The resolver's exhausted-repair result is a terminal clarification,
         # not a full executable command. Match Memory._execute's consumer.

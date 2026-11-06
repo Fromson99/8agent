@@ -412,6 +412,7 @@ def internal_schema(base, stage):
              'limitation_items': {'type': 'array'}, 'stop_reason': {'type': ['string', 'null']}}
     if stage == 'COMPOSE':
         extra.update(composition_plan={'type': 'object'}, assessment_hash={'type': 'string'})
+    schema['properties']['guided_reply']={'type':'object'}
     schema['properties'].update(assessment_basis={'type':'object'},model_proposal={'type':'object'},
                                 read_judgment_review={'type':'object'},requirement_review={'type':'object'},
                                 review_explanation={'type':'object'},ontology_explanation={'type':'object'},
@@ -523,6 +524,9 @@ def render(assessment, plan):
         raise ContractError('composition must preserve every accepted claim exactly once')
     if plan.get('layout') not in ('paragraphs', 'bullets', 'table'):
         raise ContractError('unknown composition layout')
+    if plan.get('presentation') == 'guided-conversation-v1':
+        from .guided_answer import render as render_guided
+        return render_guided(assessment,plan)
     sections = plan.get('issue_sections') if assessment.get('completion_contract', V1) != V1 else None
     if assessment.get('source_excerpt_reply'):
         text = render_source_excerpt_reply(assessment,
@@ -603,6 +607,7 @@ def compose(assessment, plan):
             **({'read_judgment_review': deepcopy(assessment['read_judgment_review'])} if 'read_judgment_review' in assessment else {}),
             **({'requirement_review': deepcopy(assessment['requirement_review'])} if 'requirement_review' in assessment else {}),
             **({'review_explanation': deepcopy(assessment['review_explanation'])} if 'review_explanation' in assessment else {}),
+            **({'guided_reply':deepcopy(assessment['guided_reply'])} if 'guided_reply' in assessment else {}),
             'text': render(assessment, plan), 'claims': deepcopy(assessment['claims']),
             'limitations': deepcopy(assessment['limitations']),
             'completion_contract': assessment.get('completion_contract', V1),
@@ -615,6 +620,7 @@ def verify_composition(assessment, answer):
     contract = assessment.get('completion_contract', V1)
     if (contract not in KNOWN or answer.get('completion_contract') != contract
             or answer.get('assessment_hash') != digest(assessment)
+            or answer.get('guided_reply') != assessment.get('guided_reply')
             or answer.get('claims') != assessment['claims']
             or answer.get('source_excerpt_reply') != assessment.get('source_excerpt_reply')
             or answer.get('read_judgment_review') != assessment.get('read_judgment_review')

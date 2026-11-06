@@ -38,6 +38,7 @@ search_scope_change.targets의 selection에는 위 구조화 선택을 사용하
 단일 항목도 SINGLE로 선택할 수 있다. structure 문자열은 기존 단일 목차 제목 호환용이다.
 user_quote는 현재 발언 원문을 그대로 보존한다. 정규화한 parent_path나 n을 user_quote에 억지로 맞춰 다시 쓰지 않는다.
 document=null이면 이전에 지정한 단일 문서 문맥을 이어간다. 범위·제외의 기준 부모는 현재 발언과 대화 문맥으로 판단한다.
+현재 발언이 직전 확인 질문에 대한 짧은 답이면 recent_dialogue의 마지막 연속 clarification=true 턴에서 사용자가 직접 지정한 대상도 이어받을 수 있다. 그때 user_quote는 해당 사용자 발언의 연속 원문이다. assistant 답변이나 더 오래된 다른 조사에서 범위를 가져오지 않는다. 현재 답변이 그 대상을 선택하는지는 명령 검토에서 함께 확인한다. 거절된 명령 자체는 승인된 범위가 아니다.
 '''
 
 
@@ -86,7 +87,14 @@ def target(matcher, did, uid):
             'metadata_hash': digest([metadata, node])}
 
 
-def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=False):
+def pending_clarifications(dialogue):
+    """Only the uninterrupted clarification exchange at the end of this session."""
+    start=len(dialogue)
+    while start and dialogue[start-1].get('clarification') is True:start-=1
+    return deepcopy(dialogue[start:])
+
+
+def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=False, reference_utterances=()):
     """Resolve a quoted scope decision against unique authorized metadata.
 
     Fresh fused entry may resolve ellipsis and aliases to canonical names.
@@ -100,7 +108,7 @@ def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=
             raise UnresolvedScope('유지 명령에는 새 검색 범위를 넣을 수 없습니다.')
         return deepcopy(previous)
     quote = change['user_quote']
-    if not quote or quote not in utterance:
+    if not quote or not any(quote in text for text in (utterance,*reference_utterances)):
         raise UnresolvedScope('검색 범위 변경의 사용자 원문을 확인해야 합니다.')
     if operation == 'CLEAR':
         if change['targets']:
@@ -111,7 +119,7 @@ def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=
             metadata=matcher.document_context.get(did,{})
             title=metadata.get('document_title') or matcher.documents.get(did,'')
             labels=[title,*getattr(matcher,'document_aliases',{}).get(did,())]
-            if any(label and norm(label) in norm(utterance) for label in labels):
+            if any(label and norm(label) in norm(utterance+' '+quote) for label in labels):
                 raise UnresolvedScope('특정 문서가 포함된 범위 해제 요청입니다. 해당 문서 전체인지, 모든 문서인지 확인해야 합니다.')
         return None
     if not change['targets']:

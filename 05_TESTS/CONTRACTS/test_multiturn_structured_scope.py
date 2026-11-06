@@ -152,7 +152,7 @@ def test_metadata_page_never_returns_sibling_outside_scope(session):
 def test_failed_first_question_can_change_query_keep_scope_and_restore(tmp_path):
     m=metadata()
     class Scoped(Fake):
-        def scope_state(self,state,c,utterance):
+        def scope_state(self,state,c,utterance,*,dialogue=()):
             if c.get('search_scope_change'):
                 state={**state,'search_scope':qs.resolve(c['search_scope_change'],state.get('search_scope'),m,state['document_ids'],utterance)}
             return state

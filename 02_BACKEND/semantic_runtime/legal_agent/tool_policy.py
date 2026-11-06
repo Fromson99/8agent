@@ -31,7 +31,7 @@ def _specs():
          ('CONTINUE','REBUILD_MENU','RESUME_REMAINDER','STOP')),
         ('ending','DECIDE FINISH PENDING','law_navigation.validate','investigation','terminal','accepted_decision',
          ('CONTINUE','ASSESS_VERIFIED_ONLY','STOP')),
-        ('memory','CASE_START FACT_UPDATE STATE_RESTORE PURPOSE_REVISE RESEARCH_REPLAN RESEARCH_REENTER ANSWER_PRESENT HISTORY_EXPLAIN EXPERIENCE_CONFIRM EXPERIENCE_REUSE WIKI_RELINK NEED_TARGET',
+        ('memory','CASE_START FACT_UPDATE STATE_RESTORE PURPOSE_REVISE RESEARCH_REPLAN RESEARCH_REENTER RESEARCH_CONTINUE ANSWER_PRESENT HISTORY_EXPLAIN EXPERIENCE_CONFIRM EXPERIENCE_REUSE WIKI_RELINK NEED_TARGET',
          'memory_methods.offered','case','case_mutation','case_owner_current_revision',('CONTINUE','RESUME_REMAINDER','STOP')),
         ('entry','CASE_START NEED_TARGET','request_entry.accept','request_entry','terminal','request_entry_binding',('CONTINUE','STOP')),
         ('wiki_hint','history_ids','wiki_recall.selected_route','wiki_recall','hint','current_authority_hash',('CONTINUE','STOP')),

@@ -8,7 +8,7 @@ from ..runtime_cache import CACHE
 
 from . import query_scope as qs
 CONTRACT = 'law-candidate-navigation-v3'
-DEFAULT_POLICY = {'reference_bundle_review':False, 'requirement_coverage':False, 'scope_completion':False, 'assessment_consistency':False, 'source_goal_control':False, 'supervisor_mode':'off', 'mode': 'legacy', 'law_page_size': 12, 'article_page_size': 4,
+DEFAULT_POLICY = {'guided_loop':False, 'guided_action_limit':0, 'reference_bundle_review':False, 'requirement_coverage':False, 'scope_completion':False, 'assessment_consistency':False, 'source_goal_control':False, 'supervisor_mode':'off', 'mode': 'legacy', 'law_page_size': 12, 'article_page_size': 4,
                   'hit_page_size': 8, 'search_rounds': 8, 'allow_unresolved_completion': True, 'investigation_control': False,
                   'assessment_reentry_limit': 2, 'completion_contract': False, 'structure_first': False, 'batch_selected_pages': False, 'selectable_search': False, 'compact_input': False, 'completion_policy_version': 'investigation-completion-v4', 'length_recovery_max_tokens': 0, 'definition_entry': False, 'answer_first': False, 'selected_connection_scope': False, 'answer_progress_control': False, 'delegation_frontier': False, 'bounded_judgment_notes': False, 'definition_context': False, 'small_connection_context': False, 'read_judgment': False, 'minimal_input': False, 'read_candidate_page_size': 20, 'stable_navigation_references':False, 'new_read_reviews':False, 'independent_read_recovery':False, 'ontology_enabled': False, 'ontology_context': {'mode':'A0'}, 'ontology_direct_assessment': False}
 
@@ -22,6 +22,8 @@ def validate_policy(value):
         raise ContractError('unknown candidate navigation setting')
     result = {**DEFAULT_POLICY, **value}
     if result['supervisor_mode'] not in ('off','shadow','enforce'):raise ContractError('invalid supervisor mode')
+    if type(result['guided_action_limit']) is not int or not 0 <= result['guided_action_limit'] <= 40:raise ContractError('guided action limit must be 0..40 (0 disables)')
+    if result['guided_action_limit'] and not result['guided_loop']:raise ContractError('guided action limit requires the guided loop')
     if result['supervisor_mode']!='off' and not (result['compact_input'] and result['investigation_control'] and result['minimal_input']):raise ContractError('supervisor requires compact controlled navigation')
     if result['assessment_consistency'] and not result['completion_contract']:raise ContractError('assessment consistency requires completion contract')
     if result['reference_bundle_review'] and not (result['source_goal_control'] and result['supervisor_mode']=='enforce' and result['read_judgment'] and result['requirement_coverage']):raise ContractError('reference bundle review requires enforced source goals and both final reviews')
@@ -40,7 +42,7 @@ def validate_policy(value):
         raise ContractError('completion contract requires investigation control')
     if type(result['allow_unresolved_completion']) is not bool:
         raise ContractError('allow_unresolved_completion must be bool')
-    if any(type(result[k]) is not bool for k in ('structure_first','batch_selected_pages','selectable_search','compact_input','definition_entry','answer_first','selected_connection_scope','answer_progress_control','delegation_frontier','bounded_judgment_notes','definition_context','small_connection_context','read_judgment','minimal_input','stable_navigation_references','new_read_reviews','independent_read_recovery','source_goal_control','assessment_consistency','scope_completion','requirement_coverage','reference_bundle_review')):
+    if any(type(result[k]) is not bool for k in ('guided_loop','structure_first','batch_selected_pages','selectable_search','compact_input','definition_entry','answer_first','selected_connection_scope','answer_progress_control','delegation_frontier','bounded_judgment_notes','definition_context','small_connection_context','read_judgment','minimal_input','stable_navigation_references','new_read_reviews','independent_read_recovery','source_goal_control','assessment_consistency','scope_completion','requirement_coverage','reference_bundle_review')):
         raise ContractError('invalid structure/read policy')
     if type(result['read_candidate_page_size']) is not int or not 1 <= result['read_candidate_page_size'] <= 20:
         raise ContractError('read candidate page size must be1..20')

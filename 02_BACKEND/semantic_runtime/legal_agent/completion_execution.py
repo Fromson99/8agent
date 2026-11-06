@@ -57,6 +57,7 @@ limitations 자유문장은 작성하지 않는다. 필요한 법률 설명은 �
 진단 reason은 짧게 쓰고 repair_feedback의 모든 독립 오류를 함께 고친다. JSON 스키마를 따른다.'''
 
 INTENT_PROMPT = ('원문 질문의 주체·행위·요구 범위·예외를 보존해 쟁점을 나눈다. '
+    'issues.kind는 질문한 내용에 맞춘다. 규정에 적힌 시점·주기·기한을 설명해 달라는 요청은 TIMING이다. 사건의 입력값으로 날짜·금액을 산출하거나 산식을 묻는 요청에는 FORMULA를 쓴다. 조항 번호나 질문 속 숫자만으로 계산 요청을 만들지 않는다. '
     '찾을 수 있을 법한 질문으로 축소하지 않는다. 일반 규칙 설명과 특정 사건에 대한 적용 판단을 목적에서 구분한다. 일반 규칙 질문에 특정 회사나 인물의 사실 확인 요구를 추가하지 않는다. issues에는 요청한 요구사항만 넣고 '
     '질문에 없는 배경 쟁점(일반적인 결정 요건, 관련 제도 전반 등)을 새로 만들지 않는다. 요구가 하나면 Q1 하나만 둔다. '
     '검색 결과나 과거 답변을 정답으로 사용하지 않는다. JSON만 출력한다.')
@@ -301,8 +302,22 @@ class CompletionExecution:
         selection = parts['SELECT']['payload']
         selected = set(selection['final_ids'])
         sources = [s for s in self.selected_originals(parts) if s['source_id'] in selected]
+        from . import guided_answer
+        if stage == 'ASSESS' and guided_answer.enabled(profile) and task is None and not state.get('scenario_context'):
+            return guided_answer.assess(self,sources,selection['issues'],utterance,
+                assessment_fact_sources(utterance,state,modern=modern),selection=selection,
+                dialogue=data.get('dialogue',[]))
         if stage == 'COMPOSE':
             assessment = parts['ASSESS']['payload']
+            if assessment.get('guided_reply'):
+                for claim in assessment['claims']:cc.verify_span_claim(claim,sources)
+                if assessment.get('source_excerpt_reply'):cc.verify_source_excerpt_reply(assessment,sources)
+                result=cc.compose(assessment,guided_answer.plan(assessment))
+                cc.verify_composition(assessment,result)
+                self.s.work.event('COMPOSITION_RENDERED',{'contract':result['completion_contract'],
+                    'assessment_hash':digest(assessment),'text_hash':digest(result['text']),
+                    'model_call':False,'presentation':guided_answer.VERSION})
+                return result
             from ..ontology_work.runtime import assert_assessment
             assert_assessment(assessment,getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))
             if assessment.get('assessment_basis',{}).get('scenario_choice'):
@@ -443,6 +458,10 @@ class CompletionExecution:
         from .assessment_input import VERSION as assessment_input_version
         basis['assessment_input_version']=assessment_input_version
         if ontology_payload:basis['ontology_context_hash']=digest(ontology_payload)
+        from . import investigation_supervisor as supervisor
+        from . import reason_decision_review as reason_review
+        if reason_review.enabled(profile):
+            basis['reason_decision_review_version']=reason_review.VERSION
         refs=ontology_payload.get('ontology_assessment',{}).get('workspace_publications',[])
         if refs:basis['workspace_publications']=refs
         signature = digest(basis)
@@ -487,16 +506,18 @@ class CompletionExecution:
             choices=final_judgment.repair_choices(prior.get('proposal'),prior['failure'])
             if choices:feedback['decision_repair_choices']=choices
         from .law_candidates import answer_first
-        answer_policy = ('\n각 판단 이유(reason/explanation)는 결론과 근거를 한 번만 짧게 적는다. 재고·자문자답·같은 문장의 반복은 쓰지 않는다. 이 필드는 최대600자이며 원문 인용이나 최종 답변의 길이 제한이 아니다.' if modern or profile.get('candidate_navigation',{}).get('bounded_judgment_notes') else '')
+        answer_policy = ('\n검토 reason은 결론과 근거를 한 번만 간결하게 적는다. 스키마의 maxLength는 상한이지 채워야 하는 분량이 아니다. 문자 수를 맞추려고 같은 문장·자기 점검·종료 표기를 덧붙이지 않는다. claims의 실제 답변 내용과 원문 인용은 필요한 범위를 보존한다.' if modern or profile.get('candidate_navigation',{}).get('bounded_judgment_notes') else '')
+        if modern:
+            from .answer_progress import SCOPE_GUIDANCE
+            answer_policy += '\n'+SCOPE_GUIDANCE+\
+                '\n재조사 횟수, 도구 입력 필드, 내부 ID는 법률상 부족의 근거가 아니다. gap.reason에는 사용자가 확인할 수 있는 짧은 법률상 이유만 쓴다. 탐색 중 제안한 추가 조사 목적은 사용자 요구와 구분하여 필요 여부를 재판단한다. '\
+                '\n특정 조항의 문언·일반 규칙을 설명하는 요청과 실제 사건의 구체 날짜·금액 계산 요청을 구분한다. 원문이 정성적인 시기나 기준을 정했다면 그 표현 자체를 설명할 수 있다. 사용자가 구체 계산을 요청하지 않았고 원문에도 위임·추가 요건이 없다면, 그 표현을 숫자나 날짜로 바꾸기 위한 별도 규정의 존재를 전제하거나 새 필수 gap을 만들지 않는다. 실제 원문에 명시된 조건·예외·위임이나 사용자가 요청한 계산에 필요한 부족은 계속 검토한다. 이전 gap도 이번 질문의 실제 요구인지 다시 판단하며, 무조건 유지하거나 통과를 위해 제거하지 않는다.'
 
         if state.get('scenario_context'):
             answer_policy += '\n이 요청은 실제 사건과 분리된 가정 검토다. hypothetical_scenario의 FACT는 이 분기의 사실 가정이며 RULE은 실제 규정과 다른 규칙 가정이다. 원문과 승인 규정은 바뀌지 않는다. 가정하의 판단임을 주장에 명시하고 계산 결과만으로 승인·예외의 미확인을 해결하지 않는다. 이미 확보한 원문은 재사용하고 가정 때문에 필요한 새 범위만 gaps에 제시한다.'
         if guarded:answer_policy += '\n'+consistency.PROMPT
         if ontology_payload:answer_policy += '\n'+ontology_assessment.PROMPT
         if judgment_context is not None:answer_policy += '\n'+final_judgment.PROMPT
-        if modern:
-            from .connection_scope import FINISH_GUIDANCE
-            answer_policy += '\n'+FINISH_GUIDANCE
         if judgment_context is not None and judgment_context.get('need_continuity'):
             from .need_continuity import PROMPT as continuity_prompt
             answer_policy += '\n'+continuity_prompt
@@ -510,6 +531,8 @@ class CompletionExecution:
         generation_schema,expand_assessment=assessment_projection(schema,allowed_targets=allowed_targets) if modern else (schema,lambda v:v)
         if host_source_work:
             generation_schema,expand_work=source_work_review.projection(generation_schema,judgment_context,options)
+            if judgment_context and judgment_context.get('need_continuity',{}).get('version') == source_work_review.need_continuity.VERSION:
+                answer_policy += '\n'+source_work_review.EXCLUSION_PROMPT
             expand_core=expand_assessment
             expand_assessment=lambda raw:expand_core(expand_work(raw))
         if shared_reviews:
@@ -522,12 +545,13 @@ class CompletionExecution:
             generation_schema,expand_scope_claims=need_continuity.scope_claim_projection(generation_schema)
             expand_before_scope=expand_assessment
             expand_assessment=lambda raw:expand_before_scope(expand_scope_claims(raw))
-            answer_policy += '\n'+need_continuity.GENERATION_PROMPT+'\n'+need_continuity.SCOPE_JOIN_PROMPT
+            # The assigned-original prompt below owns the generation contract.
+            # Do not also ask the model for the superseded singleton scope rows.
         if judgment_context is not None and judgment_context.get('need_continuity'):
-            generation_schema,expand_original_reviews=need_continuity.original_review_projection(generation_schema,judgment_context)
+            generation_schema,expand_original_reviews=need_continuity.assigned_original_review_projection(generation_schema,judgment_context)
             expand_before_originals=expand_assessment
             expand_assessment=lambda raw:expand_before_originals(expand_original_reviews(raw))
-            answer_policy += '\n'+need_continuity.ORIGINAL_REVIEW_PROMPT
+            answer_policy += '\n'+need_continuity.ASSIGNED_ORIGINAL_REVIEW_PROMPT
         if judgment_context is not None and judgment_context.get('change_review'):
             from . import judgment_changes
             generation_schema,expand_purpose_claims=judgment_changes.claim_projection(generation_schema,judgment_context)
@@ -570,7 +594,9 @@ class CompletionExecution:
                     'investigation_limitations':selection.get('completion_limitations',[]),
                     'selection_progress':selection.get('selection_progress',[]),
                     'adoption_fallback': fallback,
-                    'reentry_budget': getattr(self, 'reentry_counters', {}),
+                    # Modern ASSESS reports legal gaps. The host owns scheduling
+                    # and keeps the consumed counters in the existing checkpoint.
+                    **({} if modern else {'reentry_budget': getattr(self, 'reentry_counters', {})}),
                     'user_fact_sources': fact_sources,
                     'repair_feedback': feedback}), generation_schema,
                     'memory-assess' if not attempt else 'memory-assess-repair'))
@@ -615,6 +641,18 @@ class CompletionExecution:
                     except MemoryError as exc:
                         raise output.OutputContractError(str(exc),[output.issue('CLAIM_EVIDENCE_INVALID','/claims')],
                             category='EVIDENCE_CONTRACT_INVALID') from exc
+                if reason_review.enabled(profile):
+                    review_context={'current_request':utterance,'evidence_options':options,
+                        'user_fact_sources':fact_sources,'original_requirements':parts['INTENT']['payload'],
+                        'issues':self.issues,'read_judgments':judgment_context,
+                        'ontology_bundles':ontology_payload.get('ontology_bundles',[]),
+                        'validated_ontology_usage':deepcopy(ontology_usage or []),
+                        'execution':{k:deepcopy(result[k]) for k in
+                            ('disposition','answer_coverage','issue_assessments','claims','gaps') if k in result}}
+                    review=reason_review.review(self.s.work,stage='ASSESSMENT',context=review_context,
+                        proposal=value,binding=basis,scope=basis,
+                        invoke=lambda prompt,body,wire:self.invoke(prompt,body,wire,'memory-final-reason-review'))
+                    result.setdefault('model_proposal',{})['reason_decision_review']=review
                 if scenario_receipt:
                     result.setdefault('model_proposal',{})['scenario_review']=scenario_receipt
                     if scenario_receipt.get('version')==scenario_application.VERSION:
@@ -685,7 +723,7 @@ class CompletionExecution:
                     normalized=True
                     break
                 # A second structural rejection becomes a weaker visible answer, not a failed request.
-                candidate, changes = (None,'v5 source/structure contract unresolved') if modern else cc.normalize_assessment(value, schema, self.issues)
+                candidate, changes = (None,'source/structure or reason-decision contract unresolved') if modern or isinstance(exc,reason_review.ReviewConflict) else cc.normalize_assessment(value, schema, self.issues)
                 if candidate is not None and any(cc.rule_errors(c, fact_sources) for c in candidate['claims'] if c.get('rule') is not None):
                     candidate, changes = None, 'unverified user fact or condition provenance'
                 if candidate is not None:

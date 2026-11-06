@@ -193,12 +193,14 @@ def test_f01_registry_matches_all_37_design_choices():
     historical={(c['surface'],c['name']) for c in design['choices']}
     # The immutable 2026-10-14 design predates definition/term paging and
     # structure retry. Require every original choice and the exact additions.
-    added={('navigation',name) for name in ('NEXT_DEFINITIONS','NEXT_TERM_MATCHES','RETRY_LAW_STRUCTURE')}
+    navigation={('navigation',name) for name in ('NEXT_DEFINITIONS','NEXT_TERM_MATCHES','RETRY_LAW_STRUCTURE')}
+    # 2026-11-06: explicit guided "continue" resumes the same case investigation.
+    added=navigation|{('memory','RESEARCH_CONTINUE')}
     from semantic_runtime.legal_agent.law_navigation import INVESTIGATIVE_ACTIONS
     assert len(historical)==37 and not historical & added
-    assert added <= {('navigation',name) for name in INVESTIGATIVE_ACTIONS}
+    assert navigation <= {('navigation',name) for name in INVESTIGATIVE_ACTIONS}
     assert set(policy.REGISTRY)==historical | added
-    assert len(policy.REGISTRY)==40
+    assert len(policy.REGISTRY)==41
     assert not policy.assess_availability('navigation','invented',binding='b').offered
 
 

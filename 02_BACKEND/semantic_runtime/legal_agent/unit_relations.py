@@ -348,6 +348,7 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
             anchor_heads=list(dict.fromkeys(anchor_heads))
             anchor_quote='\n'.join(s.store.source(s.tools.sources[anchor]['document_id'],b)['text'] for b in anchor_heads)
             from .delegated_content import WORDING, definition_wording
+            from .citation_roles import role as citation_role
             delegation_hint=bool(anchor_quote and WORDING.search(anchor_quote))
             policy = classify(ref, direction, {})
             if outgoing and ref.get('reason') == 'ANNEX_BODY_NOT_IN_SELECTION':
@@ -413,6 +414,7 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
                     'anchor_endpoint_quote_truncated':len(anchor_quote)>700,
                     'anchor_delegation_wording_hint':delegation_hint,
                     'defines_anchor_wording':definition_wording(ref,anchor_quote) if not outgoing else None,
+                    'citation_role':citation_role(ref.get('source_text'),ref.get('mention_start'),ref.get('mention_end')),
                     'witness_source_order':next(i for i,b in enumerate(origin['blocks']) if str(b['block_id'])==bid),
                     'endpoint_scopes': [o['id'] for o in opts if o['unit_id'] == hit['unit_id']]})
                 for o in opts:

@@ -97,7 +97,7 @@ class _Gateway(ModelGateway):
         self._generation_schema = deepcopy(schema)
         schema = genos_wire_schema(schema)
         from . import compact_model_input as minimal
-        wire_view = compact_wire_view(view, phase) if self.compact else view
+        wire_view = compact_wire_view(view, phase) if self.compact or view.get('source_stage')=='memory-guided-answer' else view
         if minimal.applies(self.profile, view):
             wire_view = minimal.project(wire_view, schema)
             instructions = '\n' + minimal.instructions(wire_view)
@@ -234,7 +234,7 @@ class BoundedSourceSession(ObligationSession):
             if evidence_ids:
                 data={**data,'exact_evidence':[{'evidence':ident,'text':acquired[ident]['text'],
                     'spans':acquired[ident]['spans']} for ident in evidence_ids]}
-            if phase in ('memory-assess', 'memory-assess-repair'):
+            if phase in ('memory-assess', 'memory-assess-repair','memory-guided-answer'):
                 projected = compact_assessment_evidence(data, list(acquired.values()))
                 if projected:
                     existing = set(acquired)
@@ -256,9 +256,10 @@ class BoundedSourceSession(ObligationSession):
                          'spans': acquired[ident]['spans']} for ident in evidence_ids]}
         from .completion_contracts import enabled
         completion = enabled(self.profile)
-        finalizing = completion and phase in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
+        finalizing = completion and phase in ('memory-guided-answer','memory-assess','memory-assess-repair','memory-ontology-supervisor','memory-final-reason-review','memory-compose','memory-compose-repair')
+        diagnostic = output.owner_for(phase)=='reason-decision-review'
         self.work.event('MODEL_CORRECTION_OWNER', {'contract_version':output.VERSION,
-            'source_stage':phase,'owner':output.owner_for(phase),'max_corrections':1,
+            'source_stage':phase,'owner':output.owner_for(phase),'max_corrections':0 if diagnostic or phase=='memory-guided-answer' else 1,
             'shared_request_budget':True})
         native_phase = 'compose' if finalizing else 'investigate'
         budget_class = 'FINALIZE' if finalizing else 'INVESTIGATE'
@@ -271,17 +272,17 @@ class BoundedSourceSession(ObligationSession):
         profile = {**self.profile, 'numbered_references_enabled': False,
                    'max_output_tokens': max_tokens,
                    'max_transport_retries': self.profile['max_transport_retries'] if completion else 0}
-        if completion:
-            self.work.event('EFFECTIVE_CALL_POLICY', {'source_stage':phase,'native_phase':native_phase,
-                'budget_class':budget_class,'max_transport_retries':profile['max_transport_retries'],
-                'override_reason':'release-bound completion contract; gateway owns retries'})
         if output.owner_for(phase) != 'gateway':
             # Investigation owns the single correction; avoid a nested wire retry.
             profile['max_schema_repairs'] = 0
-        if phase == 'source-law-navigation-supervisor-read-choice':
+        if phase in ('source-law-navigation-supervisor-read-choice','memory-guided-answer') or diagnostic:
             # Each durable supervisor reservation is exactly one physical attempt.
             profile['max_transport_retries'] = 0
             profile['max_schema_repairs'] = 0
+        if completion:
+            self.work.event('EFFECTIVE_CALL_POLICY', {'source_stage':phase,'native_phase':native_phase,
+                'budget_class':budget_class,'max_transport_retries':profile['max_transport_retries'],
+                'override_reason':'durable diagnostic sends once' if diagnostic else 'release-bound completion contract'})
         if phase in ('source-triage', 'source-omission-review'):
             choices = schema['properties']['choices']
             allowed = choices['items']['properties']['id']['enum']

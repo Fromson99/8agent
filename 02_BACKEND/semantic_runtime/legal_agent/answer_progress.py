@@ -34,7 +34,8 @@ previous_effect는 직전 행동이 이 요구에 미친 실제 결과다: ANSWE
 
 
 def enabled(inv):
-    return bool(getattr(inv, 'policy', {}).get('answer_progress_control', False))
+    from .guided_navigation import enabled as guided
+    return not guided(getattr(getattr(inv,'s',None),'profile',{})) and bool(getattr(inv, 'policy', {}).get('answer_progress_control', False))
 
 
 def request_key(inv, data):

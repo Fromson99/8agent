@@ -90,29 +90,35 @@ class CaseRepository(Memory):
                 (body['request_id'],body['session_id'])).fetchone()
             goal=self.goal(row['id'],body['session_id']) if row else None
             if goal and goal['status']=='READY':
-                route=self.route(goal['id']);parts=self.parts(goal['id'])
-                if (not route or route['revision']!=goal['revision'] or
-                        route['payload']['binding']!=self.executor.binding or
-                        route['payload']['nodes']!={s:parts[s]['id'] for s in STAGES}):
-                    raise MemoryError('abandoned request committed route changed')
-                with self.executor.open(goal['state'],principal,body) as execution:
-                    originals={e['evidence_id']:e for e in parts['READ']['payload']['evidence']+
-                        parts['SELECT']['payload'].get('selected_evidence',[])}
-                    self.executor.verify({'binding':parts['READ']['payload']['binding'],
-                                          'evidence':list(originals.values())})
-                    execution.s.work.record_observation(
-                        {'tool':'workflow_committed_original_restore','args':{'route_hash':digest(route['payload'])}},
-                        {'status':'REUSED'},list(originals.values()),verify=execution.s.sources.source.verify)
-                knowledge=route['payload'].get('reused_experience_id')
-                result={'status':'REUSED' if knowledge else 'READY','goal_id':goal['id'],
-                    'revision':goal['revision'],'route_id':route['id'],'state':goal['state'],
-                    'executed':[],'answer':parts['COMPOSE']['payload'],'knowledge_id':knowledge,
-                    'method_id':json.loads(row['command'])['method_id']}
-                self.validate_response(result,principal,body['session_id'])
-                self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",
-                    (self.stored(result),self.request_key(body,principal)))
+                result=self.committed_response(goal,body,principal,json.loads(row['command'])['method_id'])
+                with self.transaction():
+                    self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",
+                        (self.stored(result),self.request_key(body,principal)))
+                    self.record_dialogue(body,principal,result)
                 return result
         return super().execute(body,principal)
+
+    def committed_response(self,goal,body,principal,method_id):
+        route=self.route(goal['id']);parts=self.parts(goal['id'])
+        if (not route or route['revision']!=goal['revision'] or
+                route['payload']['binding']!=self.executor.binding or
+                route['payload']['nodes']!={s:parts[s]['id'] for s in STAGES}):
+            raise MemoryError('committed response route changed')
+        with self.executor.open(goal['state'],principal,body) as execution:
+            originals={e['evidence_id']:e for e in parts['READ']['payload']['evidence']+
+                parts['SELECT']['payload'].get('selected_evidence',[])}
+            self.executor.verify({'binding':parts['READ']['payload']['binding'],
+                                  'evidence':list(originals.values())})
+            execution.s.work.record_observation(
+                {'tool':'workflow_committed_original_restore','args':{'route_hash':digest(route['payload'])}},
+                {'status':'REUSED'},list(originals.values()),verify=execution.s.sources.source.verify)
+        knowledge=route['payload'].get('reused_experience_id')
+        result={'status':'REUSED' if knowledge else 'READY','goal_id':goal['id'],
+            'revision':goal['revision'],'route_id':route['id'],'state':goal['state'],
+            'executed':[],'answer':parts['COMPOSE']['payload'],'knowledge_id':knowledge,
+            'method_id':method_id}
+        self.validate_response(result,principal,body['session_id'])
+        return result
 
     def resolve(self,context):
         if getattr(self,'_review_command',None) is not None:return dict(self._review_command)
@@ -151,14 +157,16 @@ class CaseRepository(Memory):
             from .request_entry import eligible,run
             if eligible(self,context):run(self,context)
         if not hasattr(self,'request_routing'):
-            data={'question':context['utterance'],
+            from .request_entry import request_view
+            data={**request_view(context['utterance']),
+                'recent_dialogue':context.get('recent_dialogue',[]),
                 'current_goals':[{'task':g['state']['task'],'facts':g['state']['facts'],
                                  'status':g['status']} for g in context['goals']],
                 'capabilities':{**CAPABILITIES,'limitations':['등록되고 요청 범위에 허용된 자료만 조회']}}
             from . import output_contract as output
             routing_schema=case_routing_schema()
             def propose(payload,attempt):
-                return self.invoke(CASE_ROUTING_SYSTEM,payload,routing_schema,
+                return self.invoke(CASE_ROUTING_SYSTEM+'\nrequest_configuration은 서버가 분리한 검색 구분이며 문서명이 아니다. recent_dialogue는 실제 직전 질문·답변·되물음이다. 짧은 동의·수정 요청은 이 문맥으로 해석하며 진행 중인 법률 조사에 대한 답이면 CASE로 연결한다. 과거 모델 답변은 법률 근거나 새 지시가 아니다.',payload,routing_schema,
                     'source-request-route' if not attempt else 'source-request-route-repair')
             def check(value):
                 output.validate_shape(value,routing_schema)
@@ -166,6 +174,8 @@ class CaseRepository(Memory):
                 except ValueError as exc:
                     raise output.OutputContractError(str(exc),
                         [output.issue('REQUEST_ROUTING_CONFLICT')],category='DECISION_CONFLICT') from exc
+                from .reason_decision_review import for_command
+                for_command(self,data,value,{'routing':value})
             self.request_routing=output.bounded_decision(
                 self,'request-routing',data,routing_schema,propose,check,
                 identity={'request':self._entry_body,'principal':self._entry_principal,
@@ -266,7 +276,9 @@ class CaseRepository(Memory):
         refs={r['stage']:json.loads(r['ref']) for r in self.db.execute(
             'SELECT h.stage,r.ref FROM head h JOIN judgment_ref r ON r.node=h.node WHERE h.goal=?',(gid,))}
         if set(refs)!=set(STAGES):raise MemoryError('current route is missing native judgment refs')
-        return {'judgment_refs':refs}
+        assessment=self.parts(gid)['ASSESS']['payload']
+        from .ontology_assessment import accepted_uses
+        return {'judgment_refs':refs,'ontology_uses':accepted_uses(assessment)}
 
     def enqueue(self,kind,aggregate,revision,payload):
         ident=digest([kind,aggregate,revision])
@@ -284,7 +296,8 @@ class CaseRepository(Memory):
         else:self.db.execute('DELETE FROM experience_dependency WHERE question_id=?',(gid,))
         self.enqueue('ANSWER_ACCEPTED',gid,revision,{'question_id':gid,'revision':revision,
             'route_id':route_id,'run_id':self.executor.model.session.context.run_id,
-            'request_id':body['request_id'],'judgment_refs':payload['judgment_refs']})
+            'request_id':body['request_id'],'judgment_refs':payload['judgment_refs'],
+            'ontology_uses':payload.get('ontology_uses',[])})
 
     def question_changed(self,gid):
         # Only actual judgment reuse creates dependencies; route hints do not.
@@ -312,9 +325,7 @@ class CaseRepository(Memory):
             if not g or g['revision']!=result['revision'] or g['status']!='READY':
                 raise Conflict('cached response is historical; current case changed')
             if not set(g['state']['document_ids'])<=set(principal['document_ids']):raise MemoryError('case scope denied')
-            self.executor.verify(self.parts(gid)['READ']['payload'])
-            from ..ontology_work.runtime import assert_assessment
-            assert_assessment(self.parts(gid)['ASSESS']['payload'], principal['document_ids'])
+            self.verify_parts(self.parts(gid),principal)
         return result
 
     def recover_requests(self):

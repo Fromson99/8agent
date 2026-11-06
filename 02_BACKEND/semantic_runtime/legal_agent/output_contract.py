@@ -266,6 +266,9 @@ def validate_decisions(value):
 
 
 def owner_for(phase):
+    if phase == 'memory-guided-answer':return 'guided-answer'
+    if phase in ('memory-reason-decision-review','source-reason-decision-review','memory-final-reason-review'):
+        return 'reason-decision-review'
     if phase in ('source-request-route', 'source-request-route-repair'):
         return 'request-routing'
     if phase in ('request-entry', 'request-entry-repair'):
@@ -280,6 +283,8 @@ def owner_for(phase):
         return 'unit-selection'
     if phase.startswith('source-reference-'):
         return 'reference-navigation'
+    if phase == 'memory-ontology-supervisor':
+        return 'ontology-assessment-review'
     if phase in ('memory-assess', 'memory-assess-repair'):
         return 'assessment'
     if phase in ('memory-compose', 'memory-compose-repair'):

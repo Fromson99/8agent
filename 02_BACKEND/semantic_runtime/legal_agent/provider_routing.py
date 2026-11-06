@@ -8,20 +8,20 @@ VERSION='qwen38-request-provider-v1'
 EVENT='MODEL_PROVIDER_STATE'
 
 def validate_policy(cfg,model='qwen/qwen3.8-27b'):
-    allowed={'parasail/fp8':'Parasail','chutes/fp8':'Chutes','near-ai/fp8':'Near AI'}
+    allowed={'parasail/fp8':'Parasail','chutes/fp8':'Chutes','near-ai/fp8':'Near AI','deepinfra/bf16':'DeepInfra','reka/fp8':'Reka','cloudflare':'Cloudflare'}
     providers=cfg.get('providers',[]);auth=cfg.get('authorization',{})
     if (cfg.get('schema_version')!='qwen38-provider-routing-v1' or cfg.get('model')!=model
         or not 1<=len(providers)<=3 or any(not isinstance(p,dict) or set(p)!={'tag','name'} or allowed.get(p.get('tag'))!=p.get('name') for p in providers)
         or len({p['tag'] for p in providers})!=len(providers)
         or cfg.get('switch_http_status')!=[429] or cfg.get('max_provider_switches')!=1
-        or cfg.get('model_fallback') is not False or cfg.get('quantizations')!=['fp8']
+        or cfg.get('model_fallback') is not False or cfg.get('quantizations')!=([p['tag'].rsplit('/',1)[1]] if len(providers)==1 and '/' in (p:=providers[0])['tag'] else [] if len(providers)==1 and providers[0]['tag']=='cloudflare' else ['fp8'])
         or cfg.get('reasoning')!={'effort':'none'} or auth.get('source')!='user_message'
         or not str(auth.get('text','')).strip() or not auth.get('session_id')):
         raise ValueError('Invalid explicit Qwen3.8 provider routing policy')
     return deepcopy(cfg)
 
 def route(provider):
-    return {'only':[provider['tag']],'order':[provider['tag']],'quantizations':['fp8'],
+    return {'only':[provider['tag']],'order':[provider['tag']],**({'quantizations':[provider['tag'].rsplit('/',1)[1]]} if '/' in provider['tag'] else {}),
         'allow_fallbacks':False,'require_parameters':True}
 
 def validate_response(body,provider,model):

@@ -201,7 +201,7 @@ def usage_core(value, schema, payload):
         for p in c['payload']['assembly_catalog']['paths']}
     claims = {c['claim_id']: c for c in value.get('claims', [])}
     seen = set()
-    for row in usage:
+    for index, row in enumerate(usage):
         if not isinstance(row, dict) or set(row) != {'package_sha256', 'path_id', 'node_ids', 'claim_id'}:
             raise ProposalError('ontology usage fields changed')
         path = paths.get((row['package_sha256'], row['path_id']))
@@ -214,7 +214,15 @@ def usage_core(value, schema, payload):
         # bind_current supplied exact complete originals of this path. A mere
         # matching document/package ID is insufficient for an adoption receipt.
         if not set(path['source_refs']) <= set(claim.get('evidence_refs', [])):
-            raise ProposalError('ontology usage lacks the path original evidence in this claim')
+            from .output_contract import OutputContractError, issue
+            raise OutputContractError('ontology usage lacks the path original evidence in this claim',
+                [issue('ONTOLOGY_PATH_EVIDENCE', '/ontology_usage/'+str(index),
+                    related=['/claims'],
+                    expected={'claim_id': row['claim_id'], 'path_id': row['path_id'],
+                        'required_evidence_refs': path['source_refs'],
+                        'claim_evidence_refs': claim.get('evidence_refs', []),
+                        'allowed_repair': 'Reconsider the selected path/nodes and claim evidence from current originals. Do not add unchosen sources or change legal meaning automatically.'})],
+                category='DECISION_CONFLICT')
         key = digest(row)
         if key in seen:
             raise ProposalError('duplicate ontology usage')
@@ -234,5 +242,25 @@ def explanation(payload, *, decision_key, usage=None, received=False, enabled=Fa
         'input_hash': digest(payload), 'decision_key': decision_key,
         'workspace_publications': deepcopy(payload.get('ontology_assessment', {}).get('workspace_publications', [])),
         'adoption': 'NOT_RECORDED' if usage is None else 'RECORDED', 'bundles': bundles}
+
+
+def accepted_uses(assessment):
+    """Project explicit, validated claim use; delivered packages are not use."""
+    review=assessment.get('review_explanation')
+    if not review:return []  # Legacy judgments never gain inferred adoption.
+    from .review_explanation import verify
+    verify(review)
+    if assessment.get('source_excerpt_reply'):return []
+    ontology=review.get('ontology',{})
+    if ontology.get('status')!='RESPONSE_RECEIVED' or ontology.get('adoption')!='RECORDED':return []
+    claims={c.get('claim_id') for c in assessment.get('claims',[])}
+    uses=[]
+    for bundle in ontology.get('bundles',[]):
+        if bundle.get('adoption')!='ADOPTED':continue
+        for use in bundle.get('claim_uses',[]):
+            if use['claim_id'] not in claims:
+                raise ContractError('accepted ontology use lost its claim')
+            uses.append({'bundle_id':bundle['bundle_id'],**deepcopy(use)})
+    return uses
 
 PROMPT += '\nontology_usage는 이번 claims에 실제 사용한 assembly_catalog의 package_sha256/path_id/node_ids/claim_id 연결이다. 사용하지 않았다면 []로 둔다. 선택 경로의 source_refs를 해당 claim.evidence_refs에 모두 포함한다. 단순 조회나 원문 인용만으로 온톨로지 사용을 주장하지 않는다.'

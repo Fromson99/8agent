@@ -13,7 +13,7 @@ from . import evidence_inventory as inventory, unit_reading as ur
 VERSION = 'selected-connection-scope-v1'
 INLINE_CONNECTION_LIMIT = 5
 
-FINISH_GUIDANCE = '''connection_review의 한 범위 조회 완료는 다른 원문의 연결 확인을 대신하지 않는다. source_inspections는 현재 전달된 원문 구간별 실제 연결 조회 상태다. finish_connection_review의 uninspected_basis가 있으면 그 근거의 미확인 연결과 질문 대상 행위를 함께 검토한다. 질문 대상 원문에 수치·조건이 없다는 이유만으로 다른 일반 규정의 적용을 확정하지 않는다. 일반 규정의 '다른 정함', 예외·특칙 조건이 이번 행위에 어떻게 적용되는지 원문으로 확인한다. 대상 원문을 인용하는 INCOMING 연결도 별도 요건의 단서가 될 수 있다. 필요한 범위의 FOLLOW_CONNECTION과 필요한 원문 READ를 선택한다. 모든 원문·연결을 순회하거나 미확인 조항 번호를 추측하지 않는다. 확인할 수 없거나 요청에 불필요하면 실제 남은 범위와 이유를 보존해 기존 제한된 최종 검토로 넘긴다. 조회 실패·일부 확인은 별도 규정 부재의 증명이 아니다.'''
+FINISH_GUIDANCE = '''사용자가 특정 조항의 문언이 정한 수치·시기·사항만 물었으면 전달된 해당 구간에서 답을 확인하고 그 조항의 범위로 설명한다. 다른 조항이 이 조항을 인용·준용한다는 사실만으로 원래 문언의 예외를 증명하거나 모든 적용 사례를 조사할 필요가 생기지는 않는다. 이미 읽은 연결 원문은 실제 답변 주장을 뒷받침할 때만 인용한다. 질문 밖의 적용 사례를 검토하다 생긴 필요도 최종 검토에서 그 이유와 범위를 명시한다. 반대로 요청이 사건 적용·예외·다른 조항과의 관계를 묻거나 대상 원문이 다른 규정의 요건에 의존하면 그 원문과 연결을 확인한다. connection_review의 한 범위 조회 완료는 다른 원문의 연결 확인을 대신하지 않는다. source_inspections는 현재 전달된 원문 구간별 실제 연결 조회 상태다. finish_connection_review의 uninspected_basis가 있으면 그 근거의 미확인 연결과 질문 대상 행위를 함께 검토한다. 질문 대상 원문에 수치·조건이 없다는 이유만으로 다른 일반 규정의 적용을 확정하지 않는다. 일반 규정의 '다른 정함', 예외·특칙 조건이 이번 행위에 어떻게 적용되는지 원문으로 확인한다. 대상 원문을 인용하는 INCOMING 연결도 별도 요건의 단서가 될 수 있다. 필요한 범위의 FOLLOW_CONNECTION과 필요한 원문 READ를 선택한다. 모든 원문·연결을 순회하거나 미확인 조항 번호를 추측하지 않는다. 확인할 수 없거나 요청에 불필요하면 실제 남은 범위와 이유를 보존해 기존 제한된 최종 검토로 넘긴다. 조회 실패·일부 확인은 별도 규정 부재의 증명이 아니다.'''
 
 
 def finish_review(data, value):
@@ -213,9 +213,24 @@ def candidates(inv, data):
                 'selection': deepcopy(selection['selection']), 'unit_ids': list(selection['unit_ids']),
                 'excluded_unit_ids': list(selection['excluded_unit_ids']),
                 'delivered_only': True}, list(members.values())), list(dict.fromkeys(refs))))
-    if inv.policy.get('small_connection_context'):
+    if small_context(inv):
         result = [(with_parent_bodies(inv, scope, pages), refs) for scope, refs in result]
     return result
+
+
+def small_context(inv):
+    """Bounded automatic endpoint reads apply only without per-read judgments.
+
+    Guided conversation has no per-read judgment, so a tiny verified directory
+    of the explicitly selected scope is read once without another model hop.
+    Workflow and other read-judged navigation keep the explicit READ choice.
+    """
+    from .read_judgment import enabled as read_judged
+    from .guided_navigation import enabled as guided
+    policy = getattr(inv, 'policy', {})
+    wanted = policy.get('small_connection_context') or (
+        policy.get('selected_connection_scope') and guided(getattr(getattr(inv, 's', None), 'profile', {})))
+    return bool(wanted) and not read_judged(inv)
 
 
 def with_parent_bodies(inv, scope, pages):
@@ -399,6 +414,8 @@ def offer_choices(inv, data, actions):
         if identity.get('connection') or identity.get('connection_scope'):
             del actions[key]
     choices = []; previews = {}; cards = []; seen = set(); history = []; historical_cards = []
+    from .guided_navigation import enabled as guided_enabled
+    guided_roles = guided_enabled(getattr(inv.s, 'profile', {})); listed = []
     scope_choices = candidates(inv, data)
     selected = refresh_selected_delivery(inv, scope_choices, current(inv, allow_acquired_change=True))
     selected_id = selected['scope']['id'] if selected else None
@@ -437,6 +454,8 @@ def offer_choices(inv, data, actions):
         if visible:
             shown_directories.add(directory_key(scope))
             shown = inline_cards(inv, scope, refs, visible, actions)
+            if guided_roles:
+                shown = list_only_incoming(shown, actions, listed)
             for card in shown:
                 card['target_source_refs']=[p['id'] for p in data.get('sources',[])
                     if p.get('source_id')==card['target']['source_id'] and
@@ -473,6 +492,8 @@ def offer_choices(inv, data, actions):
         ('scope_id','status','reason','endpoint_count','unresolved_count','model_called','recursive') if k in row}
         for row in inv.p.get('small_connection_directories',{}).values()]
     references['selected_scope_id'] = selected_id
+    if guided_roles and listed:
+        references['incoming_list_only'] = incoming_summary(listed)
     references['inline_connection_limit'] = None  # Every verified endpoint, within the existing context bound.
     references['inline_connection_count'] = len(cards)
     references['omitted_dependency_cards'] = 0
@@ -504,7 +525,11 @@ def offer_choices(inv, data, actions):
             'status': attempted['connection_preview']['status']}
         receipt['sha256'] = digest(receipt)
         selected['locator_receipt'] = receipt
+    from .guided_navigation import enabled as guided_enabled
+    guided=guided_enabled(inv.s.profile)
     data['connection_review'] = {
+        # Guided answers also look up connections once before answering; the
+        # user is asked only about what remains after that bounded lookup.
         'required_before_finish': bool(data.get('sources') and selectable and not attempted),
         'source_inspections': source_inspections(data, scope_choices, choices),
         'first_lookup_only': True,
@@ -516,6 +541,9 @@ def offer_choices(inv, data, actions):
                 '종료 판단 전에 사용할 원문 범위를 FOLLOW_CONNECTION으로 선택해 저장 연결을 확인한다. '
                 '조회 결과를 받은 뒤 필요한 연결만 읽는다. 빈 목록·일부 확인·실패도 상태를 보존해 종료할 수 있다. '
                 '조회 불가나 예산 소진은 확보 원문을 전달하며 원문 부재로 단정하지 않는다.'}
+    if guided:
+        data['connection_review']['rule']=('답변하기 전에 사용할 원문 범위의 연결을 FOLLOW로 한 번 조회한다. 조회 결과에서 질문에 필요한 연결 대상만 읽는다. '
+            '연결 대상은 다른 조문이 현재 조문을 인용하는 역방향(INCOMING)도 포함한다. 미확인 연결은 확인 완료로 표현하지 않는다.')
 
     data['connection_scope_rule'] = ('읽은 원문 중 현재 요청에 필요한 연결 출발 범위를 FOLLOW_CONNECTION으로 선택한다. '
         '조 전체를 선택하면 그 조 전체, 항·호·목을 선택하면 그 범위의 연결만 확인한다. '
@@ -637,6 +665,7 @@ def inline_cards(inv, scope, source_refs, groups, actions):
                 'anchor_endpoint_quote_truncated':connection.get('anchor_endpoint_quote_truncated',False),
                 'anchor_delegation_wording_hint':connection.get('anchor_delegation_wording_hint',False),
                 'defines_anchor_wording':connection.get('defines_anchor_wording'),
+                'citation_role':connection.get('citation_role'),
                 'hint_imposes_read':False}
             if decision:
                 card['decision'] = deepcopy(decision)
@@ -756,8 +785,11 @@ def acquire_small_directory(inv, scope, directory):
     The normal reader retains ownership of permissions, hashes, evidence and
     budgets. An acquired original is not an applicability or sufficiency vote.
     """
-    if not inv.policy.get('small_connection_context') or inv.policy.get('read_judgment'):
+    if not small_context(inv):
         return []
+    from .guided_navigation import enabled as guided
+    if guided(getattr(inv.s, 'profile', {})):
+        return acquire_role_chain(inv, scope, directory)
     from . import unit_relations as rel, law_candidates as lc, tool_availability as av
     from .definition_context import record_failure
     from .errors import BudgetExhausted
@@ -871,6 +903,189 @@ def acquire_small_directory(inv, scope, directory):
     row['status'] = 'PARTIAL' if row['reason'] or row['unresolved_count'] else 'COMPLETE'
     save(row)
     inv.s.repo.event('SMALL_CONNECTION_DIRECTORY', deepcopy(row))
+    return list(row['groups'])
+
+
+ROLE_CHAIN = 'role-chain-v1'
+CHAIN_LIMITS = {'outgoing': 6, 'pair_incoming': 3, 'chars': 12000, 'depth': 2}
+ROLE_LABELS = {'SPECIFIES': '구체화', 'EXCEPTION': '특칙·예외', 'MUTATIS': '준용', 'BORROWS': '차용',
+               'TRANSITIONAL': '부칙 경과·적용례'}
+
+
+def list_only_incoming(cards, actions, listed):
+    """Guided reading keeps forward and pair links; reuse/extension stays a count."""
+    from .citation_roles import PAIR_ROLES
+    kept = []
+    for card in cards:
+        if card['direction'] == 'OUTGOING' or card.get('citation_role') in PAIR_ROLES:
+            kept.append(card)
+        else:
+            listed.append(card)
+    used = {c.get('read_action') for c in kept}
+    for card in listed:
+        ident = card.get('read_action')
+        if ident and ident not in used:
+            actions.pop(ident, None)
+    return kept
+
+
+def incoming_summary(listed):
+    groups = {}
+    for card in listed:
+        row = groups.setdefault(card.get('citation_role') or 'BORROWS', {'count': 0, 'examples': []})
+        row['count'] += 1
+        if len(row['examples']) < 6:
+            # The citing article is the card target for an incoming link.
+            target = card.get('target') or {}
+            words = ((card.get('coordinate') or '') + ' ' + (target.get('heading') or '')).split()
+            row['examples'].append(' '.join(dict.fromkeys(words)))
+    return {'meaning': '현재 조문을 인용하지만 규칙을 바꾸지 않는 연결(다른 사항에 빌려 씀·준용·부칙 경과)이다. 본문은 제공하지 않는다. '
+                       '질문이 그 사항 자체를 물을 때만 구조 검색으로 해당 조문을 찾는다.',
+            'by_role': {ROLE_LABELS.get(k, k): v for k, v in sorted(groups.items())}}
+
+
+def chain_rows(directory, *, forward_only):
+    """Choose reads by citation role: forward links and rule-changing pairs only."""
+    from .citation_roles import PAIR_ROLES, EXCEPTION
+    rows = []; seen = set()
+    for group in directory['groups']:
+        for link in group['connections']:
+            outgoing = group['direction'] == 'OUTGOING'
+            pair = link.get('citation_role') in PAIR_ROLES
+            if not outgoing and (forward_only or not pair):
+                continue
+            endpoint = endpoint_key(group, link)
+            if endpoint in seen:
+                continue
+            seen.add(endpoint)
+            rows.append({'group': group, 'link': link, 'plan': read_plan(group, link), 'endpoint': endpoint,
+                         'outgoing': outgoing, 'pair': pair, 'role': link.get('citation_role')})
+    rows.sort(key=lambda r: (not r['pair'], r['role'] != EXCEPTION, r['link'].get('witness_source_order', 0)))
+    return ([r for r in rows if r['outgoing']][:CHAIN_LIMITS['outgoing']] +
+            [r for r in rows if not r['outgoing']][:CHAIN_LIMITS['pair_incoming']])
+
+
+def acquire_role_chain(inv, scope, directory, *, depth=1):
+    """Guided automatic reading without another model hop.
+
+    Depth 1 reads the selected scope's forward citations and the incoming
+    citations that specify or except its rule. Depth 2 follows only the forward
+    citations of originals reached through such a pair, so landing on either
+    side of a rule/exception pair yields the same originals. A request shares
+    one character budget; all other links remain cards or counts.
+    """
+    from . import law_candidates as lc, tool_availability as av
+    from .definition_context import record_failure
+    from .errors import BudgetExhausted
+    from .request_repair import recoverable_tool_failure
+    key = digest([ROLE_CHAIN, inv.p['binding'], sorted(inv.s.scope), directory_key(scope), depth])
+    history = inv.p.setdefault('role_chain_directories', {})
+    attempts = inv.p.setdefault('role_chain_attempts', {})
+    start = inv.p.get('request_turn_start', 0)
+    budget = inv.p.get('role_chain_budget')
+    if not budget or budget.get('request_turn_start') != start:
+        budget = inv.p['role_chain_budget'] = {'request_turn_start': start, 'chars': 0}
+
+    def seal(row):
+        row['sha256'] = digest({k: v for k, v in row.items() if k != 'sha256'})
+        inv.save()
+
+    if key in history:
+        if history[key].get('sha256') != digest({k: v for k, v in history[key].items() if k != 'sha256'}):
+            raise ContractError('role chain receipt hash mismatch')
+        if history[key]['status'] != 'STARTED':
+            return list(history[key]['groups'])
+    row = history.setdefault(key, {'scope_id': scope['id'], 'depth': depth, 'status': 'STARTED', 'groups': [],
+        'reads': [], 'skipped': [], 'model_called': False, 'absence_proven': False})
+    seal(row)
+    pairs = []
+    for item in chain_rows(directory, forward_only=depth > 1):
+        group, link, plan = item['group'], item['link'], item['plan']
+        if link['already_read'] or plan is None:
+            if plan is None and not link['already_read']:
+                row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'NO_EXECUTABLE_ENDPOINT_SCOPE'})
+            continue
+        hit, offer = plan
+        identity = {k: hit[k] for k in ('source_id', 'document_id')}
+        identity['unit_id'] = offer['unit_id']
+        rid = digest([ROLE_CHAIN, inv.p['binding'], sorted(inv.s.scope), identity, offer])
+        if rid in attempts:
+            if attempts[rid].get('group_id'):
+                row['groups'] = list(dict.fromkeys(row['groups'] + [attempts[rid]['group_id']]))
+                if item['pair'] and attempts[rid]['status'] == 'COMPLETE':
+                    pairs.append((attempts[rid]['group_id'], hit, offer, inv.p['selected'].get(attempts[rid]['group_id'])))
+            continue
+        sequences = [(hit, offer), *av.context_plans(inv.s, hit, offer)]
+        added, calls = av.sequence_cost(inv.s, sequences, inv.s.repo.evidence())
+        reason = ('ROLE_CHAIN_CHARACTER_LIMIT' if budget['chars'] + added > CHAIN_LIMITS['chars'] else
+                  av.budget_reason(inv.s, added, calls, inv.p['read_state']))
+        if reason:
+            row['skipped'].append({'endpoint': item['endpoint'], 'reason': reason, 'role': item['role']})
+            continue
+        target = attempts.setdefault(rid, {'status': 'RESERVED', 'identity': identity, 'offer_hash': digest(offer),
+            'reference_id': link['reference_id'], 'role': item['role'], 'group_id': None})
+        stage = 'READ'; gid = None
+        try:
+            checked, unavailable = av.article_plan(inv.s, identity)
+            if unavailable:
+                raise ContractError('automatic connection endpoint changed: ' + unavailable)
+            checked_hit, checked_offer = checked
+            if set(checked_offer['block_ids']) != set(offer['block_ids']):
+                raise ContractError('automatic connection endpoint extent changed')
+            from .query_scope import action_allowed
+            if not action_allowed(inv.s, 'READ_ARTICLES', identity):
+                target.update(status='FAILED', reason='OUTSIDE_DIRECT_SEARCH_SCOPE')
+                row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'OUTSIDE_DIRECT_SEARCH_SCOPE'})
+                continue
+            material = ur.read(inv.s, checked_hit, checked_offer, action_state=inv.p['read_state'])
+            if not material['complete']:
+                raise ContractError('automatic connection read incomplete')
+            inv.add_reads([{**material, 'hit': checked_hit}])
+            gid = lc.token(inv.s, 'B', [hit['source_id'], lc.parent_offer(inv.s, checked_hit)['id']])
+            target['group_id'] = gid
+            stage = 'CONTEXT'
+            label = {'SPECIFIES': '현재 조문의 규칙을 구체화', 'EXCEPTION': '현재 조문의 특칙·예외'}.get(item['role'], '현재 조문이 인용')
+            inv.register_read(inv.p['groups'][gid], material,
+                reason=label + '하는 연결 원문 자동 확보(' + ('정방향' if item['outgoing'] else '역방향') + '); 적용 판단 전')
+            target['status'] = 'COMPLETE'
+            budget['chars'] += added
+            row['groups'] = list(dict.fromkeys(row['groups'] + [gid]))
+            row['reads'].append({'endpoint': item['endpoint'], 'role': item['role'], 'outgoing': item['outgoing'], 'chars': added})
+            if item['pair']:
+                pairs.append((gid, checked_hit, checked_offer, material))
+            inv.s.repo.event('ROLE_CHAIN_ORIGINAL_ACQUIRED', {'scope_id': scope['id'], 'depth': depth, 'group_id': gid,
+                'reference_id': link['reference_id'], 'role': item['role'], 'outgoing': item['outgoing'],
+                'identity': identity, 'automatic_adoption': False, 'model_called': False})
+        except (BudgetExhausted, TimeoutError, ToolExecutionError, sqlite3.OperationalError) as error:
+            if not isinstance(error, BudgetExhausted) and recoverable_tool_failure(error) is None:
+                raise
+            target.update(status='PARTIAL' if gid else 'FAILED', reason=type(error).__name__)
+            row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'TARGET_UNAVAILABLE'})
+            if record_failure(inv, error, stage=stage, identity=identity, offer=offer, group_id=gid,
+                    anchor_key=key, origin='ROLE_CHAIN', revision=ROLE_CHAIN) == 'STOP':
+                raise
+        finally:
+            seal(row)
+    if depth < CHAIN_LIMITS['depth']:
+        for gid, hit, offer, record in pairs:
+            if not record:
+                continue
+            wanted = set(map(str, offer['block_ids']))
+            spans = _spans([p for e in record.get('evidence', []) for p in e['spans']], wanted)
+            if not spans:
+                continue
+            member = {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'spans': spans}
+            # Display label only; the identity is the verified member spans.
+            label = (inventory.scope_path(inv.s, hit, offer) if hit.get('document_name')
+                     else str(hit['source_id']) + ' ' + str(offer['unit_id']))
+            sub = _scope(label, {'unit_id': offer['unit_id'],
+                'extent': offer['extent'], 'role_chain_depth': depth + 1}, [member])
+            with bound(inv.s, sub):
+                sub_directory = inspect_directory(inv, sub)
+            row['groups'] = list(dict.fromkeys(row['groups'] + acquire_role_chain(inv, sub, sub_directory, depth=depth + 1)))
+    row['status'] = 'COMPLETE'
+    seal(row)
+    inv.s.repo.event('ROLE_CHAIN_DIRECTORY', deepcopy(row))
     return list(row['groups'])
 
 

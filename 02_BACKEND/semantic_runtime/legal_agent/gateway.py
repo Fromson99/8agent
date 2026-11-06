@@ -24,7 +24,7 @@ NUMBER_INSTRUCTIONS = (
 def compact_wire_view(view, phase):
     """Project redundant wire data only; original views and receipts stay intact."""
     result = deepcopy(view)
-    if result.get('source_stage') in ('memory-assess', 'memory-assess-repair'):
+    if result.get('source_stage') in ('memory-assess', 'memory-assess-repair','memory-guided-answer'):
         # The durable exact_evidence cards bind current-request presentation.
         # Compact assessment already transmits these exact subspans as options.
         # Drop a duplicate container only when every coordinate and byte is
@@ -74,6 +74,9 @@ def compact_wire_view(view, phase):
     if result.get('input_projection')=='compact-selection-source-v3':
         from .navigation_input import compact_cards
         result=compact_cards(result)
+    if result.get('source_stage')=='memory-guided-answer':
+        from .guided_answer import wire_input
+        result=wire_input(result)
     return result
 
 

@@ -41,10 +41,12 @@ def target_coordinate(row, *, path='/source_targets/coordinate'):
     return occurrences[0].coordinate.canonical_surface()
 
 
-PROMPT='''origin_heading이 있는 목표는 서버가 질문과 직접 맞는 저장 표제에서 찾은 원문이다. 다른 원문이나 이유만으로 제외할 수 없으며 먼저 해당 원문을 확인한다. 원문 확보 뒤 실제 적용 여부는 판단하며 무관하면 답변에서 제외할 수 있다. source_targets에는 이번에 반드시 확보할 원문의 document_ref(허용된 문서 D번호), coordinate(정확한 조·항·호), coordinate_scope, issue_id, reason을 쓴다. 위치가 불명확하면 []이며 조문번호를 추측하지 않는다. coordinate_scope는 body(본문), addendum(부칙), annex(별표), form(서식), repeated(반복 범위), appendix(기존 부록) 중 선택한다. 조·항·호·목은 범위 값이 아니다. 기존 목표는 SOURCE_GOAL의 goal_id만 선택한다. 서버가 문서와 좌표를 현재 도구 번호에 연결하며 이미 확정된 목표는 모델 선택 전에 조회·READ를 집행한다. source_goal_context의 미확보 목표는 다른 문서를 읽거나 FINISH한다고 사라지지 않는다. 불필요함을 실제 원문으로 확인한 경우에만 source_goal_exclusions에 goal_id, reason, basis_refs를 쓴다. 원문 확보는 법률적 충분성이나 판단 완료가 아니다.'''
+PROMPT='''origin_heading이 있는 목표는 서버가 질문과 직접 맞는 저장 표제에서 찾은 원문이다. 다른 원문이나 이유만으로 제외할 수 없으며 먼저 해당 원문을 확인한다. 원문 확보 뒤 실제 적용 여부는 판단하며 무관하면 답변에서 제외할 수 있다. source_targets에는 이번 조사에서 확보해야 할 새 원문 목표의 document_ref(허용된 문서 D번호), coordinate(정확한 조·항·호), coordinate_scope, issue_id, reason을 쓴다. 위치가 불명확하면 []이며 조문번호를 추측하지 않는다. coordinate_scope는 body(본문), addendum(부칙), annex(별표), form(서식), repeated(반복 범위), appendix(기존 부록) 중 선택한다. 조·항·호·목은 범위 값이 아니다. 기존 목표는 SOURCE_GOAL의 goal_id만 선택한다. source_targets는 확보할 원문 목표이며 이번 choice를 대체하는 두 번째 명령이 아니다. 이번 행동을 먼저 실행하고, 아직 미확보인 확정 목표는 다음 선택 전에 서버가 문서·좌표를 조회·READ에 연결한다. 목표를 새로 선언하면서 FINISH하지 않는다. source_goal_context의 미확보 목표는 다른 문서를 읽거나 FINISH한다고 사라지지 않는다. 불필요함을 실제 원문으로 확인한 경우에만 source_goal_exclusions에 goal_id, reason, basis_refs를 쓴다. 원문 확보는 법률적 충분성이나 판단 완료가 아니다.'''
 PROMPT += '\n기존 선언한 필요를 위한 목표이면 source_targets.need_refs에 answer_progress_context.declared_needs 또는 read_judgments.needs의 ID를 연결한다. 새 필요여서 아직 ID가 없으면 생략할 수 있으며, 목표 자체에도 지속 ID가 부여된다. 필요한 참조는 각각 선택한다. 같은 문장에 참조됐다는 이유로 서버가 나머지 조문을 선택하지 않는다.'
 
-def enabled(inv):return inv.policy.get('source_goal_control',False) and inv.policy.get('supervisor_mode')=='enforce'
+def enabled(inv):
+    from .guided_navigation import enabled as guided
+    return not guided(getattr(getattr(inv,'s',None),'profile',{})) and inv.policy.get('source_goal_control',False) and inv.policy.get('supervisor_mode')=='enforce'
 
 def state(inv,data):
     from . import investigation_supervisor as su
@@ -79,6 +81,33 @@ def attach(schema,inv,data,actions):
         b['properties'].update(deepcopy(props));b['required']+=list(props)
     return out
 
+def model_projection(schema):
+    """Omit only required goal arrays whose sole permitted value is empty.
+
+    The original schema still validates the restored response. No exclusions,
+    acquisition status, source target or legal judgment are selected here.
+    """
+    from .output_contract import validate_shape
+    branches = schema.get('anyOf', [])
+    names = [name for name in ('source_targets', 'source_goal_exclusions')
+        if branches and all(name in b.get('required', [])
+            and b.get('properties', {}).get(name, {}).get('type') == 'array'
+            and b['properties'][name].get('maxItems') == 0
+            and b['properties'][name].get('minItems', 0) == 0 for b in branches)]
+    if not names:
+        return schema, deepcopy
+    wire = deepcopy(schema)
+    for branch in wire['anyOf']:
+        for name in names:
+            branch['properties'].pop(name)
+            branch['required'].remove(name)
+    def expand(raw):
+        validate_shape(raw, wire)
+        result = {**deepcopy(raw), **{name: [] for name in names}}
+        validate_shape(result, schema)
+        return result
+    return wire, expand
+
 def validate(value,inv,data,actions):
     offered={r['lookup_target']:r for r in options(data,actions)}
     from .need_continuity import known_needs
@@ -102,11 +131,14 @@ def validate(value,inv,data,actions):
         validate_exclusion(inv,data,goals[row['goal_id']],row)
     if len(ids)!=len(set(ids)):raise ProposalError('duplicate source goal exclusion')
 
-def record(value,inv,data,actions,st):
+def proposed_goals(value,inv,data,actions,st):
     validate(value,inv,data,actions)
     receipts=list(st.get('source_goal_submissions',[]));signature=digest([data['presentation_id'],value.get('source_targets',[]),value.get('source_goal_exclusions',[])])
-    if signature in receipts:return
-    goals=deepcopy(st.get('source_goals',[]));offered={r['lookup_target']:r for r in options(data,actions)}
+    goals=deepcopy(st.get('source_goals',[]))
+    if signature in receipts:
+        refresh(inv,goals)
+        return goals, receipts
+    offered={r['lookup_target']:r for r in options(data,actions)}
     for row in value.get('source_targets',[]):
         doc=target_document(row,offered);coordinate=target_coordinate(row)
         ident=digest([row['issue_id'],doc['document_id'],coordinate,row['coordinate_scope']])
@@ -149,7 +181,12 @@ def record(value,inv,data,actions,st):
         validate_exclusion(inv,data,goal,row)
         goal['status']='EXCLUDED';goal['exclusion']=deepcopy(row)
     refresh(inv,goals)
-    receipts.append(signature);st['source_goal_submissions']=receipts;st['source_goals']=goals;commit(inv,st)
+    return goals, receipts+[signature]
+
+def record(value,inv,data,actions,st):
+    goals,receipts=proposed_goals(value,inv,data,actions,st)
+    st.update(source_goals=goals,source_goal_submissions=receipts)
+    commit(inv,st)
 
 def context(inv,data):
     return {'version':VERSION,'goals':deepcopy(state(inv,data).get('source_goals',[])),
@@ -165,23 +202,19 @@ def matches(inv,identity,goal):
     key=(did,str(uid));node=inv.s.matcher.units.get(key);coordinate=inv.s.matcher.stored_coordinates.get(key)
     return bool(node and coordinate and coordinate.canonical_surface()==goal['coordinate'] and node.get('coordinate_scope')==goal['coordinate_scope'])
 
-def resolve(inv,data,actions,payload,value,decision,expand,st,*,preselection=False):
-    """One existing action per turn; no hidden SQL/reads or semantic adoption."""
-    if not enabled(inv):return None
+def plan(inv,data,actions,value,decision,expand,st,*,discover_scope=True,preserve_choice=False):
+    """Prepare the actual next route without granting it or consuming a route."""
     from .scope_completion import discover
-    discover(inv,data,st)
-    record(value,inv,data,actions,st)
-    refresh(inv,st.get('source_goals',[]));commit(inv,st)
-    pending=[g for g in st.get('source_goals',[]) if g['status'] in ('REQUIRED','BLOCKED')]
-    if not pending:return None
-    from . import investigation_supervisor as su
-    receipts=st.setdefault('source_goal_actions',{})
-    commit(inv,st)
+    if discover_scope:discover(inv,data,st)
+    goals,submissions=proposed_goals(value,inv,data,actions,st)
+    pending=[g for g in goals if g['status'] in ('REQUIRED','BLOCKED')]
+    result={'goals':goals,'submissions':submissions,'decision':decision,'pending':pending}
+    if not pending:return result
+    receipts=st.get('source_goal_actions',{})
     if data['presentation_id'] in receipts:
-        accepted=deepcopy(receipts[data['presentation_id']]['decision']);inv.validate(accepted,data,actions)
-        su.authorize(inv,data,accepted,st,recovery=True);return accepted
-    if inv.left()<=inv.s.profile['selection_time_reserve_seconds']:su.stop(inv,st,'SOURCE_GOAL_TIME_RESERVE')
-    terminal=decision['next_action'] in ('FINISH','PENDING')
+        accepted=deepcopy(receipts[data['presentation_id']]['decision'])
+        inv.validate(accepted,data,actions)
+        return dict(result,decision=accepted,replay=True)
     for goal in pending:
         chosen=None;kind=None
         # Execute only the exact offered coordinate. Hints/previews never prove arrival.
@@ -204,13 +237,44 @@ def resolve(inv,data,actions,payload,value,decision,expand,st,*,preselection=Fal
             if name in value:chosen[name]=deepcopy(value[name])
         try:accepted=expand(chosen)
         except ProposalError as exc:
-            goal['routes'].append(kind);goal['status']='BLOCKED';goal['route_failure']=str(exc);commit(inv,st)
+            goal['routes'].append(kind);goal['status']='BLOCKED';goal['route_failure']=str(exc)
             continue
+        if preserve_choice:
+            from .investigation_supervisor import same_dispatch, action_view
+            if not same_dispatch(accepted, decision) and decision.get('next_action') not in ('FINISH','PENDING'):
+                # New source declarations are durable needs, not a second command.
+                # Existing needs are dispatched by preselect before the next model turn.
+                return dict(result, deferred_route=action_view(accepted), preserved_choice=True)
+        return dict(result,goal=goal,kind=kind,decision=accepted)
+    return result
+
+
+def stage_plan(inv,data,decision,st,plan,*,preselection=False):
+    from . import investigation_supervisor as su
+    st.update(source_goals=plan['goals'],source_goal_submissions=plan['submissions'])
+    pending=plan['pending']
+    if not pending:return None
+    accepted=plan['decision']
+    if plan.get('replay'):
+        return accepted
+    if inv.left()<=inv.s.profile['selection_time_reserve_seconds']:su.stop(inv,st,'SOURCE_GOAL_TIME_RESERVE',presentation=data['presentation_id'])
+    if 'goal' in plan:
+        goal=plan['goal'];kind=plan['kind']
         goal['routes'].append(kind)
-        receipts[data['presentation_id']]={'goal_id':goal['goal_id'],'kind':kind,'decision':deepcopy(accepted),'status':'AUTHORIZED'}
-        su.authorize(inv,data,accepted,st,recovery=True)
+        st.setdefault('source_goal_actions',{})[data['presentation_id']]={'goal_id':goal['goal_id'],'kind':kind,'decision':deepcopy(accepted),'status':'AUTHORIZED'}
         inv.s.repo.event('SOURCE_GOAL_DISPATCH',{'goal_id':goal['goal_id'],'document_id':goal['document_id'],'coordinate':goal['coordinate'],'coordinate_scope':goal['coordinate_scope'],'operation':kind,'cancelled':decision,'accepted':accepted,'legal_judgment_adopted':False})
         return accepted
+    if plan.get('preserved_choice'):
+        choices=st.setdefault('source_goal_deferred_choices',{})
+        receipt={'goal_ids':[g['goal_id'] for g in pending],
+                 'decision':deepcopy(decision),'next_route':deepcopy(plan['deferred_route'])}
+        prior=choices.get(data['presentation_id'])
+        if prior is not None and prior!=receipt:
+            raise ContractError('source-goal deferred choice changed within presentation')
+        choices[data['presentation_id']]=receipt
+        if prior is None:inv.s.repo.event('SOURCE_GOAL_DEFERRED_AFTER_CHOICE',receipt)
+        return decision
+    terminal=decision['next_action'] in ('FINISH','PENDING')
     if preselection:
         # No exact action is available now. Keep the durable goals and receipts,
         # but let the existing selector repair the route before any handoff.
@@ -223,10 +287,22 @@ def resolve(inv,data,actions,payload,value,decision,expand,st,*,preselection=Fal
     if not terminal:
         bridges=st.setdefault('source_goal_bridges',[]);route=su.route_identity(decision)
         if route not in bridges and len(bridges)<2 and set(decision.get('issue_refs',[])) & {g['issue_id'] for g in pending}:
-            bridges.append(route);su.authorize(inv,data,decision,st,recovery=True)
+            bridges.append(route)
             inv.s.repo.event('SOURCE_GOAL_INTERMEDIATE',{'goal_ids':[g['goal_id'] for g in pending],'decision':decision,'goals_resolved':False})
             return decision
-    su.stop(inv,st,'SOURCE_GOALS_UNRESOLVED:'+','.join(g['goal_id'] for g in pending))
+    su.stop(inv,st,'SOURCE_GOALS_UNRESOLVED:'+','.join(g['goal_id'] for g in pending),presentation=data['presentation_id'])
+
+def apply_plan(inv,data,decision,st,plan,*,preselection=False):
+    from . import investigation_supervisor as su
+    route=stage_plan(inv,data,decision,st,plan,preselection=preselection)
+    if route is None:commit(inv,st)
+    else:su.authorize(inv,data,route,st,recovery=True)
+    return route
+
+def resolve(inv,data,actions,payload,value,decision,expand,st,*,preselection=False):
+    if not enabled(inv):return None
+    proposed=plan(inv,data,actions,value,decision,expand,st)
+    return apply_plan(inv,data,decision,st,proposed,preselection=preselection)
 
 def after_execute(inv,data,decision,applied):
     if not enabled(inv):return
@@ -413,13 +489,16 @@ def prepare(inv,data,actions):
     from .scope_completion import discover
     discover(inv,data,st)
     record({},inv,data,actions,st)
-    refresh(inv,st.get('source_goals',[]));commit(inv,st)
     return st
 
 
 def preselect(inv,data,actions):
+    from . import investigation_supervisor as supervisor
+    reviewed=supervisor.restored_review(inv,data,actions)
+    if reviewed is not None:return reviewed
+    if not enabled(inv) or state(inv,data)['halt']:return None
     st=prepare(inv,data,actions)
-    if st is None or not any(g['status'] in ('REQUIRED','BLOCKED') for g in st.get('source_goals',[])):return None
+    if not any(g['status'] in ('REQUIRED','BLOCKED') for g in st.get('source_goals',[])):return None
     # No model proposal or rejected judgment enters this call. resolve uses the
     # exact existing executor/menu, durable intent, budget and resume receipts.
     return resolve(inv,data,actions,{}, {},{'next_action':'FINISH'},
@@ -466,14 +545,17 @@ def validate_gap_closure(inv,data,row):
 def close_gaps(inv,data,value):
     if not enabled(inv):return
     st=state(inv,data)
-    for row in value.get('gap_resolutions',[]):
-        if row['status'] not in ('RESOLVED','NOT_NEEDED'):continue
+    closures=[r for r in value.get('gap_resolutions',[]) if r['status'] in ('RESOLVED','NOT_NEEDED')]
+    for row in closures:
         validate_gap_closure(inv,data,row)
+    changed=False
+    for row in closures:
         for goal in st.get('source_goals',[]):
-            if goal.get('origin_gap_id')!=row['gap_id']:continue
+            if goal.get('origin_gap_id')!=row['gap_id'] or goal.get('resolution')==row:continue
             if row['status']=='NOT_NEEDED':goal['status']='EXCLUDED';goal['exclusion']=deepcopy(row)
             goal['resolution']=deepcopy(row)
-    commit(inv,st)
+            changed=True
+    if changed:commit(inv,st)
 
 
 def public_options(data,actions):

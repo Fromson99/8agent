@@ -28,7 +28,8 @@ read_judgments.required에는 새로 전달된 원문 묶음이 있다. 각 judg
 
 
 def enabled(inv):
-    return bool(getattr(inv,'policy',{}).get('read_judgment'))
+    from .guided_navigation import enabled as guided
+    return not guided(getattr(getattr(inv,'s',None),'profile',{})) and bool(getattr(inv,'policy',{}).get('read_judgment'))
 
 
 def seal(value):

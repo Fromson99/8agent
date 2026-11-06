@@ -8,8 +8,9 @@ from .schema_preparation import validate
 from ..contracts import digest
 from .errors import BudgetExhausted, ContractError
 from . import output_contract
+from .guided_navigation import enabled as guided_enabled
 
-VERSION = 'read-candidate-pages-v2'
+VERSION = 'read-candidate-pages-v3'
 NEXT = 'NEXT_READ_CANDIDATES'
 PREVIOUS = 'PREV_READ_CANDIDATES'
 PROGRESS_VERSION = 'read-candidate-page-progress-v1'
@@ -137,6 +138,100 @@ def move(inv, data, choice, *, expected_state, actor=None):
     return after
 
 
+DOCUMENT_TOOLS = 'SHOW_DOCUMENT_TOOLS'
+
+
+def tool_menu_view(data, schema, document=None):
+    """Focus document-specific tools without removing access to another document.
+
+    This is display only: every hidden operation can be opened by its exact
+    authorized document. Source and read-candidate sets are unchanged.
+    """
+    options=data.get('tool_options',[])
+    documents={}
+    for row in options:
+        did=row.get('scope',{}).get('document_id')
+        if did is not None:documents.setdefault(did,[]).append(row)
+    if not documents:return data,schema
+    if document is not None and document not in documents:
+        raise ContractError('tool menu document is outside the bound menu')
+    focus={document} if document is not None else {s.get('document_id') for s in data.get('sources',[])}
+    for goal in (data.get('source_goal_context') or {}).get('goals',[]):
+        if goal.get('status') in ('REQUIRED','BLOCKED'):focus.add(goal.get('document_id'))
+    if document is None and not focus.intersection(documents):
+        focus={r.get('document_id') for r in data.get('read_candidates',[])}
+    focus.intersection_update(documents)
+    if not focus:focus=set(documents)
+    visible=[r for r in options if r.get('scope',{}).get('document_id') is None or r['scope']['document_id'] in focus]
+    allowed={}
+    for row in visible:allowed.setdefault(row['choice'],set()).add(row['target'])
+    wire=deepcopy(schema);branches=[]
+    for branch in wire['anyOf']:
+        kind=branch['properties']['choice']['const']
+        target=branch['properties'].get('target')
+        if target is not None and 'enum' in target:
+            targets=[t for t in target['enum'] if t in allowed.get(kind,set())]
+            if not targets:continue
+            target['enum']=targets
+        branches.append(branch)
+    hidden=set(documents)-focus
+    if hidden:
+        branches.append({'type':'object','properties':{'choice':{'const':DOCUMENT_TOOLS},
+            'document_ref':{'type':'string','enum':sorted(hidden)}},
+            'required':['choice','document_ref'],'additionalProperties':False})
+    wire['anyOf']=branches
+    names={r.get('document_id'):r.get('name') for r in data.get('document_structures',[])}
+    view={**data,'tool_options':visible,
+        'tool_documents':[{'document_ref':did,'document_id':did,
+            'document_name':names.get(did) or did,'visible':did in focus,
+            'available_choices':sorted({r['choice'] for r in rows})} for did,rows in sorted(documents.items())],
+        'tool_menu':{'focused_document':document,'shown':len(visible),'total':len(options),
+                    'hidden_documents':len(hidden),'action':DOCUMENT_TOOLS if hidden else None,
+                    'meaning':'다른 문서의 도구는 SHOW_DOCUMENT_TOOLS로 연다. 표시되지 않은 도구·원문이 없다는 뜻이 아니다.'}}
+    return view,wire
+
+
+def tool_menu_state(inv, binding):
+    state=inv.p.get('tool_menu_focus')
+    if state is not None:
+        if state.get('state_hash')!=digest({k:v for k,v in state.items() if k!='state_hash'}):
+            raise ContractError('tool menu focus checkpoint hash mismatch')
+        if state['binding']==binding:return deepcopy(state)
+    return {'binding':binding,'document':None,'visited':[],'edges':[],'halt':False}
+
+
+def move_tool_menu(inv,data,document,*,expected_state,focus):
+    """A durable display transition shares the existing paging correction owner."""
+    if inv.p.get('read_candidate_pager')!=expected_state:
+        raise ContractError('tool menu checkpoint changed before selection')
+    current=tool_menu_state(inv,expected_state['binding'])
+    if {k:v for k,v in current.items() if k!='state_hash'}!={k:v for k,v in focus.items() if k!='state_hash'}:
+        raise ContractError('tool menu focus changed before selection')
+    shown,_=page_view(data,{'anyOf':[]},expected_state['page'],inv.policy.get('read_candidate_page_size',20))
+    _, wire=tool_menu_view(shown, {'anyOf':[]}, current['document'])
+    permitted=next((b['properties']['document_ref']['enum'] for b in wire['anyOf']
+                    if b['properties']['choice']['const']==DOCUMENT_TOOLS),[])
+    if document not in permitted:raise ContractError('tool menu document is not currently offered')
+    progress=progress_state(inv,data,expected_state)
+    edge=[current['document'],document]
+    if current['halt'] or edge in current['edges']:
+        current['halt']=True;current['state_hash']=digest({k:v for k,v in current.items() if k!='state_hash'})
+        inv.p['tool_menu_focus']=current;inv.save()
+        from .answer_progress import ProgressHandoff
+        raise ProgressHandoff('TOOL_MENU_NO_PROGRESS')
+    if document not in current['visited']:
+        current['visited'].append(document);current['edges']=[]
+    else:current['edges'].append(edge)
+    current['document']=document
+    current['state_hash']=digest({k:v for k,v in current.items() if k!='state_hash'})
+    after={**expected_state,'sequence':expected_state['sequence']+1}
+    inv.p['tool_menu_focus']=current;inv.p['read_candidate_pager']=after
+    progress['checkpoint']=after;save_progress(inv,progress)
+    inv.s.repo.event('TOOL_MENU_DOCUMENT_SELECTED',{'document_id':document,
+        'sequence':after['sequence'],'originals_acquired':False,'judgments_completed':False})
+    return after
+
+
 def choose(inv, data, schema, invoke, expand, *, key, correction_scope=None, prepare_page=None, recover=None):
     page_size = inv.policy.get('read_candidate_page_size', 20)
     signature = digest([VERSION, key, data['read_candidates'], schema, page_size])
@@ -162,10 +257,15 @@ def choose(inv, data, schema, invoke, expand, *, key, correction_scope=None, pre
         view, wire = page_view(data, schema, page, page_size)
         if prepare_page is not None:
             view = prepare_page(view)
+        focus=tool_menu_state(inv,signature)
+        if focus['halt']:
+            from .answer_progress import ProgressHandoff
+            raise ProgressHandoff('TOOL_MENU_NO_PROGRESS')
+        view,wire=tool_menu_view(view,wire,focus['document'])
 
         def check(value):
             validate(value, wire, owner=inv.s)
-            if value['choice'] not in (NEXT, PREVIOUS):
+            if value['choice'] not in (NEXT, PREVIOUS, DOCUMENT_TOOLS):
                 expand(value)
 
         def call(payload, attempt):
@@ -173,10 +273,13 @@ def choose(inv, data, schema, invoke, expand, *, key, correction_scope=None, pre
 
         from . import request_repair
         value = output_contract.bounded_decision(inv.s.repo, 'read-choice', view, wire, call, check,
-            can_repair=lambda: request_repair.gap_review_capacity(inv) is None,
+            can_repair=lambda: not guided_enabled(inv.s.profile) and request_repair.gap_review_capacity(inv) is None,
             identity={'binding': inv.p['binding'], 'presentation': data['presentation_id'],
                       'key': key, 'menu': signature, 'page': page, 'sequence': sequence},
             correction_scope=correction_scope,recover=recover)
+        if value['choice']==DOCUMENT_TOOLS:
+            state=move_tool_menu(inv,data,value['document_ref'],expected_state=state,focus=focus)
+            continue
         if value['choice'] not in (NEXT, PREVIOUS):
             return value
         # Persist only display state. No tool execution, evidence adoption or

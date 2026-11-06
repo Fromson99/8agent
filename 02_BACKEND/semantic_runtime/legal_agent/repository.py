@@ -312,7 +312,7 @@ class WorkRepository:
             budget = self.budget()
             budget_class = view.get('budget_class')
             if budget_class is not None:
-                final = view.get('source_stage') in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
+                final = view.get('source_stage') in ('memory-guided-answer','memory-assess','memory-assess-repair','memory-ontology-supervisor','memory-final-reason-review','memory-compose','memory-compose-repair')
                 if budget_class != ('FINALIZE' if final else 'INVESTIGATE') or phase != ('compose' if final else 'investigate'):
                     raise ContractError('invalid host budget classification')
             cap = budget['model_limit']-(budget['finalization_reserve'] if phase == 'investigate' else 0)

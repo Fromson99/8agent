@@ -118,9 +118,19 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None, *, 
                 if mode=='page_handoff' and self.calls.count(phase)==2:
                     moves=view['read_candidate_page']['actions'];assert moves
                     return wire({'directive':'REDIRECT','reason':'다른 후보 페이지 확인','remaining_scope':'미확인 후보','action':{'choice':moves[0]}})
-                action={k:v for k,v in view['proposed_action'].items() if k!='answer_progress'}
                 extra={'source_targets':[],'source_goal_exclusions':[]} if mode=='goal_control' else {}
-                return wire({**extra,'directive':'CONTINUE_TARGETED','reason':'필수 위임 원문 읽기 또는 확인 근거의 최종 판단','remaining_scope':'현재 질문의 위임 기준 검토','action':action})
+                if plan:=view.get('execution_plan'):
+                    # This scripted reviewer agrees with the exact source route.
+                    row={'target':plan['targets'][0],'issue_id':plan['issue_refs'][0],
+                        'missing_need':plan['reason'],'relation':'DIRECT','source_ref':None,'judgment_refs':[]}
+                    if plan['next_action']=='READ_ARTICLES':
+                        action={'choice':'READ','selections':[row]}
+                    else:
+                        action={'choice':'LOCATE',**row,'structure_filter':plan['structure_filter']}
+                    return wire({**extra,'directive':'REDIRECT','reason':'선택한 행동을 필요한 원문의 경로로 변경',
+                        'action':action,'source_targets':view['proposed_action']['source_targets'],'remaining_scope':'원문 확인'})
+                return wire({**extra,'directive':'CONTINUE_TARGETED','reason':'현재 근거와 선택이 일치',
+                    'remaining_scope':'현재 질문의 위임 기준 검토'})
             def respond(value):
                 if mode=='goal_control' and '-read-choice' in phase:
                     value.update(source_targets=[],source_goal_exclusions=[])
@@ -487,6 +497,14 @@ def run_api(tmp_path, term_glossary, mode, monkeypatch, coverage_fault=None, *, 
         assert transport.calls.count('source-law-navigation-supervisor-read-choice')<=2
         with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             goal_rows=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='SOURCE_GOAL_RESULT'")]
+            if not rejected_need:
+                reviewed=db.execute("SELECT seq,payload_json FROM event WHERE kind='SUPERVISOR_DECISION' ORDER BY seq").fetchall()
+                seq,redirect=next((seq,r) for seq,raw in reviewed if (r:=json.loads(raw))['directive']=='REDIRECT')
+                executed=json.loads(db.execute("SELECT payload_json FROM event WHERE kind='INVESTIGATION_CHAIN_STEP' AND seq>? ORDER BY seq LIMIT 1",(seq,)).fetchone()[0])
+                assert redirect['cancelled']['next_action']=='FOLLOW_CONNECTION'
+                assert executed['action']==redirect['accepted']['next_action']=='SEARCH_STRUCTURE'
+                assert [row['id'] for row in executed['targets']]==redirect['accepted']['targets']
+                assert executed['structure_filter']==redirect['accepted']['structure_filter']
         assert len([x for x in goal_rows if x['status']=='ACQUIRED'])>=2
         with __import__("semantic_runtime.legal_agent.journal_storage",fromlist=["connect"]).connect(journal) as db:
             bundles=[json.loads(x[0]) for x in db.execute("SELECT payload_json FROM event WHERE kind='SOURCE_REFERENCE_BUNDLE_BOUND'")]

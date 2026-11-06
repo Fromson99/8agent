@@ -96,7 +96,56 @@ def portable_patterns(schema):
     return visit(schema), count
 
 
-VERSION = 'schema-factor-wire-v3' 
+def discriminator_first(schema):
+    """Put finite selectors first only where the decoder must choose a branch."""
+    result = deepcopy(schema)
+    changed = 0
+
+    def prioritize(node):
+        nonlocal changed
+        if not isinstance(node, dict):
+            return
+        properties = node.get('properties')
+        if not isinstance(properties, dict):
+            return
+        required = set(node.get('required', []))
+        selectors = [name for name, rule in properties.items()
+                     if name in required and isinstance(rule, dict)
+                     and ('const' in rule or isinstance(rule.get('enum'), list) and rule['enum'])]
+        order = selectors + [name for name in properties if name not in selectors]
+        if order != list(properties):
+            node['properties'] = {name: properties[name] for name in order}
+            changed += 1
+
+    def visit(node):
+        if not isinstance(node, dict):
+            return
+        for keyword in ('anyOf', 'oneOf'):
+            alternatives = node.get(keyword, [])
+            if alternatives:
+                prioritize(node)
+            for alternative in alternatives:
+                prioritize(alternative)
+                # factor_schema uses request-local D names under the root $defs.
+                ref = alternative.get('$ref', '') if isinstance(alternative, dict) else ''
+                if isinstance(ref, str) and ref.startswith('#/$defs/') and ref.count('/') == 2:
+                    prioritize(result.get('$defs', {}).get(ref.split('/')[-1]))
+        for key in MAPS + ('$defs', 'definitions'):
+            for child in node.get(key, {}).values():
+                visit(child)
+        for key in SINGLE + ARRAYS:
+            children = node.get(key)
+            if isinstance(children, list):
+                for child in children:
+                    visit(child)
+            elif isinstance(children, dict):
+                visit(children)
+
+    visit(result)
+    return result, changed
+
+
+VERSION = 'schema-factor-wire-v6'
 
 def project_request(request):
     """Copy only the final JSON-schema envelope; never transform model output."""
@@ -106,7 +155,7 @@ def project_request(request):
         return result, None
     original = envelope['schema']
     compatible, pattern_count = portable_patterns(original)
-    wire = factor_schema(compatible)
+    wire, order_count = discriminator_first(factor_schema(compatible))
     encode = lambda value: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
     before, after = encode(original), encode(wire)
     envelope['schema'] = wire
@@ -114,4 +163,5 @@ def project_request(request):
         'validation_schema_sha256': hashlib.sha256(before.encode()).hexdigest(),
         'wire_schema_sha256': hashlib.sha256(after.encode()).hexdigest(),
         'validation_schema_chars': len(before), 'wire_schema_chars': len(after),
-        'changed': original != wire, 'equivalent_ref_pattern_count': pattern_count}
+        'changed': original != wire or order_count > 0, 'equivalent_ref_pattern_count': pattern_count,
+        'discriminator_order_changes': order_count}

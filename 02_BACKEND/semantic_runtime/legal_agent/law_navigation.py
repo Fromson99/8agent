@@ -426,7 +426,17 @@ class Investigation:
                 OriginalProgress(self.p).reset_for_new_request()
                 if self.p.get('tool_failures'):
                     self.p.setdefault('prior_tool_failures',[]).extend(self.p.pop('tool_failures'))
+            from .guided_navigation import resume
+            resume(self.p)
+            # Candidate-page cursors belong to one request's immutable menu.
+            # The next utterance changes the selector input (dialogue, request),
+            # so keep them as history instead of resuming a stale cursor.
+            for key in ('read_candidate_pager', 'read_candidate_page_progress', 'tool_menu_focus'):
+                if key in self.p:
+                    self.p.setdefault('prior_request_display_cursors', []).append(
+                        {'key': key, 'value': self.p.pop(key), 'turn': self.p.get('turn', 0)})
             self.p['reopened'] = {'turn': self.p.get('turn', 0), 'reason': 'USER_REENTRY'}
+            self.p['request_turn_start'] = self.p.get('turn', 0)
             self.p.pop('accepted', None); self.p.pop('decision_retry', None)
             # Loop bounds and stop reasons belong to the earlier request.
             if not workflow_followup:
@@ -447,6 +457,7 @@ class Investigation:
                              ('reference_state', {}), ('reference_history', []), ('seen_actions', []),
                              ('notes', ''), ('turn', 0), ('basis_history', {})):
             self.p.setdefault(key, default)
+        self.p.setdefault('request_turn_start', 0)
         qs.restore_grants(self.s,self.p)
         self.modern=rr.enabled(session.profile)
         self.p.setdefault('investigation_epoch',0)
@@ -2520,7 +2531,9 @@ class Investigation:
                 fallback=inventory.delivered_originals_for(self.s,self.p,limit=limit)
         else:fallback=[] if current or not self.control else inventory.delivered_originals_for(self.s,self.p)
         acquired=[];acquired_evidence=[];omitted=[]
-        if self.modern and not current and not fallback and self.p.get('assessment_handoffs'):
+        # An action-limited guided request may stop right after a read that was
+        # never presented to the selector; the acquired original still answers.
+        if self.modern and not current and not fallback and (self.p.get('assessment_handoffs') or reason=='GUIDED_ACTION_LIMIT'):
             acquired,acquired_evidence,omitted=inventory.acquired_originals_for(
                 self.s,self.p,limit,include_deferred=False)
         if acquired:
@@ -2622,6 +2635,8 @@ class Investigation:
                     recovery = rr.no_progress_recovery(self)
                     if recovery is None:return self.bounded_result('NO_PROGRESS')
             if self.left() <= 1: raise BudgetExhausted('law investigation request time exhausted')
+            if guided_limit_reached(self):
+                return self.bounded_result('GUIDED_ACTION_LIMIT')
             accepted = self.p.get('accepted')
             if accepted:
                 # Replay the accepted tool using its immutable presentation. Reads reuse
@@ -2632,7 +2647,7 @@ class Investigation:
                         if key in self.p:progressed[key]=deepcopy(self.p[key])
                 ontology_read=(self.policy.get('ontology_enabled') is True and self.policy.get('ontology_context',{}).get('mode','A0')!='A0' and accepted['decision']['next_action'] in ('READ_PARENT','READ_SCOPE','FOLLOW_CONNECTION'))
                 if self.modern and (ontology_read or accepted['decision']['next_action']=='READ_ARTICLES' or
-                        (accepted['decision']['next_action']=='FOLLOW_CONNECTION' and self.policy.get('small_connection_context'))):
+                        (accepted['decision']['next_action']=='FOLLOW_CONNECTION' and __import__(__package__+'.connection_scope',fromlist=['small_context']).small_context(self))):
                     # This accepted action is read-only. Completed target receipts
                     # and their acquired originals survive a process interruption.
                     # Restoring only its pre-action state would reacquire them.
@@ -2665,7 +2680,10 @@ class Investigation:
                 else:
                     data, actions = self.view(); phase = 'source-law-navigation-'+str(self.p['turn']+1)
                 from .answer_progress import ProgressHandoff
+                from .guided_navigation import Pause
                 try:decision = self.request_decision(data, actions, phase)
+                except Pause:
+                    return self.bounded_result('USER_GUIDANCE_REQUIRED')
                 except ProgressHandoff as handoff:
                     # The accepted progress opinion stops the proposed tool, not
                     # the delivery of the original pages it has just reviewed.
@@ -2705,6 +2723,23 @@ class Investigation:
                 return self.bounded_result('MODEL_PENDING')
             if decision['next_action'] in ('FINISH', 'PENDING', 'RESEARCH'):
                 return self.result(decision)
+
+
+def guided_limit_reached(inv):
+    """One user request explores a bounded number of actions; the user may continue."""
+    limit = getattr(inv, 'policy', {}).get('guided_action_limit', 0)
+    if not limit or inv.p.get('accepted') or inv.p.get('decision_retry'):
+        return False
+    from .guided_navigation import enabled as guided_enabled
+    if not guided_enabled(inv.s.profile):
+        return False
+    used = inv.p.get('turn', 0) - inv.p.get('request_turn_start', 0)
+    if used < limit:
+        return False
+    inv.s.repo.event('GUIDED_ACTION_LIMIT', {'limit': limit, 'actions_this_request': used,
+        'originals_preserved': True, 'continue_with_next_request': True,
+        'legal_sufficiency_approved': False})
+    return True
 
 
 @latency.timed('law.select', pressure=True)

@@ -171,7 +171,8 @@ class NativeExecution(CompletionExecution):
             return self._stage(stage,state,parts,utterance,format)
 
     def _stage(self,stage,state,parts,utterance,format):
-        data={'question':self.host.question(state),'current_facts':state['facts']}
+        data={'question':self.host.question(state),'current_facts':state['facts'],
+              'dialogue':deepcopy(getattr(self,'guidance_dialogue',[]))}
         chain=parts.get('SELECT',{}).get('payload',{}).get('investigation_chain')
         if chain:data['investigation_chain']=chain
         if self.completion and stage in ('INTENT','ASSESS','COMPOSE'):
@@ -218,6 +219,8 @@ class NativeExecution(CompletionExecution):
                 if progress and getattr(self,'assessment_gaps',None):progress['assessment_gaps']=deepcopy(self.assessment_gaps)
             self.s.sources.investigation_prior_route=prior_route
             self.s.sources.investigation_hints=getattr(self,'investigation_hints',None)
+            self.s.sources.guidance_dialogue=deepcopy(getattr(self,'guidance_dialogue',[]))
+            self.s.sources.continuation_request=deepcopy(getattr(self,'continuation_request',None))
             if progress:
                 records=list(progress.get('working',{}).get('unit_reads',[]))
                 records+=list(progress.get('batch',{}).get('selected',{}).values())
@@ -247,7 +250,7 @@ class NativeExecution(CompletionExecution):
                 raw=self.invoke(system,data,wire,phase,timeout=timeout)
                 if legacy:
                     for item in raw.get('choices',[]):item.setdefault('status','ADOPT')
-                if phase.startswith('source-reference-') or phase.startswith('source-law-'):
+                if phase.startswith('source-reference-') or phase.startswith('source-law-') or phase=='source-reason-decision-review':
                     return raw  # Group coverage and READ scopes are validated by navigation.
                 # Schema enforces offered IDs and the original physical choice budget.
                 # Preserve MAIN's stricter selector; only this audited adapter coalesces.
@@ -268,6 +271,10 @@ class NativeExecution(CompletionExecution):
                 checkpoint=progress,
                 on_checkpoint=getattr(self,'save_selection_progress',None))
             if result.get('terminal')=='SOURCE_HANDOFF':return result
+            from .guided_navigation import waiting, enabled as guided_navigation_enabled, BOUNDED_STOPS as GUIDED_BOUNDED_STOPS
+            if waiting(result) or (guided_navigation_enabled(self.s.sources.profile) and
+                    result.get('stop_reason') in ('MODEL_DECISION_UNRESOLVED',)+GUIDED_BOUNDED_STOPS):
+                return result
             if result.get('status')=='pending' and not result.get('needs_fulltext'):
                 failure=SourceInvestigationIncomplete(result)
                 self.s.work.event('SOURCE_INVESTIGATION_INCOMPLETE',failure.diagnostics)

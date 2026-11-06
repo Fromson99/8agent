@@ -20,7 +20,7 @@ class UnifiedRag(NativeRag):
             profile=digest(pipeline.term_agent.profile),code=code,
             pipeline=digest(pipeline.contracts.pipeline))
 
-    def scope_state(self,state,command,utterance):
+    def scope_state(self,state,command,utterance,*,dialogue=()):
         # An explicit UI/source marker is request configuration, not a model
         # opinion. Applying it before changed-stage calculation also invalidates
         # stale research when the same conversation switches back to ALL.
@@ -31,8 +31,10 @@ class UnifiedRag(NativeRag):
         from . import query_scope as qs
         change=command.get('search_scope_change')
         if change is None:return state
+        references=[r['text'] for r in qs.pending_clarifications(dialogue) if r['speaker']=='user']
         scope=qs.resolve(change,state.get('search_scope'),self.model.ensure().sources.matcher,
-            state['document_ids'],utterance,model_resolved=command.get('method_id')=='CASE_START')
+            state['document_ids'],utterance,model_resolved=command.get('method_id')=='CASE_START',
+            reference_utterances=references)
         if scope is not None or 'search_scope' in state:state={**state,'search_scope':scope}
         return state
 
@@ -66,18 +68,25 @@ class UnifiedExecution(NativeExecution):
     def bind_previous(self,parts):
         read=parts.get('READ',{}).get('payload')
         if not read:return
-        self.host.verify(read)
+        # A source/code generation change is a fresh investigation. Historical
+        # evidence is retained by the case store but never relabelled as current.
+        if read.get('binding')!=self.host.binding:return
         evidence=[]
         selected=parts.get('SELECT',{}).get('payload',{})
         all_evidence={e['evidence_id']:e for e in read['evidence']+selected.get('selected_evidence',[])}
-        self.host.verify({'binding':read['binding'],'evidence':list(all_evidence.values())})
+        from . import query_scope as qs
+        state=selected.get('investigation_state') or {}
+        if qs.active(self.s.sources) and state.get('scope_read_grants'):
+            # A restart after SELECT (ASSESS/COMPOSE) never re-runs navigation.
+            # Revalidate the same persisted witnessed grants before filtering.
+            qs.restore_grants(self.s.sources,state)
         for raw in all_evidence.values():
             if raw['document_id'] not in self.s.sources.scope:continue
-            from . import query_scope as qs
             if qs.active(self.s.sources) and not {str(p['block_id']) for p in raw['spans']} <= qs.permitted_blocks(self.s.sources,raw['source_id']):continue
             current={**raw,'evidence_id':'E'+digest([self.s.context.run_id,raw['evidence_id']])[:28]}
             self.s.sources.source.verify(current);evidence.append(current)
         if evidence:
+            self.host.verify({'binding':read['binding'],'evidence':evidence})
             self.s.work.record_observation({'tool':'case_evidence_rebind','args':{'origin_hash':digest(read)}},
                 {'status':'REUSED','origin_binding':read['binding']},evidence,verify=self.s.sources.source.verify)
 

@@ -389,19 +389,29 @@ def bind_reviewed_targets(value, ctx, options):
             proof = actual & refs & set(target['available_evidence_refs'])
             if proof:
                 matches.append((target['id'], sorted(proof)))
-        # Multiple overlapping scopes are not permission to pick an arbitrary one.
-        if len(matches) != 1:
+        # Different purposes can refer to exactly the same stored source range.
+        # Join every such proven edge, never choose between different ranges.
+        def source_identity(tid):
+            target = targets[tid]
+            expected = target.get('expected', [])
+            if not target.get('document_id') or not expected:
+                return None
+            return digest([target['document_id'], sorted(expected, key=digest),
+                           sorted(target['issue_refs']),
+                           sorted(target['available_evidence_refs'])])
+        identities = {source_identity(tid) for tid, _ in matches}
+        if not matches or (len(matches) > 1 and (None in identities or len(identities) != 1)):
             continue
-        tid, proof = matches[0]
-        if tid in row['target_refs'] or tid in need.get('target_refs', []):
-            continue
-        row['target_refs'].append(tid)
-        changes.append({'need_id': row['id'], 'claim_id': cid, 'target_id': tid,
-                        'basis_refs': proof, 'path': problem['path'] + '/target_refs'})
+        for tid, proof in matches:
+            if tid in row['target_refs'] or tid in need.get('target_refs', []):
+                continue
+            row['target_refs'].append(tid)
+            changes.append({'need_id': row['id'], 'claim_id': cid, 'target_id': tid,
+                            'basis_refs': proof, 'path': problem['path'] + '/target_refs'})
     if not changes:
         return value, None  # The ordinary validator supplies the original rejection.
     final.validate_review(result, ctx, options)
-    receipt = {'rule': 'BIND_UNIQUE_EXPLICIT_REVIEWED_TARGET', 'changes': changes,
+    receipt = {'rule': 'BIND_EXACT_EXPLICIT_REVIEWED_TARGETS', 'changes': changes,
                'original_hash': digest(value), 'bound_hash': digest(result),
                'context_hash': digest(ctx), 'evidence_hash': digest(options),
                'legal_content_changed': False, 'extra_model_calls': 0}
@@ -529,6 +539,14 @@ def scope_claim_model_copy(value):
     return out
 
 
+def _matching_scope_claims(claims, basis_refs, issue_refs):
+    evidence = set(basis_refs)
+    issues = set(issue_refs)
+    return [claim['claim_id'] for claim in claims
+            if evidence.intersection(claim['evidence_refs'])
+            and issues.intersection(claim['issue_refs'])]
+
+
 def scope_claim_projection(schema):
     """Remove a duplicate equijoin, preserving every model-owned legal decision.
 
@@ -555,11 +573,9 @@ def scope_claim_projection(schema):
         value = deepcopy(raw)
         for row in value['read_judgment_review']['scope_reviews']:
             for group in row['groups']:
-                refs = set(group['basis_refs']);issues = set(group['issue_refs'])
-                group['claim_refs'] = [c['claim_id'] for c in value['claims']
-                    if group['disposition'] == 'USE'
-                    and refs.intersection(c['evidence_refs'])
-                    and issues.intersection(c['issue_refs'])]
+                group['claim_refs'] = (_matching_scope_claims(
+                    value['claims'], group['basis_refs'], group['issue_refs'])
+                    if group['disposition'] == 'USE' else [])
         # Empty USE joins intentionally reach the original validator and fail.
         # No unsupported USE is silently excluded and no missing claim is added.
         return value
@@ -601,6 +617,150 @@ def original_review_projection(schema, ctx):
         validate_shape(value, schema)
         return value
     return out, expand
+
+GROUPED_ORIGINAL_REVIEW_PROMPT = '''original_reviews는 원문 ID basis_refs를 명시적으로 선택하는 검토 묶음 배열이다. 같은 USE/EXCLUDE/OPEN·쟁점·이유·gap·scope_quote 판단을 공유하는 원문은 한 묶음으로 작성한다. 각 원문은 전체 묶음에서 정확히 한 번 선택해야 한다. 판단이 다르면 별도 묶음으로 나눈다. 서버는 선택한 각 원문에 그 판단을 그대로 복원하고 모든 기존 검증을 수행한다. 묶음의 USE는 각 원문이 실제 주장과 채택 판단에 연결되어야 한다. 이유는 핵심 근거를 한 번만 쓰고 글자수·완료·끝 같은 자기 지시를 반복하지 않는다.'''
+
+
+def grouped_original_review_projection(schema, ctx):
+    """Compress repeated explicit decisions, never omit an original review."""
+    individual, expand_individual = original_review_projection(schema, ctx)
+    review = individual['properties'].get('read_judgment_review', {})
+    originals = review.get('properties', {}).get('original_reviews')
+    if not originals or not originals['properties']:
+        return individual, expand_individual
+    by_ref = {rule['properties']['basis_refs']['items']['const']: key
+              for key, rule in originals['properties'].items()}
+    out = deepcopy(individual)
+    group = deepcopy(next(iter(originals['properties'].values())))
+    for rule in [group, *group.get('anyOf', [])]:
+        rule['properties']['basis_refs'] = {'type': 'array', 'minItems': 1,
+            'maxItems': len(by_ref), 'uniqueItems': True,
+            'items': {'type': 'string', 'enum': list(by_ref)}}
+    out['properties']['read_judgment_review']['properties']['original_reviews'] = {
+        'type': 'array', 'minItems': 1, 'maxItems': len(by_ref), 'items': group}
+    def expand(raw):
+        from .output_contract import validate_shape, OutputContractError, issue
+        validate_shape(raw, out)
+        rows = raw['read_judgment_review']['original_reviews']
+        selected = [ref for row in rows for ref in row['basis_refs']]
+        missing = set(by_ref) - set(selected)
+        duplicate = {ref for ref in selected if selected.count(ref) > 1}
+        if missing or duplicate:
+            raise OutputContractError('각 원문은 검토 묶음에서 정확히 한 번 선택해야 합니다.',
+                [issue('ORIGINAL_REVIEW_PARTITION', '/read_judgment_review/original_reviews',
+                    expected={'missing_evidence_refs': sorted(missing),
+                              'duplicate_evidence_refs': sorted(duplicate)})],
+                category='FINAL_READ_REVIEW_INVALID')
+        value = deepcopy(raw)
+        value['read_judgment_review']['original_reviews'] = {
+            by_ref[ref]: {**deepcopy(row), 'basis_refs': [ref]}
+            for row in rows for ref in row['basis_refs']}
+        return expand_individual(value)
+    return out, expand
+
+
+ASSIGNED_ORIGINAL_REVIEW_PROMPT = '''원문 검토는 original_review_groups의 공통 판단과 original_reviews의 원문별 선택으로 작성한다. 먼저 같은 USE/EXCLUDE/OPEN·쟁점·이유·gap·scope_quote를 공유할 검토 그룹을 배열로 작성한다. 다음 모든 original_reviews.R행의 고정 basis_refs를 보고 그 원문에 적용할 group_index를 직접 선택한다. group_index는 그룹 배열의 1부터 시작하는 번호다. 각 원문은 필수 R행 하나에서 정확히 한 그룹을 선택한다. 사용되지 않는 그룹은 만들지 않는다. 판단이 다른 원문은 다른 그룹을 선택한다. 서버는 모델이 명시적으로 선택한 판단만 각 원문에 복원하고 기존 검증을 모두 수행한다. USE의 주장 연결은 해당 원문을 evidence_refs로 인용하고 같은 issue를 다루는 claims에서 정확히 조립한다. 그런 주장이 없으면 오류다. USE는 실제 주장과 채택 판단이 그 원문을 사용하는 경우에만 선택한다. 이유는 한 번만 간결하게 쓰고 글자수·완료·끝 같은 자기 지시를 반복하지 않는다.'''
+
+
+def _dependent_need_issues(review, claims, missing, ctx):
+    """Explain a second, independent proof failure in the same rejected proposal."""
+    from .output_contract import issue
+    disputed = {ref for row in missing for ref in row['basis_refs']}
+    evidence = {claim['claim_id']: claim['evidence_refs'] for claim in claims}
+    semantic_needs = {need['id'] for need in ctx.get('needs', [])
+                      if need.get('origin') not in ('SOURCE_GOAL', 'STRUCTURE_SELECTION')}
+    issues = []
+    for index, need in enumerate(review.get('needs', [])):
+        refs = set(need.get('basis_refs', []))
+        if need['status'] != 'RESOLVED' or need['id'] not in semantic_needs or not refs & disputed:
+            continue
+        for cid in need['claim_refs']:
+            if not refs.intersection(evidence.get(cid, [])):
+                issues.append(issue('NEED_CLAIM_LINK', f'/read_judgment_review/needs/{index}',
+                    related=['/claims', '/read_judgment_review/judgments'],
+                    expected={'need_id': need['id'], 'claim_id': cid, 'basis_refs': sorted(refs),
+                              'claim_evidence_refs': evidence.get(cid, []), 'target_refs': need['target_refs'],
+                              'required': 'RESOLVED에는 이 필요의 실제 원문을 인용하고 채택한 주장이 필요합니다. '
+                                          '질문 범위 밖이면 NOT_NEEDED의 제외 근거를, 결론에 필요한 미확인이면 '
+                                          'OPEN과 실제 부족 사항을 선택하십시오.'}))
+    return issues
+
+
+def _validate_assigned_uses(raw, ctx=None):
+    """Report the exact model choices behind an empty required claim join."""
+    from .output_contract import OutputContractError, issue
+    review = raw['read_judgment_review']
+    groups = review['original_review_groups']
+    claims = raw['claims']
+    missing = []
+    for slot, selection in review['original_reviews'].items():
+        group = groups[selection['group_index'] - 1]
+        if group['disposition'] == 'USE' and not _matching_scope_claims(
+                claims, selection['basis_refs'], group['issue_refs']):
+            missing.append({'slot': slot, 'group_index': selection['group_index'],
+                            'basis_refs': selection['basis_refs'], 'issue_refs': group['issue_refs']})
+    if missing:
+        problem = issue('SCOPE_USE_UNSUPPORTED_RANGE', '/read_judgment_review/original_reviews',
+                        related=['/claims','/read_judgment_review/original_review_groups'],
+                        expected={'assignments_without_a_claim': missing,
+                                  'current_claims': [{k: c[k] for k in ('claim_id','issue_refs','evidence_refs')}
+                                                     for c in claims]})
+        error = OutputContractError(
+            '표시된 원문 선택 칸은 USE 그룹이지만 같은 원문·쟁점을 인용한 주장이 없습니다. '
+            '원문과 질문을 대조해 실제로 쓴 근거만 주장에 연결하고, 쓰지 않은 원문은 이유에 맞는 '
+            '다른 그룹을 선택하십시오. 판단이 다른 원문은 별도 그룹으로 나누십시오.',
+            [problem, *_dependent_need_issues(review, claims, missing, ctx or {})],
+            category='FINAL_READ_REVIEW_INVALID')
+        error.proposal = deepcopy(raw)
+        raise error
+
+
+def assigned_original_review_projection(schema, ctx):
+    """Require one model-owned decision per original without repeating reasons."""
+    individual, expand_individual = original_review_projection(schema, ctx)
+    review = individual['properties'].get('read_judgment_review', {})
+    originals = review.get('properties', {}).get('original_reviews')
+    if not originals or not originals['properties']:
+        return individual, expand_individual
+    from .completion_contracts import obj
+    count = len(originals['properties'])
+    group = deepcopy(next(iter(originals['properties'].values())))
+    for rule in [group, *group.get('anyOf', [])]:
+        rule['properties'].pop('basis_refs')
+        rule['required'] = [k for k in rule['required'] if k != 'basis_refs']
+    assignments = {key: obj({
+        'basis_refs': deepcopy(rule['properties']['basis_refs']),
+        'group_index': {'type': 'integer', 'minimum': 1, 'maximum': count},
+    }) for key, rule in originals['properties'].items()}
+    out = deepcopy(individual)
+    node = out['properties']['read_judgment_review']
+    node['properties'].pop('original_reviews')
+    node['properties']['original_review_groups'] = {
+        'type': 'array', 'minItems': 1, 'maxItems': count, 'items': group}
+    node['properties']['original_reviews'] = obj(assignments)
+    node['required'].append('original_review_groups')
+    def expand(raw):
+        from .output_contract import validate_shape, OutputContractError, issue
+        validate_shape(raw, out)
+        r = raw['read_judgment_review'];groups = r['original_review_groups']
+        selected = {row['group_index'] for row in r['original_reviews'].values()}
+        expected = set(range(1, len(groups)+1))
+        if selected != expected:
+            raise OutputContractError('모든 원문은 실제 검토 그룹을 선택하고 모든 그룹은 원문에 사용되어야 합니다.',
+                [issue('ORIGINAL_REVIEW_ASSIGNMENT', '/read_judgment_review/original_reviews',
+                    expected={'invalid_group_indices': sorted(selected-expected),
+                              'unused_group_indices': sorted(expected-selected)})],
+                category='FINAL_READ_REVIEW_INVALID')
+        if 'claim_refs' not in group['properties'] and 'claims' in raw:
+            _validate_assigned_uses(raw, ctx)
+        value = deepcopy(raw);result = value['read_judgment_review']
+        result.pop('original_review_groups')
+        result['original_reviews'] = {key: {
+            **deepcopy(groups[row['group_index']-1]), 'basis_refs': deepcopy(row['basis_refs'])}
+            for key, row in r['original_reviews'].items()}
+        return expand_individual(value)
+    return out, expand
+
 
 def validate_review(value, ctx, options, fail):
     continuity = ctx.get('need_continuity')

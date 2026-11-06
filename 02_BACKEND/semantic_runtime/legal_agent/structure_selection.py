@@ -54,7 +54,7 @@ FILTER_SCHEMA = {'anyOf': [obj({'coordinate': {'type': 'string'},
 PROMPT = '''
 구조 위치 선택은 selection으로 구조화한다. 자연어의 범위·열거·제외·생략 표기는 네가 문맥과 함께 판단한다.
 selection={coordinate_scope:"body",groups:[{parent_path:[{unit:"조",n:6,dash:3},{unit:"항",n:2}],unit:"호",include:[...],exclude:[...]}] 형태다.
-parent_path는 실제 상위 편/장/절/관/조/항/호 경로이며 문서 루트는 []다. 상위 문맥이 불명확하면 추측하지 말고 목차를 확인하거나 NEED_TARGET으로 확인한다.
+parent_path는 실제 상위 편/장/절/관/조/항/호 경로이며 문서 루트는 []다. 질문에 명시된 상위 번호를 생략하지 않는다. 예를 들어 제12조 제2항은 parent_path=[{unit:"조",n:12}], unit="항", include=[{kind:"SINGLE",value:{n:2}}]다. 제12조 전체를 선택할 때만 parent_path=[], unit="조", include=[{kind:"SINGLE",value:{n:12}}]다. 단일 하위 항도 상위 조가 필요하며 상위 조를 검색어·reason에만 적는 것은 경로 선택이 아니다. 상위 문맥이 불명확하면 추측하지 말고 목차를 확인하거나 NEED_TARGET으로 확인한다.
 include/exclude의 원소는 {kind:"SINGLE",value:{n:1}}, {kind:"RANGE",start:{n:1},end:{n:3},start_inclusive:true,end_inclusive:true}, {kind:"ALL"} 중 하나다.
 "1호~3호", "1호에서 3호까지", "1호부터 3호까지"는 해당 상위 조·항 아래 unit="호"의 RANGE다. 중간 번호를 검색어로 일일이 열거하지 않는다.
 "1~3호와 7호"는 RANGE와 SINGLE의 합집합이다. "5호 빼고 전부"는 기준 조·항 아래 ALL을 include하고 SINGLE 5를 exclude한다.

@@ -20,7 +20,7 @@ PROMPT = '확인된 accepted_claims와 인용 원문 sources로 사용자 질문
 ASSESS_GUIDANCE = '최종 답변에 필요한 구체 결론·이유·주체·수치·기한·절차·예외를 근거에 연결해 작성한다. 의무를 의무의 발생 조건으로 바꾸지 않는다.'
 
 def enabled(profile):
-    return profile.get('answer_presentation', 'structured') in (VERSION, PRESERVED_VERSION)
+    return profile.get('answer_presentation', 'structured') in (VERSION, PRESERVED_VERSION, 'guided-conversation-v1')
 
 
 def schema(claim_ids):
@@ -216,7 +216,7 @@ class TokenStream:
 
 
 def preserved(profile):
-    return profile.get('answer_presentation') == PRESERVED_VERSION
+    return profile.get('answer_presentation') in (PRESERVED_VERSION, 'guided-conversation-v1')
 
 
 def preserved_plan(assessment, requested_format=None, issues=None):

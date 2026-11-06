@@ -232,6 +232,74 @@ def read_candidate_rows(data, candidates, matcher=None):
     return list(rows.values())
 
 
+def public_action(decision):
+    """Expose the same executable action in the selector's vocabulary."""
+    from .investigation_supervisor import action_view
+    result=action_view(decision)
+    kind=result.pop('next_action',None)
+    result['choice']=('READ' if kind=='READ_ARTICLES' else
+        ('LOCATE' if decision.get('structure_filter') is not None else 'CATALOG_SEARCH')
+        if kind=='SEARCH_STRUCTURE' else kind)
+    if result.get('targets') and len(result['targets'])==1:
+        result['target']=result['targets'][0]
+    return result
+
+
+TOOL_HELP={
+ 'READ':'제시된 후보의 실제 원문을 읽는다. 한 번에 최대4개 선택한다.',
+ 'FOLLOW_CONNECTION':'이미 읽은 선택 범위의 저장 참조·정의 연결 목록을 조회한다. 대상 원문 확보·적용 판단은 별도다.',
+ 'LOCATE':'문서 안의 정확한 좌표·제목·구조 범위를 structure_filter로 찾는다. queries는 쓰지 않는다.',
+ 'CATALOG_SEARCH':'법령명·조문번호·제목 검색어 queries로 위치를 찾는다. 결과 원문은 READ로 확인한다.',
+ 'RESEARCH':'현재 허용된 전체 범위에서 새 본문 검색어로 위치를 찾는다.',
+ 'SEARCH_BODY':'선택한 문서 또는 하위 범위 안에서 본문 표현을 검색한다.',
+ 'OPEN_LAW':'이미 찾은 문서의 현재 범위 검색 결과를 연다.',
+ 'OPEN_STRUCTURE':'선택 문서의 본문 목차를 연다. 목차 조회는 원문 읽기가 아니다.',
+ 'BROWSE_STRUCTURE':'현재 목차의 다음 범위를 펼친다. 원문 확보를 뜻하지 않는다.',
+ 'READ_SCOPE':'표시된 조문·항·호 범위 전체의 실제 원문을 읽는다.',
+ 'READ_PARENT':'표시된 상위 범위의 실제 원문을 읽는다.',
+ 'RETURN_TO':'이미 방문한 탐색 위치로 돌아간다. 새 원문 확보가 아니다.',
+ 'NEXT_LAWS':'다음 문서 검색 결과를 본다.',
+ 'NEXT_ARTICLES':'다음 조문 검색 결과를 본다.',
+ 'NEXT_HITS':'같은 문서의 다음 적중 위치를 본다.',
+ 'NEXT_TERM_MATCHES':'다음 용어 검색 결과를 본다.',
+ 'NEXT_DEFINITIONS':'다음 정의 후보를 본다.',
+ 'NEXT_READ_CANDIDATES':'다음 읽기 후보 페이지를 본다. 원문을 읽거나 판단한 것이 아니다.',
+ 'PREV_READ_CANDIDATES':'이전 읽기 후보 페이지를 본다.',
+ 'SHOW_DOCUMENT_TOOLS':'tool_documents에서 문서를 선택해 그 문서의 도구 목록을 연다. 원문 조회·확보는 하지 않는다.',
+ 'SOURCE_GOAL':'이미 확정한 미확보 원문 목표를 선택해 그 목표의 조회·읽기를 실행한다.',
+ 'FINISH':'확인한 원문과 남은 한계를 최종 판단으로 넘긴다. 답변 전체의 정답 인증은 아니다.',
+ 'PENDING':'확보 원문이 없는 상태와 남은 필요를 보존하고 종료한다.',
+}
+
+
+def public_repair_payload(payload):
+    """Translate only executable diagnostics; preserve source text and raw journal."""
+    result=deepcopy(payload)
+    def project(value):
+        if isinstance(value,list):return [project(v) for v in value]
+        if not isinstance(value,dict):return value
+        out={k:project(v) for k,v in value.items()}
+        if 'next_action' in out and isinstance(out['next_action'],str):
+            kind=out.pop('next_action')
+            out['choice']=('READ' if kind=='READ_ARTICLES' else
+                ('LOCATE' if out.get('structure_filter') is not None else 'CATALOG_SEARCH')
+                if kind=='SEARCH_STRUCTURE' else kind)
+        return out
+    if 'repair_contract' in result:result['repair_contract']=project(result['repair_contract'])
+    return result
+
+
+def tool_guidance(payload,schema):
+    choices=sorted({b['properties']['choice']['const'] for b in schema.get('anyOf',[])})
+    lines=['이번 호출에서 선택 가능한 행동과 결과:']
+    for kind in choices:
+        lines.append(kind+': '+TOOL_HELP.get(kind,'제시된 대상의 label과 입력 스키마를 따른다.'))
+    if 'FINISH' not in choices and payload.get('connection_review',{}).get('required_before_finish'):
+        lines.append('현재 FINISH는 연결 범위 미확인으로 제공되지 않는다. 제공된 FOLLOW_CONNECTION으로 필요한 출발 범위를 확인한다. 조회 완료·부분·실패 뒤의 상태와 한계를 보존한다.')
+    lines.append('새 source_targets는 다음 원문 목표다. 이번 choice와 동시에 다른 행동으로 실행되지 않는다. 이미 확보된 목표를 다시 선언하지 않는다.')
+    return '\n'.join(lines)
+
+
 def navigation_option(choice, target, action, data):
     """Describe an existing executable target; never create or expand a scope."""
     identity = action['identity']
@@ -314,7 +382,10 @@ def choose_read(inv, data, actions, phase):
     from . import request_repair as rr
     from . import answer_progress as progress
     from . import investigation_supervisor as supervisor
+    from . import reason_decision_review as reason_review
     if not inv.modern or not data.get('issues'):return None
+    from . import guided_navigation as guidance
+    guided=guidance.enabled(inv.s.profile)
     current={s['id']:s for s in data.get('sources',[]) if s.get('text')}
     basis=sorted(set(current)&{b['id'] for b in data.get('basis',[]) if b.get('branch_id')})
     candidates={k:a for k,a in actions.items() if a['action']=='READ_ARTICLES'}
@@ -322,11 +393,15 @@ def choose_read(inv, data, actions, phase):
     reviewed=inv.p.setdefault('read_choice_reviews',{})
     if key not in reviewed:
         budget=inv.s.repo.budget()
-        if budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']<2:return None
+        if budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']<(1 if guided else 2):
+            if reason_review.enabled(inv.s.profile):
+                raise reason_review.ReviewUnavailable('no capacity for a checked investigation decision')
+            return None
         reviewed[key]={'started':True};inv.save()
     canonical=decision_schema(data,actions,{b['id'] for b in data['branches']})
     rows=read_candidate_rows(data,candidates,getattr(inv.s,'matcher',None))
-    issues=[i['id'] for i in data['issues']];reason={'type':'string','minLength':1}
+    issues=[i['id'] for i in data['issues']];reason={'type':'string','minLength':1,'maxLength':400,
+        'description':'이번 행동으로 확인할 부족이나 종료 이유 한 문장. 질문·쟁점의 반복 복사 금지. 법률 답변은 별도 검토에서 작성한다.'}
     def selection(targets):return {'target':{'type':'string','enum':list(targets)},'issue_id':{'type':'string','enum':issues},
         'missing_need':reason,'relation':{'enum':['DIRECT','DEPENDENCY'] if current else ['DIRECT']},
         'source_ref':{'type':['string','null'],'enum':[None]+list(current)}}
@@ -361,21 +436,23 @@ def choose_read(inv, data, actions, phase):
     if goals.enabled(inv):
         goal_ids=[g['goal_id'] for g in goals.state(inv,data).get('source_goals',[]) if g['status'] in ('REQUIRED','BLOCKED')]
         if goal_ids:alternatives.append(obj({'choice':{'const':'SOURCE_GOAL'},'goal_id':{'enum':goal_ids}}))
+    if guided:alternatives.append(guidance.question_schema(issues))
     schema={'type':'object','anyOf':alternatives}
     from . import read_judgment as judgment
     judgment_context = judgment.context(inv,data,key) if judgment.enabled(inv) else None
     if judgment_context is not None:schema=judgment.attach(schema,judgment_context,current,issues)
     from . import source_goal_control as goals
     supervisor_enabled=supervisor.enabled(inv)
+    reason_review_enabled=reason_review.enabled(inv.s.profile) and not guided
     if goals.enabled(inv):schema=goals.attach(schema,inv,data,actions)
-    supervisor_action_schema=deepcopy(schema)
-    for branch in supervisor_action_schema['anyOf']:
-        for field in ('read_review','source_targets','source_goal_exclusions'):
-            branch['properties'].pop(field,None)
-        branch['required']=[k for k in branch['required'] if k not in ('read_review','source_targets','source_goal_exclusions')]
-    if supervisor_enabled:schema=supervisor.attach(schema,inv,data,current,key)
-    progress_enabled = progress.enabled(inv)
+    progress_enabled=progress.enabled(inv)
     if progress_enabled:schema=progress.attach(schema,inv,data,current,key)
+    elif supervisor_enabled:schema=supervisor.attach(schema,inv,data,current,key)
+    supervisor_action_schema=deepcopy(schema)
+    primary_fields=('read_review','source_targets','source_goal_exclusions','answer_progress')
+    for branch in supervisor_action_schema['anyOf']:
+        for field in primary_fields:branch['properties'].pop(field,None)
+        branch['required']=[k for k in branch['required'] if k not in primary_fields]
     payload={'request':inv.question,'current_request':data.get('current_request',inv.question),
         'issues':data['issues'],'sources':deepcopy(data.get('sources',[])),
         'read_candidates':rows,'tool_options':options, 'presentation_id':data['presentation_id'],'state_version':data.get('state_version'),
@@ -414,22 +491,39 @@ def choose_read(inv, data, actions, phase):
             'unchanged_turns':inv.p.get('no_progress',0),
             'last_recovery_selection':(inv.p.get('no_progress_recovery',{}).get('status')=='RESERVED'
                 and inv.p['no_progress_recovery'].get('selection_count',1)>=3)}}
-    def expand(value):
+    if guided:
+        payload['dialogue']=deepcopy(getattr(inv.s,'guidance_dialogue',[]))
+        payload['known_shortages']=deepcopy(data.get('assessment_gaps',[]))
+        from .guided_navigation import section_articles
+        sections=section_articles(inv.s,data.get('sources',[]))
+        if sections:payload['same_section_articles']=sections
+        continuation=getattr(inv.s,'continuation_request',None)
+        if continuation:payload['continuation_request']=deepcopy(continuation)
+        limit=inv.policy.get('guided_action_limit',0)
+        if limit:
+            used=inv.p.get('turn',0)-inv.p.get('request_turn_start',0)
+            payload['action_budget']={'limit':limit,'used':used,'remaining':max(0,limit-used),
+                'meaning':'이번 사용자 요청에서 남은 조사 행동 수. 다 쓰면 확보한 원문으로 답하고 사용자가 이어서 요청할 수 있다.'}
+    def expand(value,*,reviewed=False):
         prepared_validate(value,schema,owner=inv.s)
+        if guided and value['choice']=='ASK_USER':return None
         if goals.enabled(inv):
             goals.validate(value,inv,data,actions)
             goals.validate_recovery_choice(inv,data,actions,value)
         if judgment_context is not None:
-            reviewed,_=judgment.normalize_review(value,judgment_context)
-            judgment.validate_review(reviewed,judgment_context,current,issues,owner=inv.s)
+            normalized_review,_=judgment.normalize_review(value,judgment_context)
+            judgment.validate_review(normalized_review,judgment_context,current,issues,owner=inv.s)
         if supervisor_enabled:progress.validate_review(value,current,data['issues'],check_action=False)
         if progress_enabled:
-            value,_=progress.resolve_action(inv,data,value)
+            if not reviewed and not reason_review_enabled:value,_=progress.resolve_action(inv,data,value)
             prepared_validate(value,schema,owner=inv.s)
             progress.validate_review(value,current,data['issues'],data=data,inv=inv)
-            value=progress.bind_action(value,data,inv)
+            if not reason_review_enabled:value=progress.bind_action(value,data,inv)
         choice=value['choice']
-        if choice=='SOURCE_GOAL':return goals.from_goal_id(inv,data,actions,value['goal_id'])
+        if choice=='SOURCE_GOAL':
+            decision=goals.from_goal_id(inv,data,actions,value['goal_id'])
+            if reason_review_enabled:review_choice(value,decision)
+            return decision
         branch=bindings[choice];kind=branch['properties']['next_action']['const']
         decision={}
         for name,rule in branch['properties'].items():
@@ -465,7 +559,32 @@ def choose_read(inv, data, actions, phase):
             if 'queries' in value:decision['queries']=list(value['queries'])
             if 'structure_filter' in value:decision['structure_filter']=deepcopy(value['structure_filter'])
         inv.validate(decision,data,actions)
+        if reason_review_enabled:review_choice(value,decision)
         return decision
+    def review_choice(value,decision):
+        supervisor.require_known_outcome(inv)
+        context=deepcopy(payload)
+        context['execution']=supervisor.action_view(decision)
+        if goals.enabled(inv):
+            plan=goals.plan(inv,data,actions,value,decision,
+                lambda v:goals.native_decision(inv,data,actions,v),
+                deepcopy(supervisor.state_for(inv,data)),discover_scope=False,preserve_choice=True)
+            if not supervisor.same_dispatch(plan['decision'],decision):
+                raise output.DecisionConflict('원문 목표와 선택 행동이 다릅니다. 같은 문맥으로 전체 제안을 재판단하세요.',
+                    [output.issue('DECISION_EXECUTION_MISMATCH','/choice',related=['/source_targets'],
+                        expected={'selected':public_action(decision),
+                                  'source_goal_route':public_action(plan['decision'])})])
+        context['source_goal_dispatch']={'policy':'selected-action-first; pending-goal-preselect-next',
+            'deferred_route':plan.get('deferred_route')} if goals.enabled(inv) else None
+        def invoke_review(prompt,body,wire):
+            budget=inv.s.repo.budget()
+            if (budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']<1 or
+                    inv.left()<=inv.s.profile.get('selection_time_reserve_seconds',30)):
+                raise reason_review.ReviewUnavailable('investigation review reached shared finalization reserve')
+            return inv.invoke(prompt,body,wire,'source-reason-decision-review',min(180,inv.left()))
+        reason_review.review(inv.s.repo,stage='INVESTIGATION',context=context,proposal=value,
+            scope=payload,binding={'runtime':inv.p['binding'],'presentation':data['presentation_id'],
+                                   'actions':digest(actions)},invoke=invoke_review)
     from . import need_continuity
     observe_need = need_continuity.observe_progress(inv,data,schema,key) if supervisor_enabled else None
     def invoke(payload,attempt,wire_schema=None,page_suffix=''):
@@ -487,14 +606,22 @@ def choose_read(inv, data, actions, phase):
             EXECUTABLE_CHOICE_PROMPT+scope_prompt+'\n'+name_recovery_prompt+'\n'+selection_prompt+
             '\nLOCATE에서 structure_filter={selection:구조화 선택}을 쓴다. structure_selection_progress는 실제 전달 범위이며 미전달 항목을 전체 확인으로 표현하지 않는다.')
         # Judgment/progress semantics keep their existing authoritative contract.
+        prompt += ('\n' + scope_prompt if minimal.enabled(inv.s.profile) else '') + '\n' + tool_guidance(payload, wire_schema if wire_schema is not None else schema)
         prompt = ((judgment.NEW_PROMPT if judgment_context.get('wire_version')==judgment.NEW_WIRE_VERSION else judgment.PROMPT)+'\n' if judgment_context is not None else '')+(progress.PROMPT+'\n' if progress_enabled else '')+prompt
         if supervisor_enabled:prompt=supervisor.PROGRESS_PROMPT+'\n'+prompt
         if progress.SCOPE_GUIDANCE not in prompt:prompt=progress.SCOPE_GUIDANCE+'\n'+prompt
         if goals.enabled(inv):prompt=goals.PROMPT+'\n'+prompt
+        prompt+='\nmissing_need/reason은 이번 행동의 이유 한 문장,400자 이내다. 질문·쟁점 문장을 되풀이하지 말고 선택한 대상과 확인할 부족만 짧게 작성한다. 법률 답변·원문을 이 이유 칸에 반복하지 않는다.'
         call_phase = phase+'-read-choice'+page_suffix+('-repair' if attempt else '')
         try:
-            value = inv.invoke(prompt, payload, wire_schema if wire_schema is not None else schema,
-                call_phase,min(180,inv.left()))
+            if guided:
+                model_schema,view,restore=guidance.projection(wire_schema if wire_schema is not None else schema,public_repair_payload(payload))
+                inv.p['guidance_view']=guidance.research_view(view)
+                inv.save()
+                return restore(inv.invoke(guidance.PROMPT,view,model_schema,call_phase,min(180,inv.left())))
+            model_schema, restore_goals = goals.model_projection(wire_schema if wire_schema is not None else schema)
+            value = restore_goals(inv.invoke(prompt+'\n스키마에서 생략된 빈 관리항목은 다시 작성하지 않는다.', public_repair_payload(payload), model_schema,
+                call_phase,min(180,inv.left())))
         finally:
             from . import evidence_inventory as inventory
             if inv.control and inventory.reconcile_delivery(inv.s,inv.p,data,phase+'-read-choice'+page_suffix):inv.save()
@@ -511,6 +638,7 @@ def choose_read(inv, data, actions, phase):
     from . import read_candidate_pages as pages
     correction_scope = judgment.correction_scope(judgment_context) if judgment_context is not None else None
     def recover(raw,error):
+        if isinstance(error,reason_review.ReviewConflict):return None
         from .independent_read_recovery import plan
         return plan(inv,data,judgment_context or {},actions,raw,error)
     recovery=recover if judgment_context is not None and inv.policy.get('independent_read_recovery') else None
@@ -525,26 +653,30 @@ def choose_read(inv, data, actions, phase):
         value = pages.choose(inv,payload,schema,invoke,expand,key=key,correction_scope=correction_scope,prepare_page=prepare_page,recover=recovery)
     else:
         value=output.bounded_decision(inv.s.repo,'read-choice',payload,schema,invoke,expand,
-            can_repair=lambda:rr.gap_review_capacity(inv) is None,
+            can_repair=lambda:not guided and rr.gap_review_capacity(inv) is None,
             identity={'binding':inv.p['binding'],'presentation':data['presentation_id'],'key':key},
             correction_scope=correction_scope,recover=recovery)
+    if guided and value['choice']=='ASK_USER':guidance.pause(inv,data,value)
     decision=expand(value)
     if judgment_context is not None:
         normalized,changes=judgment.normalize_review(value,judgment_context)
         judgment.record(inv,data,normalized,key,judgment_context,actions,wire_value=value,normalizations=changes)
-    if goals.enabled(inv):goals.close_gaps(inv,data,value)
     original=deepcopy(value);correction=None
-    if progress_enabled:value,correction=progress.resolve_action(inv,data,value)
+    if progress_enabled and not reason_review_enabled:value,correction=progress.resolve_action(inv,data,value)
     if progress_enabled and progress.record(inv,data,value,key,original=original,correction=correction,actions=actions):
         inv.s.repo.event('ANSWER_PROGRESS_HANDOFF',{'reason':'NO_ANSWER_PROGRESS','proposal_hash':digest(value),
             'choice_not_executed':value['choice'],'originals_preserved':True})
         raise progress.ProgressHandoff('NO_ANSWER_PROGRESS')
     if supervisor_enabled:
-        decision=supervisor.gate(inv,data,actions,payload,value,decision,supervisor_action_schema,expand,key,
-            prepare_page=prepare_page if pages.enabled(inv) else None)
-    inv.p.setdefault('executed_compact_choices',[]).append(deepcopy(value))
+        decision=supervisor.gate(inv,data,actions,payload,value,decision,supervisor_action_schema,lambda v:expand(v,reviewed=True),key,
+            prepare_page=prepare_page if pages.enabled(inv) else None,consistency_reviewed=reason_review_enabled)
+        receipt=supervisor.state_for(inv,data)['receipts'][key]
+        selected=receipt.get('selected_action',value)
+    else:selected=value
+    inv.p.setdefault('executed_compact_choices',[]).append(deepcopy(selected))
     inv.save()
-    inv.s.repo.event('READ_CHOICE_SELECTED',{'key':key,'choice':value,'canonical_hash':digest(decision),'automatic_adoption':False})
+    inv.s.repo.event('READ_CHOICE_SELECTED',{'key':key,'choice':selected,'canonical_hash':digest(decision),
+        **({'original_proposal_hash':digest(value)} if selected!=value else {}),'automatic_adoption':False})
     return decision
 
 

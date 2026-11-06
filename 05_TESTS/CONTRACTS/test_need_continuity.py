@@ -227,7 +227,11 @@ def test_selected_range_requires_each_child_original_at_final_review(complete):
     with sqlite3.connect(':memory:') as db:
         db.execute('CREATE TABLE source_block(document_id,block_id,unit_id)')
         db.executemany('INSERT INTO source_block VALUES(?,?,?)',[('d','2','1'),('d','3','2')])
-        session=NS(matcher=m,store=NS(db=db,source=lambda did,bid:{'text':'범위 본문'+bid}))
+        db.execute('PRAGMA query_only=ON')
+        def check_unchanged():
+            assert db.execute('PRAGMA query_only').fetchone()==(1,) and db.total_changes==2
+        session=NS(matcher=m,scope=inv.s.scope,store=NS(db=db,check_unchanged=check_unchanged,
+            source=lambda did,bid:{'text':'범위 본문'+bid}))
         opts=[{'id':'E'+bid,'source_id':'s'+bid,'document_id':'d','block_id':bid,
             'start_cp':0,'end_cp':len('범위 본문'+bid),'text':'범위 본문'+bid,
             'text_hash':digest('범위 본문'+bid)} for bid in (('2','3') if complete else ('2',))]
