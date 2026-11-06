@@ -17,7 +17,8 @@ VERSION = 'term-golden-v1'
 STAGES = ('initial', 'first_round', 'cumulative', 'selected', 'cited')
 # reconciliation: 여러 규범(위계·특별법·내규↔외규)을 함께 정리해야 답이 나온다.
 # temporal: 개정·시행일·경과규정이 답을 가른다.
-TAGS = ('reconciliation', 'temporal')
+TAGS = ('reconciliation', 'temporal', 'requires_internal_data', 'genos_only',
+        'local_execution_denied', 'financial', 'local_execution_allowed')
 
 
 def read(path):
