@@ -23,6 +23,9 @@ class SaveUnconfirmed(ContractError):
 
 
 class DomainWorkflow(Workflow):
+    # Existing records without a stored limit were admitted for two attempts.
+    job_attempt_limit = 2
+
     def __init__(self, *args, namespace, source_snapshot, acl_ref, document_ids, glossary,
                  producer_binding, clock=time.time, **kwargs):
         super().__init__(*args, **kwargs)
@@ -120,29 +123,42 @@ class DomainWorkflow(Workflow):
         return self._save(bid, document, expected, state='INPUT')
 
     def _job(self, stage, context, prompt, output_schema, validator, binding_check=None):
-        identity = digest([self.namespace, self.actor, stage, context, prompt, output_schema, self.producer_binding])
+        from . import reason_review
+        from ..legal_agent import reason_decision_review as common_review
+        identity = digest([self.namespace, self.actor, stage, context, prompt, output_schema,
+                           self.producer_binding, common_review.VERSION])
         bid = 'job-' + identity
         old = self.repo.latest(bid)
         if old:
             job = self.load(bid)
             if job['phase'] == 'READY':
                 if binding_check:binding_check()
-                validator(job['response']); return job['response'], job['receipt']
+                validator(job['response'])
+                # READY is written only after a bound PASS. Old job identities
+                # cannot be promoted merely by loading them under this version.
+                saved_review=job.get('consistency_review',{})
+                if (saved_review.get('proposal_hash')!=digest(job['response']) or
+                        saved_review.get('version')!=common_review.VERSION or
+                        saved_review.get('decision')!={'decision':'PASS'}):
+                    raise ContractError('authoring consistency receipt missing or changed')
+                return job['response'], job['receipt']
             if job['phase'] not in ('RESPONSE_RECEIVED', 'RESERVED', 'REPAIR_READY'):
                 raise ContractError('job is ' + job['phase'] + '; no automatic model replay: ' + bid)
             # A persisted response can be validated again after a process restart.
             start_attempt = job['attempt'] + int(job['phase'] == 'REPAIR_READY')
+            attempt_limit = job.get('attempt_limit', 2)
         else:
             if self.generate is None:
                 raise ContractError('domain authoring model is not configured')
+            attempt_limit = self.job_attempt_limit
             job = {'kind': 'JOB', 'scope': self.scope(self.document_ids), 'stage': stage,
                    'identity': identity, 'context_hash': digest(context), 'phase': 'RESERVED',
-                   'deadline': self.clock() + 360, 'attempt': 0, 'attempts': [],
+                   'deadline': self.clock() + 180 * attempt_limit, 'attempt_limit': attempt_limit, 'attempt': 0, 'attempts': [],
                    'actor': self.actor, 'response': None, 'receipt': None}
             saved = self._job_write(bid, job, 0); job['revision'] = saved['revision']
             start_attempt = 0
         revision = job['revision']
-        for attempt in range(start_attempt, 2):
+        for attempt in range(start_attempt, attempt_limit):
             if binding_check:
                 try:binding_check()
                 except Exception as exc:
@@ -158,11 +174,12 @@ class DomainWorkflow(Workflow):
                 job.update(phase='SENT', attempt=attempt, attempt_deadline=min(job['deadline'], self.clock() + 180),
                            owner_token=uuid.uuid4().hex)
                 saved = self._job_write(bid, self._document(job), revision); revision = saved['revision']
-                payload = {**deepcopy(context), 'call_budget': {'attempt': attempt + 1, 'maximum': 2,
+                payload = {**deepcopy(context), 'call_budget': {'attempt': attempt + 1, 'maximum': attempt_limit,
                     'absolute_deadline': job['attempt_deadline']}}
                 if job['attempts']:
                     payload['repair'] = {'previous': job['attempts'][-1],
-                        'instruction': ('원본 입력을 유지하고 나열한 오류를 한 번 보완한다. 원문 분석·비교의 불일치도 고치되 원래 관찰 기록은 고쳐 쓰지 않는다.'
+                        'prior_errors': [item['error'] for item in job['attempts']],
+                        'instruction': common_review.RECONSIDER if job['attempts'][-1].get('review_issues') else ('원본 입력을 유지하고 나열한 오류를 한 번 보완한다. 원문 분석·비교의 불일치도 고치되 원래 관찰 기록은 고쳐 쓰지 않는다.'
                                         if stage in ('SOURCE_ANALYSIS','ACCUMULATE') else
                                         '같은 입력과 의미를 유지하고 나열한 형식·참조 오류만 한 번 보완한다.')}
                 try:
@@ -186,12 +203,33 @@ class DomainWorkflow(Workflow):
                     self._job_write(bid,self._document(job),revision);raise
             try:
                 validator(job['response'])
+                try:
+                    consistency=reason_review.check(self,stage=stage,context=context,proposal=job['response'],
+                        identity=identity,deadline=job['deadline'],max_reviews=attempt_limit,binding_check=binding_check)
+                except common_review.ReviewConflict:
+                    raise
+                except Exception as exc:
+                    job.update(phase='REVIEW_UNAVAILABLE',error_type=type(exc).__name__,error=str(exc))
+                    self._job_write(bid,self._document(job),revision)
+                    raise
+                job['consistency_review']=consistency
+                job['receipt']={**(job['receipt'] or {}),'reason_decision_review':consistency}
             except ContractError as exc:
+                # Scope/ACL/CAS errors and unknown reviewer outcomes are never
+                # converted to another primary-model attempt.
+                if job['phase']=='REVIEW_UNAVAILABLE':raise
                 job['attempts'].append({'response': deepcopy(job['response']), 'receipt': deepcopy(job['receipt']),
-                                        'error': str(exc)[:4000]})
-                job['phase'] = 'INVALID' if attempt else 'REPAIR_READY'
+                                        'error': str(exc)[:4000],
+                                        **({'review_issues':deepcopy(exc.issues)} if isinstance(exc,common_review.ReviewConflict) else {})})
+                repeated_review=False
+                if isinstance(exc,common_review.ReviewConflict):
+                    signature=digest([(r['code'],r['path'],r['related_paths']) for r in exc.issues])
+                    repeated_review=any(r.get('review_conflict_signature')==signature for r in job['attempts'][:-1])
+                    job['attempts'][-1]['review_conflict_signature']=signature
+                exhausted = attempt + 1 >= attempt_limit or repeated_review
+                job['phase'] = 'INVALID' if exhausted else 'REPAIR_READY'
                 saved = self._job_write(bid, self._document(job), revision); revision = saved['revision']
-                if attempt:
+                if exhausted:
                     raise
                 continue
             job['phase'] = 'READY'
@@ -226,14 +264,21 @@ class DomainWorkflow(Workflow):
             candidates['candidates'] = [r for r in candidates['candidates'] if r['concept_id'] in ids]
             candidates['candidate_receipt'] = digest({k: v for k, v in candidates.items() if k != 'candidate_receipt'})
         context = {'raw': raw, 'glossary_candidates': candidates, 'profile_hash': profile['profile_hash']}
-        output_schema = recorded_fields.request_schema(obs.normalization_schema(raw, profile), raw)
+        mentions = recorded_fields.glossary_mentions(raw, candidates)
+        if mentions:
+            context['glossary_mention_options'] = mentions
+        output_schema = recorded_fields.request_schema(obs.normalization_schema(raw, profile), raw, mentions)
         def validate(proposal):
-            canonical, _ = recorded_fields.restore(proposal, raw, output_schema, obs.restore_normalization)
+            canonical, _ = recorded_fields.restore(proposal, raw, output_schema, obs.restore_normalization, mentions)
             obs.validate_observations(canonical, raw, profile, candidates)
         proposal, receipt = self._job('NORMALIZE', context,
-            profile['prompt'] + obs.NORMALIZATION_INSTRUCTIONS + recorded_fields.INSTRUCTIONS, output_schema, validate,
+            profile['prompt'] + obs.NORMALIZATION_INSTRUCTIONS + recorded_fields.INSTRUCTIONS +
+            ('\n용어를 실제 언급한 경우 glossary_refs.mention_refs에는 glossary_mention_options에서 그 위치의 '
+             'M 참조를 고른다. 번호는 해당 원문 안의 위치이며 관찰 순번이 아니다. 이 관찰에서 언급되지 '
+             '않은 용어는 연결하지 않는다. 목록에 없는 실제 구절은 기존 정확 인용으로 지정할 수 있다.'
+             if mentions else ''), output_schema, validate,
             lambda:self.glossary.verify_candidates(candidates))
-        canonical, assembly = recorded_fields.restore(proposal, raw, output_schema, obs.restore_normalization)
+        canonical, assembly = recorded_fields.restore(proposal, raw, output_schema, obs.restore_normalization, mentions)
         # The job/provider retain the original proposal; the stored observation keeps
         # the existing canonical contract plus a source-bound assembly receipt.
         receipt = {**receipt, 'normalization_assembly': assembly}

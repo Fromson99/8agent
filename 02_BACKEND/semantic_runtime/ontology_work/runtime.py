@@ -11,12 +11,16 @@ from .configuration import repository
 MAX_BUNDLES=8
 
 
+class PublicationChanged(ContractError):
+    """A known authority change requires reassessment, never a transport retry."""
+
+
 def workspace_references(state):
-    from .wiki_repository import workspace_bundle
+    # The historical field name remains wire compatible. Domain accumulation
+    # publications have the same live SQL authority as workspace publications.
     return [{'bundle_id': bid, 'publication_id': row['publication_id'],
              'package_sha256': digest(row['context'])}
-            for bid, row in sorted(state.get('ontology_database', {}).get('contexts', {}).items())
-            if workspace_bundle(bid)]
+            for bid, row in sorted(state.get('ontology_database', {}).get('contexts', {}).items())]
 
 
 def recheck(session, state):
@@ -58,7 +62,7 @@ def assert_assessment(assessment, allowed_documents, provider=None):
     except Exception as exc:
         raise ContractError('WORKSPACE_PUBLICATION_CHECK_UNAVAILABLE: candidate answer not confirmed') from exc
     if any(current.get(ref['publication_id']) is not True for ref in refs):
-        raise ContractError('WORKSPACE_PUBLICATION_REVOKED: preserve originals; reassess before publishing')
+        raise PublicationChanged('WORKSPACE_PUBLICATION_REVOKED: preserve originals; reassess before publishing')
 
 def config(policy,state,binding):
     from ..legal_agent.ontology_context import configuration

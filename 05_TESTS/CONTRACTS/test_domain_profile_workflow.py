@@ -77,7 +77,8 @@ def env(tmp_path):
         return normalized_output(context), {'call_id': str(len(calls))}
     w = DomainWorkflow(repo, LocalFolderStore(tmp_path/'objects'), actor='reviewer',
         source_reader=lambda a: source['text'] if a['document_id'] == 'fictional' and a['version'] == 'a'*64 else None,
-        generate=generate, namespace='team1', source_snapshot='snapshot-1', acl_ref='acl1',
+        generate=generate, review_generate=lambda *_:({'decision':'PASS'},{'synthetic_reviewer':True}),
+        namespace='team1', source_snapshot='snapshot-1', acl_ref='acl1',
         document_ids=['fictional'], glossary=glossary, producer_binding='authoring-v1')
     domain = json.loads((ROOT/'00_SYSTEM/ONTOLOGY_PROFILES/domain-profile-v1.json').read_text())
     business = json.loads((ROOT/'00_SYSTEM/ONTOLOGY_PROFILES/business-profile-v1.json').read_text())

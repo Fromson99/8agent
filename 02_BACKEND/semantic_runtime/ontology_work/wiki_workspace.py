@@ -8,6 +8,8 @@ from . import wiki_contracts as wc, wiki_index as wi
 
 
 class Workspace(DomainWorkflow):
+    job_attempt_limit = 5
+
     def __init__(self, *args, can_publish=False, **kwargs):
         kwargs.setdefault('glossary', None)
         super().__init__(*args, **kwargs)

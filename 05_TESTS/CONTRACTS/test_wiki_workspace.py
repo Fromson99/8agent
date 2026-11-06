@@ -25,7 +25,8 @@ def ws(env):
         return value, receipt
     env.w.generate = modern
     w = Workspace(env.repo, env.w.store, actor=env.w.actor, source_reader=env.w.source_reader,
-        generate=env.w.generate, namespace=env.w.namespace, source_snapshot=env.w.source_snapshot,
+        generate=env.w.generate, review_generate=env.w.review_generate,
+        namespace=env.w.namespace, source_snapshot=env.w.source_snapshot,
         acl_ref=env.w.acl_ref, document_ids=env.w.document_ids, producer_binding='wiki-test', can_publish=True)
     env.w.can_publish_workspace = True
     env.repo.workspace_scopes = {wc.scope_key(w.scope())}

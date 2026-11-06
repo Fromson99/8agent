@@ -166,6 +166,18 @@ def render():
             st.write(path['title'] + ' · ' + path['status']); st.text(path['body']); st.write(path['unresolved'])
         st.write(package['graph']['unresolved'])
         st.json(work['workspace_projection']['coverage'])
+        with st.expander('다른 질문의 판단과 비교'):
+            record_text = st.text_area('비교할 실제 판단', key='wiki_followup_text')
+            event = st.text_input('원기록 식별자', key='wiki_followup_event')
+            if st.button('원문과 대조해 새 검토 판본 저장', disabled=not event.strip() or not record_text.strip() or w.generate is None):
+                from .wiki_projection import compare_judgment
+                source = w.import_payload(record_text, run_id='workspace-comparison', event_id=event,
+                                          format_description='운영자가 입력한 실제 판단, 원문 지지 미검토')
+                compare_judgment(domain, w, bundle_id=compiled, revision=work['revision'],
+                                 work_hash=work['work_hash'], raw_id=source['bundle_id'])
+                st.rerun()
+        if work.get('judgment_review'):
+            st.write('새 판단의 원문 대조 결과', work['proposal']['comparisons'])
         reason = st.text_input('검토 의견', key='wiki_review_reason')
         if work['status'] == 'DRAFT':
             approve = st.checkbox('원문·포함 범위·미확인 내용을 검토했습니다.')

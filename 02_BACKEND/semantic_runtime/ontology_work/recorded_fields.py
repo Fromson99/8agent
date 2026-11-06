@@ -16,7 +16,29 @@ INSTRUCTIONS = ('\nrecorded_reason/recorded_purpose는 원래 작성자가 기�
 FIELDS = ('reason', 'purpose')
 
 
-def request_schema(schema, raw):
+def glossary_mentions(raw, candidates, limit=128):
+    """A bounded menu of exact positions; unlisted text still has the normal locator path."""
+    labels = dict.fromkeys(label['text'] for candidate in candidates['candidates']
+                           for label in candidate.get('card', {}).get('labels', [])
+                           if isinstance(label.get('text'), str) and 0 < len(label['text']) <= 16000)
+    options = {}
+    for label in list(labels)[:128]:
+        for row in raw['index']:
+            start = -1
+            occurrence = 0
+            while len(options) < limit:
+                start = row['text'].find(label, start + 1)
+                if start < 0:
+                    break
+                options[f'M{len(options)+1}'] = {'pointer':row['pointer'], 'quote':label,
+                                                'occurrence':occurrence, 'start':start, 'end':start+len(label)}
+                occurrence += 1
+            if len(options) == limit:
+                return options
+    return options
+
+
+def request_schema(schema, raw, mentions=None):
     schema = deepcopy(schema)
     fields = schema['properties']['observations']['items']
     locator = obj({'pointer': {'enum': [r['pointer'] for r in raw['index']]},
@@ -30,16 +52,42 @@ def request_schema(schema, raw):
                                   'label': {'anyOf':[{'type':'null'},text(2000)]},
                                   'locator': deepcopy(locator)})})]}
         fields['required'].append(name)
+    if mentions:
+        refs = fields['properties']['glossary_refs']['items']['properties']['mention_refs']
+        refs['items'] = {'anyOf':[{'enum':list(mentions)}, refs['items']]}
     return schema
 
 
-def restore(proposal, raw, schema, restore_coordinates):
+def restore(proposal, raw, schema, restore_coordinates, mentions=None):
     # Generation must use the new request contract. Historical canonical readers
     # remain separate and continue to use validate_observations.
     validate(proposal, schema)
     converted = deepcopy(proposal); evidence = []
     segments = {r['pointer']:r['text'] for r in raw['index']}
+    mention_choices = []
     for observation in converted['observations']:
+        for link in observation['glossary_refs']:
+            for index, location in enumerate(link['mention_refs']):
+                if isinstance(location, str):
+                    selected = (mentions or {}).get(location)
+                    if selected is None:
+                        raise ContractError('unoffered raw glossary mention')
+                    pointer, start, end = selected['pointer'], selected['start'], selected['end']
+                    if segments[pointer][start:end] != selected['quote']:
+                        raise ContractError('raw glossary mention text changed')
+                    link['mention_refs'][index] = {k:selected[k] for k in ('pointer','quote','occurrence')}
+                    mention_choices.append({'observation_id':observation['id'], 'concept_id':link['concept_id'],
+                                            'choice':location, 'locator':deepcopy(selected)})
+                elif mentions and any(row['pointer']==location['pointer'] and row['quote']==location['quote']
+                                       for row in mentions.values()):
+                    # Keep all valid free-form spans, including occurrences beyond the menu cap.
+                    try:
+                        restore_coordinates({'mention':location}, raw)
+                    except ContractError as exc:
+                        offered = [k for k,row in mentions.items() if row['pointer']==location['pointer']
+                                   and row['quote']==location['quote']]
+                        raise ContractError(f'invalid occurrence for glossary mention {location["quote"]!r}; '
+                                            f'choose the actual occurrence from {offered} or omit an unobserved mention') from exc
         for key in FIELDS:
             value = observation.pop('recorded_' + key)
             if value is None:
@@ -74,4 +122,7 @@ def restore(proposal, raw, schema, restore_coordinates):
     canonical, receipt = restore_coordinates(converted, raw)
     receipt.update(version='normalization-recorded-role-v2', proposal_sha256=digest(proposal),
                    recorded_roles=evidence, canonical_sha256=digest(canonical))
+    if mentions:
+        receipt['glossary_mention_choices'] = mention_choices
+        receipt['glossary_mention_menu_hash'] = digest(mentions)
     return canonical, receipt

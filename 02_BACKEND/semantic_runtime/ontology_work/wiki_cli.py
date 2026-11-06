@@ -6,7 +6,7 @@ from ..legal_agent.errors import ContractError
 
 ACTIONS = ['workspace-ingest', 'workspace-propose', 'workspace-apply', 'workspace-list',
            'workspace-status', 'workspace-lint', 'workspace-preview', 'workspace-compile',
-           'workspace-reconcile']
+           'workspace-reconcile', 'workspace-compare']
 
 
 def run(args):
@@ -24,6 +24,9 @@ def run(args):
     if args.action == 'workspace-reconcile': return w.reconcile_change(args.work_hash)
     domain = domain_workflow(actor=actor)
     try:
+        if args.action == 'workspace-compare':
+            from .wiki_projection import compare_judgment
+            return compare_judgment(domain, w, **read(args.input))
         if args.action == 'workspace-preview': return domain.preview(args.bundle)
         if args.action == 'workspace-compile':
             from .wiki_projection import compile_selection
