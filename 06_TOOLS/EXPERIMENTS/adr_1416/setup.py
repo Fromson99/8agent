@@ -1,0 +1,83 @@
+"""Freeze criteria, cases and both exact code arms before any model call.
+
+Usage: setup.py design   (MAIN157 selected; candidate = current working inventory)
+"""
+from common import *
+import shutil
+sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'))
+import adr_candidate as ac
+DES.mkdir(parents=True,exist_ok=True);assert not (DES/'freeze-live.json').exists()
+ptr=read(ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json');assert ptr['generation']==157
+rel=read(ROOT/ptr['manifest_path']);C=ROOT/rel['code_root'];files=rel['files']
+assert len(files)==532 and all(sha(C/n)==h for n,h in files.items())
+working={n:sha(ROOT/n) for n in files}
+changed=sorted(n for n in files if working[n]!=files[n])
+assert changed,'candidate inventory must differ from MAIN157'
+put(DES/'baseline.json',{'pointer':ptr,'release':rel})
+public=read(C/'00_SYSTEM/LEGAL_AGENT/local-gemma-public.json')['public_document_ids']
+criteria={'authorization':'계획하고 코드 수정하고 qwen으로 실험하고 메인에 반영하고 삼성메일로 쏴줘 (멀티턴 "계속 찾아줘" 미동작, 연결관계를 최종답변에서 묻기만 하는 문제)',
+ 'scope':'Actual local root service; baseline arm runs on selected MAIN157 before promotion, candidate arm runs on MAIN158 after user-directed promotion of the frozen inventory. Public Commercial Act, default ontology OFF, isolated runtime per cell. GENOS inaccessible.',
+ 'hypothesis':'MAIN157 answers the general charter-amendment quorum question from 433 only and asks whether to look further; a naive "어 계속 찾아줘" is not mapped to a resumed investigation. MAIN158 reads located needed sources without asking, bounds exploration per request, and maps the naive continuation to RESEARCH_CONTINUE.',
+ 'primary_metric':'By the end of turn 2, the public answer states both special-resolution numbers (출석 주주 의결권 3분의 2 이상, 발행주식총수 3분의 1 이상) from an acquired original of 상법 제434조',
+ 'secondary':['Turn 2 resumes investigation (method RESEARCH_CONTINUE or RESEARCH_REENTER at SELECT) instead of CLARIFY/HTTP error',
+              'HTTP status of every turn, physical calls and seconds per turn, UNKNOWN count',
+              'Source/ACL/wire mismatch 0; duplicate request adds 0 calls'],
+ 'limits':{'physical_total':200,'per_cell_client_calls':80,'per_request':40,'per_physical_seconds':180,'reported_cost_usd':3,'ram_start_gib':5,'ram_floor_gib':3,'swap_growth_mib':128,'workers':1},
+ 'stop':'UNKNOWN/resource/source/ACL/code failure stops all later cells; no same-question retry. Order: baseline cells (MAIN157) then candidate cells (MAIN158).',
+ 'order':[['charter-natural-continue','baseline'],['charter-433-continue','baseline'],['charter-natural-continue','candidate'],['charter-433-continue','candidate']],
+ 'quality_certified':False,'in_sample':True,
+ 'prior_observation':'ADR-1415 MAIN157 charter-natural: 5 calls, answered from 433 only and asked to check 368/435; numbers missing.'}
+steps=lambda q:[{'number':1,'question':q,'mode':'외규'},{'number':2,'question':'어 계속 찾아줘','mode':'외규'}]
+cases=[{'id':'charter-natural-continue','document_ids':public,'steps':steps('정관을 변경할 때 주주총회 결의요건은 무엇인가요?')},
+       {'id':'charter-433-continue','document_ids':public,'steps':steps('상법 제433조에 따라 정관을 변경할 때 필요한 주주총회 결의요건을 알려줘.')}]
+put(DES/'criteria.json',criteria);put(DES/'live-cases.json',cases)
+put(DES/'provider-policy.json',read(C/'00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json'))
+assert read(ROOT/'00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json')==read(DES/'provider-policy.json')
+put(DES/'authorization.json',{'request':criteria['authorization'],'documents':public,'scope':'User-directed public Commercial Act multi-turn experiment, two question strings plus one continuation utterance; intersect current financial team. No internal documents or grading answers are sent.'})
+put(DES/'grading-reference.json',{'article':'상법 제434조','numbers':['3분의 2','3분의 1'],'product_input':False,
+ 'source':'ADR-1415 grading-source-locations.json (registered original)','path':'04_EXPERIMENTS/ADR/ADR-1415-main156-charter-quorum-qwen/artifacts/design/grading-source-locations.json'})
+transport=ART/'transport';transport.mkdir(exist_ok=True)
+pins=read(ROOT/'04_EXPERIMENTS/ADR/ADR-1412-main152-integration-r5-qwen/artifacts/transport/transport-pins.json')
+for name in pins['files']:
+ target=transport/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target);pins['files'][name]=sha(target)
+put(transport/'transport-pins.json',pins)
+m=read(ADR/'실험/manifest.json')
+m['lineage']['hypothesis_delta']=criteria['hypothesis']
+m['design'].update(hypothesis=criteria['hypothesis'],primary_metric=criteria['primary_metric'],success_criteria=[criteria['primary_metric'],*criteria['secondary']],
+    failure_criteria=[criteria['stop'],'Candidate turn 2 does not resume investigation','Candidate answer states numbers not in an acquired original'],
+    criteria_frozen_before_run=True,criteria_freeze_evidence={'path':str((DES/'criteria.json').relative_to(ROOT)),'sha256':sha(DES/'criteria.json')})
+stage_plan=[{'stage_id':'source','kind':'source','parent_stage_ids':[]},{'stage_id':'acquired','kind':'retrieve','parent_stage_ids':['source']},{'stage_id':'present','kind':'present','parent_stage_ids':['acquired']}]
+m['design']['retrieval_stage_plan']['stages_by_arm']={'baseline':stage_plan,'candidate':stage_plan}
+for arm in m['design']['arms']:
+ if arm['id']=='baseline':arm.update(changes='Unchanged selected MAIN157 (agent-a-unified-20261105-r1)',controls='Same source generation, default profile, questions and continuation utterance')
+ else:arm.update(changes='Continue contract, re-entry cursor/grant fixes, bounded guided auto-follow; '+str(len(changed))+' files vs MAIN157',controls='Same source generation, questions and continuation utterance; promoted unchanged as MAIN158 before its run')
+m['dataset'].update(name='Charter amendment quorum, natural and 433 formulations, plus naive continuation',version='frozen-v1',
+    frozen_source=str((DES/'live-cases.json').relative_to(ROOT)),sha256=sha(DES/'live-cases.json'),legal_version_checked=True,reference_version_checked=False)
+m['runs'][0].update(selection_rule=criteria['stop'],artifact_path=str((ART/'result.json').relative_to(ROOT)))
+m['llm_policy']['llm_calls']=[{'role':'product','class':'product','model':'qwen/qwen3.8-27b','repeats':1}]
+for row,case in zip(m['questions'],cases):
+ p=ADR/'실험'/row['file']
+ p.write_text(f"# {case['id']}\n\n## 1. 실행 메타\n\nbaseline=MAIN157 / candidate=MAIN158; actual root service; Qwen3.8 Parasail FP8, reasoning none, no output cap; isolated runtime per cell.\n\n## 2. 사용자 질문 원문\n\n1턴: {case['steps'][0]['question']}\n\n2턴: {case['steps'][1]['question']}\n\n## 3. 기준답변 — 채점 전용, 제품 입력 비공개\n\n상법 제434조의 두 결의 수치(출석한 주주 의결권의 3분의 2 이상, 발행주식총수의 3분의 1 이상)를 확보 원문과 직접 대조. grading-reference.json은 제품 입력 비공개.\n\n## 4. 제품 입력을 구성한 원값\n\n### 회수·탈락 단계 원장 — run·arm별\n\nartifacts/public-live/<case>-<arm>/canonical 및 raw 참조.\n\n## 5. 제품 모델 호출 — run·arm별 실제 원문\n\nartifacts/public-live/{case['id']}-<arm>/raw 및 canonical.\n\n## 6. 중간 LLM 호출 — router/compiler/verifier/repair\n\n각 셀 generations.json 및 calls.json 원장.\n\n## 7. 채점 호출과 반복 판정\n\n채점 모델0; 원문/행동/실제 전송/답변 직접 대조.\n\n## 8. 사례 최종 판정\n\n실행 전 동결.\n")
+ row['sha256']=sha(p)
+put(ADR/'실험/manifest.json',m)
+descs={'baseline':{'code_root':rel['code_root'],'selected_files':files,'changed_vs_main157':[],
+ 'pin':{'release_manifest':ptr['manifest_path'],'release_manifest_sha256':ptr['release_manifest_sha256'],'immutable_release_code':True}}}
+put(DES/'arm-baseline.json',descs['baseline'])
+for arm,source,inventory in (('candidate',ROOT,working),):
+ can=ac.snapshot(ADR,arm,list(inventory),experiment_id=m['experiment_id'],arm_id=arm,run_ids=['run-001'])
+ for n,h in inventory.items():
+  if sha(can/'snapshot'/n)!=h:shutil.copyfile(source/n,can/'snapshot'/n)
+ ac.freeze(can);assert not ac.validate(can),ac.validate(can)
+ cm=read(can/'candidate.json');rev=cm['revisions'][-1]
+ snapshot=can/'revisions'/rev['revision_id']/'snapshot'
+ assert all(sha(snapshot/n)==h for n,h in inventory.items())
+ descs[arm]={'code_root':str(snapshot.relative_to(ROOT)),'selected_files':inventory,'changed_vs_main157':changed if arm=='candidate' else [],
+  'pin':{'manifest_path':str((can/'candidate.json').relative_to(ROOT)),'manifest_sha256':sha(can/'candidate.json'),'revision_id':rev['revision_id'],'revision_sha256':rev['revision_sha256']}}
+ put(DES/('arm-'+arm+'.json'),descs[arm])
+m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None,candidates=[dict(descs[a]['pin'],candidate_id=a,experiment_id=m['experiment_id'],arm_id=a,run_ids=['run-001'],
+    runner_path=str(Path(__file__).with_name('live.py').relative_to(ROOT)),runner_sha256=sha(Path(__file__).with_name('live.py'))) for a in ('candidate',)])
+put(ADR/'실험/manifest.json',m)
+paths=[*Path(__file__).parent.glob('*.py'),DES/'criteria.json',DES/'live-cases.json',DES/'authorization.json',DES/'provider-policy.json',DES/'arm-baseline.json',DES/'arm-candidate.json',DES/'grading-reference.json']
+put(ART/'preparation-issues.json',[{'phase':'setup before freeze','error':'adr_candidate.snapshot rejected the baseline arm (role=baseline is not a candidate)','correction':'Baseline arm uses the immutable hash-pinned MAIN157 release code; only the candidate inventory is snapshotted. No model call.'}])
+put(DES/'freeze-live.json',{'files':{str(p.relative_to(ROOT)):sha(p) for p in paths},'selected_pointer':ptr,'source_manifest_sha256':rel['data_manifest_sha256'],'model_calls_before_freeze':0,'candidate_changed_files':changed})
+print('FROZEN baseline MAIN157 and candidate',len(changed),'changed files; two cases x two turns; model0')

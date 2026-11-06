@@ -1,0 +1,35 @@
+from common import *
+import shutil
+sys.path.insert(0,str(ROOT/'06_TOOLS/COMMANDS'));import adr_candidate as ac,adr_structure as structure
+DES.mkdir(exist_ok=False)
+ptr=read(ROOT/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json');release=read(ROOT/ptr['manifest_path']);assert ptr['generation']==147
+prior=ROOT/'04_EXPERIMENTS/ADR/ADR-1400-multiturn-command-state-repair/artifacts'
+f=read(prior/'design/candidate-working.json');C=ROOT/f['code_root'];assert all(sha(C/n)==h==sha(ROOT/n) for n,h in f['selected_files'].items())
+gold=ROOT/'08_DEPLOYMENT/LOCAL/gold_connection_engine_r12'
+put(DES/'baseline.json',{'pointer':ptr,'release':release,'gold_binding':read(gold/'binding.json'),'gold_files':{str(p.relative_to(ROOT)):sha(p) for p in gold.iterdir() if p.is_file() and p.suffix in ('.json','.py','.yaml')}})
+criteria={'authorization':'일단 메인에 반영해줘','success':['Exact530 stage and prepared code match verified integration; own2 products plus derived34 changes only','Prepared14 checks and fresh selected actual service/Gold imports pass; no unintended external sends','Source data/mapping/ontology settings, common review and rollback preserved'], 'failure':['Drift, pin, source/ACL/state, unreviewed change or smoke failure aborts activation and restores old local engine binding.'], 'known_failures':['Actual Qwen1400: purpose and issues updated2/2; final answers0/2 due2 supervisor UNKNOWN','Model retained old paragraph scope; legal answer quality and later knowledge lifecycle not certified','Integrated common reviewer preserves existing147 known semantic limits']}
+put(DES/'criteria.json',criteria)
+m=read(ADR/'실험/manifest.json');parents=[];rows=[]
+for path,arm in [(ROOT/'04_EXPERIMENTS/ADR/ADR-1399-reason-decision-review-qwen/실험/manifest.json','common-review'),(prior.parent/'실험/manifest.json','repaired')]:
+ data,info=structure._load_parent(path,arm,'merged_from');rows.append((data,info));parents.append(info['record'])
+refs=[info['ref'] for data,info in rows]
+m['lineage'].update(parents=parents,root_ref=rows[0][0]['lineage']['root_ref'],root_refs=list(dict.fromkeys(data['lineage']['root_ref'] for data,info in rows)),branch_path=[m['lineage']['branch_id']],source_branch_paths={info['ref']:data['lineage']['branch_path'] for data,info in rows},hypothesis_delta='User-directed deployment of1400 typed transition checks onto selected147 common review; no new semantic candidate or actual model calls')
+m['design']['arms'][0]['derived_from']=refs
+m['integration']={'type':'multi_parent_merge','merge_id':'ADR-1403-merge-v1','planned_at':m['reservation']['work_started_at'],'result_arm':'integrated','parent_refs':refs,'rationale':'User explicitly requested MAIN selection of scoped repair while retaining current common review','common_invariants':'Current530 inventory, source/generation/ACL, code hashes, SQL640, correction ownership/budget, existing common reason reviewer','parent_contributions':[{'parent_ref':refs[0],'adopted':'Current MAIN147 common review and all unchanged source/ontology/consumer code','excluded':'No new actual inference or quality certification'},{'parent_ref':refs[1],'adopted':'2 current-request transition modules, SQL metadata and pins from exact tested working-integration candidate','excluded':'Historical528 candidate wholesale replacement; incomplete final answers are not success'}],'conflicts':[{'id':'command-review-overlap','between':refs,'resolution':'Preserve147 for_command reason review and independently always execute1400 semantic transition check; verify both receipts before execution','chosen_from':refs,'rationale':'A reason/action PASS cannot skip current-request intent and applied-state validation. Verified integrated-unit13 and native boundary1.'}],'no_conflict_reason':None,'rollback_ref':refs[0]}
+m['design'].update(hypothesis='Exact tested transition repair can be selected without losing current MAIN147 features/data',primary_metric='Prepared inventory and selected actual entry match intended530 code; no quality claim',success_criteria=criteria['success'],failure_criteria=criteria['failure'],criteria_frozen_before_run=True,criteria_freeze_evidence={'path':str((DES/'criteria.json').relative_to(ROOT)),'sha256':sha(DES/'criteria.json')})
+for a in m['design']['arms']:a.update(changes='Existing147 reference' if a['id']=='baseline' else 'Exact530 two-module transition repair integrated with147 common review',controls='No data/provider/model/default authority changes; no additional model sends')
+m['llm_policy']['llm_calls']=[];m['dataset'].update(name='User-directed local release code530 and same published data',version='MAIN148-r1',frozen_source=str((DES/'criteria.json').relative_to(ROOT)),sha256=sha(DES/'criteria.json'))
+m['retrieval_accounting']['not_applicable_reason']='Release wiring only; no new retrieval comparison';m['retrieval_accounting']['stage_ledger'].update(mode='not_applicable',not_applicable_reason='Release wiring only; actual1400 source audit retained as dependency')
+m['runs'][0].update(arm_ids=['integrated'],selection_rule='Exact validated530 once; prepare then actual fresh default/Gold entry checks, rollback on failure',artifact_path=str((RUN/'result.json').relative_to(ROOT)));put(ADR/'실험/manifest.json',m)
+can=ac.snapshot(ADR,'integrated',list(f['selected_files']),experiment_id=m['experiment_id'],arm_id='integrated',run_ids=['run-001']);ac.freeze(can);assert not ac.validate(can),ac.validate(can)
+rev=read(can/'candidate.json')['revisions'][-1];F=can/'revisions'/rev['revision_id']/'snapshot';pin={'manifest_path':str((can/'candidate.json').relative_to(ROOT)),'manifest_sha256':sha(can/'candidate.json'),'revision_id':rev['revision_id'],'revision_sha256':rev['revision_sha256']}
+stage=ART/'release-stage';stage.mkdir()
+for n,h in release['files'].items():
+ p=stage/n;p.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/release['code_root']/n,p)
+changed=[n for n,h in f['selected_files'].items() if release['files'].get(n)!=h]
+for n in changed:shutil.copyfile(C/n,stage/n)
+assert all(sha(stage/n)==h for n,h in f['selected_files'].items())
+put(DES/'candidate-selected.json',{'code_root':str(stage.relative_to(ROOT)),'selected_files':f['selected_files'],'pin':pin});put(DES/'delta.json',{'changed':changed,'files':len(f['selected_files'])})
+put(ART/'candidate-review/result.json',{'exit_code':0,'failed':0,'passed':14,'code_unchanged':True,'code_root':str(stage),'source_checks':[{'path':str((prior/p/'result.json').relative_to(ROOT)),'sha256':sha(prior/p/'result.json')} for p in ('integrated-unit','native-state-boundary-r3')],'stage_matches_verified_working_integration':True})
+m=read(ADR/'실험/manifest.json');runner=Path(__file__).with_name('prepare.py');m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None,candidates=[dict(pin,candidate_id='integrated',experiment_id=m['experiment_id'],arm_id='integrated',run_ids=['run-001'],runner_path=str(runner.relative_to(ROOT)),runner_sha256=sha(runner))]);put(ADR/'실험/manifest.json',m)
+print('MAIN148 stage exact530; changed',len(changed),'files; user authorization and merge frozen.')
