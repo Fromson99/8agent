@@ -40,7 +40,7 @@ def request_body(data,question,trusted_platform=False):
     if data.get('memory') is True or memory_enabled or (session_present and team_present):
         return view._request_body(question,data)
     question = view._selected_question(question, data)
-    if question.startswith('대사:'):
+    if question.startswith(('대사:', '문서 대사:')):
         return view._request_body(question, data)
     # Ordinary single turns do not select saved session state.
     body={'API_TYPE':'LEGAL_AGENT','question':question,'request_id':data['request_id'],'channel':'genos-chat'}

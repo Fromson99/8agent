@@ -164,7 +164,6 @@ def write_file(path, raw, *, exclusive=False, append=False):
         old = head(path)
         if old and (exclusive or old['value']['type'] != 'file'):
             raise FileExistsError(str(path))
-        store.put_bodies([raw])
         changes = []; revision = old['revision'] if old else 0
         if append and old:
             value = dict(old['value']); seq = value['append_seq'] + 1
@@ -176,7 +175,8 @@ def write_file(path, raw, *, exclusive=False, append=False):
                      'append_seq': 0, 'size': len(raw), 'mtime': time.time()}
         if not old:
             changes.append(entry_change(path))
-        store.commit(identity(path), revision, value, changes)
+        # The file bytes are stored in the same acknowledged transaction as the head that names them.
+        store.commit(identity(path), revision, value, changes, bodies=[raw])
     return len(raw)
 
 

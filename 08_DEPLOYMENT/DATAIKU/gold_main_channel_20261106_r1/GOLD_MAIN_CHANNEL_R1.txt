@@ -1,0 +1,54 @@
+-- GOLD_MAIN_CHANNEL_R1: Dataiku Oracle SQL notebook (운영 Gold owner).
+-- 목적: 서빙의 DP_QUERY_CHANNEL / DP_QUERY_RELEASE_ID 없이 Gold 검색 게시를 읽게 합니다.
+--       서버(MAIN157)는 두 값이 모두 없으면 채널 'main'을 읽습니다.
+--       적재기가 만든 g19_ 채널 1개의 게시 ID를 그대로 복사해 'main' 줄을 추가합니다. 해시 입력 없음.
+-- 바꿀 곳: SIDDG 두 군데(아래 v_owner, 맨 아래 FROM). 실제 Gold owner로 바꿉니다.
+-- 이 파일 전체를 Query 하나에 붙여넣고, 부분 선택을 해제한 뒤 RUN. 문장 구분 주석 두 줄도 포함합니다.
+-- 완료: 오류 없이 결과에 CHANNEL=main 행이 있고, 그 QUERY_RELEASE_ID가 g19_ 행과 같으면 됩니다.
+-- 이미 같은 값의 main이 있으면 아무것도 바꾸지 않습니다(재실행 안전).
+-- 멈추는 경우(아무것도 바꾸지 않음):
+--   ORA-20901 g19_ 채널이 1개가 아님(재적재 등) / ORA-20902 그 게시본이 SRCH_POST에 COMPLETE로 없음
+--   ORA-20903 main이 이미 다른 게시본을 가리킴
+-- 테이블 생성/삭제/다른 행 변경 없음. INSERT 1행 + COMMIT만 합니다.
+DECLARE
+  v_owner VARCHAR2(128) := 'SIDDG';
+  v_chnl  VARCHAR2(400);
+  v_post  VARCHAR2(400);
+  v_g19   NUMBER;
+  v_hash  VARCHAR2(100);
+  v_main  VARCHAR2(100);
+  v_ok    NUMBER;
+BEGIN
+  v_owner := DBMS_ASSERT.SCHEMA_NAME(UPPER(TRIM(v_owner)));
+  v_chnl  := DBMS_ASSERT.ENQUOTE_NAME(v_owner, FALSE) || '.IDD_B003_LGL_SRCH_CHNL';
+  v_post  := DBMS_ASSERT.ENQUOTE_NAME(v_owner, FALSE) || '.IDD_B003_LGL_SRCH_POST';
+  EXECUTE IMMEDIATE 'SELECT COUNT(*), MAX(RFRN_POST_HASH_VALU) FROM ' || v_chnl
+    || q'[ WHERE RFRN_CHNL_NAME LIKE 'g19\_%' ESCAPE '\']' INTO v_g19, v_hash;
+  IF v_g19 <> 1 THEN
+    RAISE_APPLICATION_ERROR(-20901, 'GOLD_MAIN_CHANNEL: g19_ channels=' || v_g19 || ' (auto link needs exactly 1)');
+  END IF;
+  EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || v_post
+    || q'[ WHERE RFRN_POST_HASH_VALU = :1 AND JSON_VALUE(RFRN_POST_IFMN_CTNT, '$.status') = 'COMPLETE']'
+    INTO v_ok USING v_hash;
+  IF v_ok <> 1 THEN
+    RAISE_APPLICATION_ERROR(-20902, 'GOLD_MAIN_CHANNEL: COMPLETE query publication missing in SRCH_POST');
+  END IF;
+  BEGIN
+    EXECUTE IMMEDIATE 'SELECT RFRN_POST_HASH_VALU FROM ' || v_chnl
+      || q'[ WHERE RFRN_CHNL_NAME = 'main']' INTO v_main;
+  EXCEPTION WHEN NO_DATA_FOUND THEN v_main := NULL;
+  END;
+  IF v_main IS NULL THEN
+    EXECUTE IMMEDIATE 'INSERT INTO ' || v_chnl
+      || q'[ (RFRN_CHNL_NAME, RFRN_POST_HASH_VALU, CHAN_NO) VALUES ('main', :1, 1)]' USING v_hash;
+    COMMIT;
+  ELSIF v_main <> v_hash THEN
+    RAISE_APPLICATION_ERROR(-20903, 'GOLD_MAIN_CHANNEL: main already points to another publication; not changed');
+  END IF;
+END;
+-- DKU_END_STATEMENT
+SELECT RFRN_CHNL_NAME AS CHANNEL, RFRN_POST_HASH_VALU AS QUERY_RELEASE_ID, CHAN_NO
+FROM SIDDG.IDD_B003_LGL_SRCH_CHNL
+ORDER BY CASE WHEN RFRN_CHNL_NAME = 'main' THEN 0 ELSE 1 END, RFRN_CHNL_NAME
+
+-- DKU_END_STATEMENT

@@ -94,6 +94,60 @@ def pending_clarifications(dialogue):
     return deepcopy(dialogue[start:])
 
 
+SUBORDINATE = ('시행령', '시행규칙', '시행세칙')
+
+
+def abbreviates(name, title):
+    """A user's shorthand of a document title: same first character, all characters in order.
+
+    "금융회사 지배구조법" for "금융회사의 지배구조에 관한 법률" (ADR-1454 S7). Only the user's own words
+    are matched (the follow-up lexical contract is unchanged); a shorthand matching several titles stays
+    unresolved. A shorthand without 시행령·시행규칙·시행세칙 does not name those subordinate documents.
+    """
+    short, full = norm(name), norm(title)
+    if len(short) < 3 or not full or short[0] != full[0]:
+        return False
+    if any(word in full and word not in short for word in SUBORDINATE):
+        return False
+    rest = iter(full)
+    return all(char in rest for char in short)
+
+
+def name_choices(matcher, authorized, name):
+    """Authorized documents a written name denotes: exact title/alias, title part, then shorthand."""
+    exact = []; partial = []
+    for did in sorted(authorized):
+        metadata = matcher.document_context.get(did, {})
+        title = metadata.get('document_title') or matcher.documents[did]
+        labels = [title, *getattr(matcher, 'document_aliases', {}).get(did, ())]
+        if any(norm(name) == norm(label) for label in labels):
+            exact.append(did)
+        elif norm(name) in norm(title):
+            partial.append(did)
+    choices = exact or partial
+    if not choices:
+        choices = [did for did in sorted(authorized) if any(abbreviates(name, label) for label in
+                   [matcher.document_context.get(did, {}).get('document_title') or matcher.documents[did],
+                    *getattr(matcher, 'document_aliases', {}).get(did, ())])]
+    return choices
+
+
+def declared_title_choices(matcher, authorized, name):
+    """A law-title abbreviation the corpus declares, e.g. 「주식회사 등의 외부감사에 관한 법률」(이하 "외감법").
+
+    The declared 「title」 is resolved with name_choices. Declarations naming
+    different documents leave the name ambiguous (several choices).
+    """
+    from . import declared_names
+    try:
+        _, choices = declared_names.title_documents(matcher, name, authorized,
+                                                    lambda title: name_choices(matcher, authorized, title))
+    except (ValueError, RuntimeError):
+        # Lookup is a hint; the unresolved name is reported as before.
+        return []
+    return choices
+
+
 def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=False, reference_utterances=()):
     """Resolve a quoted scope decision against unique authorized metadata.
 
@@ -137,16 +191,9 @@ def resolve(change, previous, matcher, authorized, utterance, *, model_resolved=
         if not model_resolved and any(value and norm(value) not in norm(quote) for value in (name, structure)):
             raise UnresolvedScope('검색 범위는 현재 발언에 있는 이름으로 지정해야 합니다.')
         if name:
-            exact = []; partial = []
-            for did in sorted(authorized):
-                metadata = matcher.document_context.get(did, {})
-                title = metadata.get('document_title') or matcher.documents[did]
-                labels = [title, *getattr(matcher, 'document_aliases', {}).get(did, ())]
-                if any(norm(name) == norm(label) for label in labels):
-                    exact.append(did)
-                elif norm(name) in norm(title):
-                    partial.append(did)
-            choices = exact or partial
+            choices = name_choices(matcher, authorized, name)
+            if not choices:
+                choices = declared_title_choices(matcher, authorized, name)
         else:
             choices = list(dict.fromkeys(t['document_id'] for t in (previous or {}).get('targets', [])))
         if len(choices) != 1:
@@ -289,11 +336,17 @@ def fulltext(session):
         return {}
     cached = getattr(session, '_direct_search_keys', None)
     if cached and cached[0] == scope['hash']:
-        return {'unit_keys': cached[1]}
+        return {'unit_keys': cached[1]} if cached[1] is not None else {}
     from .law_candidates import fulltext_scope_keys
     keys = set()
     for row in scope['targets']:
-        keys.update(fulltext_scope_keys(session, row['document_id'], row['unit_id']))
+        found = fulltext_scope_keys(session, row['document_id'], row['unit_id'])
+        if found is None:
+            # A whole large document is a direct target: rank within the targeted
+            # documents (search_sources) instead of listing every unit key.
+            session._direct_search_keys = (scope['hash'], None)
+            return {}
+        keys.update(found)
     session._direct_search_keys = (scope['hash'], frozenset(keys))
     return {'unit_keys': frozenset(keys)}
 
@@ -427,12 +480,35 @@ def document_structure(session, document_id, *, unit_id=None, offset=0, limit=8)
         unit_id=unit_id,offset=offset,limit=limit)
 
 
+def drop_grants(session, saved, reason, *, unrestored=None):
+    """Persisted reference grants that no current acquired original witnesses are given up, not failed on.
+
+    ADR-1454 S4 (MAIN176 HTTP 500): turn 2 narrowed the anchor article to the chosen 항 records, so on
+    turn 3 the references witnessed by the dropped blocks could not be re-verified and the whole request
+    died in restore_grants. A grant only widens what a connected source may be read; without it the
+    direct scope stays exactly as resolved and the investigation acquires the connection again if needed.
+    Nothing is granted here (the session keeps only the grants verified in this request).
+    """
+    rows = unrestored if unrestored is not None else {sid: sorted(rows) for sid, rows in saved.items()}
+    rows = {sid: ids for sid, ids in rows.items() if ids}
+    if not rows:
+        return
+    session.repo.event('SCOPE_REFERENCE_GRANT_DROPPED', {'scope_hash': active(session)['hash'], 'reason': reason,
+        'sources': {sid: {'block_ids': ids, 'kinds': sorted({str((saved.get(sid) or {}).get(b, {}).get('kind') or 'REFERENCE') for b in ids})}
+                    for sid, ids in rows.items()},
+        'effect': 'reads of these blocks need a new verified connection in this request; direct scope unchanged'})
+
+
 def restore_grants(session, checkpoint):
-    """Revalidate persisted witnessed edges from acquired originals on resume."""
+    """Revalidate persisted witnessed edges from acquired originals on resume.
+
+    Grants that cannot be re-witnessed now are dropped (narrower reading scope), never a request failure.
+    """
     if not active(session) or not checkpoint.get('scope_read_grants'):
         return
     if checkpoint.get('direct_scope_hash') != active(session)['hash']:
-        raise ContractError('reference read grants belong to another search scope')
+        drop_grants(session, checkpoint['scope_read_grants'], 'DIRECT_SCOPE_CHANGED')
+        return
     from . import unit_relations as rel
     records={**checkpoint.get('selected',{}),**checkpoint.get('contexts',{})}
     for record in records.values():
@@ -463,5 +539,5 @@ def restore_grants(session, checkpoint):
     if any(w.get('kind')=='REQUIRED_CONNECTED_TARGET' for rows in saved.values() for w in rows.values()):
         from .source_goal_control import grant_required_targets
         grant_required_targets(session,checkpoint,restore=True)
-    if any(not set(rows) <= permitted_blocks(session,sid) for sid,rows in saved.items()):
-        raise ContractError('persisted reference scope has no current verified witness')
+    unrestored={sid:sorted(set(rows)-permitted_blocks(session,sid)) for sid,rows in saved.items()}
+    drop_grants(session,saved,'NO_CURRENT_VERIFIED_WITNESS',unrestored=unrestored)

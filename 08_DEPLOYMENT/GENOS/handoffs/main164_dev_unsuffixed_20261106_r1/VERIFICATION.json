@@ -1,0 +1,94 @@
+{
+ "main_generation": 164,
+ "release_id": "dev-unsuffixed-20261106-r2",
+ "release_manifest_sha256": "7195ba00f1b44a28c9aeb876d9ec88d19581fd52fcacc797a2febcc46ff78ec5",
+ "serving_files": 533,
+ "replaces": {
+  "main_generation": 161,
+  "release_id": "unread-notes-20261106-r1",
+  "handoff": "08_DEPLOYMENT/GENOS/handoffs/main161_unread_notes_20261106_r1",
+  "sent_gmail_id": "1a1af35d5db32c4d"
+ },
+ "field_error_addressed": "runtime.bootstrap MappingError DEV_G19_SCHEMA_COLUMNS: SIDDA.LGL_G19_ONTL_POST_A_1 (container log photo 2026-11-06T06:55:41Z, HTTP 503)",
+ "changed_vs_main161": {
+  "count": 34,
+  "products": {
+   "00_SYSTEM/ORACLE/development_g19_1.json": "133b3af1931b1b8d9490a437a6035097efb7c83a463b05abb55180f49675efec",
+   "00_SYSTEM/PIPELINE.json": "1fef2b7d3236c2a52721313ae28fabee55d529ddcab25e116f2f8546f3a0b93e",
+   "02_BACKEND/semantic_runtime/oracle_development_mapping.py": "b33a1dd603552be7b90ec6c3e1c4f1c48c5828d603be51abf6a1d310c53a73c1",
+   "02_BACKEND/semantic_runtime/oracle_gold_mapping.py": "b5ad9e9948ab63395fe029254f6c9b43975d1af4793f2c383213b6652447a286"
+  },
+  "engine_pins": 30
+ },
+ "development_mapping_new_tables": [
+  "SIDDS.LGL_G19_ONTL_POST",
+  "SIDDS.LGL_G19_ONTL_HEAD",
+  "SIDDS.LGL_G19_ONTL_ANC",
+  "SIDDA.LGL_AGT_RUN",
+  "SIDDA.LGL_AGT_REC",
+  "SIDDA.LGL_AGT_BODY",
+  "SIDDA.LGL_EXEC_ST"
+ ],
+ "development_mapping_version": "gold-development-unsuffixed-new-20261106-r1",
+ "gold_mapping_target_unchanged": true,
+ "workflow_same_as_main161": true,
+ "zip_sha256": "6f1a5b3104ddfff2c79d4ae63481730b2f272bae2859b65d9862f2dac11e36f0",
+ "oneclick_sha256": "10e343e5ade82238c36e2901139a8469f04682642238d1b670d601f120b9b2cc",
+ "workflow_sha256": "14ae0af00b39f17d213ba45b576568d73d6108318de6adbb09412050f388e1ca",
+ "zip": {
+  "code_files": 543,
+  "serving_in_zip_sha_equal": 532,
+  "excluded_js_hash_checked": [
+   "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js"
+  ],
+  "helper_files": 11,
+  "js_or_nested_archives": 0
+ },
+ "installer_diff_vs_main161": "only the expected ZIP SHA256 line",
+ "installer_test": {
+  "base_checkout": "MAIN161 release code (533 files) in isolated git checkout via DEV symlink",
+  "passed": true,
+  "commands": 15,
+  "labels": [
+   "git-init",
+   "git-name",
+   "git-email",
+   "base-stage",
+   "base-commit",
+   "python311-syntax",
+   "default-apply",
+   "same-apply",
+   "status",
+   "stage",
+   "diff-check",
+   "commit",
+   "gate-code",
+   "generation-gate",
+   "undo"
+  ],
+  "original_files_restored": 533,
+  "python311_compile": "PASS 456",
+  "record": "09_ARTIFACTS/AUDITS/20261106-main164-genos-handoff/package-tests-r1/result.json"
+ },
+ "mapping_oracle_check": {
+  "source": "08_DEPLOYMENT/DATAIKU/dev_e2e_tables_20261106_r2/VALIDATION.json",
+  "result": "local Oracle 23.26.3 temp schemas, SQL R2 as sent, MAIN164 mapping file 17 tables preflight and grantee Agent write/read/lock PASS"
+ },
+ "regression": {
+  "source": "09_ARTIFACTS/AUDITS/20261106-dev-unsuffixed-main162/결과.txt",
+  "oracle_contract_files": 17,
+  "new_failures": 0,
+  "same_existing_failures": 24,
+  "root_service_and_gold_binding_checks": 16
+ },
+ "field_prerequisite": "SQL R2 executed and BAIP04APP grants given (user report 2026-11-06, not verified here)",
+ "field_not_yet_checked_tables": [
+  "SIDDS.LGL_G19_VCTR_POST_S_1",
+  "SIDDS.LGL_G19_VCTR_ITEM_S_1",
+  "SIDDS.LGL_G19_VCTR_HEAD_S_1",
+  "7 new tables"
+ ],
+ "new_model_calls": 0,
+ "field_deployed": false,
+ "quality_certified": false
+}

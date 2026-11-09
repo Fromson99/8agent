@@ -85,7 +85,7 @@ def execute(port, action, call_id):
     if set(args) not in ({'question','previous'},{'question','previous','task'}) or not isinstance(args['question'], str) or not args['question'].strip():
         raise ContractError('invalid workflow RAG question')
     task=args.get('task')
-    if task is not None and (not isinstance(task,dict) or set(task)-{'research_task','comparison_fields','return_mode','preferred_document_ids','basis_snapshot','basis_targets','research_policy','research_requirements','research_continuity','internal_anchors'} not in ({'source_category','search_hints'},{'source_category','search_hints','issues','facts'}) or task['source_category']!=side or
+    if task is not None and (not isinstance(task,dict) or set(task)-{'research_task','comparison_fields','return_mode','preferred_document_ids','basis_snapshot','basis_targets','research_policy','research_requirements','research_continuity','internal_anchors','search_document_ids','session_key','question_definitions'} not in ({'source_category','search_hints'},{'source_category','search_hints','issues','facts'}) or task['source_category']!=side or
             not isinstance(task['search_hints'],list) or len(task['search_hints'])>4 or
             any(not isinstance(q,str) or not 0<len(q)<=500 for q in task['search_hints'])):
         raise ContractError('invalid trusted workflow task context')
@@ -99,8 +99,21 @@ def execute(port, action, call_id):
         from .comparison_research_bridge import validate_parent
         validate_parent(port,task['research_task'],side)
     if task and not set(task.get('preferred_document_ids',[]))<=set(docs):raise ContractError('preferred document outside side/ACL')
+    if task and task.get('search_document_ids') is not None:
+        # A parent may narrow (never widen) the child's search to rules it named.
+        narrowed=task['search_document_ids']
+        if (not isinstance(narrowed,list) or not narrowed or any(not isinstance(d,str) for d in narrowed)
+                or not set(narrowed)<=set(docs) or not set(task.get('preferred_document_ids',[]))<=set(narrowed)):
+            raise ContractError('search documents outside side/ACL')
+        docs=sorted(set(narrowed))
     question = ('내규: ' if side == 'internal' else '외규: ') + args['question']
     child_session = 'workflow:' + session.context.run_id + ':' + side
+    if task and task.get('session_key') is not None:
+        # Independent child questions (one per comparison unit) must not read as follow-ups of each other.
+        import re
+        if not isinstance(task['session_key'],str) or not re.fullmatch('[a-z0-9-]{1,64}',task['session_key']):
+            raise ContractError('invalid child session key')
+        child_session += ':' + task['session_key']
     result = dict(schema_version='workflow-rag-result-v2', side=side, question=question,
                   session_id=child_session, request_id=call_id, status='not_registered',
                   answer=None, evidence_ids=[], records=[], unresolved=[], continuation=None)
@@ -149,11 +162,12 @@ def execute(port, action, call_id):
                 action_hash=digest({k:action[k] for k in ('operation','side','args')}),
                 parent_binding_hash=session.context.binding_hash,error_type=type(exc).__name__,
                 cause=str(exc),error_code=getattr(exc,'code',type(exc).__name__),
+                unknown=bool(getattr(exc,'unknown',False)),
                 export_reads=isinstance(exc,(InvestigationPending,BudgetExhausted,TimeoutError,TransportError)))
             session.repo.event('WORKFLOW_CHILD_FAILED',failure)
     if failure is not None:
         export_reads=failure['export_reads']
-        result.update(status='failed',error_code=failure['error_code'],
+        result.update(status='failed',error_code=failure['error_code'],unknown_outcome=failure.get('unknown') is True,
             unresolved=['RAG 조사를 완료하지 못했습니다. 조회 실패는 규정 부재를 뜻하지 않습니다.'])
     if envelope is not None and envelope.get('kind')=='SOURCE_HANDOFF':
         handoff=envelope['handoff']

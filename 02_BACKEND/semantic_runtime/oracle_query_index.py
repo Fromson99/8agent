@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Set
 from contextlib import contextmanager
+import copy
 import json
 
 from .contracts import digest
@@ -72,14 +73,42 @@ class Sources(Mapping):
         self.kind=db.tables['source'][0]
         self.cache_binding=lambda:(request.release_id,digest(sorted(request.sources.allowed)))
 
+    MEMO = 20000
+
     def __getitem__(self,sid):
+        if not isinstance(sid,str) or not sid:
+            raise KeyError(sid)  # SQLite dict semantics; lookup_id=None would mean "no filter"
+        memo=self.__dict__.setdefault('_memo',{})
+        if sid in memo:
+            if memo[sid] is None: raise KeyError(sid)
+            return copy.deepcopy(memo[sid])
         rows=self.request.records.page(self.kind,lookup_id=sid,limit=2)['rows']
-        if not rows: raise KeyError(sid)
+        if not rows:
+            if len(memo)<self.MEMO: memo[sid]=None
+            raise KeyError(sid)
         if len(rows)!=1: raise DPError('QUERY_SOURCE_DUPLICATE: ambiguous navigation source')
         value=json.loads(rows[0]['json'])
         if value['id']!=sid or value['document_id'] not in self.request.sources.allowed:
             raise DPError('QUERY_SOURCE_SCOPE: navigation source identity mismatch')
+        if len(memo)<self.MEMO: memo[sid]=copy.deepcopy(value)
         return value
+
+    def prefetch(self,sids):
+        """Fill the request memo for many source IDs: one SQL per 100 IDs instead of one per ID."""
+        memo=self.__dict__.setdefault('_memo',{})
+        wanted=[s for s in dict.fromkeys(sids) if isinstance(s,str) and s and s not in memo]
+        for at in range(0,len(wanted),100):
+            batch=wanted[at:at+100]
+            rows=self.request.records.page(self.kind,lookup_ids=batch,limit=100)['rows']
+            found={}
+            for row in rows:
+                value=json.loads(row['json'])
+                if value['id'] in found: raise DPError('QUERY_SOURCE_DUPLICATE: ambiguous navigation source')
+                if value['id'] not in batch or value['document_id'] not in self.request.sources.allowed:
+                    raise DPError('QUERY_SOURCE_SCOPE: navigation source identity mismatch')
+                found[value['id']]=value
+            for sid in batch:
+                if len(memo)<self.MEMO: memo[sid]=copy.deepcopy(found[sid]) if sid in found else None
 
     def __iter__(self):
         return iter(self.ids_for_documents(self.request.sources.allowed))

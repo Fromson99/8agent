@@ -1,0 +1,38 @@
+{
+ "schema_version": "vector-head-check-validation-v1",
+ "date": "2026-11-06",
+ "field_error": "oracle_query_vector.py:120 VECTOR_NOT_PUBLISHED: selected Oracle query has no vector head",
+ "sql_files": {
+  "VECTOR_V1_COUNTS.txt": "8b52b204edaace59504b5efd4df11dbe04a510c0ac1a07e8c86ad858e99a132f",
+  "VECTOR_V2_CHANNEL_HEAD.txt": "35a1c7da99ad732a006dedca2cddc2672135682d0330b49dec23f39d2bc200ec",
+  "VECTOR_V3_POSTS.txt": "6115922f6cb89b00a9e647e17bf541a513cbd342e4ef6ef10b0bc709ebb76fe7",
+  "VECTOR_V4_ITEM_GROUPS.txt": "345f0080fee044076d9a80b8d246bd5a9fa97a36cd9be4d6bcc40c63057c46d8"
+ },
+ "read_only": true,
+ "statement_rules": {
+  "semicolon": false,
+  "plsql": false,
+  "ascii_only": true
+ },
+ "local_oracle": {
+  "version": "Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free\nVersion 23.26.3.0.0",
+  "tables": "dev-shaped SIDDS.LGL_G19_{SRCH_CHNL,VCTR_HEAD,VCTR_POST,VCTR_ITEM}_S_1 columns/types in temporary owner",
+  "scenarios": [
+   "head_missing",
+   "head_present"
+  ],
+  "status": "PASS",
+  "temporary_owner_dropped": "A8_TVHEAD_0DF5B4"
+ },
+ "mode_check": {
+  "code": "MAIN166 fts-literal-20261106-r1",
+  "auto": "KEYWORD_PATH + INITIAL_VECTOR_DEGRADED",
+  "vector": "RAISED VECTOR_NOT_PUBLISHED",
+  "keyword": "no vector lookup",
+  "status": "PASS",
+  "model_calls": 0,
+  "db_calls": 0
+ },
+ "field_run": "NOT_RUN",
+ "product_or_db_changes": 0
+}

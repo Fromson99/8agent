@@ -1,0 +1,58 @@
+ORA-22806 원인 확인 B — GENOS 코드스페이스 진단 (현장 ORDS 경로, 읽기 전용) — 2026-11-06 R1
+
+목적
+  현장 MAIN165 첫 원문 검색 오류
+    oracle_query_fulltext.py:209 _projection → READ_FAILED: ORACLE_ERROR: ORA-22806
+  를 서빙과 같은 ORDS 연결로 다시 실행하고, SQL을 단계별로 잘라 어느 부분에서 나는지 찾는다.
+  A(Dataiku 노트북 SQL)는 DB에 직접 붙어 실행하고, B는 GENOS → ORDS 경로로 실행한다. 둘을 비교하면 원인이 갈린다.
+
+실행 위치
+  MAIN165가 적용된 ~/DEV 가 있는 GENOS 코드스페이스.
+  첨부 FTS_ORA22806_DIAG_R1.txt 를 TRANSFER 폴더에 올리고, 그 폴더에서:
+
+    bash ./FTS_ORA22806_DIAG_R1.txt
+
+  - 코드 위치가 ~/DEV 가 아니면:  bash ./FTS_ORA22806_DIAG_R1.txt --code-root <코드 폴더>
+  - 결과 파일 FTS_ORA22806_DIAG_RESULT_R1.json 이 같은 폴더에 생긴다.
+
+필요한 환경
+  서빙 리비전과 같은 ORDS 환경변수가 셸에 있어야 한다:
+    ORACLE_ORDS_SCHEMA, ORACLE_ORDS_CLIENT_ID, ORACLE_ORDS_CLIENT_SECRET (사용 중이면 ORACLE_ORDS_BASE_URL)
+  - GENOS_ORACLE_TABLE_MAPPING 이 없으면 development_g19_1 로 실행한다.
+  - DP_QUERY_CHANNEL 이 없으면 g19_7c1f8f4931c8be61b914f5bc 로 실행한다.
+  화면에 환경변수 이름이 있는지만 기록하고, 값·인증정보는 출력하지 않는다.
+
+이렇게 멈추면
+  CLIENT FAIL ... DP_CONFIG       ORDS 환경변수가 이 셸에 없음 → 서빙 리비전 설정값을 export 한 뒤 다시 실행
+  MISSING_PYTHON_MODULE <이름>    이 python3 에 패키지가 없음 → 서빙 python 으로:
+                                  PYTHON=<서빙 python3 경로> bash ./FTS_ORA22806_DIAG_R1.txt
+  STOP: ~/DEV is not the MAIN165  관련 14파일 중 MAIN165와 다른 파일 목록이 나온다 → 그 목록을 알려주기
+  OPEN_REQUEST FAIL               채널·게시본을 여는 단계에서 실패 → 화면 그대로 알려주기
+
+하는 일 (SELECT만, 쓰기·모델 호출·재시도 없음, 최대 SQL 2000회·15분, 로컬 시험 25회)
+  V00_DUAL                       ORDS 연결 확인
+  OPEN_REQUEST                   서빙과 같은 순서로 채널 → 게시본 → 원문 묶음 → 본문검색 객체 열기
+  T1 = '정관'(한 단어), T2 = '주주총회 결의'(두 단어 구문)으로 각각:
+    V01_PRODUCTION_CALL          현장에서 실패한 바로 그 함수(law_groups_page) 호출
+    V02_PROJECTION               같은 SQL을 직접 실행
+    V03_POSTINGS / V04_LENGTHS   SQL 부분별 (V05_POSITIONS 는 T2만)
+    V06_MATCHES_COUNT            점수 계산 전체, 마지막 JSON 묶음 없이
+    V07 / V08                    문서 목록 JSON_TABLE 을 CLOB 바인드 / 문자열 바인드로
+    V09                          전체 SQL, 문서 목록을 문자열 바인드로 (목록이 4000바이트 이하일 때만)
+    V10                          전체 SQL, 문서 목록을 CLOB 바인드 없이 표에서 읽어서
+  V11_ARRAYAGG_DUAL              마지막 JSON 묶음만
+  V12_NOTEBOOK_Q1_TEXT           A의 FTS_Q1_FULL.txt 문장을 그대로 ORDS로 실행
+
+보내줄 결과
+  화면 사진(각 단계 PASS/FAIL과 ORA 번호, 위치 줄:칸) 또는 결과 파일 FTS_ORA22806_DIAG_RESULT_R1.json.
+  결과 파일에는 SQL 문장·바인드 값·행 값·인증정보가 없다. 단계 이름, PASS/FAIL, ORA 번호, ORDS가 알려준 오류 위치(줄·칸),
+  행 수, 실행한 SQL 문장의 SHA-256만 들어 있다. 위치(줄·칸)가 나오면 SQL의 정확한 지점을 찾을 수 있다.
+
+로컬 확인 (2026-11-06)
+  - 로컬 Oracle 23.26.3 에 MAIN165 개발계 매핑(development_g19_1, 실버 17표)과 같은 임시 표를 만들고 게시본을 넣은 뒤,
+    ORDS 응답만 로컬 DB 연결로 바꿔 이 TXT 안의 python을 그대로 실행: 22단계 모두 PASS(SQL 25회), SELECT만 실행, 결과 파일에 SQL 문장 없음.
+    (MAIN165 개발계 매핑으로 본문검색을 끝까지 돌린 것은 이번이 처음이며, 로컬에서는 통과한다.)
+  - ORDS 오류 응답 대역(ORA-22806, Line 1 Column 345)에서 오류 번호·위치·영문 오류 문구만 남고 다른 문구는 남지 않음을 확인.
+  - 코드 위치가 다르면 DB에 붙기 전에 멈춤(14파일 해시 비교), ORDS 환경변수가 없으면 DP_CONFIG 로 멈춤,
+    yaml 이 없는 python 으로 실행하면 MISSING_PYTHON_MODULE yaml 로 멈춤을 bash 실행으로 확인.
+  - 실제 ORDS HTTP·현장 DB에서는 아직 실행하지 않았다.

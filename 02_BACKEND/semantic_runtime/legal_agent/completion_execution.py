@@ -304,19 +304,41 @@ class CompletionExecution:
         sources = [s for s in self.selected_originals(parts) if s['source_id'] in selected]
         from . import guided_answer
         if stage == 'ASSESS' and guided_answer.enabled(profile) and task is None and not state.get('scenario_context'):
-            return guided_answer.assess(self,sources,selection['issues'],utterance,
+            result = guided_answer.assess(self,sources,selection['issues'],utterance,
                 assessment_fact_sources(utterance,state,modern=modern),selection=selection,
-                dialogue=data.get('dialogue',[]))
+                dialogue=data.get('dialogue',[]),previous=getattr(self,'continuation_previous',None))
+            reads = (result.get('guided_reply') or {}).get('proposed_reads') or []
+            if not reads:
+                return result
+            rounds = profile.get('candidate_navigation',{}).get('guided_answer_read_rounds',0)
+            count = getattr(self,'reentry_counters',{}).get('ASSESS_READ_REENTRY',0)
+            budget = self.s.work.budget()
+            capacity = (budget['model_limit']-budget['finalization_reserve']-budget['model_reserved']>=1
+                        and self.s.context.remaining()>self.s.sources.profile['selection_time_reserve_seconds'])
+            if count < rounds and capacity:
+                # A located original the answer says it needs is read now, without
+                # spending the search allowance, and the answer is written again.
+                self.s.work.event('ANSWER_READ_REENTRY_PLANNED',{'reads':[{k:r[k] for k in ('read_id','label','origin')} for r in reads],
+                    'round':count+1,'limit':rounds,'model_called_for_reading':False})
+                raise Reenter('SELECT','answer selected located originals to read',{'reentry_kind':'ASSESS_READ_REENTRY',
+                    'reads':reads,'investigation_state':selection['investigation_state']})
+            if rounds:
+                self.s.work.event('ANSWER_READ_REENTRY_UNAVAILABLE',{'reads':[{k:r[k] for k in ('read_id','label')} for r in reads],
+                    'round':count,'limit':rounds,'capacity':capacity})
+            return result
         if stage == 'COMPOSE':
             assessment = parts['ASSESS']['payload']
             if assessment.get('guided_reply'):
                 for claim in assessment['claims']:cc.verify_span_claim(claim,sources)
                 if assessment.get('source_excerpt_reply'):cc.verify_source_excerpt_reply(assessment,sources)
-                result=cc.compose(assessment,guided_answer.plan(assessment))
+                request=getattr(self,'presentation_request',None)
+                plan=guided_answer.focus_plan(self,assessment,request) if request else guided_answer.plan(assessment)
+                result=cc.compose(assessment,plan)
                 cc.verify_composition(assessment,result)
                 self.s.work.event('COMPOSITION_RENDERED',{'contract':result['completion_contract'],
                     'assessment_hash':digest(assessment),'text_hash':digest(result['text']),
-                    'model_call':False,'presentation':guided_answer.VERSION})
+                    'model_call':bool(request) and len(assessment['claims'])>1,'presentation':guided_answer.VERSION,
+                    'focus':plan.get('focus')})
                 return result
             from ..ontology_work.runtime import assert_assessment
             assert_assessment(assessment,getattr(self.s.sources,'scope',()),getattr(self.s.sources,'ontology_repository',None))

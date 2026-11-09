@@ -1,0 +1,22 @@
+{
+ "schema": "fts-ora22806-notebook-field-result-v1",
+ "source": "user photos 2026-11-06 17:41-17:42 KST, Dataiku SQL notebook TEST_LEAGAL / AIDP (Oracle)",
+ "session_user": "PIDD2APP",
+ "db_unique_name": "pidddacd_yny1h",
+ "results": {
+  "FTS_Q0_INFO.txt": {"notebook_query": "Query 2", "status": "OK",
+    "rows": {"SRCH_ROW_OBJECT": "TABLE:VALID", "CHANNEL_RELEASE": "7c1f8f4931c8be61 rows=1",
+             "POSTING_KIND": "asset_6caff629b985.unit_fts_posting", "LENGTH_KIND": "asset_6caff629b985.unit_fts_length",
+             "JSON_CHECKS": "0", "VPD_POLICIES": "0", "SYNONYMS": "0", "BAIP04APP_SELECT": "0 (ALL_TAB_PRIVS from PIDD2APP; not evidence of a missing grant)",
+             "NAME_COLLISIONS": "5 PUBLIC.COL:SYNONYM,PUBLIC.F:SYN... (truncated on screen)"}},
+  "FTS_Q2_POSTINGS.txt": {"notebook_query": "Query 3", "status": "OK", "n": 77768, "seconds": 13},
+  "FTS_Q1_FULL.txt": {"notebook_query": "Query 4", "status": "OK", "n": 2049, "items": "NULL (over 2048, by design)", "seconds": 28},
+  "FTS_Q4_MATCHES.txt": {"notebook_query": "Query 5", "status": "OK", "n": 77768, "seconds": 17},
+  "FTS_Q3_LENGTHS.txt": {"notebook_query": "Query 6", "status": "OK", "n": 344807, "seconds": 22},
+  "FTS_Q6_PHRASE.txt": {"notebook_query": "Query 7", "status": "OK", "n": 0, "items": "NULL", "seconds": 44},
+  "FTS_Q5_ARRAYAGG.txt": {"notebook_query": "Query 8", "status": "OK", "n": 1, "items": "[[\"a\",\"b\",\"c\",1]]", "seconds": 1}
+ },
+ "ora_22806_in_notebook": false,
+ "conclusion": "The failing statement text runs on the field DB through the Dataiku connection. Remaining: GENOS ORDS path, ORDS account BAIP04APP, real bind values.",
+ "gap": "No notebook run aggregated 1..2048 real rows into ITEMS (Q1 overflowed, Q6 matched 0); diagnostic B T1 covers it through ORDS."
+}

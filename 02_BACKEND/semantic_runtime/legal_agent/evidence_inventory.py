@@ -36,8 +36,9 @@ def check_page(session, state, page, *, current_scope=True):
             record['document_id'] != page['document_id'] or
             (current_scope and page.get('scope_id', digest(record['offer'])) != digest(record['offer']))):
         raise ContractError('delivered source binding changed')
+    texts = _block_texts(session, page['document_id'], [span['block_id'] for span in page['spans']])
     for span in page['spans']:
-        raw = session.store.source(page['document_id'], span['block_id'])
+        raw = {'text': texts[str(span['block_id'])]}
         if (type(span['start_cp']) is not int or type(span['end_cp']) is not int or
                 not 0 <= span['start_cp'] <= span['end_cp'] <= len(raw['text']) or
                 raw['text'][span['start_cp']:span['end_cp']] != span['text']):
@@ -140,10 +141,20 @@ def covers(expected, actual):
                    for a, z in have.get(str(p['block_id']), [])) for p in expected)
 
 
+def _block_texts(session, did, bids):
+    """Block text by ID; one bounded batch on stores that have it (Oracle: 3 SQL per 100 blocks)."""
+    ids = [str(b) for b in bids]
+    batch = getattr(session.store, 'sources', None)
+    if callable(batch) and len(set(ids)) > 1:
+        return {bid: raw['text'] for bid, raw in zip(ids, batch(did, ids))}
+    return {bid: session.store.source(did, bid)['text'] for bid in dict.fromkeys(ids)}
+
+
 def expected(session, did, blocks):
     out = []
+    texts = _block_texts(session, did, blocks)
     for bid in blocks:
-        raw = session.store.source(did, bid)
+        raw = {'text': texts[str(bid)]}
         out.append({'block_id': str(bid), 'start_cp': 0, 'end_cp': len(raw['text']),
                     'block_hash': text_hash(raw['text'])})
     return out

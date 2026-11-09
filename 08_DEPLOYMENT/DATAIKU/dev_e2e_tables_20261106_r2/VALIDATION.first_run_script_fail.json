@@ -1,0 +1,178 @@
+{
+  "status": "FAIL",
+  "started_at": "2026-11-06T06:24:20.149321+00:00",
+  "delivery_sha256": "d7171236023cbca2326ec76abb5079b02d2c7aa8d0de5ecf113d87e6a117385b",
+  "code_root": "09_ARTIFACTS/AUDITS/20261106-dev-unsuffixed-main162/code",
+  "owner_substitution_only": true,
+  "field_execution": false,
+  "external_models": 0,
+  "checks": [
+    {
+      "name": "statement_ids",
+      "passed": true,
+      "detail": [
+        "C00",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "V01",
+        "V02"
+      ]
+    },
+    {
+      "name": "no_semicolon_no_marker_ascii",
+      "passed": true
+    },
+    {
+      "name": "one_line_per_statement",
+      "passed": true
+    },
+    {
+      "name": "prerequisite_stand_ins",
+      "passed": true
+    },
+    {
+      "name": "c00_before_only_stage",
+      "passed": true,
+      "detail": [
+        {
+          "OWNER": "A8_DA_D156D7",
+          "TABLE_NAME": "LGL_PIPE_RESULT_A"
+        }
+      ]
+    },
+    {
+      "name": "c00_after_all_8",
+      "passed": true,
+      "detail": [
+        "LGL_AGT_BODY",
+        "LGL_AGT_REC",
+        "LGL_AGT_RUN",
+        "LGL_EXEC_ST",
+        "LGL_PIPE_RESULT_A",
+        "LGL_G19_ONTL_ANC",
+        "LGL_G19_ONTL_HEAD",
+        "LGL_G19_ONTL_POST"
+      ]
+    },
+    {
+      "name": "v01_grantee_sees_columns",
+      "passed": true,
+      "detail": {
+        "LGL_AGT_BODY": 4,
+        "LGL_AGT_REC": 8,
+        "LGL_AGT_RUN": 9,
+        "LGL_EXEC_ST": 5,
+        "LGL_G19_ONTL_ANC": 5,
+        "LGL_G19_ONTL_HEAD": 3,
+        "LGL_G19_ONTL_POST": 5
+      }
+    },
+    {
+      "name": "v02_grantee_privileges",
+      "passed": true,
+      "detail": {
+        "LGL_AGT_BODY": "INSERT,SELECT",
+        "LGL_AGT_REC": "DELETE,INSERT,SELECT",
+        "LGL_AGT_RUN": "INSERT,SELECT,UPDATE",
+        "LGL_EXEC_ST": "DELETE,INSERT,SELECT,UPDATE",
+        "LGL_PIPE_RESULT_A": "INSERT,SELECT",
+        "LGL_G19_DOC_BLK_S_1": "SELECT",
+        "LGL_G19_DOC_UNIT_S_1": "SELECT",
+        "LGL_G19_DOC_VER_S_1": "SELECT",
+        "LGL_G19_ONTL_ANC": "SELECT",
+        "LGL_G19_ONTL_HEAD": "SELECT",
+        "LGL_G19_ONTL_POST": "SELECT",
+        "LGL_G19_SRCH_CHNL_S_1": "SELECT",
+        "LGL_G19_SRCH_POST_S_1": "SELECT",
+        "LGL_G19_SRCH_ROW_S_1": "SELECT",
+        "LGL_G19_SRC_POST_S_1": "SELECT",
+        "LGL_G19_VCTR_HEAD_S_1": "SELECT",
+        "LGL_G19_VCTR_ITEM_S_1": "SELECT",
+        "LGL_G19_VCTR_POST_S_1": "SELECT"
+      }
+    },
+    {
+      "name": "candidate_mapping_validator",
+      "passed": true,
+      "detail": {
+        "body": "SIDDA.LGL_AGT_BODY",
+        "record": "SIDDA.LGL_AGT_REC",
+        "run": "SIDDA.LGL_AGT_RUN",
+        "state": "SIDDA.LGL_EXEC_ST"
+      }
+    },
+    {
+      "name": "main_mapping_preflight_17_tables_as_grantee",
+      "passed": true,
+      "detail": {
+        "profile": "development_g19_1",
+        "tables": 17,
+        "mapping_sha256": "133b3af1931b1b8d9490a437a6035097efb7c83a463b05abb55180f49675efec"
+      }
+    },
+    {
+      "name": "agent_preflight_as_grantee",
+      "passed": true
+    },
+    {
+      "name": "commit_insert_state_record_run_body",
+      "passed": true
+    },
+    {
+      "name": "commit_update_state_delete_record_merge_run",
+      "passed": true
+    },
+    {
+      "name": "state_read_back",
+      "passed": true
+    },
+    {
+      "name": "body_read_back",
+      "passed": true
+    },
+    {
+      "name": "lease_insert_update_delete",
+      "passed": true
+    }
+  ],
+  "error": "oracledb.exceptions.DatabaseError: ORA-00942: table or view \"A8_DA_D156D7\".\"LGL_AGT_RUN_A\" does not exist\nHelp: https://docs.oracle.com/error-help/db/ora-00942/",
+  "cleanup_errors": [
+    "ORA-01940: cannot drop a user who is currently connected\nHelp: https://docs.oracle.com/error-help/db/ora-01940/"
+  ],
+  "temporary_users_removed": false,
+  "oracle_version": "23.26.3.0.0",
+  "finished_at": "2026-11-06T06:24:22.739068+00:00"
+}

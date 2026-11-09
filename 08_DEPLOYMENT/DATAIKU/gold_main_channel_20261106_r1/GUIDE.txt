@@ -1,0 +1,37 @@
+Gold 검색 게시를 기본 채널 main에 연결 — R1 (2026-11-06)
+
+왜 필요한가
+서빙(MAIN157)은 DP_QUERY_CHANNEL과 DP_QUERY_RELEASE_ID가 둘 다 없으면 채널 'main'을 읽는다.
+운영 Gold 적재기 R5는 검색 게시를 g19_<해시24자> 채널에만 기록하고 main은 만들지 않는다
+(report.json의 serving_switched=false). 그래서 그대로 두면 첫 질문에서 QUERY_ACTIVE_MISSING 오류가 난다.
+이 SQL은 g19_ 채널이 가리키는 게시 ID를 그대로 복사해 main 한 줄을 추가한다.
+그러면 서빙 환경변수에 채널·해시를 넣지 않아도 된다. 서버 코드는 바꾸지 않는다.
+서버는 채널 이름을 게시 내용과 대조하지 않고, 게시 ID의 내용 해시·COMPLETE 상태만 검사한다.
+벡터는 채널이 아니라 게시 ID로 연결되므로 따로 할 일이 없다.
+
+실행 (Gold 적재 완료 후 1회)
+1. GOLD_MAIN_CHANNEL_R1.txt에서 SIDDG 두 군데를 실제 Gold owner로 바꾼다(맞으면 그대로).
+2. Dataiku SQL 노트북의 새 Query에 파일 전체를 붙여넣고, 부분 선택 없이 RUN.
+3. 결과 첫 행이 CHANNEL=main이고 QUERY_RELEASE_ID가 g19_ 행과 같으면 완료.
+4. 서빙 환경변수 DP_QUERY_CHANNEL / DP_QUERY_RELEASE_ID는 비워 둔다(둘 다 없음 = main).
+재실행해도 같은 값이면 아무것도 바꾸지 않는다.
+
+멈추는 경우 (아무것도 바꾸지 않고 오류)
+ORA-20901 g19_ 채널이 1개가 아님 — 재적재로 2개 이상이면 어느 것을 쓸지 자동으로 고르지 않는다.
+ORA-20902 그 채널의 검색 게시본이 SRCH_POST에 COMPLETE 상태로 없음 — 적재 미완료.
+ORA-20903 main이 이미 다른 게시본을 가리킴 — 자동으로 덮어쓰지 않는다.
+
+다음 재적재 때
+이 SQL은 첫 연결용이다. 재적재 후 main을 새 게시로 바꾸는 절차는 별도로 정한다
+(적재기가 검증 뒤 main을 자동 전환하게 하거나, 전환 SQL을 따로 둔다).
+
+검증 (validate_oracle.py → VALIDATION.json)
+로컬 Oracle 23.26.3 임시 스키마에 등록본과 같은 SRCH_POST/SRCH_CHNL 두 표를 만들고,
+동결 MAIN157 코드의 select_release(channel='main')로 실제 확인했다.
+적용 전 QUERY_ACTIVE_MISSING 재현 → SQL 실행 → main이 적재 게시를 선택(revision 1, COMPLETE),
+g19_ 채널 그대로, 재실행 변경 없음, main 다른 값/g19 2개/게시 없음/미완료 게시 각각 거절. 10검사 통과, 임시 스키마 삭제.
+ORDS 경유와 현장 Oracle 버전·권한에서의 실행은 미확인이다. 현장 DB 변경·메일 발송 없음.
+
+사용 중지 (2026-11-06)
+사용자 확인: Gold 테이블 변경 불가. 이 SQL은 사용하지 않고, 서버 코드 수정으로 대체했다.
+대체 기록: 09_ARTIFACTS/AUDITS/20261106-gold-default-channel/수정과_검증결과.txt

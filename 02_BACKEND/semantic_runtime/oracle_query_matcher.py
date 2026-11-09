@@ -4,13 +4,12 @@ from collections import OrderedDict
 import copy,json
 
 from lawrag.core.legal_coordinate import LegalCoordinate
-from .contracts import sha
 from .oracle_dp_io import DPError,digest
 from .oracle_query_index import Lists
 from .navigation_match import ReverseMatcher, SurfaceIndex, MorphIndex
 
 
-def pages(request,kind,**filters):
+def pages(request,kind,*,budget=10000,**filters):
     from .oracle_query_cache import for_request, key
     cache = for_request(request); cache_key = key(kind, **filters)
     hit, saved = cache.get(cache_key)
@@ -22,7 +21,7 @@ def pages(request,kind,**filters):
         page=request.records.page(kind,limit=100,after=cursor,**filters)
         for value in page['rows']:
             count+=1
-            if count>10000:
+            if count>budget:
                 raise DPError('QUERY_NAV_BUDGET: narrow the requested navigation page')
             if collected is not None:
                 size += len(json.dumps(value,ensure_ascii=False).encode())
@@ -39,7 +38,38 @@ class Units(Mapping):
     ROOT_MAX_UNITS = 4096
     ROOT_MAX_BYTES = 16 * 1024 * 1024
 
-    def __init__(self,request): self.request,self.cache,self.cache_bytes=request,OrderedDict(),0
+    DOCUMENT_MEMO_BYTES = 64 * 1024 * 1024
+
+    def __init__(self,request):
+        self.request,self.cache,self.cache_bytes=request,OrderedDict(),0
+        self.counts,self.documents,self.document_index,self.document_bytes={},{},{},0
+    def unit_count(self,did):
+        if did not in self.request.sources.allowed: raise DPError('QUERY_SCOPE: unauthorized unit catalogue')
+        if did not in self.counts:
+            proof=list(pages(self.request,'native.structure_proof',document_id=did,lookup_id=did))
+            if (len(proof)!=1 or proof[0].get('document_id')!=did or
+                    type(proof[0].get('unit_count')) is not int or proof[0]['unit_count']<0):
+                raise DPError('QUERY_STRUCTURE: missing or invalid document unit count')
+            self.counts[did]=proof[0]['unit_count']
+        return self.counts[did]
+    def document_rows(self,did):
+        """Every unit row of one document: budget = its published unit count, memo per request."""
+        if did in self.documents:
+            for row in self.documents[did]:
+                yield copy.deepcopy(row)
+            return
+        expected=self.unit_count(did)
+        # Read the whole listing before yielding: consumers that look up ancestors while
+        # iterating are then served by the memo instead of one SQL per unit.
+        rows=list(pages(self.request,'native.unit',budget=max(10000,expected),document_id=did))
+        if len(rows)!=expected:
+            raise DPError('QUERY_STRUCTURE: document unit listing differs from its published count')
+        size=sum(len(json.dumps(row,ensure_ascii=False).encode()) for row in rows)
+        if self.document_bytes+size<=self.DOCUMENT_MEMO_BYTES:
+            self.documents[did]=rows;self.document_bytes+=size
+            self.document_index[did]={str(r['unit_id']):r for r in rows}
+        for row in rows:
+            yield copy.deepcopy(row)
     def remember(self,row):
         key=(row['document_id'],row['unit_id'])
         size=len(json.dumps(row,ensure_ascii=False).encode())
@@ -53,6 +83,11 @@ class Units(Mapping):
         did,uid=key
         if did not in self.request.sources.allowed: raise KeyError(key)
         key=(did,str(uid))
+        index=self.document_index.get(did)
+        if index is not None:
+            # A listed document answers point lookups from the request memo (no SQL per unit).
+            if key[1] not in index: raise KeyError(key)
+            return copy.deepcopy(index[key[1]])
         from .oracle_query_cache import for_request, key as cache_key
         cache = for_request(self.request)
         document = getattr(self, '_root_document', None)
@@ -71,6 +106,21 @@ class Units(Mapping):
         if not rows: raise KeyError(key)
         if len(rows)!=1: raise DPError('QUERY_STRUCTURE: duplicate unit identity')
         return self.remember(rows[0])
+    def prefetch(self,keys):
+        """Fill the point-lookup cache for many (document, unit) keys: one SQL per 99 keys."""
+        groups={}
+        for did,uid in dict.fromkeys((d,str(u)) for d,u in keys):
+            if did in self.request.sources.allowed and did not in self.document_index and (did,uid) not in self.cache:
+                groups.setdefault(did,[]).append(uid)
+        for did,uids in groups.items():
+            for at in range(0,len(uids),99):
+                batch=uids[at:at+99];wanted={digest([did,uid]):uid for uid in batch}
+                rows=self.request.records.page('native.unit',document_id=did,lookup_ids=sorted(wanted),limit=100)['rows']
+                if len(rows)>len(batch): raise DPError('QUERY_STRUCTURE: duplicate unit identity')
+                for row in rows:
+                    if row.get('document_id')!=did or str(row.get('unit_id')) not in batch:
+                        raise DPError('QUERY_STRUCTURE: prefetched unit outside the requested keys')
+                    self.remember(row)
     def __getitem__(self,key): return self.row(key)['unit']
     def __iter__(self): return (key for key,_ in self.items())
     def __len__(self): return sum(r['unit_count'] for r in pages(self.request,'native.structure_proof'))
@@ -78,7 +128,7 @@ class Units(Mapping):
         return (((r['document_id'],r['unit_id']),r['unit']) for r in pages(self.request,'native.unit'))
     def for_document(self,did):
         if did not in self.request.sources.allowed: raise DPError('QUERY_SCOPE: unauthorized unit catalogue')
-        return (((r['document_id'],r['unit_id']),self.remember(r)['unit']) for r in pages(self.request,'native.unit',document_id=did))
+        return (((r['document_id'],r['unit_id']),self.remember(r)['unit']) for r in self.document_rows(did))
 
     def _document_rows(self, did):
         # Packed Gold rows have indexed lookup keys but their document/parent
@@ -89,7 +139,7 @@ class Units(Mapping):
         if (not callable(source_ids) or
                 manifest.get('extension',{}).get('schema_version')!='r12-packed-extension-v1' or
                 'native.unit' not in manifest.get('extension',{}).get('packed_kinds',[])):
-            yield from pages(self.request,'native.unit',document_id=did)
+            yield from self.document_rows(did)
             return
         from .oracle_query_cache import for_request
         cache=for_request(self.request)
@@ -99,7 +149,7 @@ class Units(Mapping):
             raise DPError('QUERY_STRUCTURE: missing or invalid document unit count')
         expected=proof[0]['unit_count']
         if expected>self.ROOT_MAX_UNITS:
-            yield from pages(self.request,'native.unit',document_id=did)
+            yield from self.document_rows(did)
             return
         ids=[];after=None
         while True:
@@ -178,6 +228,8 @@ class Units(Mapping):
 class SourceMetadata(Mapping):
     def __init__(self,request,sources): self.request,self.sources=request,sources
     def __getitem__(self,sid):
+        if not isinstance(sid,str) or not sid:
+            raise KeyError(sid)  # SQLite dict semantics; lookup_id=None would mean "no filter"
         from .oracle_query_cache import for_request, key
         cache=for_request(self.request); cache_key=key('source-metadata',sid=sid)
         hit,value=cache.get(cache_key)
@@ -195,18 +247,52 @@ class SourceMetadata(Mapping):
 
 
 class RemoteSurface(SurfaceIndex):
+    # A two-character group above GROUP_ROWS rows (field '제1' 34,595) is not read whole:
+    # every key that can match at a question position is looked up exactly instead.
+    GROUP_ROWS = 1000
+    MAX_KEY = 128
     def __init__(self,request,group):
         super().__init__()
         self.request,self.group=request,group
+        self.large,self.looked,self.loaded=set(),set(),set()
     def candidates(self,prefix):
         # The prefix and its values live for this request only.
+        if prefix in self.large:
+            return sorted(self.prefix.get(prefix,()),key=lambda x:(-len(x),x))
         if prefix not in self.ordered:
+            rows=[]
             for row in pages(self.request,'native.surface',lookup_id=self.group+':'+prefix,owner_id=self.group):
+                rows.append(row)
+                if len(rows)>self.GROUP_ROWS:
+                    self.large.add(prefix)
+                    return sorted(self.prefix.get(prefix,()),key=lambda x:(-len(x),x))
+            for row in rows:
                 key=row['key']
                 self.values[key].append(row['value'])
                 self.prefix[prefix].add(key)
+                self.loaded.add(key)
             self.ordered[prefix]=sorted(self.prefix[prefix],key=lambda x:(-len(x),x))
         return self.ordered[prefix]
+    def _exact(self,query,i):
+        wanted=[query[i:j] for j in range(i+2,min(len(query),i+self.MAX_KEY)+1)]
+        wanted=[k for k in dict.fromkeys(wanted) if k not in self.looked]
+        for at in range(0,len(wanted),100):
+            batch={digest(k):k for k in wanted[at:at+100]}
+            for row in pages(self.request,'native.surface',owner_id=self.group,target_ids=sorted(batch)):
+                key=row['key']
+                if key in batch.values() and key not in self.loaded:
+                    self.values[key].append(row['value'])
+                    self.prefix[key[:2]].add(key)
+            self.looked.update(batch.values())
+    def match(self,text,*,include_nested=False):
+        query,offsets=self.span(text)
+        for i in range(len(query)-1):
+            if self.word_start(text,offsets,i):
+                prefix=query[i:i+2]
+                self.candidates(prefix)
+                if prefix in self.large:
+                    self._exact(query,i)
+        return super().match(text,include_nested=include_nested)
 
 
 class BodyValues(Mapping):
@@ -237,17 +323,27 @@ class Coordinates(Mapping):
     def __iter__(self): return iter(self.units)
     def __len__(self): return len(self.units)
     def for_document(self,did):
-        return (((r['document_id'],r['unit_id']),self.decode(r['coordinate'])) for r in pages(self.units.request,'native.unit',document_id=did))
+        return (((r['document_id'],r['unit_id']),self.decode(r['coordinate'])) for r in self.units.document_rows(did))
+    def for_document_units(self,did):
+        # The same listing as for_document, with each row's unit: no lookup per unit.
+        return (((r['document_id'],r['unit_id']),self.decode(r['coordinate']),r['unit']) for r in self.units.document_rows(did))
+
+
+class CoordinateIndex(Lists):
+    """Body-article coordinates: exact key lookups, or one document's indexed units."""
+    def __init__(self,request):
+        self.request=request
+        super().__init__(lambda key:[r['unit_id'] for r in pages(request,'native.coordinate',document_id=key[0],lookup_id=digest(list(key)))])
+    def document_units(self,did):
+        # Each row is published under its own unit's coordinate (one listing per document).
+        return frozenset(r['unit_id'] for r in pages(self.request,'native.coordinate',document_id=did))
 
 
 class Matcher(ReverseMatcher):
     def __init__(self,store,tools,glossary,*,document_aliases=None,origin_projection=None):
         self.request=tools.request
-        from . import navigation_match,structure_navigation,inherited_navigation
-        for module in (navigation_match,structure_navigation,inherited_navigation):
-            expected=self.request.records.manifest.get('navigation_compilers',{}).get(module.__name__)
-            if expected!=sha(module.__file__):
-                raise DPError('QUERY_STRUCTURE_COMPILER: republish derived navigation for this code')
+        from .navigation_compatibility import require
+        require(self.request.records.manifest.get('navigation_compilers',{}))
         self.tools,self.glossary=tools,glossary
         self.projection_aliases=dict(document_aliases or {})
         self._load_documents(store.db)
@@ -260,8 +356,7 @@ class Matcher(ReverseMatcher):
         self.sources=SourceMetadata(self.request,tools.sources)
         self.members=Lists(lambda key:[r['source_id'] for r in pages(self.request,'native.member',document_id=key[0],lookup_id=digest([key[0],str(key[1])]))])
         self.stored_coordinates=Coordinates(self.units)
-        self.coordinate_index=Lists(lambda key:[r['unit_id'] for r in pages(self.request,'native.coordinate',
-            document_id=key[0],lookup_id=digest(list(key)))])
+        self.coordinate_index=CoordinateIndex(self.request)
         self.structure_binding={'generation_id':store.manifest['generation_id'],'store_sha256':store.manifest['store_sha256'],'authority':'source_unit.json'}
         self.navigation_store=store
         from .folder_navigation import bind_catalogue

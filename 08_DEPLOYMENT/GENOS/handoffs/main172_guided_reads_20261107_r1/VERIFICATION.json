@@ -1,0 +1,127 @@
+{
+  "main_generation": 172,
+  "release_id": "guided-reads-20261107-r1",
+  "release_manifest_sha256": "4e0409f1bbd162b0de3f086c086bfc3fb43162dfcc4cff2326609bd93c28ebaf",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "guided-reads-20261107-r1",
+    "generation": 172,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/guided-reads-20261107-r1/release.json",
+    "release_manifest_sha256": "4e0409f1bbd162b0de3f086c086bfc3fb43162dfcc4cff2326609bd93c28ebaf",
+    "activated_at": "2026-11-06T16:33:40.128355+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "e24ae974132815565cce88f1d4bef7981c6bf83fe043e11ceae4dab785da0bcb"
+  },
+  "serving_files": 536,
+  "replaces": {
+    "main_generation": 171,
+    "release_id": "oracle-scale-20261106-r1",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main171_oracle_scale_20261106_r1",
+    "sent_gmail_id": "1a1b1aae3ea07861"
+  },
+  "field_issue_addressed": "Field photos 2026-11-06 (주주총회 결의 요건, 3 turns): turn 2 located 제368조/제369조 titles and did not read them; turn 3 \"이어서 읽어봐봐\" re-searched and read 해산 조문 (517~519).",
+  "changed_vs_main171": {
+    "count": 44,
+    "products": {
+      "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": "104f30e9d268aeee09c24a5cad622061cc0a78c98721afbbe6201db4edce502b",
+      "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py": "43d27d81d0fd86b01550829693b9e7fe434e1066421e2bbad43da0680ce1b30b",
+      "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py": "9eb008b0c434f390f758735f0d6fa12d8a1daed5d7504334a58c9a07fd1f7af7",
+      "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "f76ae4a378a8a4c14f4ad0086549aa5ca7daea3325b3904debdc263924bd7322",
+      "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py": "4f1afa16932563c9a69510caff572bcf6226f04b0061ed930a394dfcd7ba2fd5",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py": "6095097a2d688996cfbc93603e2e334bc8eb6d1e9c6f0fda2d509d82d8846a1c",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "b13bacf84f71c06bdb58e48bda9739c059482275e84f0ff7ea0896457f410de8",
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "8d5d8dc5baf3fe2a1f58493629eb02ddf0430c4f795ca08299369d806dc11660",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "3ce5a3d36bf96d0676646520e4f669f892b699dae8de38e073f6652212226204",
+      "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": "eb6b5838c77301b77342e71cb64d71808fde0a84c489016b9905434fb1a02d0d",
+      "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py": "79f656581cea04d7d66ab5d965e82f165c37ac0d470f8b08e4a8f29dc8c18435",
+      "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": "1e530d0cb6306f5e363bb299b5afce23dbfc3bc5bc1ba5c89a1f3cfbc2c922a9"
+    },
+    "engine_pins_and_pipeline": 32,
+    "sql_plans": "{'plans_before': 642, 'plans_after': 642, 'plans_added': [], 'plans_removed': [], 'plans_changed': [], 'executable_sql_identical': True, 'engines': 30, 'engine_files': 508}",
+    "workflow_changed": false
+  },
+  "local_validation": {
+    "regression": {
+      "files": 51,
+      "main171": [
+        840,
+        189
+      ],
+      "main172": [
+        866,
+        163
+      ],
+      "new_failures": 0,
+      "fixed": 26,
+      "same_failures": 163
+    },
+    "oracle_readonly": {
+      "oracle": "local 23.26.3 Gold copy, readonly credentials",
+      "cases_passed": 10,
+      "cases_failed": 0,
+      "statements": 157,
+      "sql_kinds": "existing SELECT plans only (642 identical)"
+    },
+    "oracle_scale_guard": {
+      "passed": true,
+      "request_failures": 0,
+      "over_budget_reads": 0,
+      "full_catalogue_refusals": 0,
+      "sql_per_turn_max": 417,
+      "main171_sql_per_turn_max": 470,
+      "note": "guard_transport.py answers the two-step resolver (memory-resolve-fields); the first run without it failed every follow-up turn in the mock, kept as pytest-guard-r1-transport-old"
+    },
+    "entry_checks": 17,
+    "extra_checks": 11,
+    "installer_commands": 15,
+    "live_qwen_public_law": {
+      "ADR-1444": {
+        "turns": 8,
+        "answered": 6,
+        "unknown": 0,
+        "physical_calls": 90,
+        "reported_cost_usd": 0.162399,
+        "seconds": 1093.0
+      },
+      "ADR-1445": {
+        "turns": 8,
+        "answered": 8,
+        "unknown": 0,
+        "physical_calls": 56,
+        "reported_cost_usd": 0.167954,
+        "seconds": 473.8
+      },
+      "ADR-1446": {
+        "turns": 8,
+        "answered": 8,
+        "unknown": 0,
+        "physical_calls": 56,
+        "reported_cost_usd": 0.188562,
+        "seconds": 459.9
+      },
+      "model": "qwen/qwen3.8-27b (Parasail FP8, external experiment model, not the GENOS internal model)",
+      "cases": [
+        "주주총회 결의 요건 → 어어 상법상 주주총회 결의 요건을 확인해줘 → 이어서 읽어봐봐",
+        "상법상 정관 변경 요건 알려줘 → 종류주식을 발행한 회사면 뭐가 더 필요해?",
+        "상법상 이사회 결의는 어떻게 해? → 주주총회는? → 정관을 바꿀 때는?"
+      ],
+      "note": "ADR-1446 ran the r6 tree on MAIN170; the final tree adds one lazy-safe source lookup and the MAIN171 merge."
+    }
+  },
+  "package": {
+    "zip": "MAIN172_FULL_20261107_R1.zip",
+    "zip_sha256": "8da973d133bf0510dae5e83506cc9e192f53454af9ef61bb06debc03b89adda7",
+    "members": 547,
+    "workflow": "same bytes as MAIN171_WORKFLOW.py"
+  },
+  "known_limits": [
+    "Same-chapter title walk: first call on the local Oracle copy issued 91 SQL / 25.539 s, repeated calls 0 SQL (field timing not measured).",
+    "Broad follow-ups may read several originals before answering (ADR-1444 \"주주총회는?\": 16 calls, 95 s).",
+    "One run per case on public 상법 with an external model; not a quality certification."
+  ],
+  "field_deployed": false,
+  "quality_certified": false,
+  "new_model_calls_in_this_step": 0
+}

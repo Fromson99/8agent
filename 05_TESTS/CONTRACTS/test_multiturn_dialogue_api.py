@@ -9,10 +9,16 @@ from semantic_runtime.legal_agent.journal_storage import connect
 from semantic_runtime.legal_agent.shortcut_store import selected_store
 from test_bounded_source_main import settings
 from test_legal_agent_double_harness import ROOT, wire
-from test_memory_runtime_v2 import command
+from test_memory_runtime_v2 import command, fit
 from test_multiturn_structured_scope import tree
 from test_structure_first_search import structured_generation
 from test_natural_language_routing import EntryTransport, app as routing_app
+
+# The request-entry search field asks_definition exists from the definition-priority change on; older
+# code rejects it, so scripted entries carry it only when the loaded schema has it.
+from semantic_runtime.legal_agent import request_entry as _asks_entry
+import json as _asks_json
+ASKS_DEFINITION = {'asks_definition': True} if 'asks_definition' in _asks_json.dumps(_asks_entry.schema(model=True)) else {}
 
 
 def issue_refs(node):
@@ -50,18 +56,20 @@ def test_real_api_keeps_rejected_turn_then_commits_changed_task_and_wider_scope(
                         'queries':['승인'],'format':'prose','reason':'명시된 항'},
                     'intent':{'purpose':first,'concepts':['승인'],'issues':[{'id':'Q1','question':first,
                         'subject':'승인','kind':'OTHER','request_quote':first}]},'context_quotes':[],
-                    'search':{'mode':'FULLTEXT','scope_decision':{'mode':'NAMED_SCOPE',
+                    'search':{**ASKS_DEFINITION, 'mode':'FULLTEXT','scope_decision':{'mode':'NAMED_SCOPE',
                         'targets':[{'document':'모의승인규정','structure':'제1조제1항','selection':None}],
                         'user_quote':first,'reason':'명시된 항'},'reason':'범위 조회'}})
             if phase=='memory-reason-decision-review':return wire({'decision':'PASS'})
             if phase=='source-request-route':return wire({'mode':'CASE','answer':'','reason':'기존 조사 후속'})
-            if phase=='memory-resolve':
-                if self.turn==2:return wire(command('RESEARCH_REENTER',target=self.target,stage='SELECT'))
+            if phase.startswith('memory-resolve'):
+                # The rejected re-entry is repeated in the one guided correction, so the turn is still kept.
+                schema=body['response_format']['json_schema']['schema']
+                if self.turn==2:return wire(fit(command('RESEARCH_REENTER',target=self.target,stage='SELECT'),schema))
                 history=json.dumps(v['recent_dialogue'],ensure_ascii=False)
-                assert follow in history and '목적을 바꿀까요' in history
-                return wire(command('PURPOSE_REVISE',target=self.target,task=follow,
+                assert follow in history and '이어서 확인할까요' in history
+                return wire(fit(command('PURPOSE_REVISE',target=self.target,task=follow,
                     search_scope_change={'operation':'REPLACE','targets':[{'document':'모의승인규정',
-                        'structure':'제1조','selection':None}],'user_quote':follow}))
+                        'structure':'제1조','selection':None}],'user_quote':follow}),schema))
             if phase=='memory-command-check':
                 return wire({'valid':True,'reason':'모의 현재 목적 대조','request_relation':'FOLLOWUP',
                     'requested_task':follow})
@@ -96,7 +104,7 @@ def test_real_api_keeps_rejected_turn_then_commits_changed_task_and_wider_scope(
         transport.turn=2
         response=api.post('/v1/rag/ask',json={**request,'request_id':'2','question':follow})
         assert response.status_code==200,response.text
-        assert '적용하지 않았습니다' in response.json()['answer']['text']
+        assert '아직 조사를 시작하지 않았습니다' in response.json()['answer']['text']
         assert goal()==before
         transport.turn=3
         response=api.post('/v1/rag/ask',json={**request,'request_id':'3','question':short})

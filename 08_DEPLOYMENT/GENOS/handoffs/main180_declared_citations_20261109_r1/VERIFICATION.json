@@ -1,0 +1,125 @@
+{
+  "main_generation": 180,
+  "release_id": "declared-citations-20261109-r1",
+  "release_manifest_sha256": "0170a44e55b541c4fc25da96fd4cdb07356bb53f3593ed1591396c895c322bc5",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "declared-citations-20261109-r1",
+    "generation": 180,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/declared-citations-20261109-r1/release.json",
+    "release_manifest_sha256": "0170a44e55b541c4fc25da96fd4cdb07356bb53f3593ed1591396c895c322bc5",
+    "activated_at": "2026-11-08T18:17:52.788481+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "963f61d919a9f37628356311e164ec7996c1789784a58ea42a258e33a2668241"
+  },
+  "serving_files": 545,
+  "replaces": {
+    "main177": {
+      "release_id": "multiturn-followups-20261108-r1",
+      "sent_gmail_id": "1a1b9687a6f60209"
+    },
+    "not_sent_before": [
+      "MAIN178 unread-labels-20261108-r1",
+      "MAIN179 declared-names-20261108-r1"
+    ],
+    "field_state_assumed": "MAIN177 (multiturn-followups-20261108-r1) or an earlier MAIN"
+  },
+  "changed_vs_main179": {
+    "products": {
+      "02_BACKEND/semantic_runtime/comparison_research_bridge.py": "8322b1dcb06488b7a9abbcbe34e82325758eca522f5173b89fab2d450d10db03",
+      "02_BACKEND/semantic_runtime/legal_agent/declared_names.py": "95ddfb057c9edd61c32738763113f3aa3aac181bc58a061901427bd8154b7cd0",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "7d94831d09fca99542cc00d2132f7f794d21ccc6e9eaa39d53343bd242dd1dff",
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "0672d8a09808de3fae47ccb906cbb43c8e50cdf267ee1fa0b8c0bb44bec36209",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "b7a5e849666c9ff747a053494b6bd3f4d0e724312f70793176d4d1fc11383e1f",
+      "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": "a7deaf516cdc0c0e10884f95bba05241067654cd748328529cbcfd79eee83537",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "0f76ec09e69760cf7ae8326abe18d20bb64ce6a51ef2c104fecdd6573a00d24b",
+      "02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py": "9d9344d468976cabb29c9523d1cb2d9f45ac7f991c170d74ef205d67ef2357f7",
+      "02_BACKEND/semantic_runtime/oracle_query_service.py": "9c4dddf3e5bd68947a0bb678222bcfa069513122b5a5bb28bcd6b794d8378666",
+      "02_BACKEND/semantic_runtime/workflow_rag.py": "ef812106e4368e3f19abd303946fb461f47f19284fa38106d1419c083fca5773",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/compare_unit.py": "8be3cecdda7b3bba0dbe53d8d0114fc2611f994205aac45fff6f28531fa17764",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/flow.py": "e7d4fe07c6562839a1bb2804c5e8626c00d7a84d4eec7a9eacb3196cb0c5506e",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/manifest.json": "8b0f638fd959b21a746122677cc60d85ea10e4393458bae84a1674b13e293b0f"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "645 -> 645",
+    "workflow_file_changed": false,
+    "new_optional_environment_variable": "GENOS_DECLARED_NAMES_PRELOAD (default on; off = build on the first request as MAIN179)"
+  },
+  "changed_files_vs_field_main177": 48,
+  "changes": {
+    "main178_unread_labels": "partly read articles are named \"… 중 읽지 않은 부분\", other documents carry 「법령명」, one line per article, 장/편/관 named as such",
+    "main179_declared_names": "X(이하 \"Y\"라 한다) declarations are read once per process; a declared law-title abbreviation adds the 「title」 query and resolves the scope document",
+    "main180_declared_citations": "a citation written with a name the citing document declared in another article (규정 제32조, 법 제9조) is resolved from that declaration for the navigation connection menu, follow_reference, question comparison locators and whole-document comparison (request-local; stored index unchanged; 이 규정/같은 법 excluded)",
+    "main180_model_card": "the navigation view carries declared_names: name, what it stands for, where the original declares it (a hint, not evidence)",
+    "main180_document_compare_v2": "numbering-free external search words, question definitions off for comparison children, whole external articles (≤4,000 chars) compared, units of one reading group share found articles, external articles the unit itself cites are read without a search (found_for=cited_in_unit)",
+    "main180_oracle_first_list": "declared-name list read with ranked pages (body lookup only); Oracle serving builds it in a background thread at warm-up and requests use what is cached meanwhile"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 112,
+      "candidate_counts": {
+        "passed": 1828,
+        "failed": 296,
+        "error": 21,
+        "skipped": 2
+      },
+      "new_failures": 0,
+      "fixed": 30,
+      "same_failures": 315
+    },
+    "new_contract_tests": "05_TESTS/CONTRACTS/test_declared_citations.py (11) + test_document_compare_external_articles.py (10) + test_declared_names.py (14, 2 new for the background build)",
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "oracle_first_list": {
+      "corpus": "synthetic, local real-data counts: 1,547 documents, 327 declaring documents, 5,747 units holding 이하 (local real data 8,237), 21,113 units (local real data 255,806), local Oracle 23.26.3, PK-only search table",
+      "request_path_restart_r3": {
+        "seconds": 46.62,
+        "statements": 180
+      },
+      "request_path_restart_r4": {
+        "seconds": 14.1,
+        "statements": 66
+      },
+      "service_warmup_r4": {
+        "warmup_returned_seconds": 0.85,
+        "background_finished_seconds": 14.87,
+        "statements": 99,
+        "documents_loaded": 1547
+      }
+    },
+    "live_qwen": {
+      "adr1460_document_compare_r3": {
+        "shared_groups": 15,
+        "deferred": "0.91 -> 0.828",
+        "note": "Rejected against its 70% target; r4 cited-article reading and MAIN180 citations not run live"
+      },
+      "adr1462_declared_names": "6/6 vs 6/6 (Qwen expanded the abbreviations itself)"
+    },
+    "installer": {
+      "base": "MAIN177 multiturn-followups-20261108-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "package": {
+    "zip": "MAIN180_FULL_20261109_R1.zip",
+    "zip_sha256": "6be6a0a31ed4b0f757cc22c4cf85ed62655457fc7228460f38b10a4af2493026",
+    "members": 556,
+    "workflow": "MAIN180_WORKFLOW.py"
+  },
+  "not_verified": [
+    "field Oracle size/indexes: background build time in the field (log event declared_names.preload)",
+    "field internal model",
+    "live model run of MAIN180 citations and r4 cited-article reading",
+    "compositional abbreviations such as \"법 시행령 제34조\" stay unresolved",
+    "document comparison resume after a killed child (recover_abandoned_request) is a known defect, not fixed"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

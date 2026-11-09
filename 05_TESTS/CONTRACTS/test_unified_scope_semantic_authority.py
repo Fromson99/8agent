@@ -17,6 +17,12 @@ from test_main50_request_repair import GAP
 from test_unit_fulltext_adaptive_read import tree, session
 from test_followup_structure_lookup import investigation, apply, structured_generation
 
+# The request-entry search field asks_definition exists from the definition-priority change on; older
+# code rejects it, so scripted entries carry it only when the loaded schema has it.
+from semantic_runtime.legal_agent import request_entry as _asks_entry
+import json as _asks_json
+ASKS_DEFINITION = {'asks_definition': True} if 'asks_definition' in _asks_json.dumps(_asks_entry.schema(model=True)) else {}
+
 
 def wire(question='모의승인규정에서 승인 요건을 알려줘',named=True):
     return {'routing':{'mode':'CASE','answer':'','reason':'새 질문'},
@@ -24,7 +30,7 @@ def wire(question='모의승인규정에서 승인 요건을 알려줘',named=Tr
             'queries':['모의승인규정 승인 요건'],'format':'prose','reason':'요청 범위 조사'},
         'intent':{'purpose':'승인 요건 설명','concepts':['승인'],
             'issues':[{'id':'Q1','question':'승인 요건','subject':'승인','kind':'OTHER'}]},
-        'context_quotes':[], 'search':{'mode':'FULLTEXT','reason':'본문의 요건 확인',
+        'context_quotes':[], 'search':{**ASKS_DEFINITION, 'mode':'FULLTEXT','reason':'본문의 요건 확인',
             'scope_decision':{'mode':'NAMED_SCOPE' if named else 'AUTHORIZED_SCOPE',
                 'targets':[{'document':'모의승인규정','structure':None,'selection':None}] if named else [],
                 'user_quote':question if named else '',

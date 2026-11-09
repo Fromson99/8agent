@@ -234,10 +234,38 @@ def bounded_reference_completion(session):
 
 
 def detached_annex_files(s):
-    """In-scope separately stored annex files, keyed by owning regulation path and label."""
+    """In-scope separately stored annex files, keyed by owning regulation path and label.
+
+    Built from document names. The Oracle port pages sources with a per-call row budget,
+    so loading every in-scope source fails there (QUERY_SQL_RESULT_BUDGET); source IDs are
+    read only for the one file a citation resolves to.
+    """
     from .. import annex_files
-    return annex_files.index((sid, src['document_id'], src['document_name'])
-                             for sid, src in s.tools.sources.items() if src['document_id'] in s.scope)
+    names = getattr(getattr(s, 'matcher', None), 'documents', None)
+    if names is None:
+        return annex_files.index((sid, src['document_id'], src['document_name'])
+                                 for sid, src in s.tools.sources.items() if src['document_id'] in s.scope)
+    index = annex_files.index((None, did, names[did]) for did in sorted(s.scope) if did in names)
+    cache = {}
+
+    def document_sources(did):
+        if did not in cache:
+            cache[did] = _document_source_ids(s, did)
+        return cache[did]
+    index['document_sources'] = document_sources
+    return index
+
+
+def _document_source_ids(s, did):
+    """One document's source IDs, in the order the full source iteration listed them."""
+    sources = s.tools.sources
+    scoped = getattr(sources, 'ids_for_documents', None)
+    if scoped is None:
+        return [sid for sid, src in sources.items() if src['document_id'] == did]
+    ids = scoped([did])
+    if getattr(sources, 'cache_binding', None) is not None:
+        return list(ids)  # Oracle SourceScope streams this document ORDER BY id, as Sources iterates
+    return [sid for sid in sources if sid in ids]
 
 
 def detached_annex(ref, origin, annex_index):
@@ -251,6 +279,10 @@ def detached_annex(ref, origin, annex_index):
     if found[0] == 'AMBIGUOUS':
         return {**ref, 'reason': 'DETACHED_ANNEX_AMBIGUOUS', 'detached_annex_candidates': found[1]}
     did, sids = found
+    if 'document_sources' in annex_index:
+        sids = annex_index['document_sources'](did)
+        if not sids:
+            return None
     return {**ref, 'resolution': annex_files.RESOLUTION, 'reason': None,
             'target_source_ids': sids,
             'targets': [{'source_id': sid, 'unit_id': None, 'unit_path': [], 'block_ids': [],
@@ -295,6 +327,10 @@ def catalog(s, anchors, selected, handled, *, after_by_anchor=None, only_referen
                 limits.append({'kind':'connection_preview_limit','more_available':True})
                 break
             ref = json.loads(raw_row[0])
+            if ref.get('source_id') == anchor:
+                # `규정 제32조` after `…상장규정(이하 "규정")` elsewhere in the same document.
+                from .declared_names import upgrade_reference
+                ref = upgrade_reference(s, ref) or ref
             origin = s.tools.sources.get(ref.get('source_id'))
             # Neither an inaccessible origin nor its witness may enter context.
             if not origin or origin['document_id'] not in s.scope:

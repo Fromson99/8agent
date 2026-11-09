@@ -1,0 +1,16 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN175] R4 외규 온톨로지 읽기를 MAIN에 포함 + MAIN174(벡터 조문 번호) 포함 — MAIN173·MAIN174 대체 교체본</b></p>
+<p><b>MAIN175만 적용하면 됩니다.</b> MAIN174를 적용하지 않았으므로 MAIN174 변경이 함께 들어 있습니다.</p>
+<p><b>[MAIN175]</b> 과제3·5 R4 온톨로지(NFS 봉인 SQLite)를 읽는 코드를 MAIN에 넣었습니다(R4 설치기가 넣던 것과 같은 파일).
+이제 MAIN 전체 코드를 설치해도 빠지지 않아 <b>R4를 다시 돌릴 필요가 없고</b>, "Previous patch receipt exists" 오류도 나지 않습니다.
+DP=oracle 서빙과 온톨로지를 켜지 않은 서빙은 동작 그대로입니다.<br>
+<b>[MAIN174]</b> 벡터 초기검색에서도 검색어 속 조문 번호(제N조)를 먼저 읽습니다(키워드 검색과 같은 동작, 추가 SQL·모델 호출 0).</p>
+<p><b>적용</b>: TRANSFER 폴더에서 <code>bash MAIN175_ONECLICK_R1.txt</code> → MAIN175_ONECLICK_DONE, MAIN175_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전 배포.
+환경변수·워크플로우 편집기·화면 설정은 바꾸지 않습니다. ~/DEV에 R4 패치가 이미 있어도 그대로 실행하면 됩니다.<br>
+오늘 앞서 보낸 "결과 폴더를 새로 지정해 R4 재실행" 안내는 MAIN175 적용 시 필요 없습니다(확인용으로 R4를 다시 돌려도 코드 변경 0으로 끝남).</p>
+<p><b>로컬 검증</b>(모델 호출 0): 관련 계약 25파일 새 실패 0, R4 현장 순서 재현 통과(오늘 오류 난 옛 결과 폴더로도 통과),
+Oracle 규모 점검 통과, 설치기 15명령 통과(R4 패치된 MAIN173 checkout). 현장 실행은 미확인입니다.</p>
+<p>확인 부탁: R4 온톨로지 서빙에서 과제3·5 질문 1개, 개발계에서 vector 모드 조문 번호 질문 1개(실패 시 단계·파일:줄·oracle.sql.summary 사진).<br>
+원복: <code>bash MAIN175_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p>첨부: MAIN175_FULL_20261107_R1.zip, MAIN175_ONECLICK_R1.txt, MAIN175_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

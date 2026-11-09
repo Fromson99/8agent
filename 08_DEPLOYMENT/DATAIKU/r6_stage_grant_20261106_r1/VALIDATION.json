@@ -1,0 +1,150 @@
+{
+ "files": {
+  "R6_STAGE_GRANT_R4.txt": "f053ff8b79cb25acbae8dd7bfe515922688870162653c4d943f5132bcb334954",
+  "R6_STAGE_CHECK_R4.txt": "7b18a873f8c575425f66b013290a9ede71f407309b7c0233af6df6eaffe7d1c2",
+  "R6_STAGE_GRANT_ONE_LINE_R4.txt": "4a471cd6db149c8881e73b922021f67f7af7bdb153be2ee7354727206289bd6e"
+ },
+ "oracle_version": "23.26.3.0.0",
+ "checks": [
+  {
+   "check": "r3_loose_split_first_segment_is_comment_only",
+   "ok": true,
+   "detail": "'election, then RUN.\\n-- Copy to the very end, including the \"'"
+  },
+  {
+   "check": "r3_comment_only_segment_gives_ora00900",
+   "ok": true,
+   "detail": "ORA-00900: invalid SQL statement"
+  },
+  {
+   "check": "r4_loose_split_2_segments_no_comment_only",
+   "ok": true,
+   "detail": 2
+  },
+  {
+   "check": "r4_strict_split_2_segments_no_comment_only",
+   "ok": true,
+   "detail": 2
+  },
+  {
+   "check": "r4_only_comment_is_marker",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "check": "check_and_oneline_have_no_comment_no_semicolon",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "check": "method_b_check_before_grant",
+   "ok": true,
+   "detail": [
+    [
+     "DB_NAME",
+     "FREE",
+     "PASS"
+    ],
+    [
+     "CONNECTION_USER",
+     "A8G_OWN_5D4F89",
+     "INFO"
+    ],
+    [
+     "TABLE_COLUMNS",
+     "7",
+     "PASS"
+    ],
+    [
+     "GRANTEE_USER",
+     "A8G_ORDS_5D4F89",
+     "PASS"
+    ],
+    [
+     "SELECT_GRANT",
+     "-",
+     "FAIL"
+    ],
+    [
+     "INSERT_GRANT",
+     "-",
+     "FAIL"
+    ]
+   ]
+  },
+  {
+   "check": "method_b_oneline_grant_then_check_pass",
+   "ok": true,
+   "detail": [
+    [
+     "SELECT_GRANT",
+     "A8G_OWN_5D4F89",
+     "PASS"
+    ],
+    [
+     "INSERT_GRANT",
+     "A8G_OWN_5D4F89",
+     "PASS"
+    ]
+   ]
+  },
+  {
+   "check": "method_a_r4_block_then_select_6_rows_pass",
+   "ok": true,
+   "detail": [
+    [
+     "DB_NAME",
+     "FREE",
+     "PASS"
+    ],
+    [
+     "CONNECTION_USER",
+     "A8G_OWN_5D4F89",
+     "INFO"
+    ],
+    [
+     "TABLE_COLUMNS",
+     "7",
+     "PASS"
+    ],
+    [
+     "GRANTEE_USER",
+     "A8G_ORDS_5D4F89",
+     "PASS"
+    ],
+    [
+     "SELECT_GRANT",
+     "A8G_OWN_5D4F89",
+     "PASS"
+    ],
+    [
+     "INSERT_GRANT",
+     "A8G_OWN_5D4F89",
+     "PASS"
+    ]
+   ]
+  },
+  {
+   "check": "grantee_select_insert_ok",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "check": "r4_db_mismatch_ora20001",
+   "ok": true,
+   "detail": "ORA-20001: DB_MISMATCH: connection DB=FREE, ORDS DB=pidddacd_vnylh"
+  },
+  {
+   "check": "no_rows_changed",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "check": "temp_users_dropped",
+   "ok": true,
+   "detail": null
+  }
+ ],
+ "status": "PASS",
+ "note": "Dataiku splitter behaviour is a hypothesis emulated by regex; field not executed"
+}

@@ -195,7 +195,7 @@ class NativeExecution(CompletionExecution):
             extra=getattr(self.s.sources,'additional_recall_queries',[])
             if extra:self.s.sources.recall_query_plan['queries']=list(dict.fromkeys(self.s.sources.recall_query_plan['queries']+extra))
             selected,receipt=SourceRecall(self.s.sources).discover()
-            result={'selected_for_read':selected,'discovery':receipt,'corpus_ids':sorted(self.s.sources.tools.sources),'binding':self.host.binding}
+            result={'selected_for_read':selected,'discovery':receipt,'binding':self.host.binding}
         elif stage=='READ':
             recall=parts['RECALL']['payload'];r=SourceRecall(self.s.sources)
             r.discover=lambda:(recall['selected_for_read'],recall['discovery'])
@@ -221,6 +221,8 @@ class NativeExecution(CompletionExecution):
             self.s.sources.investigation_hints=getattr(self,'investigation_hints',None)
             self.s.sources.guidance_dialogue=deepcopy(getattr(self,'guidance_dialogue',[]))
             self.s.sources.continuation_request=deepcopy(getattr(self,'continuation_request',None))
+            self.s.sources.continuation_reads=deepcopy(getattr(self,'continuation_reads',[]))
+            self.s.sources.continuation_forced=bool(getattr(self,'continuation_forced',False))
             if progress:
                 records=list(progress.get('working',{}).get('unit_reads',[]))
                 records+=list(progress.get('batch',{}).get('selected',{}).values())

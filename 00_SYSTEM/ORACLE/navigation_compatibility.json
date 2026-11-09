@@ -1,0 +1,91 @@
+{
+  "schema_version": "navigation-compatibility-v1",
+  "modules": {
+    "semantic_runtime.navigation_match": "02_BACKEND/semantic_runtime/navigation_match.py",
+    "semantic_runtime.structure_navigation": "02_BACKEND/semantic_runtime/structure_navigation.py",
+    "semantic_runtime.inherited_navigation": "02_BACKEND/semantic_runtime/inherited_navigation.py"
+  },
+  "purpose": "Serving accepts Oracle navigation rows built by any code version in the same group: running the publisher on the reference generation produced identical rows.",
+  "tool": "06_TOOLS/maintenance/navigation_compatibility.py",
+  "publisher": {
+    "path": "02_BACKEND/lawrag/pipeline/oracle_query_navigation_publish.py",
+    "sha256": "57835cd6aabf5738182254a9f78f684e551a4296a094f78f388e349fe1877b40"
+  },
+  "reference": {
+    "generation": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+    "manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d"
+  },
+  "groups": [
+    {
+      "fingerprint": "1cc0a95ecde4fe9986cdfb2f9b526157096ed6f3fa5428a7752fea06373166f8",
+      "sections": {
+        "structures": {
+          "rows": 492946,
+          "sha256": "bcc105a842ba38a9af478a4c9a8fff952d7decb80bbf0c7133c8d7af2444ab40",
+          "kinds": {
+            "native.coordinate": 84258,
+            "native.structure_proof": 1547,
+            "native.surface": 150293,
+            "native.unit": 256848
+          }
+        },
+        "navigation": {
+          "rows": 575414,
+          "sha256": "e38210e78c54e4cd2c15d30e3ce32fed65760b2a4cf0358e6c15d9aa085e468d",
+          "kinds": {
+            "native.definition_summary": 10727,
+            "native.index_label": 213626,
+            "native.member": 97443,
+            "native.source": 39992,
+            "native.surface": 213626
+          }
+        },
+        "glossary": {
+          "rows": 131946,
+          "sha256": "3db0259692a921220470d987d0248a4faf0570763416e07783cd8caebed7fc65",
+          "kinds": {
+            "native.surface": 131946
+          }
+        }
+      },
+      "versions": [
+        {
+          "modules": {
+            "semantic_runtime.navigation_match": "f318d57b6a5d369292070f533c40be66adaa87fdeb7342fb2fd0e48e51a72157",
+            "semantic_runtime.structure_navigation": "89f5893379d4ff30290a76bfbe6d81cdfc899165344c29b7cdbc44eff7fe7a15",
+            "semantic_runtime.inherited_navigation": "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c"
+          },
+          "source": "Dataiku loaders gold_fresh_1/gold_oneclick_prod R5 vendored code (field dev G19 and operating Gold loads)",
+          "code_root": "08_DEPLOYMENT/DATAIKU/gold_fresh_1_20261102_r1/package/vendor",
+          "also_used_sha256": {
+            "02_BACKEND/lawrag/core/legal_coordinate.py": "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822",
+            "02_BACKEND/semantic_runtime/multi_entry_navigation.py": "0d1d879b58d9932723290a3b73a99178c88d63eb113d813d10563d87640392ef",
+            "02_BACKEND/semantic_runtime/oracle_query_catalog.py": "42547e7eb5d57de7af9777428025f96557c9eeff5127bc127e7eafe0473ae9b3",
+            "02_BACKEND/semantic_runtime/oracle_dp_io.py": "d346f89c9adc333082885cb32572c4e241ad088fd5c7b0b8c83dfa5ad14afd8e",
+            "02_BACKEND/semantic_runtime/term_index.py": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0"
+          },
+          "publisher_sha256": "57835cd6aabf5738182254a9f78f684e551a4296a094f78f388e349fe1877b40",
+          "registered_at": "2026-11-06T07:43:03+00:00"
+        },
+        {
+          "modules": {
+            "semantic_runtime.navigation_match": "8d498d651c7b4bcfc0e1037608149304be08a54d55f7c94afaede7f4bb908e95",
+            "semantic_runtime.structure_navigation": "89f5893379d4ff30290a76bfbe6d81cdfc899165344c29b7cdbc44eff7fe7a15",
+            "semantic_runtime.inherited_navigation": "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c"
+          },
+          "source": "Serving MAIN157-MAIN164 (dev-unsuffixed-20261106-r2 code)",
+          "code_root": "08_DEPLOYMENT/RELEASES/dev-unsuffixed-20261106-r2/code",
+          "also_used_sha256": {
+            "02_BACKEND/lawrag/core/legal_coordinate.py": "2144eaf449693df682922ef2952a300908c31106711c3174f678e4254aed3d52",
+            "02_BACKEND/semantic_runtime/multi_entry_navigation.py": "4221c8e882b5f7092d068bb7b45aebc07b304a92f474fe4acb3917bf46a236ad",
+            "02_BACKEND/semantic_runtime/oracle_query_catalog.py": "4d8d77d5d604d3ed33c36a90bfd8a9c4346b3c108b1f3fa245a64080a064b8af",
+            "02_BACKEND/semantic_runtime/oracle_dp_io.py": "f5ebe43a46a3d696ba2465bfeb185850b9bc15a78de81f47e9cd6ea610fcb698",
+            "02_BACKEND/semantic_runtime/term_index.py": "bd036e61b401671ef14ce886ae431255cac47411957968c4d001cda9aab823b0"
+          },
+          "publisher_sha256": "57835cd6aabf5738182254a9f78f684e551a4296a094f78f388e349fe1877b40",
+          "registered_at": "2026-11-06T07:43:30+00:00"
+        }
+      ]
+    }
+  ]
+}

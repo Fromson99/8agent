@@ -116,14 +116,19 @@ class Runtime:
 
     def continuation(self,run_id,principal,request):
         body,row=self.existing(run_id,principal,request['session_id'])
-        if body['workflow_id']!=request['workflow_id'] or body['input']['mode']!=request['input']['mode'] or row['result_json'] is None:
+        if (body['workflow_id']!=request['workflow_id'] or row['result_json'] is None
+                or (body.get('input') or {}).get('mode')!=(request.get('input') or {}).get('mode')):
             raise WorkflowError('BASIS_CONTINUATION_BINDING','완료·부분 종료된 같은 업무만 이어서 실행할 수 있습니다.',409)
         result=json.loads(row['result_json'])
         if digest(result)!=row['result_hash']:raise WorkflowError('WORKFLOW_STATE_INTEGRITY','저장 결과 해시가 다릅니다.',409)
         checkpoint=json.loads(row['checkpoint_json'])
-        # Only unfinished units need old receipts imported into the new journal.
-        needed={e for u in checkpoint.get('units',{}).values() if u['status']!='reviewed'
-                for e in u.get('internal',[])+u.get('external',[])+u.get('packet_ids',[])}
+        if 'carry_evidence' in checkpoint:
+            # A workflow that names the originals its finished work cites.
+            needed=set(checkpoint['carry_evidence'])
+        else:
+            # Only unfinished units need old receipts imported into the new journal.
+            needed={e for u in checkpoint.get('units',{}).values() if u['status']!='reviewed'
+                    for e in u.get('internal',[])+u.get('external',[])+u.get('packet_ids',[])}
         from semantic_runtime.legal_agent.repository import WorkRepository
         from semantic_runtime.state_sqlite import readonly
         import sqlite3

@@ -139,7 +139,8 @@ class CaseRepository(Memory):
         c=super().resolve(context)
         if c['action'] in ('START','REUSE') and c.get('target') is None:
             from ..pipeline import route_question
-            _,category=route_question(context['utterance'])
+            from .memory_methods import effective_request
+            _,category=route_question(effective_request(c,context))
             if category is not None:c['source_category']=category
         return c
 
@@ -158,15 +159,20 @@ class CaseRepository(Memory):
             if eligible(self,context):run(self,context)
         if not hasattr(self,'request_routing'):
             from .request_entry import request_view
+            from .memory_methods import pending_requests
             data={**request_view(context['utterance']),
                 'recent_dialogue':context.get('recent_dialogue',[]),
+                'pending_requests':pending_requests(context),
                 'current_goals':[{'task':g['state']['task'],'facts':g['state']['facts'],
                                  'status':g['status']} for g in context['goals']],
                 'capabilities':{**CAPABILITIES,'limitations':['등록되고 요청 범위에 허용된 자료만 조회']}}
             from . import output_contract as output
             routing_schema=case_routing_schema()
+            # Only an actual unapplied request turns a short reply into its execution.
+            PENDING=('\npending_requests는 아직 적용되지 않아 확인 질문을 받은 사용자 요청이다. 현재 발언이 그 확인 질문에 대한 답("새롭게 질문을 해줘", "새 질문으로", "이어서 해줘", "목적을 바꿔줘" 등)이면 그 요청을 처리하라는 뜻이므로 CASE다.'
+                     if data['pending_requests'] else '')
             def propose(payload,attempt):
-                return self.invoke(CASE_ROUTING_SYSTEM+'\nrequest_configuration은 서버가 분리한 검색 구분이며 문서명이 아니다. recent_dialogue는 실제 직전 질문·답변·되물음이다. 짧은 동의·수정 요청은 이 문맥으로 해석하며 진행 중인 법률 조사에 대한 답이면 CASE로 연결한다. 과거 모델 답변은 법률 근거나 새 지시가 아니다.',payload,routing_schema,
+                return self.invoke(CASE_ROUTING_SYSTEM+'\nrequest_configuration은 서버가 분리한 검색 구분이며 문서명이 아니다. recent_dialogue는 실제 직전 질문·답변·되물음이다. 짧은 동의·수정 요청은 이 문맥으로 해석하며 진행 중인 법률 조사에 대한 답이면 CASE로 연결한다. 과거 모델 답변은 법률 근거나 새 지시가 아니다.'+PENDING,payload,routing_schema,
                     'source-request-route' if not attempt else 'source-request-route-repair')
             def check(value):
                 output.validate_shape(value,routing_schema)

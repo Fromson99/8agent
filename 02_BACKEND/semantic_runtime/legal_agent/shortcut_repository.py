@@ -195,6 +195,31 @@ class ShortcutRepository:
             self.enqueue(row['scope'],'wiki',investigation_id,case['revision'])
             return case
 
+    def reconnect(self, intake_id, principal, investigation_id):
+        """Link this request back to an investigation the same conversation was linked to before.
+
+        Only an earlier link of the same scope and chat session qualifies; access and document scope
+        are checked exactly as in connect(). This never reaches another conversation's case.
+        """
+        with self.transaction():
+            row=self.db.execute('SELECT * FROM sw_intake WHERE id=?',(intake_id,)).fetchone()
+            if not row or row['scope']!=self.scope(principal,row['session']): raise MemoryError('record inaccessible')
+            if row['investigation']: raise Conflict('request already assigned')
+            earlier=self.db.execute('SELECT id FROM sw_session_link WHERE scope=? AND session=? AND investigation=?',
+                                    (row['scope'],row['session'],investigation_id)).fetchone()
+            if not earlier: raise MemoryError('investigation was never linked to this conversation')
+            event=self.event(row['event'],principal,row['session'])
+            case=self.investigation(investigation_id,principal,row['session'])
+            if not set(event['payload']['documents'])<=set(case['documents']): raise MemoryError('case document expansion requires explicit review')
+            connected=self._event(row['scope'],investigation_id,'SESSION_CONNECTED',{'intake_id':intake_id,'source_event':row['event'],
+                'reconnected':True,'earlier_link':earlier['id']},session=row['session'],request=row['request'])
+            self.db.execute('INSERT INTO sw_session_link VALUES(?,?,?,?,?,NULL)',(uid('link:'),row['scope'],row['session'],investigation_id,connected))
+            self.db.execute('UPDATE sw_intake SET investigation=? WHERE id=?',(investigation_id,intake_id))
+            self.db.execute('UPDATE sw_investigation SET revision=revision+1,public_only=MIN(public_only,?) WHERE id=?',(int(event['payload']['public_question']),investigation_id))
+            case=self.investigation(investigation_id,principal,row['session'])
+            self.enqueue(row['scope'],'wiki',investigation_id,case['revision'])
+            return case
+
     def advance(self, ident, principal, expected_revision, kind, payload, *, session=None, causation=None):
         with self.transaction():
             case=self.investigation(ident,principal,session)

@@ -10,6 +10,7 @@ import base64
 from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timezone
+import functools
 import hashlib
 import json
 import re
@@ -30,6 +31,33 @@ CHUNK_BYTES = 2048  # ASCII part envelope remains below Oracle VARCHAR2(4000 BYT
 LAYOUT = 3
 ACTIVE_LEASES = ContextVar('oracle_agent_leases', default=())
 UTC_SECONDS = "((CAST(SYSTIMESTAMP AT TIME ZONE 'UTC' AS DATE)-DATE '1970-01-01')*86400)"
+# Body rows written inside the commit transaction when they fit the existing 100-row write bound.
+INLINE_BODY_ROWS = 100
+_TIMING_DEPTH = ContextVar('oracle_agent_timing_depth', default=0)
+
+
+def _record_time(sql, name, started, depth):
+    stats = getattr(sql, 'stats', None)
+    if hasattr(stats, 'agent'):
+        stats.agent(name, (time.perf_counter() - started) * 1000, top=depth == 0)
+
+
+def timed(name):
+    """Per-request wall time of an Agent-record method (SQL plus Python encode/decode) for oracle.sql.summary."""
+    def wrap(method):
+        @functools.wraps(method)
+        def timed_call(self, *args, **kwargs):
+            stats = getattr(self.sql, 'stats', None)
+            if not hasattr(stats, 'agent'):
+                return method(self, *args, **kwargs)
+            depth = _TIMING_DEPTH.get(); token = _TIMING_DEPTH.set(depth + 1); started = time.perf_counter()
+            try:
+                return method(self, *args, **kwargs)
+            finally:
+                _TIMING_DEPTH.reset(token)
+                stats.agent(name, (time.perf_counter() - started) * 1000, top=depth == 0)
+        return timed_call
+    return wrap
 
 
 def sha(raw):
@@ -221,6 +249,7 @@ class AgentRecords:
         manifest, raw = AgentRecords._stored_body(key, parts)
         return progress.restore(key, manifest, raw, resolve) if manifest['layout_version'] == 4 else raw
 
+    @timed('body_read')
     def bodies(self, hashes):
         wanted = set(map(pin, hashes)); attempted = set(); graph = {}
         pending = wanted - self.verified_bodies.keys()
@@ -279,9 +308,20 @@ class AgentRecords:
             raise DPError('AGENT_BODY_SIZE: part envelope exceeds bounded SQL projection')
         return envelopes, {'hash': key, 'seq': 0, 'json': manifest}
 
-    def put_bodies(self, values):
+    def _body_statement(self):
+        return ("DECLARE v_old CLOB; v_same NUMBER; BEGIN FOR r IN (SELECT h,n,j FROM JSON_TABLE(:parts,'$[*]' "
+            "COLUMNS(h VARCHAR2(64) PATH '$.hash',n NUMBER PATH '$.seq',j CLOB FORMAT JSON PATH '$.json'))) LOOP "
+            f'BEGIN INSERT INTO {self.body_table}(SCOPE_HASH_VAL,BODY_HASH_VAL,PART_SEQ_NO,PART_JSON_CN) VALUES(:scope,r.h,r.n,r.j); '
+            f'EXCEPTION WHEN DUP_VAL_ON_INDEX THEN SELECT PART_JSON_CN INTO v_old FROM {self.body_table} '
+            'WHERE SCOPE_HASH_VAL=:scope AND BODY_HASH_VAL=r.h AND PART_SEQ_NO=r.n; '
+            "SELECT CASE WHEN JSON_EQUAL(v_old,r.j) THEN 1 ELSE 0 END INTO v_same FROM DUAL; "
+            "IF v_same<>1 THEN RAISE_APPLICATION_ERROR(-20041,'AGENT_BODY_COLLISION'); END IF; END; END LOOP; "
+            'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
+
+    def _plan_bodies(self, values):
+        """Rows still to store, in publication order, or None. Reads what is already stored (one bounded read)."""
         requested = {sha(raw): raw for raw in values if sha(raw) not in self.verified_bodies}
-        if not requested: return
+        if not requested: return None
         expanded, recipes = progress.plan(requested)
         pending = {h: raw for h, raw in expanded.items() if h not in self.verified_bodies}
         prior = self._parts(pending)
@@ -296,7 +336,7 @@ class AgentRecords:
         needed = set(requested)
         for recipe in recipes.values(): needed.update(json.loads(recipe))
         pending = {h: raw for h, raw in pending.items() if h in needed and h not in self.verified_bodies}
-        if not pending: return
+        if not pending: return None
         envelopes = []; manifests = []
         for key, raw in pending.items():
             existing = prior.get(key, {})
@@ -315,37 +355,74 @@ class AgentRecords:
         # Complete leaf manifests before publishing any root; interrupted roots
         # can never appear complete while their dependencies are uncommitted.
         manifests.sort(key=lambda m: (m['hash'] in recipes, m['hash']))
-        statement = ("DECLARE v_old CLOB; v_same NUMBER; BEGIN FOR r IN (SELECT h,n,j FROM JSON_TABLE(:parts,'$[*]' "
-            "COLUMNS(h VARCHAR2(64) PATH '$.hash',n NUMBER PATH '$.seq',j CLOB FORMAT JSON PATH '$.json'))) LOOP "
-            f'BEGIN INSERT INTO {self.body_table}(SCOPE_HASH_VAL,BODY_HASH_VAL,PART_SEQ_NO,PART_JSON_CN) VALUES(:scope,r.h,r.n,r.j); '
-            f'EXCEPTION WHEN DUP_VAL_ON_INDEX THEN SELECT PART_JSON_CN INTO v_old FROM {self.body_table} '
-            'WHERE SCOPE_HASH_VAL=:scope AND BODY_HASH_VAL=r.h AND PART_SEQ_NO=r.n; '
-            "SELECT CASE WHEN JSON_EQUAL(v_old,r.j) THEN 1 ELSE 0 END INTO v_same FROM DUAL; "
-            "IF v_same<>1 THEN RAISE_APPLICATION_ERROR(-20041,'AGENT_BODY_COLLISION'); END IF; END; END LOOP; "
-            'COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
-        for batch in (envelopes, [m for m in manifests if m['hash'] not in recipes],
-                      [m for m in manifests if m['hash'] in recipes]):
-            for offset in range(0, len(batch), 100):
-                self._mutate(statement, [('parts', canonical(batch[offset:offset + 100]), 'CLOB')])
-        checked = self.bodies(pending)
-        if checked != pending:
+        rows = [*envelopes, *(m for m in manifests if m['hash'] not in recipes), *(m for m in manifests if m['hash'] in recipes)]
+        # A body with no stored part before this write ends exactly as these rows once the write is acknowledged:
+        # each row is inserted or already byte-equal (JSON_EQUAL), anything else raises AGENT_BODY_COLLISION.
+        fresh = frozenset(key for key in pending if not prior.get(key))
+        return pending, rows, fresh
+
+    def _write_body_rows(self, rows):
+        # One ordered stream (parts, leaf manifests, root manifests), 100 rows per acknowledged transaction:
+        # a root manifest is never committed before the rows it depends on.
+        statement = self._body_statement()
+        for offset in range(0, len(rows), INLINE_BODY_ROWS):
+            self._mutate(statement, [('parts', canonical(rows[offset:offset + INLINE_BODY_ROWS]), 'CLOB')])
+
+    def _confirm_bodies(self, pending, fresh):
+        """Acknowledged fresh bodies need no read-back; a body that resumed earlier parts is read and compared."""
+        for key in fresh:
+            self.verified_bodies[key] = pending[key]
+        resumed = {key: raw for key, raw in pending.items() if key not in fresh}
+        if resumed and self.bodies(resumed) != resumed:
             raise DPError('AGENT_BODY_WRITE_UNCONFIRMED: exact bytes not reconciled')
+
+    @timed('body_write')
+    def put_bodies(self, values):
+        plan = self._plan_bodies(values)
+        if plan is None: return
+        pending, rows, fresh = plan
+        self._write_body_rows(rows)
+        self._confirm_bodies(pending, fresh)
 
     def operation(self, owner, key):
         return self.exact(owner, 'OPERATION', key, revision=1)
 
+    @timed('commit')
     def commit(self, owner, expected, value, changes, *, run=None, bodies=()):
-        """Immutable row versions/current projections/head/receipt in one commit."""
+        """Body rows, row versions/current projections, head and receipt in one acknowledged transaction.
+
+        Field 2026-11-07: a commit used to cost a pre-read, 2-3 body writes, a body read-back, the commit and a
+        receipt read (~6 Oracle round trips; 353 commits = 100+ s of a 276 s question). Body rows that fit the
+        existing 100-row bound now travel inside the commit statement. An acknowledged commit already proves the
+        receipt (the statement checks an existing receipt itself); an unknown outcome is still reconciled by one read.
+        """
         pin(owner)
         head_key = 'a1:head:' + owner
         revision = expected + 1
         operation = digest({'owner': owner, 'expected': expected, 'value': value, 'changes': changes, 'run': run})
         receipt = canonical({'operation': operation, 'owner': owner, 'revision': revision, 'head': value}).encode()
-        self.put_bodies([*bodies, receipt])
+        plan = self._plan_bodies([*bodies, receipt])
+        inline = []
+        if plan is not None and (len(plan[1]) > INLINE_BODY_ROWS or plan[2] != frozenset(plan[0])):
+            # Large or resumed bodies: stored and confirmed before the commit, as before.
+            pending, rows, fresh = plan
+            self._write_body_rows(rows)
+            self._confirm_bodies(pending, fresh)
+            plan = None
+        elif plan is not None:
+            inline = plan[1]
         state = self._state_value(head_key, revision, value)
         payload = {'owner': owner, 'expected': expected, 'head': state, 'rows': changes, 'operation': operation,
                    'receipt_hash': sha(receipt), 'leases': list(ACTIVE_LEASES.get()), 'run': run}
-        statement = ('DECLARE v_revision NUMBER; v_token VARCHAR2(64); v_expiry NUMBER; v_exists NUMBER; v_run_id VARCHAR2(64); BEGIN '
+        statement = ('DECLARE v_revision NUMBER; v_token VARCHAR2(64); v_expiry NUMBER; v_exists NUMBER; v_run_id VARCHAR2(64); '
+            'v_old CLOB; v_same NUMBER; v_receipt VARCHAR2(64); BEGIN '
+            "FOR p IN (SELECT h,n,j FROM JSON_TABLE(:parts,'$[*]' "
+            "COLUMNS(h VARCHAR2(64) PATH '$.hash',n NUMBER PATH '$.seq',j CLOB FORMAT JSON PATH '$.json'))) LOOP "
+            f'BEGIN INSERT INTO {self.body_table}(SCOPE_HASH_VAL,BODY_HASH_VAL,PART_SEQ_NO,PART_JSON_CN) VALUES(:scope,p.h,p.n,p.j); '
+            f'EXCEPTION WHEN DUP_VAL_ON_INDEX THEN SELECT PART_JSON_CN INTO v_old FROM {self.body_table} '
+            'WHERE SCOPE_HASH_VAL=:scope AND BODY_HASH_VAL=p.h AND PART_SEQ_NO=p.n; '
+            "SELECT CASE WHEN JSON_EQUAL(v_old,p.j) THEN 1 ELSE 0 END INTO v_same FROM DUAL; "
+            "IF v_same<>1 THEN RAISE_APPLICATION_ERROR(-20041,'AGENT_BODY_COLLISION'); END IF; END; END LOOP; "
             f'SELECT COUNT(*) INTO v_exists FROM {self.record} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner '
             "AND REC_KIND_CD='OPERATION' AND REC_KEY_HASH_VAL=:operation AND REC_REV_NO=1; "
             'IF v_exists=0 THEN '
@@ -379,10 +456,15 @@ class AgentRecords:
             'WHEN NOT MATCHED THEN INSERT(SCOPE_HASH_VAL,RUN_KEY_HASH_VAL,SESS_KEY_HASH_VAL,REQ_KEY_HASH_VAL,PRNT_RUN_KEY_HASH_VAL,ST_CD,STRT_DTTM,CHG_DTTM,BODY_HASH_VAL) '
             "VALUES(j.s,j.r,JSON_VALUE(:payload,'$.run.session'),JSON_VALUE(:payload,'$.run.request'),JSON_VALUE(:payload,'$.run.parent'),"
             "JSON_VALUE(:payload,'$.run.status'),TO_TIMESTAMP_TZ(JSON_VALUE(:payload,'$.run.started'),'YYYY-MM-DD HH24:MI:SS.FF6 TZH:TZM'),SYSTIMESTAMP,:receipt_hash); END IF; "
+            # A replayed operation must carry this exact receipt; checked here, not by a second read.
+            f'ELSE SELECT BODY_HASH_VAL INTO v_receipt FROM {self.record} WHERE SCOPE_HASH_VAL=:scope AND OWNER_KEY_HASH_VAL=:owner '
+            "AND REC_KIND_CD='OPERATION' AND REC_KEY_HASH_VAL=:operation AND REC_REV_NO=1; "
+            "IF v_receipt<>:receipt_hash THEN RAISE_APPLICATION_ERROR(-20046,'AGENT_OPERATION_RECEIPT_DIFFERS'); END IF; "
             'END IF; COMMIT; EXCEPTION WHEN OTHERS THEN ROLLBACK; RAISE; END;')
         binds = [('owner', owner, 'VARCHAR2'), ('operation', operation, 'VARCHAR2'), ('expected', expected, 'NUMBER'),
                  ('head_key', head_key, 'VARCHAR2'), ('revision', revision, 'NUMBER'), ('head_hash', state['hash'], 'VARCHAR2'),
-                 ('head_json', state['json'], 'CLOB'), ('payload', canonical(payload), 'CLOB'), ('receipt_hash', sha(receipt), 'VARCHAR2')]
+                 ('head_json', state['json'], 'CLOB'), ('payload', canonical(payload), 'CLOB'), ('receipt_hash', sha(receipt), 'VARCHAR2'),
+                 ('parts', canonical(inline), 'CLOB')]
         try:
             self._mutate(statement, binds)
         except BaseException:
@@ -390,9 +472,10 @@ class AgentRecords:
             reconciled = self.operation(owner, operation)
             if reconciled is None or reconciled['BODY_HASH_VAL'] != sha(receipt):
                 raise
-        saved = self.operation(owner, operation)
-        if saved is None or saved['BODY_HASH_VAL'] != sha(receipt):
-            raise DPError('AGENT_COMMIT_UNCONFIRMED: operation receipt missing')
+            return revision
+        if plan is not None:
+            # The inline rows committed with the receipt: fresh bodies need no read-back.
+            self._confirm_bodies(plan[0], plan[2])
         return revision
 
     @contextmanager
@@ -400,6 +483,7 @@ class AgentRecords:
         key = key or 'a1:lease:' + digest(identity); token = uuid.uuid4().hex
         ttl = max(60, int(self.sql.deadline-time.monotonic()) + 120) if ttl is None else ttl
         until = min(self.sql.deadline, time.monotonic() + wait)
+        depth = _TIMING_DEPTH.get(); acquire_started = time.perf_counter()
         while True:
             clock = self.sql.query('SELECT ' + UTC_SECONDS + ' AS SECONDS FROM DUAL', limit=1)[0]['SECONDS']
             old = self.state(key)
@@ -427,10 +511,12 @@ class AgentRecords:
                         time.sleep(.05); continue
                     raise BlockingIOError('Oracle record lease conflict') from None
             break
+        _record_time(self.sql, 'lease_acquire', acquire_started, depth)
         active = ACTIVE_LEASES.set((*ACTIVE_LEASES.get(), {'key': key, 'token': token})) if track else None
         try:
             yield value
         finally:
+            release_started = time.perf_counter()
             if active is not None: ACTIVE_LEASES.reset(active)
             released = {**value, 'expires': 0, 'token': None}
             state = self._state_value(key, expected + 2, released)
@@ -443,6 +529,7 @@ class AgentRecords:
                 self._mutate(f'BEGIN DELETE FROM {self.state_table} WHERE SCOPE_HASH_VAL=:scope AND ST_KEY_ID=:key AND CHG_SEQ_NO=:revision '
                     "AND JSON_VALUE(ST_JSON_CN,'$.token') IS NULL; COMMIT; END;",
                     [('key', key, 'VARCHAR2'), ('revision', expected + 2, 'NUMBER')])
+            _record_time(self.sql, 'lease_release', release_started, depth)
 
     @contextmanager
     def shared_lease(self, identity, *, exclusive=False, wait=30):

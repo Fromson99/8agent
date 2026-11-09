@@ -1,0 +1,13 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN174] 벡터 초기검색에서도 검색어 속 조문 번호(제N조)를 먼저 읽기 — MAIN173 대체 교체본</b></p>
+<p>첫 모델이 "상법 제365조 …"를 문서 전체 본문 검색으로 분류하면, 키워드 검색은 그 조문을 먼저 읽었지만 <b>벡터 초기검색은 지정 조문을 놓칠 수 있었습니다</b>.
+이제 벡터 결과에도 같은 구조 조회를 붙여 지정 조문을 먼저 읽고, 벡터 후보는 나머지 선택지로 남깁니다.
+범위 확대·추가 SQL·추가 모델 호출 없음, 새 환경변수 없음. 키워드·재검색·구조 진입은 원래 동작 그대로입니다.</p>
+<p><b>적용</b>: TRANSFER 폴더에서 <code>bash MAIN174_ONECLICK_R1.txt</code> → MAIN174_ONECLICK_DONE, MAIN174_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전 배포.<br>
+<b>워크플로우 편집기·화면 설정</b>: MAIN173와 같음(변경 없음). MAIN173 미적용이면 MAIN173 안내대로 "문서 대사" 선택지 추가·MAIN174_WORKFLOW.py 교체.</p>
+<p><b>로컬 검증</b>(모델 호출 0): 관련 계약 48파일 새 실패 0, Oracle 규모 점검 통과, 설치기 15명령 통과.
+로컬 Oracle에서 "모의승인규정 제101조" 벡터 질문: MAIN173는 첫 읽기 없음 → MAIN174는 제101조 먼저 읽음(추가 SQL 0).
+현장 확인 부탁: <code>GENOS_RAG_INITIAL_SEARCH=vector</code>에서 조문 번호가 든 질문 → 첫 원문 읽기에 그 조문이 나오는지(실패 시 단계·파일:줄·oracle.sql.summary).</p>
+<p>원복: <code>bash MAIN174_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p>첨부: MAIN174_FULL_20261107_R1.zip, MAIN174_ONECLICK_R1.txt, MAIN174_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

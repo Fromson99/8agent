@@ -152,7 +152,7 @@ def test_metadata_page_never_returns_sibling_outside_scope(session):
 def test_failed_first_question_can_change_query_keep_scope_and_restore(tmp_path):
     m=metadata()
     class Scoped(Fake):
-        def scope_state(self,state,c,utterance,*,dialogue=()):
+        def scope_state(self,state,c,utterance,*,dialogue=(),**kw):
             if c.get('search_scope_change'):
                 state={**state,'search_scope':qs.resolve(c['search_scope_change'],state.get('search_scope'),m,state['document_ids'],utterance)}
             return state
@@ -209,4 +209,7 @@ def test_actual_reference_catalogue_grants_read_only_after_original_acquisition(
     assert qs.documents(s)==['d']
     corrupt=deepcopy(checkpoint);corrupt['scope_read_grants'][detail['id']]['999']={'reference_id':'absent'}
     qs.attach(s,scope)
-    with pytest.raises(ContractError,match='witness'):qs.restore_grants(s,corrupt)
+    # 2026-11-08: a grant no current original witnesses is dropped (narrower reading), not a request failure
+    # (MAIN176 S4 HTTP 500). The verified grants are restored as before.
+    qs.restore_grants(s,corrupt)
+    assert set(offer['block_ids']) <= qs.permitted_blocks(s,detail['id']) and '999' not in qs.permitted_blocks(s,detail['id'])

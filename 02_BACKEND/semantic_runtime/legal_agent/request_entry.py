@@ -12,7 +12,7 @@ from . import output_contract as output
 
 from .query_scope import PROMPT as SEARCH_SCOPE_PROMPT, CHANGE as SEARCH_SCOPE_CHANGE
 POLICY='fused-title-v1'
-SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'\n현재 사건·기억 없는 최초 입력이다. 분류·목적·쟁점·사실·검색 계획을 한 번에 작성한다. 새 법률 질문과 문서/범위 지정은 CASE/CASE_START다. 목적·쟁점은 실제 요청을 보존하고 배경이나 모든 관련 사안을 추가하지 않는다. 구조 설명 요청에는 그 구조만 쟁점으로 둔다.\nfacts는 실제 사용자 사건 조건·가정만 name/value와 정확한 user_quote로 작성한다. 일반 설명은 facts=[]다. 명시 내규/외규면 source_category=internal/external, 그 외 ALL; 형식 요청이 없으면 prose다.\nFULLTEXT queries는 독립 쟁점별 구별력 있는 가장 짧은 핵심 표현1개, 최대4개다. 법령명·전체 질문·요건/기준/절차·넓은 유사어를 반복하지 않는다. 검색어는 OR 합산되므로 불필요한 일반어가 결과를 넓힌다. 주체·조건은 intent에 보존한다. 사용자나 실제 조회에 없는 조문번호·법령명·ID·법률 결론은 만들지 않는다. 제외된 참조 번호로 실제 요청 제목을 대체하지 않는다.\nsearch.scope_decision이 유일한 범위 판단이다. 실제 조사 대상으로 요청한 문서는 NAMED_SCOPE이며 hints에 없어도 그 이름을 보존한다. 문서 전체는 structure=null,selection=null; 실제 번호·목차·제목 위치를 요청하면 STRUCTURE, 문서만 알고 내용을 찾으면 FULLTEXT다. 두 검색 모두 지정 범위 안에서 실행한다. 명시한 대상이 없을 때만 AUTHORIZED_SCOPE,targets=[],user_quote=""다.\nlaw_title_hints는 위치 단서다. EXACT_TITLE/REGISTERED_ALIAS는 이름 일치, PARTIAL_TITLE/DERIVED_ABBREVIATION은 미확정 유사 후보다. question_span과 실제 title을 비교하되 후보 존재를 적용 근거로 삼지 않는다. title_hint_ids나 command.search_scope_change를 별도로 출력하지 않는다.\ncontext_quotes는 배경·업무 문맥의 연속 원문이다. 적용 가정과 원문 읽기 제외는 구분한다. 기존 판단의 정정·복원·재사용만 요구하고 대상이 없으면 CASE/NEED_TARGET,intent=null,search=null이며 필요한 대상을 reason에 쓴다. 새 법률 질문의 법령 미확인은 CASE_START로 조사한다.\nDIRECT/BROWSE는 command=null,intent=null,search=null,context_quotes=[]다. CASE answer는 빈 문자열이다. 실제 목록은 서버가 구성한다. CASE_START는 intent와 search를 작성한다. JSON만 출력한다.'
+SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'\n현재 사건·기억 없는 최초 입력이다. 분류·목적·쟁점·사실·검색 계획을 한 번에 작성한다. 새 법률 질문과 문서/범위 지정은 CASE/CASE_START다. 목적·쟁점은 실제 요청을 보존하고 배경이나 모든 관련 사안을 추가하지 않는다. 구조 설명 요청에는 그 구조만 쟁점으로 둔다.\nfacts는 실제 사용자 사건 조건·가정만 name/value와 정확한 user_quote로 작성한다. 일반 설명은 facts=[]다. 명시 내규/외규면 source_category=internal/external, 그 외 ALL; 형식 요청이 없으면 prose다.\nFULLTEXT queries는 독립 쟁점별 구별력 있는 가장 짧은 핵심 표현1개, 최대4개다. 법령명·전체 질문·요건/기준/절차·넓은 유사어를 반복하지 않는다. 검색어는 OR 합산되므로 불필요한 일반어가 결과를 넓힌다. 주체·조건은 intent에 보존한다. 사용자나 실제 조회에 없는 조문번호·법령명·ID·법률 결론은 만들지 않는다. 제외된 참조 번호로 실제 요청 제목을 대체하지 않는다.\nsearch.asks_definition은 질문이 용어·개념의 뜻이나 정의·범위 자체를 묻는지다(예: “~란 무엇인가”, “~는 어느 기관인가”, “~에 해당하는 자의 범위는”). 요건·기준·절차·기한·수량·결정 주체·허용 여부·계산 방법을 묻는 질문은 false다.\nsearch.scope_decision이 유일한 범위 판단이다. 실제 조사 대상으로 요청한 문서는 NAMED_SCOPE이며 hints에 없어도 그 이름을 보존한다. 문서 전체는 structure=null,selection=null; 실제 번호·목차·제목 위치를 요청하면 STRUCTURE, 문서만 알고 내용을 찾으면 FULLTEXT다. 두 검색 모두 지정 범위 안에서 실행한다. 명시한 대상이 없을 때만 AUTHORIZED_SCOPE,targets=[],user_quote=""다.\nlaw_title_hints는 위치 단서다. EXACT_TITLE/REGISTERED_ALIAS는 이름 일치, PARTIAL_TITLE/DERIVED_ABBREVIATION은 미확정 유사 후보다. question_span과 실제 title을 비교하되 후보 존재를 적용 근거로 삼지 않는다. title_hint_ids나 command.search_scope_change를 별도로 출력하지 않는다.\ncontext_quotes는 배경·업무 문맥의 연속 원문이다. 적용 가정과 원문 읽기 제외는 구분한다. 기존 판단의 정정·복원·재사용만 요구하고 대상이 없으면 CASE/NEED_TARGET,intent=null,search=null이며 필요한 대상을 reason에 쓴다. 새 법률 질문의 법령 미확인은 CASE_START로 조사한다.\nDIRECT/BROWSE는 command=null,intent=null,search=null,context_quotes=[]다. CASE answer는 빈 문자열이다. 실제 목록은 서버가 구성한다. CASE_START는 intent와 search를 작성한다. JSON만 출력한다.'
 
 from .structure_selection import PROMPT as ENTRY_SELECTION_PROMPT
 ENTRY_SCOPE_PROMPT = ENTRY_SELECTION_PROMPT + """
@@ -51,7 +51,10 @@ def schema(scoped=False, *, model=False):
         'context_quotes':{'type':'array','items':{'type':'string','minLength':1},'maxItems':8},
         'search':{'anyOf':[object_schema({'mode':{'enum':['STRUCTURE','FULLTEXT']},
             'title_hint_ids':{'type':'array','items':{'type':'string'},'maxItems':4},
-            'reason':{'type':'string','minLength':1}}),{'type':'null'}]}})
+            'reason':{'type':'string','minLength':1},'asks_definition':{'type':'boolean'}}),{'type':'null'}]}})
+    if not model:
+        # Stored entries from before 2026-11-09 carry no question type; they keep the old behaviour.
+        result['properties']['search']['anyOf'][0]['required'].remove('asks_definition')
     if model:
         command['properties'].pop('search_scope_change')
         command['required'].remove('search_scope_change')

@@ -1,0 +1,18 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>MAIN166 — 첫 원문 검색 ORA-22806 수정 (MAIN165 대체)</b></p>
+<p><b>원인</b>(현장 진단 R1/R2): 본문검색 점수 SQL 안의 숫자 바인드 2개(<code>:q_documents_n</code>, <code>:q_average</code>)가 현장 ORDS 경로에서 ORA-22806으로 실패.
+같은 값을 SQL에 숫자로 넣으면 통과(N=1035), 바인드 이름만 바꾸면 여전히 실패.</p>
+<p><b>수정</b>: <code>oracle_query_fulltext.py</code>에서 게시 통계 2개(문서 수·평균 길이)를 숫자로 넣음(양의 유한한 값만 허용). 결과 행·순서는 그대로.
+나머지 기능·매핑·워크플로우는 MAIN165와 같습니다(MAIN165 대비 33파일: 제품1 + SQL 출처 메타 1 + PIPELINE + 엔진 pin 30).</p>
+<p><b>적용</b> — TRANSFER 폴더에 ZIP과 TXT를 두고 (ZIP은 풀지 않음):</p>
+<pre style="background:#f4f4f4;padding:8px">bash MAIN166_ONECLICK_R1.txt</pre>
+<p>완료 표시 <code>MAIN166_ONECLICK_DONE</code>, <code>MAIN166_EXIT=0</code> → status / stage → commit → <code>bash MAIN166_ONECLICK_R1.txt gate-code</code> → push → 새 코드서빙 리비전 배포.
+환경변수는 그대로(DP=oracle, GENOS_ORACLE_TABLE_MAPPING=development_g19_1, DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc).
+워크플로우는 MAIN165와 같은 바이트라 바꿀 필요 없습니다.</p>
+<p><b>확인</b>: 새 요청 ID로 질문 1개 → 로그에 ORA-22806이 없고 검색 뒤 단계로 넘어가면 통과.
+다음에 멈출 수 있는 곳은 연결 조문 조회의 <code>QUERY_NAV_BUDGET</code>(별도 수정 중, 이번에 미포함)입니다.</p>
+<p><b>로컬 검증</b>: 개발계 실버 매핑 임시 환경에서 수정본 본문검색 통과·숫자 바인드 0·예전 문장과 결과 행 동일,
+관련 계약 19파일 MAIN165와 같은 289통과/32실패(새 실패 0), 서비스 진입 Oracle 2/2, root 서비스 확인 18항목, 설치기 15명령 통과.
+실제 ORDS·현장 DB에서 수정본 실행은 아직입니다.</p>
+<p>첨부: MAIN166_FULL_20261106_R1.zip, MAIN166_ONECLICK_R1.txt, MAIN166_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

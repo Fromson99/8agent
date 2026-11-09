@@ -149,6 +149,9 @@ def prepare(stage, data, schema):
                 alias_flat['required']=[new if k==old else k for k in alias_flat['required']]
             wire['properties']['items']['items']={'anyOf':[flat,item,alias_flat]}
             wire['properties']['items']['maxItems']=28
+        elif data.get('fields'):
+            # An initial review answers one issue: at most one item for each of its requested fields.
+            wire['properties']['items']['maxItems']=len(data['fields'])
     if single:
         wire['properties']['rows'].update(minItems=1,maxItems=1)
     if stage=='BASIS' and not all(side_ids.values()):wire['properties']['pairs']['maxItems']=0
@@ -156,6 +159,11 @@ def prepare(stage, data, schema):
         from jsonschema import validate
         # Reject omissions/extra keys before any mechanical fields are restored.
         # In particular, never hide a supplied dimension or extra comparison row.
+        if (general and data.get('review_mode')!='UPDATE' and data.get('fields') and isinstance(value,dict)
+                and isinstance(value.get('items'),list) and len(value['items'])>len(data['fields'])):
+            raise ValueError('too many items: this call reviews only the given issue. Submit at most one item for each requested field ('
+                +', '.join(data['fields'])+'); '+str(len(value['items']))+' were submitted. Put several findings of one field in that item, '
+                'and leave the other issues of the question to their own review')
         validate(value,wire)
         normalizations=[]
         prepared=deepcopy(value)
@@ -180,7 +188,8 @@ def prepare(stage, data, schema):
                 if field not in grouped:grouped[field]=row;continue
                 prior=grouped[field]
                 if any(side in prior and side in row for side in ('internal','external')):
-                    raise ValueError('duplicate field-side patch')
+                    raise ValueError('duplicate field-side patch: field '+str(field)+' has more than one judgment for the same side; '
+                        'submit each requested field once per side and put several findings of one field in that item')
                 for name,entry in row.items():
                     if name=='field':continue
                     if name in prior and prior[name]!=entry:

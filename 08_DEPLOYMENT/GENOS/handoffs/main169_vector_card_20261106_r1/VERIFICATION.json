@@ -1,0 +1,101 @@
+{
+  "main_generation": 169,
+  "release_id": "vector-card-20261106-r1",
+  "release_manifest_sha256": "644778ad08db5836a5d81f7b9aaf045d73c398d737537cb3af8eeca3924072bd",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "vector-card-20261106-r1",
+    "generation": 169,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/vector-card-20261106-r1/release.json",
+    "release_manifest_sha256": "644778ad08db5836a5d81f7b9aaf045d73c398d737537cb3af8eeca3924072bd",
+    "activated_at": "2026-11-06T11:28:51.364814+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "32e08ae316b1ebe75f9220a364a6d99db06ce9d16173a403657673ad3fcfba02"
+  },
+  "serving_files": 536,
+  "replaces": {
+    "main_generation": 168,
+    "release_id": "recall-source-budget-20261106-r1",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main168_recall_source_budget_20261106_r1",
+    "sent_gmail_id": "1a1b08f88a5cdcf4"
+  },
+  "field_issue_addressed": "After VCTR_HEAD activation with GENOS_RAG_INITIAL_SEARCH=vector the progress view showed only the planned search expression; vector use was not visible.",
+  "changed_vs_main168": {
+    "count": 34,
+    "products": {
+      "02_BACKEND/semantic_runtime/progress.py": "9ef824c26f0a5522756f5f2d75408316ef4e3a5aa3068958b457a003ce1a94ab",
+      "02_BACKEND/semantic_runtime/vector_navigation.py": "3b68cb8fccc4015953a3d99cc3ff0674b6c84edaa41cdfff206ee607107e63f8"
+    },
+    "sql_source_metadata": "02_BACKEND/semantic_runtime/oracle_query_plans.py (line numbers only; 642 executable plans identical)",
+    "engine_pins": 30,
+    "pipeline": true,
+    "workflow_changed": false
+  },
+  "behaviour": {
+    "recall_card_vector": [
+      "벡터 후보 N개 · 가까운 순",
+      "문서명 · 조문 (nearest 5, 60 chars each)",
+      "외 M개"
+    ],
+    "recall_card_fulltext": "unchanged",
+    "event": "INITIAL_VECTOR_CANDIDATES gains a five-row preview",
+    "acl": "documents outside the request scope are excluded from count and names",
+    "unchanged": [
+      "candidates",
+      "RECALL payload",
+      "SQL 642",
+      "answers"
+    ]
+  },
+  "local_validation": {
+    "new_contracts": "05_TESTS/CONTRACTS/test_vector_candidate_progress.py 6/6",
+    "related_contracts": {
+      "files": 17,
+      "main168": [
+        169,
+        76
+      ],
+      "main169": [
+        173,
+        72
+      ],
+      "new_failures": 0,
+      "same_failures": 71,
+      "fixed_by_new_tests": 4
+    },
+    "real_local_oracle_service": {
+      "passed": 2,
+      "failed": 0,
+      "vector_card": [
+        "벡터 후보 2개 · 가까운 순",
+        "모의승인규정 · 제2조 적용",
+        "모의승인규정 · 제1조 정의"
+      ],
+      "temporary_owners_dropped": true
+    },
+    "entry_check": {
+      "passed": true,
+      "checks": 29
+    },
+    "package": {
+      "zip_sha256": "2c801f7fbe05add372aea1ec9baa5924c1b1ad9c0fbd69e6b47f7810034ba20a",
+      "members": 547,
+      "diff_vs_main168_zip": 35,
+      "installer_diff_lines": 1,
+      "installer_test_commands": 15,
+      "installer_test_passed": true,
+      "undo_restored_main168_files": 536,
+      "python311_compile": true
+    }
+  },
+  "not_verified": [
+    "real ORDS HTTP",
+    "field DB",
+    "field GENOS screen",
+    "internal model"
+  ],
+  "new_model_calls": 0,
+  "quality_certified": false
+}

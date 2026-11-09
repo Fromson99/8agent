@@ -1,0 +1,25 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>MAIN167 — Oracle 게시 자료 메모리 캐시 + SQL 로그 정리 (MAIN166 대체)</b></p>
+<p><b>왜</b>: 현장 MAIN166 로그에서 SQL마다 <code>oracle.sql</code> 줄이 두 번씩 찍혀 로그가 SQL로 덮였고, 한 줄 쓰는 데 5~10ms가 걸렸습니다.
+첫 모델 호출 전 약 7초가 SQL이었고, 질문마다 같은 게시본(릴리스·원문 목록·구조·검색 행)을 처음부터 다시 읽고 있었습니다.</p>
+<p><b>수정</b></p>
+<ul>
+<li><b>메모리 캐시</b>: 채널 포인터는 질문마다 Oracle에서 새로 읽고, 그 게시본의 원문·구조·검색 표(DOC_VER/DOC_UNIT/DOC_BLK/SRC_POST/SRCH_POST/SRCH_ROW)만 읽는 SQL 결과를 서빙 프로세스 메모리에 두고 다시 씁니다.
+대화 상태·Agent 기록·온톨로지·벡터·시스템 뷰는 항상 Oracle로 갑니다. 서빙 디스크에는 쓰지 않습니다.</li>
+<li><b>로그</b>: SQL마다의 두 줄은 기본 로그에서 없앴고, 1초 이상 걸린 SQL은 <code>oracle.sql.slow</code>, 실패는 WARNING, 요청마다 <code>oracle.sql.summary</code> 한 줄(보낸 SQL 수·합계 ms·캐시 재사용 수·가장 오래 걸린 SQL 3개)을 남깁니다.</li>
+</ul>
+<p>MAIN166 대비 38파일(제품 6파일 중 새 파일 <code>oracle_shared_cache.py</code> 1 + SQL 출처 메타 1 + PIPELINE + 엔진 pin 30). 실행 SQL 642개·매핑·워크플로우는 MAIN166과 같습니다.</p>
+<p><b>적용</b> — TRANSFER 폴더에 ZIP과 TXT를 두고 (ZIP은 풀지 않음):</p>
+<pre style="background:#f4f4f4;padding:8px">bash MAIN167_ONECLICK_R1.txt</pre>
+<p>완료 표시 <code>MAIN167_ONECLICK_DONE</code>, <code>MAIN167_EXIT=0</code> → status / stage → commit → <code>bash MAIN167_ONECLICK_R1.txt gate-code</code> → push → 새 코드서빙 리비전 배포.
+환경변수는 그대로(DP=oracle, GENOS_ORACLE_TABLE_MAPPING=development_g19_1, DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc).
+새 선택 변수는 넣지 않으면 기본값입니다: <code>GENOS_ORACLE_SHARED_CACHE=on</code>(off면 MAIN166 방식), <code>GENOS_ORACLE_SHARED_CACHE_MIB=512</code>(프로세스당 메모리 상한, 빠듯하면 낮추세요).
+워크플로우는 MAIN166과 같은 바이트라 바꿀 필요 없습니다.</p>
+<p><b>확인 부탁</b>: 같은 질문을 새 요청 ID로 두 번 → 두 요청의 <code>oracle.sql.summary</code> 줄과 걸린 시간을 사진으로 보내 주세요.
+두 번째의 <code>sql_count</code>가 줄고 <code>sql_cache_hits</code>가 늘면 캐시가 동작한 것이고, 그 숫자로 실제 줄어든 시간을 계산하겠습니다.
+VCTR_HEAD(별도 메일)와 <code>QUERY_NAV_BUDGET</code>(별도 수정 중)은 이번에 바뀌지 않았습니다.</p>
+<p><b>로컬 검증</b>: 개발계 실버 매핑 임시 Oracle에서 같은 요청 묶음 3회 반복 시 Oracle로 보낸 SQL이 MAIN166 52/52/52 → MAIN167 30/9/9, 응답은 MAIN166과 같음,
+채널 포인터를 옮기면 바로 다음 요청에 반영. 새 단위 시험 30개, Gold 매핑 서비스 2/2, 관련 계약 24파일 새 실패 0(MAIN166과 같은 37개 실패), root 서비스 확인 23항목, 설치기 15명령(MAIN166 checkout에서 설치→…→undo 복원) 통과.
+감소량은 작은 시험 자료 기준이고 현장 시간 단축·현장 메모리 여유는 아직 모릅니다. 실제 ORDS·현장 DB에서는 실행하지 않았습니다.</p>
+<p>첨부: MAIN167_FULL_20261106_R1.zip, MAIN167_ONECLICK_R1.txt, MAIN167_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

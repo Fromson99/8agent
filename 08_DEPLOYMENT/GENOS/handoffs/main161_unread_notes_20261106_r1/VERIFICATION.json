@@ -1,0 +1,111 @@
+{
+  "main_generation": 161,
+  "release_id": "unread-notes-20261106-r1",
+  "release_manifest_sha256": "b0285056b5b6174961d3cdea166dada79fbc691da6fdb6343bb78a7141918f34",
+  "serving_files": 533,
+  "changed_products_vs_main160": {
+    "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py": "edfdf0d495eb6794c99e203f11feeee939bfdd4cf5db5883acfb44cec3049873",
+    "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py": "7867cc4db4ad5465cf74354a3d048e1ccb16f7eea44c013ef83fbbc05784c3ae",
+    "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "5af7979e12cb9c1a78245728954f30e2e47f2c964e99813ec53c294e09c05a7a",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "cc1254b03f7e3b0b76921d35018e8e830c929513082204a4a9c3654f2c98c461",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "14ae0af00b39f17d213ba45b576568d73d6108318de6adbb09412050f388e1ca"
+  },
+  "excluded_parallel_edit": {
+    "working_tree_differs_from_main160_but_excluded": [
+      "02_BACKEND/semantic_runtime/oracle_query_service.py"
+    ]
+  },
+  "includes": [
+    "MAIN158 continue",
+    "MAIN159 first connection lookup",
+    "MAIN160 citation roles"
+  ],
+  "zip_sha256": "7882f274b8c3fd11443abecaf93d6467db49d7933fe57cc06febc72538d25014",
+  "oneclick_sha256": "2ec3920daa24aed2353ac53a3e9022a3d07cca11d866165c53ae55842cac0306",
+  "workflow_sha256": "14ae0af00b39f17d213ba45b576568d73d6108318de6adbb09412050f388e1ca",
+  "workflow_editor_update_required": true,
+  "regression": {
+    "baseline": {
+      "passed": 1562,
+      "failed": 340,
+      "path": "main160.json",
+      "code": "MAIN160 release code root"
+    },
+    "working": {
+      "passed": 1607,
+      "failed": 333,
+      "path": "staged.json",
+      "code": "staged MAIN161 code (MAIN160 + 5 product files)"
+    },
+    "new_failures": [],
+    "new_failures_initial": [
+      "::test_read_judgment_api_retains_decisions_and_reuses_request[final_failed]"
+    ],
+    "flaky_recheck": {
+      "::test_read_judgment_api_retains_decisions_and_reuses_request[final_failed]": {
+        "staged_run1": {
+          "passed": 1,
+          "failed": 0
+        },
+        "staged_run2": {
+          "passed": 0,
+          "failed": 1
+        },
+        "main160_single": {
+          "passed": 0,
+          "failed": 1
+        },
+        "judgment": "Intermittent in both codes (single MAIN160 rerun also fails); test reads the first journal from a glob. Not caused by this change."
+      }
+    },
+    "fixed_note": "Workflow display tests import 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py from the working tree. In the MAIN160 run that file already had the new display revision while the backend came from MAIN160, so they failed; in the staged run both match. Not counted as fixes.",
+    "new_tests": 38,
+    "new_tests_failed": 0
+  },
+  "prepared_release_new_tests": 38,
+  "entry_checks": {
+    "real_root_service": true,
+    "next_main": true,
+    "release_id": true,
+    "resolved_code": true,
+    "local_release_mode": true,
+    "source_generation_unchanged": true,
+    "source_manifest_unchanged": true,
+    "working_gold_matches_selected": true,
+    "rollback_previous": true,
+    "gold_same_engine": true,
+    "gold_same_manifest": true,
+    "gold_data_unchanged": true
+  },
+  "real_data_no_model_dry_runs": [
+    "dry-433.json",
+    "dry-434.json",
+    "dry-5424.json"
+  ],
+  "installer": {
+    "passed": true,
+    "commands": 15
+  },
+  "actual_qwen": {
+    "adr": "ADR-1421-main161-unread-notes-qwen",
+    "physical_calls": 12,
+    "unknown": 0,
+    "reported_cost_usd": 0.03332352,
+    "judged_turns": 2,
+    "passed_turns": 2,
+    "source_acl_wire_mismatches": 0,
+    "duplicate_extra_model_calls": 0,
+    "latency_seconds": {
+      "per_turn": [
+        79.94072399206925,
+        42.30092892597895
+      ],
+      "median": 61.1208264590241,
+      "p95": null,
+      "p95_reason": "two questions, single runs"
+    }
+  },
+  "field_deployed": false,
+  "quality_certified": false,
+  "genos_internal_model_checked": false
+}

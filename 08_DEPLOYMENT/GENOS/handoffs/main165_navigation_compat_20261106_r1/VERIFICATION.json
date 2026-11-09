@@ -1,0 +1,147 @@
+{
+  "main_generation": 165,
+  "release_id": "navigation-compat-20261106-r1",
+  "release_manifest_sha256": "cc21c0b596e6aead98e7850a670d2e57c386959214a3f908d6d540cea671359b",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-compat-20261106-r1",
+    "generation": 165,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-compat-20261106-r1/release.json",
+    "release_manifest_sha256": "cc21c0b596e6aead98e7850a670d2e57c386959214a3f908d6d540cea671359b",
+    "activated_at": "2026-11-06T07:59:33.760627+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "afe81e5c98cfab061a21428847a0cec310930409a404cc72163f42526276f454"
+  },
+  "serving_files": 535,
+  "replaces": {
+    "main_generation": 164,
+    "release_id": "dev-unsuffixed-20261106-r2",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main164_dev_unsuffixed_20261106_r1",
+    "sent_gmail_id": "1a1afac995f4afe8"
+  },
+  "field_error_addressed": "oracle_query_matcher.py:250 DPError QUERY_STRUCTURE_COMPILER: republish derived navigation for this code (container log photo 2026-11-06T07:23:51Z, after DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc)",
+  "cause": {
+    "field_loader_navigation_match": "f318d57b6a5d",
+    "serving_main157_164_navigation_match": "8d498d651c7b",
+    "difference": "refactor: _document_matches split, document_starts added (used by memory_rag); derivation functions unchanged"
+  },
+  "changed_vs_main164": {
+    "count": 34,
+    "products": {
+      "02_BACKEND/semantic_runtime/oracle_query_matcher.py": "95026112f06fbdbb7dd3aa9ae9f31e36b7550b6abf6792de8d2dbd41f8580d08",
+      "02_BACKEND/semantic_runtime/navigation_compatibility.py": "956c21e94b18cc0f88b1068f7c225501bf586dad8ecf6c35193fc9dcbc3a96ad",
+      "00_SYSTEM/ORACLE/navigation_compatibility.json": "859d8aaa8cfa635f2c12a347424ae776b11f849d6a91dd7adb28535f56b59007"
+    },
+    "engine_pins": 30,
+    "pipeline": true
+  },
+  "channel_auto_selection": "not included (user: 자동선택은 빼버리고)",
+  "derivation_equivalence": {
+    "reference_generation": "01_DATA/TERM_RELEASES/latest-selection-20261015-r1/generation",
+    "reference_manifest_sha256": "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "documents": 1547,
+    "rows": {
+      "structures": 492946,
+      "navigation": 575414,
+      "glossary": 131946
+    },
+    "rows_total": 1200306,
+    "identical": true,
+    "annex_dash_units_in_reference": 7,
+    "negative_control": {
+      "change": "norm() drops '·'",
+      "structures_differ": true,
+      "navigation_differ": true,
+      "tool_register_exit": 3,
+      "registry_unchanged": true
+    },
+    "registry": {
+      "path": "00_SYSTEM/ORACLE/navigation_compatibility.json",
+      "sha256": "859d8aaa8cfa635f2c12a347424ae776b11f849d6a91dd7adb28535f56b59007",
+      "groups": 1
+    }
+  },
+  "oracle_field_case": {
+    "oracle": "local Oracle 23.26.3 disposable schemas (Gold mapping harness)",
+    "main164": {
+      "passed": 2,
+      "failed": 0,
+      "result": "field refusal reproduced: QUERY_STRUCTURE_COMPILER: republish derived navigation for this code"
+    },
+    "main165": {
+      "passed": 2,
+      "failed": 0,
+      "result": "field-loader publication served (health/source/search/vector/ACL/Agent record commit+fresh read); unknown loader hash refused"
+    }
+  },
+  "contracts": {
+    "files": 18,
+    "main164": {
+      "passed": 258,
+      "failed": 25
+    },
+    "main165": {
+      "passed": 268,
+      "failed": 25
+    },
+    "new_failures": [],
+    "same_failures": 25,
+    "new_tests": 10,
+    "new_tests_failed": 0,
+    "prepared_release_same_outcomes": true
+  },
+  "sql": {
+    "plans": 642,
+    "executable_plans_identical": true,
+    "engine_preflight_errors": []
+  },
+  "entry_check": {
+    "passed": true,
+    "checks": 17
+  },
+  "workflow_same_as_main164": true,
+  "zip_sha256": "aec10562f86b95ac420e7f452b6fe9b7a2c0916aec8bbe5a4729dbcbd0c9fb94",
+  "oneclick_sha256": "3c7b7df4dcee8bcbd32c98e68ecbff2a1ff6234ffe0611312a646a4b8c4416d7",
+  "workflow_sha256": "14ae0af00b39f17d213ba45b576568d73d6108318de6adbb09412050f388e1ca",
+  "zip": {
+    "code_files": 545,
+    "serving_in_zip_sha_equal": 534,
+    "excluded_js_hash_checked": [
+      "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js"
+    ],
+    "helper_files": 11,
+    "js_or_nested_archives": 0
+  },
+  "installer_diff_vs_main164": "only the expected ZIP SHA256 line",
+  "installer_test": {
+    "base_checkout": "MAIN164 release code (533 files) in isolated git checkout via DEV symlink",
+    "passed": true,
+    "commands": 15,
+    "labels": [
+      "git-init",
+      "git-name",
+      "git-email",
+      "base-stage",
+      "base-commit",
+      "python311-syntax",
+      "default-apply",
+      "same-apply",
+      "status",
+      "stage",
+      "diff-check",
+      "commit",
+      "gate-code",
+      "generation-gate",
+      "undo"
+    ],
+    "all_exit_zero": true,
+    "original_files_restored": 533,
+    "new_files_removed_on_undo": true
+  },
+  "field_deployed": false,
+  "field_verified": false,
+  "model_calls": 0,
+  "quality_certified": false
+}

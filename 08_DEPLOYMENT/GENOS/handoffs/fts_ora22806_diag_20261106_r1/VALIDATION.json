@@ -1,0 +1,48 @@
+{
+ "schema": "fts-ora22806-diagnosis-validation-v1",
+ "created": "2026-11-06",
+ "deliverable": {
+  "file": "FTS_ORA22806_DIAG_R1.txt",
+  "sha256": "1a6da4d33fc5c42621e4931d6e86d0c202220b017f588a8f94b88ea378457761",
+  "bytes": 22466
+ },
+ "source": {
+  "diag_b.py": "ee1fe979b976f9f443ce4703882a574fdfc389c8d966a0c4174f310871d2e66f",
+  "build_diag_b.py": "4fcae2386d04f229d210b7b4ad11c04a38057ebe3b3ae7d05e160b79207f7333",
+  "test_diag_b.py": "21e17878efcbed08157e7c7a1ea7e0576c46565ffdb4a86f3f02194f5b0e0ead",
+  "embedded_notebook_q1": "1aeea5241bc48a54a5fa16671abb9c3cc0981426a2d831eee3fda6957142ff14"
+ },
+ "pinned_code": {
+  "release": "navigation-compat-20261106-r1 (MAIN165)",
+  "files": 14,
+  "mismatch_in_local_run": []
+ },
+ "local_tests": {
+  "runner": "09_ARTIFACTS/AUDITS/20261106-fts-ora22806/run_b_tests.py",
+  "passed": 3,
+  "failed": 0,
+  "semantic_runtime_from_main165": true,
+  "remote_model_calls": 0,
+  "end_to_end": {
+   "oracle": "local Oracle 23.26.3, development_g19_1 silver 17 tables (temporary owners), published query release, ORDS envelope replaced by oracledb bridge",
+   "steps": 22,
+   "passed": 22,
+   "sql_calls": 25,
+   "select_only": true,
+   "sql_text_in_result": false
+  },
+  "ords_error_capture": "ORA-22806 + Line 1 Column 345 kept, other text dropped",
+  "code_mismatch_stop": "exit 3 before any database call",
+  "bash_wrapper_checks": [
+   "--code-root /nonexistent -> exit 2",
+   "no ORDS env -> CLIENT FAIL DP_CONFIG exit 4",
+   "python without yaml -> MISSING_PYTHON_MODULE yaml exit 7"
+  ]
+ },
+ "local_fixture_note": "adr_1317 Oracle fixture copied; DevelopmentMapping built from the validated real mapping with isolated owners because MAIN164+ pins SIDDS/SIDDA for 7 unsuffixed tables",
+ "not_done": [
+  "real ORDS HTTP",
+  "field database",
+  "root cause"
+ ]
+}

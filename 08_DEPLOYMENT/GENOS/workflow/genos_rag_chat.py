@@ -33,7 +33,7 @@ else:
 WORKFLOW_REVISION = "rag-applied-mode-20261027-r1"
 LIVE_PROGRESS_REVISION = "workflow-parent-progress-20261019-r1"
 PROGRESS_DISPLAY_REVISION = "rag-live-judgment-cards-20261105-r1"
-ANSWER_DISPLAY_REVISION = "workflow-guided-explanation-20261105-r3"
+ANSWER_DISPLAY_REVISION = "workflow-guided-unread-20261106-r1"
 JUDGMENT_DISPLAY_REVISION = "judgment-evidence-svg-20261008-r10"
 HTTP_ERROR_DIAGNOSTICS_REVISION = "http-error-origin-20260928-r1"
 QUESTION_KEYS = ("question", "query", "chatInput", "input", "message", "prompt", "text")
@@ -336,8 +336,9 @@ _MODE_LABELS = {
     "내규": "내규", "internal": "내규",
     "외규": "외규", "external": "외규",
     "대사": "대사", "compare": "대사",
+    "문서 대사": "문서 대사", "document_compare": "문서 대사",
 }
-_MODE_PREFIX = re.compile(r"^\s*(전체 법령|전체|내규|외규|대사)\s*[:,：，]\s*")
+_MODE_PREFIX = re.compile(r"^\s*(전체 법령|전체|내규|외규|문서 대사|대사)\s*[:,：，]\s*")
 
 
 def _selected_question(question, data):
@@ -355,7 +356,7 @@ def _selected_question(question, data):
     if value is None or isinstance(value, str) and not value.strip():
         return question
     if not isinstance(value, str) or value.strip() not in _MODE_LABELS:
-        raise QueryModeError("조회 방식은 전체 법령, 내규, 외규, 대사 중에서 선택해 주세요.")
+        raise QueryModeError("조회 방식은 전체 법령, 내규, 외규, 대사, 문서 대사 중에서 선택해 주세요.")
     label = _MODE_LABELS[value.strip()]
     match = _MODE_PREFIX.match(question)
     if match:
@@ -364,11 +365,11 @@ def _selected_question(question, data):
         question = question[match.end():].strip()
     if not question.strip():
         raise QueryModeError("조회 방식과 함께 질문을 입력해 주세요.")
-    if label == "대사":
+    if label in ("대사", "문서 대사"):
         if _session_id(data) == "sess-anonymous":
-            raise QueryModeError("대사는 대화창에서 질문과 함께 실행해 주세요. 대화 식별자가 필요합니다.")
+            raise QueryModeError(label+"는 대화창에서 질문과 함께 실행해 주세요. 대화 식별자가 필요합니다.")
         if not (os.environ.get("TEAM_ID") or data.get("team_id")):
-            raise QueryModeError("대사에 사용할 팀이 연결되지 않았습니다. 앱의 팀 설정을 확인해 주세요.")
+            raise QueryModeError(label+"에 사용할 팀이 연결되지 않았습니다. 앱의 팀 설정을 확인해 주세요.")
     return label + ": " + question
 
 
@@ -1062,6 +1063,9 @@ def _report_sources(body):
 
 def _comparison_answer_text(body):
     """One report from accepted observations, without regenerating judgments."""
+    if body.get('workflow_id') == 'risk_team_document_compare_workflow':
+        # Server-assembled whole-document report with exact quotations.
+        return _answer_text(body)
     if body.get('workflow_id') != 'risk_team_compare_workflow':
         return None
     table=body.get('comparison_table') or {}
@@ -1326,6 +1330,55 @@ def _source_cards(records):
         '<div style="margin-top:12px;">',
         '<p style="font-size:13px;color:#526174;">각 출처를 누르면 해당 원문이 펼쳐집니다.</p>',
         *cards, '</div>', '</details>', '<!-- GENOS_SOURCES_END -->',
+    ])
+
+
+def _unread_cards(body):
+    """Fold connected articles the agent saw but did not read; never evidence."""
+    from html import escape
+    def e(value):
+        return (escape(str(value), quote=True).replace('[', '&#91;').replace(']', '&#93;')
+                .replace('`', '&#96;').replace('\r', '&#13;').replace('\n', '&#10;'))
+    agent = (body.get('assembly') or {}).get('term_agent') or {}
+    reply = agent.get('guided_reply') or {}
+    if _guided_reply_text(body) is None:
+        return ''
+    rows = [r for r in reply.get('unread_connections') or []
+            if isinstance(r, dict) and r.get('used_as_evidence') is False and isinstance(r.get('target_label'), str)]
+    if not rows:
+        return ''
+    cards = []
+    for r in rows:
+        same = r.get('relation') == 'SAME_SECTION'
+        title = ((r.get('from_label') or '') + ' → ' if r.get('from_label') else '') + r['target_label'] + ' · ' + str(r.get('relation_text') or '연결 조문')
+        head = (('같은 절' + ('(' + r['section'] + ')' if r.get('section') else '') + '에 있는 ' + r['target_label']) if same
+                else ((r['from_label'] + '에 연결된 ' if r.get('from_label') else '') + r['target_label']))
+        verb = '읽을 필요가 없다고 판단했습니다' if r.get('judged_unneeded') else '아직 읽지 않았습니다'
+        parts = [
+            '<details data-genos-unread="true" style="border:1px solid #e6dcc8;border-radius:10px;margin:10px 0;background:#fffdf8;color:#172b4d;overflow-wrap:anywhere;">',
+            '<summary style="cursor:pointer;padding:14px 16px;font-weight:600;line-height:1.6;">' + e(title) + '</summary>',
+            '<div style="border-top:1px solid #efe6d6;padding:16px;">',
+            '<p style="margin:0 0 12px;">' + e(head + ': 지금은 ' + str(r.get('reason') or '').rstrip('. ') + ' ' + verb + '. 필요하면 말씀해 주세요.') + '</p>',
+        ]
+        text = r.get('text')
+        if isinstance(text, str) and text.strip():
+            parts.append('<p style="margin:0 0 12px;font-size:13px;color:#7a5b1e;">답변 근거로 쓰지 않은 원문' + (' (앞부분)' if r.get('text_clipped') else '') + '</p>')
+            parts.append('<div data-unread-text="true" style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;margin:12px 0;">' + e(text) + '</div>')
+        else:
+            parts.append('<p>이 응답에 원문 내용이 저장되지 않았습니다.</p>')
+        parts.extend(['</div>', '</details>'])
+        cards.append('\n'.join(parts))
+    total = reply.get('unread_connection_total')
+    more = total - len(cards) if isinstance(total, int) and total > len(cards) else 0
+    return '\n'.join([
+        '<!-- GENOS_UNREAD_START -->',
+        '<details data-genos-unread-group="true" style="margin:16px 0;">',
+        '<summary style="cursor:pointer;width:fit-content;max-width:100%;box-sizing:border-box;border:1px solid #e0cfa8;border-radius:8px;padding:9px 14px;background:#fdf7ea;color:#172b4d;font-weight:600;">미확인 조문 · ' + str(len(cards)) + '건</summary>',
+        '<div style="margin-top:12px;">',
+        '<p style="font-size:13px;color:#7a5b1e;">연결은 확인했지만 이번 답변에서 읽지 않은 조문입니다. 누르면 어떤 조문에서 연결됐는지와 원문이 펼쳐집니다. 답변 근거가 아니며, 읽지 않았다고 내용이 없다는 뜻은 아닙니다.</p>',
+        *cards,
+        *(['<p style="font-size:13px;color:#7a5b1e;">그 밖에 ' + str(more) + '건은 목록에서 생략했습니다.</p>'] if more else []),
+        '</div>', '</details>', '<!-- GENOS_UNREAD_END -->',
     ])
 
 
@@ -2209,6 +2262,8 @@ def render(body, *, flow=None):
     graph = _judgment_graph_html(flow or _judgment_flow(body))
     if graph: text += '\n\n'+graph
     if source_text: text += '\n\n'+source_text
+    unread = _unread_cards(body)
+    if unread: text += '\n\n' + unread
     judgments = _judgment_html(body)
     if judgments: text += '\n\n' + judgments
     return text
@@ -2217,7 +2272,7 @@ def render(body, *, flow=None):
 def _for_markdown(text):
     # Keep code fences and the generated nested HTML intact. In particular,
     # changing the generated image or nested toggle markup breaks rendering.
-    pieces = re.split(r'(<!-- GENOS_COMPARISON_START -->.*?(?:<!-- GENOS_COMPARISON_END -->|$)|<!-- GENOS_SOURCES_START -->.*?<!-- GENOS_SOURCES_END -->|<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$)|(?:^|(?<=\n))\|[^\n]*\|(?:\n\|[^\n]*\|)*)', text, flags=re.S)
+    pieces = re.split(r'(<!-- GENOS_COMPARISON_START -->.*?(?:<!-- GENOS_COMPARISON_END -->|$)|<!-- GENOS_SOURCES_START -->.*?<!-- GENOS_SOURCES_END -->|<!-- GENOS_UNREAD_START -->.*?<!-- GENOS_UNREAD_END -->|<!-- GENOS_JUDGMENT_GRAPH_START -->.*?<!-- GENOS_JUDGMENT_GRAPH_END -->|<!-- GENOS_JUDGMENT_VIEW_START -->.*?<!-- GENOS_JUDGMENT_VIEW_END -->|```[^\n]*\n.*?(?:\n```|$)|(?:^|(?<=\n))\|[^\n]*\|(?:\n\|[^\n]*\|)*)', text, flags=re.S)
     return ''.join(piece if i % 2 else re.sub(r"(?<!\n)\n(?!\n)", "\n\n", re.sub(r"~", r"\\~", piece))
                    for i, piece in enumerate(pieces))
 

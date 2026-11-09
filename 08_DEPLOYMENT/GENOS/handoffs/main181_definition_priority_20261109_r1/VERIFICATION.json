@@ -1,0 +1,107 @@
+{
+  "main_generation": 181,
+  "release_id": "definition-priority-20261109-r1",
+  "release_manifest_sha256": "0a5cfed0eeb8bf05ce56c683d76c9d2e4064ca7b77c4eda07f2a0b8c0e0eb42c",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "definition-priority-20261109-r1",
+    "generation": 181,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/definition-priority-20261109-r1/release.json",
+    "release_manifest_sha256": "0a5cfed0eeb8bf05ce56c683d76c9d2e4064ca7b77c4eda07f2a0b8c0e0eb42c",
+    "activated_at": "2026-11-08T18:25:27.701990+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "21dcac3211c22aa6b30541a538ffc690828289a092b00822101daeb51bd5f980"
+  },
+  "serving_files": 545,
+  "replaces": {
+    "main180": {
+      "release_id": "declared-citations-20261109-r1",
+      "sent_gmail_id": "1a1bc62bb4fa8a26"
+    },
+    "field_state_assumed": "MAIN180 (mailed, application unconfirmed) or MAIN177 or an earlier MAIN; MAIN178-180 are contained"
+  },
+  "changed_vs_main180": {
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py": "ab31b84383e14bc42f579535121a725547abdc9c25e229373c53247e8317e0cc",
+      "02_BACKEND/semantic_runtime/legal_agent/definition_entry.py": "7de8ac8c721952b23c456b16dd4dc9f19cefde3ca24eee72488d7d2f117ea0f9",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py": "fdc228c20d071ffcb513a0fffa038f66d2d0ff8029595aa457da59fae993a68d",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "f22907f99c1520635d14f3a888227647d858e27810d762434f6d5f421c2d3389",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "eda080b61d242ba170d62d55d26f1bd1fe1a49d977b9d0e83c3074d8d8416da3",
+      "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": "d60509e8f0e1a44093f0375dd52f00b2b66bfca55d4861edf6ca20fde05bbfc7"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "645 -> 645",
+    "new_environment_variables": 0,
+    "workflow_file_changed": false
+  },
+  "changes": {
+    "asks_definition": "request entry decides search.asks_definition (does the question ask the meaning/definition/range of a term itself)",
+    "definition_preread_deferred": "non-definition questions do not pre-read definition articles (DEFINITION_ENTRY_DEFERRED); offered definitions are marked BACKGROUND and the prompt says read the requirement articles first",
+    "definition_scope": "definitions of laws outside the vector top-20 documents and the named scope are neither pre-read nor offered (DEFINITION_ENTRY_SCOPED)",
+    "vector_title_reads": "before answering, up to 2 unread vector top-5 articles whose title holds a question word are read by the server (GUIDED_ANSWER_VECTOR_READS)",
+    "named_article_reads": "open questions naming a law + article are resolved by the server and read in the same request; missing numbers are told to the next round",
+    "reference_normalization": "duplicate reference IDs in the guided answer are removed in order and recorded instead of failing",
+    "cross_law_citations": "a read original citing 「another law」 article N offers that article as a read location",
+    "same_subject_incoming": "reverse BORROWS/MUTATIS links whose titles share content words stay selectable"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 142,
+      "candidate_counts": {
+        "failed": 378,
+        "passed": 2290,
+        "error": 21,
+        "skipped": 2
+      },
+      "new_failures": 0,
+      "fixed": 15,
+      "same_failures": 398
+    },
+    "new_contract_tests": "05_TESTS/CONTRACTS/test_definition_priority.py (7) + test_named_article_reads.py (8)",
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "live_qwen_cm51": {
+      "adr": "ADR-1464",
+      "grades": {
+        "PASS": 37,
+        "PARTIAL": 5,
+        "FAIL": 9
+      },
+      "baseline_adr1461": {
+        "PASS": 25,
+        "PARTIAL": 9,
+        "FAIL": 17
+      },
+      "required_acquired": "73/98",
+      "physical_calls": 291,
+      "unknown": 0,
+      "reported_cost_usd": 1.411195,
+      "note": "hybrid (SQLite originals, Oracle Gold vector candidates), in-sample, 1 run, graded by direct comparison"
+    },
+    "entry_checks": "17/17 (release181/main-release.json)",
+    "installer": {
+      "base": "MAIN177 multiturn-followups-20261108-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "package": {
+    "zip": "MAIN181_FULL_20261109_R1.zip",
+    "zip_sha256": "16d9b835f83eaf736a3cf722d9c37fe705a59378fa2cdd26fc9fdcb2da0c6811",
+    "members": 556,
+    "workflow": "MAIN181_WORKFLOW.py"
+  },
+  "not_verified": [
+    "field internal model (instructions tuned on external Qwen only)",
+    "field data / ORDS",
+    "native DP=oracle serving with real model (CM51 ran hybrid: SQLite originals + Oracle vector candidates)"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

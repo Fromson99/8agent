@@ -1,0 +1,85 @@
+ORA-22806 원인 확인용 진단 R1 (MAIN165 첫 본문검색 SQL)
+
+0. 무엇을 확인하나
+현장 사진(08:15Z): MAIN165 적용 후 첫 질문의 첫 본문검색 SQL에서
+  DPError: READ_FAILED: ORACLE_ERROR: ORA-22806 (not an object or REF)
+같은 SQL·같은 표 구조·같은 DB 버전(23.26.3)인 로컬 Oracle에서는 통과하여 원인이 정해지지 않았습니다.
+지금 서버 코드는 Oracle 오류 번호만 남기고 오류 위치(몇 번째 글자)를 버리고 있습니다.
+
+이 파일은 현장의 MAIN165 코드(~/DEV)와 코드서빙과 같은 ORDS 연결로
+  - 실패한 SQL을 그대로 한 번 보내고(오류 위치까지 기록)
+  - 의심 요소를 하나씩 바꾼 SQL을 따로 보내서
+어느 부분에서 Oracle이 거절하는지 확인합니다.
+수정본이 아니라 확인용입니다. 서버 코드·테이블·데이터는 바꾸지 않습니다.
+
+지키는 것
+- SELECT만 보냅니다(약 30회). 쓰기·재시도·모델 호출 없음.
+- 바인드 값, 문서 ID, 행 내용은 화면과 파일에 남기지 않습니다(건수와 결과 해시만).
+- 비밀값(ORDS client id/secret)은 출력하지 않고, 설정 유무만 표시합니다.
+
+1. 어디서 실행하나
+코드서빙과 같은 ORDS 환경변수가 있는 GENOS 코드스페이스 터미널에서 실행합니다.
+필요한 환경변수(코드서빙 리비전과 같은 값):
+  ORACLE_ORDS_SCHEMA, ORACLE_ORDS_CLIENT_ID, ORACLE_ORDS_CLIENT_SECRET
+  ORACLE_ORDS_BASE_URL (코드서빙에 넣었다면 같은 값) 또는 LLMOPS_ORDS_BASE_URL
+  GENOS_ORACLE_TABLE_MAPPING=development_g19_1   (비어 있으면 진단이 이 값으로 둡니다)
+  DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc
+코드스페이스에 이 값들이 없으면 export로 넣고 실행합니다. 예:
+  export DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc
+  export GENOS_ORACLE_TABLE_MAPPING=development_g19_1
+Dataiku 노트북에 붙이는 파일이 아닙니다.
+
+2. 실행
+ORA22806_CHECK_R1.txt를 TRANSFER 폴더에 두고 그 폴더에서:
+  bash ./ORA22806_CHECK_R1.txt
+
+코드 위치는 현재 폴더, ~/DEV, 상위 폴더 순서로 찾고, MAIN165 파일 15개의 해시를 확인합니다.
+못 찾으면 직접 지정합니다:
+  bash ./ORA22806_CHECK_R1.txt --code-root ~/DEV
+환경변수 대신 채널을 직접 줄 수도 있습니다:
+  bash ./ORA22806_CHECK_R1.txt --channel g19_7c1f8f4931c8be61b914f5bc
+검색어 기본값은 '정관'과 '정관 변경'입니다(바꿀 필요 없음).
+
+끝 표시: ORA22806_DIAGNOSTIC_DONE {...}
+결과 파일: 실행한 폴더 아래 ora22806-diagnostic-<시각>-<번호>/
+  console.txt      화면에 나온 결과와 같은 내용
+  diagnostic.json  전체 결과
+  A1.sql ~ D7.sql  보낸 SQL 원문(바인드 자리표시만 있고 값은 없음)
+
+3. 보내 주실 것
+화면 출력 전체(또는 console.txt). 첫 줄의 transport=... 와 마지막 ORA22806_DIAGNOSTIC_DONE 줄이 꼭 필요합니다.
+FAIL 줄 아래의 "oracle:" 줄과 "at line .. col ..: ...<<HERE>>..." 줄이 원인 위치입니다.
+가능하면 diagnostic.json도 보내 주세요.
+
+4. 검사 목록
+A1~A9  DB·표 정보: SELECT 1, 접속 계정, DB 버전, compatible 값(권한 없으면 FAIL이 정상),
+       검색행 표가 표/뷰/동의어 중 무엇인지, 값 컬럼 타입, IS JSON 컬럼 수, 검사 제약 수, 행 보안 정책 수
+C1~C5  바인드·문법만(DUAL): 같은 바인드 이름 반복, q_d / q_d_n 처럼 앞부분이 겹치는 이름,
+       같은 CLOB 바인드 두 번, JSON_ARRAYAGG RETURNING CLOB, FROM ( ) 안의 WITH
+SETUP  채널→게시본→원문 게시본→검색 통계 읽기 (현장에서 이미 통과한 단계)
+B1~B6  검색행 CLOB 컬럼에 JSON 함수:
+       B1 JSON_VALUE (표 직접)            B2 JSON_VALUE (MAIN165처럼 이중 인라인뷰 경유)
+       B3 JSON_TABLE 옆붙이기 (표 직접)    B4 JSON_TABLE 옆붙이기 (이중 인라인뷰 경유)
+       B5 JSON_TABLE '$.positions[*]'     B6 B4를 FROM ( WITH ... ) 안에 넣은 것
+D1~D7  실패한 본문검색 SQL 전체:
+       D1 MAIN165 SQL 그대로(단어 1개)    D2 MAIN165 SQL 그대로(구절)
+       D3 바인드 이름을 자리마다 새로     D4 CLOB 바인드를 VARCHAR2 조각 + TO_CLOB로
+       D5 D3+D4 (승호님 코드 방식)       D6 이중 인라인뷰를 한 겹으로
+       D7 lengths 부분을 JSON_TABLE 대신 JSON_VALUE로
+       각 D의 "result=" 값이 D1과 같으면 결과도 같다는 뜻입니다.
+
+5. 결과 읽는 법 (예상 경우)
+- D1 FAIL, D3·D5 PASS              → 바인드 이름 반복/겹침 처리 문제 (C1·C2도 FAIL일 가능성)
+- D1 FAIL, D4·D5 PASS              → CLOB 바인드 처리 문제
+- D1 FAIL, D6 PASS                 → 이중 인라인뷰 + JSON 함수 조합 문제 (B2/B4 FAIL, B1/B3 PASS)
+- D1 FAIL, D7 PASS                 → 컬럼 옆에 붙인 JSON_TABLE 문제 (B3/B4 FAIL)
+- A5가 TABLE이 아님, A9가 1 이상    → 표가 뷰/동의어이거나 행 보안 정책이 걸려 있음
+- D1까지 전부 PASS                 → 이 실행 환경은 코드서빙과 다르게 동작함.
+                                     첫 줄 transport 값(genos.ords SDK인지 RestClient인지)과 환경변수를 코드서빙과 대조
+로컬 Oracle에서는 D1~D7 모두 통과하고 같은 결과(result 값 동일)를 냈습니다.
+위치 표시 기능은 로컬에서 오류를 일부러 낸 경우로 확인했습니다. 현장 원인은 이 결과를 받은 뒤 정합니다.
+
+6. 실패 시
+- MAIN165_CODE_ROOT_NOT_FOUND: ~/DEV에 MAIN165가 아님. 출력의 mismatched 파일 목록을 보내 주세요.
+- DIAGNOSTIC_ERROR + DP_CONFIG: missing ...: ORDS 환경변수가 이 터미널에 없음(1번 참고).
+- SETUP_RELEASE_OR_INDEX_FAILED: setup_error 값을 보내 주세요(QUERY_ACTIVE_MISSING이면 DP_QUERY_CHANNEL 확인).

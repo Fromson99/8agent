@@ -1,0 +1,10 @@
+{
+ "schema": "oracle-scale-guard-accepted-v1",
+ "note": "Reads that exceed the scaled budget here but are bounded independently of corpus size in the product. Each entry needs a reason a reviewer can check in code. Prefer scaling the product threshold in test_guard_oracle.scale_thresholds.",
+ "entries": [
+  {
+   "point_site_prefix": "legal_agent/tool_availability.py:",
+   "reason": "article_plan checks one offered candidate article per READ action (candidate pages are at most 100 rows), not every unit of the document"
+  }
+ ]
+}

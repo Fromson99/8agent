@@ -273,7 +273,8 @@ def owner_for(phase):
         return 'request-routing'
     if phase in ('request-entry', 'request-entry-repair'):
         return 'request-entry'
-    if phase in ('memory-resolve', 'memory-resolve-repair', 'memory-command-check'):
+    if phase in ('memory-resolve', 'memory-resolve-repair', 'memory-resolve-fields', 'memory-resolve-repair-fields', 'memory-command-check',
+                 'memory-resolve-related', 'memory-resolve-related-repair'):
         return 'command-resolver'
     if phase in ('memory-intent', 'memory-intent-repair'):
         return 'request-intent'

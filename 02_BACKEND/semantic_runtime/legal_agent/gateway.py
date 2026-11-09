@@ -13,6 +13,22 @@ from .repository import encoded
 from .views import SYSTEM, PROMPTS
 
 log = obs.get_logger('legal_agent.model')
+_ORACLE_SERVICE = __name__.rsplit('.', 2)[0] + '.oracle_query_service'
+
+
+def _timing_snapshot():
+    """Cumulative Oracle SQL / Agent-record / CPU counters at this model call (empty outside Oracle serving).
+
+    Reads an already-loaded module only: non-Oracle serving pays nothing. Never fails the model call.
+    """
+    import sys
+    service = sys.modules.get(_ORACLE_SERVICE)
+    if service is None or not hasattr(service, 'sql_progress'):
+        return {}
+    try:
+        return service.sql_progress()
+    except Exception:  # noqa: BLE001 - diagnostics must not change the model call
+        return {}
 DIAGNOSTICS_VERSION = 'thinking-log-20260928-r1'
 WIRE_PROJECTION = 'compact-v5-v1'
 NUMBER_INSTRUCTIONS = (
@@ -397,7 +413,7 @@ class ModelGateway:
                       thinking_requested=thinking,
                       thinking_control_present='enable_thinking' in template,
                       stream_requested=request.get('stream') is True,
-                      remaining_ms=int(remaining * 1000))
+                      remaining_ms=int(remaining * 1000), **_timing_snapshot())
             try:
                 if self.transport.binding['trust_zone'] == 'external':
                     self.transport.validate_authorization(self.context)
@@ -511,7 +527,7 @@ class ModelGateway:
                       duration_ms=int((time.perf_counter() - attempt_started) * 1000),
                       response_bytes=raw.get('response_bytes'),
                       **response_model_metadata(self.transport.binding, body),
-                      **{**_response_diagnostics(body), **length_metrics})
+                      **{**_response_diagnostics(body), **length_metrics}, **_timing_snapshot())
             self.context.remaining()
             if status != 'SUCCEEDED':
                 raise StaleProposal('late model response ignored')

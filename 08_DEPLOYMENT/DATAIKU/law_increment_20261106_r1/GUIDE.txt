@@ -1,0 +1,164 @@
+법제처 증분 처리 R1 — 테이블·기존 표 연결·실행 안내 (2026-11-06)
+
+한 줄 요약
+바뀐 조문만 새 조문판본 행으로 올리고, 옛 행은 지우지 않고 시행종료일자만 닫는다.
+새 테이블 10개는 개발계·운영계 같은 이름(IDD_B003_LGL_*)이고 소유자(owner)만 설정값이다.
+서빙(GENOS RAG)은 지금처럼 Gold 13표만 읽으므로 런타임 조인은 필요 없다. 기존 표와는 키로만 잇고,
+실제로 기존 표를 건드리는 곳은 (1) Gold 게시 건수 확인 (2) 활성화 때 조회 채널 포인터 교체 두 곳뿐이다.
+
+
+1. 파일
+  LAW_INCREMENT_DDL_R1.sql          표 10개·PK 10개·일반 인덱스 10개·테이블/컬럼 주석 (대상 스키마 계정으로 실행)
+  LAW_INCREMENT_COLUMNS_R1.csv      컬럼 정의서 120행 (논리명·물리명·타입·NULL·PK순번·설명·신규약어)
+  LAW_INCREMENT_INDEXES_R1.csv      PK·인덱스 20행
+  LAW_INCREMENT_CODE_R1.zip         lawrag/increment 코드 (표준 라이브러리만 사용, Python 3.9~3.14 확인)
+  DATAIKU_LAW_INCREMENT_RUN_R1.py   Dataiku 레시피/노트북 셀 템플릿 (현장 미검증)
+  코드 원본: 02_BACKEND/lawrag/increment/ · 테스트: 05_TESTS/CONTRACTS/test_law_increment.py
+  실문서 검증기: 06_TOOLS/maintenance/verify_law_increment.py
+  로컬 Oracle 검증기: 06_TOOLS/maintenance/check_law_increment_oracle.py
+
+
+2. 필요한 테이블 10개
+
+  표 (물리명 / 논리명)                     역할                                                      PK
+  IDD_B003_LGL_RGLT_DOC  규정문서기본       불변 문서코드 레지스트리. LAW:<법령ID> / ADMRUL:<행정규칙ID>    RGLT_DOC_CD
+                                            이름이 바뀌어도 코드 유지, 이전 이름은 ALIAS_CTNT에 쌓인다.
+  IDD_B003_LGL_RGLT_VER  규정판본내역       공포·발령 단위 판본, 시행시작/종료일자, Gold 연결 키            RGLT_VER_ID
+                                            (Gold 문서ID·명세해시), 상태 CANDIDATE→ACTIVE→SUPERSEDED
+  IDD_B003_LGL_ARTC_VER  조문판본내역       조문 단위 판본. 조문키(165의3·별표1·전문·부칙:21065),          ARTC_VER_ID
+                                            계보ID, 내용, 내용해시, 비교해시, 시행구간, 공개여부(숨김 N/활성 Y)
+  IDD_B003_LGL_LOAD_WORK 증분적재작업내역   입력 1건(문서+원문 sha) 처리 상태와 상태변경번호(CAS),          LOAD_WORK_ID
+                                            게이트 결과, 승인자·승인한 대비표 해시
+  IDD_B003_LGL_LOAD_HIST 적재상태이력       상태 전이 감사 기록 (추가만)                                    LOAD_WORK_ID+HIST_SEQ
+  IDD_B003_LGL_ARTC_CMPR 조문비교결과       신구조문 대비표 행 (SAME 제외), 판정·유사도·사유·시행일         LOAD_WORK_ID+CMPR_SEQ
+  IDD_B003_LGL_IDX_WORK  색인작업내역       숨김 색인 준비 상태. 전부 READY여야 활성화                     LOAD_WORK_ID+IDX_KIND_CD+ARTC_KEY_VALU
+  IDD_B003_LGL_ARTC_RFRN 조문참조관계       조문판본의 인용. 대상은 계보ID로 이어 번호가 밀려도 유지         ARTC_VER_ID+RFRN_SEQ
+  IDD_B003_LGL_RVW_TRGT  재검토대상내역     영향 전파 결과 (룰·인용 조문·연결 문서). 내용 자동 수정 없음    RVW_TRGT_ID
+  IDD_B003_LGL_DOC_LINK  문서연결관계       위임 연결망(lsDelegated·lsStmd)·외규↔내규 대응, 1단계 전파용    RGLT_DOC_CD+TAGT_RGLT_DOC_CD+LINK_KIND_CD
+
+  날짜는 VARCHAR2(8 BYTE) KST 'YYYYMMDD'. 문자열 비교가 곧 날짜 비교라 시간대 변환이 끼지 않는다.
+  조회 시점 필터: ENFC_STRT_DT <= :기준일 AND (ENFC_END_DT IS NULL OR ENFC_END_DT >= :기준일) AND OPEN_YN='Y'
+  시행일 전환 배치는 없다. 시행 예정 조문은 미리 넣어 두고 조회 시점으로 거른다.
+
+  이름 규약: 운영 Gold 규약(IDD_B003_LGL_ + 약어, 30바이트 이내). 기존 Gold 13표에 이미 쓰인 약어
+  (RGLT·DOC·VER·HASH_VALU·DTLS·STRC_UNIT·RGSN_ASTM·ADDN_IFMN_CTNT·TAGT·RFRN·NAME·ID·NO·YN 등)는 재사용했다.
+  새 약어 53개(ARTC 조문, LNG 계보, ENFC 시행, STRT 시작, END 종료, DT 일자, STTS 상태, CHG 변경,
+  CMPR 비교, APRV 승인, PRVW 미리보기, RVW 재검토, PRMG 공포, OFCL 공식 …)는 메타마이너 표준단어
+  확인·신청 대상 후보다. CSV의 ‘신규약어’ 열에 컬럼별로 적었다. 표준 사전과 다르면 물리명을 바꿔 다시 만든다
+  (schema.py 한 곳만 고치면 DDL·CSV·코드가 같이 바뀐다).
+
+
+3. 개발계·운영계 같은 이름으로 두는 방법
+
+  표 이름은 고정, 소유자만 설정값(OWNER)이다. 코드·SQL·DDL에서 이름이 갈라지는 곳이 없다.
+  두는 스키마: 각 환경에서 조회 채널 표(SRCH_CHNL)가 있는 스키마와 같은 곳을 권장한다.
+    개발계: SIDDS (현재 개발 Gold 대응 13표 LGL_G19_*_S_1 이 있는 곳)
+    운영계: 운영 Gold 소유자 (IDD_B003_LGL_* 13표가 있는 곳, 실제 owner 이름은 아직 기록 없음)
+  같은 스키마에 있어야 활성화 트랜잭션 하나로 조회 채널 포인터까지 바꿀 수 있다. 다른 스키마면
+  그 표에 대한 UPDATE 권한이 필요하다. SIDDA(Agent 레이어)는 대화 부산물 전용이라 두지 않는다.
+
+
+4. 기존 테이블과 조인이 필요한가
+
+  서빙(RAG 답변): 필요 없다. GENOS는 지금처럼 SRCH_CHNL이 가리키는 Gold 세대 13표를 읽는다.
+  증분 표는 변경 관리·이력·승인·영향 전파용이고, 답변 경로에는 들어가지 않는다.
+
+  다만 키 연결은 필요하다. 이유가 하나 있다.
+  ▶ 현재 Gold의 법령 RGLT_DOC_ID는 본문 XML sha256 앞 16자리다(legal_generation.build_contract).
+    개정되면 문서ID 자체가 바뀐다. 예) 금융회사의 지배구조에 관한 법률
+       제19700호 판본 240dac7491eec3f8 · 제19913호 1ab2b728e6280db5 · 제21065호 c4b33879c7dc5554
+    그래서 “같은 법”을 이어 주는 불변 코드(LAW:012338)와 판본별 Gold 문서ID 대응표가 따로 있어야 한다.
+    그게 RGLT_VER 이다.
+
+  연결 키 (외래키 제약 없이 값으로만 잇는다)
+    RGLT_VER.RGLT_DOC_ID     ↔ IDD_B003_LGL_DOC_VER.RGLT_DOC_ID   (적재 때 원문 sha 앞 16자리로 미리 채움)
+    RGLT_VER.DTLS_HASH_VALU  ↔ DOC_VER·DOC_UNIT·DOC_BLK·SRC_POST.DTLS_HASH_VALU (Gold 게시 뒤 link_gold로 채움)
+    ARTC_VER.STRC_UNIT_ID    ↔ IDD_B003_LGL_DOC_UNIT.STRC_UNIT_ID (컬럼만 있음, 채우는 코드 미구현)
+
+  기존 표를 실제로 읽거나 쓰는 곳은 두 곳뿐이다.
+    (1) Gold 게시 확인: 새 세대에 그 판본 문서가 들어갔는지 DOC_VER 1건·DOC_UNIT 건수를 센다.
+    (2) 활성화: 같은 트랜잭션에서 SRCH_CHNL 의 게시해시를 CAS로 바꾼다
+        (UPDATE … SET RFRN_POST_HASH_VALU=:새, CHAN_NO=CHAN_NO+1 WHERE RFRN_CHNL_NAME=:채널
+         AND RFRN_POST_HASH_VALU=:옛 AND CHAN_NO=:예상번호 — 1행이 아니면 활성화 전체 롤백).
+
+  이름 차이 문제: 증분 10표는 이름이 같으니 생기지 않는다. 하지만 기존 13표는 아직
+  개발 SIDDS.LGL_G19_*_S_1 ↔ 운영 IDD_B003_LGL_* 로 다르다. 위 (1)(2)에서 기존 표를 부를 때만
+  기존 매핑 파일(00_SYSTEM/ORACLE/development_g19_1.json / gold_b003_r5.json)로 이름을 바꾼다.
+  개발계에도 IDD_B003_LGL_* 13표를 만들면(2026-11-02 정정 방향) 매핑 하나로 끝난다.
+
+
+5. 처리 흐름과 상태
+
+  DETECTED → PARSED → DIFFED → PREVIEW → APPROVED → INDEXING → ACTIVATED
+  예외: NO_CHANGE(XML은 바뀌었지만 조문 동일 — 종료) · REJECTED · BLOCKED · BLOCKED_PENDING · FAILED
+  같은 문서+같은 원문 sha는 같은 적재작업ID라 다시 넣어도 아무것도 새로 만들지 않는다.
+
+  판정 (계보 유지): SAME / AMEND / MOVE / MOVE_AMEND / REF_ONLY / ADD / DELETE
+    - 자기 번호를 떼고 인용 번호(제N조·항·호)를 가린 비교값 → 2글자 조각 후보 → 순서 유지 전역 정렬
+      (같은 키 +0.05) → 순서 밖 이동은 유사도 0.90 이상 회수 → 나머지 신설/삭제.
+    - 같은 키·같은 내용은 먼저 고정해서 600조 규모도 수 초 안에 끝난다.
+    - REF_ONLY는 바뀐 인용 번호가 이번 비교의 조문 이동으로 전부 설명될 때만. 「상법」 제5조 같은 외부 인용이나
+      제2조제1항→제2조제2항 같은 항 번호 변경은 AMEND.
+    - 해시는 공백을 모두 뺀 NFKC 기준. 실측: 지배구조법 옛 부칙의 ‘제2조 부터’→‘제2조부터’는 같은 내용.
+    - 법령 XML 별표내용은 머리 한 줄뿐이라 별표 변경은 수집기 manifest의 첨부 sha(flSeq로 대응)로 판정한다.
+
+  시행일
+    - 문서: 시행일자 메타 → 없으면 마지막 부칙. 조문별: 마지막 부칙의 예외 → 문서 시행일자.
+    - 실측: 법령 XML 조문시행일자는 보유 94개 판본 전부 문서 시행일자와 같은 값이었다(조문별 정보 아님).
+      예) 자본시장법 제21324호는 제50조(공포 후 6개월 → 20260804)·제166조(1년 → 20270204)가 늦게 시행되는데
+      조문시행일자는 596개 전부 20260203. 그래서 조문별 시행일은 부칙 판독이 정본이다.
+    - ‘공포 후 N개월이 경과한 날’ = 공포일 + N개월 + 1일 (자본시장법 실측과 일치).
+    - 타법개정 부칙(예: 지배구조법 제21065호 = 부칙(정부조직법))의 제N조는 다른 법 조문이라 예외로 쓰지 않는다.
+    - 옛 조문 종료일 = 새 시행일 - 1일.
+
+  멈춤
+    BLOCKED          기존 최신 판본보다 이른 시행일 / 같은 시행일로 내용이 다른 재업로드(정정 절차 대상)
+    BLOCKED_PENDING  아직 시행 전인 조문 판본을 다시 개정
+    사람이 판단하면 unblock → PREVIEW → 승인.
+
+  게이트 (강한 경고는 승인 때 --ack 필요)
+    변경률 50% 초과(이동·인용번호·부칙 제외) / 조문 수 20% 넘게 감소 / 삭제 과다 / 별표 사라짐 / 시행일 판독 불가
+    실측: 7개 조문만 든 잘린 자본시장법 업로드본은 조문 수 급감·삭제 627건·별표 소실로 막혔다.
+
+  반영 순서 (공백 없음)
+    승인 → 숨김(OPEN_YN=N) 조문·참조 행 생성 → 외부 색인(Gold 새 세대 게시·벡터) READY 확인
+    → 한 트랜잭션: 작업 상태 CAS · 문서 활성판본 CAS(기준 판본 그대로일 때만) · 옛 판본·옛 조문 구간 닫기 ·
+      새 조문 공개 · 재검토 대상 등록 · (선택) 조회 채널 포인터 CAS → 하나라도 어긋나면 전부 롤백.
+
+
+6. 실행 (로컬·개발 검증)
+
+  cd /home/jin/8-AGENT;  export PYTHONPATH=02_BACKEND
+  CLI=".venv/bin/python -m lawrag.increment.cli --db <파일.sqlite 또는 oracle:<연결JSON>> [--owner SIDDS]"
+  $CLI schema                                   # SQLite 표 생성 (Oracle은 DDL 파일을 DBA/스키마 계정으로)
+  $CLI ingest-manifest 01_DATA/RAW/law/manifest.json
+  $CLI preview <작업ID> --html 대비표.html       # 승인 해시 출력
+  $CLI approve <작업ID> --hash <해시> --user <사번> [--ack]
+  $CLI index <작업ID>                            # 기본: GOLD 게시 확인 대기. 개발 검증만 --no-external
+  $CLI mark <작업ID> GOLD READY --count N --ref <DTLS해시>
+  $CLI activate <작업ID> --user <사번>
+  $CLI as-of LAW:012338 20251231
+
+  Dataiku: DATAIKU_LAW_INCREMENT_RUN_R1.py 의 PARAMS 를 채우고 STEP 별로 실행. 쓰기는 PL/SQL 블록 하나를
+  pre_queries 로 보내고 COMMIT 한다(기존 운영 Gold 적재기와 같은 방식, 값은 UTF-8 16진수).
+
+
+7. 아직 안 된 것 (완료로 보지 말 것)
+  - 운영 Gold 반영: 현재 Gold는 세대 전체 스냅샷이다. 바뀐 문서도 새 세대를 기존 적재기로 통째 게시해야 하고
+    (채널 전환 없이 게시 → link_gold → activate에서 채널 전환), 검색행 규모(로컬 Gold 기준 약 439만 행)의 세대 복사 부담은 그대로다.
+    문서 단위 세대 분리나 Gold 행에 판본 구간을 넣는 방식은 13표 등록 변경이라 별도 설계·신청이 필요하다.
+  - 과거 시점 질의: 증분 표에서는 as-of 조회가 되지만 GENOS RAG는 아직 Gold 현행 세대만 읽는다.
+  - 수집 방식 고정: 같은 공포번호라도 ‘공포 전문’과 ‘시행일 기준 조회본’은 내용이 다르다
+    (실측: 상법 제20991호 2026-07-23 기준본은 2026-03-06 시행 제21448호 개정을 이미 담고 있음).
+    문서마다 한 방식으로 고정해야 판정이 뒤집히지 않는다. 시행 예정 사전 적재를 원하면 공포 전문 + 부칙 판독.
+    현재 collect.py는 시행일 기준 현행(eflaw)으로 받고, 로컬 파일이 멀쩡하면 다시 받지 않는다(--force 필요).
+  - API 중계서버 경유 수집(Dataiku→중계→법제처): 미연결.
+  - 승인 화면 UI: HTML 대비표 + CLI/노트북 승인(해시 확인)으로 대신한다.
+  - 위임 연결망(lsDelegated·lsStmd) 적재: DOC_LINK 표와 영향 전파만 있고 적재기 없음.
+  - ARTC_VER.STRC_UNIT_ID 채우기, 캐시 무효화(활성화 결과로 대상 문서ID만 돌려줌).
+  - 정정·소급 절차: 기록 시점 컬럼(RGSN_ASTM·SPSD_ASTM)만 있고 절차 없음.
+  - 내규 docx·HWP·PDF 입구: 같은 DocumentSnapshot 형태로 맞추면 뒤 단계는 그대로 쓴다. 파서는 미구현.
+  - 부칙 문형: 날짜·공포 후 기간·조문 범위·호/목 목록만 읽는다. 못 읽으면 강한 경고.
+  - 유사도 기준 0.60/0.90은 합성 데이터 기준이다. 실제 판본 28쌍에서 MOVE는 1건뿐이라 이동 기준 재조정 근거가 적다.
+  - Dataiku 레시피는 대역(같은 PL/SQL을 로컬 Oracle에 실행)으로만 검증. 실제 SQLExecutor2·권한·폴더는 미확인.
+  - 00_SYSTEM/PIPELINE.json 에 단계로 등록하지 않았다.

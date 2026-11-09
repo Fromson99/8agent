@@ -197,6 +197,14 @@ def verify_export(parent, call_id, child, result, port):
     if digest(envelope) != row['envelope_hash'] or digest(saved) != row['bundle_hash']:
         raise ContractError('workflow committed export hash changed')
     docs = [d for d in port.all_scope if port.categories[d] == result['side']]
+    # A parent may have narrowed this child's search (search_document_ids). Re-verify
+    # against that recorded request scope, which must still lie inside the side's ACL.
+    called = parent.db.execute('SELECT input_json FROM workflow_call WHERE call_id=?', (call_id,)).fetchone()
+    narrowed = ((json.loads(called[0]).get('args') or {}).get('task') or {}).get('search_document_ids') if called else None
+    if narrowed is not None:
+        if not narrowed or not set(narrowed) <= set(docs):
+            raise ContractError('workflow export scope outside side/ACL')
+        docs = sorted(set(narrowed))
     if saved.get('export_mode')=='SOURCE_HANDOFF':
         bundle,evidence=compile_source_bundle(child,envelope,result['side'],port.session.verify,port.session.store,docs)
         if result.get('answer') is not None or result.get('continuation')!={k:envelope.get(k) for k in ('goal_id','revision','investigation_id','investigation_revision')}:

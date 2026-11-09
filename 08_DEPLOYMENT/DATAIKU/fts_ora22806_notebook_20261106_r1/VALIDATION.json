@@ -1,0 +1,56 @@
+{
+ "schema": "fts-ora22806-notebook-validation-v1",
+ "created": "2026-11-06",
+ "purpose": "Separate field ORA-22806 (oracle_query_fulltext.py:209 _projection) into DB-side vs ORDS-side cause",
+ "rendered_from": {
+  "release": "navigation-compat-20261106-r1 (MAIN165)",
+  "oracle_query_fulltext.py": "e35fc2e60c3ac8dad540e388f54eae950398cd8b00b6eb67526aa6c3122ab9c0",
+  "oracle_silver_reads.py": "07ae9cebc6569aef60e03e2ec9c96bd5d86eb8df5b58ec480eb7db03ebefe83d",
+  "development_g19_1.json": "133b3af1931b1b8d9490a437a6035097efb7c83a463b05abb55180f49675efec"
+ },
+ "generator": "09_ARTIFACTS/AUDITS/20261106-fts-ora22806/build_notebook_sql.py",
+ "bind_replacement": {
+  "q_release": "channel table sub-query",
+  "q_posting/q_length": "MIN kind LIKE asset%.unit_fts_*",
+  "q_token0/1": "MIN/MAX posting token",
+  "q_documents": "JSON_ARRAYAGG of length-row document ids (CLOB)",
+  "q_documents_n": "1000",
+  "q_average": "30"
+ },
+ "files": {
+  "FTS_Q0_INFO.txt": "f8580ad57905d6220f1eb3d3f70553e0fa86ad9c7783b7daaf026a6df794eddd",
+  "FTS_Q1_FULL.txt": "1aeea5241bc48a54a5fa16671abb9c3cc0981426a2d831eee3fda6957142ff14",
+  "FTS_Q2_POSTINGS.txt": "896ce60c0ade8537d9c5c5681068312205fc53ce2ee3d124a84547eab6ba6b84",
+  "FTS_Q3_LENGTHS.txt": "09f345baf514cb850395badc86b62291b0e2f7bbd9d222f2c16cec1592a90611",
+  "FTS_Q4_MATCHES.txt": "32624ef57773f89ae0aa6515d81e4c81b3cbd510057bf4d8b1ffb430741834e6",
+  "FTS_Q5_ARRAYAGG.txt": "c01ffc89d7338efeb8f489326a5d2ba533a74fa0aa7d16f4873f3c90837b7743",
+  "FTS_Q6_PHRASE.txt": "01c6365e3d59f17b883df206199e31cbb3d2fcc421719a8cef36babbc482957d"
+ },
+ "local_test": {
+  "oracle": "Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free",
+  "tables": "temporary tables with exact development_g19_1 silver columns/types, filled from local SIDDS.LGL_SRCH_ROW_S",
+  "silver_rows": 102,
+  "results": {
+   "FTS_Q0_INFO.txt": "OK",
+   "FTS_Q1_FULL.txt": "OK",
+   "FTS_Q2_POSTINGS.txt": "OK",
+   "FTS_Q3_LENGTHS.txt": "OK",
+   "FTS_Q4_MATCHES.txt": "OK",
+   "FTS_Q5_ARRAYAGG.txt": "OK",
+   "FTS_Q6_PHRASE.txt": "OK"
+  },
+  "q1_equals_production_bound_statement": {
+   "token_is_min_posting": true,
+   "documents": 1,
+   "production_n": 2,
+   "file_n": 2,
+   "items_equal_as_set": true
+  },
+  "temporary_schema_dropped": "A8_T22806N_532619"
+ },
+ "not_done": [
+  "field notebook execution",
+  "ORDS path (diagnostic B)",
+  "root cause"
+ ]
+}

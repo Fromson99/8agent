@@ -33,6 +33,13 @@ _WORKFLOW_STAGES = {
     'COMPARE': '내규·외규의 차이와 적용 범위를 비교 중',
     'REPORT': '대사 결과와 미확인 사항을 정리 중',
 }
+_DOCUMENT_STAGES = {
+    'INTAKE': '문서 대사할 내규 문서를 확인 중',
+    'INVENTORY': '문서 전체를 읽기 묶음으로 나누는 중',
+    'GROUPS': '문서 전체를 묶음별로 대사 중',
+    'REPORT': '문서 대사 결과를 정리 중',
+}
+_DOCUMENT_WORKFLOW = 'risk_team_document_compare_workflow'
 _STAGE_LABELS = dict(zip(
     ("INTENT", "PLAN", "RECALL", "READ", "SELECT", "ASSESS", "COMPOSE"),
     ("질문 이해", "검색 계획", "자료 검색", "원문 확인", "근거 선택", "적용 판단", "답변 작성")))
@@ -132,6 +139,7 @@ class ProgressCapture(logging.Handler):
         self.law_decision_states = {}
         self.seen_reads = set()
         self.judgment_sequences = {}
+        self.vector_previews = []
         self.last_read_publish = -5.0
         self.sequence_lock = threading.Lock()
         self.poll_lock = threading.RLock()
@@ -373,14 +381,14 @@ class ProgressCapture(logging.Handler):
         payload = self._payload(db, seq)
         if created:
             self.workflow_id = payload.get('workflow_id')
-        if self.workflow_id != 'risk_team_compare_workflow':
+        if self.workflow_id not in ('risk_team_compare_workflow', _DOCUMENT_WORKFLOW):
             return
         stage = 'INTAKE' if created else payload.get('stage')
         status = 'running' if created else payload.get('status')
         key = (stage, status)
         if key == self.workflow_stage:
             return
-        label = _WORKFLOW_STAGES.get(stage)
+        label = (_DOCUMENT_STAGES if self.workflow_id == _DOCUMENT_WORKFLOW else _WORKFLOW_STAGES).get(stage)
         if stage == 'END':
             label = {'completed': '대사 결과를 정리했습니다',
                      'partial': '확인된 범위의 대사 결과와 미확인 사항을 정리했습니다',
@@ -405,12 +413,21 @@ class ProgressCapture(logging.Handler):
                 for seq, event_kind in rows:
                     if event_kind in {'WORKFLOW_CREATED', 'WORKFLOW_CHECKPOINT'} and self.admitted is not None:
                         self._workflow_checkpoint(db, seq, event_kind == 'WORKFLOW_CREATED')
+                    elif event_kind == 'DOCUMENT_COMPARE_PROGRESS' and self.admitted is not None and self.workflow_id == _DOCUMENT_WORKFLOW:
+                        value = self._payload(db, seq)
+                        if all(type(value.get(k)) is int for k in ('done', 'total', 'units', 'different')):
+                            self.publish('phase', '문서 대사 진행: 읽기 묶음 %d/%d · 대사 단위 %d · 차이 %d건'
+                                         % (value['done'], value['total'], value['units'], value['different']),
+                                         basis={'kind': 'WORKFLOW_CHECKPOINT', 'journal_seq': seq, 'stage': 'GROUPS',
+                                                'state': 'running', 'detail_mode': 'activity'})
                     elif event_kind == "CASE_EXECUTION_CONTEXT":
                         documents = self._payload(db, seq).get("documents")
                         if (self.admitted is not None and isinstance(documents, list)
                                 and all(isinstance(d, str) for d in documents)
                                 and set(documents) <= self.admitted):
                             self.admitted = frozenset(documents)
+                    elif event_kind == "INITIAL_VECTOR_CANDIDATES":
+                        self.vector_previews = (self.vector_previews + [self._payload(db, seq)])[-4:]
                     elif event_kind == "CASE_JUDGMENT_ACCEPTED" and self.admitted is not None:
                         self._flush_reads(force=True)
                         self._case_judgment(db, seq)
@@ -759,7 +776,10 @@ class ProgressCapture(logging.Handler):
             count = len(payload.get("selected_for_read", []))
             catalogue = payload.get('discovery', {}).get('law_navigation', {})
             terms = catalogue.get('terms', [])
-            if terms:
+            if catalogue.get('search_policy') == 'vector-initial-v1':
+                # The first search was vector similarity; the question words were not a body search.
+                details = self._vector_candidates(catalogue)
+            elif terms:
                 details.append('본문 검색에 사용한 단어: ' + ' / '.join(_compact(t, 60) for t in terms))
         elif stage == "READ":
             count = len(payload.get('originals', []))
@@ -822,6 +842,29 @@ class ProgressCapture(logging.Handler):
                              details=details[start:start+8], basis=basis)
         else:
             self.publish(kind, label, count=count, basis=basis)
+
+    def _vector_candidates(self, catalogue, shown=5):
+        rows = [r for r in _objects(catalogue.get('vector_candidates'))
+                if self.admitted is None or r.get('document_id') in self.admitted]
+        top = [r.get('source_id') for r in rows[:shown]]
+        names = {}
+        # The preview event precedes this RECALL checkpoint in the same journal (read in seq order).
+        for event in reversed(self.vector_previews):
+            preview = _objects(event.get('preview'))
+            if (event.get('publication_id') == catalogue.get('vector_publication')
+                    and [item.get('source_id') for item in preview] == top):
+                names = {item['source_id']: item for item in preview}
+                break
+        dual = catalogue.get('dual') if isinstance(catalogue.get('dual'), dict) else None
+        details = [('벡터 후보 ' + str(len(rows)) + '개 · 본문 검색 후보 ' + str(dual.get('fulltext', 0)) + '개 · 따로 표시') if dual else ('벡터·본문 검색 후보 ' + str(len(rows)) + '개 · 합친 순') if catalogue.get('fusion') else ('벡터 후보 ' + str(len(rows)) + '개 · 가까운 순')]
+        for sid in top:
+            item = names.get(sid) or {}
+            label = ' · '.join(v for v in (_compact(item.get('document_name'), 60), _compact(item.get('article'), 60)) if v)
+            if label:
+                details.append(label)
+        if len(rows) > shown:
+            details.append('외 ' + str(len(rows) - shown) + '개')
+        return details
 
     def _claim_source_names(self, db, claim):
         sources = dict.fromkeys([claim.get('source_id'), *(item.get('source_id')

@@ -14,12 +14,36 @@ import time
 from .oracle_dp import client_from_environment
 from .oracle_dp_io import DPError,digest
 from .oracle_query import Snapshot
-from .oracle_query_catalog import select_release
+from .oracle_query_catalog import ACTIVE, active, channel_name, read_release, select_release
+from .oracle_shared_cache import SharedRows
 from .oracle_query_request import _request
+from .physical_mapping import names as physical_names
 from .oracle_query_state import StateSQL
 from .oracle_query_store import Store
 
 _REQUEST=ContextVar('oracle_data_request',default=None)
+
+
+def _implicit_release(sql):
+    """Neither DP_QUERY_CHANNEL nor DP_QUERY_RELEASE_ID: 'main', else the only channel.
+
+    Dataiku loaders publish to their own g19_<hash> channel. Without a main row,
+    a single published channel is unambiguous; several are never ranked or guessed.
+    """
+    channel='main'
+    selected=active(sql,channel)
+    if selected is None:
+        p=physical_names(sql,'query_active',ACTIVE)
+        rows=sql.query(f'SELECT {p.select("CHANNEL")} FROM {p.table} ORDER BY {p.c("CHANNEL")} FETCH FIRST 2 ROWS ONLY',
+                       [],limit=2)
+        if len(rows)>1:
+            raise DPError('QUERY_ACTIVE_AMBIGUOUS: no main channel and several published channels; set DP_QUERY_CHANNEL')
+        if rows:
+            channel=channel_name(rows[0]['CHANNEL'])
+            selected=active(sql,channel)
+    if selected is None:
+        raise DPError('QUERY_ACTIVE_MISSING: no completed release selected for channel')
+    return {**selected,'channel':channel,'manifest':read_release(sql,selected['release_id'])}
 
 
 class ValidatedTransport:
@@ -39,7 +63,7 @@ def request_context():
     if existing is not None:
         yield existing
         return
-    slot={'app':None,'agent_records':None}
+    slot={'app':None,'agent_records':None,'cpu_started':time.process_time()}
     token=_REQUEST.set(slot)
     try:
         from .oracle_runtime_paths import using
@@ -49,6 +73,36 @@ def request_context():
         if slot['app'] is not None:
             slot['app'].state.pipeline.store.close()
         _REQUEST.reset(token)
+
+
+def _stats():
+    slot=_REQUEST.get()
+    records=slot.get('agent_records') if slot else None
+    return slot,getattr(getattr(records,'sql',None),'stats',None)
+
+
+def sql_progress():
+    """Cumulative SQL/Agent/CPU counters for model-call events (empty outside an Oracle request).
+
+    request_cpu_ms is process CPU since the request started: other threads (log writers, a
+    concurrent request) are included, so it is an upper bound for this request's own CPU.
+    """
+    slot,stats=_stats()
+    if stats is None or not hasattr(stats,'progress'):return {}
+    return {**stats.progress(),'cpu_ms_total':round((time.process_time()-slot['cpu_started'])*1000)}
+
+
+def sql_summary():
+    """This request's Oracle SQL totals and the process row cache, for one log line."""
+    slot,stats=_stats()
+    if stats is None:return None
+    value=stats.summary()
+    value['request_cpu_ms']=round((time.process_time()-slot['cpu_started'])*1000)
+    cache=getattr(slot['agent_records'].sql,'shared_cache',None)
+    if cache is not None:
+        status=cache.status()
+        value.update(cache_entries=status['entries'],cache_bytes=status['bytes'],cache_evictions=status['evictions'])
+    return value
 
 
 def environment_binding():
@@ -92,7 +146,9 @@ class Factory:
         self.runtime=external_runtime()
         self.root=host._ROOT
         self.client=client_from_environment()
+        self.shared_rows=SharedRows(self.client,self.environment)
         self.release_id=os.environ.get('DP_QUERY_RELEASE_ID','').strip() or None
+        self.implicit_channel=not self.release_id and not os.environ.get('DP_QUERY_CHANNEL','').strip()
         self.channel=os.environ.get('DP_QUERY_CHANNEL','').strip() or (None if self.release_id else 'main')
         if self.release_id and self.channel:
             raise DPError('QUERY_CONFIG: choose DP_QUERY_RELEASE_ID or DP_QUERY_CHANNEL')
@@ -112,7 +168,10 @@ class Factory:
         slots=self.profile['max_concurrent_requests_per_process']
         self.admission=threading.BoundedSemaphore(slots) if slots else None
         self.binding={'mode':'oracle-query','data_provider':'oracle','source_storage':'oracle','diagnostic_storage':'nfs',
-                      'serving_data_cache':False,'state_storage':'oracle','persistent_sqlite':False,
+                      'serving_data_cache':'process-memory' if self.shared_rows.enabled else False,
+                      'serving_data_cache_revision':self.shared_rows.status()['revision'],
+                      'serving_data_cache_mib':self.shared_rows.settings['mib'],
+                      'state_storage':'oracle','persistent_sqlite':False,
                       'record_computation':'request-local-memory',
                       'query_channel':self.channel,'query_release_id':self.release_id,
                       'dp_environment_binding':self.environment,'service_entry_sha256':host._sha(Path(host.__file__))}
@@ -133,6 +192,7 @@ class Factory:
         if slot is not None and slot.get('agent_records') is not None:
             return slot['agent_records']
         sql=RecordSQL(self.client,binding=self.environment,deadline=time.monotonic()+self.profile['wall_seconds'],max_calls=10000)
+        sql.shared_cache=self.shared_rows
         records=AgentRecords(sql,namespace=os.environ.get('GENOS_ORACLE_AGENT_NAMESPACE','genos-rag'))
         if slot is not None:slot['agent_records']=records
         return records
@@ -157,15 +217,19 @@ class Factory:
             if not self.agent_schema_verified:
                 records.preflight();self.agent_schema_verified=True
         sql=records.sql
-        selected=select_release(sql,release_id=self.release_id,channel=self.channel)
+        if self.implicit_channel:
+            selected=_implicit_release(sql)
+        else:
+            selected=select_release(sql,release_id=self.release_id,channel=self.channel)
         manifest=selected['manifest'];snapshot=Snapshot.open(sql,manifest['source_release_id'])
         if manifest['dataset_version']!=snapshot.dataset_version or manifest['source_manifest']!=snapshot.manifest:
             raise DPError('QUERY_SOURCE_BINDING: selected query/source release differs')
         allowed=set(snapshot.manifest['scope']['document_version_ids'])-snapshot.excluded
         from . import observability as obs
         obs.event(obs.get_logger('oracle.query'),'oracle.release.selected',query_release_id=selected['release_id'],
+                  query_channel=selected.get('channel',self.channel),
                   pointer_revision=selected['revision'],generation_id=snapshot.generation_id,
-                  data_provider='oracle',serving_data_cache=False)
+                  data_provider='oracle',serving_data_cache=self.shared_rows.enabled)
         return _request(sql,selected['release_id'],selected['revision'],snapshot,manifest,allowed)
 
     def application(self):
@@ -226,13 +290,54 @@ class Factory:
         threading.Thread(target=lambda:Context().run(recover),name='oracle-publication-recovery',daemon=True).start()
 
     def warmup(self):
-        # Pin and validate descriptors only. Do not walk corpus/search tables.
+        # Pin and validate descriptors only. Do not walk corpus/search tables here; the
+        # declared-name list (units holding 이하) is built in a background thread instead.
         request=self.request();store=Store(request)
         try:
             from .oracle_query_index import Index
             from .oracle_query_fulltext import UnitIndex
-            store.selection.require_latest();Index(store);UnitIndex(request)
+            store.selection.require_latest();Index(store);fulltext=UnitIndex(request)
             return {'data_provider':'oracle','mode':'oracle-query','state_storage':'oracle','persistent_sqlite':False,'nfs_required':False,'query_release_id':request.release_id,
                     'query_pointer_revision':request.pointer_revision,'document_count':len(request.sources.allowed),
-                    'serving_data_cache':False,'source_downloaded':False,'sql_calls':request.sql.calls}
+                    'serving_data_cache':'process-memory' if self.shared_rows.enabled else False,
+                    'shared_rows':self.shared_rows.status(),'source_downloaded':False,'sql_calls':request.sql.calls,
+                    'declared_names_preload':self.preload_declared_names(fulltext.manifest['index_sha256'])}
         finally: store.close()
+
+    def preload_declared_names(self,identity):
+        """Build the declared-name list off the request path (local Oracle, 1,547 documents:
+        a request-path build took 47 s of SQL). Requests meanwhile use what is cached."""
+        if os.environ.get('GENOS_DECLARED_NAMES_PRELOAD','on').strip().lower() in ('0','off','false','no'):
+            return 'off'
+        from .legal_agent.declared_names import CACHE
+        if not CACHE.reserve(identity):return 'running'
+        def run():
+            from . import observability as obs
+            log=obs.get_logger('oracle.query');started=time.monotonic();calls=None
+            try:
+                with request_context():
+                    request=self.request();store=Store(request)
+                    try:
+                        from .oracle_query_index import Index
+                        from .oracle_query_fulltext import UnitIndex
+                        documents=sorted(request.sources.allowed);tools=Index(store).tools(documents)
+                        try:
+                            fulltext=UnitIndex(request)
+                            found,report=CACHE.documents(fulltext,fulltext,tools.sources,documents,preload=True)
+                        finally:tools.db.close()
+                        calls=request.sql.calls
+                    finally:store.close()
+                obs.event(log,'declared_names.preload',state='READY',seconds=round(time.monotonic()-started,3),sql_calls=calls,
+                          documents=report['documents'],read_units=report['read_units'],
+                          declaring_documents=sum(bool(v) for v in found.values()),declarations=sum(len(v) for v in found.values()))
+            except Exception as exc:
+                obs.event(log,'declared_names.preload',level=40,state='FAILED',error_type=type(exc).__name__,
+                          seconds=round(time.monotonic()-started,3),exc_info=True)
+            finally:
+                CACHE.release(identity)
+        from contextvars import Context
+        thread=threading.Thread(target=lambda:Context().run(run),name='declared-names-preload',daemon=True)
+        try:thread.start()
+        except BaseException:
+            CACHE.release(identity);raise
+        return 'started'

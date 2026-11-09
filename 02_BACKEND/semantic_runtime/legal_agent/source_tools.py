@@ -284,9 +284,12 @@ class SourceSession:
                 from ..term_references import reference_targets
                 e = self.repo.evidence(args['evidence_id'])
                 rows = self.tools.db.execute('SELECT r.json FROM reference r JOIN reference_end x ON x.reference_id=r.id WHERE x.source_id=? ORDER BY r.id', (e['source_id'],)).fetchall()
-                refs = []
+                refs, covered = [], set()
+                from . import declared_names
                 for row in rows:
                     r = json.loads(row[0])
+                    # A citation written with a name its document declared elsewhere (`규정 제32조`).
+                    r = declared_names.upgrade_reference(self, r) or r
                     outgoing = r['source_id'] == e['source_id']
                     if outgoing != (args['direction'] == 'outgoing'):
                         continue
@@ -304,7 +307,8 @@ class SourceSession:
                                  'targets': [self.reference_source_card(
                                      target['source_id'], target.get('unit_id'), target.get('unit_path', []),
                                      target.get('block_ids', [])) for target in allowed],
-                                 'unresolved': not allowed or len(allowed) != len(targets), 'content_read': False})
+                                 'unresolved': not allowed or len(allowed) != len(targets), 'content_read': False,
+                                 **({'declared_name': r['declared_name']} if r.get('declared_name') else {})})
                 items = refs[offset:offset+size]
                 next_position = offset+size if offset+size < len(refs) else None
                 if any(r['unresolved'] for r in items):

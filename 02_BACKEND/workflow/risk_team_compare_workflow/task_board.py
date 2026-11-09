@@ -240,6 +240,8 @@ def _review(ctx,state):
             )
             if general:
                 instructions+=(query_scope.DEPENDENCY_SCOPE +
+                    ' 이 호출은 issue에 적힌 쟁점 하나만 검토한다. 질문의 다른 요구나 다른 쟁점에 해당하는 내용은 items에 넣지 않으며 그 쟁점의 검토에서 따로 다룬다. '
+                    'fields의 항목마다 item은 하나이고, 한 항목에 속한 여러 내용은 그 item의 text에 함께 쓴다. '
                     ' research_requirements의 각 요구에 필요한 원문을 확인한다. '
                     'CORE는 질문의 직접 요구를 답하는 원문, DEPENDENCY는 적용 범위·정의·위임·조건·예외 확인, CONTEXT는 보충 배경이다. '
                     'next_tasks에는 CORE·DEPENDENCY 중 필요한 조사만 제안한다. priority_reason에는 대응하는 질문의 요구와 추가 원문이 어떤 답·적용 판단을 바꿀 수 있는지 구체적으로 쓴다. '

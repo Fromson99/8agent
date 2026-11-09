@@ -248,7 +248,9 @@ def test_live_publish_pin_scope_unicode_state_and_pointer(live_oracle,published,
     assert health['status']==200,health
     assert entry._BINDING['mode']=='oracle-query'
     warm=entry._warm_resources()
-    assert warm['source_downloaded'] is False and warm['serving_data_cache'] is False
+    # Nothing is downloaded; published rows may be reused in process memory (shared-row cache, 2026-11-06).
+    assert warm['source_downloaded'] is False
+    assert warm['serving_data_cache'] == ('process-memory' if 'shared_rows' in warm else False)
     section=asyncio.run(entry.service({}, {'op':'call','method':'GET','path':'/v1/rag/section','params':{'doc_id':'d','node':'0'}}))
     assert section['status']==200 and '승인' in json.dumps(section,ensure_ascii=False),section
     search=asyncio.run(entry.service({}, {'API_TYPE':'RAG_SEARCH','q':'모의승인규정 제1조','doc_id':'d'}))

@@ -1,0 +1,161 @@
+{
+  "main_generation": 177,
+  "release_id": "multiturn-followups-20261108-r1",
+  "release_manifest_sha256": "8d57bae85689b891abe64ba3f355496bb03fb1dfeecd8169e4dbf2f61bf387a1",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "multiturn-followups-20261108-r1",
+    "generation": 177,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/multiturn-followups-20261108-r1/release.json",
+    "release_manifest_sha256": "8d57bae85689b891abe64ba3f355496bb03fb1dfeecd8169e4dbf2f61bf387a1",
+    "activated_at": "2026-11-08T04:25:19.273764+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "6a94692d981621ee4f98897b8420f041ea652f9a53aab2f8804d1a77861981b6"
+  },
+  "serving_files": 544,
+  "replaces": {
+    "main176": {
+      "release_id": "agent-roundtrips-20261107-r1",
+      "sent_gmail_id": "1a1b3cec5d38ed1c"
+    },
+    "field_state_assumed": "MAIN176 (agent-roundtrips-20261107-r1) or an earlier MAIN"
+  },
+  "changed_vs_main176": {
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": "a9bf2b1edf4424bf93592abec9b85b77641000cc238965ccce2edc03c24d086d",
+      "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py": "5b619adebe951f41c26d459078b6a50806cc686ae66e1b6c1e8430bbc530b879",
+      "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "0ae1ffacf13e63ef751ee5a7198062d46760ba1cc23ca3c3c93158d4ff4db8eb",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py": "28b394b5e4ba5be0b11f4774034557a660f96797ad6f460abc901a2467ea055b",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "950e66fea5c528d295a1290ed70fe31a8fe4b65fb0a28308bbf59dc624336553",
+      "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py": "0650c51970aa7fbadee0773a52bdfecb5d5d5bf3af689c68a65ebc214b8dd1d0",
+      "02_BACKEND/semantic_runtime/legal_agent/output_contract.py": "28b8bca9d44b2942c0b451e01835d8321e0aef329713247cba0d6346d83b3a5a",
+      "02_BACKEND/semantic_runtime/legal_agent/query_scope.py": "23944801ce51212a359cf5c4f800f9728c75e9e1796802b2a62467aee395cee9",
+      "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": "acf04b78177e1b559c52d9a7fc9b0af5e91d1fce3b1fb1250e66dbaec80838f6",
+      "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py": "c0b9e25e1a740cb3dc5c5c6904f025364e4ac55744dfc19e4839b3e36b6106a2",
+      "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py": "dea0d6f57c6fabc23d3ecfdb154a34f5147ed873a4031107cac402082c25e54b"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "643 -> 645 (two SELECTs listing the earlier investigations of the same chat; r7 of the related-question work)",
+    "new_environment_variables": 0,
+    "workflow_file_changed": false
+  },
+  "changes": {
+    "related_questions_then_decide": "every earlier question of the chat (across investigations, last 20) is judged YES/NO/UNSURE per question (one model call), the decision uses only the related ones; UNSURE only -> ask \"이번 요청이 n번째 질문 “…”에 대한 것인가요?\"; the reply runs the pending request",
+    "connected_continues": "user rule 2026-11-08: anything connected to an earlier question (same body/system/case, another article or aspect) continues it; an explicit new-question wording (새로 찾아줘, 새 질문으로, 별도로) starts a new one; a different body/system/law is a new question",
+    "part_re_show": "ANSWER_PRESENT asking for one part of an earlier answer shows only the saved explanations holding it (one claim-choice call, IDs only, no search, no new text); the saved judgment keeps every claim; WHOLE/invalid/all-claims keeps the full re-show",
+    "clarification_wording": "the question is named by what the user actually asked, not by the model-written purpose (S8: \"상법상 …\" disappeared)",
+    "grant_restore": "persisted reference read grants that no current acquired original witnesses are dropped (event SCOPE_REFERENCE_GRANT_DROPPED), never HTTP 500 (MAIN176 S4 \"persisted reference scope has no current verified witness\"); grants of another search scope are dropped too",
+    "unresolved_decision_answers": "MODEL_DECISION_UNRESOLVED with acquired originals answers from them as a limited answer with the stop note; without originals it still asks (ADR-1451 \"판단 처리 오류\" path)",
+    "reviewer_consistency": "a reviewer task paraphrase on an unchanged-purpose command, or valid=false naming the relation of the very command while demanding a different task text, is recorded (COMMAND_CHECK_OVERRIDE), not refused; task-keeping rejections and FOLLOWUP/NEW_TOPIC disagreements still refuse",
+    "guidance_rules": "a law named for an unanswered question is its guidance even when another law was searched; background answers are not acquired originals (navigation prompt)"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 53,
+      "candidate_counts": {
+        "passed": 819,
+        "failed": 129
+      },
+      "new_failures": 0,
+      "fixed": 46,
+      "same_failures": 129
+    },
+    "new_contract_tests": "05_TESTS/CONTRACTS/test_multiturn_followup_fixes.py (18) + test_multiturn_related_questions.py (28) + test_multiturn_new_topic_branch.py (12)",
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "live_qwen": {
+      "scenarios": "8 chats / 28 turns (20 graded: turn 1 excluded), public documents, financial_team, local root service, SQLite, Qwen3.8 FP8",
+      "main176_baseline_adr1454": {
+        "pass": 9,
+        "graded_turns": 20
+      },
+      "r14_run1_adr1456": {
+        "pass": 19,
+        "graded_turns": 20
+      },
+      "r14_run2_adr1456": {
+        "pass": 18,
+        "graded_turns": 20
+      },
+      "r15_run1_adr1457": {
+        "pass": 19,
+        "graded_turns": 20
+      },
+      "r14_r15_all_three_runs_pass": 17,
+      "calls": {
+        "adr1456": {
+          "candidate-run1": {
+            "physical": 230,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.47206
+          },
+          "candidate-run2": {
+            "physical": 235,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.452347
+          },
+          "baseline": {
+            "physical": 217,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.463143
+          }
+        },
+        "adr1457": {
+          "r15-run1": {
+            "physical": 256,
+            "unknown": 0,
+            "http429": 2,
+            "reported_cost_usd": 0.534931
+          },
+          "r14-run1": {
+            "physical": 230,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.47206
+          },
+          "r14-run2": {
+            "physical": 235,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.452347
+          },
+          "baseline": {
+            "physical": 217,
+            "unknown": 0,
+            "http429": 0,
+            "reported_cost_usd": 0.463143
+          }
+        }
+      }
+    },
+    "entry_checks": "see activation.json",
+    "installer": {
+      "base": "MAIN176 agent-roundtrips-20261107-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "package": {
+    "zip": "MAIN177_FULL_20261108_R1.zip",
+    "zip_sha256": "9e8be5f04e42c324582d34a00b50f77c5e0bff2a1dbb747fbf05febb31a511bf",
+    "members": 555,
+    "workflow": "MAIN177_WORKFLOW.py"
+  },
+  "not_verified": [
+    "field internal model (prompts tuned on external Qwen only)",
+    "field data / ORDS",
+    "search misses (S6 제16조 found in 1 of 3 runs) are out of scope",
+    "S5 compare question acquired no originals in r14 runs (navigation chose ANSWER from background); r15 adds a prompt rule only"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

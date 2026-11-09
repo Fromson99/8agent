@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from semantic_runtime.app import create_app
 from semantic_runtime.legal_agent import corrected_memory as m
-from test_memory_runtime_v2 import command,memory
+from test_memory_runtime_v2 import fit, command,memory
 from test_bounded_source_main import settings
 from test_legal_agent_double_harness import ROOT,wire
 from test_structure_first_search import structured_generation
@@ -25,7 +25,7 @@ class ScriptedTransport:
         phase=v.get('source_stage',v['phase']);self.phases.append(phase)
         if phase==self.fail:raise RuntimeError('injected failure')
         if phase=='source-request-route':out={'mode':'CASE','answer':'','reason':'모의 법률 질문 또는 현재 사건 후속 요청'}
-        elif phase.startswith('memory-resolve'):out=copy.deepcopy(self.command)
+        elif phase.startswith('memory-resolve'):out=fit(copy.deepcopy(self.command),body['response_format']['json_schema']['schema'])
         elif phase.endswith('check'):out={'valid':True,'reason':'synthetic structure check'}
         elif phase.startswith('domain-choice-'):
             offer=v['offer'];out={'method_id':offer['method_id'],'path':'DISCOVERY',

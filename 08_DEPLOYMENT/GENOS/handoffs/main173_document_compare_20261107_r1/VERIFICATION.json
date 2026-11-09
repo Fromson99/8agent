@@ -1,0 +1,121 @@
+{
+  "main_generation": 173,
+  "release_id": "document-compare-20261107-r1",
+  "release_manifest_sha256": "3b76e645b15f1aadd8e9683b8cdc1a3a2b0235983d0d95dd5d82b042fe9b3817",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "document-compare-20261107-r1",
+    "generation": 173,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/document-compare-20261107-r1/release.json",
+    "release_manifest_sha256": "3b76e645b15f1aadd8e9683b8cdc1a3a2b0235983d0d95dd5d82b042fe9b3817",
+    "activated_at": "2026-11-06T16:49:47.489748+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "34e4764fc97b5722bc1096d59654aaa483018aeb1ccc43df66972d700fc4b4ec"
+  },
+  "serving_files": 544,
+  "replaces": {
+    "main_generation": 172,
+    "release_id": "guided-reads-20261107-r1",
+    "sent_gmail_id": "1a1b1b7ea8bbb508"
+  },
+  "changed_vs_previous": {
+    "products": {
+      "02_BACKEND/semantic_runtime/basis_links/reading_groups.py": "686b8b85987a6c1a751c8db46f4e33988f5c14153655e53c530c26d9ba0ffa8e",
+      "02_BACKEND/semantic_runtime/chat_adapter.py": "b4b0ce6b10010f2186acf38499f8a861efae63c23b47563bd9f80ce39595d524",
+      "02_BACKEND/semantic_runtime/comparison_research_bridge.py": "32aa8e026833790cdb537490189994d7d21e721c4635d5f66dbcceb4e7428d26",
+      "02_BACKEND/semantic_runtime/legal_agent/workflow_execution.py": "244adc0fd960d23ebcf75a2c9b30dfbfc8d37a5f7d3aed60d94599166143ff79",
+      "02_BACKEND/semantic_runtime/progress.py": "cd6ea9b08334cba53f9a598ba92c0a1671ecadedb624fe162d4b22a5d08ad374",
+      "02_BACKEND/semantic_runtime/workflow_bridge.py": "dcade8cd5465f79c8b40b7fbdbdf74fdd11433ba1643906200c8ba7c9e1aec6b",
+      "02_BACKEND/semantic_runtime/workflow_evidence.py": "470efa601e0919ae6203d3db3a9ced0b7d7e56f5d8bfb7c8382efde5fbc4b68d",
+      "02_BACKEND/semantic_runtime/workflow_rag.py": "bcb392956e211e751a346e93c79273b5ee64f9d9bd015b3a07a9ae15b3bb9725",
+      "02_BACKEND/workflow/adapters/projection.py": "866345fc1bae2a3cdaded6a86ce9da5d5d11de25a88a5d17faee161f710e3b6c",
+      "02_BACKEND/workflow/contracts.py": "5f6f5103966fccb3a2c7dc3a426e0bed2ad2d74b66b3e7f95e5c6ad181cfab2b",
+      "02_BACKEND/workflow/internal_basis_discovery_workflow/manifest.json": "8da68a0220622c8580839ab89a46f9d4abd24f76f8727cf623965001541b0e6f",
+      "02_BACKEND/workflow/risk_team_compare_workflow/compare.py": "cf91582fa46a28924a2459bbfbe9123c157a4e981b1a01475ab639e68031715d",
+      "02_BACKEND/workflow/risk_team_compare_workflow/concepts.py": "68933f8dc26ee28e301b79de473d86b31d60daa2390b78cf5be5d31e4358a1bf",
+      "02_BACKEND/workflow/risk_team_compare_workflow/manifest.json": "9b06e89a0b12f50f01ccece916ef62fac9a2d74afbb9f49d66a3f7c42287b4a8",
+      "02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py": "bb6f1b526f5029e3357117b3b17327a1cd26fd05fbd41ab9c60d7e05c80666ec",
+      "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py": "2777d64f34269d11037cd18f4f2bf42a6e6b7d6e02131c45625315c1b5bb4bca",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/__init__.py": "fc01941234fd1dca48bd0978b2a8bc1d4e56533d1138fea24471951a7c354456",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/compare_unit.py": "8ca766fd9776f8962eda39b0307b86000d85e4a11fc1dc8c8b143c575f949a74",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/flow.py": "42f5c71d55a9b2948a2f9654d40d01852df37e44f639afc52393962cf48e36ae",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/group_review.py": "a86ba788104c6adb8e0e4a53422a20d8764b184c9929ae860955b828564f4cca",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/manifest.json": "9d243c6c5899ecc996e060527dbdd9c74ccd9c21b3f59575d1dcef16c2d0bd58",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/report.py": "61904678563a6d8b65ef6810f0a42c453e987646a9fe54f2cd28ba421886eccb",
+      "02_BACKEND/workflow/risk_team_document_compare_workflow/selection.py": "66171d764d5eaebc32a8f20097d185f1c50803acdccd1574672ad94969989071",
+      "02_BACKEND/workflow/runtime.py": "8532c8aba666690607e5b20d33545d2d9498749e6a312f6a95ec44c4b8abfc02",
+      "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "ee1857af33d0b205fa9d5bede5b9cd817c35d386aa09c7c7a34783d85d1ec715",
+      "service.py": "bc5823be50567c3de9d696d852e92ca9c3a7a386c33abf59e4557c714e1e0655"
+    },
+    "product_count": 26,
+    "sql_plans": "642 -> 643 (workflow journal lookup, not an Oracle source table)",
+    "workflows": {
+      "risk_team_compare_workflow": "1.20.9",
+      "internal_basis_discovery_workflow": "1.2.2",
+      "risk_team_document_compare_workflow": "1.0.0"
+    },
+    "workflow_file_changed": true
+  },
+  "local_validation": {
+    "regression_36_files": {
+      "candidate_counts": {
+        "passed": 609,
+        "failed": 95,
+        "error": 20
+      },
+      "new_failures": 0,
+      "fixed": 22,
+      "same_failures": 115,
+      "flaky": "test_read_judgment_api final_failed (fails on the previous MAIN too)"
+    },
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "entry_checks": "17/17 + workflow registry/route check",
+    "installer_commands": 15,
+    "real_qwen_document_compare": {
+      "adr": "ADR-1447",
+      "document": "금융투자회사의 리스크관리 모범규준",
+      "http_status": 200,
+      "seconds": 3135.333,
+      "physical_calls": 448,
+      "unknown": 1,
+      "reported_cost_usd": 2.883256,
+      "groups_total": 32,
+      "groups_finished": 14,
+      "groups_held": 0,
+      "units": 98,
+      "verdicts": {
+        "CONFLICT": 2,
+        "POSSIBLE_GAP": 0,
+        "ADDITIONAL_INTERNAL": 2,
+        "DEFERRED": 90,
+        "EXTERNAL_NOT_FOUND": 0,
+        "CONFORMS": 4
+      },
+      "duplicate_request_extra_calls": 0,
+      "status": "partial",
+      "stop_code": "DOCUMENT_STOPPED_UNKNOWN_OUTCOME",
+      "stop_note": "one model call got HTTP 200 headers then only whitespace (660 bytes) until the 180 s call deadline: unknown outcome, no automatic resend; partial report returned; continuation (run-002, \"문서 대사: 계속\") started after this mail"
+    }
+  },
+  "package": {
+    "zip": "MAIN173_FULL_20261107_R1.zip",
+    "zip_sha256": "47d456b5e3f7cfd50d20f2449300f3f4b8e62d7c514fe99035c5be6c36ffd988",
+    "members": 555,
+    "workflow": "MAIN173_WORKFLOW.py"
+  },
+  "not_verified": [
+    "문서 대사 on the Oracle (DP=oracle) path",
+    "real internal rules (a public guideline stood in for the internal rule)",
+    "GENOS internal model, field screen and field data",
+    "legal quality of the verdicts (not graded)"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

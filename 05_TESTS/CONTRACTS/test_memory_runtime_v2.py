@@ -30,12 +30,43 @@ class Fake:
         return {'stage':stage}
 class Wire:
     def __call__(self,system,data,schema,phase):
+        if phase.startswith('memory-resolve-related'):return related_all(schema)
         if phase.startswith('memory-resolve'):return copy.deepcopy(self.command)
         if phase.endswith('check'):return {'valid':True,'reason':'synthetic contract response'}
         raise AssertionError(phase)
+def related_all(schema):
+    """Scripted related-question step: every earlier question judged related (the pre-selection behavior)."""
+    return {'reason':'모의 선택',**{k:{'related':'YES','why':'모의: 이전 질문 전체'} for k in schema['properties'] if k!='reason'}}
+def is_related(schema):
+    import re
+    props=set(schema.get('properties',{})) if isinstance(schema,dict) else set()
+    return 'reason' in props and len(props)>1 and all(k=='reason' or re.fullmatch(r'q\d+',k) for k in props)
+def fit(value,schema):
+    """A scripted full command answered in the shape of the requested resolver step.
+
+    The resolver asks method/target/reason first and the remaining fields second; a scripted
+    provider returns only the requested properties, defaulting a missing one from its rule.
+    """
+    if is_related(schema):return related_all(schema)
+    if not isinstance(value,dict) or not isinstance(schema,dict) or 'anyOf' in schema or 'properties' not in schema:return value
+    defs=schema.get('$defs',{})
+    def rule(r):
+        while isinstance(r,dict) and '$ref' in r:r=defs[r['$ref'].split('/')[-1]]
+        return r if isinstance(r,dict) else {}
+    def default(r):
+        r=rule(r)
+        if 'const' in r:return r['const']
+        if r.get('enum'):return r['enum'][0]
+        if r.get('type')=='array':return []
+        if r.get('type')=='object':return {k:default(v) for k,v in r.get('properties',{}).items()}
+        if r.get('anyOf'):return default(r['anyOf'][0])
+        return None
+    return {k:(copy.deepcopy(value[k]) if k in value else default(r)) for k,r in schema['properties'].items()}
 def command(method,**kw):
     value={'method_id':method,'document_scope_mode':'KEEP','target':None,'knowledge_id':None,'stage':'NONE','task':None,'source_category':'KEEP','document_ids':None,'facts':None,'queries':None,'restore_event':None,'restore_fields':[],'format':'prose','reason':'모의 계약',
-           'search_scope_change':{'operation':'KEEP','targets':[],'user_quote':''},**kw}
+           'search_scope_change':{'operation':'KEEP','targets':[],'user_quote':''},
+           # Code that executes a pending (clarified) request expects the field; older code rejects it.
+           **({'pending_request':None} if 'pending_request' in m.COMMAND['properties'] else {}),**kw}
     # Scripted current-model proposals use the current wire contract. Tests of
     # persisted legacy commands build those deliberately without these fields.
     value=copy.deepcopy(value)

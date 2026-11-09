@@ -41,6 +41,9 @@ def discover(recall, original):
     return selected,record
 
 
+BLOCK_WINDOW = 5000  # block numbers per listing statement
+
+
 def blocks(s,did,uid,extent):
     s.store.check_unchanged()
     if did not in s.scope: raise ContractError('block metadata outside request scope')
@@ -54,7 +57,9 @@ def blocks(s,did,uid,extent):
         rows=s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND unit_id=? ORDER BY CAST(block_id AS INTEGER)',(did,uid))
     else:
         lo,hi=unit['span']
-        rows=s.store.db.execute('SELECT block_id FROM source_block WHERE document_id=? AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<? ORDER BY CAST(block_id AS INTEGER)',(did,lo,hi))
+        rows=[r for at in range(lo,hi,BLOCK_WINDOW) for r in s.store.db.execute(
+            'SELECT block_id FROM source_block WHERE document_id=? AND CAST(block_id AS INTEGER)>=? AND CAST(block_id AS INTEGER)<? ORDER BY CAST(block_id AS INTEGER)',
+            (did,at,min(hi,at+BLOCK_WINDOW)))]
     values=[str(r[0]) for r in rows]
     s.store.check_unchanged()
     if s._unit_blocks_count+len(values)<=50000:

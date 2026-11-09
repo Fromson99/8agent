@@ -1,0 +1,58 @@
+{
+  "schema": "genos-time-report-verification-v1",
+  "tool_version": "genos-time-report-20261107-r1",
+  "created": "2026-11-07",
+  "files": {
+    "GENOS_TIME_REPORT_R1.txt": {
+      "bytes": 32439,
+      "sha256": "d42de2d1ce5c0ed46454e593089ec9aa86b58e5ac36373bb418b3afc3b10dbe0"
+    },
+    "GUIDE.txt": {
+      "bytes": 4093,
+      "sha256": "870f104f77d5a9f6d316e55b9fcccfce757ef2aafcbb0669448669b519eb197e"
+    }
+  },
+  "source": {
+    "time_report.py": "7356e25ded4b8d6f772ffb49ae11e618d56895ece1b60b0e6c576e43869e0798",
+    "build.py": "a167975f3513fbaf11d4f07a4b53cce72c4ee6a78f9e9b4e4d2d691bdd8558c6",
+    "test_time_report.py": "200f8ac32d865903dfcd25b0e6673d8e541a372619b02d364165f6456b145cc2"
+  },
+  "behaviour": {
+    "reads": "one finished request report JSON (service_events + journal timeline) under GENOS_SHARED_LOG_DIR/<KST date>/<team>/<component>/",
+    "default_root": "/nfs-root/diamo/8-agent/rag-request-reports",
+    "writes": "./GENOS_TIME_REPORT_RESULTS/REPORT-<stamp>.txt only",
+    "no_product_change": true,
+    "no_oracle_connection": true,
+    "no_model_call": true,
+    "prints_question_answer_source_sql_text": false,
+    "python": "python3 -I (stdlib only)"
+  },
+  "tests": {
+    "cases": 7,
+    "passed_on": [
+      "3.11.15",
+      "3.9.25",
+      "3.14.4"
+    ],
+    "covered": [
+      "field-like synthetic report 253.13s / model 19.25s / SQL summary 1,800 calls 210.4s / slow SQL 3 / 60s silent step",
+      "list + latest + number pick + out-of-range",
+      "summary row without JSON (exit 3), missing root (exit 2)",
+      "DEBUG per-SQL lines and failed SQL, .json.gz",
+      "local real service report (SQLite mode, MAIN166 entry test)",
+      "non-report JSON (exit 3)",
+      "delivered TXT run from a TRANSFER-like folder with a planted json.py (ignored by -I), saved REPORT file, exit codes"
+    ]
+  },
+  "code_path_checks": [
+    "service.py: oracle.sql.summary is emitted inside request_context() and the request capture, so it is in service_events (MAIN167+)",
+    "oracle_query.QuerySQL.event: per-SQL lines only when DEBUG is enabled; oracle.sql.slow at >= GENOS_ORACLE_SQL_SLOW_MS (default 1000, read at import)",
+    "SQL stats object is the request RecordSQL shared by Agent records and source reads (sql_summary)",
+    "step.started/finished are captured in detail mode via obs.capture_details"
+  ],
+  "not_verified": [
+    "a real field Oracle-mode request report (none available locally)",
+    "field codespace access to the NFS report folder",
+    "reports written before MAIN167 have no SQL summary line (tool prints that it is missing)"
+  ]
+}

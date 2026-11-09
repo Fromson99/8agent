@@ -1,0 +1,161 @@
+{
+  "main_generation": 168,
+  "release_id": "recall-source-budget-20261106-r1",
+  "release_manifest_sha256": "3939158592d8560c73c00fc351bfe4d34e866a90bdd97ce6c5b8607053dfe5bb",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "recall-source-budget-20261106-r1",
+    "generation": 168,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/recall-source-budget-20261106-r1/release.json",
+    "release_manifest_sha256": "3939158592d8560c73c00fc351bfe4d34e866a90bdd97ce6c5b8607053dfe5bb",
+    "activated_at": "2026-11-06T10:54:56.779982+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "978016f85cf5bc24142f65ecd41b6742f84608363996baad9d4090f85fc8d970"
+  },
+  "serving_files": 536,
+  "replaces": {
+    "main_generation": 167,
+    "release_id": "oracle-shared-rows-20261106-r1",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main167_oracle_shared_rows_20261106_r1",
+    "sent_gmail_id": "1a1b06ae1d6ccbce"
+  },
+  "field_issue_addressed": "MAIN166 field photos 2026-11-06 09:43Z: /v1/rag/ask HTTP 500 QUERY_SQL_RESULT_BUDGET at RECALL (memory_rag.py:198 corpus_ids = every source ID in scope; oracle_query_db.py:185 10,000-row result budget). MAIN167 has the same code.",
+  "changed_vs_main167": {
+    "count": 34,
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py": "0ce155f39073750928cad9e84e85093176b906687b66d13a06aa45068667ad60",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "53564ee5232a4ad61819e9e1fc457bde9d9ef3181fcdbfe6bcc62b112269f651"
+    },
+    "new_files": [],
+    "sql_source_metadata": "02_BACKEND/semantic_runtime/oracle_query_plans.py (642 executable plans identical)",
+    "engine_pins": 30,
+    "pipeline": true
+  },
+  "behaviour": {
+    "recall": "RECALL payload no longer carries corpus_ids (unused); selected_for_read/discovery/binding unchanged",
+    "annex": "detached annex index from document names; source IDs read only for the one resolved annex file, same bindings and order"
+  },
+  "local_validation": {
+    "oracle_reproduction": {
+      "database": "local Oracle 23.26.3, dev silver 17 tables (temporary owners, dropped), oracledb bridge for ORDS, scripted model",
+      "scope": {
+        "documents": 8,
+        "sources": 10203,
+        "max_sources_per_document": 1700
+      },
+      "main167": {
+        "status_code": 500,
+        "max_streamed_rows": 10000,
+        "failure": "QUERY_SQL_RESULT_BUDGET: use bounded consumer pages",
+        "stage": "RECALL"
+      },
+      "main168": {
+        "status_code": 200,
+        "max_streamed_rows": 8,
+        "phases": [
+          "source-request-route",
+          "memory-resolve",
+          "memory-command-check",
+          "memory-intent",
+          "source-unit-triage",
+          "source-unit-review",
+          "memory-assess",
+          "memory-compose"
+        ]
+      }
+    },
+    "annex_equivalence": [
+      {
+        "refs": 8013,
+        "exact": 6051,
+        "ambiguous": 0,
+        "none": 1962,
+        "case": "all",
+        "scope_documents": 1547,
+        "one_document_streams": 842,
+        "distinct_streamed": 842
+      },
+      {
+        "refs": 795,
+        "exact": 93,
+        "ambiguous": 0,
+        "none": 702,
+        "case": "subset1",
+        "scope_documents": 300,
+        "one_document_streams": 58,
+        "distinct_streamed": 58
+      },
+      {
+        "refs": 1599,
+        "exact": 178,
+        "ambiguous": 0,
+        "none": 1421,
+        "case": "subset2",
+        "scope_documents": 300,
+        "one_document_streams": 45,
+        "distinct_streamed": 45
+      },
+      {
+        "refs": 725,
+        "exact": 50,
+        "ambiguous": 0,
+        "none": 675,
+        "case": "subset3",
+        "scope_documents": 300,
+        "one_document_streams": 28,
+        "distinct_streamed": 28
+      }
+    ],
+    "contract_regression": {
+      "main167_passed": 710,
+      "main167_failed": 163,
+      "staged_passed": 719,
+      "staged_failed": 154,
+      "new_failures": 0,
+      "same_failures": 154,
+      "fixed_by_new_tests": 9
+    },
+    "entry_check": {
+      "passed": true,
+      "checks": 26
+    },
+    "package": {
+      "zip_sha256": "510406866e01f4d6f41254b2d95a3f3e2e1ed64e43d7cb9fda018957207c9307",
+      "members": 547,
+      "code_files": 546,
+      "excluded_required": {
+        "02_BACKEND/lawrag/api/viewer/legal_knowledge/app.js": "b35c7a8f783313b6dec97c57baec23030386ce1536c1fc02ae862d7207a2072b"
+      },
+      "extras": [
+        "06_TOOLS/COMMANDS/genos_codespace_engine_preflight.py",
+        "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+        "06_TOOLS/COMMANDS/genos_release_gate.py",
+        "02_BACKEND/lawrag/pipeline/glossary_serving.py",
+        "02_BACKEND/lawrag/pipeline/glossary_knowledge.py",
+        "02_BACKEND/lawrag/pipeline/glossary_v1.py",
+        "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+        "02_BACKEND/lawrag/sources/moleg_knowledge.py",
+        "02_BACKEND/lawrag/sources/common.py",
+        "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py",
+        "02_BACKEND/lawrag/pipeline/term_serving_bundle.py"
+      ]
+    },
+    "installer": {
+      "passed": true,
+      "commands": 15,
+      "base": "MAIN167 checkout",
+      "original_files_restored": 536,
+      "full_generation_gate": true
+    }
+  },
+  "not_included": [
+    "guided same-section reads (guided_navigation/connection_scope units.items(), QUERY_NAV_BUDGET) - separate fix in verification",
+    "comparison SourcePort search_sources/search_structure scope scans"
+  ],
+  "quality_certified": false,
+  "field_deployed": false,
+  "external_model_calls": 0,
+  "audit": "09_ARTIFACTS/AUDITS/20261106-recall-source-budget/결과.txt"
+}

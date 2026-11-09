@@ -1,0 +1,21 @@
+<div style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>[GENOS] 과제3·5 외규 온톨로지 R4 재실행 오류("Previous patch receipt exists") 대응</b></p>
+<p><b>원인</b> — 고장이 아니라 설치기가 일부러 멈춘 것입니다.<br>
+R4는 ~/DEV 코드에 연결 패치(ontology_work/configuration.py 1줄 + 엔진 핀·PIPELINE 31개)를 넣는데, 이 패치는 MAIN 릴리스에 들어 있지 않습니다.
+11/5 R4 설치 뒤 MAIN 전체 코드를 덮어쓰면서 패치가 빠졌고, 다시 패치하려다 기존 결과 폴더 EXTERNAL_R4_RESULT의 11/5 백업을 덮어쓰지 않으려고 멈췄습니다.</p>
+<p><b>조치</b> — 결과 폴더만 새로 지정해서 다시 실행합니다(TRANSFER에서, 같은 ZIP·TXT 그대로, 새 파일 불필요):</p>
+<pre style="background:#f4f4f4;padding:8px">cd ~/DEV/TRANSFER
+IT35_OUT=$HOME/DEV/TRANSFER/EXTERNAL_R4_RESULT_2 bash GENOS_EXTERNAL_SQLITE_R4.txt</pre>
+<p>끝에 CHECKOUT_ONTOLOGY_READY 와 GENOS_EXTERNAL_ONTOLOGY_PREPARED 가 나오면 완료입니다.
+NFS의 온톨로지 DB는 이미 있는 것을 그대로 재사용합니다.</p>
+<p><b>다음</b> (기존 R4 GUIDE 5~6단계와 같음)<br>
+1) ~/DEV에서 git diff로 바뀐 32파일 확인 후 commit<br>
+2) 게이트: <code>--code-zip ~/DEV/TRANSFER/EXTERNAL_R4_RESULT_2/DEPLOY_CODE.zip</code> (새 폴더)<br>
+3) push 후 새 리비전. 환경변수는 이전과 같음: DP=nfs / GENOS_RAG_ONTOLOGY_ENABLED=on / GENOS_RAG_ONTOLOGY_CONFIG=(실행 끝에 출력된 경로)</p>
+<p><b>주의</b><br>
+- 옛 EXTERNAL_R4_RESULT 폴더의 원복(--rollback-code)은 쓰지 않습니다(예전 코드 기준 백업).<br>
+- MAIN 전체 코드를 덮어쓸 때마다 이 패치가 다시 빠집니다. 그때마다 결과 폴더 이름을 바꿔(_3, _4 …) 다시 실행합니다.<br>
+- 이 설정은 DP=nfs(SQLite) 코드서빙용이며 개발계 Oracle(DP=oracle) 서빙에는 적용되지 않습니다.</p>
+<p><b>로컬 확인</b> — MAIN174 코드 사본에서: 같은 폴더 재실행은 현장과 같은 오류, 새 폴더는 종료0·14묶음/29경로·온톨로지 DB와 원문 그대로, 반복 실행도 통과. 현장 실행 결과는 미확인입니다.</p>
+<p>첨부: GUIDE.txt · LOCAL_REPLAY_RESULT.json · SHA256SUMS.txt</p>
+</div>

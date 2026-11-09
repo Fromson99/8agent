@@ -1,0 +1,69 @@
+MAIN166 — 첫 원문 검색 ORA-22806 수정 (MAIN165 대체)
+
+현재 로컬 릴리스: fts-literal-20261106-r1 / MAIN166, 서빙 535파일(MAIN165와 같은 파일 수).
+MAIN165에서 바뀐 것은 본문검색 SQL 1파일과 그에 따른 SQL 출처 메타데이터·엔진 pin뿐입니다.
+답변·탐색 기능, 테이블 매핑, 탐색 호환 등록표, 워크플로우는 MAIN165와 같습니다.
+
+0. 왜 교체하나
+현장 컨테이너 로그(2026-11-06 08:15Z, MAIN165, 채널 지정 상태):
+  source_recall → law_candidates.py:190 law_groups_page → oracle_query_fulltext.py:209 _projection
+  DPError: READ_FAILED: ORACLE_ERROR: ORA-22806
+현장 진단 결과(코드스페이스에서 같은 ORDS로 실행):
+  R1 — 본문검색 점수 SQL 전체만 실패, SQL을 나눈 부분들과 바인드 없는 같은 문장(노트북 Q1)은 통과.
+  R2 — 같은 문장에서 숫자 바인드 2개(:q_documents_n, :q_average)를 값으로 넣으면 통과(N=1035),
+       바인드 이름만 바꾸면 여전히 ORA-22806, 바인드 모양별 작은 확인 7개는 모두 통과.
+  → 이 본문검색 SQL 안의 숫자 바인드가 현장 ORDS 경로에서 실패합니다. 현장 DB 버전은 로컬과 같은 23.26.3.
+
+1. 이번 수정
+- oracle_query_fulltext.py: 게시된 통계 2개(문서 수, 평균 길이)를 바인드 대신 SQL 숫자로 넣습니다.
+  양의 유한한 숫자만 허용하고 그 밖의 값이면 QUERY_FTS_STATS 오류로 멈춥니다(사용자 입력이 아닌 게시 통계 값).
+- 같은 값이라 점수·순서·결과 행은 그대로입니다(로컬에서 예전 바인드 문장과 행 단위 동일 확인).
+- 문자열·CLOB 바인드(채널·종류·검색어·문서 목록)는 그대로 둡니다.
+
+2. 전제 (MAIN165와 같음)
+환경변수는 지금 값 그대로 둡니다.
+  DP=oracle
+  GENOS_ORACLE_TABLE_MAPPING=development_g19_1
+  DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc
+  DP_QUERY_RELEASE_ID 는 넣지 않습니다.
+
+3. GENOS 코드스페이스 적용 (MAIN165와 같은 절차)
+같은 TRANSFER 폴더에 MAIN166_FULL_20261106_R1.zip, MAIN166_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN166_ONECLICK_R1.txt
+완료 표시: MAIN166_ONECLICK_DONE, MAIN166_EXIT=0
+확인·스테이징: bash MAIN166_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  MAIN165가 적용된 checkout이면 스테이징 대상은 다음과 같습니다.
+    02_BACKEND/semantic_runtime/oracle_query_fulltext.py
+    02_BACKEND/semantic_runtime/oracle_query_plans.py      (SQL 출처 해시만, 실행 SQL 642개 동일)
+    00_SYSTEM/PIPELINE.json, 엔진 pin(02_BACKEND/ENGINES/...) 30개, CODE_MANIFEST.json
+기존 절차로 commit 후: bash MAIN166_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+4. 워크플로우 편집기
+MAIN166_WORKFLOW.py 는 MAIN165_WORKFLOW.py 와 같은 바이트입니다. 이미 붙여 넣었다면 바꿀 필요가 없습니다.
+
+5. 확인
+새 리비전 배포 후 워크플로우 테스트 화면에서 새 요청 ID로 질문 1개를 보냅니다.
+컨테이너 로그에 ORA-22806 이 없고 원문 검색 뒤 단계로 넘어가면 통과입니다.
+다음에 멈출 수 있는 곳: 원문을 읽은 뒤 연결 조문을 볼 때 단위가 많은 문서에서 QUERY_NAV_BUDGET
+(같은 절 조문을 전체 순회하는 코드, 별도 수정 진행 중이며 이번 MAIN166에는 포함되지 않음). 다른 오류도 로그를 보내 주세요.
+
+6. 원복
+  bash MAIN166_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+  플랫폼 리비전은 기존 절차로 이전 리비전 선택. 원복하면 MAIN165로 돌아가 같은 ORA-22806 으로 다시 멈춥니다.
+
+7. 검증 범위 (로컬, 현장 미실행)
+- 원인: 현장 진단 R1/R2 결과(사진)로 확정. ORDS 내부에서 왜 실패하는지는 확인하지 못했습니다.
+- 수정 시험: 로컬 Oracle 23.26.3, 개발계 실버 매핑(development_g19_1) 17표 임시 환경, 게시본 적재 후 서빙과 같은 요청 경로로
+  법령·조문·조문 내 결과·순위 페이지 통과, 보낸 본문검색 SQL에 숫자 바인드 0, 예전 바인드 문장과 결과 행 완전 동일.
+- 관련 계약 19파일(MAIN165 검증 18 + 본문검색 합성 1): MAIN165 289통과/32실패 → MAIN166 289통과/32실패, 같은 32개, 새 실패 0.
+  SQL 642개 실행계획 동일, 엔진 30개 사전점검 통과.
+- 서비스 진입 시험(실제 로컬 Oracle, Gold 매핑 틀): 원문·검색·벡터·Agent 기록 저장/재조회 2/2 통과. 실제 root 서비스 확인 18항목 통과.
+- 전달 ZIP: 546항목(서빙 535 중 534 + 검증 보조 11 + CODE_MANIFEST), MAIN165 ZIP과 34항목만 다름. JS·중첩 압축 0.
+  설치기는 MAIN165 설치기와 ZIP 해시 1줄만 다릅니다.
+- 설치기 시험: MAIN165 코드를 가진 격리 checkout(심볼릭 링크 DEV)에 15개 명령 통과
+  (설치 → 재실행 → status → stage → diff --check → commit → gate-code → 원문 세대 포함 전체 gate → undo로 MAIN165 복원).
+  Python 3.11 구문 검사 통과.
+- 실제 ORDS HTTP·현장 DB에서 수정본을 실행하지는 않았습니다. 새 모델 호출 0. 품질 인증 아님.
+- 검증 일부는 같은 호스트에서 다른 세션의 시험·실험이 도는 동안 실행했습니다(사용자 지시로 진행).
+상세: VERIFICATION.json / SHA256SUMS.txt

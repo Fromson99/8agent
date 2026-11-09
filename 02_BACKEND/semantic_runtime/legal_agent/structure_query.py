@@ -43,6 +43,60 @@ def coordinate_index(matcher):
         return _INDEX
 
 
+def indexed_top_article(matcher, index, did, uid, view=None):
+    """The stored top-level body article (did, uid) is in the coordinate index.
+
+    One key lookup, or none when the document was already listed (``view``):
+    each indexed unit is published under its own coordinate.
+    """
+    listed = view is not None and did in view['listed']
+    entry = view['units'].get((did, uid)) if listed else None
+    if listed and entry is None:
+        return False
+    coordinate = entry[1] if entry else matcher.stored_coordinates.get((did, uid))
+    if coordinate is None or coordinate.chain:
+        return False
+    members = getattr(index, 'document_units', None)
+    if listed and members is not None:
+        return uid in members(did)
+    return uid in index.get((did, coordinate.canonical_surface()), ())
+
+
+def document_coordinates(matcher, docs, view=None):
+    """(key, stored coordinate, unit or None) for the given documents.
+
+    The Oracle port lists a document's units with their coordinates in one
+    bounded page listing; ``view`` keeps it for the rest of the catalogue call
+    instead of one unit lookup per article.
+    """
+    coordinates = matcher.stored_coordinates
+    paired = getattr(coordinates, 'for_document_units', None)
+    if paired is None:
+        rows = (r for d in sorted(docs) for r in coordinates.for_document(d)) if hasattr(coordinates, 'for_document') else coordinates.items()
+        for key, coordinate in rows:
+            yield key, coordinate, None
+        return
+    for did in sorted(docs):
+        listed = None if view is None else view['listed'].get(did)
+        if listed is None:
+            listed = list(paired(did))
+            if view is not None:
+                view['listed'][did] = listed
+                view['units'].update({key: (unit, coordinate) for key, coordinate, unit in listed})
+        yield from listed
+
+
+def listed_structure_row(matcher, index, did, uid, unit, coordinate):
+    ids = matcher._unit_sources(did, uid)
+    readable = len(ids) == 1 and matcher.sources.get(ids[0], {}).get('document_id') == did
+    return {'kind': 'structure', 'document_id': did,
+        'document_name': matcher.documents[did], 'unit_id': uid, 'coordinate': coordinate,
+        'title': unit.get('title', ''), 'coordinate_scope': 'body', 'content_read': False,
+        'ambiguous': len(index[(did, coordinate)]) != 1,
+        'source_id': ids[0] if readable else None, 'source_binding_unique': readable,
+        'original_count': len(ids)}
+
+
 def heading_route(question, matcher, scope, hits, result):
     """A literal stored article heading may locate a node without a numbered query."""
     names = {did for hit in hits for did in hit['values']}
@@ -55,6 +109,8 @@ def heading_route(question, matcher, scope, hits, result):
             continue
         for value in hit['values']:
             key = value['document_id'], value['unit_id']
+            if value['kind'] != 'TITLE' or key[0] != did:
+                continue  # look up only the named document's title hits
             coordinate = matcher.stored_coordinates.get(key)
             unit = matcher.units.get(key, {})
             if (value['kind'] == 'TITLE' and key[0] == did and coordinate and coordinate.unit == '조'
@@ -474,19 +530,17 @@ def lookup_report(page):
             or page['total'] > 1 else 'MATCH', 'failure': diagnostic}
 
 
-def heading_term_candidates(matcher, docs, query, term_cache):
+def heading_term_candidates(matcher, docs, query, term_cache, view=None):
     """Metadata-only hints inside one identified document, never exact evidence."""
     if len(docs) != 1 or find_coordinates(query):
         return {}
     from ..fulltext import question_terms
     query_terms = set(question_terms(query))
     found = {}
-    coordinates=matcher.stored_coordinates
-    rows=(r for d in sorted(docs) for r in coordinates.for_document(d)) if hasattr(coordinates,'for_document') else coordinates.items()
-    for (did, uid), coordinate in rows:
+    for (did, uid), coordinate, listed in document_coordinates(matcher, docs, view):
         if did not in docs or coordinate is None or coordinate.unit != '조' or coordinate.chain:
             continue
-        unit = matcher.units[(did, uid)]
+        unit = matcher.units[(did, uid)] if listed is None else listed
         if unit.get('coordinate_scope') != 'body' or unit.get('coordinate_binding', {}).get('mode') == 'unresolved':
             continue
         key = did, uid
@@ -521,6 +575,7 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
     if document_id is None and named_batch:
         docs &= named_batch
     rows = {}; resolutions = []; ranking = {}; term_cache = {}
+    view = {'listed': {}, 'units': {}}; pending = {}
     index = coordinate_index(matcher)
     for query in queries or ['']:
         route = resolve(query, matcher, scope, document_id=document_id) if query else None
@@ -549,17 +604,28 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
             if document_id and named and named != {document_id}:
                 active = set()
             coordinates = [c.coordinate.canonical_surface() for c in find_coordinates(query)]
+            # Key lookups only: the Oracle coordinate index refuses enumeration
+            # (QUERY_FULL_CATALOGUE). Same keys as scanning the index.
             if coordinates:
-                keys = {(did, uid) for (did, coordinate), ids in index.items()
-                        if did in active and coordinate in coordinates for uid in ids}
                 if route and route['reason'] == 'RANGE_OR_NON_BODY':
                     keys = set()
+                else:
+                    keys = {(did, uid) for did in active for coordinate in dict.fromkeys(coordinates)
+                            for uid in index.get((did, coordinate), ())}
             else:
                 title_hits = {(r['document_id'], str(r['unit_id']))
                     for h in matcher.structures.match(query) for r in h['values'] if r['kind'] == 'TITLE'} if query else set()
-                keys = {(did, uid) for (did, coordinate), ids in index.items()
-                        for uid in ids if did in active and not matcher.stored_coordinates[(did, uid)].chain
-                        and (not query or (did, uid) in title_hits)}
+                if query:
+                    if ((document_id is not None or len(named_batch) == 1) and len(active) == 1
+                            and getattr(index, 'document_units', None) is not None):
+                        # The heading hints below list this one document anyway; list it first.
+                        for _ in document_coordinates(matcher, active, view):
+                            pass
+                    keys = {(did, uid) for did, uid in title_hits
+                            if did in active and indexed_top_article(matcher, index, did, uid, view)}
+                else:
+                    keys = {(did, uid) for (did, coordinate), ids in index.items()
+                            for uid in ids if did in active and not matcher.stored_coordinates[(did, uid)].chain}
                 if query and not keys:
                     q = name_key(query)
                     for did in sorted(active):
@@ -576,9 +642,17 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
         if document_id and named and named != {document_id}:
             active = set()
         anchored = document_id is not None or len(named_batch) == 1
-        terms = heading_term_candidates(matcher, active, query, term_cache) if anchored and query else {}
-        terms = {key: score for key, score in terms.items()
-                 if (key[0], matcher.stored_coordinates[key].canonical_surface()) in index}
+        terms = heading_term_candidates(matcher, active, query, term_cache, view) if anchored and query else {}
+        indexed = getattr(index, 'document_units', None)
+        if indexed is None:
+            terms = {key: score for key, score in terms.items()
+                     if (key[0], matcher.stored_coordinates[key].canonical_surface()) in index}
+        else:
+            # Oracle: one listing per document. Every candidate is a resolved
+            # top-level body article, so its own (document, coordinate) entry
+            # exists exactly when the unit itself is indexed.
+            members = {did: indexed(did) for did in {key[0] for key in terms}}
+            terms = {key: score for key, score in terms.items() if key[1] in members[key[0]]}
         exact_coordinate = bool(find_coordinates(query))
         for key in keys:
             ranking[key] = max(ranking.get(key, (0, 0, 0)), (int(exact_coordinate), 0, 0))
@@ -586,28 +660,31 @@ def catalogue(matcher, scope, *, queries=None, document_id=None, offset=0, limit
             ranking[key] = max(ranking.get(key, (0, 0, 0)), (0, *score))
         keys |= terms.keys()
         for did, uid in keys:
-            unit = matcher.units[(did, uid)]
-            coordinate = matcher.stored_coordinates[(did, uid)].canonical_surface()
-            ids = matcher._unit_sources(did, uid)
-            readable = len(ids) == 1 and matcher.sources.get(ids[0], {}).get('document_id') == did
+            unit, stored = view['units'].get((did, uid)) or (matcher.units[(did, uid)], matcher.stored_coordinates[(did, uid)])
+            # Sources and the duplicate check are read for the returned page only (below).
             rows[('structure', did, uid)] = {'kind': 'structure', 'document_id': did,
-                'document_name': matcher.documents[did], 'unit_id': uid, 'coordinate': coordinate,
-                'title': unit.get('title', ''), 'coordinate_scope': 'body', 'content_read': False,
-                'ambiguous': len(index[(did, coordinate)]) != 1,
-                'source_id': ids[0] if readable else None, 'source_binding_unique': readable,
-                'original_count': len(ids)}
-    ordered = sorted(rows.values(), key=lambda r: (r['document_name'], r['document_id'],
-        0 if r['kind'] == 'document' else 1,
-        tuple(-x for x in ranking.get((r['document_id'], r.get('unit_id')), (0, 0, 0))),
-        matcher.units.get((r['document_id'], r.get('unit_id')), {}).get('span', [0])[0] if r['kind'] == 'structure' else 0,
-        str(r.get('unit_id') or ''), r.get('source_id') or ''))
-    if row_filter is not None:ordered=[r for r in ordered if row_filter(r)]
-    for row in ordered[offset:offset+limit]:
+                'document_name': matcher.documents[did], 'unit_id': uid}
+            pending[('structure', did, uid)] = (unit, stored.canonical_surface())
+
+    def span(key, r):
+        if key in pending:
+            return pending[key][0].get('span', [0])[0]
+        return matcher.units.get((r['document_id'], r.get('unit_id')), {}).get('span', [0])[0] if r['kind'] == 'structure' else 0
+    # A body article row is unique per (document, unit), so the source ID never
+    # breaks a tie between two structure rows; the order is the full rows' order.
+    ordered = sorted(rows.items(), key=lambda item: (item[1]['document_name'], item[1]['document_id'],
+        0 if item[1]['kind'] == 'document' else 1,
+        tuple(-x for x in ranking.get((item[1]['document_id'], item[1].get('unit_id')), (0, 0, 0))),
+        span(*item), str(item[1].get('unit_id') or ''), item[1].get('source_id') or ''))
+    if row_filter is not None:ordered=[(k, r) for k, r in ordered if row_filter(r)]
+    items = [listed_structure_row(matcher, index, r['document_id'], r['unit_id'], *pending[k]) if k in pending else r
+             for k, r in ordered[offset:offset+limit]]
+    for row in items:
         if row['kind'] == 'structure':
             row['path'] = node_path(matcher, row['document_id'], row['unit_id']) if row['unit_id'] is not None else []
     return lookup_report({'contract': 'stored-structure-catalogue-v1', 'queries': queries,
         'document_id': document_id, 'offset': offset, 'total': len(ordered),
-        'items': ordered[offset:offset+limit],
+        'items': items,
         'next_offset': offset+limit if offset+limit < len(ordered) else None,
         'resolutions': resolutions, 'navigation_hint_only': True, 'citation_eligible': False})
 
@@ -649,9 +726,12 @@ def document_tree(matcher, did):
     """Index the bound tree once per immutable document; mutable fixtures rescan."""
     prepared = getattr(matcher, 'prepared_structure', None)
     reusable = prepared is not None and matcher.units is prepared['units']
+    remote = not reusable and hasattr(matcher.units, 'children_for')
     guard = prepared['lock'] if reusable else threading.Lock()
     with guard:
-        cache = prepared.setdefault('document_structure', {}) if reusable else {}
+        # Oracle rows are pinned to this request's release; a tree is built once per matcher.
+        cache = (prepared.setdefault('document_structure', {}) if reusable else
+                 matcher.__dict__.setdefault('_request_document_trees', {}) if remote else {})
         if did in cache:
             return cache[did]
         keys = prepared['unit_index'].get(did, ()) if reusable else (
@@ -685,7 +765,7 @@ def document_tree(matcher, did):
                 'parent_child_levels': [{'parent': a, 'child': b} for a, b in sorted(edges)],
                 'branches': [{'coordinate_scope': b, 'node_count': n} for b, n in sorted(branches.items())],
                 'node_count': len(nodes), 'root_count': len(children.get(None, []))}}
-        if reusable:
+        if reusable or remote:
             cache[did] = tree
         return tree
 

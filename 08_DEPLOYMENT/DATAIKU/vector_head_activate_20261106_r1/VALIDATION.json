@@ -1,0 +1,53 @@
+{
+ "schema_version": "vector-head-activate-validation-v1",
+ "date": "2026-11-06",
+ "field_observation": {
+  "channel": "g19_7c1f8f4931c8be61b914f5bc",
+  "head_rows": 0,
+  "post_rows": 1,
+  "item_rows": 140182,
+  "documents_in_items": 2121,
+  "post_status": "READY",
+  "model": "openai:genos-embedding:embedding-kure-v1",
+  "dimensions": 1024,
+  "source": "user photos 19:11 KST"
+ },
+ "files": {
+  "VECTOR_HEAD_ACTIVATE_R1.txt": "f39c4518ad35cdb4c362e317d036bc80280c10131c5b896d15f165968feca0c5",
+  "VECTOR_V5_BINDING.txt": "3655dba811a517abbc68de047ae6d79e6af32a283b8a6bdbdfff672146db7694"
+ },
+ "write_scope": "SIDDS.LGL_G19_VCTR_HEAD_S_1 one row (INSERT, or DELETE on undo)",
+ "local_test": {
+  "oracle": "23.26.3 Free, temporary owner, dev-shaped tables",
+  "cases": {
+   "nan:check": "PASS_NO_WRITE",
+   "nan:activate": "HEAD_INSERTED_COMMIT_READBACK",
+   "nan:server_publication": "ACCEPTED",
+   "nan:activate_again": "NO_WRITE",
+   "nan:undo": "HEAD_DELETED",
+   "nan:undo_again": "NO_WRITE",
+   "none:check": "PASS_NO_WRITE",
+   "none:activate": "HEAD_INSERTED_COMMIT_READBACK",
+   "none:server_publication": "ACCEPTED",
+   "none:activate_again": "NO_WRITE",
+   "none:undo": "HEAD_DELETED",
+   "none:undo_again": "NO_WRITE",
+   "wrong_item_count": "STOP_BINDING_MISMATCH: ITEM_ROWS (no write)",
+   "dataset_mismatch": "STOP_BINDING_MISMATCH: DATASET_MATCH (no write)",
+   "document_set_mismatch": "STOP_BINDING_MISMATCH: DOCUMENT_SET (no write)",
+   "packed_extension": "STOP_BINDING_MISMATCH: QUERY_EXTENSION (no write)",
+   "other_head_exists": "STOP_HEAD_EXISTS: another VCTR_HEAD row exists for this query (no write)",
+   "undo_other_head": "STOP_UNDO_OTHER_HEAD: head points to a different publication (no write)"
+  },
+  "status": "PASS",
+  "temporary_owner_dropped": true,
+  "server_reader": "MAIN166 oracle_query_vector.Retriever.publication"
+ },
+ "not_verified": [
+  "field run",
+  "vector search SQL through field ORDS",
+  "search latency on 140182 rows",
+  "field embedding endpoint"
+ ],
+ "product_or_main_changes": 0
+}

@@ -1,0 +1,14 @@
+<p>운영계 Gold 13개 테이블과 Agent 4개 테이블에 데이터가 다 있는지 확인하는 SQL입니다. SELECT만 하며 DB는 바뀌지 않습니다.</p>
+<ol>
+<li>첨부 TXT를 메모장으로 열어 <b>GOLDOWNER</b>를 실제 Gold owner 이름으로 모두 바꿉니다.</li>
+<li>Dataiku SQL 노트북에서 [1]~[5]를 각각 새 Query에 하나씩 붙여 넣고 RUN 합니다. (노트북이 ; 에서 자르므로 끝에 ; 가 없습니다.)</li>
+</ol>
+<ul>
+<li>[1] 테이블 17개 존재 확인: 모두 '있음'이어야 다음 쿼리가 실행됩니다.</li>
+<li>[2] 테이블별 행 수: 원문·검색·벡터 10개는 0보다 커야 합니다. 온톨로지 3개·Agent 4개는 0이어도 됩니다.</li>
+<li>[3] 채널 → 검색 게시 → 원문 게시 → 문서 → 벡터 연결: POST_STATUS=COMPLETE, SRC_POST_CNT=1, 나머지 개수 0보다 큼이 정상. 여기 나온 CHANNEL 값을 서빙 환경변수 DP_QUERY_CHANNEL에 넣습니다(현재 MAIN181은 이 값이 없으면 main 채널을 찾아 첫 요청부터 오류).</li>
+<li>[4] 문서별 단위·블록·벡터 수: 0인 문서가 있으면 그 문서는 원문이 나오지 않습니다.</li>
+<li>[5] 검색 자료 종류별 행 수.</li>
+</ul>
+<p>로컬 Oracle Gold(이름 앞부분만 B03)에서 5개 모두 실행해 확인했습니다. Agent(SIDDA) 테이블 조회와 운영계 실행 결과는 아직 확인하지 않았습니다.</p>
+<p>첨부: GOLD_PROD_DATA_CHECK_R1.txt (6898 bytes, SHA256 860575080ac3ccdd4312d1de187ea84f46bc19cb6e761de100273b87e2049ae3)</p>

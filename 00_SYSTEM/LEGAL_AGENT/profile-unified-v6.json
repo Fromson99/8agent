@@ -76,7 +76,11 @@
     "requirement_coverage": true,
     "reference_bundle_review": true,
     "guided_loop": true,
-    "guided_action_limit": 6
+    "guided_action_limit": 6,
+    "guided_reads_free": true,
+    "guided_read_rounds": 4,
+    "guided_answer_read_rounds": 6,
+    "guided_section_title_matches": true
   },
   "request_entry_policy": "fused-title-v1",
   "answer_presentation": "guided-conversation-v1"

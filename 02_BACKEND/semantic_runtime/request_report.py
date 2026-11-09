@@ -333,6 +333,11 @@ _LIVE_FIELD_NAMES = (frozenset({
     "read_partial_count", "source_chars", "answer_chars", "question_chars",
     "ok", "gate", "cycle",
     "final_text_kind", "answer_present",
+    "sql_family", "sql_ms", "sql_slowest_ms", "sql_write_count", "sql_failed_count",
+    "sql_cache_hits", "sql_cache_misses", "sql_top",
+    # MAIN176 timing: call sites, Agent-record time, request CPU and the cumulative counters on model events.
+    "sql_site", "sql_sites", "sql_site_count", "agent_ms", "agent_calls", "request_cpu_ms",
+    "sql_count_total", "sql_ms_total", "agent_ms_total", "cpu_ms_total",
 }) | _LIVE_DIAGNOSTIC_FIELD_NAMES) | _FULLTEXT_DIAGNOSTIC_FIELD_NAMES
 _LIVE_SCALAR = re.compile(r"[A-Za-z0-9_.:-]{1,96}\Z")
 _OPAQUE_KEY = re.compile(r"(^id$|_id$|_ids$|^hash$|_hash$|_sha256$|^seq$|_seq$|^version$|_version$|_revision$|_cursor$)")

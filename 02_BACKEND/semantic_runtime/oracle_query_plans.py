@@ -39,7 +39,7 @@ SOURCES = {'02_BACKEND/semantic_runtime/action_memory_store.py': '12bff2bbf7864d
  '02_BACKEND/semantic_runtime/legal_agent/definition_entry.py': '11b39d2e781e456c7d55b74782862d87f87df6f86e37c9de5ebfdc21ffb5e43e',
  '02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py': '333722b24e891560a15c8b0de08ca5597100408cc6eca492262ca178837d97be',
  '02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py': 'f4d88646fed6929a50588bf692dbc96378d3a48e59a5e239b9167a04fb590ca4',
- '02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py': 'e186157800d56381d7a906d0fae282c0489e5f3044e28cba50b3476fba38a4ec',
+ '02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py': '5af7979e12cb9c1a78245728954f30e2e47f2c964e99813ec53c294e09c05a7a',
  '02_BACKEND/semantic_runtime/legal_agent/independent_read_recovery.py': '965d843cc59822540d94f0c000be12a1e4361a825297da1397e95ff2fd37d145',
  '02_BACKEND/semantic_runtime/legal_agent/investigation_leads.py': 'c9148cd494d3550ad389de29235856da7e1f7ecef8421a46992cb98ddd38a641',
  '02_BACKEND/semantic_runtime/legal_agent/journal_storage.py': '7f4cf6084a84cbad418c3d0d444934bee1bd1ab4cada4cdbe6a9b37da57df843',
@@ -15183,7 +15183,7 @@ PLANS = {'002ea09d0ada7442adb8927e3131729bd4a60e48d2946e707b419ecbb6a135fe': {'s
                                                                                           True]],
                                                                                'limit': None,
                                                                                'offset': None},
-                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py:207']},
+                                                                      'sources': ['02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py:210']},
  'abfae5df4329b531f2831304b24db8ca173782d1e35e2220e56f4b7cf99a5ee2': {'sql': 'select document_id , id , json from '
                                                                              'definition',
                                                                       'lists': [],

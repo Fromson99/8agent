@@ -1,0 +1,52 @@
+MAIN174 — 벡터 초기검색에서도 검색어 속 조문 번호(제N조)를 먼저 읽기 (MAIN173 대체)
+
+현재 로컬 릴리스: vector-structure-20261107-r1 / MAIN174, 서빙 544파일.
+MAIN173(document-compare-20261107-r1, 문서 대사)를 그대로 포함하고 그 위에 제품 1파일만 바꿨습니다.
+MAIN173를 아직 적용하지 않았다면 이 MAIN174만 적용하면 됩니다.
+워크플로우 파일은 MAIN173와 같습니다. 이미 MAIN173 워크플로우로 교체했다면 편집기는 그대로 두면 됩니다.
+
+0. 무엇이 바뀌나 (02_BACKEND/semantic_runtime/legal_agent/law_candidates.py 1파일)
+- 첫 모델이 "상법 제365조 …"의 조문 번호를 범위로 잡지 않고 "문서 전체 + 본문 검색"으로 분류하는 경우,
+  키워드 검색은 검색어 속 "제N조"를 구조 조회로 찾아 그 조문을 먼저 읽었지만, 벡터 초기검색은 이 단계 없이 결과를 돌려줘
+  지정한 조문을 놓칠 수 있었습니다.
+- 이제 벡터 결과에도 같은 구조 조회를 붙여 지정 조문을 먼저 읽고, 벡터 후보는 나머지 읽기 선택지로 남깁니다.
+  조문 번호가 없으면 벡터 결과는 그대로입니다.
+- 검색 범위는 넓히지 않습니다(요청 범위 안에서만 조회). 추가 SQL·추가 모델 호출 없음. 새 환경변수 없음, SQL 계획 643개 그대로.
+- 키워드 모드·벡터 없음(키워드로 넘어감)·같은 대화 재검색·구조 진입·조/항 범위 지정은 원래부터 이 동작이었습니다(바뀌지 않음).
+- 로그 이벤트: INITIAL_VECTOR_STRUCTURE_ENTRY (지정 조문을 먼저 읽을 때 한 번)
+
+1. 전제 — 환경변수는 지금 값 그대로
+  DP=oracle / GENOS_ORACLE_TABLE_MAPPING=development_g19_1 / DP_QUERY_CHANNEL=(지금 값) / GENOS_RAG_INITIAL_SEARCH(지금 값)
+
+2. GENOS 코드스페이스 적용 (이전과 같은 절차)
+같은 TRANSFER 폴더에 MAIN174_FULL_20261107_R1.zip, MAIN174_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN174_ONECLICK_R1.txt
+완료 표시: MAIN174_ONECLICK_DONE, MAIN174_EXIT=0
+확인·스테이징: bash MAIN174_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+기존 절차로 commit 후: bash MAIN174_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 화면 설정·워크플로우 편집기
+변경 없음. MAIN173를 적용하지 않은 상태라면 MAIN173 안내대로 조회 방식 드롭다운에 "문서 대사"를 추가하고
+MAIN174_WORKFLOW.py(MAIN173_WORKFLOW.py와 같은 파일)로 편집기를 교체합니다.
+
+4. 확인 (부탁드립니다)
+GENOS_RAG_INITIAL_SEARCH=vector 상태에서 "상법 제365조 정기총회 소집 시기"처럼 조문 번호가 든 질문을 보내면
+첫 원문 읽기에 그 조문이 나와야 합니다. 실패하면 실패 단계·파일:줄과 컨테이너 로그의 oracle.sql.summary 한 줄을 사진으로 보내 주세요.
+
+5. 원복
+  bash MAIN174_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+6. 검증 범위 (로컬, 현장 미실행, 모델 호출 0)
+- 관련 계약 48파일: 후보 통과 623·실패 112·오류 9,
+  새 실패 0, 고쳐진 것 2(이번 수정 검사), 기존 실패 121개는 MAIN173와 같음.
+- 실제 로컬 Oracle(개발계 실버 17표 임시 환경, 모의 모델): "모의승인규정 제101조 승인 기준은?"을 벡터 모드로 보내면
+  MAIN173는 구조 조회 NO_MATCH로 첫 읽기가 없었고, MAIN174는 제101조를 첫 읽기로 잡았습니다(벡터 후보 100개는 메뉴로 유지,
+  SQL 532회 → 532회 같음, 오류 0). 같은 질문의 키워드 모드는 두 버전 결과가 같습니다.
+- Oracle 규모 점검: 통과(한 질문 최대 SQL 417, MAIN173 417 / SQL 전수 3694회 오류 0).
+- 진입 확인 17/17 통과(MAIN 선택·Gold 연결·데이터 세대 불변).
+- 설치기: MAIN173 코드 격리 checkout에 15개 명령 통과(설치→재실행→status→stage→commit→gate→전체 gate→undo 복원).
+- 한계: 현장 Oracle 벡터 검색·임베딩, 실제 모델(Qwen·GENOS 내부 모델), 현장 화면·자료로는 실행하지 않았습니다.
+  검색어에 문서 이름과 조문 번호가 함께 남아 있어야 작동합니다(키워드 경로와 같은 조건). 범위에 문서가 여러 개인데
+  "제101조"처럼 번호만 있으면 어느 문서인지 정해지지 않아 키워드·벡터 모두 조문을 미리 잡지 않습니다(원래 동작).
+상세: VERIFICATION.json / SHA256SUMS.txt

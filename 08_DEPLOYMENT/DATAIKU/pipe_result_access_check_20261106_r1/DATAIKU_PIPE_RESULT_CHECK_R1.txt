@@ -1,0 +1,101 @@
+-- DATAIKU_PIPE_RESULT_CHECK_R1 (2026-11-06)
+-- 목적: GENOS ORDS 계정 BAIP04APP의 SIDDA.LGL_PIPE_RESULT_A 조회 실패(ORA-00942) 원인 확인
+-- 현장 진단 결과: ORDS 접속/인증 정상, DB=pidddacd_vnylh, 접속계정=BAIP04APP,
+--                 SELECT JOB_ID FROM SIDDA.LGL_PIPE_RESULT_A WHERE 1=0 -> ORA-00942
+-- Dataiku 화면에는 LGL_PIPE_RESULT_A 데이터셋(7컬럼, 0 rows)이 보임.
+--
+-- [0] 먼저 화면에서 확인 (SQL 아님)
+--   Dataiku LGL_PIPE_RESULT_A 데이터셋 -> Settings 탭
+--   Connection / Schema / Table 값을 확인합니다.
+--   Schema=SIDDA, Table=LGL_PIPE_RESULT_A(대문자)여야 GENOS 코드가 찾는 테이블과 같습니다.
+--
+-- [1] Dataiku SQL 노트북
+--   연결은 위 데이터셋과 같은 Connection을 선택합니다.
+--   아래 "===== [1] 시작"부터 "===== [1] 끝"까지만 Query 하나에 붙여넣고 RUN 합니다.
+--   조회만 하며 데이터/권한/테이블을 바꾸지 않습니다. 끝에 세미콜론을 붙이지 않습니다.
+--
+--   결과 읽는 법
+--   1_CONNECTION  VALUE_1=DB 이름. pidddacd_vnylh 가 아니면 ORDS와 다른 DB입니다.
+--   2_TABLE       실제 OWNER / TABLE_NAME. OWNER=SIDDA, TABLE_NAME=LGL_PIPE_RESULT_A 인지 확인.
+--                 NOT_VISIBLE 이면 이 연결 계정에서도 테이블이 보이지 않습니다.
+--   3_GRANT       이 테이블에 이 계정이 볼 수 있는 권한 목록 (GRANTEE / PRIVILEGE / GRANTOR)
+--   4_BAIP04APP   VALUE_1=SELECT, VALUE_2=INSERT 권한이 BAIP04APP에 직접 보이는지
+--                 *_GRANTED 이면 권한 있음.
+--                 *_NOT_VISIBLE 은 "이 계정에서 안 보임"입니다.
+--                 Dataiku 연결 계정이 SIDDA(소유자)가 아니면 실제로 권한이 있어도 안 보일 수 있으니
+--                 그때는 [2]를 DBA에게 요청합니다.
+
+-- ===== [1] 시작 =====
+SELECT '1_CONNECTION' AS ITEM,
+       SYS_CONTEXT('USERENV','DB_UNIQUE_NAME') AS VALUE_1,
+       SYS_CONTEXT('USERENV','SESSION_USER') AS VALUE_2,
+       SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS VALUE_3
+FROM DUAL
+UNION ALL
+SELECT '2_TABLE', T.OWNER, T.TABLE_NAME, NULL
+FROM ALL_TABLES T
+WHERE UPPER(T.TABLE_NAME) LIKE '%PIPE_RESULT%'
+UNION ALL
+SELECT '2_TABLE', 'NOT_VISIBLE', NULL, NULL
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM ALL_TABLES WHERE UPPER(TABLE_NAME) LIKE '%PIPE_RESULT%')
+UNION ALL
+SELECT '3_GRANT', P.GRANTEE, P.PRIVILEGE, P.GRANTOR
+FROM ALL_TAB_PRIVS P
+WHERE P.TABLE_SCHEMA = 'SIDDA' AND P.TABLE_NAME = 'LGL_PIPE_RESULT_A'
+UNION ALL
+SELECT '4_BAIP04APP',
+       CASE WHEN EXISTS (SELECT 1 FROM ALL_TAB_PRIVS
+                          WHERE TABLE_SCHEMA = 'SIDDA' AND TABLE_NAME = 'LGL_PIPE_RESULT_A'
+                            AND GRANTEE = 'BAIP04APP' AND PRIVILEGE = 'SELECT')
+            THEN 'SELECT_GRANTED' ELSE 'SELECT_NOT_VISIBLE' END,
+       CASE WHEN EXISTS (SELECT 1 FROM ALL_TAB_PRIVS
+                          WHERE TABLE_SCHEMA = 'SIDDA' AND TABLE_NAME = 'LGL_PIPE_RESULT_A'
+                            AND GRANTEE = 'BAIP04APP' AND PRIVILEGE = 'INSERT')
+            THEN 'INSERT_GRANTED' ELSE 'INSERT_NOT_VISIBLE' END,
+       NULL
+FROM DUAL
+-- ===== [1] 끝 =====
+
+
+-- [2] (선택) DBA 계정만 실행
+--   [1]에서 4_BAIP04APP가 NOT_VISIBLE 이고 Dataiku 계정이 SIDDA가 아닐 때 DBA에게 요청합니다.
+--   BAIP04APP의 직접 권한과 역할(ROLE)을 통한 권한을 함께 봅니다. 조회만 합니다.
+--   "===== [2] 시작"부터 "===== [2] 끝"까지만 새 Query에 붙여넣습니다.
+
+-- ===== [2] 시작 =====
+SELECT 'DIRECT' AS PATH, P.GRANTEE, P.PRIVILEGE
+FROM DBA_TAB_PRIVS P
+WHERE P.OWNER = 'SIDDA' AND P.TABLE_NAME = 'LGL_PIPE_RESULT_A' AND P.GRANTEE = 'BAIP04APP'
+UNION ALL
+SELECT 'ROLE:' || R.GRANTED_ROLE, P.GRANTEE, P.PRIVILEGE
+FROM DBA_ROLE_PRIVS R
+JOIN DBA_TAB_PRIVS P ON P.GRANTEE = R.GRANTED_ROLE
+WHERE R.GRANTEE = 'BAIP04APP' AND P.OWNER = 'SIDDA' AND P.TABLE_NAME = 'LGL_PIPE_RESULT_A'
+-- ===== [2] 끝 =====
+--   결과 0행이면 BAIP04APP에 이 테이블 권한이 없습니다.
+
+
+-- [3] 조치: 아래 조건을 모두 확인한 뒤에만 실행
+--   조건: 1_CONNECTION의 DB = pidddacd_vnylh
+--         2_TABLE의 OWNER = SIDDA, TABLE_NAME = LGL_PIPE_RESULT_A
+--         BAIP04APP의 SELECT/INSERT 권한 없음
+--   실행자: SIDDA 소유자 계정 또는 DBA. 새 Query 하나에 이 한 줄만 붙여넣습니다.
+--   테이블/데이터는 바꾸지 않고 권한만 추가합니다.
+--   되돌리기: REVOKE SELECT, INSERT ON SIDDA.LGL_PIPE_RESULT_A FROM BAIP04APP
+
+-- ===== [3] 시작 =====
+GRANT SELECT, INSERT ON SIDDA.LGL_PIPE_RESULT_A TO BAIP04APP
+-- ===== [3] 끝 =====
+
+--   조건이 다를 때
+--   DB 이름이 다름          -> 권한 문제가 아니라 GENOS ORDS 접속 대상 DB 확인 필요
+--   OWNER/TABLE_NAME 다름   -> Dataiku 데이터셋이 다른 이름/스키마 테이블. SIDDA.LGL_PIPE_RESULT_A 위치 확인 필요
+--   2_TABLE NOT_VISIBLE     -> Dataiku 연결 계정에서도 안 보임. 데이터셋 Settings의 실제 테이블 확인 필요
+--
+-- [4] 권한 추가 후
+--   GENOS pipeline 코드스페이스 TRANSFER 폴더에서 진단을 한 번 실행합니다.
+--     bash ./GENOS_R6_ORDS_CHECK_R1.txt
+--   DB_IDENTITY / AGENT_SELECT / R6_EXACT_PREFLIGHT 세 검사가 모두 PASS면
+--   R6 시나리오(01_SUBMIT부터)를 다시 실행합니다.
+--   R6_EXACT_PREFLIGHT는 INSERT 컴파일만 확인하고 실제 행은 넣지 않습니다.

@@ -1,0 +1,82 @@
+MAIN168 — 질문 처리 RECALL 단계 HTTP 500(QUERY_SQL_RESULT_BUDGET) 수정 (MAIN167 대체)
+
+현재 로컬 릴리스: recall-source-budget-20261106-r1 / MAIN168, 서빙 536파일.
+MAIN167(Oracle 게시 자료 메모리 캐시·SQL 로그 정리)을 그대로 포함하고, 그 위에 제품 2파일만 바꿨습니다.
+바뀐 것: legal_agent/memory_rag.py, legal_agent/unit_relations.py + SQL 출처 메타데이터(oracle_query_plans.py)·PIPELINE.json·엔진 pin 30개.
+실행 SQL 642개, 테이블 매핑, 탐색 호환 등록표, 워크플로우는 MAIN167과 같습니다.
+
+0. 왜 교체하나
+현장 사진(2026-11-06 09:43Z, MAIN166 적용 후):
+  - ORA-22806(본문 검색)은 더 나지 않았고, 그다음 단계 RECALL에서 HTTP 500으로 멈췄습니다.
+    QUERY_SQL_RESULT_BUDGET: use bounded consumer pages
+    memory_rag.py:198 _stage → oracle_query_index.py:54 → oracle_query_db.py:185 _pages
+원인:
+  - RECALL 결과 기록에 "요청 범위 안의 모든 원문 ID 목록(corpus_ids)"을 넣고 있었습니다. 이 값을 쓰는 곳은 없습니다.
+  - Oracle에서는 이 목록을 만들려고 범위 전체 원문 ID를 끝까지 읽는데, 한 조회 결과가 1만 행을 넘으면 중단하도록 되어 있습니다.
+    개발계 게시본은 1,649문서라 범위가 넓으면 원문이 1만 개를 넘습니다(로컬 1,547문서 = 원문 약 4만 개).
+  - MAIN167에도 같은 코드가 있습니다. MAIN167만 적용하면 같은 500이 납니다.
+
+1. 이번 수정
+(1) RECALL 결과에서 전체 원문 ID 목록(corpus_ids)을 뺐습니다. 검색·원문 선택·답변 내용은 바뀌지 않습니다.
+(2) 별표 인용(예: "별지 제9호서식")을 별도 저장된 별표 파일에 연결하는 부분도 범위의 모든 원문을 하나씩 읽고 있었습니다.
+    같은 1만 행 한도로 멈출 수 있어, 문서 이름으로 찾고 연결된 별표 파일 하나의 원문만 읽도록 바꿨습니다.
+    연결 결과(어느 파일·어느 원문·순서)는 예전과 같습니다.
+
+2. 전제 — 환경변수는 지금 값 그대로
+  DP=oracle
+  GENOS_ORACLE_TABLE_MAPPING=development_g19_1
+  DP_QUERY_CHANNEL=g19_7c1f8f4931c8be61b914f5bc
+  DP_QUERY_RELEASE_ID 는 넣지 않습니다.
+  MAIN167의 선택 환경변수(GENOS_ORACLE_SHARED_CACHE 등)는 MAIN167 안내와 같습니다. 새 환경변수는 없습니다.
+
+3. GENOS 코드스페이스 적용 (MAIN167과 같은 절차)
+같은 TRANSFER 폴더에 MAIN168_FULL_20261106_R1.zip, MAIN168_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN168_ONECLICK_R1.txt
+완료 표시: MAIN168_ONECLICK_DONE, MAIN168_EXIT=0
+확인·스테이징: bash MAIN168_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  MAIN167이 적용된 checkout이면 스테이징 대상은 다음과 같습니다.
+    02_BACKEND/semantic_runtime/legal_agent/memory_rag.py
+    02_BACKEND/semantic_runtime/legal_agent/unit_relations.py
+    02_BACKEND/semantic_runtime/oracle_query_plans.py      (SQL 출처 해시만, 실행 SQL 642개 동일)
+    00_SYSTEM/PIPELINE.json, 엔진 pin(02_BACKEND/ENGINES/...) 30개, CODE_MANIFEST.json
+  MAIN166이 적용된 checkout이면 MAIN167 변경 파일(oracle_shared_cache.py 등)도 함께 바뀝니다. 전체 코드 교체본이라 그대로 적용하면 됩니다.
+기존 절차로 commit 후: bash MAIN168_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+4. 워크플로우 편집기
+MAIN168_WORKFLOW.py 는 MAIN167_WORKFLOW.py(= MAIN166)와 같은 바이트입니다. 이미 붙여 넣었다면 바꿀 필요가 없습니다.
+
+5. 확인 (부탁드립니다)
+새 리비전 배포 후 워크플로우 테스트 화면에서 지난번 500이 난 질문을 다시 보냅니다.
+  - RECALL 단계(관련 원문 후보 검색)를 지나 원문 열람·답변까지 가면 이번 수정이 적용된 것입니다.
+  - 다음에 멈출 수 있는 곳(이번에 바뀌지 않음):
+    · 원문을 읽은 뒤 같은 절 조문을 자동으로 읽거나 연결 조문을 볼 때 QUERY_NAV_BUDGET
+      (가이드 모드의 같은 절 조문 목록을 문서 범위 전체에서 찾는 부분 — 별도 수정 검증 중, MAIN168 미포함)
+    · 첫 질문 초기 벡터 검색의 VECTOR_NOT_PUBLISHED(VCTR_HEAD 0행) — 앞서 보낸 별도 메일 안내대로 처리.
+  - 오류가 나면 이번처럼 실패 단계·발생 위치(파일:줄)와 oracle.sql.summary 줄을 사진으로 보내 주세요.
+
+6. 원복
+  코드 전체 원복: bash MAIN168_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+  플랫폼 리비전은 기존 절차로 이전 리비전을 선택. 원복하면 적용 전 코드(MAIN167 또는 MAIN166)로 돌아갑니다.
+
+7. 검증 범위 (로컬, 현장 미실행)
+- 현장 조건 재현: 로컬 Oracle 23.26.3에 개발계 실버 매핑 17표를 임시로 만들고(시험 후 삭제) 게시본 193,354행을 적재,
+  ORDS는 oracledb 대역, 모델은 모의 응답. 범위 8문서·원문 10,203개(문서당 1,700개 이하).
+    MAIN166·MAIN167: HTTP 500, 실패 단계 RECALL, QUERY_SQL_RESULT_BUDGET,
+                    호출 순서 memory_rag.py:198 → oracle_query_index.py:54 → oracle_query_db.py:36/152/185 — 현장 사진과 같음.
+    MAIN168: HTTP 200, 질문 → 원문 선별 → 열람 → 판단 → 답변까지 완료, 한 조회 결과 최대 8행.
+    같은 틀에서 원문 23개 범위면 MAIN166도 정상 — 범위가 1만을 넘을 때만 나는 오류임을 확인.
+- 별표 연결: 로컬 게시본 1,547문서의 저장 참조 8,013건 전부 예전 코드와 같은 결과(연결 6,051건·미연결 1,962건, 대상 원문 순서 포함),
+  범위를 300문서로 줄인 3가지 경우도 같음.
+- 관련 계약 시험 42파일: MAIN167 710통과/163실패 → MAIN168 719통과/154실패. 새로 깨진 시험 0, 같은 기존 실패 154,
+  새 시험 9개(05_TESTS/CONTRACTS/test_recall_source_budget.py)는 MAIN168에서만 통과.
+  SQL 642개 실행계획 동일, 엔진 30개 사전점검 통과, 실제 root 서비스 확인 26항목 통과.
+- 전달 ZIP: 547항목(서빙 536 중 535 + 검증 보조 11 + CODE_MANIFEST), MAIN167 ZIP과 35항목만 다름. JS·중첩 압축 0.
+  설치기는 MAIN167 설치기와 ZIP 해시 1줄만 다릅니다.
+- 설치기 시험: MAIN167 코드를 가진 격리 checkout(심볼릭 링크 DEV)에 15개 명령 통과
+  (설치 → 재실행 → status → stage → diff --check → commit → gate-code → 원문 세대 포함 전체 gate → undo로 MAIN167 복원). Python 3.11 구문 검사 통과.
+- 한계:
+  · 재현은 시험용으로 만든 원문 10,203개 자료입니다. 현장 1,649문서 자료로는 실행하지 않았습니다.
+  · 재현 시험은 시험용 설정이라 가이드 모드 경로(위 5번 QUERY_NAV_BUDGET 후보)는 지나지 않았습니다.
+  · 실제 ORDS HTTP·현장 DB·현장 GENOS·내부 모델로는 실행하지 않았습니다. 새 모델 호출 0. 품질 인증 아님.
+상세: VERIFICATION.json / SHA256SUMS.txt

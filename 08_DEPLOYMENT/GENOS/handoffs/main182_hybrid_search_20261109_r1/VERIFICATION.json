@@ -1,0 +1,98 @@
+{
+  "main_generation": 182,
+  "release_id": "hybrid-search-20261109-r1",
+  "release_manifest_sha256": "8d949ce311899264d3b52f69311d097b8f7aa65ea21bcc6d12ecb1065e8100aa",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "hybrid-search-20261109-r1",
+    "generation": 182,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/hybrid-search-20261109-r1/release.json",
+    "release_manifest_sha256": "8d949ce311899264d3b52f69311d097b8f7aa65ea21bcc6d12ecb1065e8100aa",
+    "activated_at": "2026-11-09T04:29:51.522044+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "ab500221ae82470464dc071a24d34b4587a26b37878beac3f1bfe706991442c5"
+  },
+  "serving_files": 545,
+  "replaces": {
+    "main181": {
+      "release_id": "definition-priority-20261109-r1",
+      "sent_gmail_id": "1a1bc6ae00b8384e"
+    },
+    "field_state_assumed": "MAIN181 (mailed, application unconfirmed) or MAIN177 or an earlier MAIN; MAIN178-181 are contained"
+  },
+  "changed_vs_main181": {
+    "products": {
+      "02_BACKEND/semantic_runtime/initial_vector.py": "9941313a0218c4c1ac3a846a5bd348710c0386523cd986b18a489e6bcad9366d",
+      "02_BACKEND/semantic_runtime/oracle_dp.py": "9bde9781547152b344090f81e399de0d3d5b5aef16167a882c350b9ea02dba88",
+      "02_BACKEND/semantic_runtime/progress.py": "6747aafd56e5ff40adf0856a056d0f0b540e5bdcbd48917261eceefdff1ea15c",
+      "02_BACKEND/semantic_runtime/vector_navigation.py": "588347747e7cabf335f174af0cf26bea967fec44d52f9809363d819fb72fb778"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "645 -> 645",
+    "new_environment_variable_values": [
+      "GENOS_RAG_INITIAL_SEARCH=hybrid"
+    ],
+    "workflow_file_changed": false
+  },
+  "changes": {
+    "hybrid_initial_search": "GENOS_RAG_INITIAL_SEARCH=hybrid: vector top-100 articles and the body-search (BM25) article order merged by reciprocal rank (k=60), capped at 100; the merged list feeds the first read menu, the definition scope and the before-answer top reads",
+    "unchanged_modes": "auto / vector / keyword behave exactly as MAIN181"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 143,
+      "candidate_counts": {
+        "failed": 378,
+        "passed": 2297,
+        "error": 21,
+        "skipped": 2
+      },
+      "new_failures": 0,
+      "fixed": 6,
+      "same_failures": 398
+    },
+    "new_contract_tests": "05_TESTS/CONTRACTS/test_hybrid_initial_search.py (7)",
+    "oracle_scale_guard": {
+      "hybrid": {
+        "passed": true,
+        "sweep_executions": 3694,
+        "sweep_error_count": 0,
+        "sql_per_turn_max": 379
+      },
+      "vector": {
+        "passed": true,
+        "sweep_executions": 3694,
+        "sweep_error_count": 0,
+        "sql_per_turn_max": 417
+      }
+    },
+    "live_qwen_cm51_required_articles": {
+      "vector_only_adr1464": "74/98",
+      "hybrid_adr1465": "77/98",
+      "hybrid_llm_rerank_adr1466_not_included": "77/98",
+      "separate_lists_adr1467_not_included": "71/98",
+      "note": "hybrid environment (SQLite originals, Oracle Gold vector candidates), in-sample, 1 run each"
+    },
+    "entry_checks": "17/17 (release/main-release.json)",
+    "installer": {
+      "base": "MAIN177 multiturn-followups-20261108-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "package": {
+    "zip": "MAIN182_FULL_20261109_R1.zip",
+    "zip_sha256": "bfd8ef60f01daca86813a94eeed02e9dec7f3e4454b336fe2fc85ca9d5f7f18f",
+    "members": 556,
+    "workflow": "MAIN182_WORKFLOW.py"
+  },
+  "not_verified": [
+    "field internal model",
+    "field data / ORDS",
+    "native DP=oracle serving with real model (CM51 ran hybrid environment)"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

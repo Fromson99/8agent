@@ -1,0 +1,87 @@
+{
+ "format": "pipe-result-access-check-validation-v1",
+ "validated_at": "2026-11-06T03:45:20+00:00",
+ "oracle": "Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free",
+ "txt_sha256": "2209d709589f5064cb6baa9c03a1d7cb78f253f58857993a3aa4ecbd13ba182d",
+ "scope": "Loopback Oracle with throwaway owner/grantee substituted for SIDDA/BAIP04APP. The field Dataiku/ORDS DB was not accessed.",
+ "checks": [
+  {
+   "check": "S1_real_names_runs",
+   "status": "PASS",
+   "detail": [
+    "1_CONNECTION",
+    "2_TABLE",
+    "4_BAIP04APP"
+   ]
+  },
+  {
+   "check": "S2_real_names_runs",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "owner_sees_table",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "before_grant_not_visible",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "grantee_select_ORA00942_before",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "grantee_r6_preflight_fails_before",
+   "status": "PASS",
+   "detail": [
+    "ORA-00942",
+    "ORA-06550"
+   ]
+  },
+  {
+   "check": "S2_before_grant_zero_rows",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "grantee_select_after",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "grantee_r6_preflight_after",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "no_row_written",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "after_grant_granted",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "S3_grant_rows_listed",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "S2_after_grant_direct",
+   "status": "PASS",
+   "detail": null
+  },
+  {
+   "check": "temp_users_dropped",
+   "status": "PASS",
+   "detail": null
+  }
+ ],
+ "status": "PASS"
+}

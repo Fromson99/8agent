@@ -20,7 +20,7 @@ class UnifiedRag(NativeRag):
             profile=digest(pipeline.term_agent.profile),code=code,
             pipeline=digest(pipeline.contracts.pipeline))
 
-    def scope_state(self,state,command,utterance,*,dialogue=()):
+    def scope_state(self,state,command,utterance,*,dialogue=(),related_utterances=()):
         # An explicit UI/source marker is request configuration, not a model
         # opinion. Applying it before changed-stage calculation also invalidates
         # stale research when the same conversation switches back to ALL.
@@ -31,7 +31,7 @@ class UnifiedRag(NativeRag):
         from . import query_scope as qs
         change=command.get('search_scope_change')
         if change is None:return state
-        references=[r['text'] for r in qs.pending_clarifications(dialogue) if r['speaker']=='user']
+        references=[r['text'] for r in qs.pending_clarifications(dialogue) if r['speaker']=='user']+list(related_utterances)
         scope=qs.resolve(change,state.get('search_scope'),self.model.ensure().sources.matcher,
             state['document_ids'],utterance,model_resolved=command.get('method_id')=='CASE_START',
             reference_utterances=references)

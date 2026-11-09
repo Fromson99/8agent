@@ -1,0 +1,98 @@
+{
+  "main_generation": 170,
+  "release_id": "structure-catalogue-20261106-r1",
+  "release_manifest_sha256": "42a6c1f53932a3ce7197f66934872859f3e9509cba2d0a1b82c107b707ebc080",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "structure-catalogue-20261106-r1",
+    "generation": 170,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/structure-catalogue-20261106-r1/release.json",
+    "release_manifest_sha256": "42a6c1f53932a3ce7197f66934872859f3e9509cba2d0a1b82c107b707ebc080",
+    "activated_at": "2026-11-06T12:51:31.780828+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "cb4abce2bd9b6dd0dd3b2daf4a528d2ac4ac5f286fe2611079f8889830af0d46"
+  },
+  "serving_files": 536,
+  "replaces": {
+    "main_generation": 169,
+    "release_id": "vector-card-20261106-r1",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main169_vector_card_20261106_r1",
+    "sent_gmail_id": "1a1b0a513e528979"
+  },
+  "field_issue_addressed": "2026-11-06T11:24:11Z dev silver: Investigation start -> structure_query.catalogue:560 iterated the coordinate index; Oracle Lists refused (QUERY_FULL_CATALOGUE: use a bounded key lookup).",
+  "changed_vs_main169": {
+    "count": 33,
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/structure_query.py": "42db9ba51a1b1d27ede8f2d33b0e51a83d64dba778bd8631fb41d518ee34a494",
+      "02_BACKEND/semantic_runtime/oracle_query_matcher.py": "261de25aac7b55cf69e66a4ca521cb92b2faf9a84c22dc92b12c5751ecbca53d"
+    },
+    "engine_pins": 30,
+    "pipeline": true,
+    "sql_plans": "642 unchanged",
+    "workflow_changed": false
+  },
+  "local_validation": {
+    "oracle_field_scope": {
+      "oracle": "23.26.3 local, development_g19_1 tables (isolated owners, dropped)",
+      "scope_documents": 8,
+      "scope_originals": 10203,
+      "main169": "9 calls QUERY_FULL_CATALOGUE; one-document call 8,521 SQL / 602 s, then BUDGET_PAUSED (request 10,000 calls)",
+      "main170_calls_equal_sqlite_main169": 17,
+      "main170_calls": 17,
+      "one_document_calls_sql": [
+        59,
+        55
+      ],
+      "probe_outside_fix": "title shared by 10,195 in-scope articles -> QUERY_NAV_BUDGET (existing limit)"
+    },
+    "new_contracts": {
+      "file": "05_TESTS/CONTRACTS/test_structure_catalogue_bounded.py",
+      "main170": [
+        27,
+        0
+      ],
+      "main169": [
+        4,
+        23
+      ]
+    },
+    "related_contracts_62_files": {
+      "main169": [
+        1239,
+        162
+      ],
+      "main170": [
+        1238,
+        163
+      ],
+      "new_failures": 0,
+      "intermittent_both_codes": [
+        "::test_read_judgment_api_retains_decisions_and_reuses_request[final_failed]"
+      ],
+      "same_failures": 162,
+      "fixed": 0,
+      "note": "main170 ran as three parallel processes, main169 as one"
+    },
+    "entry_checks": 34,
+    "installer_commands": 15
+  },
+  "package": {
+    "zip": "MAIN170_FULL_20261106_R1.zip",
+    "zip_sha256": "f78abc3ef9a51cec432488e4234c1e5a8f8a536988c03a3ed948aec93dc9e545",
+    "members": 547,
+    "differs_from_main169_zip": 34,
+    "installer_differs_from_main169": "ZIP sha256 line only",
+    "workflow": "same bytes as MAIN169_WORKFLOW.py"
+  },
+  "not_included": [
+    "law_navigation.py:905 article_menu sorted(lc.allowed(...)) -> QUERY_SQL_RESULT_BUDGET in guided scenarios (other session survey)",
+    "guided same-section reads QUERY_NAV_BUDGET (20261106-oracle-section-children)",
+    "title prefix groups over 10,000 rows (제1~제4)",
+    "documents over 10,000 units"
+  ],
+  "field_deployed": false,
+  "quality_certified": false,
+  "new_model_calls": 0
+}

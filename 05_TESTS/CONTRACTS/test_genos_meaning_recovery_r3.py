@@ -150,12 +150,18 @@ def legacy_backend(root):
     def link(source, destination):
         Path(destination).symlink_to(source)
         return destination
+    skip = shutil.ignore_patterns('__pycache__', '*.pyc')
+    research = ROOT / '02_BACKEND/lawrag/research'
+    def ignore(directory, names):
+        # lawrag/research holds ~770k files that this test never edits; one directory link keeps it importable.
+        return skip(directory, names) | ({'research'} if Path(directory) == research.parent else set())
     for source in (ROOT / '02_BACKEND').iterdir():
         if source.name in ('lawrag', 'semantic_runtime'):
-            shutil.copytree(source, backend / source.name, copy_function=link,
-                            ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+            shutil.copytree(source, backend / source.name, copy_function=link, ignore=ignore)
         else:
             (backend / source.name).symlink_to(source, target_is_directory=source.is_dir())
+    if research.is_dir():
+        (backend / 'lawrag/research').symlink_to(research, target_is_directory=True)
     path = backend / 'lawrag/pipeline/term_generation.py'
     tree = ast.parse(path.read_text())
     class Legacy(ast.NodeTransformer):

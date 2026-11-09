@@ -1,0 +1,121 @@
+﻿테이블물리명,테이블논리명,테이블설명,컬럼순번,컬럼물리명,컬럼논리명,데이터타입,NULL허용,PK순번,설명,신규약어
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,1,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,1,LAW:<법령ID> / ADMRUL:<행정규칙ID> / INTERNAL:<내규코드>,CD
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,2,SRC_SE_CD,원천구분코드,VARCHAR2(30 BYTE),N,,LAW / ADMRUL / INTERNAL,"SE,CD"
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,3,OFCL_ID,공식ID,VARCHAR2(100 BYTE),Y,,법령ID·행정규칙ID,OFCL
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,4,RGLT_DOC_NAME,규정문서명,VARCHAR2(2250 BYTE),N,,현행 공식 명칭 (Gold DOC_VER와 같은 컬럼명),
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,5,ALIAS_CTNT,별칭내용,CLOB,Y,,이전 명칭·별칭 JSON 배열,ALIAS
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,6,ACTV_VER_ID,활성판본ID,VARCHAR2(100 BYTE),Y,,가장 최근 활성화된 판본,ACTV
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,7,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_RGLT_DOC,규정문서기본,문서 불변 ID 레지스트리. 이름이 바뀌어도 코드는 유지한다.,8,CHG_ASTM,변경일시,TIMESTAMP(6) WITH TIME ZONE,N,,,CHG
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",1,RGLT_VER_ID,규정판본ID,VARCHAR2(100 BYTE),N,1,,
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",2,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,,,CD
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",3,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,,,LOAD
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",4,BASE_VER_ID,기준판본ID,VARCHAR2(100 BYTE),Y,,비교 기준이었던 직전 판본,BASE
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",5,SRC_HASH_VALU,원천해시값,VARCHAR2(100 BYTE),N,,원문 파일 sha256,
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",6,RGLT_DOC_ID,규정문서ID,VARCHAR2(100 BYTE),Y,,Gold DOC_VER.RGLT_DOC_ID (본문 sha 앞 16자리),
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",7,DTLS_HASH_VALU,명세해시값,VARCHAR2(100 BYTE),Y,,이 판본이 게시된 Gold 세대,
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",8,PRMG_DT,공포일자,VARCHAR2(8 BYTE),Y,,법령 공포일자·행정규칙 발령일자,"PRMG,DT"
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",9,PRMG_NO,공포번호,VARCHAR2(100 BYTE),Y,,법령 공포번호·행정규칙 발령번호,PRMG
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",10,ENFC_STRT_DT,시행시작일자,VARCHAR2(8 BYTE),N,,,"ENFC,STRT,DT"
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",11,ENFC_END_DT,시행종료일자,VARCHAR2(8 BYTE),Y,,다음 판본 시행일 - 1일,"ENFC,END,DT"
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",12,VER_STTS_CD,판본상태코드,VARCHAR2(30 BYTE),N,,CANDIDATE / ACTIVE / SUPERSEDED / REJECTED,"STTS,CD"
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",13,VER_ADDN_IFMN_CTNT,판본부가정보내용,CLOB,Y,,명칭·제개정구분·부칙 시행일 판독 JSON,
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",14,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",15,ACTV_ASTM,활성일시,TIMESTAMP(6) WITH TIME ZONE,Y,,,ACTV
+IDD_B003_LGL_RGLT_VER,규정판본내역,"문서 판본(공포·발령 단위)과 시행 구간, Gold 연결 키.",16,SPSD_ASTM,대체일시,TIMESTAMP(6) WITH TIME ZONE,Y,,다음 판본으로 대체된 기록 시점,SPSD
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",1,ARTC_VER_ID,조문판본ID,VARCHAR2(100 BYTE),N,1,,ARTC
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",2,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,,,CD
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",3,RGLT_VER_ID,규정판본ID,VARCHAR2(100 BYTE),N,,이 행을 만든 판본,
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",4,ARTC_KEY_VALU,조문키값,VARCHAR2(100 BYTE),N,,165의3 / 1-1 / 별표1 / 전문 / 부칙:21065,"ARTC,KEY"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",5,LNG_ID,계보ID,VARCHAR2(100 BYTE),N,,번호가 바뀌어도 유지,LNG
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",6,ARTC_SEQ,조문순번,"NUMBER(10,0)",Y,,,"ARTC,SEQ"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",7,ARTC_SE_CD,조문구분코드,VARCHAR2(30 BYTE),N,,ARTICLE / PREAMBLE / ANNEX / ADDENDUM,"ARTC,SE,CD"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",8,ARTC_TITLE_NAME,조문제목명,VARCHAR2(2000 BYTE),Y,,,"ARTC,TITLE"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",9,ARTC_CTNT,조문내용,CLOB,Y,,,ARTC
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",10,CTNT_HASH_VALU,내용해시값,VARCHAR2(100 BYTE),N,,공백 제거·NFKC 후 sha256,
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",11,CMPR_HASH_VALU,비교해시값,VARCHAR2(100 BYTE),N,,자기 번호 제거·인용 번호 가림,CMPR
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",12,ATCH_HASH_VALU,첨부해시값,VARCHAR2(100 BYTE),Y,,별표서식 첨부 파일 sha256,ATCH
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",13,ENFC_STRT_DT,시행시작일자,VARCHAR2(8 BYTE),N,,,"ENFC,STRT,DT"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",14,ENFC_END_DT,시행종료일자,VARCHAR2(8 BYTE),Y,,,"ENFC,END,DT"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",15,CHG_TYPE_CD,변경유형코드,VARCHAR2(30 BYTE),N,,ADD / AMEND / MOVE / MOVE_AMEND / REF_ONLY,"CHG,CD"
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",16,STRC_UNIT_ID,구조단위ID,VARCHAR2(100 BYTE),Y,,Gold DOC_UNIT 연결 (게시 후),
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",17,OPEN_YN,공개여부,CHAR(1 BYTE),N,,"N=색인 준비 중(숨김), Y=활성",OPEN
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",18,ARTC_ADDN_IFMN_CTNT,조문부가정보내용,CLOB,Y,,법제처 조문변경여부·이동 태그 JSON,ARTC
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",19,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_ARTC_VER,조문판본내역,"조문 단위 판본. 바뀐 조문만 새 행, 옛 행은 시행 구간만 닫는다.",20,SPSD_ASTM,대체일시,TIMESTAMP(6) WITH TIME ZONE,Y,,,SPSD
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,1,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,1,문서코드+원천 sha 결정적 ID,LOAD
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,2,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,,,CD
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,3,SRC_SE_CD,원천구분코드,VARCHAR2(30 BYTE),N,,,"SE,CD"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,4,SRC_HASH_VALU,원천해시값,VARCHAR2(100 BYTE),N,,,
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,5,SRC_FILE_NAME,원천파일명,VARCHAR2(2000 BYTE),Y,,,FILE
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,6,BASE_VER_ID,기준판본ID,VARCHAR2(100 BYTE),Y,,,BASE
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,7,NEW_VER_ID,신규판본ID,VARCHAR2(100 BYTE),Y,,,NEW
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,8,PRCS_STTS_CD,처리상태코드,VARCHAR2(30 BYTE),N,,DETECTED→PARSED→DIFFED→PREVIEW→APPROVED→INDEXING→ACTIVATED / NO_CHANGE / REJECTED / BLOCKED / BLOCKED_PENDING / FAILED,"PRCS,STTS,CD"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,9,STTS_CHG_NO,상태변경번호,"NUMBER(10,0)",N,,상태 전이 CAS,"STTS,CHG"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,10,FAIL_STEP_NAME,실패단계명,VARCHAR2(30 BYTE),Y,,,"FAIL,STEP"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,11,PRVW_HASH_VALU,미리보기해시값,VARCHAR2(100 BYTE),Y,,승인자가 본 대비표 해시,PRVW
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,12,GATE_RSLT_CTNT,게이트결과내용,CLOB,Y,,건수·변경률·경고·멈춤 사유 JSON,"GATE,RSLT"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,13,APRV_USER_ID,승인사용자ID,VARCHAR2(100 BYTE),Y,,,"APRV,USER"
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,14,APRV_ASTM,승인일시,TIMESTAMP(6) WITH TIME ZONE,Y,,,APRV
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,15,ERR_CTNT,오류내용,VARCHAR2(4000 BYTE),Y,,,ERR
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,16,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_LOAD_WORK,증분적재작업내역,입력 1건(문서+원문 sha)의 처리 상태. 같은 입력 재실행은 같은 행.,17,CHG_ASTM,변경일시,TIMESTAMP(6) WITH TIME ZONE,N,,,CHG
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,1,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,1,,LOAD
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,2,HIST_SEQ,이력순번,"NUMBER(10,0)",N,2,,"HIST,SEQ"
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,3,BFR_STTS_CD,이전상태코드,VARCHAR2(30 BYTE),Y,,,"BFR,STTS,CD"
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,4,AFTR_STTS_CD,이후상태코드,VARCHAR2(30 BYTE),N,,,"AFTR,STTS,CD"
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,5,HIST_CTNT,이력내용,CLOB,Y,,사용자·사유·건수 JSON,HIST
+IDD_B003_LGL_LOAD_HIST,적재상태이력,상태 전이 감사 기록 (추가만).,6,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,1,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,1,,LOAD
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,2,CMPR_SEQ,비교순번,"NUMBER(10,0)",N,2,,"CMPR,SEQ"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,3,CHG_TYPE_CD,변경유형코드,VARCHAR2(30 BYTE),N,,,"CHG,CD"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,4,OLD_ARTC_VER_ID,이전조문판본ID,VARCHAR2(100 BYTE),Y,,,"OLD,ARTC"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,5,OLD_ARTC_KEY_VALU,이전조문키값,VARCHAR2(100 BYTE),Y,,,"OLD,ARTC,KEY"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,6,NEW_ARTC_KEY_VALU,신규조문키값,VARCHAR2(100 BYTE),Y,,,"NEW,ARTC,KEY"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,7,NEW_ARTC_VER_ID,신규조문판본ID,VARCHAR2(100 BYTE),Y,,,"NEW,ARTC"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,8,LNG_ID,계보ID,VARCHAR2(100 BYTE),N,,,LNG
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,9,SMLR_RATE,유사비율,"NUMBER(5,4)",Y,,,"SMLR,RATE"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,10,JDGM_RSN_CTNT,판정사유내용,VARCHAR2(4000 BYTE),Y,,,"JDGM,RSN"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,11,ENFC_STRT_DT,시행시작일자,VARCHAR2(8 BYTE),Y,,,"ENFC,STRT,DT"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,12,RULE_RVW_YN,룰재검토여부,VARCHAR2(30 BYTE),N,,Y / N / NA,"RULE,RVW"
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,13,CMPR_ADDN_IFMN_CTNT,비교부가정보내용,CLOB,Y,,새 조문 제목·내용·첨부 sha·공식 태그 JSON,CMPR
+IDD_B003_LGL_ARTC_CMPR,조문비교결과,신구조문 대비표의 행. SAME은 건수만 게이트에 남긴다.,14,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,1,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,1,,LOAD
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,2,IDX_KIND_CD,색인종류코드,VARCHAR2(30 BYTE),N,2,REF / GOLD / VECTOR,"IDX,KIND,CD"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,3,ARTC_KEY_VALU,조문키값,VARCHAR2(100 BYTE),N,3,문서 단위 작업은 *,"ARTC,KEY"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,4,IDX_STTS_CD,색인상태코드,VARCHAR2(30 BYTE),N,,PENDING / READY / FAILED,"IDX,STTS,CD"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,5,EXPC_CNT,예상건수,"NUMBER(10,0)",Y,,,"EXPC,CNT"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,6,RSLT_CNT,결과건수,"NUMBER(10,0)",Y,,,"RSLT,CNT"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,7,RSLT_REF_VALU,결과참조값,VARCHAR2(4000 BYTE),Y,,Gold 세대·게시 해시 등,"RSLT,REF"
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,8,ERR_CTNT,오류내용,VARCHAR2(4000 BYTE),Y,,,ERR
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,9,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_IDX_WORK,색인작업내역,숨김 색인 준비 상태. 전부 READY여야 활성화한다.,10,CHG_ASTM,변경일시,TIMESTAMP(6) WITH TIME ZONE,N,,,CHG
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,1,ARTC_VER_ID,조문판본ID,VARCHAR2(100 BYTE),N,1,인용한 조문판본,ARTC
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,2,RFRN_SEQ,참조순번,"NUMBER(10,0)",N,2,,SEQ
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,3,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,,,CD
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,4,LNG_ID,계보ID,VARCHAR2(100 BYTE),N,,인용한 조문의 계보,LNG
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,5,TAGT_RGLT_DOC_CD,대상규정문서코드,VARCHAR2(100 BYTE),Y,,외부 법령은 명칭으로 찾은 경우만,CD
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,6,TAGT_ARTC_KEY_VALU,대상조문키값,VARCHAR2(100 BYTE),N,,,"ARTC,KEY"
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,7,TAGT_LNG_ID,대상계보ID,VARCHAR2(100 BYTE),Y,,,LNG
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,8,EXTR_YN,외부여부,CHAR(1 BYTE),N,,,EXTR
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,9,RFRN_TEXT_CTNT,참조원문내용,VARCHAR2(2000 BYTE),Y,,,TEXT
+IDD_B003_LGL_ARTC_RFRN,조문참조관계,조문판본의 인용. 대상은 계보ID로 잇기 때문에 번호가 밀려도 유지된다.,10,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,1,RVW_TRGT_ID,재검토대상ID,VARCHAR2(100 BYTE),N,1,,"RVW,TRGT"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,2,LOAD_WORK_ID,적재작업ID,VARCHAR2(100 BYTE),N,,,LOAD
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,3,RVW_KIND_CD,재검토종류코드,VARCHAR2(30 BYTE),N,,RULE / CITING_ARTICLE / LINKED_DOC,"RVW,KIND,CD"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,4,SRC_LNG_ID,원천계보ID,VARCHAR2(100 BYTE),Y,,바뀐 조문 계보,LNG
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,5,TAGT_RGLT_DOC_CD,대상규정문서코드,VARCHAR2(100 BYTE),Y,,,CD
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,6,TAGT_LNG_ID,대상계보ID,VARCHAR2(100 BYTE),Y,,,LNG
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,7,TAGT_ARTC_KEY_VALU,대상조문키값,VARCHAR2(100 BYTE),Y,,,"ARTC,KEY"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,8,RVW_RSN_CTNT,재검토사유내용,VARCHAR2(4000 BYTE),Y,,,"RVW,RSN"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,9,RVW_STTS_CD,재검토상태코드,VARCHAR2(30 BYTE),N,,OPEN / DONE / DISMISSED,"RVW,STTS,CD"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,10,PRCS_USER_ID,처리사용자ID,VARCHAR2(100 BYTE),Y,,,"PRCS,USER"
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,11,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_RVW_TRGT,재검토대상내역,영향 전파 결과. 내용은 자동으로 바꾸지 않고 후보만 올린다.,12,PRCS_ASTM,처리일시,TIMESTAMP(6) WITH TIME ZONE,Y,,,PRCS
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,1,RGLT_DOC_CD,규정문서코드,VARCHAR2(100 BYTE),N,1,출발 문서,CD
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,2,TAGT_RGLT_DOC_CD,대상규정문서코드,VARCHAR2(100 BYTE),N,2,,CD
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,3,LINK_KIND_CD,연결종류코드,VARCHAR2(30 BYTE),N,3,DELEGATE / STMD / INTERNAL_MAP,"LINK,KIND,CD"
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,4,LINK_SRC_HASH_VALU,연결원천해시값,VARCHAR2(100 BYTE),Y,,체계도·위임 응답 sha — 같으면 재전사 생략,LINK
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,5,LINK_ADDN_IFMN_CTNT,연결부가정보내용,CLOB,Y,,,LINK
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,6,RGSN_ASTM,등록일시,TIMESTAMP(6) WITH TIME ZONE,N,,,
+IDD_B003_LGL_DOC_LINK,문서연결관계,위임 연결망(lsDelegated·lsStmd)과 외규↔내규 대응. 1단계 영향 전파용.,7,CHG_ASTM,변경일시,TIMESTAMP(6) WITH TIME ZONE,N,,,CHG

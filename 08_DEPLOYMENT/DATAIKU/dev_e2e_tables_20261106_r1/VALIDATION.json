@@ -1,0 +1,174 @@
+{
+  "status": "PASS",
+  "started_at": "2026-11-06T05:34:24.150965+00:00",
+  "delivery_sha256": "338ca2a06ab220486b95b9c88f051885818b918d4013104e734c15323a732a5d",
+  "selected_code_root": "08_DEPLOYMENT/RELEASES/unread-notes-20261106-r1/code",
+  "release_id": "unread-notes-20261106-r1",
+  "owner_substitution_only": true,
+  "field_execution": false,
+  "external_models": 0,
+  "checks": [
+    {
+      "name": "statement_ids",
+      "passed": true,
+      "detail": [
+        "C00",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "V01",
+        "V02"
+      ]
+    },
+    {
+      "name": "no_semicolon_no_marker_ascii",
+      "passed": true
+    },
+    {
+      "name": "one_line_per_statement",
+      "passed": true
+    },
+    {
+      "name": "prerequisite_stand_ins",
+      "passed": true
+    },
+    {
+      "name": "c00_before_only_stage",
+      "passed": true,
+      "detail": [
+        {
+          "OWNER": "A8_DA_D4E8FE",
+          "TABLE_NAME": "LGL_PIPE_RESULT_A"
+        }
+      ]
+    },
+    {
+      "name": "c00_after_all_8",
+      "passed": true,
+      "detail": [
+        "LGL_AGT_BODY_A",
+        "LGL_AGT_REC_A",
+        "LGL_AGT_RUN_A",
+        "LGL_EXEC_ST_A",
+        "LGL_PIPE_RESULT_A",
+        "LGL_G19_ONTL_ANC_S_1",
+        "LGL_G19_ONTL_HEAD_S_1",
+        "LGL_G19_ONTL_POST_S_1"
+      ]
+    },
+    {
+      "name": "v01_grantee_sees_columns",
+      "passed": true,
+      "detail": {
+        "LGL_AGT_BODY_A": 4,
+        "LGL_AGT_REC_A": 8,
+        "LGL_AGT_RUN_A": 9,
+        "LGL_EXEC_ST_A": 5,
+        "LGL_G19_ONTL_ANC_S_1": 5,
+        "LGL_G19_ONTL_HEAD_S_1": 3,
+        "LGL_G19_ONTL_POST_S_1": 5
+      }
+    },
+    {
+      "name": "v02_grantee_privileges",
+      "passed": true,
+      "detail": {
+        "LGL_AGT_BODY_A": "INSERT,SELECT",
+        "LGL_AGT_REC_A": "DELETE,INSERT,SELECT",
+        "LGL_AGT_RUN_A": "INSERT,SELECT,UPDATE",
+        "LGL_EXEC_ST_A": "DELETE,INSERT,SELECT,UPDATE",
+        "LGL_PIPE_RESULT_A": "INSERT,SELECT",
+        "LGL_G19_DOC_BLK_S_1": "SELECT",
+        "LGL_G19_DOC_UNIT_S_1": "SELECT",
+        "LGL_G19_DOC_VER_S_1": "SELECT",
+        "LGL_G19_ONTL_ANC_S_1": "SELECT",
+        "LGL_G19_ONTL_HEAD_S_1": "SELECT",
+        "LGL_G19_ONTL_POST_S_1": "SELECT",
+        "LGL_G19_SRCH_CHNL_S_1": "SELECT",
+        "LGL_G19_SRCH_POST_S_1": "SELECT",
+        "LGL_G19_SRCH_ROW_S_1": "SELECT",
+        "LGL_G19_SRC_POST_S_1": "SELECT",
+        "LGL_G19_VCTR_HEAD_S_1": "SELECT",
+        "LGL_G19_VCTR_ITEM_S_1": "SELECT",
+        "LGL_G19_VCTR_POST_S_1": "SELECT"
+      }
+    },
+    {
+      "name": "main_mapping_preflight_17_tables_as_grantee",
+      "passed": true,
+      "detail": {
+        "profile": "development_g19_1",
+        "tables": 17,
+        "mapping_sha256": "89a8968396b1c32ba92656e519baaf95c16f8190effcdaf302cb41b64e3f13a6"
+      }
+    },
+    {
+      "name": "agent_preflight_as_grantee",
+      "passed": true
+    },
+    {
+      "name": "commit_insert_state_record_run_body",
+      "passed": true
+    },
+    {
+      "name": "commit_update_state_delete_record_merge_run",
+      "passed": true
+    },
+    {
+      "name": "state_read_back",
+      "passed": true
+    },
+    {
+      "name": "body_read_back",
+      "passed": true
+    },
+    {
+      "name": "lease_insert_update_delete",
+      "passed": true
+    },
+    {
+      "name": "run_row_merged",
+      "passed": true,
+      "detail": [
+        {
+          "ST_CD": "COMPLETE"
+        }
+      ]
+    }
+  ],
+  "temporary_users_removed": true,
+  "oracle_version": "23.26.3.0.0",
+  "finished_at": "2026-11-06T05:34:26.954585+00:00"
+}

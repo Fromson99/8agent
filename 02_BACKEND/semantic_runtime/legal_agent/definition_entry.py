@@ -35,6 +35,47 @@ def matches(session):
     return sorted(rows.values(), key=lambda r:(r['question_span']['start'],r['definition_id']))
 
 
+VECTOR_DOCUMENT_WINDOW = 20
+
+
+def question_asks_definition(session):
+    """True/False from the request-entry decision; None when the entry carried no question type."""
+    value = (getattr(session, 'entry_search', None) or {}).get('asks_definition')
+    return value if isinstance(value, bool) else None
+
+
+def relevant_documents(inv):
+    """Documents a definition may come from: the vector top documents and the user's named scope.
+
+    None when there is no vector catalogue (keyword initial search keeps the old behaviour).
+    """
+    from ..vector_navigation import effective_candidates
+    vector = effective_candidates(inv)
+    if not vector:
+        return None
+    docs = {r['document_id'] for r in vector[:VECTOR_DOCUMENT_WINDOW] if r.get('document_id')}
+    from . import query_scope as qs
+    try:
+        if qs.active(inv.s):
+            docs |= set(qs.documents(inv.s))
+    except Exception:
+        pass
+    return docs
+
+
+def scoped_matches(inv):
+    """Definition matches of the question, without definitions of laws the question is not about."""
+    rows = matches(inv.s)
+    docs = relevant_documents(inv)
+    if docs is None:
+        return rows
+    kept = [r for r in rows if inv.s.tools.definitions[r['definition_id']]['document_id'] in docs]
+    if len(kept) != len(rows):
+        inv.s.repo.event('DEFINITION_ENTRY_SCOPED', {'kept': len(kept), 'dropped': len(rows) - len(kept),
+                                                     'rule': 'vector-top-documents-or-named-scope', 'model_called': False})
+    return kept
+
+
 def location(session, source_id, unit_id):
     source = session.tools.sources.get(source_id)
     if not source or source['document_id'] not in session.scope:
@@ -120,7 +161,7 @@ def page(session, rows, offset=0):
 def render(inv, offer):
     if not inv.policy.get('definition_entry'):return None
     if 'definition_matches' not in inv.p:
-        inv.p['definition_matches']=matches(inv.s)
+        inv.p['definition_matches']=scoped_matches(inv)
         inv.p['definition_offset']=0
     if not inv.p['definition_matches']:return None
     value=page(inv.s,inv.p['definition_matches'],inv.p.get('definition_offset',0))
@@ -163,6 +204,14 @@ def acquire_initial(inv):
     if not inv.policy.get('definition_entry') or inv.p.get('accepted'):
         return
     seed=inv.p.get('system_definition_seed')
+    if seed is None and question_asks_definition(inv.s) is False:
+        # The question asks a rule (요건·기준·절차…), not what a term means: definitions stay offered
+        # in the menu as background and are not read before the model's first choice.
+        if not inv.p.get('definition_entry_deferred'):
+            inv.p['definition_entry_deferred']=True
+            inv.s.repo.event('DEFINITION_ENTRY_DEFERRED',{'reason':'question does not ask a definition','model_calls':0,'offered_in_menu':True})
+            inv.save()
+        return
     if seed:
         check_navigation_origin(seed)
         expected=digest([inv.s.context.request['question'],sorted(inv.s.scope),inv.p.get('definition_matches',[])])
@@ -178,7 +227,7 @@ def acquire_initial(inv):
             return
     if seed is None:
         actions={}
-        rows=inv.p.setdefault('definition_matches',matches(inv.s))
+        rows=inv.p.setdefault('definition_matches',scoped_matches(inv))
         inv.p.setdefault('definition_offset',0)
         for match in rows:
             item=verified(inv.s,match)

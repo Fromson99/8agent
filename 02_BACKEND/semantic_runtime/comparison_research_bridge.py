@@ -27,6 +27,9 @@ def locators(port,evidence,leads=None):
         for raw, in s.tools.db.execute('SELECT r.json FROM reference r JOIN reference_end x ON x.reference_id=r.id WHERE x.source_id=? ORDER BY r.id',(e['source_id'],)):
             ref=json.loads(raw)
             if ref['source_id']!=e['source_id']:continue
+            from .legal_agent.declared_names import upgrade_reference
+            # `규정 제32조` after `…상장규정(이하 "규정")` in another article of the same document.
+            ref=upgrade_reference(s,ref) or ref
             # A reference must be witnessed inside the actually delivered spans.
             witness=ref.get('source_text')
             if not witness or not any(witness in p['text'] for p in e['spans']):continue
@@ -104,10 +107,22 @@ def document_names(session,did):
 
 
 def preferred_documents(port,question,side):
+    """Documents of ``side`` whose registered name occurs in the text.
+
+    An occurrence lying inside a longer registered name of another document (a law
+    inside its enforcement decree) does not select the shorter one.
+    """
     from .folder_navigation import normalized
-    q=normalized(question)
-    return sorted(d for d in port.all_scope if port.categories[d]==side and
-        any(normalized(n) in q for n in document_names(port.session,d) if len(normalized(n))>=2))
+    q=normalized(question);found=[]
+    for d in port.all_scope:
+        for n in document_names(port.session,d):
+            name=normalized(n)
+            if len(name)<2:continue
+            start=q.find(name)
+            while start>=0:
+                found.append((start,start+len(name),d));start=q.find(name,start+1)
+    kept={d for a,z,d in found if not any(a2<=a and z<=z2 and z2-a2>z-a and d2!=d for a2,z2,d2 in found)}
+    return sorted(d for d in kept if port.categories[d]==side)
 
 
 def lead_view(value):

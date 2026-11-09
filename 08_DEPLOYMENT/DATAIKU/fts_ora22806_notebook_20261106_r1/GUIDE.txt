@@ -1,0 +1,43 @@
+ORA-22806 원인 확인용 Dataiku SQL 노트북 SQL (A) — 2026-11-06 R1
+
+목적
+  현장 개발계 MAIN165의 첫 원문 검색에서 난 오류
+    oracle_query_fulltext.py:209 _projection → DPError: READ_FAILED: ORACLE_ERROR: ORA-22806
+  가 "현장 DB에서 이 SQL 자체가 안 되는 것"인지, "GENOS→ORDS로 보낼 때만 나는 것"인지 가른다.
+  같은 SQL은 로컬 Oracle 23.26.3(현장과 같은 릴리스)에서는 통과한다.
+
+대상
+  개발계 실버 표만 읽는다(SELECT만, 쓰기·DDL 없음):
+    SIDDS.LGL_G19_SRCH_ROW_S_1
+    SIDDS.LGL_G19_SRCH_CHNL_S_1  (채널 g19_7c1f8f4931c8be61b914f5bc)
+
+실행 위치
+  Dataiku SQL 노트북(TEST_LEAGAL, AIDP 연결).
+
+실행 방법
+  - 파일 1개 = Query 1개. 파일 내용 전체를 새 Query에 붙여넣는다.
+  - 버튼은 RUN (RUN SELECTION 아님). 끝에 ; 를 붙이지 않는다.
+  - 파일 안에는 주석·세미콜론이 없다.
+
+순서
+  1) FTS_Q0_INFO.txt      실행 계정·DB·표 종류·검색행 종류·JSON 제약·접근정책·동의어·이름 충돌 확인 (11행)
+  2) FTS_Q1_FULL.txt      현장에서 실패한 SQL과 같은 문장 (바인드 자리만 같은 표 조회로 바꿈)
+       - 성공(N 숫자와 ITEMS 값이 나옴) → 현장 DB에서는 SQL이 된다 → ORDS 경로 문제. 여기서 끝.
+       - ORA-22806 → 아래 3)~7)을 모두 실행
+       - ORA-00942 → 노트북 계정에 이 표 읽기 권한이 없음. 여기서 끝(GENOS 쪽 진단 B로 확인).
+  3) FTS_Q2_POSTINGS.txt  검색어 출현 부분만 (JSON_VALUE)
+  4) FTS_Q3_LENGTHS.txt   조문 길이 부분만 (JSON_TABLE, 문서 목록 JSON_TABLE)
+  5) FTS_Q4_MATCHES.txt   점수 계산 전체, 마지막 JSON 묶음 없이
+  6) FTS_Q5_ARRAYAGG.txt  마지막 JSON 묶음(JSON_ARRAYAGG)만, 표 없이
+  7) FTS_Q6_PHRASE.txt    두 단어 구문 검색 형태 전체 (positions 부분 포함)
+
+보내줄 결과
+  Q0 결과 사진 1장, 그리고 각 Query가 성공했는지 / 오류 번호(ORA-xxxxx). 결과 값 전체는 필요 없다.
+  Q1·Q6의 ITEMS는 긴 문자열일 수 있다. 데이터 양에 따라 몇 초~수십 초 걸릴 수 있다.
+
+로컬 확인 (2026-11-06)
+  - SQL은 MAIN165 코드(oracle_query_fulltext.py _matches/_projection + development_g19_1 변환)가 만든 문장에서
+    바인드 자리만 바꿔 생성했다. 검색어 자리는 검색행에 있는 첫 단어(가장 작은 값)를 쓴다.
+  - 로컬 Oracle 23.26.3에 개발계 실버와 같은 컬럼·타입의 임시 표 2개를 만들고 로컬 실버 데이터(102행)를 넣어
+    7개 파일을 그대로 실행: 모두 통과. Q1 결과는 실제 코드가 바인드로 보내는 문장의 결과와 같음(N=2, 항목 동일).
+  - 임시 스키마는 삭제했다. 현장 DB·노트북 실행은 아직 안 했다.

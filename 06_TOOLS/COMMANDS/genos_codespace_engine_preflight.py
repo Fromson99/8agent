@@ -60,6 +60,20 @@ def check(root: Path) -> tuple[int, int, list[str]]:
                     errors.setdefault(relative, f"ORACLE QUERY CATALOGUE STALE {relative}: regenerate prepared queries")
         except (OSError, SyntaxError, ValueError, StopIteration, TypeError) as exc:
             errors[catalogue] = f"INVALID ORACLE QUERY CATALOGUE {type(exc).__name__}"
+    # Serving reads Oracle navigation rows only from registered compiler versions
+    # (semantic_runtime/navigation_compatibility.py). Code without the registry
+    # predates it and keeps the exact-bytes rule.
+    registry_path = "00_SYSTEM/ORACLE/navigation_compatibility.json"
+    if (root / registry_path).is_file():
+        try:
+            registry = json.loads((root / registry_path).read_text(encoding="utf-8"))
+            current = {name: digest(relative) for name, relative in registry["modules"].items()}
+            known = [v["modules"] for group in registry["groups"] for v in group["versions"]]
+            if current not in known:
+                errors[registry_path] = ("NAVIGATION COMPATIBILITY UNREGISTERED: run "
+                                         "06_TOOLS/maintenance/navigation_compatibility.py register --code-root <root> --source <why>")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            errors[registry_path] = f"INVALID NAVIGATION COMPATIBILITY REGISTRY {type(exc).__name__}"
     return len(pipeline["engines"]), len(actual), list(errors.values())
 
 

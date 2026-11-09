@@ -26,6 +26,11 @@ GOAL_PROMPT = "이번 판단에서 유지할 정확한 원문 목표만 source_t
 
 def enabled(inv):
     from .guided_navigation import enabled as guided
+    from .source_handoff import enabled as source_return
+    # A source-return child hands back the originals it read and decides no legal
+    # question, so there is nothing for a supervisor to review or authorize; the
+    # parent workflow owns sufficiency and comparison.
+    if source_return():return False
     return not guided(getattr(getattr(inv,'s',None),'profile',{})) and inv.policy.get('supervisor_mode','off')!='off'
 
 def seal(state):return digest({k:v for k,v in state.items() if k!='state_hash'})

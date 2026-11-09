@@ -195,8 +195,10 @@ def validate_current(repo,result,store,*,allowed_documents=None):
     from .repository import text_hash
     for e in repo.evidence():
         if e['document_id'] not in allowed:raise ContractError('case evidence outside current authorization')
-        for span in e['spans']:
-            raw=store.source(e['document_id'],span['block_id'])
+        batch=getattr(store,'sources',None)
+        raws=(batch(e['document_id'],[span['block_id'] for span in e['spans']]) if callable(batch) and len(e['spans'])>1
+              else [store.source(e['document_id'],span['block_id']) for span in e['spans']])
+        for span,raw in zip(e['spans'],raws):
             if (raw['source_artifact_sha256']!=e['source_artifact_hash'] or text_hash(raw['text'])!=span['block_hash'] or
                     raw['text'][span['start_cp']:span['end_cp']]!=span['text']):raise ContractError('current case evidence changed')
 

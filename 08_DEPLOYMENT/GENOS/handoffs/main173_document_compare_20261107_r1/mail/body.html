@@ -1,0 +1,12 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN173] 조회 방식 "문서 대사" 추가 + 대사 수정 — MAIN172 대체 교체본</b></p>
+<p>조회 방식 <b>문서 대사</b>: 질문에서 내규 문서를 찾아 그 문서 전체를 묶음 단위로 읽고, 단위마다 외규를 검색해 대사합니다.
+보고서는 차이 → 미확인 → 충족 → 대상 아님 → 보류 순이며 판정마다 내규·외규 원문 인용이 붙습니다. 시간·호출 한도 없음, 결과 불명이면 부분 보고서 후 멈춤("문서 대사: 계속"으로 이어 감).</p>
+<p><b>적용</b>: TRANSFER 폴더에서 <code>bash MAIN173_ONECLICK_R1.txt</code> → MAIN173_ONECLICK_DONE, MAIN173_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전 배포.<br>
+<b>화면</b>: 조회 방식 드롭다운(mode)에 "문서 대사" 선택지 추가. <b>워크플로우 편집기</b>: MAIN173_WORKFLOW.py 교체(이번에 바뀜).</p>
+<p><b>로컬 실제 실행</b>(Qwen, 공개 시험 묶음 「금융투자회사의 리스크관리 모범규준」 전체): 묶음 14/32에서 모델 응답 결과 불명 1회로 부분 보고서 후 멈춤(이어서 실행 중, 결과는 별도 안내), 단위 98, 차이 표시 4건,
+모델 448회. 관련 계약 새 실패 0, Oracle 규모 점검 통과, 설치기 15명령 통과.
+<b>Oracle 경로의 문서 대사는 아직 미실행</b>이니 현장 결과(실패 시 단계·파일:줄·oracle.sql.summary)를 부탁드립니다.</p>
+<p>원복: <code>bash MAIN173_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p>첨부: MAIN173_FULL_20261107_R1.zip, MAIN173_ONECLICK_R1.txt, MAIN173_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

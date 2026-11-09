@@ -1,0 +1,39 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>ORA-22806 원인 확인 A — Dataiku SQL 노트북용 SQL (개발계 실버, 읽기 전용)</b></p>
+<p>현장 MAIN165 첫 원문 검색 오류<br>
+<code>oracle_query_fulltext.py:209 _projection → READ_FAILED: ORACLE_ERROR: ORA-22806</code><br>
+가 현장 DB에서 SQL 자체가 안 되는 것인지, GENOS→ORDS로 보낼 때만 나는 것인지 가르는 SQL입니다.
+현장 DB 버전(23.26.3)은 로컬과 같고, 로컬에서는 같은 SQL이 통과합니다.</p>
+
+<p><b>실행 방법</b> (Dataiku SQL 노트북 TEST_LEAGAL / AIDP)</p>
+<ul>
+<li>첨부 파일 1개 = Query 1개. 파일 내용 전체를 새 Query에 붙여넣고 <b>RUN</b> (RUN SELECTION 아님).</li>
+<li>끝에 <code>;</code> 붙이지 않기. 파일 안에 주석·세미콜론 없음.</li>
+<li>읽는 표: <code>SIDDS.LGL_G19_SRCH_ROW_S_1</code>, <code>SIDDS.LGL_G19_SRCH_CHNL_S_1</code> (SELECT만)</li>
+</ul>
+
+<p><b>순서</b></p>
+<ol>
+<li><code>FTS_Q0_INFO.txt</code> — 계정·DB·표 종류·검색행 종류·JSON 제약·접근정책·동의어·이름 충돌 (11행)</li>
+<li><code>FTS_Q1_FULL.txt</code> — 현장에서 실패한 SQL과 같은 문장
+  <ul>
+  <li>성공 → DB에서는 SQL이 됨 → ORDS 경로 문제. 여기서 끝.</li>
+  <li>ORA-22806 → 아래 Q2~Q6 모두 실행</li>
+  <li>ORA-00942 → 노트북 계정에 읽기 권한 없음. 여기서 끝(GENOS 진단 B로 확인).</li>
+  </ul></li>
+<li><code>FTS_Q2_POSTINGS.txt</code> — 검색어 출현 부분만</li>
+<li><code>FTS_Q3_LENGTHS.txt</code> — 조문 길이 부분만</li>
+<li><code>FTS_Q4_MATCHES.txt</code> — 점수 계산 전체(마지막 JSON 묶음 없이)</li>
+<li><code>FTS_Q5_ARRAYAGG.txt</code> — 마지막 JSON 묶음만(표 없이)</li>
+<li><code>FTS_Q6_PHRASE.txt</code> — 두 단어 구문 검색 형태 전체</li>
+</ol>
+
+<p><b>보내줄 결과</b>: Q0 사진 1장 + 각 Query 성공 여부 / 오류 번호(ORA-xxxxx). 값 전체는 필요 없습니다.</p>
+
+<p><b>로컬 확인</b>: MAIN165 코드가 만든 SQL에서 바인드 자리만 같은 표 조회로 바꿨습니다.
+로컬 Oracle 23.26.3에 개발계 실버와 같은 컬럼·타입의 임시 표를 만들고 로컬 실버 데이터(102행)로 7개 파일 모두 통과,
+Q1 결과는 실제 코드가 바인드로 보내는 SQL과 같았습니다(임시 스키마 삭제). 현장 실행은 아직입니다.</p>
+
+<p>GENOS 코드스페이스에서 같은 ORDS로 단계별로 실행하는 진단(B)은 이어서 따로 보내겠습니다.</p>
+<p>첨부: FTS_Q0~Q6 (7개), GUIDE.txt, VALIDATION.json, SHA256SUMS.txt</p>
+</body></html>

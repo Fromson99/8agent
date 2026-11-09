@@ -173,6 +173,24 @@ class ShortcutCases(CaseRepository):
                 self.identity(new['id'],principal)
                 self.db.execute('UPDATE request SET session=?,input_hash=? WHERE id=?',
                     (new['id'],digest({'body':body,'principal':principal}),self.request_key(body,principal)))
+        target=next((g for g in context['goals'] if command.get('target') and g['id']==command['target']),None)
+        if target and target.get('earlier_topic') and not body.get('investigation_id'):
+            # Continuing an earlier question of this conversation returns to its investigation.
+            with self.transaction():
+                old=self.shortcut.investigation(self.active_case,principal,self.original_session)
+                event=self.shortcut._event(old['scope'],old['id'],'INTAKE_REASSIGNED',
+                    {'intake_id':self.intake_id,'reason':'resolver continued an earlier question of this conversation',
+                     'goal_id':target['id'],'investigation':target['investigation']},session=self.original_session)
+                self.db.execute('UPDATE sw_session_link SET detached=? WHERE scope=? AND session=? AND detached IS NULL',
+                                (event,old['scope'],self.original_session))
+                self.db.execute('UPDATE sw_intake SET investigation=NULL WHERE id=?',(self.intake_id,))
+                case=self.shortcut.reconnect(self.intake_id,principal,target['investigation'])
+                self._own_investigation(case['id'],principal)
+                self.active_case=case['id'];self.internal_session=case['id'];self.executor.active_case=self.active_case
+                body={**body,'session_id':case['id']}
+                self.identity(case['id'],principal)
+                self.db.execute('UPDATE request SET session=?,input_hash=? WHERE id=?',
+                    (case['id'],digest({'body':body,'principal':principal}),self.request_key(body,principal)))
         self.resolved_command=command
         try:return super()._execute(body,principal)
         finally:self.resolved_command=None
@@ -185,8 +203,40 @@ class ShortcutCases(CaseRepository):
         # Old USER_CONFIRMED experience cannot bypass the new verification gates.
         return []
 
+    EARLIER_GOALS=20
+
+    def earlier_topic_goals(self,session,principal):
+        """Questions of investigations this chat session was linked to before (each new question
+        starts its own investigation). Listed so the related ones can be chosen; never evidence."""
+        original=getattr(self,'original_session',None)
+        if not original or session!=getattr(self,'internal_session',None):return []
+        scope=self.shortcut.scope(principal,original)
+        rows=self.db.execute('''SELECT l.investigation AS investigation,MIN(e.recorded_at) AS first_linked
+            FROM sw_session_link l JOIN sw_event e ON e.id=l.event WHERE l.scope=? AND l.session=?
+            GROUP BY l.investigation ORDER BY first_linked''',(scope,original)).fetchall()
+        goals=[]
+        for row in rows:
+            if row['investigation']==self.active_case:continue
+            try:self.shortcut.investigation(row['investigation'],principal,original)
+            except MemoryError:continue
+            for r in self.db.execute('SELECT * FROM goal WHERE session=? ORDER BY ordinal',(row['investigation'],)):
+                g={**dict(r),'state':json.loads(r['state'])}
+                if not set(g['state']['document_ids'])<=set(principal['document_ids']):continue
+                route=self.route(g['id']) if g['status']=='READY' else None
+                g['command_ready']=bool(route and route['revision']==g['revision'])
+                events=self.events(g['id']);keep={e['id'] for e in events[:1]+events[-48:]}
+                g['events']=[e for e in events if e['id'] in keep]
+                g['event_count']=len(events);g['history_partial']=len(g['events'])!=len(events)
+                g['investigation']=row['investigation'];g['earlier_topic']=True
+                goals.append(g)
+        goals=goals[-self.EARLIER_GOALS:]
+        for g in goals:self.goal_detail(g)
+        return goals
+
     def context(self,session,principal,utterance):
         context=super().context(session,principal,utterance)
+        # Earlier questions of this conversation come first; the current investigation's are the latest.
+        context['goals']=self.earlier_topic_goals(session,principal)+context['goals']
         if self.flags.get('hint') and not self.flags.get('bounded_recall') and principal.get('authenticated'):
             # Common curated source entries are looked up by the literal
             # current request in RECALL, without flooding the private hint menu.

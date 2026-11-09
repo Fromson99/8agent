@@ -13,6 +13,12 @@ from semantic_runtime.app import create_app
 from semantic_runtime.legal_agent.shortcut_store import selected_store
 from fastapi.testclient import TestClient
 
+# The request-entry search field asks_definition exists from the definition-priority change on; older
+# code rejects it, so scripted entries carry it only when the loaded schema has it.
+from semantic_runtime.legal_agent import request_entry as _asks_entry
+import json as _asks_json
+ASKS_DEFINITION = {'asks_definition': True} if 'asks_definition' in _asks_json.dumps(_asks_entry.schema(model=True)) else {}
+
 @pytest.mark.parametrize('fused',[True,False])
 @pytest.mark.parametrize('replace',[True,False])
 def test_scope_survives_actual_ask_correction_and_duplicate(tmp_path,tree,fused,replace):
@@ -45,7 +51,7 @@ def test_scope_survives_actual_ask_correction_and_duplicate(tmp_path,tree,fused,
                         'queries':['승인 예외'],'format':'prose','reason':'조항 지정'},
                     'intent':{'purpose':'승인 예외 조사','concepts':['승인'],
                         'issues':[{'id':'Q1','question':'승인 예외는?','subject':'승인','kind':'OTHER','request_quote':question}]},
-                    'context_quotes':[],'search':{'mode':'FULLTEXT','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in first['targets']],'user_quote':first['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 안에서 승인 표현 검색'}})
+                    'context_quotes':[],'search':{**ASKS_DEFINITION, 'mode':'FULLTEXT','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in first['targets']],'user_quote':first['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 안에서 승인 표현 검색'}})
             return super().send_once(body=body,ticket=ticket)
     gen,idx=tree;transport=Transport('repaired')
     transport.command=command('CASE_START',document_scope_mode='AUTHORIZED',task=question,queries=['승인 예외'],facts=[],search_scope_change=first)

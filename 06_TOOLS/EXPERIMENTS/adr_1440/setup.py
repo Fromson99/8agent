@@ -1,0 +1,192 @@
+"""Freeze candidate code, the public test corpus, authorization and criteria before any model call (ADR-1440)."""
+from common import *
+import importlib, shutil, sqlite3
+sys.path.insert(0, str(ROOT / '06_TOOLS/COMMANDS'))
+import adr_candidate as ac
+
+DES.mkdir(parents=True, exist_ok=True)
+assert not (DES / 'freeze.json').exists(), 'already frozen'
+REQUEST = '실제 모델 실행해주고 판정은 일단 그렇게 두고 큰문서는 한 20장짜리로 할수 없나'
+rel = lambda path: str(Path(path).relative_to(ROOT))
+
+# 1. Candidate = the document-compare copy (ADR-1435 copy + 16 product files), every file pinned.
+files = {str(p.relative_to(STAGED)): sha(p) for p in sorted(STAGED.rglob('*'))
+         if p.is_file() and '__pycache__' not in p.parts}
+present = [n for n in files if (ROOT / n).is_file() and not (ROOT / n).is_symlink()]
+absent = [n for n in files if n not in present]
+manifest = read(ADR / '실험/manifest.json')
+path = ROOT / '02_BACKEND/lawrag/research/candidates/adr_1440/docmode'
+if not (path / 'candidate.json').exists():
+    path = ac.snapshot(ADR, 'docmode', present, experiment_id=manifest['experiment_id'], arm_id='docmode', run_ids=['run-001'])
+    for n in present:
+        if sha(path / 'snapshot' / n) != files[n]:
+            shutil.copyfile(STAGED / n, path / 'snapshot' / n)
+    for n in absent:
+        target = path / 'snapshot' / n; target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(STAGED / n, target)
+        ac.register_file(path, n, upstream_state='absent')
+    ac.freeze(path)
+assert not ac.validate(path), ac.validate(path)
+revision = read(path / 'candidate.json')['revisions'][-1]
+C = path / 'revisions' / revision['revision_id'] / 'snapshot'
+assert all(sha(C / n) == h for n, h in files.items())
+pin = {'manifest_path': rel(path / 'candidate.json'), 'manifest_sha256': sha(path / 'candidate.json'),
+       'revision_id': revision['revision_id'], 'revision_sha256': revision['revision_sha256']}
+put(DES / 'candidate.json', {'code_root': rel(C), 'files': files, 'new_files': absent, 'pin': pin,
+                             'base': '09_ARTIFACTS/AUDITS/20261106-comparison-items-named-rule/code (ADR-1435 candidate)',
+                             'patch': '09_ARTIFACTS/AUDITS/20261106-document-compare/document-compare-vs-1435copy.patch',
+                             'offline_evidence': '09_ARTIFACTS/AUDITS/20261106-document-compare/'})
+shutil.copyfile(C / '00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json', DES / 'provider-policy.json')
+assert read(ROOT / '00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json') == read(DES / 'provider-policy.json')
+
+# 2. Transport modules pinned to immutable copies (same list as ADR-1424/1429/1435).
+pins = read(ROOT / '04_EXPERIMENTS/ADR/ADR-1424-main161-cm51-financial-qwen/artifacts/transport/transport-pins.json')
+for name in pins['files']:
+    target = ART / 'transport' / name; target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ROOT / name, target); pins['files'][name] = sha(target)
+put(ART / 'transport/transport-pins.json', pins)
+
+# 3. Test corpus: exact stored structure and text of five public-grant documents. Only the
+#    category of the guideline changes (internal), so the document mode can select it.
+grant = read(GRANT)
+store_sha = sha(SOURCE_GENERATION / 'store.sqlite')
+assert grant['generation_id'] == read(SOURCE_GENERATION / 'manifest.json')['generation_id'] and grant['source_store_sha256'] == store_sha
+assert all(d in grant['public_document_ids'] for d in [INTERNAL, *EXTERNAL])
+os.environ.update(WORKFLOW_TEST_CODE_ROOT=str(C), LOOP_TEST_CODE_ROOT=str(C), LAWRAG_WORKSPACE_ROOT=str(ROOT), PYTHONDONTWRITEBYTECODE='1')
+sys.path[:0] = [str(C / '02_BACKEND'), str(ROOT / '05_TESTS'), str(ROOT / '05_TESTS/CONTRACTS'), str(ROOT)]
+import inspect, traceback, dataclasses, pytest  # noqa: F401  (load before the test bootstrap can shadow them)
+import lawrag
+lawrag.__path__.append(str(ROOT / '02_BACKEND/lawrag'))
+for name in ('core', 'pipeline'):
+    module = importlib.import_module('lawrag.' + name); module.__path__.append(str(ROOT / '02_BACKEND/lawrag' / name))
+import conftest
+sys.path[:0] = [str(C / '02_BACKEND')]
+from lawrag.pipeline.term_generation import build_generation
+from lawrag.pipeline.fulltext_stage import derive
+from lawrag.pipeline.search_selection import plan, activate
+
+
+def corpus(folder, wanted):
+    # Resumable: a finished build or index from an interrupted setup is reused, never rebuilt in place.
+    folder.mkdir(parents=True, exist_ok=True)
+    raw = folder / 'source.sqlite'
+    built = (folder / 'built/result.json').exists() and (folder / 'built/generation/manifest.json').exists()
+    if not built and any(folder.iterdir()):
+        raise RuntimeError('partial corpus without a finished build; move it aside first')
+    source = sqlite3.connect('file:' + str(SOURCE_GENERATION / 'store.sqlite') + '?mode=ro', uri=True); source.row_factory = sqlite3.Row
+    rows = []
+    with sqlite3.connect(':memory:' if built else raw) as db:
+        db.executescript('''CREATE TABLE document(document_id TEXT PRIMARY KEY,name TEXT,source_artifact_sha256 TEXT,json TEXT);
+          CREATE TABLE source_unit(document_id TEXT,unit_id TEXT,parent_id TEXT,json TEXT);
+          CREATE TABLE source_block(document_id TEXT,block_id TEXT,unit_id TEXT,text TEXT,source_artifact_sha256 TEXT,json TEXT);''')
+        for did, category in wanted:
+            d = source.execute('SELECT * FROM document WHERE document_id=?', (did,)).fetchone()
+            meta = json.loads(d['json'])['document_metadata']
+            title = meta['document_title']
+            keep = {k: meta[k] for k in ('official_abbreviation', 'aliases') if meta.get(k)}
+            db.execute('INSERT INTO document VALUES (?,?,?,?)', (did, title, d['source_artifact_sha256'], json.dumps({
+                'document_category': category, 'document_metadata': {'team': 'risk_team', 'document_title': title, **keep},
+                'workflow_version': {'verified': False}}, ensure_ascii=False)))
+            units = source.execute('SELECT * FROM source_unit WHERE document_id=?', (did,)).fetchall()
+            blocks = source.execute('SELECT * FROM source_block WHERE document_id=?', (did,)).fetchall()
+            db.executemany('INSERT INTO source_unit VALUES (?,?,?,?)', [tuple(r) for r in units])
+            db.executemany('INSERT INTO source_block VALUES (?,?,?,?,?,?)', [tuple(r) for r in blocks])
+            rows.append({'document_id': did, 'name': title, 'category': category, 'units': len(units), 'blocks': len(blocks),
+                         'chars': sum(len(b['text'] or '') for b in blocks), 'source_artifact_sha256': d['source_artifact_sha256']})
+    source.close()
+    if built:
+        # The saved raw copy must be exactly what this run would write.
+        with sqlite3.connect('file:' + str(raw) + '?mode=ro', uri=True) as db:
+            for r in rows:
+                assert db.execute('SELECT count(*) FROM source_block WHERE document_id=?', (r['document_id'],)).fetchone()[0] == r['blocks']
+                assert db.execute('SELECT count(*) FROM source_unit WHERE document_id=?', (r['document_id'],)).fetchone()[0] == r['units']
+    else:
+        glossary = conftest.term_glossary.__wrapped__(folder)
+        build_generation(raw, glossary, folder / 'built', serving=True, fulltext_workers=1)
+    if not (folder / 'indexed/manifest.json').exists():
+        if (folder / 'indexed').exists():
+            (folder / 'indexed').rename(folder / ('indexed-partial-%d' % len(list(folder.glob('indexed-partial-*')))))
+        derive(folder / 'built/generation', folder / 'indexed', workers=1)
+    activate(plan(folder / 'indexed', latest=True))
+    return {'data_path': rel(folder / 'indexed'), 'source_manifest': read(folder / 'indexed/manifest.json'), 'documents': rows,
+            'copied_from': {'generation': rel(SOURCE_GENERATION), 'store_sha256': store_sha, 'grant': rel(GRANT), 'grant_field': 'public_document_ids'},
+            'changed': 'document category of the guideline set to internal; names are the stored document titles; text, units and blocks copied unchanged',
+            'files': {rel(p): sha(p) for p in sorted(folder.rglob('*')) if p.is_file()}}
+
+
+live = corpus(ART / 'corpus', [(INTERNAL, 'internal')] + [(d, 'external') for d in EXTERNAL])
+put(DES / 'comparison-source.json', live)
+# The scripted wiring check reuses the ADR-1435 synthetic pair (same two documents as the contract tests).
+put(DES / 'scripted-source.json', read(ROOT / '04_EXPERIMENTS/ADR/ADR-1435-comparison-named-rule-scope-qwen/artifacts/design/scripted-source.json'))
+case = {'id': CASE, 'question': '문서 대사: 금융투자회사의 리스크관리 모범규준 문서 전체를 외규와 대사해 주세요.',
+        'document_ids': sorted([INTERNAL, *EXTERNAL]), 'public_documents_only': True}
+put(DES / 'case.json', case)
+put(DES / 'scripted-case.json', {'id': 'scripted-wiring', 'question': '문서 대사: 모의내규 전체를 대사해 주세요.',
+                                 'document_ids': ['inside', 'outside'], 'synthetic': True})
+put(DES / 'authorization.json', {'user_instruction': REQUEST, 'workflow_id': 'risk_team_document_compare_workflow', 'question': case['question'],
+                                 'documents': [{k: r[k] for k in ('document_id', 'name', 'category')} for r in live['documents']],
+                                 'generation_id': live['source_manifest']['generation_id'], 'store_sha256': live['source_manifest']['store_sha256'],
+                                 'scope': 'Five documents of the existing public grant only (copied text, no internal 내규 original). '
+                                          'The public guideline plays the internal role for this test.'})
+criteria = {
+    'request': REQUEST,
+    'question': '문서 대사 수정본이 실제 Qwen3.8로 공개 모범규준(약 20쪽) 문서 전체를 묶음별로 정리·외규 조사·비교해 보고서까지 끝내는가',
+    'primary_metric': 'One real document comparison: share of reading groups finished and of comparison units with a substantive verdict',
+    'required': ['HTTP 200 workflow-result-v1 for risk_team_document_compare_workflow; the stated document is selected without asking',
+                 'Every reading group of the document ends done or held with a recorded reason (none left pending)',
+                 'Every row of a done group is placed exactly once (unit / not target / hold), checked from the saved placements',
+                 'Every unit verdict other than DEFERRED/EXTERNAL_NOT_FOUND cites an internal and an external original (server checked)',
+                 'UNKNOWN 0; the same request again adds 0 model calls; frozen candidate/transport/corpus hashes unchanged'],
+    'secondary': ['Groups, units, verdict counts, not-target and held rows',
+                  'Physical requests per stage (group read / external child / unit compare), tokens, reported cost, wall seconds',
+                  'Units whose external child read a named external rule first; external child status counts',
+                  'Operator reading of a sample of units against the originals (descriptive, no evaluator call)'],
+    'not_measured': 'Legal quality, real internal documents, repeat stability, GENOS internal model and Oracle path are not measured. '
+                    'One request, in-sample; a public guideline stands in for an internal rule.',
+    'stop': 'One request. No request time or call limit (user direction). An unknown provider outcome stops external sending and is not '
+            're-sent. If the run stops, the runner does not continue it; any continuation ("계속") is a separate run decided with the user.',
+    'limits': {'physical_total': None, 'per_physical_seconds': 180, 'reported_cost_usd': None, 'request_seconds': None,
+               'ram_start_gib': 5, 'wait_seconds': 5400,
+               'start_gate': 'waits only for another experiment live.py',
+               'guard': 'resource_guard.py (ADR-1440): available RAM floor 3GiB, worker RSS 5GiB, worker swap growth 128MiB, free disk 20GiB. '
+                        'Host-wide swap growth is recorded only: this run may last hours and other sessions share the host (ADR-1425 stopped on another session).'},
+    'quality_certified': False, 'in_sample': True}
+put(DES / 'criteria.json', criteria)
+
+manifest['lineage']['hypothesis_delta'] = criteria['question']
+manifest['design'].update(hypothesis=criteria['question'] + ' — 예상: 모든 묶음이 끝나고 대부분의 단위에 양쪽 원문 인용 판정이 나온다.',
+                          primary_metric=criteria['primary_metric'], success_criteria=criteria['required'],
+                          failure_criteria=[criteria['stop'], 'HTTP 500 or a workflow failure', 'A reading group left pending at the end',
+                                            'Any source/ACL/hash mismatch reported by the product'],
+                          criteria_frozen_before_run=True,
+                          criteria_freeze_evidence={'path': rel(DES / 'criteria.json'), 'sha256': sha(DES / 'criteria.json')})
+manifest['design']['code_isolation'].update(mode='candidate_snapshot', reason=None, candidates=[
+    {**pin, 'candidate_id': 'docmode', 'experiment_id': manifest['experiment_id'], 'arm_id': 'docmode', 'run_ids': ['run-001'],
+     'runner_path': rel(TOOLS / 'live.py'), 'runner_sha256': sha(TOOLS / 'live.py')}])
+for arm in manifest['design']['arms']:
+    if arm['id'] == 'baseline':
+        arm.update(changes='ADR-1435 namedscope arm (question 대사); reference only, not re-executed', controls='Different request kind; no paired comparison')
+    else:
+        arm.update(changes='ADR-1435 candidate + 문서 대사 mode: routing branch, unbounded execution policy, document selection, reading groups, '
+                           'group review (ADR-1425 prompt), per-unit external search and comparison, continuation, report (16 product files)',
+                   controls='Selected profile-unified-v6 unchanged (supervisor enforce), Qwen3.8 policy, five public-grant documents')
+manifest['runs'][0].update(arm_ids=['docmode'], selection_rule='One predeclared document comparison request; ' + criteria['stop'],
+                           artifact_path=rel(ART / 'run-001/result.json'))
+manifest['dataset'].update(name='Five public-grant documents copied into a test corpus (guideline as internal)', version=live['source_manifest']['generation_id'],
+                           frozen_source=rel(DES / 'comparison-source.json'), sha256=sha(DES / 'comparison-source.json'),
+                           legal_version_checked=False, reference_version_checked=False)
+manifest['llm_policy']['llm_calls'] = [{'role': 'product', 'class': 'product', 'model': 'qwen/qwen3.8-27b', 'repeats': 1}]
+reason = 'Retrieval inside the workflow children is product behaviour; this probe records groups, units and originals, not recall. No gold coordinates.'
+manifest['retrieval_accounting'].update(not_applicable_reason=reason)
+manifest['retrieval_accounting']['stage_ledger'].update(not_applicable_reason=reason)
+(ADR / '실험/manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', 'utf-8')
+
+put(ART / 'preparation-issues.json', [{'step': 'setup corpus build (first attempt)', 'model_calls': 0,
+    'issue': 'build_generation used its default full-text worker pool while other sessions held about 3GiB; a pool worker was '
+             'terminated (BrokenProcessPool) before the generation was written. The partial folder was kept as artifacts/corpus-failed-r1. '
+             'Rerun with fulltext_workers=1; the copied text and categories are unchanged.'}])
+frozen = [*sorted(TOOLS.glob('*.py')), *(DES / n for n in ('candidate.json', 'provider-policy.json', 'comparison-source.json', 'scripted-source.json',
+                                                         'case.json', 'scripted-case.json', 'authorization.json', 'criteria.json')),
+          ART / 'transport/transport-pins.json', ROOT / '00_SYSTEM/EXPERIMENT_MODEL_POLICY.json', ROOT / '00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json']
+put(DES / 'freeze.json', {'files': {rel(p): sha(p) for p in frozen if p.name not in ('finalize.py', 'publish.py')}, 'model_calls_before_freeze': 0})
+print('frozen: candidate', len(files), 'files (', len(absent), 'new ); corpus', [(r['name'], r['category'], r['blocks'], r['chars']) for r in live['documents']])

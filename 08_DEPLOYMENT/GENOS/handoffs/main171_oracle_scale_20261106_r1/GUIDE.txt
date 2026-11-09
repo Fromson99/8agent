@@ -1,0 +1,64 @@
+MAIN171 — Oracle 대량 조회 전수 수정 + 쿼리 속도 최적화 (MAIN170 대체)
+
+현재 로컬 릴리스: oracle-scale-20261106-r1 / MAIN171, 서빙 536파일.
+MAIN170(구조 목록)·169(벡터 후보 표시)·168·167을 그대로 포함하고 그 위에 제품 18파일을 바꿨습니다.
+실행 SQL 642개, 테이블 매핑, 탐색 호환 등록표, 워크플로우(MAIN171_WORKFLOW.py = MAIN170_WORKFLOW.py)는 그대로입니다.
+MAIN170을 아직 적용하지 않았다면 이 MAIN171만 적용하면 됩니다.
+
+0. 왜 교체하나
+오늘 현장 오류는 SQL 문장이 아니라 "요청 범위·문서 전체를 펼치는 코드"에서 하나씩 났습니다
+(RECALL 원문 목록 → MAIN168, 구조 목록 → MAIN170). 로컬 Oracle에서 Oracle 대상 SQL 전부와 현장 프로필(가이드 모드) 질문을
+원문 1만 개 초과 범위·1만 단위 문서로 돌려, 다음에 멈출 곳을 모두 찾아 한 번에 고쳤습니다.
+MAIN170 그대로면 다음이 남아 있습니다(로컬 재현):
+  - 원문 1만 개 넘는 범위: 가이드 첫 질문 law_navigation.py:905 article_menu → QUERY_SQL_RESULT_BUDGET (500)
+  - 1만 단위 넘는 문서(로컬 실데이터 7개, 조세특례제한법 시행규칙 29,428 등): QUERY_NAV_BUDGET (500), 문서 지명 질문은 701초
+  - 같은 절 조문 찾기 범위 전체 순회, 질문 검색어 "제1…"의 제목 묶음(실데이터 34,595행) 1만 행 한도
+  - 대사(내규↔외규)를 Oracle에서 실행하면 즉시 500 (로컬 파일 경로 사용, 원문 ID 없는 조회, 감독 승인 오류)
+
+1. 이번 수정 (답변·근거 판단·프롬프트는 그대로, Oracle에서 읽는 방식만)
+- 요청 범위 원문 ID 목록 대신 문서 범위를 그대로 넘김(가이드 원문 메뉴·미리보기)
+- 문서 전체 나열은 그 문서의 게시 단위 수만큼 한도 + 요청 안 재사용. 형제·하위는 부모 기준 조회, 큰 문서 전체는 "문서 전체"로 검색
+- 같은 절 조문: 부모 기준 조회(다른 세션 준비 수정 반영)
+- 제목 사전: 1,000행 넘는 묶음은 질문 위치별 정확한 키 조회(실데이터 최대 키 46자, 한도 128자 → 결과 동일)
+- 대사: Oracle 저장소로 작업 연결, 원문 ID 없는 조회는 "없음", 원문 반환 하위 조사는 감독 생략(다른 세션 준비 수정)
+- 속도: 같은 요청 안에서 검증한 원문·문서·단위·출처 재사용(서빙 캐시 GENOS_ORACLE_SHARED_CACHE=on일 때, 현장 기본),
+  블록 길이·원문 묶음 조회, 벡터 후보 100개를 SQL 1~2회로 미리 읽기
+- 새 SQL 문장 없음(642개 동일). 새 환경변수 없음.
+
+2. 전제 — 환경변수는 지금 값 그대로
+  DP=oracle / GENOS_ORACLE_TABLE_MAPPING=development_g19_1 / DP_QUERY_CHANNEL=(지금 값)
+  GENOS_RAG_INITIAL_SEARCH=vector 또는 auto (지금 값) / 임베딩 설정·VCTR_HEAD 1행 유지
+  GENOS_ORACLE_SHARED_CACHE를 off로 바꾸면 요청 안 재사용도 꺼지고 매번 다시 검증합니다(느려짐, 동작은 같음).
+
+3. GENOS 코드스페이스 적용 (MAIN170과 같은 절차)
+같은 TRANSFER 폴더에 MAIN171_FULL_20261106_R1.zip, MAIN171_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN171_ONECLICK_R1.txt
+완료 표시: MAIN171_ONECLICK_DONE, MAIN171_EXIT=0
+확인·스테이징: bash MAIN171_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+기존 절차로 commit 후: bash MAIN171_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+4. 워크플로우 편집기
+MAIN171_WORKFLOW.py 는 MAIN170_WORKFLOW.py 와 같은 바이트입니다. 바꿀 필요 없습니다.
+
+5. 확인 (부탁드립니다)
+새 리비전 배포 후 워크플로우 테스트 화면에서 같은 질문을 다시 합니다.
+  - 다른 오류가 나면 실패 단계·파일:줄과 컨테이너 로그의 oracle.sql.summary 한 줄(sql_count, sql_ms)을 사진으로 보내 주세요.
+  - 속도 비교를 위해 성공한 질문의 oracle.sql.summary 한 줄도 부탁드립니다(로컬 측정은 작은 시험 자료 기준).
+
+6. 원복
+  코드 전체 원복: bash MAIN171_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+7. 검증 범위 (로컬, 현장 미실행)
+- Oracle 규모 점검 도구(새, 06_TOOLS/maintenance/oracle_scale_guard): 로컬 Oracle 23.26.3 개발계 실버 17표(임시 소유자, 삭제),
+  현장 프로필 질문 15개(키워드·벡터·후속 질문) + 대사 1개, 현장 1만 행 한도를 자료 크기에 맞춰 줄여 판정.
+  MAIN170: 현장 규모에서 멈출 읽기 7곳 → MAIN171: 0곳, 한 문서 한 건씩 조회 0곳, 질문 실패 0.
+  Oracle 대상 SQL 전부 3694회 실행(값 9종 × 실측 열 크기), Oracle 오류 0건.
+- 현장 규모: 범위 원문 10,202개 — MAIN170 계열 1/6 → MAIN171 6/6 질문 정상.
+  1만 단위(10,406) 문서 — MAIN170 계열 1/3 → MAIN171 4/4 정상.
+- 속도(같은 시험 자료, 서빙 캐시 켬, 질문 14개): 전체 232초 → 56초,
+  보낸 SQL 1,601 → 1,168회, 대사 500 → 정상.
+- 관련 계약 144파일: 새 실패 0, 고쳐진 것 11, 기존 실패 484개는 MAIN170과 같음. 새 계약 시험 8개(MAIN171 8/8, MAIN170 0/8).
+- 설치기: MAIN170 코드 격리 checkout에 15개 명령 통과(설치→재실행→status→stage→commit→gate→전체 gate→undo 복원).
+- 한계: 실제 ORDS HTTP·현장 DB·현장 화면·내부 모델로는 실행하지 않았습니다. 모의 모델이라 답변 품질 비교는 하지 않았습니다. 새 모델 호출 0.
+상세: VERIFICATION.json / SHA256SUMS.txt

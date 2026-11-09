@@ -76,6 +76,10 @@ def json_body(value):
 def read_release(sql, release_id):
     p=physical_names(sql,'query_release',RELEASE)
     release_id = pin(release_id)
+    # Serving requests reuse this content-addressed release's published rows.
+    pin_shared = getattr(sql, 'pin_shared_cache', None)
+    if pin_shared is not None:
+        pin_shared(release_id)
     text = clob_text(sql, p.table, p.c('MANIFEST_JSON'), p.c('RELEASE_ID')+'=:release',
                      [('release', release_id, 'VARCHAR2')], max_chars=MAX_JSON_BYTES)
     if text is None:
@@ -216,7 +220,7 @@ class Records:
             raise DPError('QUERY_RELEASE_BINDING: reader manifest differs')
         self.document_ids = None if document_ids is None else frozenset(document_ids)
 
-    def page(self, kind, *, document_id=None, lookup_id=None, lookup_ids=None, owner_id=None, target_id=None, after=None, limit=50):
+    def page(self, kind, *, document_id=None, lookup_id=None, lookup_ids=None, owner_id=None, target_id=None, target_ids=None, after=None, limit=50):
         if kind not in self.manifest['tables']:
             raise DPError('QUERY_KIND: undeclared table')
         if type(limit) is not int or not 1 <= limit <= 100:
@@ -238,6 +242,13 @@ class Records:
                 raise DPError('QUERY_FILTER: invalid lookup ID')
             where.append('LOOKUP_ID IN ('+','.join(':lookup'+str(i) for i in range(len(lookup_ids)))+')')
             binds.extend(('lookup'+str(i),value,'VARCHAR2') for i,value in enumerate(lookup_ids))
+        if target_ids is not None:
+            if target_id is not None or not isinstance(target_ids, (list,tuple)) or not 1 <= len(target_ids) <= 100:
+                raise DPError('QUERY_FILTER: expected 1..100 target IDs without target_id')
+            if any(not isinstance(v,str) or not v or len(v.encode()) > 512 for v in target_ids):
+                raise DPError('QUERY_FILTER: invalid target ID')
+            where.append('TARGET_ID IN ('+','.join(':target'+str(i) for i in range(len(target_ids)))+')')
+            binds.extend(('target'+str(i),value,'VARCHAR2') for i,value in enumerate(target_ids))
         for column, value in [('DOCUMENT_ID', document_id), ('LOOKUP_ID', lookup_id),
                               ('OWNER_ID', owner_id), ('TARGET_ID', target_id)]:
             if value is not None:
@@ -289,6 +300,8 @@ class Records:
                 raise DPError('QUERY_ROW_FILTER: returned row differs from requested scope')
             if lookup_ids is not None and row['LOOKUP_ID'] not in lookup_ids:
                 raise DPError('QUERY_ROW_FILTER: unexpected lookup ID')
+            if target_ids is not None and row['TARGET_ID'] not in target_ids:
+                raise DPError('QUERY_ROW_FILTER: unexpected target ID')
             values.append(value)
         return {'rows': values, 'next': {'scope': scope, 'row_id': ids[-1]} if len(rows) == limit else None,
                 'release_id': self.release_id}

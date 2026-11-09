@@ -173,7 +173,7 @@ def read_candidate_rows(data, candidates, matcher=None):
     """Keep stored location hints for each offered read, without inventing text."""
     from .errors import ContractError
     rows = {}
-    hint_fields = ('article', 'heading', 'preview', 'coordinate', 'title', 'surface', 'path')
+    hint_fields = ('article', 'heading', 'preview', 'coordinate', 'title', 'surface', 'path', 'found_by')
 
     def add(target, values):
         row = rows.setdefault(target, {'target': target})
@@ -208,6 +208,8 @@ def read_candidate_rows(data, candidates, matcher=None):
                 walk(child, document, document_id)
 
     walk(data.get('initial_vector_candidates', []))
+    walk(data.get('section_title_matches', []))
+    walk(data.get('chapter_title_matches', []))
     walk(data.get('laws', []))
     walk(data.get('structure_catalogue', {}))
     walk(data.get('document_term_candidates', {}))
@@ -400,6 +402,7 @@ def choose_read(inv, data, actions, phase):
         reviewed[key]={'started':True};inv.save()
     canonical=decision_schema(data,actions,{b['id'] for b in data['branches']})
     rows=read_candidate_rows(data,candidates,getattr(inv.s,'matcher',None))
+    if guided:guidance.remember_locations(inv,candidates,rows)
     issues=[i['id'] for i in data['issues']];reason={'type':'string','minLength':1,'maxLength':400,
         'description':'이번 행동으로 확인할 부족이나 종료 이유 한 문장. 질문·쟁점의 반복 복사 금지. 법률 답변은 별도 검토에서 작성한다.'}
     def selection(targets):return {'target':{'type':'string','enum':list(targets)},'issue_id':{'type':'string','enum':issues},
@@ -501,9 +504,20 @@ def choose_read(inv, data, actions, phase):
         if continuation:payload['continuation_request']=deepcopy(continuation)
         limit=inv.policy.get('guided_action_limit',0)
         if limit:
-            used=inv.p.get('turn',0)-inv.p.get('request_turn_start',0)
+            from .law_navigation import guided_actions_used, guided_reads_used
+            used=guided_actions_used(inv)
             payload['action_budget']={'limit':limit,'used':used,'remaining':max(0,limit-used),
                 'meaning':'이번 사용자 요청에서 남은 조사 행동 수. 다 쓰면 확보한 원문으로 답하고 사용자가 이어서 요청할 수 있다.'}
+            if inv.policy.get('guided_reads_free'):
+                payload['action_budget'].update(reads_free=True,reads_this_request=guided_reads_used(inv),
+                    meaning='이번 요청의 검색·목록 이동·연결 조회 남은 수. 위치가 확인된 후보를 READ하는 것은 차감되지 않는다.')
+                rounds=inv.policy.get('guided_read_rounds',0)
+                if rounds:
+                    payload['action_budget'].update(read_rounds_left=max(0,rounds-guided_reads_used(inv)),
+                        read_meaning='READ는 이번 요청에서 read_rounds_left번 더 고를 수 있고, 한 번에 필요한 후보를 최대 4개까지 함께 고른다. 다 쓰면 확보한 원문으로 답한다.')
+                if used>=limit:
+                    payload['action_budget'].update(read_only=True,
+                        meaning='검색·이동 한도를 다 썼다. 위치가 확인된 read_candidates 중 읽어야 할 본문은 차감 없이 READ하고, 다른 행동은 실행되지 않는다. 필요한 후보가 없으면 ANSWER한다.')
     def expand(value,*,reviewed=False):
         prepared_validate(value,schema,owner=inv.s)
         if guided and value['choice']=='ASK_USER':return None

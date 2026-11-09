@@ -9,7 +9,7 @@ class VectorUnavailable(VectorError):pass
 
 def mode():
  value=os.environ.get('GENOS_RAG_INITIAL_SEARCH','auto').strip().lower()
- if value not in ('auto','vector','keyword'):raise VectorError('VECTOR_CONFIG: initial search must be auto/vector/keyword')
+ if value not in ('auto','vector','keyword','hybrid','hybrid_rerank','dual'):raise VectorError('VECTOR_CONFIG: initial search must be auto/vector/keyword/hybrid/hybrid_rerank/dual')
  return value
 
 def endpoint(env=None):

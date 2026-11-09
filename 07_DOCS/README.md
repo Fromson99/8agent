@@ -15,6 +15,8 @@
 <!-- /ADR1066_LIVE_STATUS -->
 
 
+- [증분처리 — 법제처 규정 문서 증분 처리](REFERENCE/OPERATIONS/증분처리.md) — 바뀐 조문만 새 판본, 옛 판본은 시행 구간만 닫음. 흐름·상태, 계보 유지 판정 7종, 부칙 기반 조문별 시행일, 게이트·승인, 숨김 색인 후 한 트랜잭션 활성화, 새 표 10개(개발·운영 같은 이름)와 기존 Gold 연결 판단, 실문서 검증(공식 Y 68조문 누락0), 남은 일. 2026-11-06 로컬 작업 코드 구현·검증이며 개발·운영 DDL·Dataiku 현장·GENOS 반영은 미실시.
+
 - [온톨로지 MVP 행동별 최소 응답 계약](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/ACTION_CHOICE_CONTRACT_20261026.md) — 모델의 행동·대상·필요한 판단과 서버의 고정값 조립을 분리하고 정상·전체 보완을 같은 양식으로 연결. 입력 문자 차단 해제와 실제 구현·검사는 [최신 상태](REFERENCE/ARCHITECTURE/ONTOLOGY_V4/MVP_EXECUTION_REPAIR_STATUS_20261026.md)에서 확인. 후보 구현과 MAIN103·GENOS 적용을 구분.
 
 - [골드 레이어·메타마이너 규약과 원본 사진](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/README.md) — 표준단어·논리명·물리명·유형별 용어, 도메인·코드값, 표준 신청·승인 절차와 골드 메타 작성 규약. [테이블 목록·Bizmeta·등록 대상·컬럼 정의 양식](REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/TABLE_SCHEMA_WORKBOOK.md)과 추가 사진7장 포함. 사용자 제공 사진 총27장 원본·내용 대응·SHA-256 보존.

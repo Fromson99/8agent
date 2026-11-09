@@ -1,0 +1,16 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN171] Oracle 대량 조회 전수 수정 + 쿼리 속도 최적화 — MAIN170 대체 교체본</b></p>
+<p>오늘 현장 오류는 SQL 문장이 아니라 "범위·문서 전체를 펼치는 코드"에서 하나씩 났습니다. 로컬 Oracle에서 현장 규모로 전부 돌려,
+MAIN170 다음에 멈출 곳(가이드 원문 메뉴 law_navigation.py:905, 1만 단위 넘는 문서, 같은 절 조문, 제목 사전 '제1…' 묶음, 대사 Oracle 실행)을 한 번에 고쳤습니다.</p>
+<p>속도: 같은 시험 자료·질문 14개에서 232초 → 56초, 보낸 SQL 1,601 → 1,168회.
+답변·근거 판단·프롬프트는 그대로이고, Oracle에서 읽는 방식만 바꿨습니다. SQL 642개·워크플로우(MAIN171_WORKFLOW.py)는 MAIN170과 같습니다. 새 환경변수 없음.</p>
+<p><b>적용</b> (MAIN170과 같은 절차): TRANSFER 폴더에 ZIP과 TXT를 두고 그 폴더에서<br>
+<code>bash MAIN171_ONECLICK_R1.txt</code> → 완료 표시 MAIN171_ONECLICK_DONE, MAIN171_EXIT=0<br>
+→ <code>status</code> / <code>stage</code> → commit → <code>gate-code</code> → push → 새 코드서빙 리비전 배포.</p>
+<p><b>확인</b>: 같은 질문을 다시 해 주세요. 오류가 나면 실패 단계·파일:줄과 oracle.sql.summary 한 줄, 성공하면 속도 비교용 oracle.sql.summary 한 줄을 사진으로 부탁드립니다.</p>
+<p><b>원복</b>: <code>bash MAIN171_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p><b>로컬 검증</b>: 현장 규모(원문 10,202개 범위 6/6, 10,406단위 문서 4/4) 질문 정상,
+Oracle 대상 SQL 3694회 실행 오류 0, 관련 계약 144파일 새 실패 0, MAIN170 격리 checkout 설치기 15명령 통과.
+현장 ORDS·현장 화면·내부 모델은 미실행입니다.</p>
+<p>첨부: MAIN171_FULL_20261106_R1.zip, MAIN171_ONECLICK_R1.txt, MAIN171_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

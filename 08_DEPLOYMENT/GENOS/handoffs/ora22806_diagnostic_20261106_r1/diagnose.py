@@ -1,0 +1,480 @@
+"""ORA-22806 read-only diagnosis for the MAIN165 fulltext search SQL.
+
+Uses the installed MAIN165 code in the GENOS checkout: the same ORDS client
+(SDK or REST), the same table mapping rewrite and the same SQL builder as the
+serving code. The exact failing statement is sent, then variants that each
+change one feature, so the failing feature can be named.
+
+SELECT only. No retry, no model call, no write. Output per check: PASS/FAIL,
+row count, Oracle error code, Oracle message lines and the error position with
+the SQL text around it. Bind values, document IDs and row contents are never
+printed or saved.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sys
+import time
+import uuid
+
+FORMAT = 'ora22806-diagnostic-r1'
+EXPECTED = {
+    '02_BACKEND/semantic_runtime/oracle_dp.py': 'f0c7245dd0f547f046393504949337a518e567dcaec206fef0fa8bea2e3f361c',
+    '02_BACKEND/semantic_runtime/oracle_dp_io.py': 'f5ebe43a46a3d696ba2465bfeb185850b9bc15a78de81f47e9cd6ea610fcb698',
+    '02_BACKEND/semantic_runtime/oracle_ords.py': '45e95fc1a7468617a86d7b00b1e822024515dae0e375869f19f7fda48b2252b6',
+    '02_BACKEND/semantic_runtime/oracle_query.py': 'd3750e0755dd61935e8c2f2f7a9c8843625ce67bc3dcd56a0282c899ff5cb509',
+    '02_BACKEND/semantic_runtime/oracle_query_catalog.py': '4d8d77d5d604d3ed33c36a90bfd8a9c4346b3c108b1f3fa245a64080a064b8af',
+    '02_BACKEND/semantic_runtime/oracle_query_request.py': '18f4bf345e0d7b3afdd1fcb97ca9b6057be5cb562590ce8def7355cda1ae1270',
+    '02_BACKEND/semantic_runtime/oracle_query_state.py': '6b8f426c067a1a8fdbf12bea2415fcd44c8c692366d2e51727698780bb129a78',
+    '02_BACKEND/semantic_runtime/oracle_query_fulltext.py': 'e35fc2e60c3ac8dad540e388f54eae950398cd8b00b6eb67526aa6c3122ab9c0',
+    '02_BACKEND/semantic_runtime/oracle_query_cache.py': '22060037a037ee981d3eecb706a78f353f384863cd59bdde7c5f5b5a559bbd63',
+    '02_BACKEND/semantic_runtime/oracle_silver_reads.py': '07ae9cebc6569aef60e03e2ec9c96bd5d86eb8df5b58ec480eb7db03ebefe83d',
+    '02_BACKEND/semantic_runtime/oracle_sql_tokens.py': '1fa2f1a33ca5c074ce2b9864a77d09a9fbdf43a60ca14f0bd7210eff4eb49338',
+    '02_BACKEND/semantic_runtime/oracle_development_mapping.py': 'b33a1dd603552be7b90ec6c3e1c4f1c48c5828d603be51abf6a1d310c53a73c1',
+    '02_BACKEND/semantic_runtime/physical_mapping.py': 'eb6d175549c3c2d7d485275fb2dc158acf992454ff7e36e278112285bb0a199a',
+    '02_BACKEND/semantic_runtime/oracle_dp_assets.py': '911f1ff01d1fc1714c95b41d6dd828a86b0f2747785c49d4f098fde0c32659fa',
+    '00_SYSTEM/ORACLE/development_g19_1.json': '133b3af1931b1b8d9490a437a6035097efb7c83a463b05abb55180f49675efec',
+}
+CLOB_PIECE_BYTES = 3900
+SAFE_VALUE = re.compile(r'[A-Za-z0-9_ .:$#()/-]{1,80}')
+POSITIONS = (re.compile(r'Error at Line:\s*(\d+)\s*Column:\s*(\d+)', re.I),
+             re.compile(r'line\s*(\d+)\s*,\s*column\s*(\d+)', re.I))
+LITERAL = re.compile(r"'[^']*'")
+PLACEHOLDER = re.compile(r'(?<![:\w]):(\w+)')
+
+
+# ---- code root -------------------------------------------------------------
+def mismatches(root):
+    bad = []
+    for name, expected in EXPECTED.items():
+        path = root / name
+        try:
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            actual = 'MISSING'
+        if actual != expected:
+            bad.append({'file': name, 'actual': actual[:12]})
+    return bad
+
+
+def code_root(explicit):
+    candidates = [Path(explicit)] if explicit else [Path.cwd(), Path.home() / 'DEV', Path.cwd().parent]
+    report = []
+    for candidate in candidates:
+        root = candidate.expanduser().resolve()
+        bad = mismatches(root)
+        if not bad:
+            return root, report
+        report.append({'root': str(root), 'mismatched': bad})
+    raise SetupError('MAIN165_CODE_ROOT_NOT_FOUND', report)
+
+
+class SetupError(Exception):
+    def __init__(self, tag, detail=None):
+        super().__init__(tag)
+        self.tag, self.detail = tag, detail
+
+
+# ---- response capture (no bind values / rows) ------------------------------
+def oracle_lines(text):
+    out = []
+    for line in str(text)[:65536].splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if re.search(r'\b(ORA|PLS|SP2)-\d{4,5}\b', line) or any(p.search(line) for p in POSITIONS):
+            out.append(line[:300])
+        if len(out) >= 12:
+            break
+    return out
+
+
+def body_of(response):
+    if isinstance(response, dict):
+        return response
+    raw = getattr(response, 'raw', None)
+    if isinstance(raw, dict):
+        return raw
+    candidate = getattr(response, 'json', None)
+    try:
+        value = candidate() if callable(candidate) else candidate
+    except Exception:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def describe(response):
+    body = body_of(response)
+    if body is None:
+        return {'shape': 'NOT_A_JSON_OBJECT', 'wrapper': type(response).__name__}
+    items = body.get('items')
+    info = {'shape': 'ITEMS_%d' % len(items) if isinstance(items, list) else 'NO_ITEMS'}
+    for item in [body] + (items if isinstance(items, list) else []):
+        if not isinstance(item, dict):
+            continue
+        code = item.get('errorCode')
+        if code in (None, 0, '0') and not item.get('errorMessage') and not item.get('errorDetails'):
+            continue
+        info['error_item_keys'] = sorted(str(k) for k in item)[:30]
+        info['errorCode'] = code if isinstance(code, (int, str)) and len(str(code)) <= 12 else 'NON_STANDARD'
+        for key in ('errorLine', 'errorColumn', 'statementPos', 'errorPos', 'errorOffset'):
+            if type(item.get(key)) is int:
+                info[key] = item[key]
+        lines = []
+        for key in ('errorMessage', 'errorDetails'):
+            if isinstance(item.get(key), str):
+                lines += [l for l in oracle_lines(item[key]) if l not in lines]
+        info['oracle_lines'] = lines
+        break
+    return info
+
+
+class Observer:
+    """Pass-through ORDS client that remembers the last response metadata."""
+    def __init__(self, client):
+        self._client = client
+        self.last = None
+
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+    def request(self, method, path, json=None):
+        self.last = None
+        try:
+            response = self._client.request(method, path, json=json)
+        except Exception as exc:
+            self.last = {'transport_exception': type(exc).__name__, 'oracle_lines': oracle_lines(exc)}
+            raise
+        self.last = describe(response)
+        return response
+
+
+# ---- SQL variants ----------------------------------------------------------
+def split_literals(sql):
+    parts, at = [], 0
+    for m in LITERAL.finditer(sql):
+        parts.append((False, sql[at:m.start()]))
+        parts.append((True, m.group(0)))
+        at = m.end()
+    parts.append((False, sql[at:]))
+    return parts
+
+
+def clob_pieces(text):
+    pieces, start, size = [], 0, 0
+    for i, ch in enumerate(text):
+        width = len(ch.encode('utf-8'))
+        if size + width > CLOB_PIECE_BYTES:
+            pieces.append(text[start:i])
+            start, size = i, 0
+        size += width
+    pieces.append(text[start:])
+    return pieces
+
+
+def transform_binds(sql, binds, *, unique_names, clob_as_varchar):
+    """Rename every bind occurrence and/or send CLOB values as VARCHAR2 pieces."""
+    values = {name.lower(): (name, value, kind) for name, value, kind in binds}
+    out_binds, counter, used = [], [0], {}
+
+    def swap(match):
+        name, value, kind = values[match.group(1).lower()]
+        if unique_names:
+            counter[0] += 1
+            target = 'b%d' % counter[0]
+        else:
+            target = name
+        if clob_as_varchar and kind == 'CLOB':
+            pieces = clob_pieces(value)
+            names = ['%s__%d' % (target, i) for i in range(1, len(pieces) + 1)]
+            for n, piece in zip(names, pieces):
+                if n not in used:
+                    used[n] = True
+                    out_binds.append((n, piece, 'VARCHAR2'))
+            return '(' + '||'.join('TO_CLOB(:%s)' % n for n in names) + ')'
+        if target not in used:
+            used[target] = True
+            out_binds.append((target, value, kind))
+        return ':' + target
+
+    text = ''.join(chunk if quoted else PLACEHOLDER.sub(swap, chunk) for quoted, chunk in split_literals(sql))
+    return text, out_binds
+
+
+def position_snippet(sql, info):
+    line = column = None
+    if isinstance(info, dict):
+        if type(info.get('errorLine')) is int and type(info.get('errorColumn')) is int:
+            line, column = info['errorLine'], info['errorColumn']
+        else:
+            for text in info.get('oracle_lines') or []:
+                for pattern in POSITIONS:
+                    m = pattern.search(text)
+                    if m:
+                        line, column = int(m.group(1)), int(m.group(2))
+                        break
+                if line:
+                    break
+    if not line or not column:
+        return None
+    lines = sql.split('\n')
+    if line > len(lines):
+        return {'line': line, 'column': column, 'offset': None}
+    offset = sum(len(l) + 1 for l in lines[:line - 1]) + column - 1
+    return {'line': line, 'column': column, 'offset': offset,
+            'before': sql[max(0, offset - 90):offset], 'after': sql[offset:offset + 90]}
+
+
+# ---- runner ----------------------------------------------------------------
+class Runner:
+    def __init__(self, sql, observer, mapping, rewrite, folder):
+        self.sql, self.observer, self.mapping, self.rewrite = sql, observer, mapping, rewrite
+        self.folder, self.results = folder, []
+
+    def run(self, check, what, statement, binds=(), *, limit=5, values=()):
+        final = self.rewrite(statement, self.mapping)
+        item = {'check': check, 'what': what, 'sql_chars': len(final),
+                'sql_sha256': hashlib.sha256(final.encode()).hexdigest()[:16]}
+        (self.folder / (check + '.sql')).write_text(final + '\n', encoding='utf-8')
+        started = time.monotonic()
+        try:
+            rows = self.sql.query(final, list(binds), limit=limit)
+        except Exception as exc:
+            item['status'] = 'FAIL'
+            item['error'] = str(exc)[:300] if type(exc).__name__ in ('DPError', 'BudgetPause') else type(exc).__name__
+            item['response'] = self.observer.last
+            snippet = position_snippet(final, self.observer.last)
+            if snippet:
+                item['position'] = snippet
+        else:
+            item['status'] = 'PASS'
+            item['rows'] = len(rows)
+            first = rows[0] if rows else {}
+            if type(first.get('N')) is int:
+                item['N'] = first['N']
+            if isinstance(first.get('ITEMS'), str):
+                # Hash only: compares variant results without exposing document/unit IDs.
+                item['items_sha256'] = hashlib.sha256(first['ITEMS'].encode()).hexdigest()[:16]
+            for key in values:
+                value = first.get(key)
+                if isinstance(value, str) and SAFE_VALUE.fullmatch(value):
+                    item[key] = value
+                elif value is not None:
+                    item[key] = 'NON_STANDARD_VALUE'
+        item['seconds'] = round(time.monotonic() - started, 3)
+        self.results.append(item)
+        print(line_of(item), flush=True)
+        return item
+
+
+def line_of(item):
+    text = '[%s] %-4s %s' % (item['status'], item['check'], item['what'])
+    if item['status'] == 'PASS':
+        extra = ['rows=%d' % item.get('rows', 0)]
+        if 'N' in item:
+            extra.append('N=%d' % item['N'])
+        if 'items_sha256' in item:
+            extra.append('result=%s' % item['items_sha256'][:8])
+        extra += ['%s=%s' % (k, item[k]) for k in ('V', 'SESSION_USER', 'CURRENT_SCHEMA', 'DB_NAME') if k in item]
+        return text + '  ' + ' '.join(extra)
+    response = item.get('response') or {}
+    text += '\n        error: ' + item.get('error', '')
+    for line in response.get('oracle_lines') or []:
+        text += '\n        oracle: ' + line
+    position = item.get('position')
+    if position and position.get('offset') is not None:
+        text += '\n        at line %d col %d: ...%s<<HERE>>%s...' % (
+            position['line'], position['column'], position['before'][-60:], position['after'][:60])
+    return text
+
+
+def main(argv=None, *, client_factory=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--code-root')
+    parser.add_argument('--channel')
+    parser.add_argument('--release-id')
+    parser.add_argument('--term', default='정관')
+    parser.add_argument('--phrase', default='정관 변경')
+    parser.add_argument('--seconds', type=int, default=900)
+    args = parser.parse_args(argv)
+    os.environ.setdefault('GENOS_LOG_LEVEL', 'WARNING')
+    folder = Path.cwd() / ('ora22806-diagnostic-' + time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()) + '-' + uuid.uuid4().hex[:6])
+    report = {'format': FORMAT, 'python': sys.version.split()[0], 'writes': 0, 'retries': 0, 'model_calls': 0,
+              'env_present': {k: bool(os.environ.get(k, '').strip()) for k in (
+                  'DP', 'ORACLE_ORDS_SCHEMA', 'ORACLE_ORDS_CLIENT_ID', 'ORACLE_ORDS_CLIENT_SECRET',
+                  'ORACLE_ORDS_BASE_URL', 'LLMOPS_ORDS_BASE_URL', 'DP_QUERY_CHANNEL', 'DP_QUERY_RELEASE_ID')},
+              'table_mapping': os.environ.get('GENOS_ORACLE_TABLE_MAPPING', '').strip() or None}
+    runner = None
+    try:
+        folder.mkdir(mode=0o700)
+        report['folder'] = str(folder)
+        root, skipped = code_root(args.code_root)
+        report['code_root'], report['code_root_skipped'] = str(root), skipped
+        sys.path[:0] = [str(root / '02_BACKEND')]
+        if not report['table_mapping']:
+            os.environ['GENOS_ORACLE_TABLE_MAPPING'] = 'development_g19_1'
+            report['table_mapping'] = 'development_g19_1 (not set; diagnostic default)'
+        from semantic_runtime import oracle_dp
+        from semantic_runtime.oracle_query_state import StateSQL
+        from semantic_runtime.oracle_query_catalog import ROW, select_release
+        from semantic_runtime.oracle_query import Snapshot
+        from semantic_runtime.oracle_query_request import _request
+        from semantic_runtime.oracle_query_fulltext import UnitIndex
+        from semantic_runtime.oracle_silver_reads import rewrite
+        from semantic_runtime.physical_mapping import CONTRACT_COLUMNS
+
+        raw = (client_factory or oracle_dp.client_from_environment)()
+        report['transport'] = type(raw).__module__ + '.' + type(raw).__name__
+        mapping = getattr(raw, 'schema_map', None)
+        report['mapping_profile'] = getattr(mapping, 'profile', None)
+        print('ORA22806_DIAGNOSTIC transport=%s mapping=%s code_root=%s' % (
+            report['transport'], report['mapping_profile'], root), flush=True)
+        observer = Observer(raw)
+        sql = StateSQL(observer, binding=oracle_dp.environment_binding(),
+                       deadline=time.monotonic() + args.seconds, max_calls=150)
+        runner = Runner(sql, observer, mapping, rewrite, folder)
+        run = runner.run
+
+        # A. database and table facts
+        table = mapping.tables['SRCH_ROW']
+        owner, name = table['owner'], table['name']
+        col = {k: v['name'] for k, v in table['columns'].items()}
+        meta = [('o', owner, 'VARCHAR2'), ('t', name, 'VARCHAR2')]
+        run('A1', 'SELECT 1 FROM DUAL', 'SELECT 1 AS N FROM DUAL')
+        run('A2', 'session identity', "SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS SESSION_USER,"
+            "SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS CURRENT_SCHEMA,SYS_CONTEXT('USERENV','DB_NAME') AS DB_NAME FROM DUAL",
+            values=('SESSION_USER', 'CURRENT_SCHEMA', 'DB_NAME'))
+        run('A3', 'database version', "SELECT VERSION_FULL AS V FROM PRODUCT_COMPONENT_VERSION WHERE PRODUCT LIKE 'Oracle%' FETCH FIRST 1 ROWS ONLY", values=('V',))
+        run('A4', 'compatible parameter (may be not visible)', "SELECT VALUE AS V FROM V$PARAMETER WHERE NAME='compatible'", values=('V',))
+        run('A5', 'search-row object type', 'SELECT OBJECT_TYPE AS V,COUNT(*) OVER () AS N FROM ALL_OBJECTS WHERE OWNER=:o AND OBJECT_NAME=:t', meta, values=('V',))
+        run('A6', 'value column data type', 'SELECT DATA_TYPE AS V FROM ALL_TAB_COLUMNS WHERE OWNER=:o AND TABLE_NAME=:t AND COLUMN_NAME=:c',
+            meta + [('c', col['SRCH_DATA_CTNT'], 'VARCHAR2')], values=('V',))
+        run('A7', 'IS JSON columns on search-row table', 'SELECT COUNT(*) AS N FROM ALL_JSON_COLUMNS WHERE OWNER=:o AND TABLE_NAME=:t', meta)
+        run('A8', 'check constraints on search-row table', "SELECT COUNT(*) AS N FROM ALL_CONSTRAINTS WHERE OWNER=:o AND TABLE_NAME=:t AND CONSTRAINT_TYPE='C'", meta)
+        run('A9', 'row-level security policies on search-row table', 'SELECT COUNT(*) AS N FROM ALL_POLICIES WHERE OBJECT_OWNER=:o AND OBJECT_NAME=:t', meta)
+
+        # C. bind handling on DUAL only
+        doc = '["a"]'
+        run('C1', 'same VARCHAR2 bind name used 3 times', "SELECT COUNT(*) AS N FROM DUAL WHERE :x=:x AND :x='a'", [('x', 'a', 'VARCHAR2')])
+        run('C2', 'CLOB bind q_d + NUMBER bind q_d_n (prefix names)',
+            "SELECT CASE WHEN :q_d_n<=2 THEN 1 ELSE 0 END AS N FROM DUAL WHERE 'a' IN (SELECT j.v FROM JSON_TABLE(:q_d,'$[*]' COLUMNS(v VARCHAR2(10) PATH '$')) j)",
+            [('q_d', doc, 'CLOB'), ('q_d_n', 1, 'NUMBER')])
+        run('C3', 'same CLOB bind used twice in JSON_TABLE',
+            "SELECT COUNT(*) AS N FROM DUAL WHERE 'a' IN (SELECT j.v FROM JSON_TABLE(:q_d,'$[*]' COLUMNS(v VARCHAR2(10) PATH '$')) j) "
+            "AND 'a' IN (SELECT j.v FROM JSON_TABLE(:q_d,'$[*]' COLUMNS(v VARCHAR2(10) PATH '$')) j)", [('q_d', doc, 'CLOB')])
+        run('C4', 'JSON_ARRAYAGG RETURNING CLOB',
+            "SELECT COUNT(*) AS N,JSON_ARRAYAGG(JSON_ARRAY('a',1 NULL ON NULL RETURNING CLOB) RETURNING CLOB) AS ITEMS FROM DUAL")
+        run('C5', 'WITH nested inside FROM ( )', 'SELECT COUNT(*) AS N FROM (WITH a AS (SELECT 1 AS v FROM DUAL) SELECT v FROM a)')
+
+        # Setup: the same pinned release/index the serving request opens.
+        channel = args.channel or os.environ.get('DP_QUERY_CHANNEL', '').strip() or None
+        release = args.release_id or os.environ.get('DP_QUERY_RELEASE_ID', '').strip() or None
+        report['channel'], report['release_arg'] = channel, release
+        try:
+            selected = select_release(sql, release_id=release, channel=None if release else channel)
+            manifest = selected['manifest']
+            snapshot = Snapshot.open(sql, manifest['source_release_id'])
+            allowed = set(snapshot.manifest['scope']['document_version_ids']) - snapshot.excluded
+            request = _request(sql, selected['release_id'], selected['revision'], snapshot, manifest, allowed)
+            index = UnitIndex(request)
+        except Exception as exc:
+            report['setup_error'] = str(exc)[:300] if type(exc).__name__ in ('DPError', 'BudgetPause') else type(exc).__name__
+            report['setup_response'] = observer.last
+            raise SetupError('SETUP_RELEASE_OR_INDEX_FAILED')
+        report['release_id'] = request.release_id
+        report['documents'] = len(allowed)
+        posting, length = index.kinds['unit_fts_posting'], index.kinds['unit_fts_length']
+        print('SETUP release=%s documents=%d (release/manifest/stats reads passed)' % (request.release_id, len(allowed)), flush=True)
+
+        # B. JSON functions over the search-row CLOB column
+        tbl = owner + '.' + name
+        rk = [('r', request.release_id, 'VARCHAR2'), ('k', posting, 'VARCHAR2')]
+        rl = [('r', request.release_id, 'VARCHAR2'), ('k', length, 'VARCHAR2')]
+        where = 't.%s=:r AND t.%s=:k' % (col['RFRN_POST_HASH_VALU'], col['RFRN_DTA_TYPE_VALU'])
+        run('B1', 'JSON_VALUE on table column (direct table)',
+            "SELECT COUNT(*) AS N FROM (SELECT JSON_VALUE(t.%s,'$.tf' RETURNING NUMBER ERROR ON ERROR) AS tf FROM %s t WHERE %s FETCH FIRST 5 ROWS ONLY)"
+            % (col['SRCH_DATA_CTNT'], tbl, where), rk)
+        run('B2', 'JSON_VALUE on mapped column (double inline view, as MAIN165)',
+            "SELECT COUNT(*) AS N FROM (SELECT JSON_VALUE(p.VALUE_JSON,'$.tf' RETURNING NUMBER ERROR ON ERROR) AS tf FROM %s p "
+            'WHERE p.RELEASE_ID=:r AND p.KIND=:k FETCH FIRST 5 ROWS ONLY)' % ROW, rk)
+        run('B3', 'JSON_TABLE beside table column (direct table)',
+            "SELECT COUNT(*) AS N FROM (SELECT l.n FROM %s t,JSON_TABLE(t.%s,'$' COLUMNS(sid VARCHAR2(512) PATH '$.source_id',"
+            "n NUMBER PATH '$.length' ERROR ON ERROR)) l WHERE %s FETCH FIRST 5 ROWS ONLY)" % (tbl, col['SRCH_DATA_CTNT'], where), rl)
+        lengths = ("SELECT r.LOOKUP_ID AS k,l.sid,l.n FROM %s r,JSON_TABLE(r.VALUE_JSON,'$' COLUMNS(sid VARCHAR2(512) PATH '$.source_id',"
+                   "n NUMBER PATH '$.length' ERROR ON ERROR)) l WHERE r.RELEASE_ID=:r AND r.KIND=:k" % ROW)
+        run('B4', 'JSON_TABLE beside mapped column (double inline view, as MAIN165)',
+            'SELECT COUNT(*) AS N FROM (%s FETCH FIRST 5 ROWS ONLY)' % lengths, rl)
+        run('B5', "JSON_TABLE '$.positions[*]' beside mapped column",
+            "SELECT COUNT(*) AS N FROM (SELECT j.pos FROM %s p,JSON_TABLE(p.VALUE_JSON,'$.positions[*]' COLUMNS(pos NUMBER PATH '$' ERROR ON ERROR)) j "
+            'WHERE p.RELEASE_ID=:r AND p.KIND=:k FETCH FIRST 5 ROWS ONLY)' % ROW, rk)
+        run('B6', 'B4 inside WITH nested in FROM ( )',
+            'SELECT COUNT(*) AS N FROM (WITH lengths AS (%s) SELECT * FROM lengths FETCH FIRST 5 ROWS ONLY)' % lengths, rl)
+
+        # D. the full fulltext statement and one-change variants
+        def full(terms):
+            cte, binds = index._matches(terms, None, None)
+            if cte is None:
+                raise SetupError('NO_FTS_TOKENS')
+            statement = ('SELECT COUNT(*) AS N,CASE WHEN COUNT(*)<=2048 THEN '
+                         'JSON_ARRAYAGG(JSON_ARRAY(k,did,sid,score NULL ON NULL RETURNING CLOB) RETURNING CLOB) END AS ITEMS FROM (' +
+                         cte + 'SELECT k,did,sid,score FROM matches FETCH FIRST 2049 ROWS ONLY)')
+            return rewrite(statement, mapping), binds
+
+        single, single_binds = full([args.term])
+        run('D1', 'exact MAIN165 fulltext SQL, 1 word', single, single_binds, limit=1)
+        phrase, phrase_binds = full([args.phrase])
+        run('D2', 'exact MAIN165 fulltext SQL, phrase', phrase, phrase_binds, limit=1)
+        text, binds = transform_binds(single, single_binds, unique_names=True, clob_as_varchar=False)
+        run('D3', 'D1 with a new bind name at every position', text, binds, limit=1)
+        text, binds = transform_binds(single, single_binds, unique_names=False, clob_as_varchar=True)
+        run('D4', 'D1 with CLOB binds sent as VARCHAR2 pieces + TO_CLOB', text, binds, limit=1)
+        text, binds = transform_binds(single, single_binds, unique_names=True, clob_as_varchar=True)
+        run('D5', 'D1 with both (seungho style binds)', text, binds, limit=1)
+        n = mapping.names('query_row')
+        double = '(SELECT ' + n.select(*CONTRACT_COLUMNS['query_row'].split()) + ' FROM ' + n.table + ')'
+        if double in single:
+            run('D6', 'D1 with single-level inline view', single.replace(double, n.table), single_binds, limit=1)
+        else:
+            runner.results.append({'check': 'D6', 'status': 'SKIPPED', 'what': 'mapping projection not found'})
+            print('[SKIPPED] D6 mapping projection not found', flush=True)
+        jt = ("l.sid,l.n FROM %s r,JSON_TABLE(r.VALUE_JSON,'$' COLUMNS(sid VARCHAR2(512) PATH '$.source_id',"
+              "n NUMBER PATH '$.length' ERROR ON ERROR)) l " % rewrite('SELECT 1 FROM ' + ROW + ' r', mapping)[len('SELECT 1 FROM '):-2])
+        jv = ("JSON_VALUE(r.VALUE_JSON,'$.source_id' RETURNING VARCHAR2(512)) AS sid,"
+              "JSON_VALUE(r.VALUE_JSON,'$.length' RETURNING NUMBER ERROR ON ERROR) AS n FROM %s r "
+              % rewrite('SELECT 1 FROM ' + ROW + ' r', mapping)[len('SELECT 1 FROM '):-2])
+        if single.count(jt) == 1:
+            run('D7', 'D1 with lengths read by JSON_VALUE (no JSON_TABLE beside the column)', single.replace(jt, jv), single_binds, limit=1)
+        else:
+            runner.results.append({'check': 'D7', 'status': 'SKIPPED', 'what': 'lengths CTE text not found'})
+            print('[SKIPPED] D7 lengths CTE text not found', flush=True)
+        report['sql_calls'] = sql.calls
+        report['status'] = 'DONE'
+    except SetupError as exc:
+        report['status'] = exc.tag
+        if exc.detail is not None:
+            report['detail'] = exc.detail
+    except Exception as exc:
+        report['status'] = 'DIAGNOSTIC_ERROR'
+        report['error'] = str(exc)[:300] if type(exc).__name__ in ('DPError', 'BudgetPause', 'MappingError') else type(exc).__name__
+    if runner is not None:
+        report['checks'] = runner.results
+        report['failed'] = [c['check'] for c in runner.results if c['status'] == 'FAIL']
+    if folder.is_dir():
+        (folder / 'diagnostic.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    summary = {k: report.get(k) for k in ('status', 'failed', 'transport', 'mapping_profile', 'release_id', 'documents', 'sql_calls', 'folder')}
+    for key in ('setup_error', 'setup_response', 'error', 'detail'):
+        if key in report:
+            summary[key] = report[key]
+    final = 'ORA22806_DIAGNOSTIC_DONE ' + json.dumps(summary, ensure_ascii=False, sort_keys=True)
+    print(final, flush=True)
+    if folder.is_dir():
+        lines = [line_of(c) for c in report.get('checks', []) if c.get('status') != 'SKIPPED']
+        (folder / 'console.txt').write_text('\n'.join(lines + [final]) + '\n', encoding='utf-8')
+    return report
+
+
+if __name__ == '__main__':
+    main()

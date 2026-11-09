@@ -1,0 +1,63 @@
+{
+ "schema": "fts-ora22806-diagnosis-r2-validation-v1",
+ "created": "2026-11-06",
+ "field_r1": {
+  "run_utc": "2026-11-06T09:02:44Z..09:03:26Z",
+  "python": "3.11.15",
+  "code_files_mismatch": [],
+  "documents": 1649,
+  "sql_calls": 22,
+  "failed": [
+   "T1_V01_PRODUCTION_CALL",
+   "T1_V02_PROJECTION",
+   "T1_V06_MATCHES_COUNT",
+   "T1_V10_PROJECTION_NO_CLOB_BIND",
+   "T2_V01_PRODUCTION_CALL",
+   "T2_V02_PROJECTION",
+   "T2_V06_MATCHES_COUNT",
+   "T2_V10_PROJECTION_NO_CLOB_BIND"
+  ],
+  "passed": {
+   "T1_V03_POSTINGS": 1132,
+   "T1_V04_LENGTHS": 261166,
+   "T1_V07_JSONTABLE_CLOB_BIND": 1649,
+   "T2_V03_POSTINGS": 1349,
+   "T2_V04_LENGTHS": 261166,
+   "T2_V05_POSITIONS": 1726,
+   "T2_V07_JSONTABLE_CLOB_BIND": 1649,
+   "V11_ARRAYAGG_DUAL": 1,
+   "V12_NOTEBOOK_Q1_TEXT": 2049
+  },
+  "skipped": [
+   "T1_V08_V09",
+   "T2_V08_V09 (document list over 4000 bytes)"
+  ],
+  "ords_positions_captured": false,
+  "source": "user photos 2026-11-06 (terminal + result JSON)"
+ },
+ "hypothesis": "failing statements alone repeat bind names and carry NUMBER binds (q_documents_n int, q_average float)",
+ "deliverable": {
+  "file": "FTS_ORA22806_DIAG_R2.txt",
+  "sha256": "c9c7d5f6b290230cd25195fd46c4976b25137c4e128eb24e2b79853c8dbf2995",
+  "bytes": 18006
+ },
+ "source": {
+  "diag_b2.py": "65b9053eb59d56c2a0430ccb6484c5c2c6255bbd049e659a328720abbd386b49",
+  "build_diag_b.py": "affc72c5fe89fb6e3269c8a5ab4561042bd8a42a143534bcabbeeef3231f3777",
+  "test_diag_b2.py": "43352884009f4da5abd0c8bfa3373b2e2b3fe0dc92ed498389f33ef6896d88c3"
+ },
+ "local_tests": {
+  "passed": 2,
+  "failed": 0,
+  "semantic_runtime_from_main165": true,
+  "steps": 17,
+  "all_pass": true,
+  "sql_calls": 20,
+  "rewritten_counts_equal": true,
+  "sdk_response_error_capture": "ORA-22806 + Line 1 Column 77 captured from .json()"
+ },
+ "not_done": [
+  "field R2 run",
+  "code fix"
+ ]
+}

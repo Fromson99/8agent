@@ -676,7 +676,7 @@ def _normalize(data: dict[str, Any]) -> dict[str, Any]:
             if control in {"WARMUP", "WARMUP_STATUS"}:
                 return {"op": control.lower()}
         if api_type in {"LEGAL_AGENT", "ELS_QUERY"} and isinstance(body, dict):
-            is_workflow = bool(body.get("workflow_id")) or bool(re.match(r"^\s*대사\s*[:：]",str(body.get("question",body.get("q","")))))
+            is_workflow = bool(body.get("workflow_id")) or bool(re.match(r"^\s*(?:문서\s*)?대사\s*[:：]",str(body.get("question",body.get("q","")))))
             has_session = (isinstance(body.get('session_id'),str) and body['session_id'] not in ('','sess-anonymous')
                            and bool(body.get('team_id') or os.environ.get('TEAM_ID')))
             removed = {"channel", "memory_authorization"} if body.get("memory") is True or is_workflow or has_session else {"channel", "session_id", "request_id", "user_id", "memory_authorization"}
@@ -1141,9 +1141,21 @@ async def _service(config: dict, data: dict) -> dict[str, Any]:
             request=payload, events=events) if shared_root else nullcontext(None)
         with report_context as report:
             result = await _reported_dispatch(config, data, payload, question_body, started, report, request_id, api_type)
+            _oracle_sql_summary()
             obs.event(log, "request.returning",
                       duration_ms=int((time.perf_counter() - started) * 1000))
             return result
+
+
+def _oracle_sql_summary():
+    """One line per Oracle request: SQL sent, time, shared-row reuse (per-SQL lines are DEBUG)."""
+    from semantic_runtime.oracle_dp import enabled as dp_enabled
+    if not dp_enabled():
+        return
+    from semantic_runtime.oracle_query_service import sql_summary
+    summary = sql_summary()
+    if summary is not None:
+        obs.event(log, "oracle.sql.summary", **summary)
 
 
 async def _reported_dispatch(config, data, payload, question_body, started, report, request_id, api_type):

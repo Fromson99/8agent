@@ -11,6 +11,12 @@ from test_bounded_source_main import settings
 from test_legal_agent_double_harness import ROOT,BINDING
 from test_structure_first_search import structured_generation
 
+# The request-entry search field asks_definition exists from the definition-priority change on; older
+# code rejects it, so scripted entries carry it only when the loaded schema has it.
+from semantic_runtime.legal_agent import request_entry as _asks_entry
+import json as _asks_json
+ASKS_DEFINITION = {'asks_definition': True} if 'asks_definition' in _asks_json.dumps(_asks_entry.schema(model=True)) else {}
+
 @pytest.mark.parametrize('always_missing',[False,True])
 def test_omitted_scope_is_repaired_once_and_failure_budget_survives_restart(tmp_path,structured_generation,always_missing):
     question='모의승인규정 원문을 확인해 줘'
@@ -27,7 +33,7 @@ def test_omitted_scope_is_repaired_once_and_failure_budget_survives_restart(tmp_
             'search_scope_change':{'operation':'REPLACE','targets':[{'document':'모의승인규정','structure':None,'selection':None}],'user_quote':question}},
         'intent':{'purpose':'모의승인규정 원문 확인','concepts':['승인'],
             'issues':[{'id':'Q1','question':'모의승인규정 원문 확인','subject':'승인','kind':'OTHER','request_quote':question}]},
-        'context_quotes':[],'search':{'mode':'STRUCTURE','title_hint_ids':[],'reason':'문서 원문 조사'}}
+        'context_quotes':[],'search':{**ASKS_DEFINITION, 'mode':'STRUCTURE','title_hint_ids':[],'reason':'문서 원문 조사'}}
     scope=value['command'].pop('search_scope_change')
     value['search'].pop('title_hint_ids')
     value['search']['scope_decision']={'mode':'NAMED_SCOPE', 'targets':scope['targets'],

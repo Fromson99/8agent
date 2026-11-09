@@ -1,4 +1,4 @@
-"""Explicit G19 data ports and shared suffix-A Agent records for Oracle DP.
+"""Explicit G19 data ports and Agent records for Oracle DP (development profile).
 
 The immutable ingestion contract is code, not a SQL/DDL instruction source.
 Original row keys, hashes and publication identities remain unchanged.
@@ -22,6 +22,10 @@ PORTS = {
 }
 LOGICAL = {'DOC_VER': 'MNFST_HASH_VALU DOC_ID DOC_NAME DOC_HASH_VALU DOC_ADDN_IFMN_CTNT', 'DOC_UNIT': 'MNFST_HASH_VALU DOC_ID STRC_UNIT_ID UPPR_STRC_UNIT_ID STRC_UNIT_ADDN_IFMN_CTNT', 'DOC_BLK': 'MNFST_HASH_VALU DOC_ID BODY_SLC_ID STRC_UNIT_ID BODY_CTNT DOC_HASH_VALU BODY_SLC_ADDN_IFMN_CTNT ADD_INFO_TEXT_OMIT_YN', 'SRC_POST': 'DOC_POST_HASH_VALU MNFST_HASH_VALU DOC_POST_IFMN_CTNT RGSN_AITM', 'SRCH_POST': 'RFRN_POST_HASH_VALU RFRN_POST_IFMN_CTNT', 'SRCH_ROW': 'RFRN_POST_HASH_VALU RFRN_DTA_TYPE_VALU RFRN_DTA_ID DOC_ID RFRN_DTA_IDNF_CTNT BLNG_DTA_IDNF_CTNT TAGT_DTA_IDNF_CTNT SRCH_DATA_HASH_VALU SRCH_DATA_CTNT', 'SRCH_CHNL': 'RFRN_CHNL_NAME RFRN_POST_HASH_VALU CHAN_NO'}
 AGENTS = {'body': 'AGT_BODY', 'record': 'AGT_REC', 'run': 'AGT_RUN', 'state': 'EXEC_ST'}
+# Tables created new for the development E2E carry no layer suffix: ontology in
+# Silver, conversation by-products in the Agent layer. Existing G19 data keeps _S_1.
+UNSUFFIXED = {**{key: ('SIDDA', 'LGL_' + key) for key in AGENTS.values()},
+              **{key: ('SIDDS', 'LGL_G19_' + key) for key in ('ONTL_POST', 'ONTL_HEAD', 'ONTL_ANC')}}
 
 
 @dataclass(frozen=True)
@@ -39,13 +43,13 @@ class DevelopmentMapping:
         raw = Path(path).read_bytes()
         value = json.loads(raw)
         tables = value['tables']
-        if value['version'] != 'gold-development-agent-a-20261105-r1' or len(tables) != 17:
+        if value['version'] != 'gold-development-unsuffixed-new-20261106-r1' or len(tables) != 17:
             raise MappingError('DEV_G19_CONTRACT')
         for key, table in tables.items():
             identifier(table['owner']); identifier(table['name'])
-            if key in AGENTS.values():
-                if table['name'] != 'LGL_' + key + '_A':
-                    raise MappingError('DEV_G19_AGENT_TABLE')
+            if key in UNSUFFIXED:
+                if (table['owner'], table['name']) != UNSUFFIXED[key]:
+                    raise MappingError('DEV_G19_AGENT_TABLE' if key in AGENTS.values() else 'DEV_G19_NEW_TABLE')
             elif not table['name'].endswith('_1'):
                 raise MappingError('DEV_G19_SUFFIX')
             for column in table['columns'].values():

@@ -42,6 +42,23 @@ def install(app, pipeline, runtime, release, identity):
     return api.install(app, Services(pipeline, runtime, release), identity)
 
 
+UNBOUNDED_SECONDS = 10*365*24*3600
+UNBOUNDED_CALLS = 10**9
+
+# Oracle: a structure search without a document lists every unit of each document.
+
+def _generation_manifest_sha(store):
+    """SHA-256 of the generation manifest: the local file, or the pinned Oracle snapshot
+    (the publisher's dataset_version is that file's SHA-256, re-checked by Snapshot.open)."""
+    if hasattr(store, 'path'):
+        return sha(store.path/'manifest.json')
+    request = getattr(store, 'oracle_request', None)
+    if request is None:
+        raise ContractError('workflow store has no bound generation manifest')
+    return request.snapshot.dataset_version
+
+STRUCTURE_SEARCH_DOCUMENTS = 20
+
 class Services:
     ProposalError = ProposalError
     BudgetExhausted = BudgetExhausted
@@ -70,7 +87,7 @@ class Services:
             raise ContractError('workflow manifest is not bound by PIPELINE')
         binding = {'workflow':digest(manifest), 'request':digest(request),
                 'generation_id':store.manifest['generation_id'], 'store_sha256':store.manifest['store_sha256'],
-                'generation_manifest_sha256':sha(store.path/'manifest.json'),
+                'generation_manifest_sha256':_generation_manifest_sha(store),
                 'search_selection_sha256':getattr(getattr(store,'selection',None),'fingerprint',None),
                 'pipeline_sha256':sha(root/'00_SYSTEM/PIPELINE.json'),
                 'profile_sha256':digest(self.profile), 'release':self.release,
@@ -97,7 +114,7 @@ class Services:
         # for a verified reused result. No model call or artificial token delay.
         from .legal_agent.answer_stream import current_sink
         sink = current_sink()
-        if (sink is None or result.get('workflow_id') != 'risk_team_compare_workflow'
+        if (sink is None or result.get('workflow_id') not in ('risk_team_compare_workflow', 'risk_team_document_compare_workflow')
                 or result.get('status') not in {'completed', 'partial'}):
             return result
         if getattr(sink, 'started', False):
@@ -133,7 +150,13 @@ class Services:
         query = {'id':'workflow-query:'+run_id, 'question':request['question'] or '선택 내규 전체의 근거 외규 조사',
                  'generation_id':binding['generation_id'],
                  'scope':{'document_version_ids':request['document_ids']}}
-        seconds=min(self.profile['wall_seconds'],binding.get('execution_policy',{}).get('wall_seconds',self.profile['wall_seconds']))
+        policy=binding.get('execution_policy',{})
+        if policy.get('unbounded') is True:
+            # A whole-document comparison has no request time limit (user
+            # direction). A single long deadline keeps the existing clock code.
+            seconds=UNBOUNDED_SECONDS
+        else:
+            seconds=min(self.profile['wall_seconds'],policy.get('wall_seconds',self.profile['wall_seconds']))
         result = RequestContext.create(query, request, binding, seconds, run_id)
         if deadline_at:
             remaining = (datetime.fromisoformat(deadline_at)-datetime.now(timezone.utc)).total_seconds()
@@ -142,7 +165,14 @@ class Services:
 
     def journal(self, path, context):
         profile=dict(self.profile);policy=context.binding.get('execution_policy',{})
-        if policy:
+        if policy.get('unbounded') is True:
+            # No model-call or tool-call limit for this workflow (user direction).
+            # Each physical call keeps its own transport timeout and an unknown
+            # outcome is still never re-sent.
+            profile['max_model_attempts']=UNBOUNDED_CALLS
+            profile['max_tool_actions']=UNBOUNDED_CALLS
+            profile['finalization_reserve']=0
+        elif policy:
             profile['max_model_attempts']=min(profile['max_model_attempts'],policy['max_model_attempts'])
             profile['finalization_reserve']=min(max(profile['finalization_reserve'],policy['finalization_reserve']),
                                                max(0,profile['max_model_attempts']-1))
@@ -158,7 +188,7 @@ class Services:
     def phase_context(self, context, *, final=False):
         """One original end time: investigation cannot consume publication time."""
         policy=context.binding.get('execution_policy')
-        if not policy:return context
+        if not policy or policy.get('unbounded') is True:return context
         reserve=policy['publication_seconds'] if final else policy['finalization_seconds']
         # Shorter operator deadlines reserve a proportional share, never renew it.
         total=min(self.profile['wall_seconds'],policy['wall_seconds'])
@@ -169,7 +199,9 @@ class Services:
     @contextmanager
     def tools(self, work, context):
         # Dedicated read connection: request deadlines and SQL callbacks never leak.
-        store = Store(self.pipeline.store.path, verify=True)
+        # Oracle: the same pinned request store (no local generation files), as legal_agent_adapter.
+        store = (self.pipeline.store.reopen() if getattr(self.pipeline.store, 'is_oracle_query', False)
+                 else Store(self.pipeline.store.path, verify=True))
         try:
             if store.manifest != self.pipeline.store.manifest:
                 raise ContractError('workflow source binding changed')
@@ -450,13 +482,20 @@ class SourcePort:
             ids, nodes = [], []
             if operation == 'search_structure':
                 q = normalized(args['query'])
-                nodes = [(d,u) for (d,u),v in s.matcher.units.items()
+                units = s.matcher.units
+                if hasattr(units, 'children_for') and len(docs) > STRUCTURE_SEARCH_DOCUMENTS:
+                    raise ProposalError('search_structure needs a document when the scope has many documents')
+                rows = ((row for d in sorted(docs) for row in units.for_document(d)) if hasattr(units, 'for_document')
+                        else units.items())
+                nodes = [(d,u) for (d,u),v in rows
                          if d in docs and q in normalized(v.get('title','')+' '+v.get('surface',''))]
             else:
                 found = s.matcher.starts(args['query'],docs)
                 for row in found['structures']:
                     nodes.append((row['document_id'],row['unit_id']))
-                allowed = {sid for sid,source in s.tools.sources.items() if source['document_id'] in docs}
+                scoped = getattr(s.tools.sources, 'ids_for_documents', None)
+                allowed = (scoped(docs) if scoped is not None and hasattr(s.matcher.units, 'children_for') else
+                           {sid for sid,source in s.tools.sources.items() if source['document_id'] in docs})
                 from .fulltext import question_terms
                 if s.matcher.fulltext is not None:
                     ids = s.matcher.fulltext.rank(s.matcher.fulltext_db, question_terms(args['query']), allowed)

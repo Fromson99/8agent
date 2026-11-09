@@ -1,0 +1,27 @@
+<div style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>[GENOS] 처리 시간 보고 명령 R1 — 방금 질문에서 어디에 시간이 걸렸는지</b></p>
+<p>"내부 회계 관리자는 누가 지정하나요?"가 서버 처리 253.13초, 그중 모델 호출 5회가 19.25초였습니다.
+모델 밖 약 234초가 어디서 쓰였는지(Oracle SQL인지, 어느 단계인지) 나눠 보는 명령입니다.</p>
+<p><b>안전</b>: 코드서빙이 질문마다 공유 폴더에 자동으로 남기는 요청 보고서(JSON) 하나만 읽습니다.
+코드·워크플로우·DB·환경변수 변경 없음, 재배포·재시작 없음, Oracle 접속·모델 호출 없음.
+질문·답변·원문·SQL 본문은 화면에 나오지 않습니다(시각·시간·횟수·단계 이름·SQL 해시만).</p>
+<p><b>실행</b> — 첨부 <code>GENOS_TIME_REPORT_R1.txt</code>를 TRANSFER 폴더에 올리고, 그 폴더에서(이동하지 않고):</p>
+<pre style="background:#f4f4f4;padding:8px">bash ./GENOS_TIME_REPORT_R1.txt list
+bash ./GENOS_TIME_REPORT_R1.txt 1</pre>
+<p>첫 줄은 최근 요청 목록입니다. 서버 처리 "253.1초"인 줄의 번호를 두 번째 명령에 넣습니다(1번이면 번호 생략 가능).
+마지막 줄이 "종료=0"이면 완료입니다.<br>
+요청 보고서 위치가 기본(/nfs-root/diamo/8-agent/rag-request-reports)과 다르면 두 명령 끝에
+<code>--root /실제/GENOS_SHARED_LOG_DIR값</code>을 붙입니다.</p>
+<p><b>사진</b>: 화면 맨 위 "GENOS 처리 시간 보고 R1"부터 맨 아래 "종료=0"까지(보통 2~4장, 많아도 5장).
+같은 내용이 ./GENOS_TIME_REPORT_RESULTS/REPORT-날짜시각.txt 에도 저장됩니다.</p>
+<p><b>화면 구성</b><br>
+[1] 전체 시간 = 모델 호출 / Oracle SQL(횟수·1회 평균) / 그 외<br>
+[2] 순서대로 모델 호출(M)과 그 사이(G) 구간 시간, 긴 구간의 느린 SQL·단계·기록<br>
+[3] 시간 많이 쓴 SQL 종류 상위 3, 느린 SQL(1초 이상) 상위 10<br>
+[4] 시간 많이 쓴 단계 상위 12<br>
+[5] 기록 없이 흐른 긴 시간 상위 6<br>
+[6] 한 줄 판정</p>
+<p>오류: 종료=2는 위치·번호 문제(list와 --root 확인), 종료=3은 보고서 없음(방금 끝났으면 10~20초 뒤 다시).
+자세한 내용과 선택 단계(0.2초 이상 SQL까지 보기)는 GUIDE.txt에 있습니다.</p>
+<p>첨부: GENOS_TIME_REPORT_R1.txt(실행 파일, 압축 해제 불필요) · GUIDE.txt · VERIFICATION.json · SHA256SUMS.txt</p>
+</div>

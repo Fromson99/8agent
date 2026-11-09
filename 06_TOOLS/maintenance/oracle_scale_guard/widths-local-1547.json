@@ -1,0 +1,284 @@
+{
+ "navigation/navigation.sqlite:navigation_checkpoint": {
+  "rows": 41540,
+  "max_bytes": {
+   "stage": 16,
+   "item": 32,
+   "json": 38
+  },
+  "gold_max": {
+   "stage": 0,
+   "item": 0,
+   "json": 0
+  }
+ },
+ "navigation/navigation.sqlite:term": {
+  "rows": 245571,
+  "max_bytes": {
+   "id": 4490,
+   "json": 9148
+  },
+  "gold_max": {
+   "id": 4490,
+   "json": 9148
+  }
+ },
+ "navigation/navigation.sqlite:edge": {
+  "rows": 48101,
+  "max_bytes": {
+   "id": 64,
+   "json": 229
+  },
+  "gold_max": {
+   "id": 64,
+   "json": 229
+  }
+ },
+ "navigation/navigation.sqlite:source": {
+  "rows": 39992,
+  "max_bytes": {
+   "id": 32,
+   "document_id": 16,
+   "article": 16,
+   "json": 1733668
+  },
+  "gold_max": {
+   "id": 32,
+   "document_id": 16,
+   "article": 14,
+   "json": 508899
+  }
+ },
+ "navigation/navigation.sqlite:definition": {
+  "rows": 10727,
+  "max_bytes": {
+   "id": 82,
+   "document_id": 16,
+   "json": 25176
+  },
+  "gold_max": {
+   "id": 82,
+   "document_id": 16,
+   "json": 25038
+  }
+ },
+ "navigation/navigation.sqlite:reference_end": {
+  "rows": 252425,
+  "max_bytes": {
+   "source_id": 32,
+   "reference_id": 28
+  },
+  "gold_max": {
+   "source_id": 32,
+   "reference_id": 28
+  }
+ },
+ "navigation/navigation.sqlite:reference_target": {
+  "rows": 132903,
+  "max_bytes": {
+   "reference_id": 28,
+   "ordinal": 3,
+   "source_id": 32,
+   "unit_id": 4,
+   "unit_path": 26,
+   "block_ids": 2944,
+   "target_level": 9
+  },
+  "gold_max": {
+   "reference_id": 28,
+   "ordinal": 0,
+   "source_id": 32,
+   "unit_id": 4,
+   "unit_path": 26,
+   "block_ids": 664,
+   "target_level": 9
+  }
+ },
+ "navigation/navigation.sqlite:reference_candidate": {
+  "rows": 0,
+  "max_bytes": {
+   "reference_id": null,
+   "candidate_id": null,
+   "ordinal": null,
+   "source_id": null,
+   "unit_id": null,
+   "unit_path": null,
+   "block_ids": null,
+   "target_level": null,
+   "basis": null,
+   "json": null
+  },
+  "gold_max": {
+   "reference_id": 0,
+   "candidate_id": 0,
+   "ordinal": 0,
+   "source_id": 0,
+   "unit_id": 0,
+   "unit_path": 0,
+   "block_ids": 0,
+   "target_level": 0,
+   "basis": 0,
+   "json": 0
+  }
+ },
+ "navigation/navigation.sqlite:reference_candidate_end": {
+  "rows": 0,
+  "max_bytes": {
+   "source_id": null,
+   "reference_id": null,
+   "candidate_id": null
+  },
+  "gold_max": {
+   "source_id": 0,
+   "reference_id": 0,
+   "candidate_id": 0
+  }
+ },
+ "navigation/navigation.sqlite:source_unit_map": {
+  "rows": 216613,
+  "max_bytes": {
+   "source_id": 32,
+   "unit_id": 5,
+   "parent_id": 5,
+   "ordinal": 10,
+   "surface": 22,
+   "block_ids": 2096,
+   "family": 18
+  },
+  "gold_max": {
+   "source_id": 32,
+   "unit_id": 5,
+   "parent_id": 5,
+   "ordinal": 9,
+   "surface": 22,
+   "block_ids": 1488,
+   "family": 12
+  }
+ },
+ "navigation/navigation.sqlite:document_frame": {
+  "rows": 1547,
+  "max_bytes": {
+   "document_id": 16,
+   "json": 74
+  },
+  "gold_max": {
+   "document_id": 16,
+   "json": 73
+  }
+ },
+ "navigation/navigation.sqlite:reference_body": {
+  "rows": 64874,
+  "max_bytes": {
+   "sha256": 64,
+   "text": 96699
+  },
+  "gold_max": {
+   "sha256": 64,
+   "text": 8094
+  }
+ },
+ "navigation/navigation.sqlite:reference_payload": {
+  "rows": 146081,
+  "max_bytes": {
+   "id": 28,
+   "document_id": 16,
+   "json": 52528
+  },
+  "gold_max": {
+   "id": 28,
+   "document_id": 16,
+   "json": 52528
+  }
+ },
+ "navigation/navigation.sqlite:occurrence_keys": {
+  "rows": 6025268,
+  "max_bytes": {
+   "term_key": 6,
+   "source_key": 5
+  },
+  "gold_max": {
+   "term_key": 0,
+   "source_key": 0
+  }
+ },
+ "navigation/navigation.sqlite:term_surface": {
+  "rows": 210431,
+  "max_bytes": {
+   "term_id": 4490,
+   "key": 293,
+   "text": 318,
+   "kind": 23
+  },
+  "gold_max": {
+   "term_id": 4490,
+   "key": 284,
+   "text": 309,
+   "kind": 23
+  }
+ },
+ "navigation/navigation.sqlite:source_literal": {
+  "rows": 39992,
+  "max_bytes": {
+   "id": 32,
+   "document_id": 16,
+   "text": 667129
+  },
+  "gold_max": {
+   "id": 32,
+   "document_id": 16,
+   "text": 220984
+  }
+ },
+ "navigation/navigation.sqlite:reference_witness_count": {
+  "rows": 75530,
+  "max_bytes": {
+   "source_id": 32,
+   "block_id": 5,
+   "source_text_sha256": 64,
+   "n": 3
+  },
+  "gold_max": {
+   "source_id": 32,
+   "block_id": 5,
+   "source_text_sha256": 64,
+   "n": 0
+  }
+ },
+ "navigation/navigation.sqlite:term_stats": {
+  "rows": 86325,
+  "max_bytes": {
+   "term_id": 4490,
+   "n": 5
+  },
+  "gold_max": {
+   "term_id": 4490,
+   "n": 0
+  }
+ },
+ "navigation/navigation.sqlite:definition_reference": {
+  "rows": 635,
+  "max_bytes": {
+   "definition_id": 82,
+   "reference_id": 28
+  },
+  "gold_max": {
+   "definition_id": 82,
+   "reference_id": 28
+  }
+ },
+ "fulltext/units.sqlite:unit": {
+  "rows": 255806,
+  "max_bytes": {
+   "key": 43,
+   "source_id": 32,
+   "document_id": 16,
+   "json": 177458
+  },
+  "gold_max": {
+   "key": 43,
+   "source_id": 32,
+   "document_id": 16,
+   "json": 36531
+  }
+ }
+}

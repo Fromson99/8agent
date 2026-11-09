@@ -1,0 +1,205 @@
+{
+  "main_generation": 176,
+  "release_id": "agent-roundtrips-20261107-r1",
+  "release_manifest_sha256": "c0b987916a16c31629e9a92a4eea7aed8a2b89b0e60fe6785af0b674ef1e2346",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "agent-roundtrips-20261107-r1",
+    "generation": 176,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/agent-roundtrips-20261107-r1/release.json",
+    "release_manifest_sha256": "c0b987916a16c31629e9a92a4eea7aed8a2b89b0e60fe6785af0b674ef1e2346",
+    "activated_at": "2026-11-07T02:18:00.407479+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "163b5606c0be9e1a0a1602b12cac62e3188ca0004c904b4998284678cb7c7928"
+  },
+  "serving_files": 544,
+  "replaces": {
+    "main175": {
+      "release_id": "published-ontology-20261107-r1",
+      "sent_gmail_id": "1a1b399db3c3c0a0"
+    },
+    "field_state_assumed": "MAIN173 (document-compare-20261107-r1) or MAIN175"
+  },
+  "changed_vs_main175": {
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "809fb864d3352499a5fa7e51e02e020453117ecb6832c2f280f4e92417450202",
+      "02_BACKEND/semantic_runtime/oracle_agent_records.py": "9c1d2060706e7360039b853053b7c77d95eb0fc91b1d909d7e677ea7183b2cfb",
+      "02_BACKEND/semantic_runtime/oracle_query.py": "f50c07dff26ea4b3455ab757277bbf04696d7578cf756ec5cc1c80aa647c4b87",
+      "02_BACKEND/semantic_runtime/oracle_query_service.py": "efc16dcb254ddb4fda62770c90fee3e047812915935deb59ec1ec8b9daac98ec",
+      "02_BACKEND/semantic_runtime/oracle_runtime_paths.py": "73655b5b16476b38b6fad2cbed7013c41dd349ba2a499bff053e7fb9b00ab530",
+      "02_BACKEND/semantic_runtime/request_report.py": "29fb0004a378d2c137bc0ca01f881b2e56131079bb9de7179d97dbba6b51f436"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "643 -> 643",
+    "new_environment_variables": 0,
+    "workflow_file_changed": false
+  },
+  "changed_vs_main173_field": {
+    "files": 40,
+    "products": [
+      "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "02_BACKEND/semantic_runtime/ontology_work/configuration.py",
+      "02_BACKEND/semantic_runtime/oracle_agent_records.py",
+      "02_BACKEND/semantic_runtime/oracle_query.py",
+      "02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "02_BACKEND/semantic_runtime/oracle_runtime_paths.py",
+      "02_BACKEND/semantic_runtime/request_report.py"
+    ]
+  },
+  "field_basis": {
+    "report": "GENOS_TIME_REPORT_R1 photo, financial request 09:34 KST, server 276.1 s",
+    "sql": "5,258 SQL 147.7 s; top families mapped to AgentRecords._parts 871x45.5 s, commit 353x37.8 s, put_bodies 834x19.5 s",
+    "mapping_record": "09_ARTIFACTS/AUDITS/20261107-sql-family-map/결과.txt"
+  },
+  "changes": {
+    "body_writes": "parts and manifests in one ordered write stream (100 rows per acknowledged transaction); a body with no stored part before the write is not read back after the acknowledgement (rows are inserted or byte-equal, a different representation raises AGENT_BODY_COLLISION in the statement); resumed bodies are still read back",
+    "commit": "fresh body rows (<=100) are inserted inside the commit transaction; no receipt re-read after an acknowledged commit, a replayed operation must carry the same receipt (checked in the statement, -20046); unknown outcome: one reconciliation read as before, never a resend; large or resumed bodies keep write-then-confirm before the commit",
+    "file_writes": "oracle_runtime_paths.write_file stores the file bytes with the head commit (one transaction)",
+    "logs": "oracle.sql.summary adds sql_sites (top 12 call sites: Agent method <- caller), sql_site_count, agent_ms, agent_calls (commit/body_write/body_read/lease_acquire/lease_release), request_cpu_ms; model.attempt.started/received carry sql_count_total, sql_ms_total, agent_ms_total, cpu_ms_total (per-segment split); no new per-SQL log line",
+    "time_report_r2": "reads the new fields (per-gap SQL/Agent/CPU/rest, call sites, Agent calls) and names known SQL hashes; older reports still print the R1 view"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 82,
+      "candidate_counts": {
+        "passed": 1065,
+        "failed": 195,
+        "error": 9,
+        "skipped": 3
+      },
+      "new_failures": 0,
+      "fixed": 7,
+      "same_failures": 204
+    },
+    "real_oracle_record_tests": "adr_1242/1261/1246 (29 passed, 1 NFS-mount environment failure on both) + 7 new round-trip tests (MAIN175 7 failed, MAIN176 7 passed)",
+    "one_question_real_oracle_records": {
+      "question": "모의승인규정 제1조의 승인 대상은? (scripted model, 7 calls, answer HTTP200 both)",
+      "setup": "real local Oracle 23.26.3, every Agent record (journal/memory/progress/files) in SIDDA *_A tables via the adr_1242 bridge; sources from the local generation",
+      "round_trips": {
+        "main175": 1386,
+        "main176": 896
+      },
+      "by_kind": {
+        "body_read": {
+          "main175": 256,
+          "main176": 127
+        },
+        "body_write": {
+          "main175": 256,
+          "main176": 11
+        },
+        "clock": {
+          "main175": 124,
+          "main176": 124
+        },
+        "commit": {
+          "main175": 116,
+          "main176": 116
+        },
+        "lease_write": {
+          "main175": 248,
+          "main176": 248
+        },
+        "other": {
+          "main175": 2,
+          "main176": 2
+        },
+        "receipt_read": {
+          "main175": 116,
+          "main176": 0
+        },
+        "state_read": {
+          "main175": 268,
+          "main176": 268
+        }
+      },
+      "ms_by_kind": {
+        "body_read": {
+          "main175": 333,
+          "main176": 150
+        },
+        "body_write": {
+          "main175": 447,
+          "main176": 27
+        },
+        "clock": {
+          "main175": 61,
+          "main176": 73
+        },
+        "commit": {
+          "main175": 336,
+          "main176": 477
+        },
+        "lease_write": {
+          "main175": 380,
+          "main176": 434
+        },
+        "other": {
+          "main175": 4,
+          "main176": 1
+        },
+        "receipt_read": {
+          "main175": 56,
+          "main176": 0
+        },
+        "state_read": {
+          "main175": 135,
+          "main176": 153
+        }
+      },
+      "elapsed_ms": {
+        "main175": 2437,
+        "main176": 1985
+      },
+      "answers": {
+        "main175": [
+          200,
+          "CLARIFY",
+          true
+        ],
+        "main176": [
+          200,
+          "CLARIFY",
+          true
+        ]
+      },
+      "oracle_errors": {
+        "main175": [],
+        "main176": []
+      }
+    },
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "entry_checks": "17/17 + six product files byte-equal",
+    "installer": {
+      "base": "MAIN173 document-compare-20261107-r1 with the R4 reader in configuration.py",
+      "commands": 15,
+      "passed": true
+    },
+    "time_report_r2": "11 tests on Python 3.11.15 and 3.9.25 (synthetic field-shaped report with counters, MAIN175/MAIN176 local measured reports, delivered TXT from a TRANSFER-like folder)"
+  },
+  "package": {
+    "zip": "MAIN176_FULL_20261107_R1.zip",
+    "zip_sha256": "0d6fafda9caf25ba724cd7f5a69f65ad6967bc2ba7f1e6993ef89ef9e39b68e6",
+    "members": 555,
+    "workflow": "MAIN176_WORKFLOW.py",
+    "time_report": {
+      "file": "GENOS_TIME_REPORT_R2.txt",
+      "sha256": "22dd6d9aed805d3bc98f7c870d340c79858245a7aa89c0c9d6efed831fbf9929"
+    }
+  },
+  "not_verified": [
+    "field ORDS latency and field seconds saved (local round-trip counts only)",
+    "real model (Qwen or GENOS internal)",
+    "Agent lease round trips (clock + state read + write + release per transaction) are unchanged in this release"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

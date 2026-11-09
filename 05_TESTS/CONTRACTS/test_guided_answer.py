@@ -52,14 +52,15 @@ def test_native_final_stage_once_then_compose_and_cached_repeat():
     cc.verify_composition(a,out)
     assert not any('repair' in p or 'review' in p for p,_ in calls)
 
-@pytest.mark.parametrize('fault',['foreign_evidence','missing_issue','empty','duplicate'])
+# A repeated reference ID is normalized (order kept) and recorded since 2026-11-08
+# (test_named_article_reads.py); it is no longer a rejected proposal.
+@pytest.mark.parametrize('fault',['foreign_evidence','missing_issue','empty'])
 def test_invalid_proposal_asks_without_repair_or_publishing_rejected_text(fault):
     v=value()
     v['answer_points'][0]['text']='모의규정 제1조에 따르면 거래 금액이 100 이상이면 A유형입니다.'
     if fault=='foreign_evidence':v['answer_points'][0]['evidence_refs']=['FOREIGN']
     if fault=='missing_issue':v['answer_points'][0]['issue_refs']=[]
     if fault=='empty':v={'answer_points':[],'open_questions':[]}
-    if fault=='duplicate':v['answer_points'][0]['issue_refs']=['Q1','Q1']
     sources=deepcopy(SOURCES)
     e,calls=execution(v);a=g.assess(e,sources,ISSUES,'어느 유형인가요?',[])
     assert len(calls)==1 and a['claims']==[] and a['guided_reply']['needs_guidance']

@@ -1,0 +1,44 @@
+과제3·5 외규 온톨로지 R4 재실행 — "Previous patch receipt exists" 오류 대응 (2026-11-07)
+
+현장 오류
+  TRANSFER에서 bash GENOS_EXTERNAL_SQLITE_R4.txt 실행 시 genos_install.py:99에서
+  ValueError: Previous patch receipt exists; use its rollback or a fresh output directory
+
+원인 (고장 아님, 설치기가 일부러 멈춘 것)
+  - R4는 ~/DEV 코드에 연결 패치를 넣습니다: ontology_work/configuration.py 1줄 + 이 파일을 고정한
+    엔진 핀·PIPELINE.json 31개 (총 32파일).
+  - 이 패치는 MAIN 릴리스에 들어 있지 않습니다(MAIN157~174 모두 패치 전 파일).
+    그래서 11/5 R4 설치 뒤 MAIN 전체 코드를 덮어쓸 때 패치가 빠졌습니다.
+  - 다시 패치하려 했는데 기존 결과 폴더 EXTERNAL_R4_RESULT에 11/5 설치 때 백업(code-before.json)이
+    남아 있어, 그 백업을 덮어쓰지 않으려고 멈췄습니다.
+
+조치 — 결과 폴더만 새로 지정해서 다시 실행 (TRANSFER에서)
+  cd ~/DEV/TRANSFER
+  IT35_OUT=$HOME/DEV/TRANSFER/EXTERNAL_R4_RESULT_2 bash GENOS_EXTERNAL_SQLITE_R4.txt
+  - 같은 ZIP(INTEGRATION_EXTERNAL_B03_B05_R4.zip)과 TXT를 그대로 씁니다. 새 파일은 필요 없습니다.
+  - 다른 generation을 쓰던 경우에는 그때와 같이 IT35_GENERATION='<경로>' 를 앞에 함께 붙입니다.
+  - 끝에 CHECKOUT_ONTOLOGY_READY 와 GENOS_EXTERNAL_ONTOLOGY_PREPARED 가 나오면 완료입니다.
+  - NFS의 온톨로지 DB(generation/ontology/integration-external-b03-b05-r4)는 이미 있는 것을 그대로 재사용합니다.
+
+다음 (기존 R4 GUIDE 5~6단계와 같음)
+  1) ~/DEV에서 git diff --check, git diff로 바뀐 32파일 확인 후 commit (다른 staged 변경과 섞지 않음)
+  2) 게이트 — 새 결과 폴더의 DEPLOY_CODE.zip 사용:
+     python3 ~/DEV/06_TOOLS/COMMANDS/genos_release_gate.py --code-zip ~/DEV/TRANSFER/EXTERNAL_R4_RESULT_2/DEPLOY_CODE.zip --deploy-root ~/DEV --generation '<실제 GENOS_GENERATION 절대경로>'
+  3) push 후 새 코드서빙 리비전. 환경변수는 이전과 같음:
+     DP=nfs
+     GENOS_RAG_ONTOLOGY_ENABLED=on
+     GENOS_RAG_ONTOLOGY_CONFIG=<실행 끝에 출력된 runtime_config.json 경로>
+
+주의
+  - 옛 EXTERNAL_R4_RESULT 폴더의 원복(--rollback-code)은 쓰지 않습니다(예전 코드 기준 백업).
+  - 앞으로 MAIN 전체 코드를 덮어쓸 때마다 이 패치가 다시 빠집니다.
+    그때마다 결과 폴더 이름을 바꿔(_3, _4 …) 같은 명령을 다시 실행합니다.
+  - 이 R4 설정은 DP=nfs(SQLite generation) 코드서빙용입니다. 개발계 Oracle(DP=oracle) 서빙에는 적용되지 않습니다.
+
+로컬 확인 (MAIN174 코드 사본 + 원문 generation 사본, 전달 ZIP/TXT 그대로) — LOCAL_REPLAY_RESULT.json
+  1) 첫 설치: 종료0, 32파일 패치, CHECKOUT_ONTOLOGY_READY
+  2) 32파일을 MAIN174 원본으로 덮어씀 (현장 MAIN 설치 재현)
+  3) 같은 결과 폴더로 재실행: 종료1, 현장과 같은 오류
+  4) 새 결과 폴더: 종료0, 첫 설치와 같은 32파일·같은 코드 해시, 14묶음/29경로, 온톨로지 DB·원문 generation 그대로
+  5) 새 폴더로 한 번 더: 종료0
+  현장 실행·코드서빙 응답은 미확인입니다.

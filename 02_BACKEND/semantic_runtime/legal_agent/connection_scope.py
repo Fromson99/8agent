@@ -455,7 +455,9 @@ def offer_choices(inv, data, actions):
             shown_directories.add(directory_key(scope))
             shown = inline_cards(inv, scope, refs, visible, actions)
             if guided_roles:
-                shown = list_only_incoming(shown, actions, listed)
+                from .guided_navigation import question_terms
+                shown = list_only_incoming(shown, actions, listed, question_terms(getattr(inv, 'question', '') or ''))
+                remember_list_only(inv, listed)
             for card in shown:
                 card['target_source_refs']=[p['id'] for p in data.get('sources',[])
                     if p.get('source_id')==card['target']['source_id'] and
@@ -912,12 +914,31 @@ ROLE_LABELS = {'SPECIFIES': '구체화', 'EXCEPTION': '특칙·예외', 'MUTATIS
                'TRANSITIONAL': '부칙 경과·적용례'}
 
 
-def list_only_incoming(cards, actions, listed):
-    """Guided reading keeps forward and pair links; reuse/extension stays a count."""
+def heading_terms(text):
+    """Content words of an article heading, for a same-subject check; never a legal meaning."""
+    from .guided_navigation import question_terms
+    return {t for t in question_terms(text or '') if len(t) >= 2 and t not in HEADING_GENERIC}
+
+
+HEADING_GENERIC = {'규정', '규칙', '기준', '정의', '목적', '적용', '범위', '특례', '특칙', '예외', '벌칙', '과태료', '위임', '준용', '기타', '사항', '조치', '절차', '방법'}
+
+
+def same_subject(card, terms=()):
+    """An incoming citation whose article heading shares a content word with the cited
+    article's heading or with the user's question names the same subject (벤처기업법 제16조의3
+    주식매수선택권 ← 제16조의5 주식매수선택권의 행사). Such an article stays selectable instead
+    of being counted away as reuse; it is not read automatically and proves nothing."""
+    target = heading_terms(((card.get('target') or {}).get('heading') or '') + ' ' + (card.get('heading') or ''))
+    anchor = heading_terms((card.get('anchor') or {}).get('heading') or '')
+    return bool(target & (anchor | {t for t in terms if len(t) >= 2}))
+
+
+def list_only_incoming(cards, actions, listed, terms=()):
+    """Guided reading keeps forward, pair and same-subject links; other reuse stays a count."""
     from .citation_roles import PAIR_ROLES
     kept = []
     for card in cards:
-        if card['direction'] == 'OUTGOING' or card.get('citation_role') in PAIR_ROLES:
+        if card['direction'] == 'OUTGOING' or card.get('citation_role') in PAIR_ROLES or same_subject(card, terms):
             kept.append(card)
         else:
             listed.append(card)
@@ -927,6 +948,21 @@ def list_only_incoming(cards, actions, listed):
         if ident and ident not in used:
             actions.pop(ident, None)
     return kept
+
+
+def remember_list_only(inv, listed):
+    """Keep identities of not-offered incoming links for the answer's unread notes."""
+    saved = inv.p.setdefault('list_only_connections', {})
+    for card in listed:
+        target = card.get('target') or {}
+        scope = card.get('target_scope') or {}
+        key = digest([card.get('reference_id'), target.get('source_id'), scope.get('unit_id')])
+        if key in saved or len(saved) >= 60:
+            continue
+        saved[key] = {'role': card.get('citation_role') or 'BORROWS', 'anchor_label': (card.get('anchor') or {}).get('heading', ''),
+            'identity': {'source_id': target.get('source_id'), 'document_id': target.get('document_id'), 'unit_id': scope.get('unit_id')},
+            'block_ids': list(scope.get('block_ids') or []), 'label': ' '.join(dict.fromkeys(((card.get('coordinate') or '') + ' ' + (target.get('heading') or '')).split())),
+            'witness': (card.get('reference_witness') or {}).get('text', '')[:200] if isinstance(card.get('reference_witness'), dict) else ''}
 
 
 def incoming_summary(listed):
@@ -965,19 +1001,320 @@ def chain_rows(directory, *, forward_only):
             [r for r in rows if not r['outgoing']][:CHAIN_LIMITS['pair_incoming']])
 
 
-def acquire_role_chain(inv, scope, directory, *, depth=1):
-    """Guided automatic reading without another model hop.
+SECTION_LIMITS = {'articles': 10, 'reads': 2, 'preview_chars': 600}
+REASON_TEXT = {  # (clause, judged_unneeded)
+    'ROLE_CHAIN_CHARACTER_LIMIT': ('이번 요청의 자동 읽기 분량 한도(12,000자)를 넘어서', False),
+    'CHAIN_COUNT_LIMIT': ('자동으로 읽는 연결 수 한도(정방향 6개·구체화/예외 3개)를 넘어서', False),
+    'TOOL_ACTION_LIMIT': ('이번 요청의 도구 실행 한도에 닿아서', False),
+    'OUTSIDE_DIRECT_SEARCH_SCOPE': ('사용자가 지정한 검색 범위 밖이라서', False),
+    'TARGET_UNAVAILABLE': ('원문 조회가 완료되지 않아서', False),
+    'NO_EXECUTABLE_ENDPOINT_SCOPE': ('읽을 수 있는 원문 범위가 확인되지 않아서', False),
+    'SECTION_TERMS_NOT_MATCHED': ('같은 절 조문이지만 앞부분에 절 제목의 핵심 표현이 함께 나오지 않아서', True),
+    'SECTION_READ_LIMIT': ('같은 절 자동 읽기 한도(2개)를 넘어서', False),
+    'SECTION_TOO_LARGE': ('조문이 많은 절이라 같은 절 자동 읽기 대상에서 빠져서', False),
+    'SAME_SUBJECT_INCOMING': ('현재 조문을 인용하는 같은 제도의 조문이라 자동 읽기 대상은 아니지만 필요하면 바로 읽을 수 있어서', False)}
 
-    Depth 1 reads the selected scope's forward citations and the incoming
-    citations that specify or except its rule. Depth 2 follows only the forward
-    citations of originals reached through such a pair, so landing on either
-    side of a rule/exception pair yields the same originals. A request shares
-    one character budget; all other links remain cards or counts.
-    """
+
+def _chain_read(inv, row, attempts, budget, identity, hit, offer, *, reason, meta, char_limit=None):
+    """One automatic read through the normal reader; returns (group_id, material) or None."""
     from . import law_candidates as lc, tool_availability as av
     from .definition_context import record_failure
     from .errors import BudgetExhausted
     from .request_repair import recoverable_tool_failure
+    rid = digest([ROLE_CHAIN, inv.p['binding'], sorted(inv.s.scope), identity, offer])
+    if rid in attempts:
+        prior = attempts[rid]
+        if prior.get('group_id'):
+            row['groups'] = list(dict.fromkeys(row['groups'] + [prior['group_id']]))
+        if prior['status'] == 'COMPLETE':
+            return prior.get('group_id'), inv.p['selected'].get(prior.get('group_id'))
+        return None
+    sequences = [(hit, offer), *av.context_plans(inv.s, hit, offer)]
+    added, calls = av.sequence_cost(inv.s, sequences, inv.s.repo.evidence())
+    code = ('ROLE_CHAIN_CHARACTER_LIMIT' if budget['chars'] + added > (char_limit or CHAIN_LIMITS['chars']) else
+            av.budget_reason(inv.s, added, calls, inv.p['read_state']))
+    if code:
+        row['skipped'].append({**meta, 'identity': identity, 'block_ids': list(offer['block_ids']), 'reason': code})
+        return None
+    target = attempts.setdefault(rid, {'status': 'RESERVED', 'identity': identity, 'offer_hash': digest(offer),
+        'meta': deepcopy(meta), 'group_id': None})
+    stage = 'READ'; gid = None
+    try:
+        checked, unavailable = av.article_plan(inv.s, identity)
+        if unavailable:
+            raise ContractError('automatic connection endpoint changed: ' + unavailable)
+        checked_hit, checked_offer = checked
+        if set(checked_offer['block_ids']) != set(offer['block_ids']):
+            raise ContractError('automatic connection endpoint extent changed')
+        from .query_scope import action_allowed
+        if not action_allowed(inv.s, 'READ_ARTICLES', identity):
+            target.update(status='FAILED', reason='OUTSIDE_DIRECT_SEARCH_SCOPE')
+            row['skipped'].append({**meta, 'identity': identity, 'block_ids': list(offer['block_ids']), 'reason': 'OUTSIDE_DIRECT_SEARCH_SCOPE'})
+            return None
+        material = ur.read(inv.s, checked_hit, checked_offer, action_state=inv.p['read_state'])
+        if not material['complete']:
+            raise ContractError('automatic connection read incomplete')
+        inv.add_reads([{**material, 'hit': checked_hit}])
+        gid = lc.token(inv.s, 'B', [hit['source_id'], lc.parent_offer(inv.s, checked_hit)['id']])
+        target['group_id'] = gid
+        stage = 'CONTEXT'
+        inv.register_read(inv.p['groups'][gid], material, reason=reason)
+        target['status'] = 'COMPLETE'
+        budget['chars'] += added
+        row['groups'] = list(dict.fromkeys(row['groups'] + [gid]))
+        row['reads'].append({**meta, 'identity': identity, 'chars': added})
+        inv.s.repo.event('ROLE_CHAIN_ORIGINAL_ACQUIRED', {**meta, 'group_id': gid, 'identity': identity,
+            'automatic_adoption': False, 'model_called': False})
+        return gid, material
+    except (BudgetExhausted, TimeoutError, ToolExecutionError, sqlite3.OperationalError) as error:
+        if not isinstance(error, BudgetExhausted) and recoverable_tool_failure(error) is None:
+            raise
+        target.update(status='PARTIAL' if gid else 'FAILED', reason=type(error).__name__)
+        row['skipped'].append({**meta, 'identity': identity, 'block_ids': list(offer['block_ids']), 'reason': 'TARGET_UNAVAILABLE'})
+        if record_failure(inv, error, stage=stage, identity=identity, offer=offer, group_id=gid,
+                anchor_key=meta.get('directory'), origin='ROLE_CHAIN', revision=ROLE_CHAIN) == 'STOP':
+            raise
+        return None
+
+
+UNREAD_LIMITS = {'entries': 30, 'text_chars': 1500}
+RELATION_TEXT = {'SPECIFIES': '규칙을 구체화하는 조문(역방향)', 'EXCEPTION': '특칙·예외 조문(역방향)',
+    'MUTATIS': '이 조문을 준용하는 조문(역방향)', 'BORROWS': '이 조문을 기준으로 인용하는 조문(역방향)',
+    'TRANSITIONAL': '부칙 경과 규정(역방향)', 'SAME_SECTION': '같은 절의 조문', None: '인용한 조문(정방향)'}
+LIST_ONLY_REASON = {
+    'MUTATIS': '다른 대상에 이 조문을 준용하는 규정이라 지금 질문의 기준을 바꾸지 않는 것으로 보아서',
+    'BORROWS': '다른 제도가 이 조문을 기준으로 빌려 쓰는 규정이라 지금 질문의 기준을 바꾸지 않는 것으로 보아서',
+    'TRANSITIONAL': '개정 전후의 적용 시기를 정하는 부칙이라 지금 기준 설명에는 필요하지 않다고 보아서'}
+
+
+def document_name(session, did):
+    """Registered catalogue name of one document, or '' when the port has none."""
+    try:
+        return str(session.matcher.documents[did] or '')
+    except (AttributeError, KeyError, TypeError):
+        return ''
+
+
+def section_level(heading):
+    """"제4장 내부통제 …" -> 장; the structure word of a heading (편/장/절/관), 절 when absent."""
+    import re
+    m = re.match(r'^\s*제\d+(?:의\d+)?\s*(편|장|절|관)', heading or '')
+    return m.group(1) if m else '절'
+
+
+def article_label(text):
+    """"제433조 정관변경의 방법" -> "제433조(정관변경의 방법)"; other labels unchanged."""
+    import re
+    text = re.sub(r'\s+', ' ', text or '').strip()
+    text = re.sub(r'(제\d+조(?:의\d+)?)\s*[①-⑳]\s*', r'\1 ', text)
+    m = re.match(r'^(.*?제\d+조(?:의\d+)?)\s+([^()]+)$', text)
+    return m.group(1) + '(' + m.group(2) + ')' if m else text
+
+
+def unread_connections(inv):
+    """Connections the system saw but did not read, with the system's own reason.
+
+    This is a location record, never evidence: the text is shown separately
+    as "not used for the answer" and the absence of a reading proves nothing.
+    """
+    import re
+    known = {}
+    for e in inv.s.repo.evidence():
+        known.setdefault(e['source_id'], set()).update(str(p['block_id']) for p in e['spans'])
+    rows = []
+    for receipt in (inv.p.get('role_chain_directories') or {}).values():
+        for skip in receipt.get('skipped', []):
+            if skip.get('identity'):
+                clause, judged = REASON_TEXT.get(skip['reason'], ('이번 요청의 자동 읽기 대상에서 빠져서', False))
+                if skip['reason'] == 'SECTION_TERMS_NOT_MATCHED' and skip.get('terms'):
+                    level = skip.get('section_level') or '절'
+                    clause = '같은 ' + level + ' 조문이지만 앞부분에 ' + level + ' 제목의 핵심 표현(' + '·'.join(skip['terms']) + ')이 함께 나오지 않아서'
+                rows.append({**skip, 'reason_code': skip['reason'], 'reason': clause, 'judged_unneeded': judged})
+    for item in (inv.p.get('list_only_connections') or {}).values():
+        rows.append({**item, 'outgoing': False, 'reason_code': 'LIST_ONLY_' + str(item['role']),
+                     'reason': LIST_ONLY_REASON.get(item['role'], LIST_ONLY_REASON['BORROWS']), 'judged_unneeded': True})
+    result = []; seen = set(); seen_labels = set()
+    units = getattr(getattr(inv.s, 'matcher', None), 'units', None) or {}
+    # A target in a document the answer did not read is named with its document.
+    read_documents = {(inv.s.tools.sources.get(sid) or {}).get('document_id') for sid in known}
+    for row in rows:
+        ident = row['identity']; did = ident.get('document_id'); uid = ident.get('unit_id')
+        blocks = [str(b) for b in row.get('block_ids') or []]
+        key = (did, str(uid))
+        if key in seen or did not in inv.s.scope or not blocks:
+            continue
+        read_part = set(blocks) & known.get(ident.get('source_id'), set())
+        if read_part == set(blocks):
+            continue
+        seen.add(key)
+        node = units.get((did, str(uid))) or {}
+        label = row.get('label') or ' '.join(x for x in (node.get('surface'), node.get('title')) if x) or str(uid)
+        label = article_label(label)
+        # Paragraph units of one article carry the same article label: one entry per article.
+        if (did, label) in seen_labels:
+            continue
+        seen_labels.add((did, label))
+        # Only the unread part of an article some of whose text was already read.
+        unread_blocks = [b for b in blocks if b not in read_part]
+        if did not in read_documents:
+            name = document_name(inv.s, did)
+            if name:
+                label = '「' + name + '」 ' + label
+        if read_part:
+            label += ' 중 읽지 않은 부분'
+        text = ''
+        for bid in (unread_blocks if len(result) < UNREAD_LIMITS['entries'] else []):
+            if len(text) >= UNREAD_LIMITS['text_chars']:
+                break
+            text += inv.s.store.source(did, bid)['text'] + '\n'
+        text = text.strip()
+        clipped = len(text) > UNREAD_LIMITS['text_chars']
+        anchor = article_label(row.get('anchor_label') or '')
+        level = row.get('section_level') or '절'
+        reason = row['reason']
+        if row.get('role') == 'SAME_SECTION' and level != '절':
+            for word in ('같은 절', '절 제목', '많은 절'):
+                reason = reason.replace(word, word.replace('절', level))
+        result.append({'unread_id': 'U' + str(len(result) + 1), 'from_label': anchor,
+            'target_label': label, 'document_id': did, 'source_id': ident.get('source_id'), 'unit_id': str(uid),
+            'relation': row.get('role') if not row.get('outgoing') else None,
+            'relation_text': RELATION_TEXT.get(None if row.get('outgoing') else row.get('role'), '연결된 조문').replace('같은 절', '같은 ' + level),
+            'reason_code': row['reason_code'], 'reason': reason, 'judged_unneeded': row['judged_unneeded'],
+            'section': row.get('section') or '', 'section_level': level, 'partially_read': bool(read_part),
+            'list_only': row['reason_code'].startswith('LIST_ONLY_'),
+            'text': text[:UNREAD_LIMITS['text_chars']], 'text_clipped': clipped,
+            'used_as_evidence': False, 'absence_proven': False})
+    return {'entries': result[:UNREAD_LIMITS['entries']], 'total': len(result),
+            'meaning': '시스템이 확인했지만 읽지 않은 연결 조문이다. 답변 근거가 아니며 읽지 않았다고 내용이 없다는 뜻이 아니다.'}
+
+
+def _unit_label(inv, hit):
+    try:
+        return ur.unit_label(inv.s, hit)
+    except (AttributeError, KeyError):
+        return ''
+
+
+def section_terms(title):
+    """Content words of a section heading ("제5절 정관의 변경" -> 정관, 변경)."""
+    import re
+    text = re.sub(r'^\s*제\d+(?:편|장|절|관)(?:의\d+)?\s*', '', title or '')
+    words = [re.sub(r'(?:의|및|등|에|관한|대한|에관한)$', '', w) for w in re.split(r'[\s·ㆍ,()]+', text)]
+    return [w for w in words if len(w) >= 2]
+
+
+def _article_source(session, did, uid):
+    """Source of one article unit through the matcher's member index (point lookup on every port)."""
+    for sid in session.matcher._unit_sources(did, str(uid)):
+        src = session.tools.sources.get(sid) or {}
+        if src.get('document_id') == did and str(src.get('unit_id')) == str(uid):
+            return sid
+    return None
+
+
+def section_children(session, did, parent):
+    """Child unit IDs of one parent, in document order, without enumerating the corpus.
+
+    SQLite binds the whole generation as an in-memory dict, but the Oracle port pages
+    published rows with a per-call row budget, so a units.items() scan fails there
+    (QUERY_NAV_BUDGET). Same dispatch as structure_selection.children.
+    """
+    parent = str(parent)
+    cache = session.__dict__.setdefault('_section_children_by_parent', {})
+    if (did, parent) in cache:
+        return cache[(did, parent)]
+    matcher = session.matcher; values = matcher.units
+    if hasattr(values, 'children_for'):
+        rows = values.children_for(did, parent)
+    else:
+        prepared = getattr(matcher, 'prepared_structure', None)
+        if prepared is not None and values is prepared['units']:
+            from .structure_query import document_tree
+            rows = (((did, u), values[(did, u)]) for u in document_tree(matcher, did)['children'].get(parent, ()))
+        else:
+            index = session.__dict__.setdefault('_section_children_index', {})
+            if did not in index:
+                found = {}
+                source = values.for_document(did) if hasattr(values, 'for_document') else (
+                    (key, unit) for key, unit in values.items() if key[0] == did)
+                for key, unit in source:
+                    owner = unit.get('parent')
+                    found.setdefault(str(owner) if owner is not None else None, []).append((key, unit))
+                index[did] = found
+            rows = index[did].get(parent, ())
+    out = []
+    for (_, uid), unit in rows:
+        owner = unit.get('parent')
+        if (str(owner) if owner is not None else None) == parent:
+            out.append((tuple(unit.get('span') or (0, 0)), str(uid)))
+    cache[(did, parent)] = [u for _, u in sorted(out)]
+    return cache[(did, parent)]
+
+
+def section_neighbors(inv, scope):
+    """Unread same-section articles of the selected scope, with a deterministic match.
+
+    A small section groups one legal institution. A sibling whose own opening
+    text contains every content word of the section heading is read
+    automatically (bounded); other siblings stay as unread notes with the reason.
+    """
+    import re
+    units = getattr(getattr(inv.s, 'matcher', None), 'units', None)
+    if units is None:
+        return []
+    article = re.compile(r'^제\d+조(?:의\d+)?$')
+    rows = []; seen = set()
+    for member in scope['members']:
+        src = inv.s.tools.sources.get(member['source_id']) or {}
+        did, uid = src.get('document_id'), src.get('unit_id')
+        if did is None or uid is None:
+            continue
+        uid = str(uid); hops = 0
+        while (did, uid) in units and not article.match(str(units[(did, uid)].get('surface', ''))) and hops < 8:
+            parent = units[(did, uid)].get('parent')
+            if parent is None:
+                break
+            uid = str(parent); hops += 1
+        node = units.get((did, uid)) or {}
+        parent = node.get('parent')
+        if not article.match(str(node.get('surface', ''))) or parent is None or (did, str(parent)) in seen:
+            continue
+        seen.add((did, str(parent)))
+        section = units.get((did, str(parent))) or {}
+        siblings = [u for u in section_children(inv.s, did, parent)
+                    if article.match(str((units.get((did, u)) or {}).get('surface', '')))]
+        terms = section_terms(section.get('title') or '')
+        if len(siblings) > SECTION_LIMITS['articles']:
+            continue  # a large section is not one institution; no automatic same-section reading
+        for sib in siblings:
+            sid = _article_source(inv.s, did, sib) if sib != uid else None
+            if sib == uid or not sid:
+                continue
+            blocks = [str(b) for b in ur.blocks(inv.s, did, sib, 'subtree')]
+            preview = ''.join(inv.s.store.source(did, b)['text'] for b in blocks[:4])[:SECTION_LIMITS['preview_chars']]
+            if re.match(r'^\s*(?:제\d+조(?:의\d+)?\s*)?삭제', preview):
+                continue  # repealed article: nothing to read
+            label = ((units[(did, sib)].get('surface') or '') + ' ' + (units[(did, sib)].get('title') or '')).strip()
+            rows.append({'anchor_source_id': member['source_id'],
+                         'anchor_label': ((node.get('surface') or '') + ' ' + (node.get('title') or '')).strip(),
+                         'section': section.get('title') or section.get('surface') or '', 'source_id': sid, 'document_id': did,
+                         'section_level': section_level(section.get('surface') or section.get('title') or ''),
+                         'unit_id': sib, 'label': label, 'block_ids': blocks,
+                         'matched': bool(terms) and all(t in preview for t in terms), 'terms': terms,
+                         'too_large': len(siblings) > SECTION_LIMITS['articles']})
+    return rows
+
+
+def acquire_role_chain(inv, scope, directory, *, depth=1):
+    """Guided automatic reading without another model hop.
+
+    Depth 1 reads the selected scope's forward citations and the incoming
+    citations that specify or except its rule, then up to two same-section
+    articles that share the section's content words. Depth 2 follows only the
+    forward citations of originals reached through a rule pair, so landing on
+    either side of a rule/exception pair yields the same originals. A request
+    shares one character budget; every unread link keeps its reason.
+    """
     key = digest([ROLE_CHAIN, inv.p['binding'], sorted(inv.s.scope), directory_key(scope), depth])
     history = inv.p.setdefault('role_chain_directories', {})
     attempts = inv.p.setdefault('role_chain_attempts', {})
@@ -995,76 +1332,91 @@ def acquire_role_chain(inv, scope, directory, *, depth=1):
             raise ContractError('role chain receipt hash mismatch')
         if history[key]['status'] != 'STARTED':
             return list(history[key]['groups'])
-    row = history.setdefault(key, {'scope_id': scope['id'], 'depth': depth, 'status': 'STARTED', 'groups': [],
-        'reads': [], 'skipped': [], 'model_called': False, 'absence_proven': False})
+    row = history.setdefault(key, {'scope_id': scope['id'], 'scope_label': scope.get('label', ''), 'depth': depth,
+        'status': 'STARTED', 'groups': [], 'reads': [], 'skipped': [], 'model_called': False, 'absence_proven': False})
     seal(row)
     pairs = []
-    for item in chain_rows(directory, forward_only=depth > 1):
+    chosen = chain_rows(directory, forward_only=depth > 1)
+    chosen_keys = {r['endpoint'] for r in chosen}
+    from .citation_roles import PAIR_ROLES
+    from .guided_navigation import question_terms
+    terms = question_terms(getattr(inv, 'question', '') or '')
+    for group in directory['groups']:
+        for link in group['connections']:
+            outgoing = group['direction'] == 'OUTGOING'
+            wanted = outgoing or (depth == 1 and link.get('citation_role') in PAIR_ROLES)
+            plan = read_plan(group, link)
+            related = (not outgoing and depth == 1 and not wanted and not link['already_read'] and plan
+                       and same_subject({'target': group.get('target'), 'anchor': group.get('anchor')}, terms))
+            if related:
+                hit, offer = plan
+                row['skipped'].append({'endpoint': endpoint_key(group, link), 'role': link.get('citation_role'),
+                    'outgoing': False, 'anchor_label': (group.get('anchor') or {}).get('heading', ''),
+                    'identity': {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'unit_id': offer['unit_id']},
+                    'block_ids': list(offer['block_ids']), 'reason': 'SAME_SUBJECT_INCOMING'})
+                continue
+            if (not outgoing and depth == 1 and not wanted and not link['already_read'] and plan
+                    and len(inv.p.setdefault('list_only_connections', {})) < 60):
+                hit, offer = plan
+                inv.p['list_only_connections'].setdefault(digest([link['reference_id'], hit['source_id'], offer['unit_id']]), {
+                    'role': link.get('citation_role') or 'BORROWS', 'anchor_label': (group.get('anchor') or {}).get('heading', ''),
+                    'identity': {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'unit_id': offer['unit_id']},
+                    'block_ids': list(offer['block_ids']), 'label': ' '.join(dict.fromkeys(
+                        (_unit_label(inv, hit) + ' ' + ((group.get('target') or {}).get('heading') or '')).split()))})
+            if wanted and not link['already_read'] and endpoint_key(group, link) not in chosen_keys and plan:
+                hit, offer = plan
+                row['skipped'].append({'endpoint': endpoint_key(group, link), 'role': link.get('citation_role'),
+                    'outgoing': outgoing, 'anchor_label': (group.get('anchor') or {}).get('heading', ''),
+                    'identity': {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'unit_id': offer['unit_id']},
+                    'block_ids': list(offer['block_ids']), 'reason': 'CHAIN_COUNT_LIMIT'})
+    for item in chosen:
         group, link, plan = item['group'], item['link'], item['plan']
         if link['already_read'] or plan is None:
             if plan is None and not link['already_read']:
-                row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'NO_EXECUTABLE_ENDPOINT_SCOPE'})
+                row['skipped'].append({'endpoint': item['endpoint'], 'role': item['role'], 'outgoing': item['outgoing'],
+                    'anchor_label': (group.get('anchor') or {}).get('heading', ''), 'reason': 'NO_EXECUTABLE_ENDPOINT_SCOPE'})
             continue
         hit, offer = plan
-        identity = {k: hit[k] for k in ('source_id', 'document_id')}
-        identity['unit_id'] = offer['unit_id']
-        rid = digest([ROLE_CHAIN, inv.p['binding'], sorted(inv.s.scope), identity, offer])
-        if rid in attempts:
-            if attempts[rid].get('group_id'):
-                row['groups'] = list(dict.fromkeys(row['groups'] + [attempts[rid]['group_id']]))
-                if item['pair'] and attempts[rid]['status'] == 'COMPLETE':
-                    pairs.append((attempts[rid]['group_id'], hit, offer, inv.p['selected'].get(attempts[rid]['group_id'])))
-            continue
-        sequences = [(hit, offer), *av.context_plans(inv.s, hit, offer)]
-        added, calls = av.sequence_cost(inv.s, sequences, inv.s.repo.evidence())
-        reason = ('ROLE_CHAIN_CHARACTER_LIMIT' if budget['chars'] + added > CHAIN_LIMITS['chars'] else
-                  av.budget_reason(inv.s, added, calls, inv.p['read_state']))
-        if reason:
-            row['skipped'].append({'endpoint': item['endpoint'], 'reason': reason, 'role': item['role']})
-            continue
-        target = attempts.setdefault(rid, {'status': 'RESERVED', 'identity': identity, 'offer_hash': digest(offer),
-            'reference_id': link['reference_id'], 'role': item['role'], 'group_id': None})
-        stage = 'READ'; gid = None
-        try:
-            checked, unavailable = av.article_plan(inv.s, identity)
-            if unavailable:
-                raise ContractError('automatic connection endpoint changed: ' + unavailable)
-            checked_hit, checked_offer = checked
-            if set(checked_offer['block_ids']) != set(offer['block_ids']):
-                raise ContractError('automatic connection endpoint extent changed')
-            from .query_scope import action_allowed
-            if not action_allowed(inv.s, 'READ_ARTICLES', identity):
-                target.update(status='FAILED', reason='OUTSIDE_DIRECT_SEARCH_SCOPE')
-                row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'OUTSIDE_DIRECT_SEARCH_SCOPE'})
+        identity = {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'unit_id': offer['unit_id']}
+        label = {'SPECIFIES': '현재 조문의 규칙을 구체화', 'EXCEPTION': '현재 조문의 특칙·예외'}.get(item['role'], '현재 조문이 인용')
+        got = _chain_read(inv, row, attempts, budget, identity, hit, offer,
+            reason=label + '하는 연결 원문 자동 확보(' + ('정방향' if item['outgoing'] else '역방향') + '); 적용 판단 전',
+            meta={'endpoint': item['endpoint'], 'role': item['role'], 'outgoing': item['outgoing'], 'depth': depth,
+                  'anchor_label': (group.get('anchor') or {}).get('heading', ''), 'directory': key, 'kind': 'CONNECTION'})
+        seal(row)
+        if got and item['pair']:
+            pairs.append((got[0], hit, offer, got[1]))
+    if depth == 1:
+        from . import tool_availability as av
+        section_reads = 0
+        row['section_neighbors'] = []
+        for sib in section_neighbors(inv, scope):
+            read_keys = {str(b) for b in sib['block_ids']}
+            known = set()
+            for e in inv.s.repo.evidence():
+                if e['source_id'] == sib['source_id']:
+                    known.update(str(p['block_id']) for p in e['spans'])
+            if read_keys and read_keys <= known:
                 continue
-            material = ur.read(inv.s, checked_hit, checked_offer, action_state=inv.p['read_state'])
-            if not material['complete']:
-                raise ContractError('automatic connection read incomplete')
-            inv.add_reads([{**material, 'hit': checked_hit}])
-            gid = lc.token(inv.s, 'B', [hit['source_id'], lc.parent_offer(inv.s, checked_hit)['id']])
-            target['group_id'] = gid
-            stage = 'CONTEXT'
-            label = {'SPECIFIES': '현재 조문의 규칙을 구체화', 'EXCEPTION': '현재 조문의 특칙·예외'}.get(item['role'], '현재 조문이 인용')
-            inv.register_read(inv.p['groups'][gid], material,
-                reason=label + '하는 연결 원문 자동 확보(' + ('정방향' if item['outgoing'] else '역방향') + '); 적용 판단 전')
-            target['status'] = 'COMPLETE'
-            budget['chars'] += added
-            row['groups'] = list(dict.fromkeys(row['groups'] + [gid]))
-            row['reads'].append({'endpoint': item['endpoint'], 'role': item['role'], 'outgoing': item['outgoing'], 'chars': added})
-            if item['pair']:
-                pairs.append((gid, checked_hit, checked_offer, material))
-            inv.s.repo.event('ROLE_CHAIN_ORIGINAL_ACQUIRED', {'scope_id': scope['id'], 'depth': depth, 'group_id': gid,
-                'reference_id': link['reference_id'], 'role': item['role'], 'outgoing': item['outgoing'],
-                'identity': identity, 'automatic_adoption': False, 'model_called': False})
-        except (BudgetExhausted, TimeoutError, ToolExecutionError, sqlite3.OperationalError) as error:
-            if not isinstance(error, BudgetExhausted) and recoverable_tool_failure(error) is None:
-                raise
-            target.update(status='PARTIAL' if gid else 'FAILED', reason=type(error).__name__)
-            row['skipped'].append({'endpoint': item['endpoint'], 'reason': 'TARGET_UNAVAILABLE'})
-            if record_failure(inv, error, stage=stage, identity=identity, offer=offer, group_id=gid,
-                    anchor_key=key, origin='ROLE_CHAIN', revision=ROLE_CHAIN) == 'STOP':
-                raise
-        finally:
+            code = ('SECTION_TOO_LARGE' if sib['too_large'] else 'SECTION_TERMS_NOT_MATCHED' if not sib['matched']
+                    else 'SECTION_READ_LIMIT' if section_reads >= SECTION_LIMITS['reads'] else None)
+            meta = {'kind': 'SECTION', 'role': 'SAME_SECTION', 'outgoing': False, 'depth': depth, 'directory': key,
+                    'anchor_label': sib['anchor_label'].strip(), 'section': sib['section'], 'label': sib['label'],
+                    'section_level': sib['section_level'],
+                    'terms': sib['terms']}
+            identity = {'source_id': sib['source_id'], 'document_id': sib['document_id'], 'unit_id': sib['unit_id']}
+            if code:
+                row['skipped'].append({**meta, 'identity': identity, 'block_ids': sib['block_ids'], 'reason': code})
+                continue
+            checked, unavailable = av.article_plan(inv.s, identity)
+            if unavailable or not checked:
+                row['skipped'].append({**meta, 'identity': identity, 'block_ids': sib['block_ids'], 'reason': 'NO_EXECUTABLE_ENDPOINT_SCOPE'})
+                continue
+            hit, offer = checked
+            got = _chain_read(inv, row, attempts, budget, identity, hit, offer,
+                reason='같은 ' + sib['section_level'] + '(' + sib['section'] + ')에서 ' + sib['section_level'] + ' 제목의 핵심 표현을 함께 쓰는 조문 자동 확보; 적용 판단 전', meta=meta)
+            if got:
+                section_reads += 1
             seal(row)
     if depth < CHAIN_LIMITS['depth']:
         for gid, hit, offer, record in pairs:

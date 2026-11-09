@@ -1,0 +1,97 @@
+{
+  "main_generation": 160,
+  "release_id": "citation-roles-20261106-r1",
+  "release_manifest_sha256": "585734eb595f6c51e66ad804abc9d919a6410d26ad28c072001fd4a2042acd7b",
+  "serving_files": 533,
+  "new_modules": [
+    "02_BACKEND/semantic_runtime/legal_agent/citation_roles.py"
+  ],
+  "includes": [
+    "MAIN158 guided-continue-20261106-r1",
+    "MAIN159 connection-lookup-20261106-r1"
+  ],
+  "zip_sha256": "3118f540f079b0e6276a5174954de874c9567c46a780ad76be6da2352be4e1b3",
+  "oneclick_sha256": "5ce1b0aabbfc8a082b4684222924a1bd924125dd02e67ed16fdd96c115c6366e",
+  "workflow_sha256": "dac69a34677f5f986c109a13dd411f62cf9be41f7bebb95b1523ac286be3fca8",
+  "workflow_equals_MAIN157": true,
+  "citation_role_measure": {
+    "references_classified": 93644,
+    "roles": {
+      "BORROWS": 74057,
+      "SPECIFIES": 4514,
+      "TRANSITIONAL": 9824,
+      "EXCEPTION": 1179,
+      "MUTATIS": 4070
+    },
+    "pair_incoming_per_cited_article": {
+      "articles": 2265,
+      "max": 30,
+      "over3": 519
+    },
+    "borrows_with_keyword_later_in_sentence": {
+      "준용": 522,
+      "갈음": 86,
+      "불구하고": 1600,
+      "적용하지 아니": 253
+    }
+  },
+  "regression": {
+    "baseline_main159": {
+      "passed": 1127,
+      "failed": 207,
+      "path": "baseline-main159.json",
+      "code": "MAIN159 bytes (swap.json)"
+    },
+    "working": {
+      "passed": 1160,
+      "failed": 207,
+      "path": "working-r2.json"
+    },
+    "new_failures": [],
+    "new_contract_tests": 33,
+    "new_contract_tests_failed": 0
+  },
+  "staged_and_prepared_contracts": {
+    "staged": 33,
+    "prepared": 33
+  },
+  "entry_checks": 12,
+  "real_data_no_model_dry_runs": [
+    "dryrun-433.json",
+    "dryrun-434.json",
+    "dryrun-5424.json"
+  ],
+  "installer": {
+    "passed": true,
+    "commands": 15,
+    "original_files_restored": 528,
+    "full_generation_gate": true
+  },
+  "actual_qwen": {
+    "ADR-1420_MAIN160": {
+      "judged_turns": 3,
+      "passed_turns": 3,
+      "physical_calls": 19,
+      "unknown": 0,
+      "reported_cost_usd": 0.04872432
+    },
+    "ADR-1418_MAIN159": {
+      "judged_turns": 3,
+      "passed_turns": 3,
+      "physical_calls": 19,
+      "unknown": 1,
+      "reported_cost_usd": 0.04131684
+    },
+    "ADR-1416_MAIN157": {
+      "judged_turns": 3,
+      "passed_turns": 0,
+      "physical_calls": 18,
+      "unknown": 1,
+      "reported_cost_usd": 0.02218792
+    },
+    "limits": "One run per formulation. MAIN160 turn1 did not read same-section 435 despite its title; exception-landing cell stopped by local resource guard (ADR-1419 also stopped at app load)."
+  },
+  "field_deployed": false,
+  "quality_certified": false,
+  "genos_internal_model_checked": false
+}

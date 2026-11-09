@@ -1,0 +1,155 @@
+{
+  "main_generation": 175,
+  "release_id": "published-ontology-20261107-r1",
+  "release_manifest_sha256": "a2d194411127bc676cee0a48385695deaa6bfb2f77b6b1c00f75306ad5ba861d",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "published-ontology-20261107-r1",
+    "generation": 175,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/published-ontology-20261107-r1/release.json",
+    "release_manifest_sha256": "a2d194411127bc676cee0a48385695deaa6bfb2f77b6b1c00f75306ad5ba861d",
+    "activated_at": "2026-11-07T01:20:31.194377+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "bc879d7ea04bdd94e6245892048fbff7ed3654396295a0d38ca9902d21e08edf"
+  },
+  "serving_files": 544,
+  "replaces": {
+    "main174": {
+      "release_id": "vector-structure-20261107-r1",
+      "sent_gmail_id": "1a1b377313830669",
+      "field_applied": false
+    },
+    "main173": {
+      "release_id": "document-compare-20261107-r1",
+      "sent_gmail_id": "1a1b34d19059886c",
+      "field_state_assumed": true
+    }
+  },
+  "changed_vs_main174": {
+    "products": {
+      "02_BACKEND/semantic_runtime/ontology_work/configuration.py": "b203d6a12b6d47a87e8e28e03ddc9a08112d0362b4416b371bdde877c5bd9f4e"
+    },
+    "derived": "engine pins 30 + PIPELINE + Oracle query plan metadata (source hash/line only)",
+    "sql_plans": "643 -> 643 (executable SQL identical)",
+    "new_environment_variables": 0,
+    "workflow_file_changed": false
+  },
+  "changed_vs_main173_field": {
+    "files": 34,
+    "products": [
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "02_BACKEND/semantic_runtime/ontology_work/configuration.py"
+    ]
+  },
+  "changes": {
+    "main175_published_ontology_reader": {
+      "what": "ontology_work/configuration.py: repository() accepts kind 'sqlite-published' (sealed NFS SQLite next to the source generation); byte-identical to what the R4 integration installer wrote into the checkout, so a full MAIN install no longer removes it.",
+      "configuration_sha256": "b203d6a12b6d47a87e8e28e03ddc9a08112d0362b4416b371bdde877c5bd9f4e",
+      "dp_oracle": "unchanged: SQLite ontology still refused under DP=oracle",
+      "without_ontology_env": "unchanged (reader only used when GENOS_RAG_ONTOLOGY_CONFIG points to a sqlite-published config)"
+    },
+    "main174_vector_named_article": {
+      "what": "Vector initial search keeps the article named in the accepted search words; the named article is read first, vector candidates stay as the remaining READ offers (law_candidates.py).",
+      "event": "INITIAL_VECTOR_STRUCTURE_ENTRY",
+      "scope_widened": false,
+      "extra_sql": 0,
+      "extra_model_calls": 0
+    }
+  },
+  "local_validation": {
+    "regression_files_main175": {
+      "files": 25,
+      "candidate_counts": {
+        "passed": 351,
+        "failed": 62
+      },
+      "new_failures": 0,
+      "same_failures": 62
+    },
+    "regression_files_main174": {
+      "files": 48,
+      "candidate_counts": {
+        "passed": 623,
+        "failed": 112,
+        "skipped": 2,
+        "error": 9
+      },
+      "new_failures": 0,
+      "fixed": 2,
+      "same_failures": 121
+    },
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "oracle_named_article_main174": {
+      "question": "모의승인규정 제101조 승인 기준은? (search words: 모의승인규정 제101조, scope: all authorized)",
+      "vector_main174_first_read": [
+        "모의승인규정",
+        "제101조 긴급 승인 기준",
+        "11"
+      ],
+      "vector_main174_event": "INITIAL_VECTOR_STRUCTURE_ENTRY",
+      "vector_main173_structure": "NO_MATCH",
+      "vector_sql_main173_main174": [
+        532,
+        532
+      ],
+      "keyword_same_on_both": true,
+      "model": "mock (oracle_scale_guard transport), no external model"
+    },
+    "r4_field_order_replay": {
+      "r4_on_main173": {
+        "exit": 0,
+        "changed": 32,
+        "ready": true
+      },
+      "reverted_to_main173": true,
+      "checkout_equals_main175": true,
+      "verify_without_r4_rerun": {
+        "exit": 0,
+        "ready": true
+      },
+      "r4_old_folder_on_main175": {
+        "exit": 0,
+        "ready": true,
+        "code_files_to_change": [],
+        "previous_receipt_error": false
+      },
+      "r4_new_folder_on_main175": {
+        "exit": 0,
+        "ready": true,
+        "code_files_to_change": []
+      },
+      "checkout_unchanged_by_r4": true,
+      "ontology_db_unchanged": true,
+      "generation_unchanged": true,
+      "PASS": true
+    },
+    "entry_checks": "17/17 + published reader bytes",
+    "installer": {
+      "base": "MAIN173 document-compare-20261107-r1 with the R4 reader already in configuration.py",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "package": {
+    "zip": "MAIN175_FULL_20261107_R1.zip",
+    "zip_sha256": "62ea1a2e79f87e4bc4fc47414c8759fb3c889304a58e451cfaabf78ace84d09a",
+    "members": 555,
+    "workflow": "MAIN175_WORKFLOW.py"
+  },
+  "not_verified": [
+    "field GENOS NFS / code serving with the R4 ontology after this change",
+    "real model (Qwen or GENOS internal)",
+    "field Oracle vector search / embedding (MAIN174 part)",
+    "field screen and field data"
+  ],
+  "working_tree": "configuration.py and engine pins in the shared working tree were left as they were (other sessions); MAIN175 release holds the change",
+  "field_deployed": false,
+  "quality_certified": false
+}

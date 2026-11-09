@@ -1,0 +1,22 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>MAIN168 — 질문 처리 RECALL 단계 HTTP 500(QUERY_SQL_RESULT_BUDGET) 수정 (MAIN167 대체)</b></p>
+<p><b>왜</b>: MAIN166 적용 후 ORA-22806은 해결됐고, 그다음 단계 RECALL에서 <code>QUERY_SQL_RESULT_BUDGET: use bounded consumer pages</code>로 멈췄습니다
+(<code>memory_rag.py:198</code> → <code>oracle_query_index.py:54</code> → <code>oracle_query_db.py:185</code>).
+RECALL 결과 기록에 요청 범위의 모든 원문 ID 목록을 넣고 있었는데(쓰는 곳 없음), Oracle에서는 이를 위해 범위 전체를 읽다가 한 조회 1만 행 한도에 걸립니다.
+<b>MAIN167에도 같은 코드가 있어 MAIN167만 적용하면 같은 500이 납니다.</b></p>
+<p><b>수정</b> (MAIN167 그대로 + 제품 2파일)</p>
+<ul>
+<li><code>memory_rag.py</code>: RECALL 결과에서 전체 원문 ID 목록 제거(검색·원문 선택·답변 내용 변화 없음).</li>
+<li><code>unit_relations.py</code>: 별표 인용을 별도 별표 파일에 연결할 때 범위의 모든 원문을 읽던 것을, 문서 이름으로 찾고 연결된 파일 하나만 읽도록 변경(연결 결과 동일).</li>
+</ul>
+<p>MAIN167 대비 34파일(제품 2 + SQL 출처 메타 1 + PIPELINE + 엔진 pin 30). 실행 SQL 642개·매핑·워크플로우는 MAIN167과 같습니다. 환경변수는 지금 값 그대로, 새 환경변수 없음.</p>
+<p><b>적용</b>: 같은 TRANSFER 폴더에 ZIP과 TXT를 두고 그 폴더에서 <code>bash MAIN168_ONECLICK_R1.txt</code> → <code>MAIN168_ONECLICK_DONE</code>, <code>MAIN168_EXIT=0</code> 확인 →
+status / stage → commit → <code>bash MAIN168_ONECLICK_R1.txt gate-code</code> → push → 새 코드서빙 리비전 배포. 워크플로우(MAIN168_WORKFLOW.py)는 MAIN167과 같은 바이트라 바꿀 필요 없습니다.</p>
+<p><b>확인 부탁</b>: 지난번 500이 난 질문을 다시 보내 RECALL을 지나 답변까지 가는지 봐 주세요.
+다음에 멈출 수 있는 곳은 원문을 읽은 뒤 같은 절 조문 자동 읽기·연결 조문 보기의 <code>QUERY_NAV_BUDGET</code>입니다(별도 수정 검증 중, MAIN168 미포함). 오류가 나면 실패 단계·발생 위치와 <code>oracle.sql.summary</code> 줄을 사진으로 보내 주세요.</p>
+<p><b>로컬 검증</b>(현장 미실행, 모델 호출 0): 로컬 Oracle 23.26.3 개발계 실버 17표 임시 환경, 원문 10,203개 범위(문서당 1,700개 이하)에서
+MAIN166·MAIN167은 현장과 같은 호출 순서로 500 재현, MAIN168은 답변까지 HTTP 200·한 조회 최대 8행.
+별표 연결은 로컬 참조 8,013건 모두 예전과 같은 결과. 관련 계약 42파일 새로 깨진 시험 0, 새 시험 9개 통과.
+MAIN167 격리 checkout 설치→재실행→stage→commit→gate-code→전체 gate→undo 15명령 통과.</p>
+<p>첨부: MAIN168_FULL_20261106_R1.zip / MAIN168_ONECLICK_R1.txt / MAIN168_WORKFLOW.py / GUIDE.txt / VERIFICATION.json / SHA256SUMS.txt — 자세한 내용은 GUIDE.txt를 봐 주세요.</p>
+</body></html>

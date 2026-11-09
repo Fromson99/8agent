@@ -1,0 +1,329 @@
+set -eu
+"${PYTHON:-python3}" - "$@" <<'PY_FTS_ORA22806_DIAG'
+"""Read-only GENOS diagnosis of the MAIN165 full-text ORA-22806, through the serving ORDS client.
+
+Opens the query request the same way the serving factory does (channel ->
+release -> source snapshot -> UnitIndex), then runs the failing full-text
+statement and its parts as separate SELECTs. Nothing is written, no model is
+called, nothing is retried.
+
+Printed and saved: variant name, PASS/FAIL, ORA codes, ORDS error line/column,
+HTTP status, row count, SHA-256 of the statement text (maintained SQL only, no
+bind values). No SQL text, bind values, row values or credentials are output.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sys
+import time
+
+EXPECTED = {'02_BACKEND/semantic_runtime/oracle_query_fulltext.py': 'e35fc2e60c3ac8dad540e388f54eae950398cd8b00b6eb67526aa6c3122ab9c0', '02_BACKEND/semantic_runtime/oracle_silver_reads.py': '07ae9cebc6569aef60e03e2ec9c96bd5d86eb8df5b58ec480eb7db03ebefe83d', '02_BACKEND/semantic_runtime/oracle_sql_tokens.py': '1fa2f1a33ca5c074ce2b9864a77d09a9fbdf43a60ca14f0bd7210eff4eb49338', '02_BACKEND/semantic_runtime/oracle_query.py': 'd3750e0755dd61935e8c2f2f7a9c8843625ce67bc3dcd56a0282c899ff5cb509', '02_BACKEND/semantic_runtime/oracle_dp_io.py': 'f5ebe43a46a3d696ba2465bfeb185850b9bc15a78de81f47e9cd6ea610fcb698', '02_BACKEND/semantic_runtime/oracle_dp.py': 'f0c7245dd0f547f046393504949337a518e567dcaec206fef0fa8bea2e3f361c', '02_BACKEND/semantic_runtime/oracle_ords.py': '45e95fc1a7468617a86d7b00b1e822024515dae0e375869f19f7fda48b2252b6', '02_BACKEND/semantic_runtime/oracle_query_state.py': '6b8f426c067a1a8fdbf12bea2415fcd44c8c692366d2e51727698780bb129a78', '02_BACKEND/semantic_runtime/oracle_query_request.py': '18f4bf345e0d7b3afdd1fcb97ca9b6057be5cb562590ce8def7355cda1ae1270', '02_BACKEND/semantic_runtime/oracle_query_catalog.py': '4d8d77d5d604d3ed33c36a90bfd8a9c4346b3c108b1f3fa245a64080a064b8af', '02_BACKEND/semantic_runtime/oracle_query_cache.py': '22060037a037ee981d3eecb706a78f353f384863cd59bdde7c5f5b5a559bbd63', '02_BACKEND/semantic_runtime/oracle_development_mapping.py': 'b33a1dd603552be7b90ec6c3e1c4f1c48c5828d603be51abf6a1d310c53a73c1', '02_BACKEND/semantic_runtime/physical_mapping.py': 'eb6d175549c3c2d7d485275fb2dc158acf992454ff7e36e278112285bb0a199a', '00_SYSTEM/ORACLE/development_g19_1.json': '133b3af1931b1b8d9490a437a6035097efb7c83a463b05abb55180f49675efec'}
+NOTEBOOK_Q1 = "SELECT COUNT(*) AS N,CASE WHEN COUNT(*)<=2048 THEN JSON_ARRAYAGG(JSON_ARRAY(k,did,sid,score NULL ON NULL RETURNING CLOB) RETURNING CLOB) END AS ITEMS FROM (WITH postings AS (SELECT p.OWNER_ID AS k,p.DOCUMENT_ID AS did,p.LOOKUP_ID AS token,JSON_VALUE(p.VALUE_JSON,'$.tf' RETURNING NUMBER ERROR ON ERROR) AS tf FROM (SELECT RELEASE_ID,KIND,ROW_ID,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,ROW_SHA256,VALUE_JSON FROM (SELECT RFRN_POST_HASH_VALU AS RELEASE_ID,RFRN_DTA_TYPE_VALU AS KIND,RFRN_DTA_ID AS ROW_ID,RGLT_DOC_ID AS DOCUMENT_ID,RFRN_DTA_IDNF_CTNT AS LOOKUP_ID,BLNG_DTA_IDNF_CTNT AS OWNER_ID,TAGT_DTA_IDNF_CTNT AS TARGET_ID,SRCH_DATA_HASH_VALU AS ROW_SHA256,SRCH_DATA_CTNT AS VALUE_JSON FROM SIDDS.LGL_G19_SRCH_ROW_S_1)) p WHERE p.RELEASE_ID=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND p.KIND=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_posting') AND p.LOOKUP_ID IN ((SELECT MIN(RFRN_DTA_IDNF_CTNT) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_posting')))), frequencies AS (SELECT 0 AS phrase,k,SUM(tf) AS tf FROM postings WHERE token=(SELECT MIN(RFRN_DTA_IDNF_CTNT) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_posting')) AND did IN (SELECT j.did FROM JSON_TABLE((SELECT JSON_ARRAYAGG(d RETURNING CLOB) FROM (SELECT DISTINCT RGLT_DOC_ID AS d FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_length'))),'$[*]' COLUMNS(did VARCHAR2(512) PATH '$')) j) GROUP BY k), df AS (SELECT 0 AS phrase,COUNT(DISTINCT k) AS n FROM postings WHERE token=(SELECT MIN(RFRN_DTA_IDNF_CTNT) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_posting'))), lengths AS (SELECT r.LOOKUP_ID AS k,r.DOCUMENT_ID AS did,l.sid,l.n FROM (SELECT RELEASE_ID,KIND,ROW_ID,DOCUMENT_ID,LOOKUP_ID,OWNER_ID,TARGET_ID,ROW_SHA256,VALUE_JSON FROM (SELECT RFRN_POST_HASH_VALU AS RELEASE_ID,RFRN_DTA_TYPE_VALU AS KIND,RFRN_DTA_ID AS ROW_ID,RGLT_DOC_ID AS DOCUMENT_ID,RFRN_DTA_IDNF_CTNT AS LOOKUP_ID,BLNG_DTA_IDNF_CTNT AS OWNER_ID,TAGT_DTA_IDNF_CTNT AS TARGET_ID,SRCH_DATA_HASH_VALU AS ROW_SHA256,SRCH_DATA_CTNT AS VALUE_JSON FROM SIDDS.LGL_G19_SRCH_ROW_S_1)) r,JSON_TABLE(r.VALUE_JSON,'$' COLUMNS(sid VARCHAR2(512) PATH '$.source_id',n NUMBER PATH '$.length' ERROR ON ERROR)) l WHERE r.RELEASE_ID=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND r.KIND=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_length') AND r.DOCUMENT_ID IN (SELECT j.did FROM JSON_TABLE((SELECT JSON_ARRAYAGG(d RETURNING CLOB) FROM (SELECT DISTINCT RGLT_DOC_ID AS d FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU=(SELECT MIN(RFRN_DTA_TYPE_VALU) FROM SIDDS.LGL_G19_SRCH_ROW_S_1 WHERE RFRN_POST_HASH_VALU=(SELECT RFRN_POST_HASH_VALU FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME='g19_7c1f8f4931c8be61b914f5bc') AND RFRN_DTA_TYPE_VALU LIKE 'asset%.unit_fts_length'))),'$[*]' COLUMNS(did VARCHAR2(512) PATH '$')) j)), matches AS (SELECT l.k,l.did,l.sid,-SUM(CASE WHEN 1000<=2*df.n THEN 1e-6 ELSE LN((1000-df.n+0.5)/(df.n+0.5)) END*f.tf*2.2/(f.tf+1.2*(0.25+0.75*l.n/30))) AS score FROM frequencies f JOIN df ON df.phrase=f.phrase JOIN lengths l ON l.k=f.k GROUP BY l.k,l.did,l.sid) SELECT k,did,sid,score FROM matches FETCH FIRST 2049 ROWS ONLY)"
+DEFAULT_CHANNEL = 'g19_7c1f8f4931c8be61b914f5bc'
+# 정관 / 주주총회 결의 (single token, then a two-token phrase)
+DEFAULT_TERMS = [['정관'], ['주주총회 결의']]
+HEAD = ("SELECT COUNT(*) AS N,CASE WHEN COUNT(*)<=2048 THEN "
+        "JSON_ARRAYAGG(JSON_ARRAY(k,did,sid,score NULL ON NULL RETURNING CLOB) RETURNING CLOB) END AS ITEMS FROM (")
+TAIL = 'SELECT k,did,sid,score FROM matches FETCH FIRST 2049 ROWS ONLY)'
+ARRAYAGG_DUAL = ("SELECT COUNT(*) AS N,CASE WHEN COUNT(*)<=2048 THEN "
+                 "JSON_ARRAYAGG(JSON_ARRAY(k,did,sid,score NULL ON NULL RETURNING CLOB) RETURNING CLOB) END AS ITEMS "
+                 "FROM (SELECT 'a' AS k,'b' AS did,'c' AS sid,1 AS score FROM DUAL)")
+TAGS = ('READ_FAILED', 'ORACLE_ERROR', 'RESPONSE_SHAPE', 'PARTIAL_READ', 'QUERY_FTS_PROJECTION', 'QUERY_FTS_BINDING',
+        'QUERY_FTS_SCHEMA', 'QUERY_FTS_STATS', 'QUERY_BUDGET', 'QUERY_DEADLINE', 'QUERY_RESPONSE_SIZE', 'QUERY_PAGE',
+        'QUERY_ACTIVE_MISSING', 'QUERY_ACTIVE_AMBIGUOUS', 'QUERY_SOURCE_BINDING', 'QUERY_SOURCE_HASH', 'QUERY_CONFIG',
+        'QUERY_STRUCTURE_COMPILER', 'DP_CONFIG', 'DP_CONNECT', 'READ_ONLY', 'BUDGET_PAUSED', 'MAP_FIELDS',
+        'ORDS_AUTH_HTTP', 'ORDS_SQL_HTTP', 'ORDS_AUTH_TRANSPORT', 'ORDS_SQL_TRANSPORT', 'ORDS_TIMEOUT', 'ORDS_REQUEST')
+MESSAGE = re.compile(r"^ORA-\d{5}: [A-Za-z0-9 ,.'()/_-]{1,120}$")
+POSITION = re.compile(r'[Ll]ine\s*:?\s*(\d{1,6})\s*,?\s*[Cc]ol(?:umn)?\s*:?\s*(\d{1,7})')
+KEY = re.compile(r'^[A-Za-z_]{1,40}$')
+
+
+def codes(text):
+    return sorted(set(re.findall(r'ORA-\d{5}', str(text)[:65536])))[:8]
+
+
+def details(item):
+    """Allowlisted facts from one ORDS error item; never the raw text."""
+    out = {'oracle_codes': set(), 'messages': set(), 'positions': set(), 'error_keys': set()}
+    if any(k in item for k in ('errorCode', 'errorMessage', 'errorDetails')):
+        out['error_keys'].update(k for k in item if isinstance(k, str) and KEY.match(k))
+    line, column = (str(item.get(k, '')) for k in ('errorLine', 'errorColumn'))
+    if re.fullmatch(r'\d{1,6}', line) and re.fullmatch(r'\d{1,7}', column):
+        out['positions'].add((int(line), int(column)))
+    number = str(item.get('errorCode', ''))
+    if re.fullmatch(r'-?\d{1,5}', number) and int(number):
+        out['oracle_codes'].add('ORA-' + str(abs(int(number))).zfill(5))
+    for key in ('errorMessage', 'errorDetails', 'message'):
+        text = item.get(key)
+        if not isinstance(text, str):
+            continue
+        out['oracle_codes'].update(codes(text))
+        for line in text.splitlines():
+            if MESSAGE.match(line.strip()):
+                out['messages'].add(line.strip())
+        for line, column in POSITION.findall(text):
+            out['positions'].add((int(line), int(column)))
+    return out
+
+
+class Observer:
+    """Delegating ORDS client that keeps allowlisted facts of the last response."""
+    def __init__(self, client):
+        self.client = client
+        self.last = None
+
+    def __getattr__(self, name):
+        return getattr(self.client, name)
+
+    def request(self, method, path, json=None, **kw):
+        self.last = {'oracle_codes': set(), 'messages': set(), 'positions': set(), 'http_status': set(), 'error_keys': set()}
+        try:
+            response = self.client.request(method, path, json=json, **kw)
+        except Exception as exc:
+            status = getattr(getattr(exc, 'response', None), 'status_code', None)
+            if type(status) is int:
+                self.last['http_status'].add(status)
+            self.last['http_status'].update(int(s) for s in re.findall(r'ORDS_(?:AUTH|SQL)_HTTP:\s*(\d{3})', str(exc)))
+            self.last['oracle_codes'].update(codes(str(exc)))
+            for k, v in details({'errorMessage': str(exc)[:65536]}).items():
+                if k != 'error_keys':
+                    self.last[k].update(v)
+            raise
+        body = response if isinstance(response, dict) else getattr(response, 'raw', None)
+        if not isinstance(body, dict):
+            candidate = getattr(response, 'json', None)
+            try:
+                body = candidate() if callable(candidate) else candidate
+            except Exception:
+                body = None
+        if isinstance(body, dict):
+            items = body.get('items')
+            for item in [body] + (items if isinstance(items, list) else []):
+                if isinstance(item, dict):
+                    for k, v in details(item).items():
+                        self.last[k].update(v)
+        return response
+
+
+def safe_error(exc):
+    tags, found, current, seen = set(), set(), exc, set()
+    for _ in range(5):
+        if current is None or id(current) in seen:
+            break
+        seen.add(id(current))
+        text = str(current)[:65536]
+        tags.update(t for t in TAGS if re.search(r'\b' + t + r'\b', text))
+        found.update(codes(text))
+        current = current.__cause__ or current.__context__
+    return {'exception_type': type(exc).__name__, 'tags': sorted(tags), 'oracle_codes': sorted(found)}
+
+
+def cte_body(cte, name):
+    start = cte.index(name + ' AS (') + len(name + ' AS (')
+    depth, i, quoted = 1, start, False
+    while depth:
+        ch = cte[i]
+        if ch == "'":
+            quoted = not quoted
+        elif not quoted and ch == '(':
+            depth += 1
+        elif not quoted and ch == ')':
+            depth -= 1
+        i += 1
+    return cte[start:i - 1]
+
+
+def used(statement, binds):
+    return [b for b in binds if re.search(':' + b[0] + r'\b', statement)]
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='Read-only ORA-22806 full-text diagnosis (MAIN165), R2.')
+    parser.add_argument('--code-root', default=str(Path.home() / 'DEV'))
+    parser.add_argument('--channel', default=os.environ.get('DP_QUERY_CHANNEL', '').strip() or DEFAULT_CHANNEL)
+    parser.add_argument('--out', default='FTS_ORA22806_DIAG_RESULT_R2.json')
+    parser.add_argument('--terms', action='append', help='search phrase (repeatable); default 2 Korean phrases')
+    parser.add_argument('--allow-code-mismatch', action='store_true')
+    args = parser.parse_args(argv)
+    result = {'schema': 'fts-ora22806-diagnosis-r2', 'started_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+              'python': sys.version.split()[0], 'channel': args.channel, 'steps': []}
+    out = Path(args.out).resolve()
+
+    def finish(code):
+        result['finished_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        out.write_text(json.dumps(result, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
+        print('RESULT_FILE', out)
+        print('EXIT', code)
+        return code
+
+    code_root = Path(args.code_root).expanduser().resolve()
+    result['code_root_found'] = (code_root / '02_BACKEND/semantic_runtime').is_dir()
+    if not result['code_root_found']:
+        print('CODE_ROOT_NOT_FOUND', code_root)
+        return finish(2)
+    mismatch = []
+    for name, expected in EXPECTED.items():
+        path = code_root / name
+        actual = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+        if actual != expected:
+            mismatch.append(name)
+    result['code_files_checked'] = len(EXPECTED)
+    result['code_files_mismatch'] = mismatch
+    print('CODE_FILES', len(EXPECTED) - len(mismatch), '/', len(EXPECTED), 'match MAIN165')
+    for name in mismatch:
+        print('  MISMATCH', name)
+    if mismatch and not args.allow_code_mismatch:
+        print('STOP: ~/DEV is not the MAIN165 code for these files')
+        return finish(3)
+
+    env = {k: bool(os.environ.get(k, '').strip()) for k in
+           ('DP', 'GENOS_ORACLE_TABLE_MAPPING', 'DP_QUERY_CHANNEL', 'ORACLE_ORDS_BASE_URL', 'ORACLE_ORDS_SCHEMA',
+            'ORACLE_ORDS_CLIENT_ID', 'ORACLE_ORDS_CLIENT_SECRET')}
+    result['environment_present'] = env
+    mapping = os.environ.get('GENOS_ORACLE_TABLE_MAPPING', '').strip()
+    if not mapping:
+        os.environ['GENOS_ORACLE_TABLE_MAPPING'] = mapping = 'development_g19_1'
+        result['mapping_defaulted'] = True
+    result['mapping'] = mapping
+    print('MAPPING', mapping, '(defaulted)' if result.get('mapping_defaulted') else '')
+
+    sys.path.insert(0, str(code_root / '02_BACKEND'))
+    sys.dont_write_bytecode = True
+    try:
+        from semantic_runtime.oracle_dp import client_from_environment
+        from semantic_runtime.oracle_dp_io import DPError
+        from semantic_runtime.oracle_query import Snapshot
+        from semantic_runtime.oracle_query_catalog import select_release
+        from semantic_runtime.oracle_query_request import _request
+        from semantic_runtime.oracle_query_state import StateSQL
+        from semantic_runtime.oracle_query_fulltext import UnitIndex
+    except ModuleNotFoundError as exc:
+        result['missing_python_module'] = exc.name
+        print('MISSING_PYTHON_MODULE', exc.name, '- run again with the serving python: PYTHON=<path to python3> bash <this file>')
+        return finish(7)
+
+    def step(name, call, statement=None):
+        t = time.monotonic()
+        record = {'name': name}
+        if statement is not None:
+            record['sql_sha256'] = hashlib.sha256(statement.encode()).hexdigest()
+            record['sql_chars'] = len(statement)
+        try:
+            value = call()
+            record['status'] = 'PASS'
+            if isinstance(value, dict):
+                record.update(value)
+        except Exception as exc:
+            record['status'] = 'FAIL'
+            record['error'] = safe_error(exc)
+            last = getattr(observer, 'last', None) if observer is not None else None
+            if last:
+                record['ords'] = {k: sorted(v) for k, v in last.items() if v}
+        record['seconds'] = round(time.monotonic() - t, 3)
+        result['steps'].append(record)
+        extra = ''
+        if record['status'] == 'FAIL':
+            extra = ' '.join(record['error']['oracle_codes'] or record['error']['tags'] or [record['error']['exception_type']])
+            pos = record.get('ords', {}).get('positions')
+            if pos:
+                extra += ' at line/column ' + ','.join('%d:%d' % tuple(p) for p in pos)
+        elif 'n' in record:
+            extra = 'N=' + str(record['n'])
+        elif 'total' in record:
+            extra = 'total=' + str(record['total'])
+        print('%-34s %s %s' % (name, record['status'], extra))
+        return record['status'] == 'PASS', value if record['status'] == 'PASS' else None
+
+    observer = None
+    try:
+        observer = Observer(client_from_environment())
+    except Exception as exc:
+        result['steps'].append({'name': 'CLIENT', 'status': 'FAIL', 'error': safe_error(exc)})
+        print('CLIENT FAIL', safe_error(exc))
+        return finish(4)
+    sql = StateSQL(observer, binding='fts-ora22806-diagnosis-r2', deadline=time.monotonic() + 900, max_calls=2000)
+
+    def count(statement, binds=()):
+        rows = sql.query(statement, list(binds), limit=1)
+        return {'n': int(rows[0]['N']) if rows and isinstance(rows[0].get('N'), (int, float)) else None}
+
+    ok, _ = step('V00_DUAL', lambda: count('SELECT 1 AS N FROM DUAL'))
+    if not ok:
+        return finish(5)
+    holder = {}
+
+    def open_request():
+        selected = select_release(sql, channel=args.channel)
+        manifest = selected['manifest']
+        snapshot = Snapshot.open(sql, manifest['source_release_id'])
+        if manifest['dataset_version'] != snapshot.dataset_version or manifest['source_manifest'] != snapshot.manifest:
+            raise DPError('QUERY_SOURCE_BINDING: selected query/source release differs')
+        allowed = set(snapshot.manifest['scope']['document_version_ids']) - snapshot.excluded
+        holder['request'] = _request(sql, selected['release_id'], selected['revision'], snapshot, manifest, allowed)
+        holder['index'] = UnitIndex(holder['request'])
+        return {'documents': len(allowed), 'release_prefix': selected['release_id'][:16]}
+
+    ok, _ = step('OPEN_REQUEST', open_request)
+    if not ok:
+        return finish(6)
+    idx = holder['index']
+    physical = None
+    schema = getattr(observer, 'schema_map', None)
+    if getattr(schema, 'profile', None) == 'development_g19_1':
+        physical = schema.physical_table('SRCH_ROW')
+
+    for number, terms in enumerate(args.terms and [[t] for t in args.terms] or DEFAULT_TERMS, 1):
+        label = 'T%d' % number
+        cte, binds = idx._matches(terms, None, None)
+        if cte is None:
+            result['steps'].append({'name': label, 'status': 'NO_QUERY'})
+            print(label, 'NO_QUERY')
+            continue
+        result['steps'].append({'name': label, 'tokens': len([b for b in binds if b[0].startswith('q_token')]),
+                                'positions_cte': 'positions AS' in cte})
+        print('%s tokens=%d positions=%s' % (label, len([b for b in binds if b[0].startswith('q_token')]), 'positions AS' in cte))
+        full = HEAD + cte + TAIL
+        step(label + '_V01_PRODUCTION_CALL',
+             lambda: {'total': idx.law_groups_page(idx, terms, None, limit=12)['total']}, full)
+        step(label + '_V02_PROJECTION', lambda: count(full, binds), full)
+        parts = [('V03_POSTINGS', 'postings'), ('V04_LENGTHS', 'lengths')]
+        if 'positions AS' in cte:
+            parts.append(('V05_POSITIONS', 'positions'))
+        for name, part in parts:
+            statement = 'SELECT COUNT(*) AS N FROM (' + cte_body(cte, part) + ')'
+            step(label + '_' + name, lambda s=statement: count(s, used(s, binds)), statement)
+        matches = 'SELECT COUNT(*) AS N FROM (' + cte + 'SELECT k,did,sid,score FROM matches)'
+        step(label + '_V06_MATCHES_COUNT', lambda: count(matches, binds), matches)
+        documents = [b for b in binds if b[0] == 'q_documents'][0]
+        jt = "SELECT COUNT(*) AS N FROM JSON_TABLE(:q_documents,'$[*]' COLUMNS(did VARCHAR2(512) PATH '$')) j"
+        step(label + '_V07_JSONTABLE_CLOB_BIND', lambda: count(jt, [documents]), jt)
+        small = len(documents[1].encode()) <= 4000
+        if small:
+            as_text = [(n, v, 'VARCHAR2' if n == 'q_documents' else k) for n, v, k in binds]
+            step(label + '_V08_JSONTABLE_VARCHAR_BIND', lambda: count(jt, [('q_documents', documents[1], 'VARCHAR2')]), jt)
+            step(label + '_V09_PROJECTION_VARCHAR_DOCS', lambda: count(full, as_text), full)
+        else:
+            result['steps'].append({'name': label + '_V08_V09', 'status': 'SKIP', 'reason': 'document list over 4000 bytes'})
+            print(label + '_V08_V09 SKIP (document list over 4000 bytes)')
+        if physical:
+            inline = ('(SELECT JSON_ARRAYAGG(d RETURNING CLOB) FROM (SELECT DISTINCT RGLT_DOC_ID AS d FROM ' + physical +
+                      ' WHERE RFRN_POST_HASH_VALU=:q_release AND RFRN_DTA_TYPE_VALU=:q_length))')
+            no_clob = re.sub(r':q_documents\b', lambda _m: inline, full)
+            step(label + '_V10_PROJECTION_NO_CLOB_BIND',
+                 lambda: count(no_clob, [b for b in binds if b[0] != 'q_documents']), no_clob)
+    step('V11_ARRAYAGG_DUAL', lambda: count(ARRAYAGG_DUAL), ARRAYAGG_DUAL)
+    if physical and args.channel == DEFAULT_CHANNEL:
+        step('V12_NOTEBOOK_Q1_TEXT', lambda: count(NOTEBOOK_Q1), NOTEBOOK_Q1)
+    result['sql_calls'] = sql.calls
+    failed = [s['name'] for s in result['steps'] if s.get('status') == 'FAIL']
+    result['failed'] = failed
+    print('FAILED', len(failed), ' '.join(failed))
+    return finish(0)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+PY_FTS_ORA22806_DIAG

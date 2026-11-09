@@ -72,8 +72,9 @@ class GoldMapping(DevelopmentMapping):
                     raise MappingError('GOLD_B003_KEY')
             tables[key] = {**table, 'owner': owner}
         for key in AGENTS.values():
+            # Gold keeps the SIDDA *_A Agent tables; only the development profile is unsuffixed.
             table = development.tables[key]
-            tables[key] = {'owner': table['owner'], 'name': table['name'],
+            tables[key] = {'owner': 'SIDDA', 'name': 'LGL_' + key + '_A',
                            'columns': {k: dict(v) for k, v in table['columns'].items()},
                            'primary_key': list(table['primary_key'])}
         return cls(_freeze(tables), hashlib.sha256(raw).hexdigest(), digest(tables), profile='gold')

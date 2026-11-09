@@ -1,0 +1,121 @@
+{
+  "main_generation": 171,
+  "release_id": "oracle-scale-20261106-r1",
+  "release_manifest_sha256": "33e25d5997a5b9edf8cec6f2fe5d98f25a5a1221d2b258159a74dbcd3d0f2216",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "oracle-scale-20261106-r1",
+    "generation": 171,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/oracle-scale-20261106-r1/release.json",
+    "release_manifest_sha256": "33e25d5997a5b9edf8cec6f2fe5d98f25a5a1221d2b258159a74dbcd3d0f2216",
+    "activated_at": "2026-11-06T16:19:31.070258+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "b504e1012cecb6ee53bc61d7bfd080f78b5eb77ee58c14af8444ac889ea8fbb2"
+  },
+  "serving_files": 536,
+  "replaces": {
+    "main_generation": 170,
+    "release_id": "structure-catalogue-20261106-r1",
+    "handoff": "08_DEPLOYMENT/GENOS/handoffs/main170_structure_catalogue_20261106_r1",
+    "sent_gmail_id": "1a1b0f5d26f1a6bd"
+  },
+  "changed_vs_main170": {
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py": "244348aba9cd4f0d08ccbec3618e4a8afe548abed442129a93242e39f60f2744",
+      "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py": "25298556d3d4c8329027c2d3f37f9e32f172e42b5b6b4645cba3ef9ab6765e98",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "169c86ca7144958442abba0619ce700758987345a58b30a835493e8e4cf4e9f3",
+      "02_BACKEND/semantic_runtime/legal_agent/investigation_supervisor.py": "705e12cc5c51342cb313a583d21495e8db063260bf6d0a9e58faccf262e0e935",
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "419284d487b9fb166bb87e4612e25228d8290599a9b8f76fcf1d264083c41e09",
+      "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "54a5b7e79e7ca776eafbba5f78493d53ae8b4629ff8148a105b586bee75e3e81",
+      "02_BACKEND/semantic_runtime/legal_agent/query_scope.py": "d393e40c0c9321047281a0167f0621c8c7c9bc470b4524e60e16c033bcc3f9ee",
+      "02_BACKEND/semantic_runtime/legal_agent/source_goal_control.py": "e7c7a7e65d72d78c8dcc870959c5291bce686ebb2e26ea3f748b3dc00247e390",
+      "02_BACKEND/semantic_runtime/legal_agent/structure_query.py": "62e09e58b3c22b9b9a5098be7704dcddc0332977dcf3f1fc506cb05d5e4de1f4",
+      "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py": "5644331b5304e62173a434f48833e4badce62298e0544113d338e8dcd5ce0810",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py": "181f1efc7f4dd942cf014c29262e18cda9a48478d417e9a01ef6a4abf0c1a7d9",
+      "02_BACKEND/semantic_runtime/oracle_query.py": "54db8c3ee839cb9946c179a05407576e1a1ad97ce01f9f4b60d4ca3a0627fcec",
+      "02_BACKEND/semantic_runtime/oracle_query_catalog.py": "2b4ee14f37aac50f2c975e99359b8a3b81f8725c60b10b1ca2a39feb6583a78e",
+      "02_BACKEND/semantic_runtime/oracle_query_index.py": "acca54864370948cfe8bb2d8aa73d9d6390ee67c73f55448a84803879265e880",
+      "02_BACKEND/semantic_runtime/oracle_query_matcher.py": "5599af7eeb41a933af5af2d8a00ec4e88c40d61de48468df8de0b0dc99c7619c",
+      "02_BACKEND/semantic_runtime/oracle_query_store.py": "166957997612eb75798bc10a45c1309ced66ca6f268f84bdc37c587a980377b4",
+      "02_BACKEND/semantic_runtime/vector_navigation.py": "88dbbdcfb24f0cf65d265c03147686aa787bfcd25c3f11550939e0e7579a116e",
+      "02_BACKEND/semantic_runtime/workflow_bridge.py": "7954e5d25f3d5d0f657d026d89f197840d42c14af5b758ab3de556c65c875201"
+    },
+    "product_count": 18,
+    "engine_pins": 30,
+    "pipeline": true,
+    "sql_plans": "642 unchanged",
+    "workflow_changed": false
+  },
+  "local_validation": {
+    "scale_guard": {
+      "tool": "06_TOOLS/maintenance/oracle_scale_guard",
+      "main170_over_budget_reads": 7,
+      "main171": {
+        "passed": true,
+        "sweep_executions": 3694,
+        "sweep_error_count": 0,
+        "sql_per_turn_max": 470
+      },
+      "main171_over_budget_reads": 0,
+      "main171_point_lookup_suspects": 0,
+      "main171_request_failures": 0
+    },
+    "speed_same_fixture_process_cache_on": {
+      "questions": 14,
+      "seconds_before": 232.0,
+      "seconds_after": 56.1,
+      "sql_before": 1601,
+      "sql_after": 1168,
+      "sql_ms_before": 4491,
+      "sql_ms_after": 3134
+    },
+    "field_scope_10202_originals": {
+      "main170_like_ok": 1,
+      "main171_ok": 6,
+      "scenarios": 6
+    },
+    "document_10406_units": {
+      "main170_like_ok": 1,
+      "main171_ok": 4,
+      "scenarios": 4,
+      "seconds_after": {
+        "S1-test-profile": 6,
+        "S2-guided-broad-continue": 305,
+        "S3-guided-named-continue": 140,
+        "S5-guided-assess-reentry": 105
+      }
+    },
+    "related_contracts_144_files": {
+      "candidate_counts": {
+        "failed": 476,
+        "passed": 2139,
+        "error": 9,
+        "skipped": 39
+      },
+      "new_failures": 0,
+      "fixed": 11,
+      "same_failures": 484,
+      "not_reproduced_alone": [
+        "05_TESTS/CONTRACTS/test_read_judgment_api.py::test_read_judgment_api_retains_decisions_and_reuses_request[final_failed]"
+      ]
+    },
+    "new_contract_test": "05_TESTS/CONTRACTS/test_oracle_scale_reads.py (MAIN171 8/8, MAIN170 0/8)",
+    "installer_commands": 15
+  },
+  "package": {
+    "zip": "MAIN171_FULL_20261106_R1.zip",
+    "zip_sha256": "d6c7520e49b906317f45514564fd38f1e3ad4ded60f35d502464adc6f98c0d63",
+    "members": 547,
+    "workflow": "same bytes as MAIN170_WORKFLOW.py"
+  },
+  "not_verified": [
+    "real ORDS HTTP / field database / field GENOS screen / internal model",
+    "answer quality with a real model (scripted model only)",
+    "field index on SRCH_ROW TARGET_ID/OWNER_ID columns (unknown)"
+  ],
+  "field_deployed": false,
+  "quality_certified": false,
+  "new_model_calls": 0
+}

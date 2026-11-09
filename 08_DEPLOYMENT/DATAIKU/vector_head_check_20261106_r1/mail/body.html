@@ -1,0 +1,29 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[개발계] 첫 질문 VECTOR_NOT_PUBLISHED 대응 + 벡터 게시 확인 SQL (읽기 전용)</b></p>
+<p>현장 로그: <code>oracle_query_vector.py:120 VECTOR_NOT_PUBLISHED: selected Oracle query has no vector head</code></p>
+<p><b>원인</b><br>
+첫 질문의 초기 벡터 검색이 <code>SIDDS.LGL_G19_VCTR_HEAD_S_1</code>에서 현재 채널 판본 행을 찾지 못했습니다.
+개발계 벡터 적재기(R1~R4)는 VCTR_POST/VCTR_ITEM까지만 쓰고 VCTR_HEAD는 쓰지 않습니다.
+코드서빙에 <code>GENOS_RAG_INITIAL_SEARCH=vector</code>가 있으면 이때 키워드 검색으로 넘어가지 않고 요청이 실패합니다.</p>
+<p><b>1. 바로 할 일 (코드 변경 없음)</b><br>
+코드서빙 환경 설정에서 <code>GENOS_RAG_INITIAL_SEARCH</code>를 <code>auto</code>로 바꾸거나 지운 뒤 재기동합니다.<br>
+DP, GENOS_ORACLE_TABLE_MAPPING, DP_QUERY_CHANNEL, 임베딩 설정은 그대로 둡니다.</p>
+<p><b>2. 벡터 사용 가능 여부 확인 (선택, 읽기 전용)</b><br>
+Dataiku 노트북 SQL에서 첨부 TXT마다 별도 Query로 전체를 붙여 실행합니다. 세미콜론·PL/SQL 없음.</p>
+<ul>
+<li>VECTOR_V1_COUNTS.txt — 채널/HEAD/POST/ITEM 행 수</li>
+<li>VECTOR_V2_CHANNEL_HEAD.txt — 채널 판본(QUERY_ID)과 HEAD 연결</li>
+<li>VECTOR_V3_POSTS.txt — 적재된 벡터 판본의 QUERY_ID·모델·차원·완료상태·행 수·HEAD 참조</li>
+<li>VECTOR_V4_ITEM_GROUPS.txt — ITEM 묶음별 행 수와 완료 명세 유무</li>
+</ul>
+<p><b>결과 읽는 법</b></p>
+<ul>
+<li>V1의 POST_ROWS=0, ITEM_ROWS=0 → 개발계에 벡터 없음. auto로 운영.</li>
+<li>V3에 V2의 QUERY_ID와 같은 행이 있고 STATUS=READY, COMPLETION_COUNT=ITEM_ROWS, HEAD_REFS=0 → 벡터는 적재됨, HEAD 1행만 없음(활성화는 별도 결정).</li>
+<li>V3의 QUERY_ID가 현재 채널과 다름 → 예전 판본용 벡터, 현재 판본에는 사용 불가.</li>
+<li>V4의 POST_ROWS=0 → 완료 명세 없는 미완료 적재.</li>
+</ul>
+<p>주의: 판본·문서 목록이 맞지 않는 HEAD 행을 넣으면 auto여도 요청이 실패합니다. 확인 전에 HEAD를 직접 넣지 마세요.</p>
+<p>로컬 검증: Oracle 23.26.3 임시 스키마(개발계와 같은 컬럼/타입)에서 HEAD 없음/있음 두 경우 4개 SQL 통과, 임시 스키마 삭제. 현장 실행 결과는 미확인입니다.</p>
+<p>첨부: VECTOR_V1~V4 TXT 4개, GUIDE.txt, VALIDATION.json, SHA256SUMS.txt</p>
+</body></html>

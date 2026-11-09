@@ -46,6 +46,10 @@ PROMPT += '\n기존 선언한 필요를 위한 목표이면 source_targets.need_
 
 def enabled(inv):
     from .guided_navigation import enabled as guided
+    from .source_handoff import enabled as source_return
+    # Source goals are recorded and executed through the supervisor ledger, which a
+    # source-return child does not keep.
+    if source_return():return False
     return not guided(getattr(getattr(inv,'s',None),'profile',{})) and inv.policy.get('source_goal_control',False) and inv.policy.get('supervisor_mode')=='enforce'
 
 def state(inv,data):

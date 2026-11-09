@@ -9,7 +9,7 @@ from semantic_runtime.legal_agent import corrected_memory as m, query_scope as q
 from semantic_runtime.legal_agent import request_entry as entry
 from semantic_runtime.legal_agent.unified_rag import UnifiedRag
 from semantic_runtime.legal_agent.errors import ContractError
-from test_memory_runtime_v2 import Fake, command
+from test_memory_runtime_v2 import Fake, command, related_all
 
 
 FIRST='최대주주 의무보유기간을 확인해줘'
@@ -35,14 +35,15 @@ class Executor(Fake):
         self.pipeline=S(term_agent=S(profile={'candidate_navigation':{'guided_loop':True},
             'answer_presentation':'guided-conversation-v1'}))
         self.model=S(ensure=lambda:S(sources=S(matcher=metadata())))
-    def scope_state(self,state,c,utterance,*,dialogue=()):
-        return UnifiedRag.scope_state(self,state,c,utterance,dialogue=dialogue)
+    def scope_state(self,state,c,utterance,*,dialogue=(),**kw):
+        return UnifiedRag.scope_state(self,state,c,utterance,dialogue=dialogue,**kw)
 
 
 class Wire:
     def __init__(self):self.calls=[];self.relation='NEW_TOPIC'
     def __call__(self,system,data,schema,phase):
         self.calls.append((phase,deepcopy(data)))
+        if phase.startswith('memory-resolve-related'):return related_all(schema)
         if phase.startswith('memory-resolve'):return deepcopy(self.command)
         if phase=='memory-command-check':
             return {'valid':True,'reason':'모의 검토','request_relation':self.relation,

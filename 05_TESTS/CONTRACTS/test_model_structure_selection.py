@@ -17,6 +17,12 @@ from test_followup_structure_lookup import investigation, apply
 from test_structure_first_search import structured_generation
 from test_multiturn_structured_scope import tree as scoped_tree
 
+# The request-entry search field asks_definition exists from the definition-priority change on; older
+# code rejects it, so scripted entries carry it only when the loaded schema has it.
+from semantic_runtime.legal_agent import request_entry as _asks_entry
+import json as _asks_json
+ASKS_DEFINITION = {'asks_definition': True} if 'asks_definition' in _asks_json.dumps(_asks_entry.schema(model=True)) else {}
+
 
 def single(n): return {'kind':'SINGLE','value':{'n':n}}
 def interval(start, end, first=True, last=True):
@@ -225,7 +231,7 @@ def test_modern_api_keeps_exclusion_through_read_reply_and_restart(tmp_path,scop
                         'queries':['승인'],'format':'prose','reason':'범위 선택'},
                     'intent':{'purpose':'승인 원문 설명','concepts':['승인'],'issues':[
                         {'id':'Q1','question':'승인 원문 설명','subject':'승인','kind':'OTHER','request_quote':question}]},
-                    'context_quotes':[],'search':{'mode':'STRUCTURE','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in change['targets']],'user_quote':change['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 지정'}})
+                    'context_quotes':[],'search':{**ASKS_DEFINITION, 'mode':'STRUCTURE','scope_decision':{'mode':'NAMED_SCOPE','targets':[{**t,'selection':t.get('selection')} for t in change['targets']],'user_quote':change['user_quote'],'reason':'사용자 지정 범위'},'reason':'범위 지정'}})
             if phase.startswith('memory-intent'):
                 self.phases.append(phase)
                 return wire({'purpose':'승인 원문 설명','concepts':['승인'],'background_quotes':[],

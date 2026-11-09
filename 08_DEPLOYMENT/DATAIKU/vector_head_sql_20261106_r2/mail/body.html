@@ -1,0 +1,15 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[개발계] 벡터 켜기 — SQL 노트북만 (Python 셀 대신)</b></p>
+<p>이전 메일의 VECTOR_HEAD_ACTIVATE_R1.txt(Python 셀)는 쓰지 마세요. 아래 SQL만 씁니다.</p>
+<ol>
+<li>SQL 노트북 새 Query → <code>VECTOR_V6_HEAD_INSERT.txt</code> 전체 붙여넣기 → RUN<br>
+INSERT 1문장 + COMMIT. 조건(같은 판본·데이터셋·문서목록·READY·행 수·1024차원)이 하나라도 안 맞으면 0행이고 아무것도 안 바뀝니다.</li>
+<li><code>VECTOR_V2_CHANNEL_HEAD.txt</code> 다시 RUN → HEAD_VCTR_POST_ID = de7e174f006e2808..., HEAD_CHAN_ORD = 1 이면 완료.<br>
+빈칸이면 조건이 안 맞은 것 → V5 결과 사진 보내 주세요.</li>
+<li>코드서빙 <code>GENOS_RAG_INITIAL_SEARCH=auto</code> 로 두고 재기동 → 질문.</li>
+</ol>
+<p>되돌리기: <code>VECTOR_V7_HEAD_UNDO.txt</code> RUN (이 HEAD 1행만 삭제 + COMMIT).<br>
+첫 질문이 VECTOR_CONFIG / VECTOR_HTTP / VECTOR_PUBLICATION / VECTOR_COORDINATE 로 실패하면 되돌리고 사진 보내 주세요.</p>
+<p>로컬 검증(Oracle 23.26.3, 개발계와 같은 구조 임시 표): 정상 1행·다른 세션에서 보임·서버 벡터 게시 검사 통과, 조건 불일치 각각 0행, 되돌리기 확인 — 17개 통과. 현장 실행은 미확인.</p>
+<p>첨부: VECTOR_V6_HEAD_INSERT.txt, VECTOR_V2_CHANNEL_HEAD.txt, VECTOR_V7_HEAD_UNDO.txt, GUIDE.txt, VALIDATION.json, SHA256SUMS.txt</p>
+</body></html>

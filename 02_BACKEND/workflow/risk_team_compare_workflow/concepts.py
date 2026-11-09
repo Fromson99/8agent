@@ -4,6 +4,7 @@ from ..contracts import digest, WorkflowError
 from .contracts import obj, text, array, choice, CITATION, ISSUE, check_citations
 
 CONTRACT = 'internal-concept-comparison-v1'
+STAGE_NOTE = '내규 개념 정리 단계 메모(외규 조사 전): '
 
 
 def enabled(ctx):
@@ -90,6 +91,7 @@ def prepare(ctx, state):
                 'external_task와 external_queries는 이 내규의 명시 참조·위임·정의·적용 조건에 대응하는 '
                 '외규 원문을 찾는 과제다. 질문만 보고 독립된 외규 주제를 만들거나 정답 조문을 추측하지 않는다. '
                 '명시 참조가 없으면 내용상 대응 조사임을 설명한다. requested_fields는 이 개념의 대사에 필요한 것만 선택한다. '
+                '이 단계는 외규를 조사하기 전이다. 외규 원문을 아직 확보하지 못했다는 내용은 unresolved에 쓰지 않고 external_task로 나타낸다. '
                 '이전 묶음의 같은 개념이면 existing_id를 선택해 범위를 확장한다. 새로운 개념만 null로 낸다. '
                 '이번 원문과 관계없는 질문은 억지로 묶지 말고 unresolved에 남긴다. '
                 '범위 판단의 불확실성은 scope_reason과 unresolved에 설명하고 확인한 원문을 보존한다. '
@@ -107,7 +109,8 @@ def prepare(ctx, state):
                     refs = old['internal_citations'] + item['internal_citations']
                     item['internal_citations'] = list({(c['evidence'], c['quote']): c for c in refs}.values())
                     old.update(item)
-            plan['unresolved'] = list(dict.fromkeys(plan['unresolved'] + value['unresolved']))
+            # Written before any external original is read: keep the note, but with its timing.
+            plan['unresolved'] = list(dict.fromkeys(plan['unresolved'] + [STAGE_NOTE + note for note in value['unresolved']]))
             plan['completed_packets'].append(key)
             checkpoint(ctx, state, 'CONCEPTS', data, value)
         plan['status'] = 'DEFINED' if plan['concepts'] else 'NO_RELEVANT_CONCEPT'

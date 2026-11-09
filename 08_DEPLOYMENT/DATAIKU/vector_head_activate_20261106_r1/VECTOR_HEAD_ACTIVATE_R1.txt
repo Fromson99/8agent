@@ -1,0 +1,107 @@
+# Dataiku LEGAL_RAG Python notebook cell: activate the loaded dev vectors for the current search channel.
+# ACTION = "check"    -> read-only binding check only (no write)
+# ACTION = "activate" -> binding check, then insert one VCTR_HEAD row, COMMIT, read back
+# ACTION = "undo"     -> delete exactly that VCTR_HEAD row, COMMIT, read back
+ACTION = "activate"
+CONNECTION = "AIDP"
+CHANNEL = "g19_7c1f8f4931c8be61b914f5bc"
+EXPECTED_POST_PREFIX = "de7e174f006e2808"
+EXPECTED_ITEM_ROWS = 140182
+
+import dataiku
+
+BINDING_SQL = """SELECT c.RFRN_CHNL_NAME, JSON_VALUE(q.RFRN_POST_IFMN_CTNT, '$.status') AS QUERY_STATUS, CASE WHEN JSON_EXISTS(q.RFRN_POST_IFMN_CTNT, '$.extension') THEN 'Y' ELSE 'N' END AS QUERY_EXTENSION, p.VCTR_POST_ID, CASE WHEN JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.query_id') = c.RFRN_POST_HASH_VALU THEN 'Y' ELSE 'N' END AS QUERY_ID_MATCH, CASE WHEN JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.source_release_id') = JSON_VALUE(q.RFRN_POST_IFMN_CTNT, '$.source_release_id') THEN 'Y' ELSE 'N' END AS SOURCE_RELEASE_MATCH, CASE WHEN JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.dataset_version') = JSON_VALUE(q.RFRN_POST_IFMN_CTNT, '$.dataset_version') THEN 'Y' ELSE 'N' END AS DATASET_MATCH, (SELECT COUNT(*) FROM JSON_TABLE(p.VCTR_POST_IFMN_CTNT, '$.manifest.documents[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) a) AS VECTOR_DOCS, (SELECT COUNT(*) FROM JSON_TABLE(q.RFRN_POST_IFMN_CTNT, '$.source_manifest.scope.document_version_ids[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) b) AS QUERY_DOCS, (SELECT COUNT(*) FROM JSON_TABLE(p.VCTR_POST_IFMN_CTNT, '$.manifest.documents[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) a WHERE a.d NOT IN (SELECT b.d FROM JSON_TABLE(q.RFRN_POST_IFMN_CTNT, '$.source_manifest.scope.document_version_ids[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) b)) AS ONLY_IN_VECTOR, (SELECT COUNT(*) FROM JSON_TABLE(q.RFRN_POST_IFMN_CTNT, '$.source_manifest.scope.document_version_ids[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) b WHERE b.d NOT IN (SELECT a.d FROM JSON_TABLE(p.VCTR_POST_IFMN_CTNT, '$.manifest.documents[*]' COLUMNS (d VARCHAR2(1000) PATH '$')) a)) AS ONLY_IN_QUERY, JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.completion.status') AS VECTOR_STATUS, JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.completion.count' RETURNING NUMBER) AS COMPLETION_COUNT, (SELECT COUNT(*) FROM SIDDS.LGL_G19_VCTR_ITEM_S_1 i WHERE i.VCTR_POST_ID = p.VCTR_POST_ID) AS ITEM_ROWS, JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.profile.metric') AS METRIC, JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.profile.normalization') AS NORMALIZATION, JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.profile.dimensions' RETURNING NUMBER) AS DIMENSIONS, (SELECT COUNT(*) FROM SIDDS.LGL_G19_VCTR_HEAD_S_1 h WHERE h.RFRN_POST_HASH_VALU = c.RFRN_POST_HASH_VALU) AS HEAD_ROWS FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 c JOIN SIDDS.LGL_G19_SRCH_POST_S_1 q ON q.RFRN_POST_HASH_VALU = c.RFRN_POST_HASH_VALU CROSS JOIN SIDDS.LGL_G19_VCTR_POST_S_1 p ORDER BY p.VCTR_POST_ID"""
+
+HEAD_SQL = ("SELECT c.RFRN_POST_HASH_VALU AS QUERY_ID, h.VCTR_POST_ID AS HEAD_VCTR_POST_ID, h.CHAN_ORD AS HEAD_CHAN_ORD "
+            "FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 c LEFT JOIN SIDDS.LGL_G19_VCTR_HEAD_S_1 h "
+            "ON h.RFRN_POST_HASH_VALU = c.RFRN_POST_HASH_VALU WHERE c.RFRN_CHNL_NAME = '" + CHANNEL + "'")
+
+executor = dataiku.SQLExecutor2(connection=CONNECTION)
+
+
+def rows(sql):
+    frame = executor.query_to_df(sql)
+    return [dict(zip(frame.columns, values)) for values in frame.itertuples(index=False)]
+
+
+def number(value):
+    return None if value is None or value != value else int(float(value))
+
+
+def text(value):
+    return None if value is None or isinstance(value, float) and value != value else str(value)
+
+
+def binding():
+    found = [r for r in rows(BINDING_SQL) if r["RFRN_CHNL_NAME"] == CHANNEL]
+    if len(found) != 1:
+        raise RuntimeError("STOP_VECTOR_POST_COUNT: expected exactly 1 vector publication, found %d" % len(found))
+    r = found[0]
+    problems = []
+    if not str(r["VCTR_POST_ID"]).startswith(EXPECTED_POST_PREFIX): problems.append("VCTR_POST_ID")
+    for key in ("QUERY_ID_MATCH", "SOURCE_RELEASE_MATCH", "DATASET_MATCH"):
+        if r[key] != "Y": problems.append(key)
+    if r["QUERY_EXTENSION"] != "N": problems.append("QUERY_EXTENSION")
+    if r["QUERY_STATUS"] != "COMPLETE": problems.append("QUERY_STATUS")
+    if r["VECTOR_STATUS"] != "READY": problems.append("VECTOR_STATUS")
+    if r["METRIC"] != "COSINE" or r["NORMALIZATION"] != "l2": problems.append("PROFILE")
+    if number(r["DIMENSIONS"]) != 1024: problems.append("DIMENSIONS")
+    if number(r["ONLY_IN_VECTOR"]) != 0 or number(r["ONLY_IN_QUERY"]) != 0: problems.append("DOCUMENT_SET")
+    if number(r["VECTOR_DOCS"]) != number(r["QUERY_DOCS"]): problems.append("DOCUMENT_COUNT")
+    if not number(r["COMPLETION_COUNT"]) == number(r["ITEM_ROWS"]) == EXPECTED_ITEM_ROWS: problems.append("ITEM_ROWS")
+    shown = {k: (number(v) if isinstance(v, float) else v) for k, v in r.items()}
+    r = dict(r, VCTR_POST_ID=text(r["VCTR_POST_ID"]))
+    print("BINDING", shown)
+    if problems:
+        raise RuntimeError("STOP_BINDING_MISMATCH: " + ",".join(problems) + " (no write)")
+    return r
+
+
+def write(statement):
+    executor.query_to_df("SELECT 1 AS OK FROM DUAL", pre_queries=[statement], post_queries=["COMMIT"])
+
+
+def head():
+    found = rows(HEAD_SQL)
+    if len(found) != 1:
+        raise RuntimeError("STOP_CHANNEL_COUNT: %d" % len(found))
+    r = found[0]
+    return dict(r, QUERY_ID=text(r["QUERY_ID"]), HEAD_VCTR_POST_ID=text(r["HEAD_VCTR_POST_ID"]))
+
+
+if ACTION not in ("check", "activate", "undo"):
+    raise RuntimeError("ACTION must be check, activate or undo")
+before = head()
+print("HEAD_BEFORE", before)
+if ACTION in ("check", "activate"):
+    b = binding()
+    if ACTION == "check":
+        print("VECTOR_BINDING_PASS_NO_WRITE")
+    elif before["HEAD_VCTR_POST_ID"] == b["VCTR_POST_ID"] and number(before["HEAD_CHAN_ORD"]) == 1:
+        print("VECTOR_HEAD_ALREADY_ACTIVE (no write)")
+    elif before["HEAD_VCTR_POST_ID"] is not None or number(b["HEAD_ROWS"]) != 0:
+        raise RuntimeError("STOP_HEAD_EXISTS: another VCTR_HEAD row exists for this query (no write)")
+    else:
+        write("INSERT INTO SIDDS.LGL_G19_VCTR_HEAD_S_1 (RFRN_POST_HASH_VALU, VCTR_POST_ID, CHAN_ORD) "
+              "SELECT c.RFRN_POST_HASH_VALU, p.VCTR_POST_ID, 1 FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 c, SIDDS.LGL_G19_VCTR_POST_S_1 p "
+              "WHERE c.RFRN_CHNL_NAME = '" + CHANNEL + "' AND p.VCTR_POST_ID = '" + b["VCTR_POST_ID"] + "' "
+              "AND JSON_VALUE(p.VCTR_POST_IFMN_CTNT, '$.manifest.query_id') = c.RFRN_POST_HASH_VALU "
+              "AND NOT EXISTS (SELECT 1 FROM SIDDS.LGL_G19_VCTR_HEAD_S_1 h WHERE h.RFRN_POST_HASH_VALU = c.RFRN_POST_HASH_VALU)")
+        after = head()
+        print("HEAD_AFTER", after)
+        if after["HEAD_VCTR_POST_ID"] != b["VCTR_POST_ID"] or number(after["HEAD_CHAN_ORD"]) != 1:
+            raise RuntimeError("STOP_HEAD_READBACK_MISMATCH")
+        print("VECTOR_HEAD_ACTIVATED: the next question uses vectors (no restart needed for this row; restart only after changing environment variables)")
+else:
+    post = before["HEAD_VCTR_POST_ID"]
+    if post is None:
+        print("VECTOR_HEAD_ALREADY_ABSENT (no write)")
+    else:
+        if not str(post).startswith(EXPECTED_POST_PREFIX):
+            raise RuntimeError("STOP_UNDO_OTHER_HEAD: head points to a different publication (no write)")
+        write("DELETE FROM SIDDS.LGL_G19_VCTR_HEAD_S_1 WHERE RFRN_POST_HASH_VALU = '" + before["QUERY_ID"] + "' AND VCTR_POST_ID = '" + post + "'")
+        after = head()
+        print("HEAD_AFTER", after)
+        if after["HEAD_VCTR_POST_ID"] is not None:
+            raise RuntimeError("STOP_UNDO_READBACK_MISMATCH")
+        print("VECTOR_HEAD_REMOVED: the next question uses keyword search when GENOS_RAG_INITIAL_SEARCH=auto")

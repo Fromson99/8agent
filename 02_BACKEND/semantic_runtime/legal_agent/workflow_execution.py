@@ -31,8 +31,11 @@ def bind_context(context):
     parent['context'].remaining()
     if set(context.query['scope']['document_version_ids']) != parent['documents']:
         raise ContractError('child RAG authorization changed')
+    # The label follows whichever deadline is earlier, so a child of a workflow
+    # without a time limit keeps its own native deadline when resumed.
+    own = context.deadline < parent['context'].deadline
     return replace(context, deadline=min(context.deadline, parent['context'].deadline),
-                   deadline_at=parent['context'].deadline_at)
+                   deadline_at=context.deadline_at if own else parent['context'].deadline_at)
 
 
 def register(work):
@@ -80,6 +83,7 @@ def reserve(work, kind):
             policy=owner.context.binding.get('execution_policy',{})
             if policy:
                 reserve=owner.budget()['finalization_reserve']
+            if policy and policy.get('unbounded') is not True:
                 spent=owner.db.execute("SELECT count(*) FROM event WHERE kind='WORKFLOW_CHILD_RESERVED' AND json_extract(journal_text(payload_json),'$.call_id')=? AND json_extract(journal_text(payload_json),'$.kind')='model'",(parent['call_id'],)).fetchone()[0]
                 if spent>=policy['max_child_model_attempts']:
                     raise BudgetExhausted('workflow child investigation call limit reached')
@@ -190,6 +194,10 @@ def validate_task(task, original, *, verify_requirements=False):
     mode=task.pop('return_mode',None);preferred=task.pop('preferred_document_ids',[])
     if mode not in (None,'sources') or not isinstance(preferred,list) or any(not isinstance(d,str) for d in preferred):raise ContractError('invalid source task')
     task.pop('basis_snapshot',None);task.pop('basis_targets',None)
+    task.pop('search_document_ids',None);task.pop('session_key',None)
+    # A parent whose question carries its own originals (문서 대사) may switch off the
+    # automatic definition entry for the terms in that question; it cannot switch it on.
+    if task.pop('question_definitions',False) is not False:raise ContractError('question_definitions may only be false')
     anchors=task.pop('internal_anchors',None)
     if anchors is not None:validate_internal_anchors(anchors,task)
     fields=task.pop('comparison_fields',None)

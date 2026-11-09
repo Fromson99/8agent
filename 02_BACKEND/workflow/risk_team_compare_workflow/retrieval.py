@@ -2,6 +2,22 @@
 from ..contracts import digest
 
 
+def named_external(ctx, state):
+    """External rules named in the originals read from an internal document the concepts cite.
+
+    The governing rule is often named in a purpose article that no concept cites, so
+    every original read from the cited internal documents is searched. Only registered
+    names are matched; which originals apply is still judged from what is then read.
+    """
+    from .concepts import originals
+    from semantic_runtime.comparison_research_bridge import preferred_documents
+    sources=originals(ctx,state)
+    cited={c['evidence'] for concept in state['concept_plan']['concepts'] for c in concept['internal_citations']}
+    documents={e['document_id'] for e in sources if e['evidence_id'] in cited}
+    named='\n'.join(e['text'] for e in sources if e['side']=='internal' and e['document_id'] in documents)
+    return preferred_documents(ctx.rag.port,named,'external')
+
+
 def discover(ctx, state, side, *, question=None, research_task=None, previous_result=None):
     previous=state.get('rag_results',{}).get(side) if question is not None else None
     if previous_result is not None:previous=previous_result
@@ -26,7 +42,10 @@ def discover(ctx, state, side, *, question=None, research_task=None, previous_re
         action['args']['task']['research_continuity']=ResearchLedger(state['task_board']).child_context(side,research_task['binding_hash'],research_task)
     if ctx.definition.manifest.get('source_return_contract') in ('source-investigation-v1','source-investigation-v2'):
         from semantic_runtime.comparison_research_bridge import preferred_documents
-        action['args']['task'].update(return_mode='sources',preferred_document_ids=preferred_documents(ctx.rag.port,ctx.request['question'],side))
+        preferred=preferred_documents(ctx.rag.port,ctx.request['question'],side)
+        if side=='external' and state.get('concept_plan'):
+            preferred=sorted(set(preferred)|set(named_external(ctx,state)))
+        action['args']['task'].update(return_mode='sources',preferred_document_ids=preferred)
     from semantic_runtime.basis_links.integration import parent_task
     parent_task(ctx,state,side,action)
     if side=='external' and state.get('concept_plan'):

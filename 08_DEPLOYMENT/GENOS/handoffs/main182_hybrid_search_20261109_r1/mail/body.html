@@ -1,0 +1,13 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN182] 초기검색 하이브리드(벡터 + 본문 검색 합친 순서) 추가 — MAIN181 대체 교체본</b></p>
+<p><b>MAIN182만 적용하면 됩니다</b>(MAIN181이 적용됐든 아직 MAIN177이든, MAIN178~181 내용 모두 포함). 워크플로우 편집기·화면 설정 그대로.</p>
+<p><b>환경변수 한 값만 변경</b>: <code>GENOS_RAG_INITIAL_SEARCH=hybrid</code> (지금 vector). 다른 값은 그대로. 이 값이 hybrid가 아니면 MAIN181과 동작이 같습니다.</p>
+<p><b>바뀐 것</b>: 벡터 상위 100개 조문과 본문 검색(BM25) 조문 순위를 순위 합산으로 합쳐 첫 읽기 메뉴에 올립니다.
+질문 표현과 조문 표현이 달라 벡터만으로는 뒤로 밀리던 정답 조문을 본문 검색이 끌어올립니다.</p>
+<p><b>실제 Qwen</b>(financial CM 51문항, 로컬, 1회): 필수 조문 확보 벡터만 74/98 → <b>하이브리드 77/98</b>, 답변 인용 66 → 68. 결과 불명 0.
+같이 시험한 "LLM 재정렬"(77)·"두 목록 따로 표시"(71)는 나아지지 않아 넣지 않았습니다. 품질 인증은 아닙니다.</p>
+<p><b>적용</b>: TRANSFER 폴더에서 <code>bash MAIN182_ONECLICK_R1.txt</code> → MAIN182_ONECLICK_DONE, MAIN182_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전(환경변수 hybrid).</p>
+<p><b>현장 확인 부탁</b>: 판단 카드 첫 줄 "벡터·본문 검색 후보 N개 · 합친 순", 로그 INITIAL_VECTOR_CANDIDATES의 fusion, 요청당 시간·oracle.sql.summary.</p>
+<p><b>로컬 검증</b>: 관련 계약 143파일 새 실패 0, Oracle 규모 점검 hybrid·vector 두 모드 통과(최대 SQL 379/417), 진입 17/17, 설치기 MAIN177 checkout 15명령 통과.
+상세는 GUIDE.txt / VERIFICATION.json.</p>
+</body></html>

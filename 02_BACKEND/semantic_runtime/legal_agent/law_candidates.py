@@ -8,7 +8,7 @@ from ..runtime_cache import CACHE
 
 from . import query_scope as qs
 CONTRACT = 'law-candidate-navigation-v3'
-DEFAULT_POLICY = {'guided_loop':False, 'guided_action_limit':0, 'reference_bundle_review':False, 'requirement_coverage':False, 'scope_completion':False, 'assessment_consistency':False, 'source_goal_control':False, 'supervisor_mode':'off', 'mode': 'legacy', 'law_page_size': 12, 'article_page_size': 4,
+DEFAULT_POLICY = {'guided_loop':False, 'guided_action_limit':0, 'guided_reads_free':False, 'guided_read_rounds':0, 'guided_answer_read_rounds':0, 'guided_section_title_matches':False, 'reference_bundle_review':False, 'requirement_coverage':False, 'scope_completion':False, 'assessment_consistency':False, 'source_goal_control':False, 'supervisor_mode':'off', 'mode': 'legacy', 'law_page_size': 12, 'article_page_size': 4,
                   'hit_page_size': 8, 'search_rounds': 8, 'allow_unresolved_completion': True, 'investigation_control': False,
                   'assessment_reentry_limit': 2, 'completion_contract': False, 'structure_first': False, 'batch_selected_pages': False, 'selectable_search': False, 'compact_input': False, 'completion_policy_version': 'investigation-completion-v4', 'length_recovery_max_tokens': 0, 'definition_entry': False, 'answer_first': False, 'selected_connection_scope': False, 'answer_progress_control': False, 'delegation_frontier': False, 'bounded_judgment_notes': False, 'definition_context': False, 'small_connection_context': False, 'read_judgment': False, 'minimal_input': False, 'read_candidate_page_size': 20, 'stable_navigation_references':False, 'new_read_reviews':False, 'independent_read_recovery':False, 'ontology_enabled': False, 'ontology_context': {'mode':'A0'}, 'ontology_direct_assessment': False}
 
@@ -24,6 +24,12 @@ def validate_policy(value):
     if result['supervisor_mode'] not in ('off','shadow','enforce'):raise ContractError('invalid supervisor mode')
     if type(result['guided_action_limit']) is not int or not 0 <= result['guided_action_limit'] <= 40:raise ContractError('guided action limit must be 0..40 (0 disables)')
     if result['guided_action_limit'] and not result['guided_loop']:raise ContractError('guided action limit requires the guided loop')
+    if type(result['guided_reads_free']) is not bool:raise ContractError('guided reads free must be boolean')
+    if result['guided_reads_free'] and not result['guided_action_limit']:raise ContractError('free guided reads require a guided action limit')
+    if type(result['guided_read_rounds']) is not int or not 0 <= result['guided_read_rounds'] <= 12:raise ContractError('guided read rounds must be 0..12 (0 leaves free reads unbounded; applies only to free reads)')
+    if type(result['guided_answer_read_rounds']) is not int or not 0 <= result['guided_answer_read_rounds'] <= 8:raise ContractError('guided answer read rounds must be 0..8 (0 disables)')
+    if result['guided_answer_read_rounds'] and not result['guided_loop']:raise ContractError('guided answer reads require the guided loop')
+    if type(result['guided_section_title_matches']) is not bool:raise ContractError('guided section title matches must be boolean')
     if result['supervisor_mode']!='off' and not (result['compact_input'] and result['investigation_control'] and result['minimal_input']):raise ContractError('supervisor requires compact controlled navigation')
     if result['assessment_consistency'] and not result['completion_contract']:raise ContractError('assessment consistency requires completion contract')
     if result['reference_bundle_review'] and not (result['source_goal_control'] and result['supervisor_mode']=='enforce' and result['read_judgment'] and result['requirement_coverage']):raise ContractError('reference bundle review requires enforced source goals and both final reviews')
@@ -80,6 +86,26 @@ def validate_policy(value):
 
 def enabled(session):
     return policy(session)['mode'] == 'law-first-v1' and getattr(session.matcher, 'unit_fulltext', None) is not None
+
+
+def allowed_descriptor(permitted):
+    """Durable description of a permitted source set: documents for a lazy Oracle scope."""
+    if hasattr(permitted, 'document_ids'):
+        return {'documents': sorted(permitted.document_ids)}
+    return sorted(permitted)
+
+
+def descriptor_within(descriptor, permitted):
+    if isinstance(descriptor, dict):
+        documents = getattr(permitted, 'document_ids', None)
+        return documents is not None and set(descriptor['documents']) <= set(documents)
+    return set(descriptor) <= permitted
+
+
+def descriptor_scope(session, descriptor):
+    if isinstance(descriptor, dict):
+        return session.tools.sources.ids_for_documents(descriptor['documents'])
+    return descriptor
 
 
 def allowed(session):
@@ -158,6 +184,52 @@ def search_queries(session, plan):
     return focused_queries(session.context.request['question'], plan), 'request_query_fallback'
 
 
+DECLARED_NAME_CARDS = 8
+
+
+def declared_name_queries(s, queries, *, read=True):
+    """Add the 「title」 of law-title abbreviations the corpus declares (`「X」(이하 "Y"라 한다)`).
+
+    Structure-first discovery passes read=False: the body index is not read before a
+    structural selection, so only declarations already cached in this process are used.
+    Returns the queries and, for the model, what each name in them stands for and where
+    the original declares it (a search hint, never legal evidence).
+    """
+    from . import declared_names
+    with latency.span('law.recall.declared_names') as metrics:
+        expanded, report = declared_names.expand(s, queries, s.scope, read=read)
+        metrics.update(word_count=len(report['words']), added=len(report['added_queries']))
+    if report['declarations'] or report['skipped']:
+        s.repo.event('DECLARED_NAME_QUERIES', report)
+    return expanded, declared_name_cards(s, report['declarations'])
+
+
+def declared_name_cards(s, declarations):
+    sources = getattr(getattr(s, 'tools', None), 'sources', None) or {}
+    cards, seen = [], set()
+    for d in declarations:
+        key = (d['name'], d['long_form'], d['document_id'])
+        if key in seen:
+            continue
+        seen.add(key)
+        source = sources.get(d['source_id']) if hasattr(sources, 'get') else None
+        cards.append({'name': d['name'], 'means': d['long_form'],
+                      'declared_in': ' '.join(x for x in (d.get('document_name'), (source or {}).get('heading')) if x),
+                      'search_word_added': d['kind'] == 'TITLE' and d['direction'] == 'NAME_TO_LONG_FORM'})
+        if len(cards) >= DECLARED_NAME_CARDS:
+            break
+    return cards
+
+
+def _with_declared(result, cards):
+    """Keep the cards with the catalogue the model is shown (saved with the investigation)."""
+    if cards and isinstance(result, tuple) and len(result) == 2 and isinstance(result[1], dict):
+        catalogue = result[1].get('law_navigation')
+        if isinstance(catalogue, dict):
+            catalogue['declared_names'] = cards
+    return result
+
+
 @latency.timed('law.recall.discover', pressure=True)
 def discover(recall):
     from .comparison_research import recall as task_recall
@@ -172,22 +244,51 @@ def discover(recall):
             recall.s.repo.event('CORE_EVIDENCE_ROUTE_FALLBACK',{'reason':'current source coordinates or spans changed'})
             recall.s.core_evidence_route=None
     from .source_recall import focused_queries
-    from .structure_query import resolve
     s = recall.s; idx, db = index(s)
     plan = getattr(s, 'recall_query_plan', {'queries': [], 'law_names': []})
     with latency.span('law.recall.tokenize') as metrics:
         queries, query_origin = search_queries(s, plan)
+        entry=getattr(s,'entry_search',None) or {}
+        body_selected=policy(s)['selectable_search'] and (entry.get('mode')=='FULLTEXT' or getattr(s,'law_search_queries',None))
+        structure_path=policy(s)['structure_first'] and not body_selected
+        queries, declared = declared_name_queries(s, queries, read=not structure_path)
         route_queries = list(queries)
         terms = sorted({term for query in queries for term in question_terms(query)})
         metrics.update(query_count=len(queries), term_count=len(terms))
-    entry=getattr(s,'entry_search',None) or {}
-    body_selected=policy(s)['selectable_search'] and (entry.get('mode')=='FULLTEXT' or getattr(s,'law_search_queries',None))
-    if policy(s)['structure_first'] and not body_selected:
-        return structured_discovery(s, queries, terms, route_queries=route_queries, query_origin=query_origin)
+    if structure_path:
+        return _with_declared(structured_discovery(s, queries, terms, route_queries=route_queries, query_origin=query_origin), declared)
     from ..vector_navigation import discover as vector_discover
     vector_result=vector_discover(s,queries,terms,query_origin)
-    if vector_result is not None:return vector_result
+    if vector_result is not None:return _with_declared(vector_structure_entry(s, vector_result, route_queries), declared)
     page = idx.law_groups_page(db, terms, qs.search_sources(s), limit=policy(s)['law_page_size'], **qs.fulltext(s))
+    structural, direct = structure_entry(s, route_queries)
+    # Exact positions are entry hints; the full corpus directory remains present.
+    hits = []; selected = list(direct)
+    for law in page['items']:
+        articles = idx.article_groups_page(db, terms, law['document_id'], qs.search_sources(s), limit=1, **qs.fulltext(s))
+        for article in articles['items']:
+            sid = article['source_id']; selected.append(sid)
+            for h in idx.hit_page(db, terms, sid, qs.search_sources(s), limit=1, **qs.fulltext(s))['items']:
+                hits.append(hit_shape(h, terms))
+    hits = add_structure_hits(s, structural, direct, hits)
+    selected = list(dict.fromkeys(selected))
+    catalogue = {'contract': CONTRACT, 'terms': terms, 'queries': queries, 'route_queries': route_queries, 'query_origin': query_origin, 'law_page': page,
+        'query_fingerprint': digest({'terms': terms, 'route_queries': route_queries, 'query_origin': query_origin, 'scope': sorted(s.scope), 'index': idx.manifest['index_sha256']}),
+        'index_sha256': idx.manifest['index_sha256'], 'search_policy': 'best-own-block-match-v1'}
+    s.repo.event('LAW_FULLTEXT_DIRECTORY', {'queries': queries, 'laws': [{**law,'name':s.matcher.documents[law['document_id']]} for law in page['items']],
+        'total_laws': page['total'], 'has_more_laws': page['next_cursor'] is not None,
+        'query_fingerprint': catalogue['query_fingerprint']})
+    if declared:
+        catalogue['declared_names'] = declared
+    return selected, {'discovery_mode': 'fulltext', 'law_navigation': catalogue,
+        'unit_hits': hits, 'unit_index_sha256': idx.manifest['index_sha256'],
+        'selected_for_read': selected, 'discovered': selected, 'routes': {}, 'queries': [],
+        'structure_query': structural, 'parent_selections_preserved': True}
+
+
+def structure_entry(s, route_queries):
+    """Coordinates named in the accepted search words, filtered to the request scope."""
+    from .structure_query import resolve
     with latency.span('law.recall.structure'):
         query_routes = [qs.filter_route(s,resolve(query, s.matcher, qs.documents(s))) for query in route_queries]
         structural = dict(query_routes[0])
@@ -200,14 +301,11 @@ def discover(recall):
     direct = structural['source_ids'] if structural['status'] == 'MATCH' else []
     if set(direct)-allowed(s):
         raise ContractError('structural originals outside request scope')
-    # Exact positions are entry hints; the full corpus directory remains present.
-    hits = []; selected = list(direct)
-    for law in page['items']:
-        articles = idx.article_groups_page(db, terms, law['document_id'], qs.search_sources(s), limit=1, **qs.fulltext(s))
-        for article in articles['items']:
-            sid = article['source_id']; selected.append(sid)
-            for h in idx.hit_page(db, terms, sid, qs.search_sources(s), limit=1, **qs.fulltext(s))['items']:
-                hits.append(hit_shape(h, terms))
+    return structural, direct
+
+
+def add_structure_hits(s, structural, direct, hits):
+    """Read named coordinates first; an existing body-search hit only gains the entry reason."""
     for sid in direct:
         source = s.tools.sources[sid]
         partitions=[p for p in structural['pairs'] if p.get('source_partition') is not None and p.get('source_id')==sid]
@@ -240,17 +338,27 @@ def discover(recall):
                     'unit_id':uid,'requested_unit_id':requested,'article_unit_id':source['unit_id'],
                     'document_name':source['document_name'],'heading':source.get('heading',''),
                     'match_paths':[],'entry_reason':'exact_structure'})
-    selected = list(dict.fromkeys(selected))
-    catalogue = {'contract': CONTRACT, 'terms': terms, 'queries': queries, 'route_queries': route_queries, 'query_origin': query_origin, 'law_page': page,
-        'query_fingerprint': digest({'terms': terms, 'route_queries': route_queries, 'query_origin': query_origin, 'scope': sorted(s.scope), 'index': idx.manifest['index_sha256']}),
-        'index_sha256': idx.manifest['index_sha256'], 'search_policy': 'best-own-block-match-v1'}
-    s.repo.event('LAW_FULLTEXT_DIRECTORY', {'queries': queries, 'laws': [{**law,'name':s.matcher.documents[law['document_id']]} for law in page['items']],
-        'total_laws': page['total'], 'has_more_laws': page['next_cursor'] is not None,
-        'query_fingerprint': catalogue['query_fingerprint']})
-    return selected, {'discovery_mode': 'fulltext', 'law_navigation': catalogue,
-        'unit_hits': hits, 'unit_index_sha256': idx.manifest['index_sha256'],
-        'selected_for_read': selected, 'discovered': selected, 'routes': {}, 'queries': [],
-        'structure_query': structural, 'parent_selections_preserved': True}
+    return hits
+
+
+def vector_structure_entry(s, result, route_queries):
+    """Vector ranking never drops a coordinate the search words name (e.g. 제365조).
+
+    Same resolver and scope filter as the keyword path. The named units are read
+    first; the vector candidates stay as the remaining READ offers. Without a
+    named coordinate the vector result is returned unchanged.
+    """
+    if not route_queries:return result
+    structural, direct = structure_entry(s, route_queries)
+    if not direct:return result
+    hits = add_structure_hits(s, structural, direct, [])
+    selected, discovery = result
+    selected = list(dict.fromkeys([*direct, *selected]))
+    s.repo.event('INITIAL_VECTOR_STRUCTURE_ENTRY', {'source_ids': list(direct),
+        'units': [{'source_id': h.get('source_id'), 'unit_id': h.get('unit_id')} for h in hits],
+        'publication_id': discovery['law_navigation'].get('vector_publication')})
+    return selected, {**discovery, 'unit_hits': hits, 'selected_for_read': selected,
+        'discovered': selected, 'structure_query': structural}
 
 
 @latency.timed('law.recall.prepare', pressure=True)
@@ -286,7 +394,11 @@ def parent_offer(session, hit):
 def siblings(session, hit, offer):
     result = []
     units=session.matcher.units
-    rows=units.for_document(hit['document_id']) if hasattr(units,'for_document') else units.items()
+    if hasattr(units,'children_for'):
+        # Oracle: the parent's children only (a whole-document listing stops at large documents).
+        rows=units.children_for(hit['document_id'], None if offer['unit_id'] is None else str(offer['unit_id']))
+    else:
+        rows=units.for_document(hit['document_id']) if hasattr(units,'for_document') else units.items()
     for (did, uid), unit in rows:
         if did == hit['document_id'] and str(unit.get('parent')) == str(offer['unit_id']):
             result.append({'unit_id': uid, 'label': unit.get('surface') or unit.get('title') or uid,
@@ -342,9 +454,16 @@ def structured_discovery(s, queries, terms, *, route_queries=None, query_origin=
 
 
 def fulltext_scope_keys(session, document_id, unit_id=None):
-    """Resolve selected metadata scope to indexed units before lexical ranking."""
+    """Resolve selected metadata scope to indexed units before lexical ranking.
+
+    Oracle returns None for "the whole document" when the document is too large to
+    enumerate (callers already restrict ranking to that document); subtrees are walked
+    through parent lookups. SQLite keeps the bound in-memory tree.
+    """
     from .structure_query import document_tree
     if document_id not in session.scope:raise ContractError('fulltext document outside request scope')
+    if hasattr(session.matcher.units,'children_for'):
+        return _oracle_scope_keys(session, document_id, unit_id)
     tree=document_tree(session.matcher,document_id)
     if unit_id is None:units=set(tree['nodes'])
     else:
@@ -360,6 +479,54 @@ def fulltext_scope_keys(session, document_id, unit_id=None):
     rows=idx.scope_keys(db, document_id, units)
     permitted=allowed(session)
     return frozenset(key for key,sid in rows if sid in permitted)
+
+
+SCOPE_KEY_UNITS = 1000          # unit IDs per scope_keys statement (one result stays far below 10,000 rows)
+WHOLE_DOCUMENT_UNITS = 4096     # larger whole-document scopes are passed as "whole document" (None)
+
+
+def _subtree(session, did, root):
+    units=session.matcher.units
+    if (did, str(root)) not in units:
+        raise ContractError('fulltext subtree is not stored')
+    found=[]; todo=[str(root)]; seen=set()
+    while todo:
+        uid=todo.pop()
+        if uid in seen:continue
+        seen.add(uid);found.append(uid)
+        todo.extend(str(child) for (_, child), _ in units.children_for(did, uid))
+    return found
+
+
+def _oracle_scope_keys(session, document_id, unit_id):
+    units=session.matcher.units
+    targets=None
+    if qs.active(session):
+        targets=[t['unit_id'] for t in qs.active(session)['targets'] if t['document_id']==document_id]
+        if not targets:
+            return frozenset()
+        if any(t is None for t in targets):
+            targets=None  # the whole document is directly in scope
+    if unit_id is None:
+        if targets is None:
+            if units.unit_count(document_id) > WHOLE_DOCUMENT_UNITS:
+                return None
+            selected=[str(uid) for (_, uid), _ in units.for_document(document_id)]
+        else:
+            selected=list(dict.fromkeys(u for t in targets for u in _subtree(session, document_id, t)))
+    else:
+        selected=_subtree(session, document_id, unit_id)
+        if targets is not None:
+            selected=[uid for uid in selected if qs.direct(session, document_id, uid)]
+    if not selected:
+        return frozenset()
+    idx,db=index(session);idx.check_unchanged()
+    keys=set()
+    for at in range(0, len(selected), SCOPE_KEY_UNITS):
+        # Oracle scope_keys verifies each published row's document; every source is in this
+        # authorized document, so no per-key source lookup is needed.
+        keys.update(key for key,_ in idx.scope_keys(db, document_id, selected[at:at+SCOPE_KEY_UNITS]))
+    return frozenset(keys)
 
 
 def scoped_read_unit(session, source_id, selected_unit):

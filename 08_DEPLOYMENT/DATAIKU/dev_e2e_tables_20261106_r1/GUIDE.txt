@@ -1,0 +1,53 @@
+개발계 E2E 추가 테이블 7개 - SQL / 컬럼 / 권한  R1  (2026-11-06)
+
+1. 추가로 만들어야 하는 테이블 (총 7개)
+  [Silver SIDDS] 온톨로지 - 데이터는 비어 있어도 됨(온톨로지 OFF), 테이블은 서버 시작 검사에 필요
+    SIDDS.LGL_G19_ONTL_POST_S_1   온톨로지게시내역     5컬럼  PK ONTL_POST_ID
+    SIDDS.LGL_G19_ONTL_HEAD_S_1   온톨로지선택내역     3컬럼  PK CNCP_GROP_ID
+    SIDDS.LGL_G19_ONTL_ANC_S_1    원문지식연결내역     5컬럼  PK ONTL_POST_ID, DOC_LCT_HASH_VALU
+  [Agent SIDDA] 대화에서 나온 부산물(질의·판단·실행 기록)만
+    SIDDA.LGL_AGT_RUN_A           에이전트실행정보     9컬럼
+    SIDDA.LGL_AGT_REC_A           에이전트공통기록정보 8컬럼
+    SIDDA.LGL_AGT_BODY_A          에이전트본문조각정보 4컬럼
+    SIDDA.LGL_EXEC_ST_A           에이전트실행상태정보 5컬럼
+  컬럼 논리명/물리명/타입/PK/NULL허용 전체는 COLUMNS_R1.csv.
+  기존 요청한 11개(SIDDS 10개 + SIDDA.LGL_PIPE_RESULT_A)와 합쳐 총 18개.
+
+2. 실행 방법 (DEV_E2E_TABLES_R1.txt)
+  - 블록([C00], [S01] ...)마다 SQL 한 줄. 한 Query에 한 줄씩 붙여서 실행.
+  - 세미콜론(;)과 PL/SQL이 없음. Dataiku SQL 노트북은 버튼이 RUN(RUN SELECTION 아님)인지 확인.
+  - 생성(S/A)과 권한(G)은 SIDDS/SIDDA 소유자 또는 DBA가 실행 (PIDD2APP은 GRANT시 ORA-01031이었음).
+  순서
+    C00        8개 테이블 중 이미 있는 것 확인
+    S01~S06    Silver 온톨로지 3테이블 + 인덱스 3
+    A01~A11    Agent 4테이블 + 인덱스 7  (C00에 이미 나온 테이블은 해당 CREATE 건너뜀)
+    G01~G18    BAIP04APP 권한 (G01~G10, G18은 앞서 요청한 것과 같음 - 이미 했으면 건너뜀)
+    V01        컬럼 수 확인: POST 5, HEAD 3, ANC 5, RUN 9, REC 8, BODY 4, EXEC_ST 5
+    V02        BAIP04APP 권한 확인 (DBA는 DBA_TAB_PRIVS로 봐도 됨)
+
+3. 필요한 권한 (받는 계정: BAIP04APP = GENOS ORDS 접속 계정)
+    SIDDS.LGL_G19_*_S_1 기존 10개       SELECT                         (기존 요청)
+    SIDDS.LGL_G19_ONTL_POST_S_1        SELECT                         (신규)
+    SIDDS.LGL_G19_ONTL_HEAD_S_1        SELECT                         (신규)
+    SIDDS.LGL_G19_ONTL_ANC_S_1         SELECT                         (신규)
+    SIDDA.LGL_AGT_RUN_A                SELECT, INSERT, UPDATE         (신규)
+    SIDDA.LGL_AGT_REC_A                SELECT, INSERT, DELETE         (신규)
+    SIDDA.LGL_AGT_BODY_A               SELECT, INSERT                 (신규)
+    SIDDA.LGL_EXEC_ST_A                SELECT, INSERT, UPDATE, DELETE (신규)
+    SIDDA.LGL_PIPE_RESULT_A            SELECT, INSERT                 (기존 요청)
+  근거: 현재 메인(MAIN161) 코드가 각 테이블에 실제로 쓰는 SQL 종류.
+    RUN은 MERGE(INSERT/UPDATE), REC는 현재 투영행 교체(INSERT/DELETE),
+    BODY는 추가만(INSERT), EXEC_ST는 상태·잠금(INSERT/UPDATE/DELETE, SELECT FOR UPDATE).
+  CREATE 권한은 서빙 계정에 필요 없음(서버는 테이블을 만들지 않고 미리 만들어진 것만 검사).
+
+4. 주의
+  - 현재 MAIN161 코드의 개발계 매핑은 온톨로지 3개를 SIDDA.LGL_G19_ONTL_*_A_1로 찾는다.
+    SIDDS에 만든 뒤에는 코드 매핑 갱신본(온톨로지 owner/이름 3곳)이 반영돼야 첫 질문의 테이블 검사가 통과한다.
+  - 온톨로지는 지금 OFF라 빈 테이블로 충분. 나중에 Dataiku로 게시할 때 적재 계정의 INSERT 권한은 별도.
+  - 채팅 코드서빙이 BAIP04APP이 아닌 다른 ORDS 계정을 쓰면 G01~G18의 BAIP04APP만 그 계정으로 바꿔 실행.
+
+5. 로컬 검증 (현장 미실행)
+  로컬 Oracle 23.26.3 임시 스키마 3개(SIDDS/SIDDA/BAIP04APP 대역)에서 이 TXT 그대로 실행: 16/16 통과.
+  생성 7테이블·10인덱스, 권한 받은 계정으로 V01/V02 기대값 일치,
+  같은 계정으로 MAIN161 매핑 17테이블 검사(온톨로지 SIDDS로 바꾼 사본) 통과,
+  Agent 기록 쓰기(INSERT/UPDATE/DELETE/MERGE)·읽기·잠금 통과. 임시 사용자 삭제 확인. VALIDATION.json 참고.

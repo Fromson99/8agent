@@ -1,0 +1,22 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[개발계] 벡터 활성화 — VCTR_HEAD 1행 (확인 후 INSERT, 되돌리기 포함)</b></p>
+<p><b>보내주신 V1~V4 결과</b><br>
+채널 g19_7c1f8f4931c8be61b914f5bc 판본용 벡터 게시 de7e174f006e2808... 가 READY, kure-v1 1024차원,
+완료 수 140,182 = ITEM 140,182행(문서 2,121)으로 다 적재돼 있습니다. VCTR_HEAD만 0행이라 서비스가 못 찾았습니다.</p>
+<p><b>실행</b></p>
+<ol>
+<li>(선택) SQL 노트북에서 <code>VECTOR_V5_BINDING.txt</code> 전체를 새 Query로 실행 — 서버가 검사하는 판본·데이터셋·문서목록 일치 확인(읽기 전용).<br>
+정상: QUERY_STATUS=COMPLETE, QUERY_EXTENSION=N, *_MATCH=Y 3개, VECTOR_DOCS=QUERY_DOCS, ONLY_IN_VECTOR=0, ONLY_IN_QUERY=0, VECTOR_STATUS=READY, COMPLETION_COUNT=ITEM_ROWS=140182, COSINE/l2/1024, HEAD_ROWS=0</li>
+<li>벡터 적재를 돌린 LEGAL_RAG <b>Python 노트북</b> 새 셀에 <code>VECTOR_HEAD_ACTIVATE_R1.txt</code> 전체를 붙여 실행.<br>
+기본 ACTION="activate": 위 검사를 먼저 하고 하나라도 다르면 STOP_... 로 멈추며 쓰지 않습니다.
+통과하면 <code>SIDDS.LGL_G19_VCTR_HEAD_S_1</code>에 1행만 넣고 COMMIT 후 되읽어 확인합니다. 완료 표시 <b>VECTOR_HEAD_ACTIVATED</b>.<br>
+검사만: ACTION="check".</li>
+<li>코드서빙 <code>GENOS_RAG_INITIAL_SEARCH=auto</code> 권장. HEAD 행은 다음 질문부터 읽으므로 이 행 때문에 재기동할 필요는 없습니다(환경변수를 바꿨다면 재기동).
+코드서빙에 임베딩 설정(GENOS_EMBED_ID/TOKEN)이 있어야 하고, 적재 모델 kure-v1과 같은 모델이어야 합니다.</li>
+</ol>
+<p><b>되돌리기</b>: 같은 셀 ACTION="undo" → 이 HEAD 1행만 삭제·COMMIT·되읽기(VECTOR_HEAD_REMOVED).<br>
+활성화 뒤 첫 질문이 VECTOR_CONFIG / VECTOR_HTTP / VECTOR_PUBLICATION / VECTOR_COORDINATE 로 실패하면 undo 후 오류 사진을 보내 주세요.</p>
+<p>쓰기 범위: VCTR_HEAD 1행만. 다른 표·DDL·벡터 본문 변경 없음.</p>
+<p>로컬 검증(Oracle 23.26.3, 개발계와 같은 컬럼/타입 임시 표): 18개 경우 통과 — 검사 쓰기0, INSERT·COMMIT·되읽기, 실제 MAIN166 서버의 벡터 게시 검사 통과, 재실행 쓰기0, undo, 데이터셋·문서목록·행 수·다른 HEAD 각각 쓰기 없이 거절. 현장 ORDS 경로의 벡터 검색 SQL·속도·실제 임베딩 호출은 미확인입니다.</p>
+<p>첨부: VECTOR_V5_BINDING.txt, VECTOR_HEAD_ACTIVATE_R1.txt, GUIDE.txt, VALIDATION.json, SHA256SUMS.txt</p>
+</body></html>

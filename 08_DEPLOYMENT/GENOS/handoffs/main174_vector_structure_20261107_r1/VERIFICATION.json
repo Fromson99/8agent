@@ -1,0 +1,104 @@
+{
+  "main_generation": 174,
+  "release_id": "vector-structure-20261107-r1",
+  "release_manifest_sha256": "6fab3219782ef990be727ec5fb6ea571a05cb80f41731d64e7f65edc20036f64",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "vector-structure-20261107-r1",
+    "generation": 174,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/vector-structure-20261107-r1/release.json",
+    "release_manifest_sha256": "6fab3219782ef990be727ec5fb6ea571a05cb80f41731d64e7f65edc20036f64",
+    "activated_at": "2026-11-07T00:43:18.898662+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "0c639c48a31a8ebc1cf4befde86c336262dd2514dbac73d68e36e0cbf651af43"
+  },
+  "serving_files": 544,
+  "replaces": {
+    "main_generation": 173,
+    "release_id": "document-compare-20261107-r1",
+    "sent_gmail_id": "1a1b34d19059886c"
+  },
+  "changed_vs_previous": {
+    "products": {
+      "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "5750c407fff837ca0a7dbe80fe65128f3702c1adfc539f6132e53b35e73d836a"
+    },
+    "product_count": 1,
+    "derived": "engine pins 30 + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "643 -> 643 (same statements)",
+    "new_environment_variables": 0,
+    "workflow_file_changed": false
+  },
+  "change": {
+    "what": "Vector initial search now keeps the article named in the accepted search words (e.g. 제365조): same structure lookup and request-scope filter as the keyword path, the named article is read first, vector candidates stay as the remaining READ offers.",
+    "paths_already_working": [
+      "keyword mode",
+      "vector unavailable -> keyword fallback",
+      "same-conversation re-search",
+      "structure-first entry (STRUCTURE)",
+      "article/paragraph scope (vector skipped)"
+    ],
+    "scope_widened": false,
+    "extra_sql": 0,
+    "extra_model_calls": 0,
+    "event": "INITIAL_VECTOR_STRUCTURE_ENTRY"
+  },
+  "local_validation": {
+    "regression_files": {
+      "files": 48,
+      "candidate_counts": {
+        "passed": 623,
+        "failed": 112,
+        "skipped": 2,
+        "error": 9
+      },
+      "new_failures": 0,
+      "fixed": 2,
+      "same_failures": 121
+    },
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "oracle_scale_guard_previous_main": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "oracle_named_article": {
+      "question": "모의승인규정 제101조 승인 기준은? (search words: 모의승인규정 제101조, scope: all authorized)",
+      "vector_main174_first_read": [
+        "모의승인규정",
+        "제101조 긴급 승인 기준",
+        "11"
+      ],
+      "vector_main174_event": "INITIAL_VECTOR_STRUCTURE_ENTRY",
+      "vector_main173_structure": "NO_MATCH",
+      "vector_sql_main173_main174": [
+        532,
+        532
+      ],
+      "keyword_same_on_both": true,
+      "model": "mock (oracle_scale_guard transport), no external model"
+    },
+    "entry_checks": "17/17",
+    "installer_commands": 15
+  },
+  "package": {
+    "zip": "MAIN174_FULL_20261107_R1.zip",
+    "zip_sha256": "26b278b7f756a26065e2da41eb608c2cfde53a5c92224315060b64858ccc33df",
+    "members": 555,
+    "workflow": "MAIN174_WORKFLOW.py"
+  },
+  "not_verified": [
+    "real Oracle vector search / embedding on the field",
+    "real model (Qwen or GENOS internal) after this change",
+    "field screen and field data"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

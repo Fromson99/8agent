@@ -1,0 +1,20 @@
+개발계 E2E 추가 테이블 7개 SQL R2 (2026-11-06) - R1 대체
+
+1. 바뀐 점
+  새로 만드는 7개 테이블 이름에서 _S_1 / _A 접미사를 뺐습니다. PK·인덱스·CHECK 이름도 같은 방식으로 뺐습니다.
+  컬럼·타입·NULL·PK 구성은 R1과 같습니다. 기존 11개 테이블(_S_1, LGL_PIPE_RESULT_A) 이름은 그대로입니다.
+  전체 목록과 권한은 TABLES_R2.txt, 컬럼은 COLUMNS_R2.csv.
+
+2. 실행 (DEV_E2E_TABLES_R2.txt)
+  블록마다 SQL 한 줄. 한 Query에 한 줄씩 실행 (세미콜론·PL/SQL 없음, Dataiku 버튼은 RUN).
+  C00 확인 -> S01~S06 Silver 온톨로지 -> A01~A11 Agent -> G01~G18 권한 -> V01·V02 확인
+  생성과 GRANT는 SIDDS/SIDDA 소유자 또는 DBA가 실행.
+  V01 기대값: POST 5, HEAD 3, ANC 5, RUN 9, REC 8, BODY 4, EXEC_ST 5
+
+3. 코드
+  로컬 현재 메인(MAIN164)의 개발계 매핑(GENOS_ORACLE_TABLE_MAPPING=development_g19_1)을 이 이름으로 바꿨습니다.
+  Gold 등 다른 매핑의 Agent 테이블(SIDDA.*_A)은 그대로입니다. 현장 코드 반영은 아직 하지 않았습니다.
+
+4. 로컬 검증 (현장 미실행)
+  로컬 Oracle 23.26.3 임시 스키마에서 이 TXT 그대로 실행: 17/17 통과.
+  MAIN164 매핑 파일 그대로 17테이블 검사, 권한만 받은 계정의 Agent 기록 쓰기·읽기·잠금 통과. 임시 사용자 삭제.

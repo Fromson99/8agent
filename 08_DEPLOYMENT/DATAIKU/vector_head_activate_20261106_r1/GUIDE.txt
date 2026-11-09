@@ -1,0 +1,39 @@
+개발계 벡터 활성화(VCTR_HEAD 1행) R1 — 2026-11-06
+
+현장 확인 결과(19:11 노트북, V1~V4)
+- 채널 g19_7c1f8f4931c8be61b914f5bc / 판본 7c1f8f4931c8be61b914f5bc99626b9f...
+- VCTR_POST 1행 de7e174f006e2808... : 같은 판본, READY, kure-v1 1024차원, 완료 수 140,182 = ITEM 140,182행, 문서 2,121
+- VCTR_HEAD 0행 → 벡터는 다 적재됐고 서비스가 찾는 HEAD 행만 없다.
+
+첨부
+VECTOR_V5_BINDING.txt       (SQL 노트북, 읽기 전용) 서버가 검사하는 판본·데이터셋·문서목록 일치 확인
+VECTOR_HEAD_ACTIVATE_R1.txt (Python 노트북 셀) 확인 후 HEAD 1행 INSERT + COMMIT + 되읽기 / 되돌리기
+
+실행
+1. (선택) SQL 노트북에서 VECTOR_V5_BINDING.txt 전체를 새 Query로 실행.
+   정상: QUERY_STATUS=COMPLETE, QUERY_EXTENSION=N, *_MATCH=Y 3개, VECTOR_DOCS=QUERY_DOCS,
+         ONLY_IN_VECTOR=0, ONLY_IN_QUERY=0, VECTOR_STATUS=READY, COMPLETION_COUNT=ITEM_ROWS=140182,
+         METRIC=COSINE, NORMALIZATION=l2, DIMENSIONS=1024, HEAD_ROWS=0
+2. 기존 LEGAL_RAG Python 노트북(벡터 적재를 돌린 곳)의 새 셀에 VECTOR_HEAD_ACTIVATE_R1.txt 전체를 붙여 실행.
+   기본 ACTION="activate": 위 1번과 같은 검사를 먼저 하고, 하나라도 다르면 STOP_... 로 멈추며 아무것도 쓰지 않는다.
+   통과하면 SIDDS.LGL_G19_VCTR_HEAD_S_1에 (현재 판본, de7e174f... , 1) 1행만 넣고 COMMIT 후 다시 읽어 확인한다.
+   완료 표시: VECTOR_HEAD_ACTIVATED
+   쓰기 없이 검사만: ACTION="check" (완료 표시 VECTOR_BINDING_PASS_NO_WRITE)
+3. 코드서빙: GENOS_RAG_INITIAL_SEARCH=auto 권장(vector도 동작). HEAD 행은 다음 질문부터 읽으므로
+   이 행 때문에 재기동할 필요는 없다. 환경변수를 바꿨다면 재기동한다.
+   임베딩 설정(GENOS_EMBED_ID/TOKEN 등)이 코드서빙에 있어야 한다. 적재 모델 kure-v1과 같은 모델이어야 한다.
+
+되돌리기
+같은 셀에서 ACTION="undo" → 이 판본·이 벡터 게시를 가리키는 HEAD 1행만 삭제, COMMIT, 되읽기(VECTOR_HEAD_REMOVED).
+다른 게시를 가리키는 HEAD는 지우지 않고 멈춘다.
+활성화 뒤 첫 질문이 VECTOR_CONFIG / VECTOR_HTTP / VECTOR_PUBLICATION / VECTOR_COORDINATE 오류로 실패하면 undo 후 오류 사진을 보내 주세요.
+auto에서는 임베딩 통신 장애(429/5xx/시간초과)는 키워드 검색으로 넘어가지만, 위 오류들은 요청을 실패시킨다.
+
+쓰기 범위: SIDDS.LGL_G19_VCTR_HEAD_S_1 1행(INSERT 또는 undo 시 DELETE)만. 다른 표·DDL·벡터 본문 변경 없음.
+Dataiku 연결 AIDP, SQLExecutor2.query_to_df(pre_queries=[문장], post_queries=["COMMIT"]) — 기존 벡터 적재기와 같은 방식.
+
+로컬 검증(Oracle 23.26.3 임시 스키마, 개발계와 같은 컬럼/타입, 문서 2,121개 판본): 18개 경우 통과.
+check 쓰기0 / activate INSERT·COMMIT·되읽기 / 실제 MAIN166 서버 벡터 게시 검사(Retriever.publication) 통과 /
+재실행 쓰기0 / undo 삭제 / 데이터셋·문서목록·행 수·packed 판본·다른 HEAD 각각 쓰기 없이 거절.
+Dataiku의 NULL→NaN, NUMBER→소수 반환 두 경우 모두 확인. 임시 스키마 삭제.
+현장 실행, 현장 ORDS 경로의 벡터 검색 SQL(VECTOR_DISTANCE, 14만 행) 실행·속도, 실제 임베딩 호출은 미확인.

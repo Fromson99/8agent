@@ -9,10 +9,21 @@ from __future__ import annotations
 import json
 import sqlite3
 import math
+import re
 from functools import lru_cache
 
 from .oracle_dp_io import DPError, digest
 from .oracle_query_catalog import ROW, json_body
+
+
+def numeric_literal(value):
+    """Oracle numeric literal for a finite positive statistic (int or float)."""
+    if type(value) not in (int,float) or not math.isfinite(value) or value<=0:
+        raise DPError('QUERY_FTS_STATS: statistic is not a finite positive number')
+    text=repr(value)
+    if not re.fullmatch(r'\d+(\.\d+)?(e[+-]?\d+)?',text):
+        raise DPError('QUERY_FTS_STATS: statistic has no plain numeric literal')
+    return text
 
 
 def query_phrases(terms):
@@ -176,15 +187,17 @@ class UnitIndex:
         n=self.statistics['documents']; total=self.statistics['tokens']
         if not n or not total:
             return None,[]
-        binds += [('q_documents_n',n,'NUMBER'),('q_average',total/n,'NUMBER')]
+        # Published statistics are literals, not NUMBER binds: GENOS ORDS rejects this
+        # statement with ORA-22806 when they are bound (field FTS_ORA22806_DIAG R2).
+        documents_n,average=numeric_literal(n),numeric_literal(total/n)
         # FTS5 BM25: global (pre-ACL) phrase document frequency, k1=1.2,
         # b=.75, one indexed body column, negative score sorts first.
         global_df=(' UNION ALL '.join(f'SELECT {i} AS phrase,COUNT(DISTINCT k) AS n FROM postings WHERE token=:{token_names[p[0]]}' for i,p in enumerate(phrases)) if single_only else 'SELECT phrase,COUNT(*) AS n FROM frequencies GROUP BY phrase')
         cte=('WITH postings AS ('+postings+'), '+('positions AS ('+positions+'), ' if any(len(p)>1 for p in phrases) else '')+'frequencies AS ('+' UNION ALL '.join(counts)+'), '
             'df AS ('+global_df+'), '
             'lengths AS ('+lengths+'), matches AS ('
-            'SELECT l.k,l.did,l.sid,-SUM(CASE WHEN :q_documents_n<=2*df.n THEN 1e-6 ELSE LN((:q_documents_n-df.n+0.5)/(df.n+0.5)) END'
-            '*f.tf*2.2/(f.tf+1.2*(0.25+0.75*l.n/:q_average))) AS score '
+            f'SELECT l.k,l.did,l.sid,-SUM(CASE WHEN {documents_n}<=2*df.n THEN 1e-6 ELSE LN(({documents_n}-df.n+0.5)/(df.n+0.5)) END'
+            f'*f.tf*2.2/(f.tf+1.2*(0.25+0.75*l.n/{average}))) AS score '
             'FROM frequencies f JOIN df ON df.phrase=f.phrase JOIN lengths l ON l.k=f.k GROUP BY l.k,l.did,l.sid) ')
         return cte,binds
 

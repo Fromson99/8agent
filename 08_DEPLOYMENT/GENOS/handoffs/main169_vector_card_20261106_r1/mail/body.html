@@ -1,0 +1,18 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN169] 벡터 검색 후보를 화면에 표시 — MAIN168 대체 교체본</b></p>
+<p>벡터로 첫 검색을 한 질문은 "자료 검색" 카드가 아래처럼 나옵니다. 화면 표시만 바뀌고, 후보 조문·검색 SQL(642개)·권한·답변은 그대로입니다.</p>
+<pre>벡터 후보 100개 · 가까운 순
+상법 · 제447조의4(감사보고서)
+...   (가까운 조문 최대 5개)
+외 95개</pre>
+<p>MAIN168(RECALL 1만 행 수정)·MAIN167을 포함합니다. MAIN168을 아직 안 넣었다면 MAIN169만 넣으면 됩니다.<br>
+워크플로우(MAIN169_WORKFLOW.py)는 MAIN168과 같은 바이트라 편집기는 바꿀 필요가 없습니다.</p>
+<p><b>적용</b> (MAIN168과 같은 절차): TRANSFER 폴더에 ZIP과 TXT를 두고 그 폴더에서<br>
+<code>bash MAIN169_ONECLICK_R1.txt</code> → 완료 표시 MAIN169_ONECLICK_DONE, MAIN169_EXIT=0<br>
+→ <code>status</code> / <code>stage</code> → commit → <code>gate-code</code> → push → 새 코드서빙 리비전 배포.<br>
+환경변수는 지금 값 그대로(DP=oracle, development_g19_1, DP_QUERY_CHANNEL, GENOS_RAG_INITIAL_SEARCH, 임베딩 설정). 새 변수 없음.</p>
+<p><b>확인</b>: 질문 후 "자료 검색" 카드에 "벡터 후보 N개 · 가까운 순"이 나오면 적용된 것입니다. 기존처럼 "본문 검색에 사용한 단어"가 나오면 그 질문은 키워드 본문검색으로 간 것입니다.</p>
+<p><b>원복</b>: <code>bash MAIN169_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p><b>로컬 검증</b>: 새 계약 6/6, 관련 계약 17파일 새 실패 0(MAIN168 169/76 → MAIN169 173/72), 실제 로컬 Oracle 서비스 경로에서 카드 생성 2/2, 로컬 메인 반영 후 진입 확인 29/29, MAIN168 격리 checkout 설치기 15명령 통과(undo로 MAIN168 복원). 현장 ORDS·현장 화면·내부 모델은 미실행입니다.</p>
+<p>첨부: MAIN169_FULL_20261106_R1.zip, MAIN169_ONECLICK_R1.txt, MAIN169_WORKFLOW.py, GUIDE.txt, VERIFICATION.json, SHA256SUMS.txt</p>
+</body></html>

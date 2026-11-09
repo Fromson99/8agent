@@ -5,7 +5,10 @@ import json
 import re
 
 WORKFLOW_ID = 'risk_team_compare_workflow'
+DOCUMENT_WORKFLOW_ID = 'risk_team_document_compare_workflow'
 PREFIX = re.compile(r'^\s*대사\s*[:：]\s*')
+# "문서 대사:" selects one whole internal document; "대사:" keeps the question scope.
+DOCUMENT_PREFIX = re.compile(r'^\s*문서\s*대사\s*[:：]\s*')
 FIELDS = {'workflow_id', 'workflow_version', 'question', 'q', 'user_id', 'team_id',
           'session_id', 'request_id', 'document_ids', 'as_of', 'use_llm',
           'input', 'return_to', 'public_question', 'memory', 'ad_session_id', 'ad_channel'}
@@ -27,10 +30,15 @@ def digest(value):
 
 def route(body):
     question = body.get('question', body.get('q', ''))
+    document = isinstance(question, str) and DOCUMENT_PREFIX.match(question)
     marked = isinstance(question, str) and PREFIX.match(question)
     selected = body.get('workflow_id')
     if selected and isinstance(question,str) and re.match(r'^\s*(내규|외규)\s*[:：]',question):
         raise WorkflowError('WORKFLOW_ROUTE_CONFLICT', '단일 규정 조회 접두어와 workflow_id가 충돌합니다.')
+    if document:
+        if selected not in (None, DOCUMENT_WORKFLOW_ID):
+            raise WorkflowError('WORKFLOW_ROUTE_CONFLICT', '문서 대사 접두어와 workflow_id가 다릅니다.')
+        return DOCUMENT_WORKFLOW_ID
     if marked and selected not in (None, WORKFLOW_ID):
         raise WorkflowError('WORKFLOW_ROUTE_CONFLICT', '대사 접두어와 workflow_id가 다릅니다.')
     return WORKFLOW_ID if marked else selected
@@ -62,7 +70,7 @@ def request(body, principal, normalizer=None):
     question = body.get('question', body.get('q', '' if normalizer else None))
     if not isinstance(question, str) or (not question.strip() and normalizer is None):
         raise WorkflowError('WORKFLOW_INPUT', '대사할 질문을 입력해 주세요.')
-    question = PREFIX.sub('', question, count=1).strip()
+    question = (DOCUMENT_PREFIX if DOCUMENT_PREFIX.match(question) else PREFIX).sub('', question, count=1).strip()
     if not question and normalizer is None:
         raise WorkflowError('WORKFLOW_INPUT', '대사할 질문을 입력해 주세요.')
     for key in ('session_id', 'request_id'):

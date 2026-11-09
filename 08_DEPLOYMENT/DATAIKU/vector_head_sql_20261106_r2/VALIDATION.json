@@ -1,0 +1,42 @@
+{
+ "schema_version": "vector-head-sql-validation-v1",
+ "date": "2026-11-06",
+ "replaces": "08_DEPLOYMENT/DATAIKU/vector_head_activate_20261106_r1 (Python cell)",
+ "files": {
+  "VECTOR_V2_CHANNEL_HEAD.txt": "35a1c7da99ad732a006dedca2cddc2672135682d0330b49dec23f39d2bc200ec",
+  "VECTOR_V6_HEAD_INSERT.txt": "20e0587b0e95143ba0dead005c22d80372fba1da314f2f6819f9d2a2b0cdcefd",
+  "VECTOR_V7_HEAD_UNDO.txt": "1500acb0650ecbac077d5d1db99cce1bb09c5700ef60b482812875245a0357d3"
+ },
+ "write_scope": "SIDDS.LGL_G19_VCTR_HEAD_S_1 one row",
+ "notebook_model": "split at ; and run in order on one session",
+ "local_test": {
+  "oracle": "23.26.3 Free temporary owner, dev-shaped tables",
+  "cases": {
+   "dataset_mismatch": "INSERT_0_ROWS",
+   "source_release_mismatch": "INSERT_0_ROWS",
+   "document_extra": "INSERT_0_ROWS",
+   "document_swapped": "INSERT_0_ROWS",
+   "dimension_768": "INSERT_0_ROWS",
+   "count_mismatch": "INSERT_0_ROWS",
+   "not_ready": "INSERT_0_ROWS",
+   "packed_extension": "INSERT_0_ROWS",
+   "query_not_complete": "INSERT_0_ROWS",
+   "head_already_exists": "INSERT_0_ROWS",
+   "undo_other_head_kept": "DELETE_0_ROWS",
+   "insert_commit_other_session": "HEAD_1_ROW",
+   "v2_readback": "HEAD_VCTR_POST_ID_FILLED",
+   "insert_again": "INSERT_0_ROWS",
+   "main166_server_publication": "ACCEPTED",
+   "undo": "DELETE_1_ROW",
+   "undo_again": "DELETE_0_ROWS"
+  },
+  "status": "PASS",
+  "temporary_owner_dropped": "A8_TVSQL_BF1DD6"
+ },
+ "not_verified": [
+  "field run",
+  "Dataiku SQL notebook commit behaviour (COMMIT included)",
+  "vector search through field ORDS",
+  "field embedding endpoint"
+ ]
+}

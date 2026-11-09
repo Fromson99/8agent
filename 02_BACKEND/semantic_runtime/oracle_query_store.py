@@ -106,6 +106,11 @@ class Store:
         self.check_unchanged()
         return self.oracle_request.sources.source(did,bid)
 
+    def source_lengths(self,did,bids):
+        """Exact character lengths from the same verified batch read (100 blocks per page)."""
+        ids=list(dict.fromkeys(str(b) for b in bids))
+        return {bid:len(raw['text']) for bid,raw in zip(ids,self.sources(did,ids))}
+
     def sources(self,did,bids):
         self.check_unchanged()
         ids=list(bids);result=[]

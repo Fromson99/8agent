@@ -1,0 +1,87 @@
+{
+ "status": "PASS",
+ "oracle_version": "23.26.3.0.0",
+ "owner": "A8_GOLDMAIN_A04FCE34",
+ "delivery_sha256": "e953d9df26bdd1490be71c846d35fc1bbbf205c8157161060412af3d6813fb1d",
+ "frozen_server_code": "08_DEPLOYMENT/RELEASES/agent-a-unified-20261105-r1",
+ "checks": [
+  {
+   "name": "two_explicit_statements",
+   "passed": true,
+   "count": 2
+  },
+  {
+   "name": "before_server_default_main_missing",
+   "passed": true,
+   "result": "QUERY_ACTIVE_MISSING"
+  },
+  {
+   "name": "delivery_links_main",
+   "passed": true,
+   "error": null,
+   "result": [
+    {
+     "CHANNEL": "main",
+     "QUERY_RELEASE_ID": "139b617497751d48bdd171a28efb2e85dbe82e2b123c410091a4882159628913",
+     "CHAN_NO": 1
+    },
+    {
+     "CHANNEL": "g19_139b617497751d48bdd171a2",
+     "QUERY_RELEASE_ID": "139b617497751d48bdd171a28efb2e85dbe82e2b123c410091a4882159628913",
+     "CHAN_NO": 1
+    }
+   ]
+  },
+  {
+   "name": "after_server_default_main_selects_loader_release",
+   "passed": true,
+   "release_id": "139b617497751d48bdd171a28efb2e85dbe82e2b123c410091a4882159628913",
+   "revision": 1
+  },
+  {
+   "name": "g19_channel_unchanged",
+   "passed": true
+  },
+  {
+   "name": "rerun_no_change",
+   "passed": true,
+   "error": null,
+   "result": [
+    {
+     "CHANNEL": "main",
+     "QUERY_RELEASE_ID": "139b617497751d48bdd171a28efb2e85dbe82e2b123c410091a4882159628913",
+     "CHAN_NO": 1
+    },
+    {
+     "CHANNEL": "g19_139b617497751d48bdd171a2",
+     "QUERY_RELEASE_ID": "139b617497751d48bdd171a28efb2e85dbe82e2b123c410091a4882159628913",
+     "CHAN_NO": 1
+    }
+   ]
+  },
+  {
+   "name": "main_pointing_elsewhere_refused",
+   "passed": true,
+   "error": 20903
+  },
+  {
+   "name": "two_g19_refused",
+   "passed": true,
+   "error": 20901
+  },
+  {
+   "name": "missing_publication_refused",
+   "passed": true,
+   "error": 20902
+  },
+  {
+   "name": "incomplete_publication_refused",
+   "passed": true,
+   "error": 20902
+  }
+ ],
+ "field_execution": false,
+ "external_models": 0,
+ "temporary_owner_removed": true,
+ "finished_at": "2026-11-06T01:54:19.773856+00:00"
+}

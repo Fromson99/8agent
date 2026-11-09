@@ -61,7 +61,7 @@ def client_from_environment():
         elif physical_mode=='development_g19_1':
             from .oracle_development_mapping import DevelopmentMapping
             client.schema_map=DevelopmentMapping.load()
-        elif (enabled() and physical_mode=='mapped') or os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower()=='vector':
+        elif (enabled() and physical_mode=='mapped') or os.environ.get('GENOS_RAG_INITIAL_SEARCH','').strip().lower() in ('vector','hybrid','hybrid_rerank','dual'):
             from .physical_mapping import SchemaMap
             client.schema_map=SchemaMap.load(Path(__file__).resolve().parents[2]/'00_SYSTEM/ORACLE/physical_mapping.yaml')
         return client
