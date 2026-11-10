@@ -102,7 +102,8 @@ def flow(service: IncrementService, checks: dict, label: str) -> None:
     checks[f"{label}_rerun_reused"] = True
 
     first = service.ingest(load(EFINANCE[0]))
-    service.approve(first.load_id, user="checker", preview_digest=first.preview_hash, acknowledge=True)
+    assert service.auto_apply(first.load_id)["decision"] == "APPROVED"        # 사람 승인 대신 게이트 판단
+    checks[f"{label}_auto_apply_approved"] = True
     service.prepare_index(first.load_id, external=())
     service.activate(first.load_id, user="checker")
     second = service.ingest(load(EFINANCE[1]))
@@ -130,6 +131,15 @@ def flow(service: IncrementService, checks: dict, label: str) -> None:
                                f"WHERE RFRN_CHNL_NAME='check'")[0]
     assert channel == {"RFRN_POST_HASH_VALU": "post-b", "CHAN_NO": 2}, channel
     checks[f"{label}_channel_switched_in_activation"] = True
+    rolled = service.rollback(second.load_id, user="checker", reason="되돌리기 점검",
+                              channel=ChannelSwitch(channel_table, "check", "post-b", "post-a", expected_no=2))
+    assert rolled["state"] == "ROLLED_BACK"
+    assert [r["ARTC_KEY_VALU"] for r in service.articles_as_of("ADMRUL:21828", "20260801")] == before
+    assert not {"56의8", "56의9"} & {r["ARTC_KEY_VALU"] for r in service.articles_as_of("ADMRUL:21828", "20261001")}
+    channel = service.db.query(f"SELECT RFRN_POST_HASH_VALU, CHAN_NO FROM {channel_table} "
+                               f"WHERE RFRN_CHNL_NAME='check'")[0]
+    assert channel == {"RFRN_POST_HASH_VALU": "post-a", "CHAN_NO": 3}, channel
+    checks[f"{label}_rollback_restored_previous_version_and_channel"] = True
     checks[f"{label}_seconds"] = round(time.time() - started, 2)
 
 

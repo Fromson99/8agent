@@ -1,0 +1,42 @@
+{
+ "adr": "ADR-1466",
+ "dir": "adr_1466",
+ "priors": {
+  "1464": "ADR-1464-main179-definition-priority-cm51-qwen-r2",
+  "1465": "ADR-1465-main181-hybrid-search-cm51-qwen"
+ },
+ "summary": "보류(Proposed), 운영 배선 변경 없음. MAIN181 위 하이브리드(RRF) 초기검색 + 상위 30개를 모델 1회로 재정렬해 최대 10개를 첫 메뉴 맨 앞에 둠(GENOS_RAG_INITIAL_SEARCH=hybrid_rerank). financial CM 51문항 1회, 판정 모델 없이 골든셋 필수 조문 일치만 집계: 확보 {A}/{T}·인용 {C} vs ADR-1464(벡터만) 74·66, ADR-1465(하이브리드) 77·68. 재정렬은 47문항에서 실행. 1465 대비 확보 합계 개선 없음.",
+ "problem": "ADR-1465(하이브리드 RRF)는 필수 조문 확보를 74→77로 늘렸지만, 두 검색 모두에 걸린 조문이 위로 올라가 한쪽에서만 상위인 정답 조문(cm-007 유가 제13조 벡터 2위)이 첫 화면 밖으로 밀렸다. 사용자 지시: \"1. 하이브리드 llm리랭킹 해서 올리기 2. 벡터 그리고 full text 각각 보여주기 조합하지 말고 둘다 진행후 실험 각각\".",
+ "hypothesis": "하이브리드 후보를 모델이 질문 관련 순으로 다시 골라 첫 메뉴 맨 앞에 두면 필수 조문 확보가 ADR-1465보다 늘어난다.",
+ "arm": "MAIN181 + 하이브리드(RRF) + 상위 30개 LLM 재정렬(최대 10개 맨 앞)",
+ "arm_short": "MAIN181+하이브리드+LLM 재정렬",
+ "mode_note": "GENOS_RAG_INITIAL_SEARCH=hybrid_rerank",
+ "filter": "벡터 100 + 본문 조문 → RRF 100 → 상위 30을 모델이 재정렬(선택 0~10개)",
+ "taxonomy": "| 재정렬 후보 30개 밖(합친 순서에서 밀림) | 13/91 미확보 | 007 유가 제13조·010·012·045 등 | 재정렬이 고를 수 없음 |\n| 재정렬이 골랐는데 조사 모델이 안 읽음 | 5/91 | 017 시행령 제11조의3·043·047 제165조의7·013 | 순서만 바뀌고 읽기는 다음 모델이 다시 결정 |\n| 후보에 있었는데 안 고름·미확보 | 2/91 | 025 제39조·030 시행령 제170조 | 재정렬 판단 누락 |",
+ "interpretation": "사실: 재정렬 47문항의 필수 조문 91개 중 50개는 골랐고 읽음, 28개는 재정렬 후보 30개 밖(15개는 다른 경로로 읽음), 5개는 골랐는데 미열람. 1465 대비 확보 늘어남 5·줄어듦 5로 합계 같음. 추론: 재정렬 판단 자체는 대체로 맞지만 (1) 후보가 RRF 상위 30이라 RRF가 밀어낸 정답을 되살리지 못하고 (2) 메뉴 순서만 바뀌어 조사 모델이 따르지 않는다. 고칠 점: 후보를 벡터 상위 N + 본문 상위 N 합집합으로, 고른 상위 몇 개는 서버가 바로 읽기.",
+ "error_taxonomy": [
+  {
+   "kind": "NOT_IN_RERANK_POOL",
+   "missed": 13
+  },
+  {
+   "kind": "PICKED_NOT_READ",
+   "missed": 5
+  },
+  {
+   "kind": "NOT_PICKED",
+   "missed": 2
+  }
+ ],
+ "extra_comparisons": [
+  {
+   "metric": "rerank",
+   "questions_reranked": 47,
+   "required_in_reranked_cases": 91,
+   "picked": 55,
+   "picked_and_acquired": 50,
+   "not_in_pool": 28,
+   "picked_not_read": 5
+  }
+ ]
+}
