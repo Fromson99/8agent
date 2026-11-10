@@ -114,15 +114,16 @@ def test_assess_merges_reads_up_to_four_and_does_not_force_a_location_twice():
     selection = {'issues': ISSUES, 'unread_locations': deepcopy(locations)}
     result = g.assess(e, SOURCES, ISSUES, '상장주선인의 의무인수 수량은?', [], selection=selection)
     proposed = [r['label'] for r in result['guided_reply']['proposed_reads']]
-    # The answer's two choices, then the lower rule and the cited article; the vector read waits.
-    assert proposed == ['규정 · 제15조', '규정 · 제16조', '시행령 · 제11조의3', '규정 · 제13조(상장주선인의 의무)']
+    # The answer's two choices, then the first-screen candidate and the lower rule; the cited
+    # article did not fit and is carried to the next round (2026-11-09 order, ADR-1470).
+    assert proposed == ['규정 · 제15조', '규정 · 제16조', '규정 · 제14조', '시행령 · 제11조의3']
     event = next(p for k, p in e.s.work.events if k == 'GUIDED_ANSWER_SERVER_READS')
-    assert [r['kind'] for r in event['reads']] == ['SPECIFIES', 'CITED'] and event['deferred'] == [{'kind': 'VECTOR', 'label': '규정 · 제14조'}]
+    assert [r['kind'] for r in event['reads']] == ['VECTOR', 'SPECIFIES'] and event['deferred'] == [{'kind': 'CITED', 'label': '규정 · 제13조(상장주선인의 의무)'}]
     # Next round of the same request: the forced ones are not forced again (an unreadable one cannot loop).
     v2 = value(open=False); v2['next_reads'] = []  # the schema requires the field when reads are offered
     e.invoke = lambda *a, **k: deepcopy(v2)
     again = g.assess(e, SOURCES, ISSUES, '상장주선인의 의무인수 수량은? (다음 라운드)', [], selection=selection)
-    assert [r['label'] for r in again['guided_reply']['proposed_reads']] == ['규정 · 제14조']
+    assert [r['label'] for r in again['guided_reply']['proposed_reads']] == ['규정 · 제13조(상장주선인의 의무)']
 
 
 def test_no_server_read_without_hints_keeps_the_answer_unchanged():
@@ -149,7 +150,7 @@ class Repo:
 
 def nav_inv(monkeypatch, directory, text='벤처기업이 대통령령으로 정하는 바에 따라 주식매수선택권을 부여할 수 있다.', readable=None):
     readable = readable or {}
-    def article(inv, did, uid):
+    def article(inv, did, uid, link=None):
         if (did, str(uid)) in readable:
             return None, readable[(did, str(uid))]
         return {'document_id': did, 'source_id': did + ':' + str(uid), 'unit_id': 'A' + str(uid)}, None
@@ -169,10 +170,23 @@ def nav_inv(monkeypatch, directory, text='벤처기업이 대통령령으로 정
     return S(s=s, p={'turn': 1}, question='행사가격'), opened
 
 
-def group(direction, role, did, sid, uid, *, already=False):
+def group(direction, role, did, sid, uid, *, already=False, kind=None, sentence='법 제16조의3에서 "대통령령으로 정하는 행사가격"이란 다음 각 호의 가격을 말한다.'):
     return {'direction': direction, 'target': {'heading': '제11조의3(주식매수선택권)'}, 'anchor': {'heading': '제16조의3'},
             'offers': {'k': ({'source_id': sid, 'document_id': did}, {'unit_id': uid, 'extent': 'subtree', 'block_ids': ['c1']})},
-            'connections': [{'citation_role': role, 'already_read': already, 'endpoint_scopes': ['k'], 'reference_id': 'r' + uid}]}
+            'connections': [{'citation_role': role, 'already_read': already, 'endpoint_scopes': ['k'], 'reference_id': 'r' + uid,
+                             'citation_relation': {'kind': kind or role, 'subject': None, 'sentence': sentence}}]}
+
+
+def test_lower_rule_needs_question_words_in_its_citing_sentence(monkeypatch):
+    # 구체화는 질문 낱말 1개, 적용 특례·시행 세부는 2개 이상. 많이 겹치는 문장이 먼저.
+    directory = {'groups': [group('INCOMING', 'SPECIFIES', 'decree', 'decree:1', '1', sentence='법 제16조의3에서 "대통령령으로 정하는 자"란'),
+                            group('INCOMING', 'BORROWS', 'decree', 'decree:2', '2', kind='IMPLEMENTS', sentence='법 제16조의3에 따른 행사가격은'),
+                            group('INCOMING', 'BORROWS', 'decree', 'decree:3', '3', kind='APPLIES_CASE', sentence='행사하는 때에는 행사가격을 법 제16조의3에 따른 취득가액으로 한다.'),
+                            group('INCOMING', 'SPECIFIES', 'decree', 'decree:4', '4')]}
+    inv, _ = nav_inv(monkeypatch, directory)
+    inv.question = '행사가격과 취득가액'
+    rows = gn.delegated_locations(inv, [], {}, {})
+    assert [(r['identity']['unit_id'], r['specifies_score']) for r in rows] == [('A3', 2), ('A4', 1)]
 
 
 def test_lower_rule_specifying_a_read_article_becomes_a_location(monkeypatch):
@@ -211,7 +225,7 @@ def test_unread_locations_runs_without_remembered_menu_locations(monkeypatch):
     monkeypatch.setattr(inventory, 'acquired_records', lambda p, **_: {'g1': {'evidence': [{'source_id': 'law:5', 'spans': [{'block_id': 'b1'}]}]}})
     monkeypatch.setattr(gn, 'scan_read_originals', lambda inv, known: {'cited': {('law', '제13조'): ['제9조']}, 'defers': {}})
     cited = {'identity': {'document_id': 'law', 'source_id': 'law:13', 'unit_id': '13'}, 'label': '규정 · 제13조', 'from_citation': True}
-    monkeypatch.setattr(gn, 'cited_locations', lambda inv, c, rows, known, units, terms=(): [deepcopy(cited)])
+    monkeypatch.setattr(gn, 'cited_locations', lambda inv, c, rows, known, units, terms=(), contexts=None: [deepcopy(cited)])
     monkeypatch.setattr(gn, 'delegated_locations', lambda inv, rows, known, units: [])
     monkeypatch.setattr(gn, 'vector_top_locations', lambda inv, rows, known, units: [])
     s = S(matcher=S(units={('law', '13'): {'surface': '제13조', 'title': '상장주선인의 의무'}}), scope={'law'},

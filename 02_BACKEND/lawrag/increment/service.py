@@ -1,7 +1,11 @@
 """증분 처리 단계 실행과 상태 전이.
 
-DETECTED → PARSED → DIFFED → PREVIEW → APPROVED → INDEXING → ACTIVATED
+DETECTED → PARSED → DIFFED → PREVIEW → APPROVED → INDEXING → ACTIVATED (→ ROLLED_BACK)
 예외: NO_CHANGE(조문 변화 없음, 종료) · REJECTED · BLOCKED · BLOCKED_PENDING · FAILED
+
+자동 반영(auto_apply): 사람 승인 대신 게이트로 판단한다. BLOCKED·BLOCKED_PENDING과 강한 경고
+(조문 수 급감·대량 삭제·변경률 50% 초과·별표 소실·시행일 못 읽음)는 보류(PREVIEW 유지),
+그 밖에는 승인자 AUTO로 승인한다. 잘못 들어간 판본은 rollback으로 되돌린다.
 
 반영 순서 (색인 준비 후 활성화)
 1. 승인된 변경으로 새 조문 행을 숨김(OPEN_YN=N)으로 만든다. 참조 행도 함께.
@@ -27,7 +31,8 @@ from .normalize import citations, compare_hash, normalize_text, stable_id, text_
 from .preview import build_preview, preview_hash
 from .schema import TABLE, qualified
 
-TERMINAL = {"ACTIVATED", "NO_CHANGE", "REJECTED"}
+TERMINAL = {"ACTIVATED", "NO_CHANGE", "REJECTED", "ROLLED_BACK"}
+AUTO_USER = "AUTO"
 ALLOWED = {
     "PREVIEW": {"APPROVED", "REJECTED", "PREVIEW"},
     "BLOCKED": {"PREVIEW", "REJECTED"},
@@ -35,6 +40,7 @@ ALLOWED = {
     "APPROVED": {"INDEXING", "FAILED"},
     "INDEXING": {"INDEXING", "ACTIVATED", "FAILED"},
     "FAILED": {"INDEXING"},
+    "ACTIVATED": {"ROLLED_BACK"},
 }
 NEW_ROW_TYPES = (ADD, AMEND, MOVE, MOVE_AMEND, REF_ONLY)
 CLOSE_TYPES = (AMEND, MOVE, MOVE_AMEND, REF_ONLY, DELETE)
@@ -250,28 +256,7 @@ class IncrementService:
         return IngestResult(load_id, state, snapshot.doc_cd, gate_dict, digest)
 
     def _cmpr_rows(self, load_id: str, version_id: str, changes: list[Change]) -> list[dict]:
-        rows = []
-        for seq, change in enumerate(changes, 1):
-            new = change.new
-            payload = None
-            if new is not None:
-                payload = {"kind": new.kind, "title": new.title, "text": new.text, "seq": new.seq,
-                           "attachment_sha256": new.attachment_sha256,
-                           "official": {"changed": new.official_changed, "effective": new.official_effective,
-                                        "moved": list(new.official_moved)},
-                           "official_note": change.official_note}
-            rows.append({
-                "LOAD_WORK_ID": load_id, "CMPR_SEQ": seq, "CHG_TYPE_CD": change.change_type,
-                "OLD_ARTC_VER_ID": change.old.version_id if change.old else None,
-                "OLD_ARTC_KEY_VALU": change.old.key if change.old else None,
-                "NEW_ARTC_KEY_VALU": new.key if new else None,
-                "NEW_ARTC_VER_ID": ("A" + stable_id(version_id, new.key, length=31)) if new else None,
-                "LNG_ID": change.lineage_id, "SMLR_RATE": round(float(change.similarity), 4),
-                "JDGM_RSN_CTNT": change.reason[:1300], "ENFC_STRT_DT": change.effective_from or None,
-                "RULE_RVW_YN": change.rule_review,
-                "CMPR_ADDN_IFMN_CTNT": _json(payload) if payload is not None else None,
-            })
-        return rows
+        return comparison_rows(load_id, version_id, changes)
 
     def preview(self, load_id: str) -> dict:
         job = self._require(load_id)
@@ -313,6 +298,27 @@ class IncrementService:
             self._hist(tx, load_id, self._hist_seq(load_id) + 1, "PREVIEW", "APPROVED",
                        {"user": user, "acknowledged": [w["code"] for w in strong]})
         return self._require(load_id)
+
+    def auto_apply(self, load_id: str, *, hold_on_strong: bool = True) -> dict:
+        """사람 승인 대신 게이트 결과로 승인하거나 보류한다. 보류는 상태를 바꾸지 않고 이력만 남긴다."""
+        job = self._require(load_id)
+        state = job["PRCS_STTS_CD"]
+        gate = json.loads(job["GATE_RSLT_CTNT"] or "{}")
+        strong = [w for w in gate.get("warnings", []) if w.get("strong")]
+        if state in ("BLOCKED", "BLOCKED_PENDING"):
+            reasons = [gate.get("stop_reason") or state]
+        elif state == "PREVIEW" and strong and hold_on_strong:
+            reasons = [f"{w['code']}: {w['message']}" for w in strong]
+        elif state == "PREVIEW":
+            self.approve(load_id, user=AUTO_USER, preview_digest=job["PRVW_HASH_VALU"], acknowledge=True)
+            return {"load_id": load_id, "decision": "APPROVED", "state": "APPROVED",
+                    "acknowledged": [w["code"] for w in strong]}
+        else:
+            return {"load_id": load_id, "decision": "SKIPPED", "state": state}
+        with self.db.transaction() as tx:
+            self._hist(tx, load_id, self._hist_seq(load_id) + 1, state, state,
+                       {"user": AUTO_USER, "hold": reasons})
+        return {"load_id": load_id, "decision": "HOLD", "state": state, "reasons": reasons}
 
     def reject(self, load_id: str, *, user: str, reason: str) -> dict:
         job = self._require(load_id)
@@ -466,8 +472,7 @@ class IncrementService:
                 f"AND r.TAGT_LNG_ID IN ({', '.join(':' + k for k in part)})", part))
         return out
 
-    def activate(self, load_id: str, *, channel: ChannelSwitch | None = None,
-                 user: str = "") -> dict:
+    def _activation_plan(self, load_id: str) -> dict:
         job = self._require(load_id)
         if job["PRCS_STTS_CD"] != "INDEXING":
             raise IncrementError(f"INDEXING 상태만 활성화 (현재 {job['PRCS_STTS_CD']})")
@@ -475,59 +480,138 @@ class IncrementService:
                                 f"WHERE LOAD_WORK_ID=:id AND IDX_STTS_CD<>'READY'", {"id": load_id})
         if pending:
             raise IncrementError(f"색인 준비 미완료: {[(p['IDX_KIND_CD'], p['ARTC_KEY_VALU'], p['IDX_STTS_CD']) for p in pending][:5]}")
-        doc_cd, ver_id, base_id = job["RGLT_DOC_CD"], job["NEW_VER_ID"], job["BASE_VER_ID"]
+        doc_cd, ver_id = job["RGLT_DOC_CD"], job["NEW_VER_ID"]
         rows = self.changes(load_id)
-        new_count = sum(1 for r in rows if r["CHG_TYPE_CD"] in NEW_ROW_TYPES)
         gate = json.loads(job["GATE_RSLT_CTNT"] or "{}")
-        effective = gate.get("effective") or self.version(ver_id)["ENFC_STRT_DT"]
         citing = self._external_targets(rows, doc_cd)
         links = self.db.query(f"SELECT TAGT_RGLT_DOC_CD, LINK_KIND_CD FROM {self.t('DOC_LINK')} "
                               f"WHERE RGLT_DOC_CD=:d", {"d": doc_cd})
-        reviews = _reviews(load_id, rows, citing, links, doc_cd)
         name = gate.get("doc_name") or ""
         document = self.document(doc_cd)
         aliases = json.loads(document.get("ALIAS_CTNT") or "[]") if document else []
         if document and name and name != document["RGLT_DOC_NAME"] and document["RGLT_DOC_NAME"] not in aliases:
             aliases.append(document["RGLT_DOC_NAME"])
+        return {"job": job, "doc_cd": doc_cd, "ver_id": ver_id, "base_id": job["BASE_VER_ID"], "rows": rows,
+                "new_count": sum(1 for r in rows if r["CHG_TYPE_CD"] in NEW_ROW_TYPES),
+                "effective": gate.get("effective") or self.version(ver_id)["ENFC_STRT_DT"],
+                "reviews": _reviews(load_id, rows, citing, links, doc_cd),
+                "name": name or document["RGLT_DOC_NAME"], "aliases": aliases}
+
+    def _apply_activation(self, tx, plan: dict, user: str, channel_name: str | None) -> None:
+        job, doc_cd, ver_id, base_id = plan["job"], plan["doc_cd"], plan["ver_id"], plan["base_id"]
+        rows, effective = plan["rows"], plan["effective"]
+        load_id = job["LOAD_WORK_ID"]
+        self._transition(tx, job, "ACTIVATED")
+        tx.execute(f"UPDATE {self.t('RGLT_DOC')} SET ACTV_VER_ID=:new, RGLT_DOC_NAME=:name, "
+                   f"ALIAS_CTNT=:aliases, CHG_ASTM={{now}} WHERE RGLT_DOC_CD=:d AND "
+                   f"(ACTV_VER_ID=:base OR (ACTV_VER_ID IS NULL AND :base IS NULL))",
+                   {"new": ver_id, "name": plan["name"], "aliases": _json(plan["aliases"]),
+                    "d": doc_cd, "base": base_id}, expect=1)
+        if base_id:
+            tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='SUPERSEDED', ENFC_END_DT=:end, "
+                       f"SPSD_ASTM={{now}} WHERE RGLT_VER_ID=:base AND VER_STTS_CD='ACTIVE'",
+                       {"end": day_before(effective), "base": base_id}, expect=1)
+        tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='ACTIVE', ACTV_ASTM={{now}} "
+                   f"WHERE RGLT_VER_ID=:v AND VER_STTS_CD='CANDIDATE'", {"v": ver_id}, expect=1)
+        for r in rows:
+            if r["CHG_TYPE_CD"] in CLOSE_TYPES:
+                tx.execute(f"UPDATE {self.t('ARTC_VER')} SET ENFC_END_DT=:end, SPSD_ASTM={{now}} "
+                           f"WHERE ARTC_VER_ID=:old AND ENFC_END_DT IS NULL AND OPEN_YN='Y'",
+                           {"end": day_before(r["ENFC_STRT_DT"] or effective),
+                            "old": r["OLD_ARTC_VER_ID"]}, expect=1)
+        tx.execute(f"UPDATE {self.t('ARTC_VER')} SET OPEN_YN='Y' WHERE RGLT_VER_ID=:v AND OPEN_YN='N'",
+                   {"v": ver_id}, expect=plan["new_count"])
+        for review in plan["reviews"]:
+            tx.execute(f"INSERT INTO {self.t('RVW_TRGT')} (RVW_TRGT_ID, LOAD_WORK_ID, RVW_KIND_CD, SRC_LNG_ID, "
+                       f"TAGT_RGLT_DOC_CD, TAGT_LNG_ID, TAGT_ARTC_KEY_VALU, RVW_RSN_CTNT, RVW_STTS_CD, "
+                       f"PRCS_USER_ID, RGSN_ASTM, PRCS_ASTM) VALUES (:id, :load, :kind, :src, :tdoc, :tlng, "
+                       f":tkey, :reason, 'OPEN', NULL, {{now}}, NULL)", review)
+        self._hist(tx, load_id, self._hist_seq(load_id) + 1, "INDEXING", "ACTIVATED",
+                   {"user": user, "new_rows": plan["new_count"],
+                    "closed": sum(1 for r in rows if r["CHG_TYPE_CD"] in CLOSE_TYPES),
+                    "reviews": len(plan["reviews"]), "channel": channel_name})
+
+    def _invalidate(self, plan: dict) -> dict:
+        return {"doc_cd": plan["doc_cd"], "rglt_doc_ids": [self.version(plan["ver_id"])["RGLT_DOC_ID"]] +
+                ([self.version(plan["base_id"])["RGLT_DOC_ID"]] if plan["base_id"] else [])}
+
+    def activate(self, load_id: str, *, channel: ChannelSwitch | None = None,
+                 user: str = "") -> dict:
+        return self.activate_many([load_id], channel=channel, user=user)["results"][0]
+
+    def activate_many(self, load_ids: list[str], *, channel: ChannelSwitch | None = None,
+                      user: str = "") -> dict:
+        """여러 문서를 한 트랜잭션에서 활성화하고 조회 채널은 한 번만 바꾼다.
+        새 Gold 세대 하나에 여러 문서의 새 판본이 들어가므로, 하나라도 어긋나면 전부 롤백한다."""
+        if not load_ids or len(set(load_ids)) != len(load_ids):
+            raise IncrementError("활성화할 작업 목록이 비었거나 중복")
+        plans = [self._activation_plan(i) for i in load_ids]
+        if len({p["doc_cd"] for p in plans}) != len(plans):
+            raise IncrementError("한 번에 같은 문서의 판본 둘을 활성화할 수 없다")
         try:
             with self.db.transaction() as tx:
-                self._transition(tx, job, "ACTIVATED")
-                tx.execute(f"UPDATE {self.t('RGLT_DOC')} SET ACTV_VER_ID=:new, RGLT_DOC_NAME=:name, "
-                           f"ALIAS_CTNT=:aliases, CHG_ASTM={{now}} WHERE RGLT_DOC_CD=:d AND "
-                           f"(ACTV_VER_ID=:base OR (ACTV_VER_ID IS NULL AND :base IS NULL))",
-                           {"new": ver_id, "name": name or document["RGLT_DOC_NAME"], "aliases": _json(aliases),
-                            "d": doc_cd, "base": base_id}, expect=1)
-                if base_id:
-                    tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='SUPERSEDED', ENFC_END_DT=:end, "
-                               f"SPSD_ASTM={{now}} WHERE RGLT_VER_ID=:base AND VER_STTS_CD='ACTIVE'",
-                               {"end": day_before(effective), "base": base_id}, expect=1)
-                tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='ACTIVE', ACTV_ASTM={{now}} "
-                           f"WHERE RGLT_VER_ID=:v AND VER_STTS_CD='CANDIDATE'", {"v": ver_id}, expect=1)
-                for r in rows:
-                    if r["CHG_TYPE_CD"] in CLOSE_TYPES:
-                        tx.execute(f"UPDATE {self.t('ARTC_VER')} SET ENFC_END_DT=:end, SPSD_ASTM={{now}} "
-                                   f"WHERE ARTC_VER_ID=:old AND ENFC_END_DT IS NULL AND OPEN_YN='Y'",
-                                   {"end": day_before(r["ENFC_STRT_DT"] or effective),
-                                    "old": r["OLD_ARTC_VER_ID"]}, expect=1)
-                tx.execute(f"UPDATE {self.t('ARTC_VER')} SET OPEN_YN='Y' WHERE RGLT_VER_ID=:v AND OPEN_YN='N'",
-                           {"v": ver_id}, expect=new_count)
-                for review in reviews:
-                    tx.execute(f"INSERT INTO {self.t('RVW_TRGT')} (RVW_TRGT_ID, LOAD_WORK_ID, RVW_KIND_CD, SRC_LNG_ID, "
-                               f"TAGT_RGLT_DOC_CD, TAGT_LNG_ID, TAGT_ARTC_KEY_VALU, RVW_RSN_CTNT, RVW_STTS_CD, "
-                               f"PRCS_USER_ID, RGSN_ASTM, PRCS_ASTM) VALUES (:id, :load, :kind, :src, :tdoc, :tlng, "
-                               f":tkey, :reason, 'OPEN', NULL, {{now}}, NULL)", review)
+                for plan in plans:
+                    self._apply_activation(tx, plan, user, channel.channel if channel else None)
                 if channel is not None:
                     sql, binds = channel.sql()
                     tx.execute(sql, binds, expect=1)
-                self._hist(tx, load_id, self._hist_seq(load_id) + 1, "INDEXING", "ACTIVATED",
-                           {"user": user, "new_rows": new_count,
-                            "closed": sum(1 for r in rows if r["CHG_TYPE_CD"] in CLOSE_TYPES),
-                            "reviews": len(reviews),
-                            "channel": channel.channel if channel else None})
         except Exception as exc:          # Dataiku 경로는 Oracle 오류가 실행기 예외로 온다
-            self._note_error(load_id, f"활성화 롤백: {type(exc).__name__}: {exc}")
+            for load_id in load_ids:
+                self._note_error(load_id, f"활성화 롤백: {type(exc).__name__}: {exc}")
             raise IncrementError(f"활성화 롤백 — 기존 현행본 유지: {exc}") from exc
-        return {"state": "ACTIVATED", "new_rows": new_count, "reviews": len(reviews),
+        results = [{"load_id": p["job"]["LOAD_WORK_ID"], "state": "ACTIVATED", "new_rows": p["new_count"],
+                    "reviews": len(p["reviews"]), "invalidate": self._invalidate(p)} for p in plans]
+        return {"state": "ACTIVATED", "results": results, "channel": channel.channel if channel else None}
+
+    # ---------------------------------------------------------------- 5. 되돌리기 (한 트랜잭션)
+    def rollback(self, load_id: str, *, user: str, reason: str,
+                 channel: ChannelSwitch | None = None) -> dict:
+        """활성화한 판본을 닫고 기준 판본을 다시 연다. 이 판본이 아직 현행일 때만 (뒤 판본이 있으면 거절).
+        새 조문 행은 지우지 않고 숨긴다(OPEN_YN=N). 같은 원문 파일은 같은 작업이라 다시 넣으려면
+        수정한 파일이 필요하다."""
+        job = self._require(load_id)
+        if job["PRCS_STTS_CD"] != "ACTIVATED":
+            raise IncrementError(f"ACTIVATED 상태만 되돌린다 (현재 {job['PRCS_STTS_CD']})")
+        doc_cd, ver_id, base_id = job["RGLT_DOC_CD"], job["NEW_VER_ID"], job["BASE_VER_ID"]
+        document = self.document(doc_cd)
+        if (document or {}).get("ACTV_VER_ID") != ver_id:
+            raise IncrementError("이 판본 뒤에 다른 판본이 활성화됐다 — 최신 판본부터 되돌린다")
+        rows = self.changes(load_id)
+        new_count = sum(1 for r in rows if r["CHG_TYPE_CD"] in NEW_ROW_TYPES)
+        closed = [r for r in rows if r["CHG_TYPE_CD"] in CLOSE_TYPES and r["OLD_ARTC_VER_ID"]]
+        try:
+            with self.db.transaction() as tx:
+                self._transition(tx, job, "ROLLED_BACK", "ERR_CTNT=:reason", {"reason": reason[:1300]})
+                tx.execute(f"UPDATE {self.t('RGLT_DOC')} SET ACTV_VER_ID=:base, CHG_ASTM={{now}} "
+                           f"WHERE RGLT_DOC_CD=:d AND ACTV_VER_ID=:new",
+                           {"base": base_id, "d": doc_cd, "new": ver_id}, expect=1)
+                tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='ROLLED_BACK', SPSD_ASTM={{now}} "
+                           f"WHERE RGLT_VER_ID=:v AND VER_STTS_CD='ACTIVE'", {"v": ver_id}, expect=1)
+                if base_id:
+                    tx.execute(f"UPDATE {self.t('RGLT_VER')} SET VER_STTS_CD='ACTIVE', ENFC_END_DT=NULL, "
+                               f"SPSD_ASTM=NULL WHERE RGLT_VER_ID=:base AND VER_STTS_CD='SUPERSEDED'",
+                               {"base": base_id}, expect=1)
+                tx.execute(f"UPDATE {self.t('ARTC_VER')} SET OPEN_YN='N' WHERE RGLT_VER_ID=:v AND OPEN_YN='Y'",
+                           {"v": ver_id}, expect=new_count)
+                for r in closed:
+                    tx.execute(f"UPDATE {self.t('ARTC_VER')} SET ENFC_END_DT=NULL, SPSD_ASTM=NULL "
+                               f"WHERE ARTC_VER_ID=:old AND ENFC_END_DT IS NOT NULL AND OPEN_YN='Y'",
+                               {"old": r["OLD_ARTC_VER_ID"]}, expect=1)
+                tx.execute(f"UPDATE {self.t('RVW_TRGT')} SET RVW_STTS_CD='DISMISSED', PRCS_USER_ID=:user, "
+                           f"PRCS_ASTM={{now}} WHERE LOAD_WORK_ID=:id AND RVW_STTS_CD='OPEN'",
+                           {"user": user, "id": load_id})
+                if channel is not None:
+                    sql, binds = channel.sql()
+                    tx.execute(sql, binds, expect=1)
+                self._hist(tx, load_id, self._hist_seq(load_id) + 1, "ACTIVATED", "ROLLED_BACK",
+                           {"user": user, "reason": reason, "hidden_rows": new_count, "reopened": len(closed),
+                            "channel": channel.channel if channel else None})
+        except IncrementError:
+            raise
+        except Exception as exc:
+            raise IncrementError(f"되돌리기 롤백 — 현재 판본 유지: {exc}") from exc
+        return {"state": "ROLLED_BACK", "active_version": base_id, "hidden_rows": new_count,
+                "reopened": len(closed),
                 "invalidate": {"doc_cd": doc_cd, "rglt_doc_ids": [self.version(ver_id)["RGLT_DOC_ID"]] +
                                ([self.version(base_id)["RGLT_DOC_ID"]] if base_id else [])}}
 
@@ -535,6 +619,32 @@ class IncrementService:
         with self.db.transaction() as tx:
             tx.execute(f"UPDATE {self.t('LOAD_WORK')} SET ERR_CTNT=:err, CHG_ASTM={{now}} WHERE LOAD_WORK_ID=:id",
                        {"err": message[:1300], "id": load_id})
+
+
+def comparison_rows(load_id: str, version_id: str, changes: list[Change]) -> list[dict]:
+    """조문 변경 목록 → 대비표 행 (증분 표 ARTC_CMPR 행과 같은 모양)."""
+    rows = []
+    for seq, change in enumerate(changes, 1):
+        new = change.new
+        payload = None
+        if new is not None:
+            payload = {"kind": new.kind, "title": new.title, "text": new.text, "seq": new.seq,
+                       "attachment_sha256": new.attachment_sha256,
+                       "official": {"changed": new.official_changed, "effective": new.official_effective,
+                                    "moved": list(new.official_moved)},
+                       "official_note": change.official_note}
+        rows.append({
+            "LOAD_WORK_ID": load_id, "CMPR_SEQ": seq, "CHG_TYPE_CD": change.change_type,
+            "OLD_ARTC_VER_ID": change.old.version_id if change.old else None,
+            "OLD_ARTC_KEY_VALU": change.old.key if change.old else None,
+            "NEW_ARTC_KEY_VALU": new.key if new else None,
+            "NEW_ARTC_VER_ID": ("A" + stable_id(version_id, new.key, length=31)) if new else None,
+            "LNG_ID": change.lineage_id, "SMLR_RATE": round(float(change.similarity), 4),
+            "JDGM_RSN_CTNT": change.reason[:1300], "ENFC_STRT_DT": change.effective_from or None,
+            "RULE_RVW_YN": change.rule_review,
+            "CMPR_ADDN_IFMN_CTNT": _json(payload) if payload is not None else None,
+        })
+    return rows
 
 
 def _resolve_citations(text: str, doc_cd: str, lineage_by_key: dict[str, str],

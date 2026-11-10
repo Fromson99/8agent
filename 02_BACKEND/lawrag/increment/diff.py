@@ -96,6 +96,10 @@ class _Item:
     attachment: str
 
 
+# 첨부 해시 칸에 파일 sha 대신 별표 내용 지문을 담을 때의 머리 (구조화 경로)
+CONTENT_FINGERPRINT = "content:"
+
+
 def _body(text: str) -> str:
     return normalize_text(strip_own_heading(normalize_text(text)))
 
@@ -191,6 +195,9 @@ def _explained(old_body: str, new_body: str, key_map: dict[str, str]) -> bool:
 def _classify(o: BaseArticle, oi: _Item, n: Article, ni: _Item, sim: float,
               key_map: dict[str, str]) -> tuple[str, str]:
     same_key = o.key == n.key
+    if oi.attachment.startswith(CONTENT_FINGERPRINT) and oi.attachment == ni.attachment:
+        # 구조화 경로 별표: 표 배치만 다르고 글자 구성은 같다 (structured.annex_fingerprint)
+        return (SAME, "내용 동일 (표 서식 무시)") if same_key else (MOVE, f"번호 이동 {o.key}→{n.key}, 내용 동일")
     attach_changed = bool(oi.attachment and ni.attachment and oi.attachment != ni.attachment)
     if oi.flat == ni.flat and not attach_changed:
         return (SAME, "내용 동일") if same_key else (MOVE, f"번호 이동 {o.key}→{n.key}, 내용 동일")

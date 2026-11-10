@@ -123,9 +123,23 @@ class Connection(sqlite3.Connection):
         self.create_function('_oracle_dirty', -1, self._mark)
         self.set_authorizer(self._authorize)
         state = self.records.state('a1:head:' + self.owner)
-        if state:
-            self._load(state)
-        elif readonly:
+        # Opening takes no lease (readers must not write), so another request or
+        # serving may commit while rows are being read. _load detects that before
+        # touching this connection; read the newer head again, a bounded number of
+        # times. Writers still serialize and re-check under the lease in _acquire.
+        for attempt in range(1, HYDRATION_ATTEMPTS + 1):
+            if not state:
+                break
+            try:
+                self._load(state)
+                break
+            except StateConflict as exc:
+                if not str(exc).startswith('AGENT_SQL_CHANGED') or attempt == HYDRATION_ATTEMPTS:
+                    raise
+                hydration_retry(self.record_path, attempt)
+                time.sleep(min(.2, .05 * attempt))
+                state = self.records.state('a1:head:' + self.owner)
+        if not state and readonly:
             raise FileNotFoundError(str(path))
         self._suppressed = False
 
@@ -398,6 +412,15 @@ class Connection(sqlite3.Connection):
     def __exit__(self, typ, value, traceback):
         if typ is None: self.commit()
         else: self.rollback()
+
+
+HYDRATION_ATTEMPTS = 4
+
+
+def hydration_retry(path, attempt):
+    from .observability import event, get_logger
+    event(get_logger('service'), 'oracle.record.hydration_retry', attempt=attempt,
+          max_attempts=HYDRATION_ATTEMPTS, record=paths.Path(path).name)
 
 
 def connect(path, *args, **kwargs):

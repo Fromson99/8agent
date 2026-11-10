@@ -103,9 +103,16 @@ def _intern(db, raw, depth=0):
         for token in TOKEN.finditer(raw) if depth < MAX_NESTING else ():
             if token.end() - token.start() < MIN_SIZE:
                 continue
+            try:
+                text = json.loads(token.group())
+            except ValueError:
+                # Inside an already decoded text a quoted passage is not a JSON string literal
+                # (ADR-1475 cm-051, ADR-1477 cm-023/024/025: a 15,593-character form original with
+                # quoted lines holding raw line breaks ended the request with JSONDecodeError).
+                # It stays in the literal bytes around it, stored unchanged.
+                continue
             if token.start() > end:
                 parts.append(['literal', raw[end:token.start()].decode('utf-8')])
-            text = json.loads(token.group())
             canonical = json.dumps(text, ensure_ascii=False, separators=(',', ':')).encode()
             if canonical == token.group():
                 # The same original stored as evidence_span.text and embedded

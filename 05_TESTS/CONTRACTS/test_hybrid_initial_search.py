@@ -57,7 +57,9 @@ def test_lexical_only_article_enters_the_menu_and_shared_hits_go_first(monkeypat
     assert [r['rank'] for r in discovery['law_navigation']['vector_candidates']] == list(range(1, len(order) + 1))
     fusion = discovery['law_navigation']['fusion']
     assert fusion['method'] == 'rrf-v1' and fusion['both'] == 2 and fusion['lexical_only_kept'] == 1
-    assert index.calls[0]['terms'] == ['의무인수', '면제']
+    # The model terms come first; since 2026-11-09 the question's own content words follow them
+    # (ADR-1477 r3: "상장주선인", "사내규정" never reached the body search).
+    assert index.calls[0]['terms'][:2] == ['의무인수', '면제']
     assert {d['document_id'] for d in discovery['law_navigation']['law_page']['items']} == {'d1', 'd2'}
     assert any(k == 'INITIAL_VECTOR_CANDIDATES' and p.get('fusion') for k, p in events)
 

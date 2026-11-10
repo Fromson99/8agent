@@ -16,7 +16,7 @@ SYSTEM=CASE_ROUTING_SYSTEM+'\n'+INTENT_PROMPT+'\n현재 사건·기억 없는 �
 
 from .structure_selection import PROMPT as ENTRY_SELECTION_PROMPT
 ENTRY_SCOPE_PROMPT = ENTRY_SELECTION_PROMPT + """
-request_configuration의 source_category는 서버가 해석한 내규/외규/전체 선택이다. 이 접두어는 문서명이 아니며 scope_decision.targets에 넣지 않는다. question에는 접두어를 뺀 실제 요청이 있다. 원문 인용 선택지는 원래 요청을 그대로 보존하며 접두어를 포함할 수 있다.
+request_configuration의 source_category는 서버가 해석한 내규/외규/전체 선택이다. 이 접두어는 문서명이 아니며 scope_decision.targets에 넣지 않는다. 쟁점의 subject·purpose·검색어에도 '외규'·'내규'를 대상처럼 쓰지 않는다(조회 방식 표시일 뿐이다). question에는 접두어를 뺀 실제 요청이 있다. 원문 인용 선택지는 원래 요청을 그대로 보존하며 접두어를 포함할 수 있다.
 search.scope_decision은 이 최초 요청의 유일한 범위 판단이다. NAMED_SCOPE의 targets에는 실제 요청한 문서명과 구조만 넣고 user_quote는 현재 question의 연속 원문을 그대로 복사한다.
 생략·대명사·약칭이 가리키는 법령은 문맥을 보고 해석한 문서명으로 targets에 작성하고 reason에 해석 이유를 쓴다. user_quote에는 해석 전 현재 질문의 원문을 그대로 보존한다. 확인되지 않은 이름을 지어내지 않는다.
 문서 전체는 structure=null, selection=null이다. 단일 조문 번호도 selection으로 표현하고 structure=null이다. 예를 들어 본문 제2조는 coordinate_scope="body", groups=[{parent_path:[],unit:"조",include:[{kind:"SINGLE",value:{n:2}}],exclude:[]}]다. 부칙을 요청한 경우 본문으로 바꾸지 않고 해당 부칙 범위를 구분한다. 번호의 복수·범위·제외도 selection으로 표현한다. 번호 없는 목차 제목은 structure에 쓴다. 범위 없이 허용 자료에서 찾는 AUTHORIZED_SCOPE는 targets=[], user_quote=""다.

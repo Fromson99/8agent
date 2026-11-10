@@ -95,10 +95,12 @@ def test_prose_format_is_not_a_new_keyword_rejection():
     assert cc.compose(a,g.plan(a))['text']==v['answer_points'][0]['text']
 
 def test_unknown_stays_unknown_and_does_not_trigger_another_call():
+    # Since ADR-1477 r3 an unknown answer call is not sent again and the request returns the acquired
+    # originals (or the earlier verified draft) with an interruption, instead of HTTP 504.
     e,calls=execution(TransportError('unknown',retryable=False,unknown=True))
-    with pytest.raises(TransportError):g.assess(e,SOURCES,ISSUES,'질문',[])
-    with pytest.raises(ContractError,match='unknown'):g.assess(e,SOURCES,ISSUES,'질문',[])
-    assert len(calls)==1
+    result=g.assess(e,SOURCES,ISSUES,'질문',[])
+    assert len(calls)==1 and not result['claims']
+    assert result['guided_reply']['interruption']['kind']=='MODEL_OUTCOME_UNKNOWN'
 
 def test_verified_sources_and_guided_body_remain_separate_and_partial():
     a=g.materialize(value(),ISSUES,OPTIONS,SOURCES);answer=cc.compose(a,g.plan(a))

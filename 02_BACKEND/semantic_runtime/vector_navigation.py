@@ -64,6 +64,7 @@ def attach(inv,data,offer):
 # reciprocal rank. The question words often differ from an article's own words
 # (e.g. 의무인수 vs 상장주선인의 의무), and a lexical hit can sit far down the
 # vector list (or the reverse); fusion keeps both near the top of the first menu.
+QUESTION_NOISE={'대해','대한','관한','관하','경우','어떻게','무엇','어느','어떤','있는','없는','하는','되는','따른','위한','문맥','업무','해당','여부'}
 FUSION_K=60
 FUSION_LIMIT=100
 LEXICAL_UNITS=200
@@ -82,9 +83,36 @@ def lexical_articles(session,terms):
   if cursor is None or not page['items']:break
  return order
 
+# Generic names a question uses for a family of documents (plan r5 4-2). Candidates of the named
+# family get a small fusion bonus; nothing outside it is removed. Edit this table when documents
+# are added; names are matched on the document's own last path part.
+DOCUMENT_FAMILIES=(
+ (r'거래소\s*(?:규정|규칙|상장규정)|상장규정상', r'^(?:유가증권시장|코스닥시장|코넥스시장)\s*상장규정'),
+ (r'세법(?!인)|세법상|세제', r'^(?:소득세법|법인세법|상속세\s*및\s*증여세법|조세특례제한법)'),
+ (r'자본시장법령|자본시장법(?:상|에)?', r'^(?:자본시장과\s*금융투자업에\s*관한\s*법률|증권의\s*발행\s*및\s*공시\s*등에\s*관한\s*규정)'),
+ (r'협회\s*규정|인수\s*규정', r'^증권\s*인수업무\s*등에\s*관한\s*규정'),
+)
+FAMILY_BONUS=1/(FUSION_K+20)
+
+def family_documents(session,question):
+ import re
+ wanted=[doc for word,doc in DOCUMENT_FAMILIES if re.search(word,question or '')]
+ if not wanted:return None
+ return lambda sid:any(re.search(doc,str(session.tools.sources[sid].get('document_name') or '').rsplit(' > ',1)[-1].strip()) for doc in wanted)
+
 def fuse(session,rows,terms):
  """Reciprocal-rank fusion of the vector rows and the lexical article order (k=60)."""
  from .legal_agent import query_scope as qs
+ # ADR-1475 cm-008/012: the body search used only the words the first request's model wrote as
+ # queries, so "상장주선인" and "사내규정" of the question never reached it. The question's own
+ # content words are added (same tokenizer, mode prefix removed); nothing is inferred.
+ try:
+  import re
+  from .fulltext import question_terms
+  text=re.sub(r'^\s*(?:전체 법령|전체|내규|외규|대사)\s*[:：]\s*','',session.context.request['question'])
+  own=[t for t in question_terms(text) if len(t)>=2 and not t.isdigit() and t not in QUESTION_NOISE and t not in terms] if terms else []
+ except Exception:own=[]
+ model_terms=list(terms);terms=[*terms,*own]  # no model terms: the vector order alone, as before
  lexical=lexical_articles(session,terms)
  vrank={r['source_id']:r['rank'] for r in rows};lrank={sid:i for i,sid in enumerate(lexical,1)}
  extra=[sid for sid in lexical if sid not in vrank]
@@ -95,13 +123,15 @@ def fuse(session,rows,terms):
   source=session.tools.sources[sid]
   if source['document_id'] not in docs:raise VectorError('VECTOR_COORDINATE: lexical candidate outside request scope')
   by_sid[sid]={'source_id':sid,'document_id':source['document_id'],'unit_id':str(source['unit_id']),'source_sha256':digest(source),'distance':None}
- score=lambda sid:(1/(FUSION_K+vrank[sid]) if sid in vrank else 0)+(1/(FUSION_K+lrank[sid]) if sid in lrank else 0)
+ try:family=family_documents(session,session.context.request['question'])
+ except Exception:family=None
+ score=lambda sid:(1/(FUSION_K+vrank[sid]) if sid in vrank else 0)+(1/(FUSION_K+lrank[sid]) if sid in lrank else 0)+(FAMILY_BONUS if family and family(sid) else 0)
  ordered=sorted(by_sid,key=lambda sid:(-score(sid),vrank.get(sid,10**6),lrank.get(sid,10**6),sid))[:FUSION_LIMIT]
  fused=[]
  for i,sid in enumerate(ordered,1):
   fused.append({**by_sid[sid],'rank':i,'vector_rank':vrank.get(sid),'lexical_rank':lrank.get(sid)})
- info={'method':'rrf-v1','k':FUSION_K,'terms':list(terms),'vector':len(rows),'lexical':len(lexical),
-       'both':len(set(vrank)&set(lrank)),'lexical_only_kept':sum(1 for r in fused if r['vector_rank'] is None)}
+ info={'method':'rrf-v1','k':FUSION_K,'terms':list(terms),'model_terms':model_terms,'question_terms_added':own,'vector':len(rows),'lexical':len(lexical),
+       'both':len(set(vrank)&set(lrank)),'lexical_only_kept':sum(1 for r in fused if r['vector_rank'] is None),'family_bonus':bool(family)}
  return fused,info
 
 

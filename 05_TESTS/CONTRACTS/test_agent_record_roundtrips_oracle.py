@@ -1,7 +1,7 @@
 """Agent-record round trips on the real local Oracle (2026-11-07 field: 70% of SQL time was record traffic).
 
-A commit stores its fresh body rows in the same acknowledged transaction (one read of what is already
-stored + one write); a lone body upload needs no read-back once acknowledged. Integrity checks that the
+A commit stores its fresh body rows in the same acknowledged transaction (one write; since 2026-11-10 small
+new bodies need no read of what is already stored, see test_agent_record_lease_fastpath_oracle.py); a lone body upload needs no read-back once acknowledged. Integrity checks that the
 removed reads used to provide stay inside the statement: byte-equal duplicates only, an existing replayed
 operation must carry the same receipt, a failed commit leaves no body behind. Large or resumed bodies keep
 the earlier write-then-confirm path. Uses the adr_1242 local Oracle fixture (SIDDA *_A tables, isolated scope).
@@ -55,13 +55,13 @@ def fresh_reader(store):
     return other
 
 
-def test_fresh_commit_is_one_read_and_one_write_and_bodies_are_stored(oracle_agent):
+def test_fresh_commit_is_one_write_and_bodies_are_stored(oracle_agent):
     store, client, _ = oracle_agent
     counter = counted(store)
     owner = digest('roundtrip-commit'); a = ('본문 A ' * 400).encode(); b = b'{"x": 1}'
     rows = [{'key': digest('k1'), 'kind': 'T', 'order': 1, 'lookup': None, 'body': hashlib.sha256(a).hexdigest(), 'deleted': 0}]
     assert store.commit(owner, 0, {'type': 'test'}, rows, bodies=[a, b]) == 1
-    assert counter.seen == ['body_read', 'commit'], counter.seen
+    assert counter.seen == ['commit'], counter.seen
     reader = fresh_reader(store)
     assert reader.body(hashlib.sha256(a).hexdigest()) == a and reader.body(hashlib.sha256(b).hexdigest()) == b
     assert reader.state('a1:head:' + owner)['revision'] == 1
@@ -69,7 +69,7 @@ def test_fresh_commit_is_one_read_and_one_write_and_bodies_are_stored(oracle_age
     # Second commit on the same owner: bodies already verified, only the receipt is new.
     counter.seen.clear()
     assert store.commit(owner, 1, {'type': 'test', 'n': 2}, [], bodies=[a]) == 2
-    assert counter.seen == ['body_read', 'commit'], counter.seen
+    assert counter.seen == ['commit'], counter.seen
     assert not client.errors
 
 
@@ -131,7 +131,8 @@ def test_sql_sites_and_agent_time_are_counted(oracle_agent):
     store.commit(owner, 0, {'type': 'test'}, [], bodies=[b'{"a": 1}'])
     summary = store.sql.stats.summary()
     sites = {row['site'].split('<')[0] for row in summary['sql_sites']}
-    assert {'oracle_agent_records._parts', 'oracle_agent_records.commit'} <= sites, summary['sql_sites']
+    # The commit statement is sent from _commit_planned (2026-11-10); no stored-parts read for a small new body.
+    assert 'oracle_agent_records._commit_planned' in sites and 'oracle_agent_records._parts' not in sites, summary['sql_sites']
     calls = {row['name']: row['count'] for row in summary['agent_calls']}
     assert calls['commit'] == 1 and summary['agent_ms'] > 0
     progress = store.sql.stats.progress()

@@ -161,7 +161,9 @@ def test_read_original_citing_another_law_by_name_offers_that_article(monkeypatc
     known = {'s4-3': {'x1'}}
     scan = gn.scan_read_originals(inv, known)
     assert scan['cited'][('law', '제341조의4')] == ['증권의 발행 및 공시 등에 관한 규정 제4-3조']
-    assert ('r', '제170조') in scan['cited'] and ('r', '제341조의4') not in scan['cited']
+    # "영 제170조" names the 시행령 of the law the rule declares, not the rule's own 제170조 (plan r5 4-1);
+    # unresolved here, it is not recorded as the citing document's article.
+    assert ('r', '제170조') not in scan['cited'] and ('r', '제341조의4') not in scan['cited']
     # The cited article of the other law becomes a readable location without any menu or search.
     monkeypatch.setattr(sq, 'coordinate_index', lambda matcher: {('law', '제341조의4'): ['1108']})
     inv.s.matcher._unit_sources = lambda did, uid: ['article:341-4']

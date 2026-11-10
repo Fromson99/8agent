@@ -30,12 +30,19 @@ from dataclasses import dataclass
 
 from .lawgo_parse import (KIND_ADDENDUM, KIND_ANNEX, KIND_ARTICLE, KIND_PREAMBLE, PREAMBLE, Addendum,
                           Article, DocumentSnapshot, ParseError, _date, _info)
+from .diff import CONTENT_FINGERPRINT
 from .normalize import article_key, normalize_text
 
 _ARTICLE_SURFACE = re.compile(r"^제\s*(\d+(?:-\d+)?)\s*조(?:\s*의\s*(\d+))?$")
 _ANNEX_SURFACE = re.compile(r"^(별표|별지|서식|부표|양식|별첨)\s*(\d+)(?:\s*의\s*(\d+))?$")
 # 행정규칙 구조화는 제목 없는 `제26조 삭제<2025. 2. 5.>` 줄을 조로 세우지 않고 앞 조에 붙인다
 _DELETED_LINE = re.compile(r"^제\s*(\d+(?:-\d+)?)\s*조(?:\s*의\s*(\d+))?\s*<?\s*삭제\b")
+# 별표·서식 본문은 HWP 변환 결과라 같은 내용도 판본마다 표 그리는 방식이 다르다
+# (┌─┐ 상자 / `| a | b |` 표 / <br>). 실측: 금융회사의 지배구조에 관한 법률 시행령 별표1,
+# 전자금융감독규정 별지2. 비교에는 표 테두리·구분선을 뺀 글자만 쓴다.
+_TABLE_DRAWING = re.compile(r"[\u2500-\u257F|]")
+_TABLE_RULE = re.compile(r"^[\s:\-|\u2500-\u257F]*$")
+_BREAK = re.compile(r"<br\s*/?>", re.IGNORECASE)
 _ANNEX_HEAD = re.compile(r"^\[[^\]]*\]\s*")
 _DIVISION = re.compile(r"^제\s*\d+\s*(?:편|장|절|관)(?:\s*의\s*\d+)?(?:\s|\[|$)")
 _DELETED = re.compile(r"^제\s*\d+(?:-\d+)?\s*조(?:\s*의\s*\d+)?\s*(?:\([^)]*\)\s*)?<?\s*삭제")
@@ -49,7 +56,7 @@ _KIND_BODY, _KIND_ADDENDUM, _KIND_ANNEX = "body", "addendum", "annex"
 class Header:
     """구조화 결과 밖에서 오는 문서 정보."""
     doc_cd: str
-    source_kind: str            # LAW | ADMRUL | RULE (내규 등 법제처 밖 문서)
+    source_kind: str            # LAW | ADMRUL | INTERNAL (내규 등 법제처 밖 문서)
     official_id: str
     name: str
     promulgated: str = ""
@@ -91,15 +98,36 @@ def name_code(name: str) -> str:
     compact = re.sub(r"\s+", "", normalize_text(name))
     if not compact:
         raise ParseError("문서명이 없음")
-    return "RULE:" + hashlib.sha256(compact.encode("utf-8")).hexdigest()[:16]
+    return "INTERNAL:" + hashlib.sha256(compact.encode("utf-8")).hexdigest()[:16]
 
 
 def header_from_name(name: str, *, filename: str = "", source_sha256: str) -> Header:
     """법제처 밖 문서. 시행일은 파일명의 YYYYMMDD → 없으면 부칙(snapshot 조립 뒤 채움) 순서."""
     match = _FILENAME_DATE.search(filename or "")
     effective = match.group(1) if match else ""
-    return Header(name_code(name), "RULE", name_code(name).split(":", 1)[1], normalize_text(name),
+    return Header(name_code(name), "INTERNAL", name_code(name).split(":", 1)[1], normalize_text(name),
                   effective=effective, source_sha256=source_sha256)
+
+
+def annex_text(lines: list[str]) -> str:
+    out = []
+    for line in lines:
+        if _TABLE_RULE.match(line):
+            continue
+        cleaned = normalize_text(_TABLE_DRAWING.sub(" ", _BREAK.sub(" ", line)))
+        if cleaned:
+            out.append(cleaned)
+    return "\n".join(out)
+
+
+def annex_fingerprint(text: str) -> str:
+    """표 배치와 무관한 별표 내용 지문 — 글자·숫자만의 순서 무시 구성.
+    상자 표는 한 칸의 글이 여러 줄로 쪼개져 옆 칸과 줄 단위로 섞이므로 글자 순서로는
+    같은 내용을 알아볼 수 없다. 기호는 변환마다 달라서 뺀다 (실측: 전자금융감독규정 별표2
+    옛 변환의 `?`가 새 변환에서 `▪`·`∙`). 글자·숫자가 하나라도 바뀌면 지문이 달라진다.
+    기호만 바뀐 개정은 이 지문으로 잡지 못한다."""
+    chars = sorted(ch for ch in normalize_text(text) if ch.isalnum())
+    return CONTENT_FINGERPRINT + hashlib.sha256("".join(chars).encode("utf-8")).hexdigest()
 
 
 def _surface(node: dict) -> str:
@@ -203,8 +231,9 @@ def from_structure(nodes: list[dict], blocks: list[dict], header: Header) -> Doc
             lines = _span_lines(node, blocks)
             if lines:                          # 구조화가 붙인 머리 `[별표 0] 제목` → 제목
                 lines[0] = _ANNEX_HEAD.sub("", lines[0]) or lines[0]
-            annexes.append(Article(key, KIND_ANNEX, normalize_text(node.get("title") or ""),
-                                   "\n".join(lines), 0))
+            text = annex_text(lines)
+            annexes.append(Article(key, KIND_ANNEX, normalize_text(node.get("title") or ""), text, 0,
+                                   attachment_sha256=annex_fingerprint(text)))
 
     division_ids = {n["id"] for n in nodes if scopes[n["id"]] == _KIND_BODY
                     and n.get("family", "").startswith("kr_") and n.get("family") != "kr_article"}
@@ -246,7 +275,7 @@ def from_structure(nodes: list[dict], blocks: list[dict], header: Header) -> Doc
         name=header.name, promulgated=header.promulgated, promulgation_no=header.promulgation_no,
         effective=header.effective, revision_kind=header.revision_kind, source_sha256=header.source_sha256,
         articles=articles, addenda=addenda, meta={"input": "structured"})
-    if header.source_kind == "RULE" and addenda:
+    if header.source_kind == "INTERNAL" and addenda:
         last = addenda[-1]                     # 법제처 밖 문서: 공포번호·공포일은 마지막 부칙에서
         snapshot.promulgation_no = snapshot.promulgation_no or last.number
         snapshot.promulgated = snapshot.promulgated or last.promulgated

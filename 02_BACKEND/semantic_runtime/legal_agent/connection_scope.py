@@ -668,6 +668,7 @@ def inline_cards(inv, scope, source_refs, groups, actions):
                 'anchor_delegation_wording_hint':connection.get('anchor_delegation_wording_hint',False),
                 'defines_anchor_wording':connection.get('defines_anchor_wording'),
                 'citation_role':connection.get('citation_role'),
+                'citation_relation':deepcopy(connection.get('citation_relation')),
                 'hint_imposes_read':False}
             if decision:
                 card['decision'] = deepcopy(decision)
@@ -909,7 +910,7 @@ def acquire_small_directory(inv, scope, directory):
 
 
 ROLE_CHAIN = 'role-chain-v1'
-CHAIN_LIMITS = {'outgoing': 6, 'pair_incoming': 3, 'chars': 12000, 'depth': 2}
+CHAIN_LIMITS = {'outgoing': 6, 'pair_incoming': 3, 'matched_incoming': 2, 'chars': 12000, 'depth': 2}
 ROLE_LABELS = {'SPECIFIES': '구체화', 'EXCEPTION': '특칙·예외', 'MUTATIS': '준용', 'BORROWS': '차용',
                'TRANSITIONAL': '부칙 경과·적용례'}
 
@@ -933,15 +934,61 @@ def same_subject(card, terms=()):
     return bool(target & (anchor | {t for t in terms if len(t) >= 2}))
 
 
+SENTENCE_CARD_LIMIT = 12
+SENTENCE_CARD_NOTES = {
+    'MUTATIS': '이 조문이 현재 조문을 다른 대상에 준용한다. 질문 대상이 그 대상이면 READ한다.',
+    'APPLIES_CASE': '이 조문이 특정한 경우에 현재 조문의 적용 결과(금액·기준 등)를 따로 정한다. 질문이 그 경우이면 READ한다.',
+    'IMPLEMENTS': '하위 규정이 현재 조문을 시행하는 세부를 정한다. 질문이 그 세부이면 READ한다.'}
+
+
+def relation_kind(card):
+    return (card.get('citation_relation') or {}).get('kind')
+
+
+def term_overlap(text, terms):
+    """How many question words appear in one citing sentence; an ordering hint only."""
+    return sum(1 for t in terms if len(t) >= 2 and t in (text or ''))
+
+
+def question_match(link, terms):
+    """A reverse 준용 whose extended subject is a question word ("감사에 준용" for a question about
+    감사), or a case-specific application whose sentence holds two or more question words
+    ("주식매수선택권을 행사하여 취득한 주식을 양도하는 때에는 …"). The system reads these with the cited
+    rule instead of leaving the choice to the model; it is a reading decision, not applicability."""
+    from .citation_roles import MUTATIS, APPLIES_CASE
+    relation = link.get('citation_relation') or {}
+    if relation.get('kind') == MUTATIS:
+        subject = relation.get('subject') or ''
+        return any(len(t) >= 2 and t in subject for t in terms)
+    if relation.get('kind') == APPLIES_CASE:
+        return term_overlap(relation.get('sentence'), terms) >= 2
+    return False
+
+
 def list_only_incoming(cards, actions, listed, terms=()):
-    """Guided reading keeps forward, pair and same-subject links; other reuse stays a count."""
-    from .citation_roles import PAIR_ROLES
-    kept = []
+    """Guided reading keeps forward, pair and same-subject links. A reverse 준용, a case-specific
+    application and a lower rule's implementing sentence stay selectable as one-sentence cards
+    (question words first, bounded); other reuse stays a count."""
+    from .citation_roles import PAIR_ROLES, CARD_KINDS
+    kept = []; sentence_cards = []
     for card in cards:
         if card['direction'] == 'OUTGOING' or card.get('citation_role') in PAIR_ROLES or same_subject(card, terms):
             kept.append(card)
+        elif relation_kind(card) in CARD_KINDS and card.get('read_action') and not card.get('already_read'):
+            sentence_cards.append(card)
         else:
             listed.append(card)
+    sentence_cards.sort(key=lambda c: -term_overlap((c.get('citation_relation') or {}).get('sentence'), terms))  # stable
+    offered = set()
+    for card in sentence_cards:
+        # One sentence may cite the same rule twice; the limit counts distinct reads.
+        if card['read_action'] not in offered and len(offered) >= SENTENCE_CARD_LIMIT:
+            listed.append(card)
+            continue
+        offered.add(card['read_action'])
+        relation = card['citation_relation']
+        card['citation_note'] = SENTENCE_CARD_NOTES[relation['kind']] + (' 대상: ' + relation['subject'] + '.' if relation.get('subject') else '') + ' 맞지 않으면 읽지 않는다. READ는 차감되지 않는다.'
+        kept.append(card)
     used = {c.get('read_action') for c in kept}
     for card in listed:
         ident = card.get('read_action')
@@ -980,25 +1027,33 @@ def incoming_summary(listed):
             'by_role': {ROLE_LABELS.get(k, k): v for k, v in sorted(groups.items())}}
 
 
-def chain_rows(directory, *, forward_only):
-    """Choose reads by citation role: forward links and rule-changing pairs only."""
+def chain_rows(directory, *, forward_only, terms=()):
+    """Choose reads by citation role: forward links and rule-changing pairs only. Within one
+    role, a citing sentence that shares question words comes first (the landing paragraph the
+    search matched), then original order."""
     from .citation_roles import PAIR_ROLES, EXCEPTION
     rows = []; seen = set()
     for group in directory['groups']:
         for link in group['connections']:
             outgoing = group['direction'] == 'OUTGOING'
             pair = link.get('citation_role') in PAIR_ROLES
-            if not outgoing and (forward_only or not pair):
+            matched = not outgoing and not pair and not forward_only and question_match(link, terms)
+            if not outgoing and (forward_only or not (pair or matched)):
                 continue
             endpoint = endpoint_key(group, link)
             if endpoint in seen:
                 continue
             seen.add(endpoint)
             rows.append({'group': group, 'link': link, 'plan': read_plan(group, link), 'endpoint': endpoint,
-                         'outgoing': outgoing, 'pair': pair, 'role': link.get('citation_role')})
-    rows.sort(key=lambda r: (not r['pair'], r['role'] != EXCEPTION, r['link'].get('witness_source_order', 0)))
-    return ([r for r in rows if r['outgoing']][:CHAIN_LIMITS['outgoing']] +
-            [r for r in rows if not r['outgoing']][:CHAIN_LIMITS['pair_incoming']])
+                         'outgoing': outgoing, 'pair': pair, 'matched': matched, 'role': link.get('citation_role')})
+    rows.sort(key=lambda r: (not r['pair'], r['role'] != EXCEPTION,
+                             -term_overlap((r['link'].get('citation_relation') or {}).get('sentence'), terms),
+                             r['link'].get('witness_source_order', 0)))
+    # Question-matched reverse links are one short unit each; read them before the character
+    # budget goes to the landing article's general forward citations.
+    return ([r for r in rows if r['matched']][:CHAIN_LIMITS['matched_incoming']] +
+            [r for r in rows if r['outgoing']][:CHAIN_LIMITS['outgoing']] +
+            [r for r in rows if not r['outgoing'] and r['pair']][:CHAIN_LIMITS['pair_incoming']])
 
 
 SECTION_LIMITS = {'articles': 10, 'reads': 2, 'preview_chars': 600}
@@ -1336,15 +1391,15 @@ def acquire_role_chain(inv, scope, directory, *, depth=1):
         'status': 'STARTED', 'groups': [], 'reads': [], 'skipped': [], 'model_called': False, 'absence_proven': False})
     seal(row)
     pairs = []
-    chosen = chain_rows(directory, forward_only=depth > 1)
-    chosen_keys = {r['endpoint'] for r in chosen}
     from .citation_roles import PAIR_ROLES
     from .guided_navigation import question_terms
     terms = question_terms(getattr(inv, 'question', '') or '')
+    chosen = chain_rows(directory, forward_only=depth > 1, terms=terms)
+    chosen_keys = {r['endpoint'] for r in chosen}
     for group in directory['groups']:
         for link in group['connections']:
             outgoing = group['direction'] == 'OUTGOING'
-            wanted = outgoing or (depth == 1 and link.get('citation_role') in PAIR_ROLES)
+            wanted = outgoing or (depth == 1 and (link.get('citation_role') in PAIR_ROLES or question_match(link, terms)))
             plan = read_plan(group, link)
             related = (not outgoing and depth == 1 and not wanted and not link['already_read'] and plan
                        and same_subject({'target': group.get('target'), 'anchor': group.get('anchor')}, terms))
@@ -1378,7 +1433,8 @@ def acquire_role_chain(inv, scope, directory, *, depth=1):
             continue
         hit, offer = plan
         identity = {'source_id': hit['source_id'], 'document_id': hit['document_id'], 'unit_id': offer['unit_id']}
-        label = {'SPECIFIES': '현재 조문의 규칙을 구체화', 'EXCEPTION': '현재 조문의 특칙·예외'}.get(item['role'], '현재 조문이 인용')
+        label = ('현재 조문을 질문 대상에 준용·적용' if item.get('matched') else
+                 {'SPECIFIES': '현재 조문의 규칙을 구체화', 'EXCEPTION': '현재 조문의 특칙·예외'}.get(item['role'], '현재 조문이 인용'))
         got = _chain_read(inv, row, attempts, budget, identity, hit, offer,
             reason=label + '하는 연결 원문 자동 확보(' + ('정방향' if item['outgoing'] else '역방향') + '); 적용 판단 전',
             meta={'endpoint': item['endpoint'], 'role': item['role'], 'outgoing': item['outgoing'], 'depth': depth,
