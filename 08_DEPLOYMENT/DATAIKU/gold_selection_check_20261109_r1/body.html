@@ -1,0 +1,33 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>운영 Gold 게시본 최신판본 표시 확인 SQL R1 (2026-11-09)</h3>
+<p><b>상황</b>: 운영 코드서빙이 시작 단계에서 <code>QUERY_SELECTION: Dataiku must verify latest document selection before serving</code>로 HTTP 503.</p>
+<ol>
+<li>채널(<code>g19_252f50906fa00e444b543cec</code>)로 게시본 번호를 찾음 — 통과</li>
+<li>게시본 명세(SRCH_POST의 JSON)를 읽음 — 통과</li>
+<li>명세 안에 "최신판본만 골랐다" 표시가 있는지 검사 — <b>여기서 멈춤</b></li>
+</ol>
+<p>이 표시는 사람이 확인한 결과가 아니라, R5 적재기가 게시할 때 원문 세대 옆의 최신판본 선택 파일(<code>SEARCH_SELECTION/generation.json</code>)을 읽어 명세 JSON에 자동으로 쓰는 값입니다.
+아래 둘 중 하나가 있어야 통과합니다: <code>search_selection.schema_version = filename-search-selection-v2</code> 또는 <code>selection_proof.native_latest_verified = true</code>.
+<code>DP_QUERY_CHANNEL</code>은 1번(어느 게시본을 읽을지)만 정하므로 넣는 것은 맞지만 3번은 바뀌지 않습니다(운영 채널이 하나뿐이라 비워도 같은 게시본을 읽음).</p>
+
+<h4>실행 방법</h4>
+<p>첨부 <code>GOLD_SELECTION_CHECK_R1.sql</code>의 SELECT 3개를 Dataiku SQL 노트북에서 각각 따로 실행하고 결과를 찍어 주세요. SELECT만 있고 아무것도 바꾸지 않습니다.</p>
+<ul>
+<li>[1] <b>SEL_VER, PROOF</b>: 둘 다 비었거나 PROOF=false → 표시 누락 확정. 값이 있는데도 오류였다면 다른 원인.<br>
+<b>DATASET_VERSION</b>: 로컬 기준 세대(latest-selection-20261015-r1)는 <code>d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d</code>. 같으면 그 세대의 선택 파일은 제외 문서 0건이라 표시만 빠진 것이고 검색 결과는 달라지지 않습니다.<br>
+SEL_VER·PROOF·DATASET_VERSION이 모두 비고 HEAD가 JSON처럼 안 보이면 압축 저장이라 다른 방법으로 확인해야 합니다.</li>
+<li>[2] SRCH_ROWS: 이 게시본에 묶인 검색 행 수(재게시 작업 규모).</li>
+<li>[3] DOCS: 적재된 문서 수.</li>
+</ul>
+
+<h4>표시가 없다면 — 명세 INSERT 한 줄로는 안 됩니다</h4>
+<ul>
+<li>게시본 번호(<code>RFRN_POST_HASH_VALU</code>)는 명세 JSON 내용으로 계산한 해시입니다. 서빙은 명세를 읽을 때 다시 계산해 번호와 다르면 거부합니다. 그래서 기존 행을 UPDATE하거나 표시를 넣은 새 명세를 INSERT하면 번호가 새로 바뀝니다.</li>
+<li>검색 행(SRCH_ROW, [2]의 수만큼)과 벡터 연결(VCTR_HEAD)은 옛 번호에 묶여 있어서, 새 명세 한 줄만 넣고 채널을 바꾸면 서빙이 검색 행을 못 찾습니다.</li>
+<li>가능한 방법:
+ <br>(가) 새 명세 INSERT + 검색 행을 새 번호로 복사(INSERT…SELECT) + VCTR_HEAD 새 번호 추가 + 채널을 새 번호로 변경. 명세 JSON과 해시는 손으로 만들 수 없어 R5 작업 폴더의 복원 세대로 계산하는 노트북 TXT가 필요하고, 검색 행 복사만큼 Gold 공간을 더 씁니다.
+ <br>(나) 선택 파일을 포함해 R5를 다시 적재.
+ <br>(다) [1]의 DATASET_VERSION이 위 로컬 값과 같아 제외 문서 0건이면 검색 결과 차이가 없으므로, 서빙 쪽 확인 조건을 조정하는 방법도 검토할 수 있습니다(코드 변경이라 별도 결정 필요).</li>
+<li>[1]~[3] 결과를 보고 어느 방법으로 갈지 정해 해당 실행본을 만들겠습니다. 이번 메일에는 확인 SQL만 들어 있고 수정 실행본은 아직 없습니다.</li>
+</ul>
+</body></html>

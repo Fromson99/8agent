@@ -1,0 +1,19 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>Gold 판본 선택 보완 플로우 R7 — 플로우 만드는 설치 스크립트 포함 (2026-11-09)</h3>
+<ul>
+<li><b>코드로 플로우 만들기</b>: 첨부 <code>DATAIKU_CREATE_GOLD_FIX_FLOW_R7.txt</code>를 개발계 노트북에서 한 번 실행하면 폴더 2개 + Python 레시피 1개가 생깁니다(레시피 코드 내장).</li>
+<li><b>이 플로우만 보내기</b>: 프로젝트 ZIP은 프로젝트 단위라, 스크립트가 이 플로우만 든 새 프로젝트 <code>GOLD_SELECTION_FIX</code>를 만들고 그 프로젝트만 ZIP(<code>GOLD_SELECTION_FIX_R7.zip</code>)으로 내보냅니다.</li>
+<li><b>운영에서 이것만 실행</b>: 가져온 프로젝트에는 레시피 하나뿐이고 RUN은 그것만 실행합니다. 실행 모드는 코드 수정 없이 프로젝트 변수 <code>GOLD_FIX_MODE</code>(CHECK→APPLY, 되돌리기 ROLLBACK)로 바꿉니다.</li>
+</ul>
+<h4>개발계</h4>
+<ol><li>기존 프로젝트 노트북에 설치 TXT 붙여 넣기</li>
+<li>PARAMS: <code>REFERENCE_FOLDER_ID</code>(잘 동작하는 S3 폴더 ID, 연결·버킷 복사), <code>EXPORT_FOLDER_ID</code>(ZIP 저장 폴더 ID), 운영 값 AIDP/PIDD2APP/SIDDG</li>
+<li>실행 → <code>FLOW_READY</code>, <code>ZIP 저장: GOLD_SELECTION_FIX_R7.zip</code> → 폴더에서 내려받기</li></ol>
+<h4>운영</h4>
+<ol><li>+ New Project → Import project → ZIP (폴더 저장 연결은 운영 S3로 매핑, 폴더 설정 확인)</li>
+<li>판본 선택 JSON을 <code>gold_selection_input</code>에 업로드(복사 명령은 GUIDE)</li>
+<li>변수 <code>GOLD_FIX_MODE=CHECK</code> → 레시피 RUN → documents 2121 / search_rows 60971724 / <code>CHECK_OK</code> 확인 (권한 부족이면 GRANT 줄 출력)</li>
+<li><code>GOLD_FIX_MODE=APPLY</code> → RUN → <code>APPLIED</code> → 코드서빙 재기동</li></ol>
+<p><b>검증</b>: 설치 스크립트는 Dataiku API 대역으로 5항목 통과, 레시피는 설치 스크립트에 든 코드를 그대로 꺼내 변수로 모드를 바꿔 가며 로컬 Oracle 11항목 통과. <b>미확인</b>: 실제 Dataiku API(프로젝트 생성 권한, S3 폴더 설정, 내보내기/가져오기), 운영 규모 시간·로그량, 큰 CLOB 읽기, 운영 권한. 검색 행 6,097만 행 UPDATE는 DBA에 미리 공유해 주세요.</p>
+<p>앞서 보낸 R6(1a1bf5d61d3f4abc)·R7 레시피만(1a1bf6ca7fb9dcab)을 이 메일이 대체합니다.</p>
+</body></html>

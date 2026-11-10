@@ -1,0 +1,18 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>Gold 판본 보완 플로우 R7 — 직접 만든 프로젝트에 설치 · JSON 함께 ZIP (2026-11-09)</h3>
+<p>앞선 R7 메일들을 대체합니다. 설치 스크립트가 더 이상 프로젝트를 자동으로 만들거나 ZIP을 내보내지 않습니다.</p>
+<h4>개발계</h4>
+<ol>
+<li>새 프로젝트를 직접 만든다(빈 프로젝트)</li>
+<li>그 프로젝트의 노트북에서 첨부 <code>DATAIKU_CREATE_GOLD_FIX_FLOW_R7.txt</code> 실행 (REFERENCE_FOLDER는 비워 두기 → 폴더를 DSS 서버 디스크에 만듦)</li>
+<li>생긴 <code>gold_selection_input</code> 폴더에 판본 선택 JSON 업로드 → 같은 셀 다시 실행 → <code>입력 JSON 확인 … term-source-533a… bf643c59…</code> 확인</li>
+<li>프로젝트 메뉴 → Export → <b>'관리 폴더(Managed folders) 내용 포함'</b>을 켜고 ZIP 받기 → JSON이 ZIP에 같이 들어감</li>
+</ol>
+<h4>운영</h4>
+<ol>
+<li>Import project → ZIP (폴더 연결 filesystem_folders 그대로, 버킷에 쓰지 않음)</li>
+<li>변수 확인 GOLD_FIX_MODE=APPLY, AIDP / PIDD2APP / SIDDG → 레시피 RUN 한 번 → <code>APPLIED</code> → 코드서빙 재기동</li>
+<li>권한 부족이면 로그에 GRANT 줄, 끊기면 다시 RUN, 확인만은 CHECK, 되돌리기는 ROLLBACK</li>
+</ol>
+<p><b>검증</b>: 레시피는 이전과 같은 코드(로컬 Oracle 12항목, 폴더 쓰기 0). 설치 스크립트는 Dataiku API 대역 6항목 통과. <b>미확인</b>: 실제 Dataiku의 Export 폴더 내용 포함·가져오기, 출력 없는 레시피 허용, 운영 규모 시간·로그량(6,097만 행 UPDATE — DBA 공유), 운영 권한.</p>
+</body></html>

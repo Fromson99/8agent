@@ -1,0 +1,68 @@
+{
+ "date": "2026-11-09",
+ "package": "increment_dev_20261109_r1",
+ "code_zip": {
+  "name": "INCREMENT_CODE_R1.zip",
+  "sha256": "d5d5ed452b71dcac9bf18e01912ea818d3df2315e2c308a2409e67edd8305512"
+ },
+ "cell": {
+  "name": "DATAIKU_INCREMENT_R1.txt",
+  "sha256": "3cc20889a12de89637a564e20dd25a0c0e4051b86a6378c2094831f83c257c07",
+  "r6_bootstrap_zip_sha256": "5201fb6d85eb627849187a8224325105a33e365bf5b97b7669833872aa4d7e39"
+ },
+ "contract_tests": "05_TESTS/CONTRACTS test_increment_release.py 7 + test_structured_increment.py 9 + test_law_increment.py 21 = 37 passed",
+ "local_oracle_flow": {
+  "result": "PASS",
+  "loader_channel_as_serving_refused": true,
+  "privilege_check": {
+   "owner": true,
+   "no_grant": [
+    "ORA-00942",
+    "ORA-06550"
+   ],
+   "one_grant_ok": [
+    "DELETE SRCH_ROW"
+   ]
+  },
+  "d1_summary": {
+   "HOLD": 1,
+   "APPROVED": 2
+  },
+  "three_generations_kept_and_g0_pruned": true,
+  "g0_rows_left_after_prune": {
+   "DOC_VER": 0,
+   "DOC_UNIT": 0,
+   "DOC_BLK": 0,
+   "SRC_POST": 0,
+   "VCTR_POST": 0,
+   "VCTR_ITEM": 0,
+   "SRCH_CHNL": 0
+  },
+  "rollback_three_steps": [
+   "CHANNEL",
+   "CHANNEL",
+   "REBUILD"
+  ],
+  "status_after": {
+   "documents": 3,
+   "updates": [
+    "ROLLED_BACK",
+    "ROLLED_BACK",
+    "ROLLED_BACK"
+   ]
+  }
+ },
+ "cell_fake_dataiku": "local_checks/run_cell_fake_dataiku.py: R6 BOOTSTRAP 해시·증분 ZIP 해시·R6 레시피 설정 읽기·DEV_1 이름(SIDDS.LGL_G19_*_S_1)·check 13항목 실행·g19_ 채널 거절",
+ "prod_cell": "local_checks/run_prod_check.py: 운영 이름 표 주인 13 PASS / 권한 없음 13 FAIL",
+ "python": [
+  "3.9.25 import",
+  "3.11.15 import",
+  "3.14 tests"
+ ],
+ "not_verified": [
+  "실제 GENOS 구조화·Agent·03 적재와 이어 붙인 실행(대역만)",
+  "개발계 실제 권한·원문 ZIP·지원 ZIP",
+  "전체 재적재 시간",
+  "운영 실행"
+ ]
+}

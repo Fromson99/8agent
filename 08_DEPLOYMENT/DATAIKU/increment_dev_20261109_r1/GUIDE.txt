@@ -1,0 +1,99 @@
+증분 처리 개발계 실험 R1 — 2026-11-09
+
+무엇을 하나
+처리된 파일이 떨어지는 폴더를 매번 확인해서, 지금 서빙 중인 판본(Gold/개발계 실버)과 조문 단위로 비교하고
+이상 없는 것은 사람 승인 없이 반영한다. 새 DB 표는 만들지 않는다. 기록은 Dataiku 관리 폴더에 JSON으로 남긴다.
+
+  떨어진 파일 ─▶ [decide] 해시가 지금 세대에 있으면 변경 없음
+                          바뀐 파일만 작은 R6 실행으로 GENOS 구조화 → Gold에서 읽은 지금 판본과 조문 비교
+                          → 반영(APPROVED) / 보류(HOLD) / 시행일 대기(WAIT_EFFECTIVE) / 변경 없음, 대비표 HTML
+              ─▶ [publish] 지난 원문 ZIP에서 반영 문서만 바꾼 전체 원문 ZIP → R6(구조화·Agent·03 적재) → 새 세대
+              ─▶ [activate] 벡터 게시 행 + 서빙 채널 교체(한 블록) → 업데이트 기록(바뀐 조문·옛 파일, 최근 3개)
+                            → 옛 세대 정리(지금 + 이전 2개만 남김) → Agent 결과 삭제
+              ─▶ [rollback] 최근 업데이트를 되돌림 (이전 세대가 남아 있으면 채널만, 없으면 옛 파일로 다시 게시)
+
+같은 문서가 재무팀·리스크팀 폴더에 함께 있으면 둘 다 같은 새 파일로 바꾼다.
+보류 기준: 조문 수 80% 미만으로 감소·대량 삭제·변경률 50% 초과·별표 소실·시행일 못 읽음·
+            기존보다 이른 시행일·같은 시행일인데 내용 다름. 그 밖은 자동 반영.
+시행일 전 문서는 그날까지 기다린다 (Gold는 조문별 시행일이 없어 넣는 순간 서빙되므로).
+
+
+파일
+  INCREMENT_CODE_R1.zip        증분 코드 (lawinc 패키지, 표준 라이브러리만, Python 3.9 확인)
+  DATAIKU_INCREMENT_R1.txt     Dataiku Python 노트북 한 셀 (ACTION만 바꿔 가며 실행)
+  DEV_MAIN_CHANNEL_R1.txt      개발계 서빙 채널을 main으로 (SQL 노트북, 한 문장씩)
+  PROD_DELETE_CHECK_R1.txt     운영계 권한 확인 셀 (행 변경 0)
+  LOCAL_ORACLE_FLOW_CHECK.json 로컬 Oracle 끝까지 점검 결과
+  local_checks/                셀을 가짜 dataiku로 그대로 돌린 점검 스크립트
+
+
+개발계 실험 순서 (TEST_LEAGAL, R6가 설치돼 있고 오늘 02까지 통과한 프로젝트)
+
+1. 서빙 채널을 main으로
+   DEV_MAIN_CHANNEL_R1.txt 의 Q1~Q4를 SQL 노트북에서 하나씩 실행 → main 줄이 g19_7c1f… 와 같은 세대를 가리키면 완료.
+   GENOS RAG 코드서빙 환경변수 DP_QUERY_CHANNEL 을 main 으로 바꾸고(또는 지우고) 재기동, 질문 하나로 확인.
+   (지금 서빙 채널 g19_7c1f… 는 적재기가 세대마다 자동으로 만드는 이름이라, 증분이 세대를 바꾸고 되돌릴 때
+    적재기와 이름이 부딪힌다. 셀은 CHANNEL이 g19_ 이름이면 시작하지 않는다.)
+
+2. 폴더 준비
+   - CODE 폴더(R6 코드 ZIP이 있는 곳)에 INCREMENT_CODE_R1.zip 업로드
+   - 새 관리 폴더 하나 = STATE (비어 있는 폴더, 상태·기록 JSON)
+   - DROP = 처리된 파일이 떨어지는 폴더. 처음 실험은 빈 관리 폴더를 만들어 손으로 파일을 넣어도 된다.
+     기존 문서의 새 판본은 아무 경로에 넣어도 되고(법령은 법령ID, 그 밖은 문서명으로 찾음),
+     지난 원문에 없는 새 문서는 출처 경로에 넣는다 (예: external/financial_team/law/<문서명>/<파일>).
+   - 지원 ZIP: 실제 원문 구조화에는 실제 지원 ZIP(용어집·카탈로그)과 <이름>.receipt.json 이 R6 지원 폴더에
+     있어야 한다. 예시 지원 ZIP(SAMPLE_SUPPORT_R2.zip)은 예시 원문 전용이라 실제 원문에는 거절된다
+     (DEMO_SUPPORT_REQUIRES_EXACT_SAMPLE). PARAMS 의 SUPPORT_ZIP_NAME 에 실제 이름을 넣는다.
+
+3. 셀 붙여 넣기
+   DATAIKU_INCREMENT_R1.txt 전체를 새 Python 노트북 한 셀에 붙이고 PARAMS의 CODE_FOLDER_ID·DROP_FOLDER_ID·
+   STATE_FOLDER_ID 를 채운다. TARGET='DEV_1' (개발계 실버 SIDDS.LGL_G19_*_S_1), CHANNEL='main'.
+
+4. ACTION='check'  → 개발계 쓰기 권한 확인. 13개 모두 PASS 여야 한다
+   (세대 표 10개 DELETE, SRCH_CHNL UPDATE, VCTR_HEAD INSERT, Agent 표 DELETE). 행은 바뀌지 않는다.
+
+5. ACTION='status' + 기준 원문 지정 (첫 실행 한 번만)
+   지금 세대를 만든 원문을 알려 준다. 둘 중 하나:
+     BASE_DATA_ZIP_NAME   = R6 입력 폴더 안 원문 ZIP 이름
+     BASE_DOCUMENT_PREFIX = R6 입력 폴더 안 낱개 원문 파일 접두 (그 아래 external/…·internal/… 경로)
+   base_zip.ok 가 true 여야 한다 (원문 파일 해시 앞 16자리 = Gold 문서 ID 집합이 지금 세대와 같음).
+   다르면 missing_in_zip / not_in_current 가 보인다 — 지금 세대를 만든 원문이 아니다.
+
+6. ACTION='decide'
+   DROP 에 새 판본 파일을 넣고 실행. STATE 폴더 runs/<실행번호>/decide.json 과 previews/*.html(신구 대비표) 확인.
+   이 단계에서 R6가 바뀐 파일만 GENOS로 구조화하고(작은 실행), 끝나면 Agent 결과를 지운다.
+
+7. ACTION='publish' → ACTION='activate'
+   publish: 전체 원문을 R6로 다시 구조화·적재한다 (오래 걸림 — 시간을 재 주세요). 서빙은 아직 그대로.
+   activate: 서빙 채널 main 이 새 세대로 바뀐다. 질문으로 새 조문이 나오는지 확인.
+   (ACTION='run' 은 decide → publish → activate 를 한 번에)
+
+8. ACTION='rollback'
+   바로 이전 세대로 돌아간다. 업데이트 기록은 최근 3개, Gold 세대는 지금 + 이전 2개만 남는다.
+
+9. ACTION='cleanup'
+   끊긴 옛 세대 삭제·Agent 결과 삭제를 이어서 한다 (activate 가 자동으로 부름).
+
+
+운영계 (지금은 권한 확인만)
+  PROD_DELETE_CHECK_R1.txt 를 운영 Dataiku Python 노트북에서 실행. CONNECTION·GOLD_OWNER(SIDDG)·AGENT_TABLE 확인.
+  PROD_INCREMENT_PRIVILEGES PASS 면 운영에서도 같은 셀(TARGET='GOLD', GOLD_OWNER='SIDDG', CHANNEL='main')로 돈다.
+  FAIL 항목은 ORA-01031(권한 없음)·ORA-00942(표 없음 또는 볼 권한 없음) — 그 표의 DELETE(또는 UPDATE/INSERT)를 DBA에 신청.
+
+
+기록 (STATE 폴더)
+  state.json                 지금 세대·지금 원문 ZIP·파일별 판단·작업
+  runs/<실행>/decide.json     판단, previews/<문서>.html 대비표, publish.json 게시·적재 결과
+  updates/<번호>/update.json  반영 한 번: 채널 전/후, 문서별 조문 변경(옛 문구/새 문구), 원문 ZIP 전/후
+  updates/<번호>/old/…        바꿔치기 전 원문 파일 (되돌리기용) — 최근 3개만
+  structured/<sha>.json.gz   떨어진 파일의 구조화 결과 (같은 파일을 다시 구조화하지 않음)
+  prune/last-plan.json        옛 세대 정리 계획과 결과
+
+
+한계 (실험에서 확인할 것)
+  - 바뀐 문서가 있는 날은 전체 원문을 다시 구조화·적재한다. 개발계에서 걸리는 시간을 재서 운영 주기를 정한다.
+  - Gold는 판본을 통째로 서빙한다. 일부 조문만 늦게 시행되는 부칙 예외는 경고만 남기고 함께 반영된다.
+  - 법령은 법령ID, 그 밖은 문서명(파일명에서 날짜·'본문'을 뺀 이름)으로 같은 문서를 찾는다.
+  - 기준 판본과 새 판본은 같은 구조화(GENOS)를 거쳐야 한다 — 이미 그렇게 동작한다.
+  - 로컬에서는 GENOS 구조화·Agent·03 적재를 대역으로 두고 나머지(비교·SQL·기록·되돌리기)를 실제 Oracle로 확인했다.
+    실제 GENOS·실제 적재와 이어 붙인 확인은 이 개발계 실험이 처음이다.

@@ -1,0 +1,107 @@
+{
+  "main_generation": 185,
+  "release_id": "initial-modes-20261110-r1",
+  "release_manifest_sha256": "ce6c7c6b3488be678a8c4d8ee0fd3e84a558e9255334939985648cea9a35b0d0",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "initial-modes-20261110-r1",
+    "generation": 185,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/initial-modes-20261110-r1/release.json",
+    "release_manifest_sha256": "ce6c7c6b3488be678a8c4d8ee0fd3e84a558e9255334939985648cea9a35b0d0",
+    "activated_at": "2026-11-09T23:31:58.747871+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "69f45820091f95bf523120aad6c95ea0857f2f3003120825564ca51906a32c5b"
+  },
+  "serving_files": 545,
+  "replaces": {
+    "main182": {
+      "release_id": "hybrid-search-20261109-r1",
+      "sent_gmail_id": "1a1be9a6e4828a51"
+    },
+    "field_state_assumed": "MAIN182 (mailed, application unconfirmed) or MAIN177 or earlier; MAIN183-185 are contained"
+  },
+  "changed_vs_main182": {
+    "products": {
+      "02_BACKEND/semantic_runtime/initial_vector.py": "c69719f16da1c3fc0c916f6fd9cf73be746215f4498f73a20b54fb605fdce062",
+      "02_BACKEND/semantic_runtime/legal_agent/citation_roles.py": "049e63f7be2219953792f64e364f72b85eed00e06696c40b892d712f21b0696b",
+      "02_BACKEND/semantic_runtime/legal_agent/connection_scope.py": "15075ae52e3c926449487a298796d47ec094d746cf8d863a970e8141f92d1e1f",
+      "02_BACKEND/semantic_runtime/legal_agent/decision_projection.py": "b55650226185e12e6e4d74546b88fddec39f3bda7fb0ed595cc31c0e40a73dd3",
+      "02_BACKEND/semantic_runtime/legal_agent/definition_entry.py": "7af5f22343298c24fe80640359a5ca8cba09687edb82dc6fb4aba2af51393cf0",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py": "7f6706044f55852eaf5c73bb591eb167a15f54ec1d89cc998dd714d5e2bd09c0",
+      "02_BACKEND/semantic_runtime/legal_agent/guided_navigation.py": "b56a6ae9212ff7f5bffa7d95ba2451066820c416df1a89a9fb9abadd4c558285",
+      "02_BACKEND/semantic_runtime/legal_agent/journal_storage.py": "07ae4ffb36e0ecda79b2750a868e5faf11e2e18a4ec9dd319cc28a12306a7863",
+      "02_BACKEND/semantic_runtime/legal_agent/request_entry.py": "8e71844b6e7c9772d136f339503220e73e83dc256ad0adcdee0eab27abdcc599",
+      "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "a133fb9fd74eaf47752286b539061cb15d6a0b0004db8c507435c9139e18694a",
+      "02_BACKEND/semantic_runtime/oracle_dp.py": "d51611d55fe211107d835176ed718b4fa1b7e87d4cc52442bd69ad0a6d19a499",
+      "02_BACKEND/semantic_runtime/oracle_query_plans.py": "a1acfa908e72ce2770b4fa71b1a761bdcd4b4599245d24de685ed434ad65b907",
+      "02_BACKEND/semantic_runtime/progress.py": "6bc43cb2b6fdaf6e6db768aabe873e936541de8beaa848db312741317e332a4d",
+      "02_BACKEND/semantic_runtime/vector_navigation.py": "787568682ac1b3e9fea3017f262d4f175f4ecd2d99be9d74a7e4d13d4fd5d3b4"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "645 -> 645",
+    "new_required_environment_variables": [],
+    "optional_values": [
+      "GENOS_RAG_INITIAL_SEARCH=hybrid_rerank",
+      "GENOS_RAG_INITIAL_SEARCH=dual"
+    ],
+    "workflow_file_changed": false
+  },
+  "contains": {
+    "MAIN183 citation-relations-20261109-r1": "citation relation per connection (delegated definition, borrowed subject, application special case, enforcement detail), question-matching reverse mutatis/special cases read by the system (max 2)",
+    "MAIN184 relation-clauses-20261110-r1": "form-save 422 fix and form articles excluded from the first screen; relation clauses (mutatis targets, priority, remaining matters) read by the server (2 per request); 2-4 cited passages incl. ranges read together; \"법/영 시행규칙 제N조\" resolved to the declared law; title words",
+    "MAIN185 initial-modes-20261110-r1": "MAIN184 + initial search modes hybrid_rerank and dual (only when GENOS_RAG_INITIAL_SEARCH is set to them); default hybrid/vector unchanged"
+  },
+  "local_validation": {
+    "oracle_scale_guard_main185_20261110": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 417
+    },
+    "entry_checks": "17/17",
+    "regression": "MAIN184 86 files new failures 0 except 3 intended contract changes (tests updated); modes stage 87 files new failures 0",
+    "live_qwen": "ADR-1478 (MAIN184 candidate, 50 standalone questions): required articles acquired 88/95 vs 77 (ADR-1477); in-sample, 1 run, not a quality certification",
+    "installer": {
+      "base": "MAIN177 multiturn-followups-20261108-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_included": [
+    "2026-11-10 inefficient-SQL first fix (candidate staged2, not in MAIN)",
+    "open-links r6 (other session, staged only)"
+  ],
+  "package": {
+    "zip": "MAIN185_FULL_20261110_R1.zip",
+    "zip_sha256": "d43276a60fdcfa4cee3c941a54df68186877d1bd44ba87eb99dd2fbac1d72bb2",
+    "members": 556,
+    "workflow": "MAIN185_WORKFLOW.py"
+  },
+  "oracle_report_r3": {
+    "files": {
+      "GENOS_ORACLE_REPORT_R3.txt": "f7ef8bda48430b3579c1fac50a8cd0bee8810cfb2c9159898cc691686f771fc2",
+      "ORACLE_VSQL_TOP_R3.txt": "09ec9529fa5da0e3fe14fcad6c6c2594046d4191e8160404470d37f512993a24",
+      "ORACLE_REPORT_GUIDE.txt": "17650f9fa7162c603d7267e79113fe0bf63d2a3ad888822204ab24457f6f9122"
+    },
+    "tests": "09_ARTIFACTS/AUDITS/20261110-oracle-report-r3/test_oracle_report_r3.py 5 passed on Python 3.9/3.11/3.14",
+    "vsql_local_oracle": {
+      "short": true,
+      "long_ascii": true,
+      "korean": true,
+      "too_long": true,
+      "too_long_listed_without_fam": true,
+      "full_scan_named": true
+    },
+    "read_only": true
+  },
+  "not_verified": [
+    "field internal model",
+    "field data / ORDS",
+    "whether ORDS sends the SQL text unchanged (FAM match)",
+    "V$SQLSTATS privilege on the field account"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

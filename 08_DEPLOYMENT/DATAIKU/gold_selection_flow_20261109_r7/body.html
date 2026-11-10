@@ -1,0 +1,23 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>운영 Gold 최신판본 선택 정보 보완 R7 — Dataiku 플로우 레시피 (2026-11-09)</h3>
+<p>앞서 보낸 R6(노트북 TXT, 1a1bf5d61d3f4abc)를 대신합니다. <b>R5 코드 ZIP 없이 Python 레시피 하나로 돕니다.</b></p>
+<h4>개발계에서 플로우 만들기</h4>
+<ol>
+<li>Managed Folder 2개: <code>gold_selection_input</code>(JSON 넣는 곳), <code>gold_selection_result</code>(결과·로그)</li>
+<li>+ RECIPE → Python, 입력 gold_selection_input / 출력 gold_selection_result</li>
+<li>코드 칸 전체를 첨부 <code>recipe_gold_selection_fix_r7.py</code>로 교체·저장 (개발계에서는 실행하지 않음)</li>
+<li>프로젝트 ZIP으로 내보내 운영에 가져가기 (Oracle 연결은 운영 AIDP로)</li>
+</ol>
+<h4>운영에서 JSON 준비 (GENOS 터미널 한 줄)</h4>
+<pre style="background:#f4f4f4;padding:8px;white-space:pre-wrap">cp /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/SEARCH_SELECTION/generation.json /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json &amp;&amp; sha256sum /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json &amp;&amp; python3 -c "import json;v=json.load(open('/workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json'));print(v['schema_version'],v['generation_id'],v['manifest_sha256'][:16],'excluded',len(v['excluded']),'marks',len(v['latest_documents']))"</pre>
+<p>TRANSFER에서 내려받아 운영 <code>gold_selection_input</code> 폴더에 올립니다.</p>
+<h4>운영에서 실행</h4>
+<ol>
+<li>SETTINGS의 <code>MODE='CHECK'</code> 그대로 RUN → 로그 PLAN 줄 documents 2121 / search_rows 60971724 확인 → <code>CHECK_OK</code> (DB 무변경)</li>
+<li><code>PRIVILEGE_REQUIRED</code>면 출력된 GRANT 줄을 DBA 요청 (UPDATE: SRCH_ROW·VCTR_ITEM·VCTR_HEAD·SRCH_CHNL)</li>
+<li><code>MODE='APPLY'</code>로 바꿔 RUN → <code>APPLIED</code> → 코드서빙 재기동 (DP_QUERY_CHANNEL 그대로)</li>
+<li>끊기면 다시 RUN(이어서 진행), 되돌리기는 <code>MODE='ROLLBACK'</code> (출력 폴더 plan.json 필요)</li>
+</ol>
+<p><b>DBA 사전 공유</b>: 검색 행 60,971,724행의 번호 컬럼 UPDATE로 인덱스 5개가 함께 바뀌어 redo/아카이브 로그가 많이 생깁니다. 소요 시간은 미측정입니다.</p>
+<p><b>검증</b>: 로컬 Oracle 23 임시 계정에서 R5로 합성 Gold를 실제 적재한 뒤 이 레시피 코드를 그대로 실행해 11항목 통과(현장 오류 재현, 권한 없으면 쓰기 전 중단, CHECK 무변경, 다른 세대 파일 거절, 응답 유실 후 재실행 이어서 완료, 현재 MAIN 서빙 시작·벡터 검사 통과, 옛 판본 검색 제외, 재실행 무변경, ROLLBACK 복구, 재적용). <b>미확인</b>: 운영 규모 시간·로그량, 운영 Dataiku의 큰 CLOB 읽기, 운영 권한, 실제 Dataiku 레시피 환경과 프로젝트 ZIP 가져오기.</p>
+</body></html>

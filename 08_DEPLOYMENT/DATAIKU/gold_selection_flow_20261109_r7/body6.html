@@ -1,0 +1,19 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>운영 Gold 판본 보완 관련 SQL 전체 모음 (2026-11-09)</h3>
+<p>첨부 <code>GOLD_OPS_SQL_20261109.sql</code> 하나에 오늘 드린 SQL을 용도별로 모았습니다. 각 문장은 Dataiku SQL 노트북에서 따로 실행합니다.</p>
+<table border="1" cellpadding="4" style="border-collapse:collapse">
+<tr><th>구역</th><th>내용</th><th>실행</th></tr>
+<tr><td>A</td><td>지금 상태(완료/진행 중)</td><td>읽기</td></tr>
+<tr><td>B</td><td>남은 행 수(속도 계산)</td><td>읽기</td></tr>
+<tr><td>C</td><td>완료 검증(SEL_VER v2, 60,971,724행, 벡터 연결, CHAN_NO 2)</td><td>읽기</td></tr>
+<tr><td>D</td><td>게시된 임베딩 모델 확인(운영 142번과 같은지)</td><td>읽기</td></tr>
+<tr><td>E</td><td>개발계 ↔ 운영계 대조 2개</td><td>읽기</td></tr>
+<tr><td>F</td><td>실행 계획 확인(EXPLAIN PLAN만)</td><td>읽기</td></tr>
+<tr><td>G</td><td>통계 갱신(UPDATE 후, 느려짐 방지)</td><td>DBA</td></tr>
+<tr><td>H</td><td>아카이브 로그 공간</td><td>DBA</td></tr>
+<tr><td>I</td><td>ORDS 계정의 Agent 기록 표·Gold 권한</td><td>DBA</td></tr>
+<tr><td>J</td><td>처음 원인 확인에 쓴 SQL(기록용)</td><td>읽기</td></tr>
+<tr><td>K</td><td>R7f 레시피가 보내는 쓰기 SQL과 DBA 병렬 UPDATE 선택지(참고, 직접 실행 금지)</td><td>참고</td></tr>
+</table>
+<p>재기동 전 순서: A·C로 완료 확인 → G 통계 갱신 요청 → D·I 확인 → 코드서빙 재기동 → 질문 1개.</p>
+</body></html>

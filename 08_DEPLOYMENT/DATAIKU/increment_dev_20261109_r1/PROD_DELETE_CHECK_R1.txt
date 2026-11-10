@@ -1,0 +1,31 @@
+# 운영계 증분 권한 확인 R1 — Dataiku Python 노트북 한 셀 (코드 ZIP 불필요). 행은 하나도 바뀌지 않는다.
+# 각 표에 WHERE 1=0 인 DELETE/UPDATE/INSERT를 보내 권한만 확인한다. 실패는 Oracle 오류 번호로 표시.
+#   ORA-01031 권한 없음 → DBA에 그 표 권한 신청 / ORA-00942 표가 없거나 볼 권한 없음
+CONNECTION = 'AIDP'                       # 운영 Gold 적재에 쓰는 Dataiku 연결 이름
+GOLD_OWNER = 'SIDDG'
+AGENT_TABLE = 'SIDDA.LGL_PIPE_RESULT_A'    # GENOS 결과가 들어오는 Agent 표
+AGENT_CONNECTION = 'AIDP'
+
+import re
+import dataiku
+T = lambda k: GOLD_OWNER + '.IDD_B003_LGL_' + k
+CHECKS = [('DELETE ' + k, CONNECTION, 'DELETE FROM ' + T(k) + ' WHERE 1=0') for k in
+          ('DOC_VER', 'DOC_UNIT', 'DOC_BLK', 'SRC_POST', 'SRCH_POST', 'SRCH_ROW', 'SRCH_CHNL',
+           'VCTR_POST', 'VCTR_ITEM', 'VCTR_HEAD')]
+CHECKS += [('UPDATE SRCH_CHNL', CONNECTION, 'UPDATE ' + T('SRCH_CHNL') + ' SET CHAN_NO=CHAN_NO WHERE 1=0'),
+           ('INSERT VCTR_HEAD', CONNECTION, 'INSERT INTO ' + T('VCTR_HEAD') + ' SELECT * FROM ' + T('VCTR_HEAD') + ' WHERE 1=0'),
+           ('DELETE AGENT', AGENT_CONNECTION, 'DELETE FROM ' + AGENT_TABLE + ' WHERE 1=0')]
+who = dataiku.SQLExecutor2(connection=CONNECTION).query_to_df(
+    "SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS U, SYS_CONTEXT('USERENV','DB_NAME') AS D FROM DUAL")
+print('접속 계정', who.iloc[0, 0], 'DB', who.iloc[0, 1])
+ok = True
+for label, conn, sql in CHECKS:
+    try:
+        dataiku.SQLExecutor2(connection=conn).query_to_df('SELECT 1 AS OK FROM DUAL',
+                                                          pre_queries=['BEGIN ' + sql + '; END;'],
+                                                          post_queries=['ROLLBACK'])
+        print('PASS', label)
+    except Exception as exc:
+        ok = False
+        print('FAIL', label, sorted(set(re.findall(r'ORA-\d{5}', str(exc)))) or type(exc).__name__)
+print('PROD_INCREMENT_PRIVILEGES', 'PASS' if ok else 'FAIL')

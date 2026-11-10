@@ -1,0 +1,17 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>Gold 판본 보완 플로우 R7 — 버킷 읽기 전용·바로 UPDATE (2026-11-09)</h3>
+<p>앞서 보낸 R7 메일(1a1bf71ead2146cb)을 대체합니다.</p>
+<ul>
+<li><b>버킷은 읽기만</b>: 레시피는 입력 폴더의 JSON을 읽기만 하고 폴더·버킷에 아무것도 쓰지 않습니다. 결과·진행은 레시피 실행 로그에만 남습니다.</li>
+<li><b>바로 UPDATE</b>: 기본 모드가 <code>APPLY</code>입니다. RUN 한 번으로 확인 → INSERT/UPDATE → 채널 변경까지 합니다. UPDATE 전에 선택 파일이 운영 세대용인지, 권한이 있는지 먼저 확인하고 아니면 아무것도 바꾸지 않고 멈춥니다.</li>
+<li><b>되돌리기·재개</b>: 필요한 원래 번호를 DB에서 다시 찾습니다(plan.json 같은 파일 저장 없음).</li>
+<li><b>플로우 구성</b>: 입력 폴더 1개 + Python 레시피 1개. Dataiku가 레시피 출력을 꼭 요구하면 설치 스크립트가 빈 폴더(<code>gold_selection_noop</code>)를 연결만 하고 레시피는 쓰지 않습니다.</li>
+</ul>
+<h4>순서</h4>
+<ol>
+<li>개발계: 첨부 <code>DATAIKU_CREATE_GOLD_FIX_FLOW_R7.txt</code>를 노트북에서 실행(REFERENCE_FOLDER_ID, EXPORT_FOLDER_ID 입력) → <code>GOLD_SELECTION_FIX_R7.zip</code> 내려받기</li>
+<li>운영: Import project → 입력 폴더에 판본 선택 JSON 올리기(복사 명령은 GUIDE) → 변수 확인(GOLD_FIX_MODE=APPLY, AIDP/PIDD2APP/SIDDG) → 레시피 RUN → <code>APPLIED</code> → 코드서빙 재기동</li>
+<li>권한 부족이면 로그에 GRANT 줄 출력(UPDATE: SRCH_ROW·VCTR_ITEM·VCTR_HEAD·SRCH_CHNL). 끊기면 다시 RUN. 되돌리기는 GOLD_FIX_MODE=ROLLBACK.</li>
+</ol>
+<p><b>검증</b>: 레시피는 폴더에 쓰면 실패하도록 막아 둔 상태로 로컬 Oracle에서 12항목 통과(폴더 쓰기 0, 중단 후 재개·되돌리기 모두 DB에서 원래 번호를 찾아 완료, 현재 MAIN 서빙 시작 검사 통과). 설치 스크립트는 Dataiku API 대역 6항목 통과. <b>미확인</b>: 실제 Dataiku(출력 없는 레시피 허용 여부, 프로젝트 생성 권한, 가져오기), 운영 규모 시간·로그량(6,097만 행 UPDATE — DBA 사전 공유), 큰 CLOB 읽기, 운영 권한.</p>
+</body></html>

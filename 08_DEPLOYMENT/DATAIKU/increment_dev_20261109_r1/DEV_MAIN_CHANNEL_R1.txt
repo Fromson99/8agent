@@ -1,0 +1,20 @@
+-- 개발계 서빙 채널을 main 으로 (SQL 노트북, 아래 Query를 하나씩 새 Query에 붙여 RUN — 세미콜론 없음)
+-- 왜: 지금 서빙 채널 g19_7c1f8f4931c8be61b914f5bc 는 적재기가 세대마다 자동으로 만드는 채널 이름이라
+--     증분이 세대를 바꾸고 되돌릴 때 적재기와 이름이 부딪힌다. 운영처럼 main 한 줄을 두고 서빙은 main을 읽는다.
+-- 이 SQL은 main 한 줄만 추가한다 (지금 세대를 그대로 가리킴). 기존 행은 바꾸지 않는다.
+
+-- [Q1] 지금 채널 확인
+SELECT RFRN_CHNL_NAME, RFRN_POST_HASH_VALU, CHAN_ORD FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 ORDER BY RFRN_CHNL_NAME
+
+-- [Q2] main 추가 (이미 있으면 0행)
+INSERT INTO SIDDS.LGL_G19_SRCH_CHNL_S_1 (RFRN_CHNL_NAME, RFRN_POST_HASH_VALU, CHAN_ORD) SELECT 'main', RFRN_POST_HASH_VALU, 1 FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME = 'g19_7c1f8f4931c8be61b914f5bc' AND NOT EXISTS (SELECT 1 FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME = 'main')
+
+-- [Q3]
+COMMIT
+
+-- [Q4] 확인: main 과 g19_7c1f… 가 같은 RFRN_POST_HASH_VALU 이면 완료
+SELECT RFRN_CHNL_NAME, RFRN_POST_HASH_VALU, CHAN_ORD FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 ORDER BY RFRN_CHNL_NAME
+
+-- 그다음 GENOS RAG 코드서빙 환경변수 DP_QUERY_CHANNEL 을 main 으로 바꾸고(또는 지우고) 재기동.
+-- 되돌리기: DELETE FROM SIDDS.LGL_G19_SRCH_CHNL_S_1 WHERE RFRN_CHNL_NAME = 'main'  → COMMIT
+--           → DP_QUERY_CHANNEL 을 g19_7c1f8f4931c8be61b914f5bc 로 되돌리고 재기동.

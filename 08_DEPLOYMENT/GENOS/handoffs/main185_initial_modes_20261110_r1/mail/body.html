@@ -1,0 +1,21 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN185] 최신 메인 교체본(MAIN182 대체) + Oracle 병목 보고 R3</b></p>
+<p><b>1) MAIN185</b> — MAIN185만 적용하면 됩니다(MAIN182가 적용됐든 아직 MAIN177이든, MAIN178~185 모두 포함). 워크플로우·환경변수 그대로.</p>
+<ul>
+<li>MAIN183: 인용 관계 종류별 처리, 질문과 맞는 역방향 준용·적용 특례를 시스템이 읽음</li>
+<li>MAIN184: 관계 조항(준용 대상어·우선·나머지 사항) 서버 읽기, 인용 구절 2~4개(범위 포함) 같이 읽기, "법 시행규칙 제N조" 연결, 서식 저장 422 수정</li>
+<li>MAIN185: 초기검색 모드 hybrid_rerank·dual 추가(그 값으로 바꿀 때만 동작, 지금 값 그대로면 변화 없음)</li>
+</ul>
+<p>적용: TRANSFER 폴더에서 <code>bash MAIN185_ONECLICK_R1.txt</code> → MAIN185_ONECLICK_DONE, MAIN185_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전.</p>
+<p>로컬 검증: Oracle 규모 점검 통과(한 질문 최대 SQL 417, SQL 전수 3694회 오류 0), 진입 17/17, 설치기 MAIN177 checkout 15명령 통과. 실제 Qwen 독립형 50문항 필수 조문 77→88/95(로컬 1회, 품질 인증 아님).
+11-10 비효율 SQL 수정은 아직 넣지 않았습니다 — 아래 사진을 보고 정하겠습니다.</p>
+<p><b>2) Oracle 병목 보고 R3 — 사진 최대 5장</b> (자세한 순서: ORACLE_REPORT_GUIDE.txt)</p>
+<ol>
+<li>(선택, 가능하면) 코드서빙 환경변수 <code>GENOS_ORACLE_SQL_SLOW_MS=200</code> → 재시작 → 느린 질문 한 번 더 (0.2초 넘는 SQL이 모두 하나씩 남음)</li>
+<li>TRANSFER 폴더에서 <code>bash ./GENOS_ORACLE_REPORT_R3.txt list</code> → 느린 질문 번호 확인(사진 불필요)</li>
+<li><code>bash ./GENOS_ORACLE_REPORT_R3.txt 번호</code> → "사진 1/4"~"사진 4/4" 4장 (한 장이 안 보이면 <code>번호 --page 2</code>처럼 한 장씩)</li>
+<li>Dataiku SQL 노트북에 ORACLE_VSQL_TOP_R3.txt 전체를 붙여 RUN → 결과표 1장(사진 5). 권한 오류(ORA-00942/01031)면 그 화면을 보내 주세요.</li>
+</ol>
+<p>읽기 전용입니다(코드·DB·설정 변경 없음, 사진 1~4는 Oracle 접속도 하지 않음). 질문·답변·원문·바인드 값은 출력하지 않습니다.
+사진 3·4의 "해시"와 사진 5의 FAM 열이 같으면 같은 SQL입니다.</p>
+</body></html>

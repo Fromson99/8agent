@@ -1,0 +1,80 @@
+{
+ "privilege_check": {
+  "owner": true,
+  "no_grant": [
+   "ORA-00942",
+   "ORA-06550"
+  ],
+  "one_grant_ok": [
+   "DELETE SRCH_ROW"
+  ]
+ },
+ "loader_channel_as_serving_refused": true,
+ "status_before": true,
+ "d1_summary": {
+  "HOLD": 1,
+  "APPROVED": 2
+ },
+ "d1_compare_agent_rows_deleted": true,
+ "d1_rerun_reuses_structure": true,
+ "d1_activate": {
+  "update": 1,
+  "prune": {
+   "keep": [
+    "b3858e23425c1ee8b0c00629ab21c3b6f106f39fe1e61c45543240ca07cb1953",
+    "f29bc2fb64d608de0e22291031852ce7df04b08db15369063e90d33cff303bdb"
+   ],
+   "removed": [],
+   "protected": [],
+   "complete": true
+  }
+ },
+ "d2_prune": {
+  "keep": [
+   "9ce24b5248f3fed385ad68ccc9e1fdf8f43d1e3f5d952948e6eebeebaea1297e",
+   "b3858e23425c1ee8b0c00629ab21c3b6f106f39fe1e61c45543240ca07cb1953",
+   "f29bc2fb64d608de0e22291031852ce7df04b08db15369063e90d33cff303bdb"
+  ],
+  "removed": [],
+  "protected": [],
+  "complete": true
+ },
+ "d3_prune": {
+  "keep": [
+   "61283a0a4c709eca4abde2650fdc273d5c0d77facb3a91787b9df53e6542531a",
+   "9ce24b5248f3fed385ad68ccc9e1fdf8f43d1e3f5d952948e6eebeebaea1297e",
+   "b3858e23425c1ee8b0c00629ab21c3b6f106f39fe1e61c45543240ca07cb1953"
+  ],
+  "removed": [
+   "f29bc2fb64d608de"
+  ],
+  "protected": [],
+  "complete": true
+ },
+ "g0_rows_left_after_prune": {
+  "DOC_VER": 0,
+  "DOC_UNIT": 0,
+  "DOC_BLK": 0,
+  "SRC_POST": 0,
+  "VCTR_POST": 0,
+  "VCTR_ITEM": 0,
+  "SRCH_CHNL": 0
+ },
+ "three_generations_kept_and_g0_pruned": true,
+ "rollback_three_steps": [
+  "CHANNEL",
+  "CHANNEL",
+  "REBUILD"
+ ],
+ "status_after": {
+  "documents": 3,
+  "updates": [
+   "ROLLED_BACK",
+   "ROLLED_BACK",
+   "ROLLED_BACK"
+  ]
+ },
+ "r6_calls": 18,
+ "result": "PASS",
+ "temporary_user_dropped": "A8_INCF_E2F7DFCA"
+}

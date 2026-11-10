@@ -1,0 +1,27 @@
+SELECT
+  CASE WHEN DBMS_LOB.GETLENGTH(q.sql_fulltext) <= 1300
+         OR (DBMS_LOB.GETLENGTH(q.sql_fulltext) <= 4000 AND NOT REGEXP_LIKE(q.sql_fulltext, '[^' || CHR(1) || '-' || CHR(127) || ']'))
+       THEN LOWER(SUBSTR(RAWTOHEX(STANDARD_HASH(DBMS_LOB.SUBSTR(q.sql_fulltext, 4000, 1), 'SHA256')), 1, 12))
+  END AS fam,
+  q.sql_id,
+  q.executions AS execs,
+  ROUND(q.elapsed_time / 1e6, 1) AS total_s,
+  ROUND(q.elapsed_time / GREATEST(q.executions, 1) / 1e3) AS avg_ms,
+  ROUND(q.cpu_time / GREATEST(q.elapsed_time, 1) * 100) AS cpu_pct,
+  ROUND(q.buffer_gets / GREATEST(q.executions, 1)) AS gets_per_exec,
+  ROUND(q.disk_reads / GREATEST(q.executions, 1)) AS disk_per_exec,
+  ROUND(q.rows_processed / GREATEST(q.executions, 1)) AS rows_per_exec,
+  (SELECT SUBSTR(LISTAGG(DISTINCT p.object_name, ',') WITHIN GROUP (ORDER BY p.object_name), 1, 60)
+     FROM v$sql_plan p
+    WHERE p.sql_id = q.sql_id AND p.plan_hash_value = q.plan_hash_value
+      AND ((p.operation = 'TABLE ACCESS' AND p.options LIKE 'FULL%') OR (p.operation = 'INDEX' AND p.options = 'FAST FULL SCAN'))) AS full_scan,
+  TO_CHAR(q.last_active_time, 'MM-DD HH24:MI') AS last_active,
+  DBMS_LOB.GETLENGTH(q.sql_fulltext) AS sql_len,
+  SUBSTR(REPLACE(REPLACE(q.sql_text, CHR(10), ' '), CHR(13), ' '), 1, 110) AS sql_start
+FROM v$sqlstats q
+WHERE q.last_active_time >= SYSDATE - 6 / 24
+  AND q.executions > 0
+  AND UPPER(q.sql_text) LIKE '%LGL\_%' ESCAPE '\'
+  AND UPPER(q.sql_text) NOT LIKE '%V$SQL%'
+ORDER BY q.elapsed_time DESC
+FETCH FIRST 25 ROWS ONLY

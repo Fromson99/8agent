@@ -1,0 +1,69 @@
+운영 Gold 최신판본 선택 정보 보완 R6 · 2026-11-09
+
+1. 왜 필요한가
+- 운영 코드서빙이 시작 단계에서 멈춘다:
+  QUERY_SELECTION: Dataiku must verify latest document selection before serving (HTTP 503)
+- 운영 Gold 게시본에 판본 중복 제거 결과(최신판본 선택 정보)가 없다.
+  SQL 확인 결과: SEL_VER 비어 있음, PROOF=false, 문서 2,121개, 검색 행 60,971,724행.
+- 원인: R5에 쓴 34조각은 2026-10-07에 만든 NFS 원문 세대 압축본
+  (genos-rag-data-20261007T002029Z-7c0b050f.zip)이다. 판본 선택 파일은 그 뒤
+  2026-10-15에 세대 폴더 옆(SEARCH_SELECTION/generation.json)에 만들어져 압축본에 없었다.
+  개발계는 NFS를 직접 읽어 이 파일까지 썼기 때문에 정상이었다.
+- 그 파일이 운영 Gold 세대용과 정확히 같다(사진 확인):
+  generation_id term-source-533a15307cda1265e17e, manifest_sha256 bf643c5923fa5be4...
+
+2. 준비 (GENOS 터미널, 한 줄)
+  cp /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/SEARCH_SELECTION/generation.json /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json && sha256sum /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json && python3 -c "import json;v=json.load(open('/workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json'));print(v['schema_version'],v['generation_id'],v['manifest_sha256'][:16],'excluded',len(v['excluded']),'marks',len(v['latest_documents']))"
+
+  - JupyterLab 왼쪽 TRANSFER 폴더에 SEARCH_SELECTION_GENERATION.json이 생긴다. 내려받는다.
+    (TRANSFER가 /workspace/TRANSFER가 아니면 cp의 뒤쪽 경로를 그 폴더로 바꾼다.)
+  - 출력 줄의 excluded 숫자가 이번에 검색에서 빠지는 옛 판본 수다.
+  - 운영 Dataiku에서 R5 코드 ZIP(DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip)이 있는 그 Managed
+    Folder(CODE_FOLDER_ID)에 이 파일을 같은 이름으로 올린다.
+
+3. 실행 (운영 Dataiku Python 노트북)
+  1) 커널 재시작(또는 새 노트북). 셀 하나에 DATAIKU_GOLD_SELECTION_FIX_R6.txt 전체를 붙여 넣는다.
+  2) 맨 위 PARAMS를 R5 때 실제 쓴 값으로 바꾼다(특히 CODE_FOLDER_ID, GOLD_OWNER=SIDDG,
+     EXPECTED_DB_USER, WORK_DIR). EMBED 값은 R5와 같게 둔다(이번에는 임베딩을 호출하지 않음).
+  3) FIX['MODE']='CHECK' 그대로 한 번 실행한다. 아무것도 바꾸지 않는다.
+     - PLAN 줄: documents(2121이어야 함), excluded, searchable, search_rows(60971724여야 함), vector_rows
+     - R6_CHECK_OK 가 나오면 다음 단계로.
+     - R6_PRIVILEGE_REQUIRED 가 나오면 출력된 GRANT 줄을 DBA에게 요청한다(아래 4번).
+  4) FIX['MODE']='APPLY'로 바꿔 다시 실행한다.
+     - 새 원문 게시본(SRC_POST)·새 검색 명세(SRCH_POST)·새 벡터 게시본(VCTR_POST) 각 1행 INSERT
+     - 벡터 행(VCTR_ITEM)과 검색 행(SRCH_ROW)의 게시본 번호를 새 번호로 UPDATE
+       (UPDATE_BATCH_ROWS 행마다 COMMIT, 호출 한 번 최대 UPDATE_BLOCK_SECONDS초, 5번마다 진행 표시)
+     - 벡터 연결(VCTR_HEAD)과 채널(SRCH_CHNL)을 새 번호로 바꾼다(채널 이름은 그대로)
+     - 마지막에 서빙 시작 검사와 같은 조건으로 확인하고 R6_APPLIED를 출력한다.
+  5) R6_APPLIED가 나오면 코드서빙을 재기동한다. DP_QUERY_CHANNEL은 지금 값 그대로 둔다.
+
+  - 중간에 끊기거나 오류가 나면 같은 셀을 그대로 다시 실행한다. 남은 행부터 이어서 한다.
+  - 다시 실행했을 때 R6_ALREADY_APPLIED면 이미 끝난 것이다.
+  - 되돌리기: FIX['MODE']='ROLLBACK'. 채널·벡터 연결·검색 행·벡터 행을 원래 번호로 되돌린다.
+    INSERT한 새 게시본 3행은 남겨 둔다(지우는 권한을 쓰지 않음).
+
+4. 필요한 권한 (접속 계정 PIDD2APP 기준, owner SIDDG)
+  - INSERT: IDD_B003_LGL_SRC_POST, IDD_B003_LGL_SRCH_POST, IDD_B003_LGL_VCTR_POST (R5 때 이미 있음)
+  - UPDATE: IDD_B003_LGL_SRCH_ROW, IDD_B003_LGL_VCTR_ITEM, IDD_B003_LGL_VCTR_HEAD, IDD_B003_LGL_SRCH_CHNL
+  CHECK가 실제로 컴파일만 해 보고(쓰기 없음) 빠진 것만 GRANT 문으로 출력한다.
+
+5. DBA에게 미리 알릴 것
+  - 검색 행 60,971,724행의 게시본 번호 컬럼을 UPDATE한다. 이 표의 PK와 인덱스 4개가 모두 이
+    컬럼으로 시작하므로 인덱스 5개가 함께 바뀐다. 실행 기록(redo/undo)과 아카이브 로그가 많이 생긴다.
+  - 걸리는 시간은 운영 DB 속도에 따라 다르며 로컬에서 측정하지 못했다.
+  - 서빙은 지금도 멈춰 있으므로 작업 중 추가 영향은 없다. 채널은 마지막에 바뀐다.
+
+6. 검증 범위
+  - 로컬 Oracle 23.26 임시 계정에서 R5 TXT로 합성 34조각을 실제 적재한 뒤 이 R6 TXT 그대로 실행, 11항목 통과
+    (VALIDATION.json): 현장 오류 재현 → UPDATE 권한 없으면 쓰기 전 GRANT 출력 → CHECK 읽기 전용 →
+    다른 세대용 파일 거절 → 커밋 뒤 응답 유실 2번(검색 행·벡터 연결) 후 재실행으로 이어서 완료 →
+    현재 MAIN 서빙 코드의 시작 검사·벡터 게시본 검사 통과 → 빠진 문서가 검색 범위에서 제외 →
+    재실행 무변경 → ROLLBACK 원상 복구 → 다시 APPLY 같은 번호.
+  - 합성 Gold는 검색 행 112행이다. 6,100만 행 규모, 운영 Dataiku의 실제 CLOB 읽기(약 1~2MB 명세),
+    실제 운영 권한은 현장 CHECK 결과로 확인해야 한다.
+  - 로컬 서빙 점검에서 연결기의 디스크 여유 기준만 80GB→20GB로 낮췄다(C: 여유 78GB, 메모리·스왑 기준 유지).
+    합성 문서에는 최신 표시가 들어 있어 확인값을 현장과 같은 false로 두고 검사했다.
+
+7. 재발 방지(별도 작업)
+  - R5 계열 적재기는 판본 선택 정보 없이 게시하지 않도록 고친다.
+  - 적재 검증에 실제 서빙 시작 검사를 넣는다.

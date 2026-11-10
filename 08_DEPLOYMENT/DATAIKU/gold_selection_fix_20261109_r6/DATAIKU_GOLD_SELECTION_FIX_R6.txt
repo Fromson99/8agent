@@ -1,0 +1,405 @@
+# 운영계 Dataiku: Gold 최신판본 선택 정보 보완 R6 (2026-11-09)
+# 이 TXT 전체를 Python 노트북 셀 하나에 붙여 넣고 한 번 실행합니다.
+# PARAMS는 R5 적재 때 쓴 값을 그대로 붙여 넣습니다. R5 코드 ZIP이 같은 폴더에 있어야 합니다.
+# FIX['MODE']: 'CHECK'(읽기만, 기본) -> 'APPLY'(적용) / 되돌리기 'ROLLBACK'
+PARAMS = {
+    'CODE_FOLDER_ID': '',          # 필수: R5 코드 ZIP과 선택 파일을 올린 Managed Folder ID
+    'INPUT_FOLDER_ID': '',         # R5와 같은 값
+    'ORACLE_CONNECTION': 'AIDP',    # R5와 같은 값
+    'EXPECTED_DB_USER': 'PIDD2APP', # R5와 같은 값
+    'GOLD_OWNER': 'SIDDG',          # 운영 Gold owner
+    'TABLE_PREFIX': 'IDD_B003_LGL_',
+    'TABLE_NAMES': {},
+    'EMBED_MODEL': 'openai:genos-embedding:embedding-kure-v1',
+    'EMBED_DIMENSIONS': 1024,
+    'WORK_DIR': '',                # R5와 같은 값
+}
+FIX = {
+    'MODE': 'CHECK',                                    # CHECK / APPLY / ROLLBACK
+    'SELECTION_FILE': 'SEARCH_SELECTION_GENERATION.json',  # NFS에서 복사해 온 파일 이름
+    'CHANNEL': '',                                      # 비우면 SRCH_CHNL의 한 줄
+    'UPDATE_BATCH_ROWS': 20000,                         # UPDATE 한 번에 바꾸는 행 수(바꿀 때마다 COMMIT)
+    'UPDATE_BLOCK_SECONDS': 120,                        # DB 호출 한 번의 최대 시간
+}
+
+import copy
+import fcntl
+import hashlib
+import io
+import json
+from pathlib import Path, PurePosixPath
+import stat
+import sys
+import tempfile
+import time
+import zipfile
+import dataiku
+
+ZIP_NAME = 'DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip'
+ZIP_SHA256 = 'f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0'
+SEL_V2 = 'filename-search-selection-v2'
+R6_VERSION = 'gold-selection-fix-20261109-r6'
+
+
+def open_package():
+    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])
+    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]
+    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)
+    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)
+    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')
+    root = Path(tempfile.gettempdir()) / ('gold-oneclick-prod-code-'+ZIP_SHA256[:16])
+    root.mkdir(exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))
+        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:
+            raise ValueError('CODE_ZIP_MEMBERS')
+        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')
+        for item in z.infolist():
+            p = PurePosixPath(item.filename)
+            if p.is_absolute() or '..' in p.parts or '\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):
+                raise ValueError('CODE_ZIP_PATH')
+            dest = root.joinpath(*p.parts)
+            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')
+            content = z.read(item)
+            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:
+                raise ValueError('CODE_FILE_HASH')
+            if dest.exists():
+                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')
+            else:
+                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)
+    sys.path.insert(0,str(root))
+    return root
+
+
+FLOW_PACKAGE = open_package()
+for _name in ("prod_run","prod_config","prod_pipeline","prod_guard","prod_storage","prod_state","prod_panel",
+              "run_full","gold_io","fast_loader","fast_insert","vector_stage","jdbc_transport","mesh_embedding"):
+    _loaded=sys.modules.get(_name)
+    if _loaded is not None and FLOW_PACKAGE.resolve() not in Path(getattr(_loaded,"__file__","")).resolve().parents:
+        raise RuntimeError("RESTART_KERNEL_OTHER_LOADER:"+_name)
+_engine = FLOW_PACKAGE/'engine'
+for _p in (_engine/'vendor/02_BACKEND', _engine/'vendor', _engine):
+    if str(_p) not in sys.path: sys.path.insert(0, str(_p))
+
+import prod_run
+import prod_pipeline
+from gold_io import Stop, digest, literal
+
+
+def log(phase, **fields):
+    print(json.dumps(dict(phase=phase, at=time.strftime('%H:%M:%S'), **fields), ensure_ascii=False), flush=True)
+
+
+class Fix:
+    def __init__(self):
+        mode = FIX.get('MODE')
+        if mode not in ('CHECK', 'APPLY', 'ROLLBACK'): raise Stop('R6_MODE_MUST_BE_CHECK_APPLY_ROLLBACK')
+        self.mode = mode
+        for name in ('UPDATE_BATCH_ROWS', 'UPDATE_BLOCK_SECONDS'):
+            if type(FIX.get(name)) is not int or not 1 <= FIX[name] <= 1000000: raise Stop('R6_INVALID:'+name)
+        project = dataiku.api_client().get_default_project().project_key
+        self.cfg, r5_root = prod_run.configure(PARAMS, project)
+        self.work = (r5_root.parent/'selection-fix-r6'/r5_root.name).resolve()
+        self.work.mkdir(parents=True, exist_ok=True)
+        target = self.work/'contract.json'
+        if target.exists():
+            if json.loads(target.read_text()) != self.cfg['target']: raise Stop('R6_TARGET_CHANGED')
+        else:
+            target.write_text(json.dumps(self.cfg['target'], ensure_ascii=False, sort_keys=True))
+        self.contract = prod_pipeline.Contract(target)
+        self.folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])
+        self.db = prod_pipeline.connection(self.cfg)
+        rows = self.db.query("SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS U FROM DUAL")
+        if rows != [{'U': PARAMS['EXPECTED_DB_USER']}]: raise Stop('R6_DATABASE_USER_MISMATCH')
+        for key in ('SRC_POST','SRCH_POST','SRCH_CHNL','SRCH_ROW','VCTR_POST','VCTR_HEAD','VCTR_ITEM'):
+            self.contract.preflight(self.db, key)
+        self.contract.bind_registration_time(self.db)
+        self.run_id = time.strftime('%Y%m%d-%H%M%S')
+
+    # ---------- 읽기 ----------
+    def T(self, key): return self.contract.table(key)
+    def C(self, key, name): return self.contract.col(key, name)
+
+    def body(self, key, idcol, value, content):
+        rows = self.db.query('SELECT '+self.C(key,content)+' AS BODY FROM '+self.T(key)+' WHERE '+
+                             self.C(key,idcol)+'='+literal(value), limit=2)
+        if len(rows) > 1: raise Stop('R6_DUPLICATE_ROW:'+key)
+        if not rows: return None
+        value_json = json.loads(rows[0]['BODY'])
+        if digest(value_json if key != 'VCTR_POST' else value_json['manifest']) != value:
+            raise Stop('R6_CONTENT_HASH_MISMATCH:'+key)
+        return value_json
+
+    def count(self, key, col, value):
+        rows = self.db.query('SELECT COUNT(*) AS N FROM '+self.T(key)+' WHERE '+self.C(key,col)+'='+literal(value))
+        return int(rows[0]['N'])
+
+    def exists(self, key, col, value):
+        rows = self.db.query('SELECT COUNT(*) AS N FROM '+self.T(key)+' WHERE '+self.C(key,col)+'='+literal(value)+' AND ROWNUM<=1')
+        return int(rows[0]['N']) == 1
+
+    def channel(self):
+        c = lambda n: self.C('SRCH_CHNL', n)
+        rows = self.db.query('SELECT '+c('RFRN_CHNL_NAME')+' AS NAME,'+c('RFRN_POST_HASH_VALU')+' AS Q,'+c('CHAN_NO')+
+                             ' AS NO FROM '+self.T('SRCH_CHNL'))
+        if FIX.get('CHANNEL'): rows = [r for r in rows if r['NAME'] == FIX['CHANNEL']]
+        if len(rows) != 1: raise Stop('R6_CHANNEL_NOT_ONE: SRCH_CHNL 줄이 '+str(len(rows))+'개입니다. FIX["CHANNEL"]을 지정하세요.')
+        row = rows[0]
+        return {'name': row['NAME'], 'q': row['Q'], 'no': int(row['NO'])}
+
+    def vector_head(self, q):
+        c = lambda n: self.C('VCTR_HEAD', n)
+        rows = self.db.query('SELECT '+c('VCTR_POST_ID')+' AS V,'+c('CHAN_NO')+' AS NO FROM '+self.T('VCTR_HEAD')+
+                             ' WHERE '+c('RFRN_POST_HASH_VALU')+'='+literal(q), limit=2)
+        return {'v': rows[0]['V'], 'no': int(rows[0]['NO'])} if rows else None
+
+    # ---------- 선택 파일 ----------
+    def selection(self):
+        name = FIX['SELECTION_FILE']
+        paths = [p for p in self.folder.list_paths_in_partition() if PurePosixPath(p).name == name]
+        if len(paths) != 1: raise Stop('R6_UPLOAD_ONE_SELECTION_FILE:'+name+' (찾은 수 '+str(len(paths))+')')
+        with self.folder.get_download_stream(paths[0]) as stream: raw = stream.read(16*1024**2+1)
+        if len(raw) > 16*1024**2: raise Stop('R6_SELECTION_FILE_TOO_LARGE')
+        value = json.loads(raw.decode('utf-8-sig'))
+        if not isinstance(value, dict) or value.get('schema_version') != SEL_V2: raise Stop('R6_SELECTION_NOT_V2')
+        rows = value.get('excluded')
+        if not isinstance(rows, list) or any(not isinstance(r, dict) or not isinstance(r.get('document_id'), str)
+                                             or not r['document_id'] for r in rows):
+            raise Stop('R6_SELECTION_EXCLUDED_INVALID')
+        excluded = [r['document_id'] for r in rows]
+        if len(set(excluded)) != len(excluded): raise Stop('R6_SELECTION_DUPLICATE_EXCLUDED')
+        marks = value.get('latest_documents')
+        if not isinstance(marks, list): raise Stop('R6_SELECTION_LATEST_MARKS_INVALID')
+        if {m['document_id'] for m in marks if m.get('is_latest') is False} != set(excluded):
+            raise Stop('R6_SELECTION_LATEST_MARK_EXCLUSION_MISMATCH')
+        return value, hashlib.sha256(raw).hexdigest()
+
+    # ---------- 새 게시본 계산 ----------
+    def plan(self, q0id, sel, sel_sha, saved=None):
+        q0 = self.body('SRCH_POST','RFRN_POST_HASH_VALU',q0id,'RFRN_POST_IFMN_CTNT')
+        if q0 is None: raise Stop('R6_QUERY_RELEASE_MISSING')
+        if (q0.get('search_selection') or {}).get('schema_version') == SEL_V2:
+            raise Stop('R6_CHANNEL_ALREADY_HAS_SELECTION')
+        s0id = q0['source_release_id']
+        s0 = self.body('SRC_POST','DOC_POST_HASH_VALU',s0id,'DOC_POST_IFMN_CTNT')
+        if s0 is None: raise Stop('R6_SOURCE_RELEASE_MISSING')
+        manifest = s0['source_manifest']
+        checks = {'generation_id': (sel.get('generation_id'), manifest.get('generation_id')),
+                  'manifest_sha256': (sel.get('manifest_sha256'), s0.get('dataset_version')),
+                  'store_sha256': (sel.get('store_sha256'), manifest.get('store_sha256')),
+                  'query_dataset_version': (q0.get('dataset_version'), s0.get('dataset_version'))}
+        wrong = {k: v for k, v in checks.items() if v[0] != v[1]}
+        if wrong: raise Stop('R6_SELECTION_BELONGS_TO_ANOTHER_GENERATION:'+json.dumps(wrong))
+        scope = manifest['scope']['document_version_ids']
+        excluded = {r['document_id'] for r in sel['excluded']}
+        if not excluded <= set(scope): raise Stop('R6_SELECTION_EXCLUDES_UNKNOWN_DOCUMENT')
+        s1 = copy.deepcopy(s0); s1['search_selection'] = sel; s1id = digest(s1)
+        q1 = copy.deepcopy(q0); q1['search_selection'] = sel; q1['source_release_id'] = s1id
+        q1['selection_proof'] = {'fingerprint': digest(sel), 'native_latest_verified': False}
+        q1id = digest(q1)
+        vector = None; env1 = None
+        head = self.vector_head(q0id)
+        if head is None and saved and saved.get('q0') == q0id and saved.get('vector'):
+            # 중단된 APPLY: 벡터 연결만 먼저 바뀐 경우 원래 벡터 게시본 번호는 저장된 plan에서 가져온다.
+            head = {'v': saved['vector']['v0']}
+        if head:
+            env0 = self.body('VCTR_POST','VCTR_POST_ID',head['v'],'VCTR_POST_IFMN_CTNT')
+            if env0 is None or set(env0) != {'manifest','completion'}: raise Stop('R6_VECTOR_POST_INVALID')
+            m0 = env0['manifest']
+            if m0.get('query_id') != q0id or m0.get('source_release_id') != s0id: raise Stop('R6_VECTOR_BINDING_MISMATCH')
+            m1 = copy.deepcopy(m0); m1['query_id'] = q1id; m1['source_release_id'] = s1id
+            env1 = {'manifest': m1, 'completion': env0['completion']}
+            vector = {'v0': head['v'], 'v1': digest(m1), 'count': env0['completion']['count']}
+        plan = {'version': R6_VERSION, 'q0': q0id, 's0': s0id, 'q1': q1id, 's1': s1id, 'vector': vector,
+                'dataset_version': s0['dataset_version'], 'generation_id': manifest['generation_id'],
+                'selection_sha256': sel_sha, 'selection_fingerprint': digest(sel),
+                'documents': len(scope), 'excluded': len(excluded), 'searchable': len(scope)-len(excluded),
+                'search_rows': sum(t['rows'] for t in q0['tables'].values())}
+        return plan, s1, q1, env1
+
+    def save_plan(self, plan):
+        local = self.work/'plan.json'
+        if local.exists() and json.loads(local.read_text()) != plan: raise Stop('R6_SAVED_PLAN_DIFFERS')
+        local.write_text(json.dumps(plan, ensure_ascii=False, indent=1))
+        self.upload('plan.json', plan)
+
+    def saved_plan(self):
+        local = self.work/'plan.json'
+        if local.exists(): return json.loads(local.read_text())
+        try:
+            with self.folder.get_download_stream('_gold_selection_fix_r6/plan.json') as f: return json.loads(f.read())
+        except Exception: raise Stop('R6_PLAN_NOT_FOUND: APPLY 때 만든 plan.json이 없습니다.') from None
+
+    def upload(self, name, value):
+        try: self.folder.upload_stream('_gold_selection_fix_r6/'+name, io.BytesIO(json.dumps(value, ensure_ascii=False, indent=1).encode()))
+        except Exception as exc: log('UPLOAD_SKIPPED', file=name, error=type(exc).__name__)
+
+    # ---------- 권한 ----------
+    def privileges(self):
+        missing = []
+        def can(kind, key, statement):
+            try: self.db.block('BEGIN IF FALSE THEN '+statement+'; END IF; END;', rollback=True)
+            except Exception as exc:
+                if 'ORA-01031' in str(exc) or 'ORA-00942' in str(exc) or 'PLS-' in str(exc): missing.append((kind, key))
+                else: raise
+        for key in ('SRC_POST','SRCH_POST','VCTR_POST'):
+            cols = ','.join(c['name'] for c in self.contract.tables[key]['columns'].values())
+            can('INSERT', key, 'INSERT INTO '+self.T(key)+' ('+cols+') SELECT '+cols+' FROM '+self.T(key)+' WHERE 1=0')
+        for key, col in (('SRCH_ROW','RFRN_POST_HASH_VALU'),('VCTR_ITEM','VCTR_POST_ID'),
+                         ('VCTR_HEAD','RFRN_POST_HASH_VALU'),('SRCH_CHNL','RFRN_POST_HASH_VALU')):
+            can('UPDATE', key, 'UPDATE '+self.T(key)+' SET '+self.C(key,col)+'='+self.C(key,col)+' WHERE 1=0')
+        if missing:
+            grants = ['GRANT '+k+' ON '+self.T(t)+' TO '+PARAMS['EXPECTED_DB_USER']+';' for k, t in missing]
+            log('PRIVILEGE_REQUIRED', message='DBA에게 아래 권한을 요청하세요. 아무것도 바꾸지 않고 멈췄습니다.', grants=grants)
+            raise Stop('R6_PRIVILEGE_REQUIRED: '+' '.join(grants))
+
+    # ---------- 쓰기 ----------
+    def insert(self, key, idcol, content, row):
+        # R5 INSERT 경로는 중복을 거르지 않는다. 이미 있으면 내용 해시가 같은지 확인하고 건너뛴다.
+        value = row[idcol]
+        if self.exists(key, idcol, value):
+            if self.body(key, idcol, value, content) is None: raise Stop('R6_EXISTING_POST_UNREADABLE:'+key)
+            log('POST_EXISTS', table=key); return
+        sql, binds = self.contract.batch(key, [row])
+        self.db.block(sql, binds, transaction_managed=True)
+        if self.body(key, idcol, value, content) is None: raise Stop('R6_POST_READBACK:'+key)
+
+    def move(self, key, col, old, new, label):
+        if not self.exists(key, col, old): log('MOVE_DONE', table=label, remaining=0); return
+        total = self.count(key, col, old)
+        log('MOVE_START', table=label, rows=total)
+        sql = ('DECLARE n NUMBER; t0 NUMBER := DBMS_UTILITY.GET_TIME; BEGIN LOOP UPDATE '+self.T(key)+' SET '+
+               self.C(key,col)+'=:new_id WHERE '+self.C(key,col)+'=:old_id AND ROWNUM<=:batch_rows; '
+               'n := SQL%ROWCOUNT; COMMIT; EXIT WHEN n=0 OR DBMS_UTILITY.GET_TIME-t0>=:limit_cs; END LOOP; END;')
+        binds = [('new_id',new,'VARCHAR2'),('old_id',old,'VARCHAR2'),
+                 ('batch_rows',FIX['UPDATE_BATCH_ROWS'],'NUMBER'),('limit_cs',FIX['UPDATE_BLOCK_SECONDS']*100,'NUMBER')]
+        started = time.monotonic(); calls = 0
+        while True:
+            self.db.block(sql, binds, transaction_managed=True); calls += 1
+            if not self.exists(key, col, old): break
+            if calls % 5 == 0:
+                left = self.count(key, col, old)
+                log('MOVE_PROGRESS', table=label, done=total-left, total=total, seconds=round(time.monotonic()-started))
+        log('MOVE_DONE', table=label, rows=total, seconds=round(time.monotonic()-started))
+
+    def swap_one(self, key, where, sets, label):
+        """Single-row pointer change with exact old values; 0 rows means already done or changed."""
+        assign = ','.join(self.C(key,c)+'='+v for c, v in sets)
+        cond = ' AND '.join(self.C(key,c)+'='+literal(v) for c, v in where)
+        self.db.block('DECLARE n NUMBER; BEGIN UPDATE '+self.T(key)+' SET '+assign+' WHERE '+cond+'; n := SQL%ROWCOUNT; '
+                      "IF n>1 THEN ROLLBACK; RAISE_APPLICATION_ERROR(-20071,'R6_POINTER_NOT_UNIQUE'); END IF; COMMIT; END;",
+                      transaction_managed=True)
+        log('POINTER', table=label)
+
+    # ---------- 확인 ----------
+    def verify(self, plan, applied):
+        q, s, vec = (plan['q1'], plan['s1'], plan['vector']) if applied else (plan['q0'], plan['s0'], plan['vector'])
+        ch = self.channel()
+        if ch['q'] != q: raise Stop('R6_VERIFY_CHANNEL:'+ch['q'])
+        qm = self.body('SRCH_POST','RFRN_POST_HASH_VALU',q,'RFRN_POST_IFMN_CTNT')
+        if qm is None or qm.get('status') != 'COMPLETE' or qm.get('source_release_id') != s: raise Stop('R6_VERIFY_QUERY_RELEASE')
+        sm = self.body('SRC_POST','DOC_POST_HASH_VALU',s,'DOC_POST_IFMN_CTNT')
+        if sm is None or sm.get('status') != 'COMPLETE': raise Stop('R6_VERIFY_SOURCE_RELEASE')
+        sel = qm.get('search_selection') or {}
+        if applied:
+            # 서빙 시작 검사(oracle_query_store.Selection.require_latest)와 같은 조건
+            if sel.get('schema_version') != SEL_V2: raise Stop('R6_VERIFY_SELECTION_V2')
+            if (qm.get('selection_proof') or {}).get('fingerprint') != digest(sel): raise Stop('R6_VERIFY_SELECTION_PROOF')
+            # 원문 게시본 검사(oracle_query.Snapshot.open)와 같은 조건
+            if sm.get('search_selection') != sel or sel.get('manifest_sha256') != sm['dataset_version'] \
+                    or sel.get('store_sha256') != sm['source_manifest']['store_sha256']:
+                raise Stop('R6_VERIFY_SOURCE_SELECTION_BINDING')
+        if self.count('SRCH_ROW','RFRN_POST_HASH_VALU',q) != plan['search_rows']: raise Stop('R6_VERIFY_SEARCH_ROWS')
+        other = plan['q0'] if applied else plan['q1']
+        if self.exists('SRCH_ROW','RFRN_POST_HASH_VALU',other): raise Stop('R6_VERIFY_SEARCH_ROWS_LEFT_BEHIND')
+        if vec:
+            v = vec['v1'] if applied else vec['v0']
+            head = self.vector_head(q)
+            if not head or head['v'] != v: raise Stop('R6_VERIFY_VECTOR_HEAD')
+            env = self.body('VCTR_POST','VCTR_POST_ID',v,'VCTR_POST_IFMN_CTNT')
+            m = env['manifest']
+            if m.get('query_id') != q or m.get('source_release_id') != s or env['completion'].get('status') != 'READY':
+                raise Stop('R6_VERIFY_VECTOR_BINDING')
+            if self.count('VCTR_ITEM','VCTR_POST_ID',v) != vec['count']: raise Stop('R6_VERIFY_VECTOR_ROWS')
+        log('VERIFIED', state='APPLIED' if applied else 'ORIGINAL', channel=ch['name'], query_release=q)
+
+    # ---------- 실행 ----------
+    def run(self):
+        ch = self.channel()
+        log('START', mode=self.mode, channel=ch['name'], current_release=ch['q'], work_dir=str(self.work))
+        current = self.body('SRCH_POST','RFRN_POST_HASH_VALU',ch['q'],'RFRN_POST_IFMN_CTNT')
+        if current is None: raise Stop('R6_CHANNEL_RELEASE_MISSING')
+        switched = (current.get('search_selection') or {}).get('schema_version') == SEL_V2
+        if self.mode == 'ROLLBACK':
+            plan = self.saved_plan()
+            if ch['q'] not in (plan['q0'], plan['q1']): raise Stop('R6_CHANNEL_POINTS_ELSEWHERE')
+            self.privileges()
+            vec = plan['vector']
+            if ch['q'] == plan['q1']:
+                self.swap_one('SRCH_CHNL', [('RFRN_CHNL_NAME',ch['name']),('RFRN_POST_HASH_VALU',plan['q1'])],
+                              [('RFRN_POST_HASH_VALU',literal(plan['q0'])),('CHAN_NO',self.C('SRCH_CHNL','CHAN_NO')+'+1')], '채널')
+            if vec:
+                self.swap_one('VCTR_HEAD', [('RFRN_POST_HASH_VALU',plan['q1']),('VCTR_POST_ID',vec['v1'])],
+                              [('RFRN_POST_HASH_VALU',literal(plan['q0'])),('VCTR_POST_ID',literal(vec['v0'])),
+                               ('CHAN_NO',self.C('VCTR_HEAD','CHAN_NO')+'+1')], '벡터 연결')
+            self.move('SRCH_ROW','RFRN_POST_HASH_VALU',plan['q1'],plan['q0'],'검색 행')
+            if vec: self.move('VCTR_ITEM','VCTR_POST_ID',vec['v1'],vec['v0'],'벡터 행')
+            self.verify(plan, applied=False)
+            return self.finish('R6_ROLLED_BACK', plan)
+        sel, sel_sha = self.selection()
+        if switched:
+            plan = self.saved_plan()
+            if ch['q'] != plan['q1'] or plan['selection_sha256'] != sel_sha: raise Stop('R6_SWITCHED_BY_ANOTHER_SELECTION')
+            self.verify(plan, applied=True)
+            return self.finish('R6_ALREADY_APPLIED', plan)
+        local = self.work/'plan.json'
+        saved = json.loads(local.read_text()) if local.exists() else None
+        plan, s1, q1, env1 = self.plan(ch['q'], sel, sel_sha, saved)
+        log('PLAN', **{k: plan[k] for k in ('documents','excluded','searchable','search_rows','q0','q1')},
+            vector_rows=(plan['vector'] or {}).get('count'))
+        self.privileges()
+        if self.mode == 'CHECK':
+            log('CHECK_OK', message='확인만 했고 아무것도 바꾸지 않았습니다. FIX["MODE"]="APPLY"로 바꿔 다시 실행하세요.',
+                search_rows_to_move=plan['search_rows'], vector_rows_to_move=(plan['vector'] or {}).get('count'))
+            return self.finish('R6_CHECK_OK', plan, save=False)
+        self.save_plan(plan)
+        self.insert('SRC_POST', 'DOC_POST_HASH_VALU', 'DOC_POST_IFMN_CTNT', {'DOC_POST_HASH_VALU': plan['s1'], 'MNFST_HASH_VALU': plan['dataset_version'],
+                                 'DOC_POST_IFMN_CTNT': json.dumps(s1, ensure_ascii=False, sort_keys=True, separators=(',',':'))})
+        self.insert('SRCH_POST', 'RFRN_POST_HASH_VALU', 'RFRN_POST_IFMN_CTNT', {'RFRN_POST_HASH_VALU': plan['q1'],
+                                  'RFRN_POST_IFMN_CTNT': json.dumps(q1, ensure_ascii=False, sort_keys=True, separators=(',',':'))})
+        vec = plan['vector']
+        if vec:
+            self.insert('VCTR_POST', 'VCTR_POST_ID', 'VCTR_POST_IFMN_CTNT', {'VCTR_POST_ID': vec['v1'],
+                                      'VCTR_POST_IFMN_CTNT': json.dumps(env1, ensure_ascii=False, sort_keys=True, separators=(',',':'))})
+        log('POSTS_INSERTED')
+        if vec: self.move('VCTR_ITEM','VCTR_POST_ID',vec['v0'],vec['v1'],'벡터 행')
+        self.move('SRCH_ROW','RFRN_POST_HASH_VALU',plan['q0'],plan['q1'],'검색 행')
+        if vec:
+            self.swap_one('VCTR_HEAD', [('RFRN_POST_HASH_VALU',plan['q0']),('VCTR_POST_ID',vec['v0'])],
+                          [('RFRN_POST_HASH_VALU',literal(plan['q1'])),('VCTR_POST_ID',literal(vec['v1'])),
+                           ('CHAN_NO',self.C('VCTR_HEAD','CHAN_NO')+'+1')], '벡터 연결')
+        self.swap_one('SRCH_CHNL', [('RFRN_CHNL_NAME',ch['name']),('RFRN_POST_HASH_VALU',plan['q0'])],
+                      [('RFRN_POST_HASH_VALU',literal(plan['q1'])),('CHAN_NO',self.C('SRCH_CHNL','CHAN_NO')+'+1')], '채널')
+        self.verify(plan, applied=True)
+        return self.finish('R6_APPLIED', plan)
+
+    def finish(self, status, plan, save=True):
+        result = {'status': status, 'version': R6_VERSION, 'mode': self.mode, 'run_id': self.run_id,
+                  'channel': self.channel(), 'plan': plan}
+        if save:
+            (self.work/('result-'+self.run_id+'.json')).write_text(json.dumps(result, ensure_ascii=False, indent=1))
+            self.upload('result-'+self.run_id+'.json', result)
+        log(status, message={'R6_CHECK_OK': '확인 통과(변경 없음)', 'R6_APPLIED': '적용 완료. 코드서빙을 재기동하세요.',
+                             'R6_ALREADY_APPLIED': '이미 적용되어 있습니다.', 'R6_ROLLED_BACK': '원래 상태로 되돌렸습니다.'}[status])
+        return result
+
+
+def main():
+    fix = Fix()
+    with (fix.work/'r6.lock').open('a') as lock:
+        try: fcntl.flock(lock, fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError: raise Stop('R6_ALREADY_RUNNING: 다른 셀에서 실행 중입니다.') from None
+        return fix.run()
+
+
+RESULT = main()

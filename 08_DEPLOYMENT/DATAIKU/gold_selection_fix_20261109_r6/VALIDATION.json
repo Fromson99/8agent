@@ -1,0 +1,55 @@
+{
+ "version": "gold-selection-fix-20261109-r6",
+ "status": "PASS",
+ "checks": [
+  "R5_synthetic_gold_loaded_without_selection",
+  "field_error_reproduced_QUERY_SELECTION_before_R6",
+  "missing_UPDATE_privilege_stops_before_writes_with_GRANT_lines",
+  "CHECK_mode_read_only",
+  "selection_for_other_generation_refused",
+  "APPLY_resumed_after_lost_responses_SRCH_ROW_and_VCTR_HEAD",
+  "MAIN_serving_require_latest_and_vector_publication_pass_after_R6",
+  "excluded_document_removed_from_serving_scope",
+  "repeat_APPLY_no_writes",
+  "ROLLBACK_restores_original_release",
+  "APPLY_after_ROLLBACK_same_release_ids"
+ ],
+ "cleaned": true,
+ "oracle": "local Oracle 23.26 disposable owner/login (dropped)",
+ "dataiku_sdk": "LOCAL_SUBSTITUTE",
+ "external_models": 0,
+ "r5_zip_required": {
+  "name": "DATAIKU_GOLD_ONECLICK_PROD_20261105_R5.zip",
+  "sha256": "f6060c4b2cd3a7ba2667095efe4dc8fe76e47f83579974823aa4620ffad742d0"
+ },
+ "synthetic": {
+  "search_rows": 112,
+  "documents": 2,
+  "excluded": 1,
+  "q0": "f02fe00a5f69f00185cfa17a25100aba6297248fb94ff701bcb847413b9cce7b",
+  "q1": "8365719a42fcb0e57bde04ca4d60f4a5b9c9408b8766aa0a4e5a5593f240ca3f"
+ },
+ "serving_code": "08_DEPLOYMENT/RELEASES/citation-relations-20261109-r1/code (local selected MAIN at test time) via gold_connection_engine_r12",
+ "deviations": [
+  "local connector disk floor 80GB->20GB in serving_check_r6.py only (C: 78GB free); memory/RSS/swap limits kept",
+  "fixture documents carry latest marks; native_latest_verified set to false in serving check to match field PROOF=false"
+ ],
+ "not_verified": [
+  "field scale 60,971,724 rows UPDATE time/redo",
+  "Dataiku query_to_df on ~1-2MB CLOB",
+  "field UPDATE privileges",
+  "real NFS selection file content"
+ ],
+ "earlier_failed_runs": [
+  "run1 connector needs fresh process",
+  "run2 connector disk guard",
+  "run3 fixture proof true (no field reproduction)",
+  "run4 resume re-INSERT ORA-00001 -> idempotent insert added"
+ ],
+ "files": {
+  "DATAIKU_GOLD_SELECTION_FIX_R6.txt": "265bef50da856f2c24347a51389abe5c8256afa1e84afd96e8cb3d6595a6a539",
+  "GUIDE.txt": "5a01159e3b623f02bbd868d620c94f30fefb679b6d1eae8c9c5ff7fda4689c93",
+  "verify_local_r6.py": "aab131583adf60ed2333537df667b259ca4d15c1411fff0f156fc1baf3343dc0",
+  "serving_check_r6.py": "2d49809cae19c0c3f58553d0d709f2cd8e060115314c7c3794c7ea660c430cf9"
+ }
+}

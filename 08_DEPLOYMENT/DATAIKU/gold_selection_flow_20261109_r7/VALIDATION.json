@@ -1,0 +1,67 @@
+{
+ "version": "gold-selection-flow-20261109-r7f",
+ "replaces": [
+  "R6 1a1bf5d61d3f4abc",
+  "R7 1a1bf6ca7fb9dcab",
+  "R7b 1a1bf71ead2146cb",
+  "R7c 1a1bf7551ab3c9b5"
+ ],
+ "bucket": "read only (recipe never writes folders; checked with write-raising folder shim)",
+ "default_mode": "APPLY (checks before any write)",
+ "recipe_oracle_check": {
+  "status": "PASS",
+  "checks": [
+   "R5_synthetic_gold_loaded_without_selection",
+   "field_error_reproduced_QUERY_SELECTION_before_R6",
+   "missing_UPDATE_privilege_stops_before_writes_with_GRANT_lines",
+   "CHECK_mode_read_only",
+   "selection_for_other_generation_refused",
+   "APPLY_resumed_after_lost_responses_SRCH_ROW_and_VCTR_HEAD",
+   "MAIN_serving_require_latest_and_vector_publication_pass_after_R6",
+   "excluded_document_removed_from_serving_scope",
+   "repeat_APPLY_no_writes",
+   "ROLLBACK_restores_original_release",
+   "APPLY_after_ROLLBACK_same_release_ids",
+   "no_folder_or_bucket_writes_by_recipe"
+  ],
+  "cleaned": true,
+  "keyed_path_used": true,
+  "sweep_needed": false,
+  "note": "synthetic 112 rows, batch 7; lost-response injection matched keyed UPDATE"
+ },
+ "installer_fake_api_check": {
+  "status": "PASS",
+  "checks": [
+   "user_created_project_gets_input_folder_and_recipe_only_no_project_creation_no_export",
+   "rerun_reuses_objects_keeps_changed_variables",
+   "rerun_updates_recipe_code",
+   "rerun_checks_uploaded_json_in_input_folder",
+   "rerun_attaches_output_to_earlier_install_without_output",
+   "existing_project_with_other_objects_refused_and_listed"
+  ]
+ },
+ "not_verified": [
+  "field execution plan of old vs keyed UPDATE",
+  "field speed",
+  "real Dataiku add_output, export/import",
+  "field UPDATE privileges"
+ ],
+ "deviations": [
+  "local connector disk floor 80GB->20GB in serving_check.py only",
+  "fixture native_latest_verified forced false to match field"
+ ],
+ "files": {
+  "DATAIKU_CREATE_GOLD_FIX_FLOW_R7.txt": "bf63a19daf98a50d580d65c6a31b72431bc1f6bc8ab4a732c2b665c525eb5abe",
+  "recipe_gold_selection_fix_r7.py": "3ce3d46fc93c8e5a36b8f697ef85ae3f672e2e25cc6755e6c3458995c5e31887",
+  "GUIDE.txt": "2d8dbb767ee4ca8009df958355d59c6b51724064c4dc587ef70ffff14f1762b3",
+  "installer_template.py": "0d1aca4734371f562fb85176e5455e6c1b676332c2b20c777b3cc969495090d1",
+  "build_installer.py": "6997e142f451deb1cb709df6c6571a557cc41bf65acbd91eb3847069eea12358",
+  "test_installer.py": "cb092b96b78244d3b3bac414ddfcd1d8a3de5696fdd0dc3ede10671366e21b1f",
+  "verify_local_r7.py": "7f8eb805c65b076dde8b843d253b37e5c0a22d006795ec3242915aaf11f6340a",
+  "serving_check.py": "2d49809cae19c0c3f58553d0d709f2cd8e060115314c7c3794c7ea660c430cf9"
+ },
+ "installer": "runs in a user-created empty project; no project creation, no API export; user exports via UI with managed folder contents",
+ "field_feedback": "DSS validation: Output role main is required for recipe type python -> installer always attaches empty output folder; rerun repairs earlier install (settings.add_output)",
+ "change": "SRCH_ROW move: per kind, PK index order (hash,type,id) keyed ranges of 50000 (boundary via index, then range UPDATE+COMMIT), no rescans; leftover sweep with old method; 1-minute progress with rows_per_second and eta_minutes",
+ "plan_comparison": "NOT_DONE: local Oracle Free 12GB limit (ORA-12954) while building 1M-row comparison table; temp user dropped. Field EXPLAIN PLAN check in GUIDE."
+}

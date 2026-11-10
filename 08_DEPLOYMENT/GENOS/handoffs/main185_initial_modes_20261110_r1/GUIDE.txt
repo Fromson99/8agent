@@ -1,0 +1,42 @@
+MAIN185 — 관계 조항·인용 구절 묶음 읽기, 인용 관계별 연결 + 초기검색 두 모드 (MAIN182 대체)
+함께 보냄: Oracle 병목 보고 R3 (어떤 SQL이 느린지 사진 5장) — ORACLE_REPORT_GUIDE.txt
+
+현재 로컬 릴리스: initial-modes-20261110-r1 / MAIN185, 서빙 545파일. 현장에 보낸 마지막 것은 MAIN182(SENT 1a1be9a6e4828a51)입니다.
+MAIN182가 적용됐든 아직 MAIN177이든 이 MAIN185 하나만 적용하면 됩니다(MAIN178~185 내용 모두 포함).
+워크플로우 파일은 MAIN173~182와 같습니다(편집기·화면 설정 그대로). SQL 계획 645 그대로. 새로 꼭 넣을 환경변수 없음.
+
+0. 무엇이 바뀌나 (MAIN182 대비 제품 14파일: initial_vector.py, citation_roles.py, connection_scope.py, decision_projection.py, definition_entry.py, guided_answer.py, guided_navigation.py, journal_storage.py, request_entry.py, unit_relations.py, oracle_dp.py, oracle_query_plans.py, progress.py, vector_navigation.py)
+[MAIN183] 인용 관계를 종류별로 처리: 위임 정의("각 목 외의 부분")·인용 대상 주어·"적용할 때"는 구체화로 판정,
+    연결마다 관계(종류·준용 대상어·인용 문장)를 붙임. 질문과 맞는 역방향 준용(대상어가 질문 낱말)·적용 특례는 시스템이 읽음(최대 2).
+[MAIN184] 근거 조문을 가리키는 관계 조항(준용 대상어·경합·우선·나머지 사항)을 서버가 읽음(요청당 2),
+    인용 구절 2~4개(범위 인용 포함)를 같이 읽음, "법/영 시행규칙 제N조"는 선언한 법으로 연결, 첫 화면 서식 조문 제외·서식 저장 422 수정.
+[MAIN185] 초기검색 모드 두 개 추가(GENOS_RAG_INITIAL_SEARCH=hybrid_rerank 또는 dual 일 때만). 지금 값(hybrid·vector) 그대로면 동작 변화 없음.
+실제 Qwen(로컬, 독립형 50문항, 1회, 품질 인증 아님): 필수 조문 확보 77 → 88/95 (MAIN184 후보, ADR-1478).
+포함 안 됨: 11-10 비효율 SQL 1차 수정(후보만), 다른 작업 r6. Oracle 병목은 함께 보낸 R3 사진을 보고 다음 수정을 정합니다.
+
+1. 환경변수 — 바꿀 것 없음
+  DP=oracle / GENOS_ORACLE_TABLE_MAPPING=development_g19_1 / DP_QUERY_CHANNEL=(지금 값) / GENOS_RAG_INITIAL_SEARCH=(지금 값, hybrid 권장)
+  (선택) Oracle 병목 사진용: GENOS_ORACLE_SQL_SLOW_MS=200 → 확인 후 지우기 (ORACLE_REPORT_GUIDE.txt)
+
+2. GENOS 코드스페이스 적용 (이전과 같은 절차)
+같은 TRANSFER 폴더에 MAIN185_FULL_20261110_R1.zip, MAIN185_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN185_ONECLICK_R1.txt
+완료 표시: MAIN185_ONECLICK_DONE, MAIN185_EXIT=0
+확인·스테이징: bash MAIN185_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+기존 절차로 commit 후: bash MAIN185_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 현장 확인
+  ① 질문 하나 실행(판단 카드 첫 줄은 이전과 같음: hybrid 이면 "벡터·본문 검색 후보 N개 · 합친 순").
+  ② 준용·특례가 있는 질문에서 로그/원장에 관계 조항 서버 읽기(relation clause)가 남는지.
+  ③ 처리 시간: GENOS_ORACLE_REPORT_R3.txt 사진 4장 + Dataiku V$SQL 사진 1장.
+
+4. 원복
+  bash MAIN185_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- Oracle 규모 점검(11-10, MAIN185 그대로): 통과, 한 질문 최대 SQL 417, SQL 전수 3694회 오류 0.
+- 회귀: MAIN184 86파일 새 실패 0(의도한 계약 변경 3건은 시험을 새 계약으로 수정), 두 모드 87파일 새 실패 0. 진입 확인 17/17, MAIN184 롤백 보존.
+- 설치기: MAIN177 격리 checkout에 15개 명령 통과(설치→재실행→status→stage→commit→gate→전체 gate→undo 복원).
+- 현장 내부 모델·현장 데이터·DP=oracle 서빙 전체 실모델은 미확인.
+상세: VERIFICATION.json / SHA256SUMS.txt

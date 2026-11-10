@@ -1,0 +1,15 @@
+<html><body style="font-family:sans-serif;font-size:14px">
+<p><b>[GENOS MAIN186] MAIN185 + 실제 질문에서 SQL 시간 쪼개기 측정 + Oracle 병목 보고 R4</b></p>
+<p>V$SQLSTATS 권한이 없어 DB 쪽 통계를 볼 수 없으므로, GENOS 코드서빙이 실제 질문을 처리하면서 SQL 시간을 직접 나눠 남기게 했습니다.
+답변·DB 쓰기 동작은 그대로이고 측정만 추가됩니다. MAIN186 하나만 적용하면 됩니다(MAIN185 내용 포함, 워크플로우·환경변수 그대로).</p>
+<ul>
+<li>SQL마다 보낸 크기·받은 행 수·그동안 CPU, 보낸 크기 구간별 시간(읽기·쓰기 따로)</li>
+<li>ORDS 빈 왕복: SQL 300번마다 SELECT 1 FROM DUAL 한 번 — 네트워크+ORDS 기본 비용(측정만, 실패해도 질문 진행, 끄기 GENOS_ORACLE_SQL_PROBE_EVERY=0)</li>
+</ul>
+<p>적용: TRANSFER 폴더에서 <code>bash MAIN186_ONECLICK_R1.txt</code> → MAIN186_ONECLICK_DONE, MAIN186_EXIT=0 → status / stage → commit → gate-code → push → 새 리비전.</p>
+<p>측정: 느린 질문 하나 → <code>bash ./GENOS_ORACLE_REPORT_R4.txt list</code> → <code>bash ./GENOS_ORACLE_REPORT_R4.txt 번호</code> → 사진 1/5~5/5 (사진 5 "SQL 시간 쪼개기"가 핵심).
+Dataiku V$SQL 사진은 이제 필요 없습니다. 읽는 법: ORACLE_REPORT_GUIDE_R4.txt</p>
+<p>로컬 검증: 회귀 171파일 새 실패 0, 새 시험 5 통과, Oracle 규모 점검 통과(한 질문 최대 SQL 418), 진입 17/17,
+설치기 MAIN177 checkout 15명령 통과, 보고서 R4 시험 7개 × Python 3.9/3.11/3.14 통과.
+원장 잠금 왕복 줄이기 후보는 아직 넣지 않았습니다 — 이번 사진을 보고 넣겠습니다.</p>
+</body></html>

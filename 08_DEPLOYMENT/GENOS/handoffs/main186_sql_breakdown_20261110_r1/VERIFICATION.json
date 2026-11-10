@@ -1,0 +1,121 @@
+{
+  "main_generation": 186,
+  "release_id": "sql-breakdown-20261110-r1",
+  "release_manifest_sha256": "6fad198c1595a14277824685572ea6629ee22ad6066a7c7592ca772f52df0853",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "sql-breakdown-20261110-r1",
+    "generation": 186,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/sql-breakdown-20261110-r1/release.json",
+    "release_manifest_sha256": "6fad198c1595a14277824685572ea6629ee22ad6066a7c7592ca772f52df0853",
+    "activated_at": "2026-11-10T02:19:52.881437+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "d87ed83fbbeda361244bb22412842dc93db32b1639da7b0b5f6ea222be86b7a4"
+  },
+  "serving_files": 545,
+  "replaces": {
+    "main185": {
+      "release_id": "initial-modes-20261110-r1",
+      "sent_gmail_id": "1a1c2f88d7a5a3cc"
+    },
+    "field_state_assumed": "MAIN185 (mailed 11-10, application unconfirmed) or MAIN182/177; MAIN178-186 are contained"
+  },
+  "changed_vs_main185": {
+    "products": {
+      "02_BACKEND/semantic_runtime/oracle_dp_io.py": "4c42c2284a6f1b0bfae9b6e88e37aa1733248e9bbe01c47d2b6d1151bfab8e23",
+      "02_BACKEND/semantic_runtime/oracle_query.py": "726f248daff17872fcd813f6a80874d7f8f832b9a2a9cb26b769ff8ffa8a2537",
+      "02_BACKEND/semantic_runtime/request_report.py": "7c07ca96077ec022567b8efb8f5a5e2e88f6f64f617b280694030753d606b518"
+    },
+    "derived": "engine pins + PIPELINE + Oracle query plan metadata",
+    "sql_plans": "645 -> 646 (added: SELECT 1 AS ONE FROM DUAL, the ORDS round-trip probe)",
+    "behaviour": "measurement only: per-SQL bytes sent, rows received, CPU while in flight, size buckets, one SELECT 1 FROM DUAL every 300 SQL calls (never fails a request); answers and DB writes unchanged",
+    "new_required_environment_variables": [],
+    "optional_values": [
+      "GENOS_ORACLE_SQL_PROBE_EVERY=0 turns the probe off"
+    ],
+    "workflow_file_changed": false
+  },
+  "local_validation": {
+    "oracle_scale_guard": {
+      "passed": true,
+      "sweep_executions": 3694,
+      "sweep_error_count": 0,
+      "sql_per_turn_max": 418
+    },
+    "regression_vs_main185": {
+      "files": 171,
+      "new_failures": 0,
+      "already_failing_same_as_main185": true,
+      "file": "09_ARTIFACTS/AUDITS/20261110-sql-breakdown/regression-compare.json"
+    },
+    "new_contract_test": "05_TESTS/CONTRACTS/test_sql_breakdown.py 5 passed",
+    "one_question_local_oracle": {
+      "sql_count": 896,
+      "sql_probe": {
+        "count": 2,
+        "ms": 1.0,
+        "min_ms": 0.4,
+        "max_ms": 0.6,
+        "failed": 0,
+        "every": 300
+      },
+      "sql_size_buckets": [
+        {
+          "write": false,
+          "size": "<4KB",
+          "count": 521,
+          "ms": 461,
+          "bytes": 258335
+        },
+        {
+          "write": true,
+          "size": "<4KB",
+          "count": 259,
+          "ms": 551,
+          "bytes": 264476
+        },
+        {
+          "write": true,
+          "size": "4-64KB",
+          "count": 116,
+          "ms": 606,
+          "bytes": 1375662
+        }
+      ],
+      "sql_bytes_out": 1898473
+    },
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN177 multiturn-followups-20261108-r1",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_included": [
+    "2026-11-10 Agent-record lease fast path (candidate 20261110-query-speed/staged3)",
+    "2026-11-10 inefficient-SQL first fix (candidate 20261110-sql-efficiency/staged2)"
+  ],
+  "package": {
+    "zip": "MAIN186_FULL_20261110_R1.zip",
+    "zip_sha256": "8b9452fe0699686c83679b50a2fa45d02fc1a6c0b292a1815d5cd048f133e760",
+    "members": 556,
+    "workflow": "MAIN186_WORKFLOW.py"
+  },
+  "oracle_report_r4": {
+    "files": {
+      "GENOS_ORACLE_REPORT_R4.txt": "8f45078e504ffc12ed37f6ceeae93c551af987b88f4c467aa918e2e8ed7ddea2",
+      "ORACLE_REPORT_GUIDE_R4.txt": "6387a44595d9012d7270f2912c40d62368e2e8040423feb511fab4f75617c0bf"
+    },
+    "tests": "09_ARTIFACTS/AUDITS/20261110-sql-breakdown/report_r4/test_oracle_report_r4.py 7 passed on Python 3.9/3.11/3.14",
+    "read_only": true
+  },
+  "not_verified": [
+    "field ORDS numbers (first field run)",
+    "field internal model",
+    "DB-side time (no V$SQLSTATS privilege)"
+  ],
+  "field_deployed": false,
+  "quality_certified": false
+}

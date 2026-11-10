@@ -1,0 +1,43 @@
+Gold 통계 갱신 레시피 R1 · 2026-11-10 — 기존 GOLD_SELECTION_FIX 플로우 뒤에 붙이기
+
+[왜]
+R7f가 SIDDG.IDD_B003_LGL_SRCH_ROW 60,971,724행의 RFRN_POST_HASH_VALU(인덱스 맨 앞 컬럼)를 옛 번호→새 번호로 바꿨다.
+표 데이터의 물리 순서와 인덱스 안의 (종류, ID) 순서는 그대로다. 바뀐 것은 Oracle 통계다:
+통계는 아직 '모든 행이 옛 번호, 새 번호는 0행(또는 범위 밖)'으로 알고 있어서, 서빙 SQL(WHERE 번호=새 번호)의
+행 수를 매우 작게 잡고 나쁜 실행 계획을 고를 수 있다. 인덱스에는 옛 번호 자리에 빈 블록이 남는다(범위 조회 영향은 작음).
+이 레시피는 두 표의 통계를 다시 모은다. 데이터는 바꾸지 않는다.
+
+[붙이는 모습]
+gold_selection_input → [GOLD_SELECTION_FIX_R7] → gold_selection_noop → [GOLD_STATS_R1] → gold_stats_noop
+(gold_selection_noop를 입력으로 받으므로 항상 R7f 뒤에 돈다. 두 noop 폴더는 순서 연결용이고 읽기·쓰기 0)
+
+[화면에서 붙이기 — 기존 프로젝트 GOLD_SELECTION_FIX]
+1) Flow에서 gold_selection_noop 폴더 클릭 → 오른쪽 Actions > Code recipes > Python
+2) Inputs: gold_selection_noop (자동으로 들어가 있음)
+   Outputs: + Add > New folder, 이름 gold_stats_noop, 저장 위치 filesystem_folders > CREATE RECIPE
+3) 편집기 내용을 지우고 recipe_gold_stats_r1.py 전체를 붙여 넣기 > SAVE
+4) 레시피 이름을 GOLD_STATS_R1 로 바꾸기(선택)
+5) 프로젝트 변수는 R7f 것(GOLD_FIX_ORACLE_CONNECTION / GOLD_FIX_EXPECTED_DB_USER / GOLD_FIX_GOLD_OWNER)을 그대로 쓴다.
+   추가 변수(선택): GOLD_STATS_MODE = CHECK(보기만) / APPLY(기본), GOLD_STATS_DEGREE = 병렬도(기본 4)
+6) 먼저 GOLD_STATS_MODE=CHECK 로 RUN → 로그 CHECK_DONE 이면 권한 있음. 변수를 지우거나 APPLY 로 바꾸고 RUN.
+   - 이 레시피만 실행할 것: 레시피 화면의 RUN(= 이 레시피만). 상위 R7f를 다시 돌릴 필요 없음(돌려도 ALREADY_APPLIED).
+
+[운영에서 코드 붙여 넣기가 안 되면]
+개발계 같은 프로젝트에 위 1)~4)로 붙인 뒤 Export(관리 폴더 내용 포함) → 운영에서 Import. 운영 변수는 Import 뒤 다시 확인.
+
+[로그 읽기]
+START → CHANNEL(SEL_VER=filename-search-selection-v2 이어야 진행) → STATS_BEFORE → GATHER_START/DONE(표마다, SRCH_ROW는 수십 분 가능)
+→ STATS_AFTER → APPLIED. 멈춤 사유:
+- R7F_NOT_FINISHED : R7f가 아직 안 끝남(채널이 새 게시본이 아님) → R7f 먼저
+- PRIVILEGE_REQUIRED : 접속 계정(PIDD2APP)에 ANALYZE ANY 없음 → 로그 dba_statements 두 줄을 DBA에 요청(또는 GRANT ANALYZE ANY)
+- STATS_LOCKED : DBA가 통계를 잠가 둔 표 → DBA 문의
+- UNEXPECTED_DB_USER : 연결 계정이 변수와 다름
+
+[DBA 공유] GATHER_TABLE_STATS(cascade=>TRUE, degree=>4, no_invalidate=>FALSE). no_invalidate=>FALSE 라서
+끝나는 즉시 기존 커서가 새 통계로 다시 계획을 세운다(기본값 AUTO면 최대 수 시간 늦게 반영).
+기존 SQL 모음 G 구역과 같은 일을 플로우로 하는 것이다.
+
+[검증 — 로컬 Oracle 23 임시 계정, Dataiku SDK 대역]
+R7f 미완료 정지 · 권한 없으면 쓰기 전 정지·DBA 문장 출력 · CHECK는 갱신 안 함 · 다른 계정 정지 통과.
+APPLY는 확인을 모두 통과해 GATHER까지 갔지만, 로컬 Oracle Free 12GB 한도(ORA-12954)로 통계 저장 자체는 실패 → 실제 갱신은 운영에서만 확인.
+STATS_LOCKED 경로도 같은 한도로 로컬 시험 못 함. 실제 Dataiku·운영 시간·권한 미확인.

@@ -1,0 +1,16 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>Gold 판본 보완 R7f — 검색 행 이동 속도 개선판 (2026-11-09)</h3>
+<p><b>왜</b>: 지금 도는 방식(<code>UPDATE … WHERE 번호=옛번호 AND ROWNUM&lt;=20000</code> 반복)은 표 거의 전부가 옛 번호라 Oracle이 표 전체 읽기(FULL)를 고르면 회차마다 이미 바꾼 앞부분을 다시 읽어 <b>뒤로 갈수록 느려질 수 있습니다</b>.</p>
+<p><b>R7f</b>: 종류별로 PK 인덱스(번호·종류·ID) 순서를 따라 ① 다음 5만 행의 끝 ID를 인덱스로 찾고 ② 그 구간만 UPDATE·COMMIT. 이미 바꾼 부분은 다시 읽지 않습니다. 남은 행이 있으면 마지막에 기존 방식으로 마저 바꿉니다. 로그에 1분마다 <code>MOVE_PROGRESS … rows_per_second, eta_minutes(남은 분)</code>이 찍힙니다.</p>
+<h4>지금 작업을 바꿀지 판단</h4>
+<p>SQL 노트북에서 EXPLAIN PLAN (실행 아님):</p>
+<pre style="background:#f4f4f4;padding:8px">UPDATE SIDDG.IDD_B003_LGL_SRCH_ROW SET RFRN_POST_HASH_VALU = RFRN_POST_HASH_VALU
+WHERE RFRN_POST_HASH_VALU = (SELECT RFRN_POST_HASH_VALU FROM SIDDG.IDD_B003_LGL_SRCH_CHNL) AND ROWNUM &lt;= 20000</pre>
+<ul><li><b>TABLE ACCESS FULL</b> → 바꾸기 권장 / <b>INDEX RANGE SCAN</b> → 지금 작업 그대로 둬도 됨</li>
+<li>또는 MOVE_PROGRESS 두 줄에서 10분당 옮긴 행 수가 줄고 있으면 바꾸기</li></ul>
+<h4>바꾸는 법</h4>
+<ol><li>Jobs에서 지금 작업 Abort (이미 옮긴 행은 COMMIT 되어 있음)</li>
+<li>레시피 코드 전체를 첨부 <code>recipe_gold_selection_fix_r7.py</code>(R7f)로 교체 → SAVE → RUN → 남은 행부터 이어서 진행</li>
+<li>운영에서 코드 수정이 안 되면 개발계에서 첨부 설치 TXT 재실행 → Export → 운영 다시 Import</li></ol>
+<p><b>검증</b>: 로컬 Oracle에서 새 방식으로 12항목 통과(종류별 구간 이동만으로 전부 이동·남은 행 처리 단계 불필요, 응답 유실 후 재개, 되돌리기, 현재 MAIN 서빙 시작 검사 통과, 폴더 쓰기 0). 설치 스크립트 대역 6항목 통과. <b>미확인</b>: 실제 운영의 실행 계획과 속도 — 로컬 100만 행 비교는 로컬 Oracle Free 12GB 한도로 못 했습니다.</p>
+</body></html>

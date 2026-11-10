@@ -1,0 +1,25 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<h3>운영 Gold 최신판본 선택 정보 보완 R6 (2026-11-09)</h3>
+<p><b>원인</b>: R5의 34조각은 2026-10-07 NFS 원문 세대 압축본입니다. 판본 중복 제거 결과 파일은 10-15에 세대 폴더 옆(<code>SEARCH_SELECTION/generation.json</code>)에 생겨 압축본에 없었습니다. 그래서 운영 Gold 게시본에 선택 정보가 없고(SEL_VER 비어 있음, PROOF=false) 서빙이 <code>QUERY_SELECTION</code>으로 시작을 거부합니다. NFS의 그 파일은 운영 세대(<code>term-source-533a…</code>, <code>bf643c59…</code>)와 정확히 같습니다.</p>
+
+<h4>1. NFS 파일을 TRANSFER로 복사 (GENOS 터미널, 한 줄)</h4>
+<pre style="background:#f4f4f4;padding:8px;white-space:pre-wrap">cp /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/SEARCH_SELECTION/generation.json /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json &amp;&amp; sha256sum /workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json &amp;&amp; python3 -c "import json;v=json.load(open('/workspace/TRANSFER/SEARCH_SELECTION_GENERATION.json'));print(v['schema_version'],v['generation_id'],v['manifest_sha256'][:16],'excluded',len(v['excluded']),'marks',len(v['latest_documents']))"</pre>
+<p>JupyterLab TRANSFER에서 내려받아, 운영 Dataiku의 R5 코드 ZIP이 있는 Managed Folder에 <b>같은 이름</b>으로 올립니다. 출력의 excluded 숫자가 검색에서 빠지는 옛 판본 수입니다.</p>
+
+<h4>2. 실행 (운영 Dataiku 노트북)</h4>
+<ol>
+<li>커널 재시작 → 첨부 <code>DATAIKU_GOLD_SELECTION_FIX_R6.txt</code> 전체를 셀 하나에 붙여 넣기 → PARAMS를 R5 값으로(GOLD_OWNER=SIDDG)</li>
+<li><code>FIX['MODE']='CHECK'</code>로 실행 (읽기만). PLAN 줄의 documents 2121, search_rows 60971724 확인 → <code>R6_CHECK_OK</code></li>
+<li><code>R6_PRIVILEGE_REQUIRED</code>가 나오면 출력된 GRANT 줄을 DBA에 요청 (UPDATE: SRCH_ROW·VCTR_ITEM·VCTR_HEAD·SRCH_CHNL)</li>
+<li><code>FIX['MODE']='APPLY'</code>로 다시 실행 → <code>R6_APPLIED</code> → 코드서빙 재기동 (DP_QUERY_CHANNEL 그대로)</li>
+</ol>
+<p>끊기면 같은 셀을 다시 실행하면 이어서 합니다. 되돌리기는 <code>MODE='ROLLBACK'</code>.</p>
+
+<h4>3. 하는 일</h4>
+<p>새 원문 게시본·새 검색 명세·새 벡터 게시본 각 1행 INSERT → 벡터 행과 검색 행 6,097만 행의 게시본 번호 UPDATE(나눠서 COMMIT) → 벡터 연결·채널을 새 번호로 변경 → 서빙 시작 검사와 같은 조건으로 확인.<br>
+<b>DBA 사전 공유 필요</b>: 검색 행 표는 PK와 인덱스 4개가 모두 이 번호 컬럼으로 시작하므로 인덱스 5개가 같이 바뀌고 redo/아카이브 로그가 많이 생깁니다. 소요 시간은 로컬에서 측정하지 못했습니다.</p>
+
+<h4>4. 검증</h4>
+<p>로컬 Oracle 23 임시 계정에서 R5 TXT로 합성 Gold를 실제 적재한 뒤 이 R6 TXT 그대로 실행해 11항목 통과: 현장 오류 재현, 권한 없으면 쓰기 전 중단, CHECK 무변경, 다른 세대 파일 거절, 응답 유실 2회 후 재실행 이어서 완료, 현재 MAIN 서빙 코드의 시작 검사·벡터 검사 통과, 옛 판본 문서 검색 범위 제외, 재실행 무변경, ROLLBACK 원상 복구, 재적용 같은 번호.<br>
+<b>미확인</b>: 6,097만 행 규모의 시간과 redo, 운영 Dataiku의 1~2MB CLOB 읽기, 운영 UPDATE 권한. 현장 CHECK 결과로 확인해야 합니다.</p>
+</body></html>

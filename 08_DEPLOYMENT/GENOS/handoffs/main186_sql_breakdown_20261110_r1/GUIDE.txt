@@ -1,0 +1,43 @@
+MAIN186 — MAIN185 + 실제 질문에서 SQL 시간 쪼개기 측정 (MAIN185 대체)
+함께 보냄: Oracle 병목 보고 R4 (사진 5장) — ORACLE_REPORT_GUIDE_R4.txt
+
+현재 로컬 릴리스: sql-breakdown-20261110-r1 / MAIN186, 서빙 545파일. 현장에 보낸 마지막 것은 MAIN185(SENT 1a1c2f88d7a5a3cc)입니다.
+MAIN185가 적용됐든 아직 MAIN182·MAIN177이든 이 MAIN186 하나만 적용하면 됩니다(MAIN178~186 모두 포함).
+워크플로우 파일은 MAIN173~185와 같습니다(편집기·화면 설정 그대로). 새로 꼭 넣을 환경변수 없음.
+
+0. 무엇이 바뀌나 (MAIN185 대비 제품 3파일: oracle_query.py, oracle_dp_io.py, request_report.py) — 측정만, 답변·DB 쓰기 동작 그대로
+  커밋 한 번 평균 142ms가 DB 안인지 밖인지 보려 했으나 V$SQLSTATS 조회 권한이 없어, GENOS 쪽에서 실제 질문마다 잽니다.
+  - SQL마다: 보낸 크기, 받은 행 수, 보내고 받는 동안 CPU(요청 스레드·프로세스 전체)
+  - 보낸 크기 구간별(<4KB / 4~64KB / 64~512KB / 512KB 이상) 횟수·시간, 읽기·쓰기 따로
+  - ORDS 빈 왕복: SQL 300번마다 SELECT 1 FROM DUAL 한 번(같은 부하에서 네트워크+ORDS 기본 비용).
+    측정만 하며 실패해도 질문은 그대로 진행. SQL 계획 645 → 646(이 한 문장). 끄기: GENOS_ORACLE_SQL_PROBE_EVERY=0
+  - 결과는 질문 끝의 oracle.sql.summary 줄과 요청 보고서에 들어가고, GENOS_ORACLE_REPORT_R4.txt 사진 5가 보여 줍니다.
+포함 안 됨: 11-10 원장 잠금 왕복 줄이기 후보(로컬 왕복 896→354), 비효율 SQL 1차 수정 — 이번 측정을 보고 넣습니다.
+
+1. 환경변수 — 바꿀 것 없음
+  DP=oracle / GENOS_ORACLE_TABLE_MAPPING=development_g19_1 / DP_QUERY_CHANNEL=(지금 값) / GENOS_RAG_INITIAL_SEARCH=(지금 값)
+
+2. GENOS 코드스페이스 적용 (이전과 같은 절차)
+같은 TRANSFER 폴더에 MAIN186_FULL_20261110_R1.zip, MAIN186_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다. ZIP은 미리 풀지 않습니다.
+  bash MAIN186_ONECLICK_R1.txt
+완료 표시: MAIN186_ONECLICK_DONE, MAIN186_EXIT=0
+확인·스테이징: bash MAIN186_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+기존 절차로 commit 후: bash MAIN186_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 현장 측정
+  ① 평소처럼 느린 질문 하나(실제 질문 그대로).
+  ② TRANSFER 폴더에서 bash ./GENOS_ORACLE_REPORT_R4.txt list → bash ./GENOS_ORACLE_REPORT_R4.txt 번호 → 사진 1/5 ~ 5/5.
+  ③ 사진 5 "SQL 시간 쪼개기"가 핵심입니다. 자세한 읽는 법: ORACLE_REPORT_GUIDE_R4.txt
+
+4. 원복
+  bash MAIN186_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- 실제 로컬 Oracle 원장 + 모의 모델 한 질문: SQL 896회 + 빈 왕복 2회, 크기 구간·위치별 크기/CPU 기록 확인.
+- 회귀: 관련 171파일 MAIN185 대비 새 실패 0(이미 실패하던 것은 MAIN185와 같음), 새 시험 test_sql_breakdown.py 5 통과.
+- Oracle 규모 점검: 통과, 한 질문 최대 SQL 418, SQL 전수 3694회 오류 0.
+- 진입 확인 17/17, MAIN185 롤백 보존. 설치기: MAIN177 격리 checkout 15개 명령 통과.
+- 보고서 R4: 시험 7개 × Python 3.9/3.11/3.14 통과.
+- 현장 ORDS에서의 숫자는 이번 사진이 처음입니다. DB 안 시간(읽은 블록 등)은 권한 없이 볼 수 없습니다.
+상세: VERIFICATION.json / SHA256SUMS.txt
