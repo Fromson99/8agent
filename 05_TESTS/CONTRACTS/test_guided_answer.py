@@ -62,8 +62,10 @@ def test_invalid_proposal_asks_without_repair_or_publishing_rejected_text(fault)
     if fault=='missing_issue':v['answer_points'][0]['issue_refs']=[]
     if fault=='empty':v={'answer_points':[],'open_questions':[]}
     sources=deepcopy(SOURCES)
+    # Since 2026-11-10 (ADR-1478 cm-042) an invalid answer gets the one full correction of
+    # bounded_decision; the same invalid proposal again publishes nothing.
     e,calls=execution(v);a=g.assess(e,sources,ISSUES,'어느 유형인가요?',[])
-    assert len(calls)==1 and a['claims']==[] and a['guided_reply']['needs_guidance']
+    assert len(calls)==2 and 'contract_error' in calls[1][1] and a['claims']==[] and a['guided_reply']['needs_guidance']
     assert a['source_excerpt_reply']['legal_conclusion_confirmed'] is False
     assert '모의규정' not in cc.compose(a,g.plan(a))['text']
 
@@ -202,7 +204,8 @@ def test_actual_gateway_reserves_final_slot_receipts_sources_and_sends_once(guid
     executor=S(s=native,host=S(binding={'fixture':True}),
         invoke=lambda system,data,schema,phase:native.structured(system,data,schema,phase,30))
     result=g.assess(executor,sources,ISSUES,'어떤 기준인가요?',[])
-    assert len(seen)==1 and native.work.budget()['model_reserved']==38
+    sends=2 if malformed else 1  # a malformed answer gets one correction (2026-11-10)
+    assert len(seen)==sends and native.work.budget()['model_reserved']==37+sends
     assert result['guided_reply']['needs_guidance'] and bool(result['claims']) != malformed
     assert native.work.db.execute('SELECT count(*) FROM presentation').fetchone()[0]>0
-    assert g.assess(executor,sources,ISSUES,'어떤 기준인가요?',[])==result and len(seen)==1
+    assert g.assess(executor,sources,ISSUES,'어떤 기준인가요?',[])==result and len(seen)==sends

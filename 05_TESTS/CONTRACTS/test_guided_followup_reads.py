@@ -181,13 +181,17 @@ def test_scope_question_after_reading_is_asked_after_the_answer(tree, tmp_path):
     assert '다음 방향을 기다립니다' not in body['answer']['text']
 
 
-def test_fact_question_after_reading_still_waits_for_the_user(tree, tmp_path):
+def test_fact_question_after_reading_is_asked_after_the_explanation(tree, tmp_path):
     plan = {'actions': {1: [('LOCATE', '제1조제1항'), ('READ', '제1조제1항'), ('ASK', 'FACT')]}}
     transport, responses = run(tree, tmp_path, plan, turns=1,
                                navigation={'guided_action_limit': 6, 'guided_answer_read_rounds': 6})
-    assert not calls(transport, 1, 'answer')
+    # Since 2026-11-10 (ADR-1478 cm-006/021) the acquired original is explained before the FACT
+    # question; the question stays for the user and nothing is read further in this request.
+    answer = calls(transport, 1, 'answer')
+    assert len(answer) == 1 and answer[0]['view'].get('investigation_questions')
+    assert 'readable_locations' not in answer[0]['view'] and 'next_reads' not in answer[0]['schema']['properties']
     body = responses[0].json()
-    assert body['answer']['claims'] == [] and '다음 방향을 기다립니다' in body['answer']['text']
+    assert [c['text'] for c in body['answer']['claims']] == [FIRST]
 
 
 def test_after_the_limit_a_new_search_is_not_executed(tree, tmp_path):

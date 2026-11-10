@@ -197,8 +197,8 @@ def pin(code: Path, report: Path, allow_sql_change: bool) -> dict:
                          'when the new SQL is intended. This staged tree is now modified: stage again with a new --name.')
     for engine in sorted((code / '02_BACKEND' / 'ENGINES').rglob('*.json')):
         value = read(engine)
-        for name in value.get('files', {}):
-            value['files'][name] = sha(code / name)
+        # A file removed by --remove leaves the pins of every engine that held it.
+        value['files'] = {name: sha(code / name) for name in value.get('files', {}) if (code / name).is_file()}
         put(engine, value)
     pipeline = code / '00_SYSTEM' / 'PIPELINE.json'
     value = read(pipeline)
@@ -286,7 +286,7 @@ def stage_tree(args, state, attempt, pointer, pointer_sha, manifest, base_code, 
         (code / name).unlink()
         summary.append({'path': name, 'removed': True, 'lines_removed': removed})
     (state.out / f'{args.name}-diff.patch').write_text(''.join(diffs))
-    unchanged = [row['path'] for row in summary if row.get('base_sha256') == row.get('sha256')]
+    unchanged = [row['path'] for row in summary if not row.get('removed') and row.get('base_sha256') == row.get('sha256')]
     if unchanged:
         fail(f'products identical to the selected MAIN: {unchanged}')
 
@@ -321,6 +321,21 @@ def stage_tree(args, state, attempt, pointer, pointer_sha, manifest, base_code, 
             value = read(engine)
             value['files'].update({name: 'pending' for name in pinned if name not in value['files']})
             put(engine, value)
+    if args.engine_pin and not args.register_workflow:
+        # A new runtime module: pin it in every engine that already pins a module of its directory.
+        for name in args.engine_pin:
+            if name not in products:
+                fail(f'--engine-pin {name}: must be a declared product')
+            directory = str(Path(name).parent) + '/'
+            engines = [engine for engine in sorted((code / '02_BACKEND' / 'ENGINES').rglob('*.json'))
+                       if any(pinned.startswith(directory) and '/' not in pinned[len(directory):]
+                              for pinned in read(engine).get('files', {}))]
+            if not engines:
+                fail(f'--engine-pin {name}: no engine pins a module of {directory}')
+            for engine in engines:
+                value = read(engine)
+                value['files'].setdefault(name, 'pending')
+                put(engine, value)
     navigation = sorted(set(products) & set(NAVIGATION_FILES))
     if navigation:
         if not args.navigation_source:
@@ -374,7 +389,9 @@ def stage_tree(args, state, attempt, pointer, pointer_sha, manifest, base_code, 
 def run_suite(code: Path, files: list[str], output: Path, extra: list[str] = (), log: Path | None = None) -> dict:
     listing = output.with_suffix('.files.txt')
     listing.write_text('\n'.join(files) + '\n')
-    command = [PYTHON, HERE / 'run_tests.py', '--code-root', code, '--files-from', listing, '--output', output, *extra]
+    jobs = os.environ.get('MAIN_RELEASE_TEST_JOBS', '').strip()  # fewer workers while a live model run shares the host
+    command = [PYTHON, HERE / 'run_tests.py', '--code-root', code, '--files-from', listing, '--output', output, *extra,
+               *(['-j', jobs] if jobs else [])]
     with (log or output.with_suffix('.log')).open('w') as handle:
         subprocess.run([str(part) for part in command], cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT, timeout=7200)
     result_path = output / 'result.json'
