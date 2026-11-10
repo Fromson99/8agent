@@ -128,3 +128,28 @@ def test_latest_policy_real_api(tmp_path,monkeypatch,term_glossary,mode):
 def test_native_marked_generation_needs_no_extra_sidecar(tmp_path):
  g=metadata_generation(tmp_path,[('a','internal/f/모의준칙.docx',{'is_latest':True,'filename_version':{'is_latest':True,'policy':'user-approved-retained-set-latest-v2','exceptions_sha256':'a'*64}})])
  with closing(Store(g)) as s:s.selection.require_latest();assert s.selection.native_latest_verified
+
+def test_merge_titles_joins_typo_family_without_pinning_a_date():
+ # 2026-11-10 사용자 지정: 파일명 오타 "상품원회운영지침"을 같은 지침 판본으로 묶되 최신은 파일명 날짜로.
+ field=['상품위원회운영지침(20140612).gul.docx','상품위원회운영지침(20250625).docx','상품원회운영지침(20250625)_CCO거부권.docx','상품위원회운영지침(20251205)_조직개편.docx']
+ events=[];r={x['filename']:x for x in select(rows(field),config(),events)}
+ assert [n for n,x in r.items() if x['status']=='LATEST']==['상품위원회운영지침(20251205)_조직개편.docx']
+ assert r['상품원회운영지침(20250625)_CCO거부권.docx']['status']=='OLDER' and r['상품원회운영지침(20250625)_CCO거부권.docx']['physical_exclusion_candidate']
+ e=next(e for e in events if e['rule_id']=='product-committee-typo-merge')
+ assert e['status']=='APPLIED' and e['merged_titles']==['상품원회운영지침','상품위원회운영지침']
+ # a later edition wins with no rule change; a newer typo file wins the same way
+ assert selected(field+['상품위원회운영지침(20260301).docx'])['상품위원회운영지침(20260301).docx']['status']=='LATEST'
+ assert selected(['상품위원회운영지침(20251205).docx','상품원회운영지침(20260101).docx'])['상품원회운영지침(20260101).docx']['status']=='LATEST'
+ # without the exception file the typo stays its own family (previous behaviour)
+ plain={x['filename']:x for x in select(rows(field))}
+ assert plain['상품원회운영지침(20250625)_CCO거부권.docx']['status']=='LATEST'
+ # documents outside the rule are unchanged
+ other=selected(['상품관리준칙(20151207).docx','상품관리준칙(20251205)_조직개편.docx'])
+ assert other['상품관리준칙(20251205)_조직개편.docx']['status']=='LATEST' and other['상품관리준칙(20151207).docx']['status']=='OLDER'
+
+def test_merge_titles_needs_two_titles():
+ from semantic_runtime.filename_versions import validate_exceptions
+ c=config();c['rules'].insert(0,{'id':'one','titles':['한제목준칙'],'action':'merge_titles','reason':'x'})
+ with pytest.raises(ValueError,match='two titles'):validate_exceptions(c)
+ c=config();c['rules'].insert(0,{'id':'dated','titles':['가준칙','나준칙'],'action':'merge_titles','date':'2026-01-01','reason':'x'})
+ with pytest.raises(ValueError,match='date only'):validate_exceptions(c)

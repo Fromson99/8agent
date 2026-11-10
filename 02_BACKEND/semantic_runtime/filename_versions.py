@@ -139,8 +139,10 @@ def validate_exceptions(value):
         if any(k == old and (s == os or 'any' in {s, os}) for k, s in keys for old, os in titles): raise ValueError('conflicting exception titles')
         titles.update(keys)
         action = rule.get('action')
-        if action not in {'confirm_auto_latest', 'select_date', 'select_filename', 'separate_attachments', 'keep_all'}:
+        if action not in {'confirm_auto_latest', 'select_date', 'select_filename', 'separate_attachments', 'keep_all', 'merge_titles'}:
             raise ValueError('unknown exception action')
+        if action == 'merge_titles' and len(keys) < 2:
+            raise ValueError('merge_titles needs at least two titles')
         if 'match_parent_folder' in rule and (type(rule['match_parent_folder']) is not bool or action != 'separate_attachments'):
             raise ValueError('parent folder matching is limited to attachment identity')
         if 'expected_locations' in rule and (type(rule['expected_locations']) is not int or rule['expected_locations'] < 1 or action != 'keep_all'):
@@ -195,6 +197,11 @@ def select(rows, exceptions=None, exception_events=None):
     for rule in exceptions['rules'] if exceptions else []:
         members = [r for r in rows if not r['temporary'] and rule_matches(rule, r)]
         rule_members[rule['id']] = members
+        if rule['action'] == 'merge_titles':
+            # One document filed under differently spelled titles (e.g. a typo in one file name).
+            # The rule only joins the family; the latest edition is still the newest filename
+            # date, so later editions need no rule change and no date is pinned.
+            for r in members: r['title_key'] = name_key(rule['titles'][0])
         if rule.get('title_spacing', 'any') != 'any':
             for r in members: r['title_key'] += '::spacing:' + rule['title_spacing']
         if rule['action'] != 'separate_attachments': continue
@@ -269,6 +276,9 @@ def select(rows, exceptions=None, exception_events=None):
                 if rule.get('expected_locations') and len(members) != rule['expected_locations']:
                     event['status'] = 'APPLIED_COUNT_DIFFERS'
                     event['expected_locations'] = rule['expected_locations']
+            elif action == 'merge_titles':
+                event['merged_titles'] = sorted({r['title'] for r in members})
+                if not any(r['status'] == 'LATEST' for r in members): event['status'] = 'MERGED_LATEST_UNRESOLVED'
             elif action == 'confirm_auto_latest':
                 event['status'] = 'CONFIRMED' if any(r['status'] == 'LATEST' for r in members) else 'AUTO_LATEST_UNRESOLVED'
             elif action == 'separate_attachments':

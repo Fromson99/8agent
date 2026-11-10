@@ -1,6 +1,6 @@
 """Oracle scale guard: question scenarios with the shipped field profile + every reachable SQL plan.
 
-Real local Oracle 23.26.3 (a8-legal-mapped-20261023), development_g19_1 (dev silver) tables under
+Real local Oracle 23.26.3 (a8-legal-mapped-20261023), field-serving gold mapping tables (IDD_B003_* + Agent LGL_*_A, GUARD_MAPPING=gold default) under
 isolated temporary owners (dropped afterwards), published query release, ORDS envelope replaced by an
 oracledb bridge that answers like ORDS (errorCode items, offset/limit pages), scripted model only.
 
@@ -38,6 +38,8 @@ FILLER_DOCUMENTS = int(os.environ.get('FILLER_DOCUMENTS', '3'))
 FILLER_ARTICLES = int(os.environ.get('FILLER_ARTICLES', '30'))
 BIG_DOC_ARTICLES = int(os.environ.get('BIG_DOC_ARTICLES', '60'))  # 제100조.. (+3 항 each) in 모의승인규정
 FIRST_ARTICLE = 100  # many '제1..' surfaces, like the field's 2-character title groups
+# Field serving mapping: gold (dev and prod since 2026-11-10). development_g19_1 = old dev names, for comparison only.
+GUARD_MAPPING = os.environ.get('GUARD_MAPPING', 'gold')
 EVIDENCE = Path(os.environ['GUARD_EVIDENCE'])
 CODE = Path(os.environ['LOOP_TEST_CODE_ROOT'])
 PARTS = os.environ.get('GUARD_PARTS', 'scenarios,sweep').split(',')
@@ -147,10 +149,24 @@ def oracle(tmp_path):
                 evidence['created'].append(name)
                 cur.execute('GRANT CREATE SESSION,CREATE TABLE TO ' + name)
         data = json.loads((CODE/'00_SYSTEM/ORACLE/development_g19_1.json').read_text())
-        for table in data['tables'].values():
-            table['owner'] = names['A' if table['owner'] == 'SIDDA' else 'S']
-        DevelopmentMapping.load(CODE/'00_SYSTEM/ORACLE/development_g19_1.json')
-        mapping = DevelopmentMapping(_freeze(data['tables']), 'isolated-owner-copy', mapping_digest(data['tables']))
+        if GUARD_MAPPING == 'gold':
+            # 2026-11-10부터 개발계도 운영과 같은 IDD_B003_* 이름 + gold 모드(GENOS_ORACLE_GOLD_OWNER=SIDDS)로 서빙한다.
+            # Gold 13표는 gold_b003_r5.json 그대로, Agent 4표는 gold 모드처럼 LGL_*_A. 소유자만 임시 계정.
+            from semantic_runtime.oracle_gold_mapping import GoldMapping
+            from semantic_runtime.oracle_development_mapping import AGENTS
+            gold = json.loads((CODE/'00_SYSTEM/ORACLE/gold_b003_r5.json').read_text())['tables']
+            tables = {key: {**table, 'owner': names['S']} for key, table in gold.items()}
+            for key in AGENTS.values():
+                tables[key] = {**data['tables'][key], 'owner': names['A'], 'name': 'LGL_' + key + '_A'}
+            data['tables'] = tables
+            GoldMapping.load(owner=names['S'])
+            mapping = GoldMapping(_freeze(tables), 'isolated-owner-copy', mapping_digest(tables), profile='gold')
+        else:
+            for table in data['tables'].values():
+                table['owner'] = names['A' if table['owner'] == 'SIDDA' else 'S']
+            DevelopmentMapping.load(CODE/'00_SYSTEM/ORACLE/development_g19_1.json')
+            mapping = DevelopmentMapping(_freeze(data['tables']), 'isolated-owner-copy', mapping_digest(data['tables']))
+        evidence['mapping'] = mapping.profile
         with admin.cursor() as cur:
             for i, (key, table) in enumerate(data['tables'].items()):
                 fields = [c['name']+' '+c['type']+(' DEFAULT '+c['default'] if c['default'] else '')+

@@ -559,6 +559,13 @@ def unread_locations(inv):
     specified = delegated_locations(inv, rows, known, units)
     offered_keys = {(r['identity']['document_id'], str(r['identity'].get('unit_id', (inv.s.tools.sources.get(r['identity']['source_id']) or {}).get('unit_id')))) for r in rows}
     rows.extend(r for r in specified if (r['identity']['document_id'], r['identity']['unit_id']) not in offered_keys)
+    # An internal rule read that hands details to another internal rule by name only ("관련 준칙",
+    # "세부 준칙", "○○지침에 따라"): resolved by title in the request scope, no index row exists.
+    from .linked_documents import locations as linked_locations
+    linked = linked_locations(inv, rows, known, units)
+    offered_keys = {(r['identity']['document_id'], str(r['identity'].get('unit_id', (inv.s.tools.sources.get(r['identity']['source_id']) or {}).get('unit_id')))) for r in rows}
+    rows.extend(r for r in linked if (r['identity']['document_id'], str(r['identity']['unit_id'])) not in offered_keys)
+    specified = [*specified, *[r for r in linked if r.get('specifies')]]
     clauses = relation_locations(inv, known, units, terms)
     offered_keys = {(r['identity']['document_id'], str(r['identity'].get('unit_id', (inv.s.tools.sources.get(r['identity']['source_id']) or {}).get('unit_id')))) for r in rows}
     for clause in clauses:
@@ -1068,6 +1075,14 @@ def grant_connected_read(inv, identity, link):
             anchor_surface = surface(anchor.get('document_id'), link.get('anchor_unit_id', anchor.get('unit_id')))
             if anchor_surface and known.get(link.get('anchor_source_id')):
                 verified = any(anchor_surface in str((store.source(did, b) or {}).get('text') or '') for b in blocks[:200])
+        elif link.get('kind') == 'DELEGATED_DOCUMENT':
+            # A read internal rule hands details to this rule by name only (linked_documents): the
+            # phrase must stand in an acquired block of the anchor; the target was chosen by title.
+            anchor = inv.s.tools.sources.get(link.get('anchor_source_id')) or {}
+            phrase = str(link.get('phrase') or '')
+            if phrase and anchor.get('document_id') in inv.s.scope:
+                verified = any(phrase in str((store.source(anchor['document_id'], b) or {}).get('text') or '')
+                               for b in known.get(link.get('anchor_source_id'), set()))
     except Exception:
         verified = False
     if not verified or not blocks:

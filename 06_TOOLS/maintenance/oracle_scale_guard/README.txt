@@ -1,5 +1,9 @@
 Oracle 규모 점검 (oracle_scale_guard) — 2026-11-06
 
+2026-11-10: 개발계도 운영 Gold 이름으로 바뀌어(gold 모드 서빙) 기본 매핑을 gold로 바꿨다.
+  예전 개발계 이름(development_g19_1)으로 비교할 때만 GUARD_MAPPING=development_g19_1.
+  현재 MAIN193 gold 모드 통과: 09_ARTIFACTS/AUDITS/20261110-dev-gold-align/guard-gold-main193/보고서.txt
+
 왜 필요한가
   현장 Oracle 오류는 대부분 SQL 문장이 아니라 "범위 전체·문서 전체를 펼치는 코드"에서 났다.
   Oracle 경로는 한 번의 나열이 1만 행을 넘으면 멈추고(QUERY_NAV_BUDGET / QUERY_SQL_RESULT_BUDGET),
@@ -9,7 +13,7 @@ Oracle 규모 점검 (oracle_scale_guard) — 2026-11-06
 
 무엇을 하나
   1. inventory.py — 이 코드가 Oracle로 보낼 수 있는 SQL 전부(계획 642개 중 Oracle 대상 215문장)와 손으로 쓴 Oracle SQL 목록.
-  2. test_guard_oracle.py — 로컬 Oracle 컨테이너(a8-legal-mapped-20261023)에 개발계 실버 17표를 임시 소유자로 만들고
+  2. test_guard_oracle.py — 로컬 Oracle 컨테이너(a8-legal-mapped-20261023)에 현장 서빙과 같은 gold 매핑 17표(IDD_B003_* 13 + Agent LGL_*_A 4)를 임시 소유자로 만들고
      작은 자료(범위 원문 ~150, 한 문서 ~250단위, 장 4개 아래 조문, 벡터 3차원 항목)를 게시한 뒤, 배포 프로필(가이드 모드)
      질문 17개(키워드·벡터 초기검색·후속 질문·조문 번호 검색어, 문서 이름+조문 번호 검색어의 키워드 S11·벡터 V4)를 모의 모델로 끝까지 실행.
      test_guard_comparison_oracle.py — 같은 방식으로 대사(모의내규↔모의승인규정 + 부속 문서) 1건.

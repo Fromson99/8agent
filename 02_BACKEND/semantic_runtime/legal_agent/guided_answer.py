@@ -67,7 +67,7 @@ MAX_POINTS = 12  # the saved ASSESS claim bound
 EVIDENCE_REF_LIMIT = 12  # per explanation
 ORIGINAL_CHAR_BUDGET = 45000  # original text one answer call receives
 LINK_READ_LIMIT = 4  # open links read in one answer round
-LOCATION_HINTS = ('cited_by','exception_for','matched_terms','vector_rank','specifies','relation','listed_with')
+LOCATION_HINTS = ('cited_by','exception_for','matched_terms','vector_rank','specifies','relation','listed_with','delegated')
 INTERNAL_HINTS = ('cited_contexts','specifies_score','connection','form','relation_clause','group')  # server read ordering only; not model input
 
 
@@ -894,7 +894,7 @@ def assess(executor, sources, issues, question, facts, *, selection=None, dialog
         elif scheduled:executor.direction_check=None
         server=[(k,r) for k,r in scheduled if k!='MODEL']
         if server:
-            executor.s.work.event('GUIDED_ANSWER_SERVER_READS',{'reads':[{'kind':k,**{f:r.get(f) for f in ('label','specifies','cited_by','matched_terms','vector_rank','relation','listed_with')},
+            executor.s.work.event('GUIDED_ANSWER_SERVER_READS',{'reads':[{'kind':k,**{f:r.get(f) for f in ('label','specifies','cited_by','matched_terms','vector_rank','relation','listed_with','delegated') if f!='delegated' or r.get(f)},
                 **({'relation_clause':{x:r['relation_clause'].get(x) for x in ('kind','anchor_label','subject')}} if r.get('relation_clause') else {}),
                 **({'group':r['group'].get('members')} if r.get('group') else {})} for k,r in server],
                 'deferred':[{'kind':k,'label':r.get('label')} for k,r in dropped],'model_called':False,'search_called':False})

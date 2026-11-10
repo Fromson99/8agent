@@ -1,3 +1,10 @@
+2026-11-10 최신: 로컬 Gold를 운영 이름·컬럼으로 실제 변경했다(새 표·데이터 이동 없음).
+표 IDD_B03_LGL_* → IDD_B003_LGL_*, PK/인덱스 X0~X4_IDD_B003_*, SRCH_ROW RFRN_DATA_* → RFRN_DTA_*,
+DOC_BLK 플래그 VARCHAR2(1), STRC/BODY_SLC 50·BODY_UNIT 100·식별 내용 3000 BYTE. 행 수 동일·운영 매핑과 차이 0.
+ACTIVE_MAPPING.json → mapping_local_b003_current.json (= 00_SYSTEM/ORACLE/gold_b003_r5.json, owner만 A8_GR12_CM1208).
+MAIN 서빙 gold 모드(GENOS_ORACLE_GOLD_OWNER=A8_GR12_CM1208)도 기동 검사 통과. 이전 매핑 파일은 옛 이름이라 현재 DB에 쓰지 않는다.
+기록·되돌리기: 09_ARTIFACTS/AUDITS/20261110-dev-gold-align/ (local-applied.json, local_rollback.sql)
+
 2026-11-04 최신 코드 연결: Gold R5 물리 매핑 + ZIP Flow 게시본
 - B003 실행 매핑 mapping_registration_b003_r5.json 추가. owner는 명시 설정합니다.
 - 로컬 기본값은 ACTIVE_MAPPING.json → mapping_local_chan_no_current.json(B03)을 유지합니다.

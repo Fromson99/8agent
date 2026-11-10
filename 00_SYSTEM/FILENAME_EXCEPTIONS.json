@@ -1,6 +1,6 @@
 {
   "schema_version": "filename-audit-exceptions-v1",
-  "revision": "user-20261015-r2",
+  "revision": "user-20261110-r3",
   "description": "사용자 승인 검색용 최신 선택 예외. 날짜의 법적 효력 인증과 구분하며 이 파일에서만 관리한다.",
   "single_file_folder_is_latest": true,
   "rules": [
@@ -80,6 +80,15 @@
       "action": "select_date",
       "date": "2016-01-11",
       "reason": "사용자 지정: 20160111 판본 선택."
+    },
+    {
+      "id": "product-committee-typo-merge",
+      "titles": [
+        "상품위원회운영지침",
+        "상품원회운영지침"
+      ],
+      "action": "merge_titles",
+      "reason": "사용자 지정(2026-11-10, 이번 건만): 원본 파일명 오타 '상품원회운영지침(20250625)_CCO거부권'을 상품위원회운영지침 판본으로 묶음. 날짜는 고정하지 않고 파일명 날짜로 최신 선택."
     },
     {
       "id": "index-book-spaced-preserve",
