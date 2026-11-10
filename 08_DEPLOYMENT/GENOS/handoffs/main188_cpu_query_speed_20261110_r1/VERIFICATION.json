@@ -1,0 +1,269 @@
+{
+  "main_generation": 188,
+  "release_id": "cpu-query-speed-20261110-r1",
+  "release_manifest_sha256": "eda8a35f93035790f029e0f78fc7dff1caf35b53da445e784ff1162d03d037b7",
+  "serving_files": 546,
+  "base": "MAIN187 hydration-retry-20261110-r1 (contains MAIN186 measurement)",
+  "replaces_field": "MAIN186C (applied) / MAIN186D (mailed 1a1c3cf2e824a77b)",
+  "changes": [
+    {
+      "path": "02_BACKEND/semantic_runtime/cpu_profile.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/cpu_profile.py",
+      "from_working_tree": false,
+      "sha256": "8e595dfc66cfacb48187bfa7c19c4b3b17aadee3a3e9fea3791da45f80675896",
+      "base_sha256": null,
+      "new_file": true,
+      "lines_added": 339,
+      "lines_removed": 0
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "from_working_tree": false,
+      "sha256": "91f1e56e46846908e74941c0cbdb2833633ffb64ab57eae732aa91adc54119bb",
+      "base_sha256": "79f656581cea04d7d66ab5d965e82f165c37ac0d470f8b08e4a8f29dc8c18435",
+      "new_file": false,
+      "lines_added": 4,
+      "lines_removed": 2
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "from_working_tree": false,
+      "sha256": "0cbd110194884d422b56f585f4ad8f2bc3a06cb7baca076718fd1e8e74e6b772",
+      "base_sha256": "f33fa40475ee05cf8c5dda3fe0226b77139bb59c46b05e65b1c54b363801acda",
+      "new_file": false,
+      "lines_added": 66,
+      "lines_removed": 0
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_agent_records.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_agent_records.py",
+      "from_working_tree": false,
+      "sha256": "214d1160b45e38932f11286e2ef5b9f7ba7613bf284f32c78f5dee23d13c6fcb",
+      "base_sha256": "9c1d2060706e7360039b853053b7c77d95eb0fc91b1d909d7e677ea7183b2cfb",
+      "new_file": false,
+      "lines_added": 179,
+      "lines_removed": 22
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_dp_io.py",
+      "from_working_tree": false,
+      "sha256": "f871e59b2fa0e77aa14fde7d7d300dc03845794a145931c8c15bda4b15ee992b",
+      "base_sha256": "4c42c2284a6f1b0bfae9b6e88e37aa1733248e9bbe01c47d2b6d1151bfab8e23",
+      "new_file": false,
+      "lines_added": 8,
+      "lines_removed": 1
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_cache.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_query_cache.py",
+      "from_working_tree": false,
+      "sha256": "259d1808c06a2dba9b5bb6cee00d2922630d1b6801eeeac1038eebc20bc19816",
+      "base_sha256": "22060037a037ee981d3eecb706a78f353f384863cd59bdde7c5f5b5a559bbd63",
+      "new_file": false,
+      "lines_added": 10,
+      "lines_removed": 2
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+      "from_working_tree": false,
+      "sha256": "3e70844408289b1d51892802f771ce350f9234d5ce5fe4fb4256677beed20aa2",
+      "base_sha256": "2b4ee14f37aac50f2c975e99359b8a3b81f8725c60b10b1ca2a39feb6583a78e",
+      "new_file": false,
+      "lines_added": 6,
+      "lines_removed": 3
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_fulltext.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_query_fulltext.py",
+      "from_working_tree": false,
+      "sha256": "ca89459e4977f5e8037f19cdd3ebf50e16694d874eac6c6732c56adcf0252c89",
+      "base_sha256": "b28cb60bda94b33eda4bed2bd5de00f2b3eaeec6fb6fdb72f3135aff78127e1b",
+      "new_file": false,
+      "lines_added": 25,
+      "lines_removed": 10
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_query_service.py",
+      "from_working_tree": false,
+      "sha256": "9f3d6f14eb0b2a073480569bc7371f2854b642bb90604dfcd18660cb25f4c6ea",
+      "base_sha256": "9c4dddf3e5bd68947a0bb678222bcfa069513122b5a5bb28bcd6b794d8378666",
+      "new_file": false,
+      "lines_added": 6,
+      "lines_removed": 1
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_query_store.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_query_store.py",
+      "from_working_tree": false,
+      "sha256": "a3f7652ca7c105296db6518ea4d2a31b4ebbd8646b38932804fb90857ce0eb37",
+      "base_sha256": "166957997612eb75798bc10a45c1309ced66ca6f268f84bdc37c587a980377b4",
+      "new_file": false,
+      "lines_added": 17,
+      "lines_removed": 3
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_record_sqlite.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_record_sqlite.py",
+      "from_working_tree": false,
+      "sha256": "0b38d9043bad1004a35857e537fe9dc78537d43d3ac19cef1130e776d24172fd",
+      "base_sha256": "6b202d5c8798586378f56d5b873ad12c171aaa5ea5f6c8ebdb3f0b1f3b7fd4d5",
+      "new_file": false,
+      "lines_added": 27,
+      "lines_removed": 3
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/oracle_runtime_paths.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/oracle_runtime_paths.py",
+      "from_working_tree": false,
+      "sha256": "75f6bf82e9ca20ce3efb0627fbe72a705d5c9145eaee3c30b4c16b86872c215b",
+      "base_sha256": "73655b5b16476b38b6fad2cbed7013c41dd349ba2a499bff053e7fb9b00ab530",
+      "new_file": false,
+      "lines_added": 2,
+      "lines_removed": 1
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/progress.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/progress.py",
+      "from_working_tree": false,
+      "sha256": "173611ef4a6109c87d27d6e0d2a8791454624174ef7e1f8fb5fe0fe918ec0df1",
+      "base_sha256": "6bc43cb2b6fdaf6e6db768aabe873e936541de8beaa848db312741317e332a4d",
+      "new_file": false,
+      "lines_added": 18,
+      "lines_removed": 0
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/02_BACKEND/semantic_runtime/request_report.py",
+      "from_working_tree": false,
+      "sha256": "1a84d298db73a1795e12befb22a186df967b7f85e7759ce7ce292c0e1abf3224",
+      "base_sha256": "7c07ca96077ec022567b8efb8f5a5e2e88f6f64f617b280694030753d606b518",
+      "new_file": false,
+      "lines_added": 12,
+      "lines_removed": 0
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-main188/src/08_DEPLOYMENT/GENOS/stream_app.py",
+      "from_working_tree": false,
+      "sha256": "ce38ca3cc429fa67094c4ba18668478c7dbb1fd858ed92ecb48a17507d042a39",
+      "base_sha256": "fbe2d34a8b601dc5bdaad4982e62135afed007b2541afc3e7390eb82fd426d8e",
+      "new_file": false,
+      "lines_added": 28,
+      "lines_removed": 0
+    }
+  ],
+  "sql_plans": "646 -> 647",
+  "workflow_file_changed": false,
+  "local_validation": {
+    "regression_227_files_vs_main187": {
+      "new_failures": 0,
+      "not_reproduced_alone": 1,
+      "fixed": 19,
+      "new_tests": 3,
+      "status": "PASSED"
+    },
+    "live_log_off_default": "7 tests that assert .log/.trace.txt files exist fail by design; with GENOS_LIVE_LOG=on identical to MAIN187",
+    "oracle_scale_guard": "passed, 0 failed questions, 0 over-limit reads, max SQL per turn 418 (= MAIN187), 3694 sweep executions 0 errors",
+    "one_question_local_oracle": {
+      "question": "모의승인규정 제1조의 승인 대상은? (scripted model, 1 s per call, real local Oracle records)",
+      "runs": {
+        "187-1": {
+          "http": 200,
+          "answer_status": "CLARIFY",
+          "round_trips": 899,
+          "sql_ms": 2355,
+          "request_cpu_ms": 1087,
+          "by_kind": {
+            "body_read": 127,
+            "body_write": 11,
+            "clock": 124,
+            "commit": 116,
+            "lease_write": 248,
+            "other": 5,
+            "state_read": 268
+          }
+        },
+        "187-2": {
+          "http": 200,
+          "answer_status": "CLARIFY",
+          "round_trips": 899,
+          "sql_ms": 2462,
+          "request_cpu_ms": 1070,
+          "by_kind": {
+            "body_read": 127,
+            "body_write": 11,
+            "clock": 124,
+            "commit": 116,
+            "lease_write": 248,
+            "other": 5,
+            "state_read": 268
+          }
+        },
+        "188-1": {
+          "http": 200,
+          "answer_status": "CLARIFY",
+          "round_trips": 246,
+          "sql_ms": 903,
+          "request_cpu_ms": 960,
+          "by_kind": {
+            "body_read": 11,
+            "body_write": 11,
+            "clock": 18,
+            "commit": 62,
+            "lease_fast": 52,
+            "lease_write": 34,
+            "other": 2,
+            "state_read": 56
+          }
+        },
+        "188-2": {
+          "http": 200,
+          "answer_status": "CLARIFY",
+          "round_trips": 246,
+          "sql_ms": 953,
+          "request_cpu_ms": 973,
+          "by_kind": {
+            "body_read": 11,
+            "body_write": 11,
+            "clock": 18,
+            "commit": 62,
+            "lease_fast": 52,
+            "lease_write": 34,
+            "other": 2,
+            "state_read": 56
+          }
+        }
+      },
+      "answer_text_sha256_12": "cac8578ba361 (all four runs identical)"
+    },
+    "progress_poll": "MAIN187 reopened an unchanged journal 3/3 polls; MAIN188 1, re-read after a new commit",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN186 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field effect (needs the CPU/R4 photos)",
+    "Q3 source-view hint field EXPLAIN",
+    "live-model multiturn (mock-model contract tests only)"
+  ],
+  "package": {
+    "zip": "MAIN188_FULL_20261110_R1.zip",
+    "zip_sha256": "a934e9338dda1a6e34a4c1760b5171391fd5a194d67756a43a8c89a52def3c8e",
+    "members": 557
+  },
+  "measurement_commands": {
+    "GENOS_CPU_REPORT_R2.txt": "158558a11ba21fb5017632c2848c3f3ce06a958f1ed90199a67db1b5430c4694",
+    "GENOS_ORACLE_REPORT_R4.txt": "8f45078e504ffc12ed37f6ceeae93c551af987b88f4c467aa918e2e8ed7ddea2",
+    "ORACLE_REPORT_GUIDE_R4.txt": "6387a44595d9012d7270f2912c40d62368e2e8040423feb511fab4f75617c0bf"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,125 @@
+{
+  "main_generation": 189,
+  "release_id": "chat-records-20261110-r1",
+  "release_manifest_sha256": "1355ad5ae3b4aa5aad72ce1ed705ba5ea98b4913bcfbf10b1f53252350d67e72",
+  "serving_files": 546,
+  "base": "MAIN188 cpu-query-speed-20261110-r1 (mailed 1a1c3f6dccf2dc84)",
+  "replaces_mail": "MAIN188 1a1c3f6dccf2dc84 (MAIN189 contains all of MAIN188)",
+  "field_report": "code serving 135, 2026-11-10 03:57:01Z: /v1/rag/ask 47.6 s, HTTP 500, BlockingIOError Oracle record owner is active (oracle_agent_records.py line 408 = MAIN157..175 code)",
+  "changes": [
+    {
+      "path": "02_BACKEND/semantic_runtime/workflow_evidence.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/workflow_evidence.py",
+      "from_working_tree": false,
+      "sha256": "a162de3a463b776cc77cc5cd38eab97fc3e66d4df821df10db86e35f49d083fe",
+      "base_sha256": "470efa601e0919ae6203d3db3a9ced0b7d7e56f5d8bfb7c8382efde5fbc4b68d",
+      "new_file": false,
+      "lines_added": 2,
+      "lines_removed": 1
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/session_identity.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/session_identity.py",
+      "from_working_tree": false,
+      "sha256": "ef575252840180f895b4f3261a9d44e5f81797ebf52bb9f8ec9afd6f8627c8f0",
+      "base_sha256": "54b7b47317337b371bf9b9c859c173a9c808bc8b976866f22b68f3b83145e587",
+      "new_file": false,
+      "lines_added": 5,
+      "lines_removed": 0
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/app.py",
+      "from_working_tree": false,
+      "sha256": "43d1ad0e30ba616d1bda11d2d3d0e87312cc3bf872a42c2c6c6a47bcd41c619d",
+      "base_sha256": "7339d9766b716d7585f8b32f608ec6cd3cb64541e316543656b0d6611863cf4b",
+      "new_file": false,
+      "lines_added": 24,
+      "lines_removed": 2
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+      "from_working_tree": false,
+      "sha256": "232ae14dfab80f1c14fcfbea56837d821ad0bf38aee6e2f9a76384857f746706",
+      "base_sha256": "59b5aa753edf9858527cd9ac338d4759748fa5305bcc5676a6da9629bffd29c4",
+      "new_file": false,
+      "lines_added": 84,
+      "lines_removed": 0
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+      "from_working_tree": false,
+      "sha256": "0d20b38172b2deb9aafbdd051a259f76e4596bcede9b7f18a685ce79c09b851b",
+      "base_sha256": "6c9c8b516cd24248771374f4a84843a1a123f569acbf06d9174199ebe4683766",
+      "new_file": false,
+      "lines_added": 2,
+      "lines_removed": 1
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/storage_admission.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/legal_agent/storage_admission.py",
+      "from_working_tree": false,
+      "sha256": "576516b5a23d20f0aa6e89763358e6943f4f4606d25149f0360788b1152ead92",
+      "base_sha256": "058801dde2e644eee5a923b93374347483942ece23455da32d36d5c851643a32",
+      "new_file": false,
+      "lines_added": 9,
+      "lines_removed": 4
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "source": "09_ARTIFACTS/AUDITS/20261110-concurrency-redesign/src/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "from_working_tree": false,
+      "sha256": "a72a289c90f2657d8f1e1ecbac7fbc21058ddcd1ac551668bd9955d4344b6e60",
+      "base_sha256": "a5b4dae15de5452a6d455133443a08a90d5be8387614a9238ab509ab3b9fcda9",
+      "new_file": false,
+      "lines_added": 6,
+      "lines_removed": 3
+    }
+  ],
+  "sql_plans": "647 -> 647",
+  "tables_changed": false,
+  "workflow_file_changed": false,
+  "local_validation": {
+    "concurrency_test": {
+      "file": "05_TESTS/CONTRACTS/test_concurrent_chats_oracle.py",
+      "harness": "actual service.py entry, local Oracle 23.26.3 Agent records (SIDDA *_A), scripted model",
+      "main188": "another chat holding the write lease -> HTTP 500 BlockingIOError (field error reproduced); two chats in parallel -> one HTTP 500",
+      "main189": "all 3 pass: other chat lease held -> 200 within 25 s; two chats in parallel + resend -> both 200, stored answer reused; same chat busy -> 409 \"처리 중\""
+    },
+    "regression_113_files_vs_main188": {
+      "new_failures": 0,
+      "not_reproduced_alone": 2,
+      "fixed": 3,
+      "new_tests": 0,
+      "status": "PASSED"
+    },
+    "oracle_scale_guard": "passed, 0 failed questions, 0 over-limit reads, max SQL per turn 418 (= MAIN188), 3694 sweep executions 0 errors",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN175 published-ontology-20261107-r1 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "deferred": [
+    "record lease lifetime (~32 min) and renewal in oracle_agent_records.py: a lease left by a stopped process now affects only its own chat (409)"
+  ],
+  "not_verified": [
+    "field ORDS with several real users",
+    "live model (scripted model only)"
+  ],
+  "package": {
+    "zip": "MAIN189_FULL_20261110_R1.zip",
+    "zip_sha256": "bb296dcd3923ce70f007041e4f9d9efda5d50cb26e77bebdbbd3e6794f902b1c",
+    "members": 557
+  },
+  "measurement_commands": {
+    "GENOS_CPU_REPORT_R2.txt": "158558a11ba21fb5017632c2848c3f3ce06a958f1ed90199a67db1b5430c4694",
+    "GENOS_ORACLE_REPORT_R4.txt": "8f45078e504ffc12ed37f6ceeae93c551af987b88f4c467aa918e2e8ed7ddea2",
+    "ORACLE_REPORT_GUIDE_R4.txt": "6387a44595d9012d7270f2912c40d62368e2e8040423feb511fab4f75617c0bf"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

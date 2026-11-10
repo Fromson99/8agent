@@ -1,0 +1,63 @@
+{
+  "main_generation": 191,
+  "release_id": "deferred-records-20261110-r1",
+  "release_manifest_sha256": "4eb791351fa381bbb83ee2764f522c83e2f3746b13538db6830231ffc7110819",
+  "replaces_field": "MAIN188 (applied) / MAIN190 (mailed 1a1c4223d26e4f4b)",
+  "contains": [
+    "MAIN189 chat-records-20261110-r1",
+    "MAIN190 binding-recheck-20261110-r1",
+    "MAIN191 deferred-records-20261110-r1"
+  ],
+  "main191_products": [
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py",
+    "02_BACKEND/semantic_runtime/progress.py",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+    "02_BACKEND/semantic_runtime/oracle_agent_records.py",
+    "02_BACKEND/semantic_runtime/legal_agent/publication.py"
+  ],
+  "sql_plans": "647 (unchanged)",
+  "workflow_file_changed": false,
+  "local_validation": {
+    "regression_299_files_vs_main190": {
+      "new_failures": 0,
+      "not_reproduced_alone": 1,
+      "fixed": 7,
+      "status": "PASSED"
+    },
+    "one_question_local_oracle": {
+      "main190": {
+        "round_trips": 244,
+        "commits": 64,
+        "sql_ms": 766
+      },
+      "main191": {
+        "round_trips": 160,
+        "commits": 23,
+        "sql_ms": 524
+      },
+      "answer_identical": true
+    },
+    "deferred_unit_tests": "6 passed (flush points, rollback, in-process reader, second writer, failure, immediate mode)",
+    "concurrent_chats_oracle": "3 passed (two chats in parallel + follow-ups, same chat busy -> 409)",
+    "oracle_scale_guard": "passed, max SQL per turn 418 (guard runs outside a request scope: deferral not exercised there)",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN188 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "trade_off_accepted_by_user": "a crash/restart during a question loses that question's work since the last upload; the user asks again",
+  "not_verified": [
+    "field effect",
+    "live-model multiturn"
+  ],
+  "package": {
+    "zip": "MAIN191_FULL_20261110_R1.zip",
+    "zip_sha256": "50aa9304af541ad92c81c8e66f1c6dd7998446cf9c27883975109a3f05d76bce",
+    "members": 557
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

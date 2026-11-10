@@ -1,0 +1,44 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px"><pre style="font-family:inherit;white-space:pre-wrap">MAIN192 — 커밋(Oracle 저장)을 질문 끝 한 번으로   (MAIN191 대체, MAIN188·190에도 이것 하나만)
+함께 보냄: 측정 명령 — GENOS_CPU_REPORT_R2.txt(사진 3장), GENOS_ORACLE_REPORT_R4.txt(사진 5장), 이전과 같은 파일
+
+현재 로컬 MAIN: batched-records-20261110-r1 / MAIN192 (MAIN189 대화별 기록 DB, MAIN190 원문 확인 해시 반복 제거, MAIN191 저장 미루기 포함).
+워크플로우 파일은 그대로입니다. 꼭 넣을 환경변수 없음.
+
+0. MAIN191 대비 무엇이 바뀌나
+  - 질문 처리 중에는 Oracle에 기록을 올리지 않습니다(모델 호출 직전·잠금 해제 직전 저장 없앰).
+  - 질문 처리 중 닫히는 기록 연결도 질문 끝까지 열어 두고, 질문 끝에 그 질문의 모든 기록 저장을 Oracle 요청 하나로 묶어 보냅니다.
+    묶은 요청이 실패하거나 응답이 사라지면, 저장마다 영수증을 확인해 이미 들어간 것은 건너뛰고 나머지만 하나씩 다시 보냅니다.
+  - 같은 대화에 앞 질문이 처리 중이면 지금처럼 409(첫 쓰기 때 잡는 기록 잠금).
+  - 화면 진행 표시는 MAIN191처럼 처리 중인 기록의 메모리 사본을 읽습니다(Oracle 저장과 무관하게 갱신).
+  - 그대로 남는 커밋: 새 폴더 만들기(질문 실행 폴더 등, 질문당 보통 1~3개)와 결과 파일 쓰기(1개).
+  - 잃는 것(확인하신 대로): 질문 처리 중 서버가 죽으면 그 질문의 작업이 모두 사라집니다. 다시 물으면 됩니다.
+  - 중간 저장을 다시 켜기: GENOS_RECORD_FLUSH_POINTS=on / 예전 방식(매번 저장): GENOS_RECORD_COMMIT=immediate (재시작)
+  답변·SQL 문장(계획 647)·DB 데이터는 바뀌지 않습니다(같은 질문 답변 동일 확인).
+
+1. 로컬 결과 (실제 로컬 Oracle, 같은 질문, 모의 모델 7회, 빈 실행 환경이라 폴더 10개를 새로 만듦)
+  커밋 23 → 11회(그중 기록 저장 12회 → 질문 끝 묶음 1번) · 커밋 시간 240 → 74ms
+  Oracle 왕복 160 → 139회 · SQL 시간 0.54 → 0.30초 · 답변 동일
+  현장 추정: 질문당 커밋 약 3~4회(묶음 1 + 새 폴더 1~2 + 결과 파일 1), 합계 0.5초 안팎. 아래 측정으로 확인합니다.
+
+2. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN192_ONECLICK_R1.txt  → 완료 표시 MAIN192_ONECLICK_DONE, MAIN192_EXIT=0
+  확인·스테이징: bash MAIN192_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  기존 절차로 commit 후: bash MAIN192_ONECLICK_R1.txt gate-code → push → 새 코드서빙 리비전
+  시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 측정 (같은 질문을 두 번 연속 — 두 번째가 평소 값)
+  bash ./GENOS_CPU_REPORT_R2.txt list → 두 요청 각각 bash ./GENOS_CPU_REPORT_R2.txt 번호 --page 1
+  두 요청 각각 bash ./GENOS_ORACLE_REPORT_R4.txt 번호 --page 1, 두 번째 요청은 --page 2 도
+  질문 중 화면 진행 표시 갱신, 이어서 후속 질문 한 번(멀티턴)도 확인 부탁드립니다.
+
+4. 원복: bash MAIN192_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- 회귀 299파일(멀티턴·워크플로우·재개·기록 포함) MAIN191 대비 새 실패 0.
+- 새 시험(실제 로컬 Oracle): 저장 미루기 8(질문 끝 Oracle 요청 1번, 묶음 실패·응답 유실 시 영수증 확인 후 재전송, 되돌리기,
+  진행 표시 읽기, 두 번째 쓰기 연결, 실패 시 저장, 예전 방식, 중간 저장 켜기) + 동시 대화 3(대화 두 개 동시 + 후속, 같은 대화 409).
+- Oracle 규모 점검 통과(최대 SQL 418; 요청 범위 밖이라 저장 미루기와 무관).
+- 진입 확인 17/17, MAIN191 롤백 보존. 설치기: MAIN188 격리 checkout 15개 명령 통과.
+- 하지 않은 것: 현장 실행, 실제 모델 멀티턴.
+상세: VERIFICATION.json / SHA256SUMS.txt
+</pre></body></html>

@@ -1,0 +1,50 @@
+MAIN186D — MAIN186C + 현장 CPU 사진으로 찾은 두 가지 수정 (MAIN186C 대체)
+함께 보냄: CPU 보고 R1 (GENOS_CPU_REPORT_R1.txt, MAIN186C와 같은 파일)
+
+현장 CPU 사진(11-10 13:26)에서 찾은 것
+  1) 질문 처리 스레드의 CPU 65.2초(프로세스 CPU의 41.5%)가 oracle_dp_io.py:digest 한 줄이었습니다.
+     요청 안 조회 캐시(oracle_query_cache.py)가 캐시를 쓸 때마다 "릴리스·권한이 그대로인지" 확인하면서,
+     매번 릴리스 명세 전체를 JSON으로 만들어 해시하고 허용 문서 목록 전체를 새로 만들었습니다.
+  2) 실시간 로그 스레드(request_report _LiveLog._heartbeat_loop)가 1초마다 Oracle에서 요청 기록을 읽어
+     .log 파일에 옮기는 데 CPU 23.7초를 썼습니다.
+
+0. 무엇이 바뀌나 (MAIN186C 대비 제품 2파일)
+  - oracle_query_cache.py: 명세 해시와 허용 목록을 요청마다 한 번만 만들고, 이후에는 같은 객체인지만 봅니다.
+    다른 명세·다른 권한 목록이 들어오거나 릴리스가 바뀌면 지금처럼 QUERY_CACHE_BINDING으로 멈춥니다.
+    로컬: 큰 명세로 캐시 확인 6천 번 — 수정 전 해시 6,002번·약 23초, 수정 후 해시 1번·0.1초 안팎.
+  - request_report.py: 요청별 실시간 로그(.log), 진행 추적(.trace.txt), 읽기용 보고(.txt)를 기본으로 만들지 않습니다.
+    1초마다 기록을 읽는 스레드도 없습니다.
+    남는 것: 요청 보고서 JSON, _qa 요약 줄, 질문답변.csv (CPU 보고·R4 보고 명령이 이 JSON을 읽습니다).
+    다시 켜려면 코드서빙 환경변수 GENOS_LIVE_LOG=on 후 재시작(켜면 MAIN186C와 똑같이 동작).
+  - CPU 측정(MAIN186C)은 그대로 들어 있습니다. 수정 효과를 같은 사진으로 확인합니다.
+  질문 처리 순서·답변·SQL 문장(계획 646)·DB 데이터는 바뀌지 않습니다. 워크플로우 파일도 MAIN186과 같습니다.
+
+1. 환경변수 — 바꿀 것 없음
+  실시간 로그를 다시 보고 싶을 때만 GENOS_LIVE_LOG=on. CPU 측정 끄기: GENOS_CPU_PROFILE=off
+
+2. GENOS 코드스페이스 적용 (같은 절차, MAIN186이든 MAIN186C든 이것 하나만 적용)
+같은 TRANSFER 폴더에 MAIN186D_FULL_20261110_R1.zip, MAIN186D_ONECLICK_R1.txt 를 두고 그 폴더에서 실행합니다.
+ZIP은 미리 풀지 않습니다.
+  bash MAIN186D_ONECLICK_R1.txt
+완료 표시: MAIN186D_ONECLICK_DONE, MAIN186D_EXIT=0
+확인·스테이징: bash MAIN186D_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+기존 절차로 commit 후: bash MAIN186D_ONECLICK_R1.txt gate-code → push → 그 commit의 새 코드서빙 리비전 배포
+시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 효과 확인
+  ① 아까와 같은 질문 하나
+  ② bash ./GENOS_CPU_REPORT_R1.txt list → bash ./GENOS_CPU_REPORT_R1.txt 번호 → 사진 3장
+     (사진 1에 서버 처리 시간·프로세스 CPU, 사진 3에서 oracle_dp_io.py:digest 줄이 사라졌는지)
+  ③ 같은 요청의 R4 사진 1장: bash ./GENOS_ORACLE_REPORT_R4.txt 번호 --page 1
+
+4. 원복
+  bash MAIN186D_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- MAIN186 대비 제품 5파일(MAIN186C의 3 + oracle_query_cache.py, request_report.py) + 엔진 고정값 30 + SQL 계획 메타. SQL 계획 646 그대로, 엔진 사전 점검 통과.
+- 캐시 확인 시험: 큰 명세(표 2,000개·문서 2만 개)로 캐시 확인 약 6천 번 — MAIN186C 코드 해시 6,002번·약 23초, MAIN186D 해시 1번. 명세·권한 목록·릴리스가 바뀌면 그대로 멈춤.
+- 관련 회귀 48파일: GENOS_LIVE_LOG=on이면 MAIN186C와 결과 동일(바뀐 검사 0). 기본(꺼짐)에서는 .log/.trace.txt 파일이 있는지 보는 검사 7개만 실패로 바뀜(의도한 변화). 같은 검사 안의 JSON 보고서·요약 줄·질문답변.csv 확인은 통과.
+- 실제 로컬 Oracle 원장 + 모의 모델 한 질문: HTTP 200, SQL 897회, CPU 측정 기록 그대로(로컬 질문에서는 이 캐시 사용이 적어 digest가 원래 거의 잡히지 않음 — 현장 효과는 사진으로 확인).
+- 설치기: MAIN186 격리 checkout에서 적용·재적용·status·stage·commit·gate-code·세대 검사·undo 15개 명령 통과.
+- 하지 않은 것: 현장 실행, 전체 171파일 회귀, Oracle 규모 점검 전체(SQL 변경 없음).
+상세: VERIFICATION.json / SHA256SUMS.txt

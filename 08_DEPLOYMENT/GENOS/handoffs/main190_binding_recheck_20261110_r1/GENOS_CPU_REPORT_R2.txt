@@ -1,0 +1,521 @@
+#!/usr/bin/env bash
+# GENOS CPU 보고 R2 (2026-11-10, MAIN186C·MAIN188 이상) - 방금 질문 동안 어느 코드가 CPU를 썼는지 사진 3장으로
+#
+# 이 파일을 올린 TRANSFER 폴더에서 실행합니다(다른 폴더로 이동하지 않습니다).
+#   bash ./GENOS_CPU_REPORT_R2.txt list     최근 요청 목록(번호, 시각, 서버 처리 시간)
+#   bash ./GENOS_CPU_REPORT_R2.txt 2        목록의 2번 요청 보고(사진 1/3 ~ 3/3)
+#   bash ./GENOS_CPU_REPORT_R2.txt          가장 최근 요청 보고
+#   bash ./GENOS_CPU_REPORT_R2.txt 2 --page 3   사진 3/3 한 장만 다시
+# 요청 보고서 위치가 기본(/nfs-root/diamo/8-agent/rag-request-reports)과 다르면 끝에 --root /실제/GENOS_SHARED_LOG_DIR
+#
+# 읽기 전용: 코드서빙·코드·DB·모델·설정을 바꾸지 않고, Oracle에 접속하지 않습니다.
+# 질문·답변·원문·SQL 본문은 출력하지 않습니다(시각·시간·횟수·코드 위치만).
+# 결과는 화면과 ./GENOS_CPU_REPORT_RESULTS/REPORT-날짜시각.txt 에 같이 남습니다.
+set -u
+OUT_DIR=./GENOS_CPU_REPORT_RESULTS
+mkdir -p "$OUT_DIR" || { echo "결과 폴더를 만들지 못했습니다: $OUT_DIR"; echo "종료=1"; exit 1; }
+SAVE="$OUT_DIR/REPORT-$(date +%Y%m%d-%H%M%S).txt"
+python3 -I - "$@" <<'GENOS_CPU_REPORT_R2_PY' 2>&1 | tee "$SAVE"
+"""GENOS CPU 보고 R2 — 요청 보고서(JSON)만 읽어 그 질문 동안 어느 코드가 CPU를 썼는지 사진 3장으로 정리.
+
+CPU 측정이 들어간 코드(MAIN186C, MAIN188 이상)가 요청마다 oracle.sql.summary 줄에 남기는 cpu_profile을 읽는다.
+사진 1: 시간과 CPU, 스레드 묶음별 CPU, 원장 다시 만들기(기록 DB를 열 때마다 전체 재구성) 횟수·CPU, 판정
+사진 2: 함수별 CPU(포함 시간) — CPU를 많이 쓴 스레드 묶음 2개
+사진 3: 코드 줄별 CPU(맨 안쪽 우리 코드 / 라이브러리 포함), 많이 쓴 호출 경로
+
+읽기 전용, 표준 라이브러리만. 서빙 코드 import·Oracle 접속·모델 호출 없음.
+질문·답변·원문·SQL 본문은 출력하지 않는다(시각·시간·횟수·코드 위치만).
+
+  python3 -I cpu_report.py                 가장 최근 요청
+  python3 -I cpu_report.py list            최근 요청 목록(번호)
+  python3 -I cpu_report.py 2               목록의 2번
+  python3 -I cpu_report.py /경로/보고서.json
+  공통 옵션: --root <요청 보고서 상위 폴더>  (기본: GENOS_SHARED_LOG_DIR, 없으면 /nfs-root/diamo/8-agent/rag-request-reports)
+             --page N  해당 사진 한 장만 다시 출력
+"""
+import json
+import math
+import os
+import re
+import sys
+import unicodedata
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+VERSION = 'genos-cpu-report-20261110-r2'
+COMMAND = 'bash ./GENOS_CPU_REPORT_R2.txt'
+DEFAULT_ROOT = '/nfs-root/diamo/8-agent/rag-request-reports'
+KST = timezone(timedelta(hours=9))
+MAX_REPORT_BYTES = 1024 * 1024 * 1024
+MAX_ROW_BYTES = 4 * 1024 * 1024
+LIST_LIMIT = 12
+LOOK_BACK_DAYS = 3
+PAGE_LINES = 40
+PAGE_WIDTH = 100
+
+class Stop(Exception):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
+def width(text):
+    return sum(2 if unicodedata.east_asian_width(ch) in 'WF' else 1 for ch in text)
+
+
+def pad(text, size, right=False):
+    text = str(text)
+    gap = max(0, size - width(text))
+    return (' ' * gap + text) if right else (text + ' ' * gap)
+
+
+def cut(text, size):
+    text = str(text)
+    if width(text) <= size:
+        return text
+    out = ''
+    for ch in text:
+        if width(out + ch) > size - 1:
+            break
+        out += ch
+    return out + '…'
+
+
+def sec(ms):
+    return f'{ms / 1000:,.1f}초'
+
+
+def pct(part, whole):
+    return f'{100 * part / whole:5.1f}%' if whole else '   - '
+
+
+def bar(part, whole, size=20):
+    if not whole:
+        return ''
+    filled = max(0, min(size, int(round(size * part / whole))))
+    return '#' * filled + '.' * (size - filled)
+
+
+def num(value):
+    return value if type(value) in (int, float) and math.isfinite(value) else None
+
+
+def stamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+# ---------------------------------------------------------------- 보고서 찾기
+
+def report_root(argument):
+    for value in (argument, os.environ.get('GENOS_SHARED_LOG_DIR', '').strip(), DEFAULT_ROOT):
+        if value:
+            root = Path(value).expanduser()
+            if root.is_dir():
+                return root
+            if value == argument:
+                raise Stop(2, f'요청 보고서 폴더가 없습니다: {root}')
+    raise Stop(2, '요청 보고서 폴더를 찾지 못했습니다. 코드서빙의 GENOS_SHARED_LOG_DIR 값을 --root 로 주세요.\n'
+                  f'  기본 위치 {DEFAULT_ROOT} 없음. 확인: ls -d /nfs-root/*/8-agent/rag-request-reports')
+
+
+def recent_requests(root):
+    today = datetime.now(KST).date()
+    rows, unreadable = [], 0
+    for back in range(LOOK_BACK_DAYS + 1):
+        day = root / (today - timedelta(days=back)).isoformat()
+        if not day.is_dir():
+            continue
+        seen = set()
+        for row_path in day.glob('*/*/_qa/*.row'):
+            try:
+                with row_path.open('rb') as source:
+                    raw = source.read(MAX_ROW_BYTES + 1)
+                if len(raw) > MAX_ROW_BYTES:
+                    raise ValueError
+                row = json.loads(raw)
+                when = stamp(row['requested_at'])
+                if when is None:
+                    raise ValueError
+                report = row_path.parent.parent / str(row.get('report') or '')
+                seen.add(report.name)
+                rows.append({'when': when, 'seconds': num(row.get('seconds')), 'team': str(row.get('team') or ''),
+                             'component': row_path.parent.parent.name, 'status': str(row.get('status') or ''),
+                             'http': row.get('http_status'), 'report': report})
+            except (OSError, ValueError, TypeError, KeyError):
+                unreadable += 1
+        # A request whose summary row was not written still has its JSON report.
+        for report in day.glob('*/*/*.json'):
+            if report.name in seen:
+                continue
+            try:
+                when = datetime.fromtimestamp(report.stat().st_mtime, timezone.utc)
+            except OSError:
+                continue
+            rows.append({'when': when, 'seconds': None, 'team': report.parent.parent.name,
+                         'component': report.parent.name, 'status': '요약 줄 없음(파일 시각)', 'http': None,
+                         'report': report})
+        if len(rows) >= LIST_LIMIT:
+            break
+    rows.sort(key=lambda r: r['when'], reverse=True)
+    return rows, unreadable
+
+
+def print_list(root, rows, unreadable, out):
+    out(f'요청 보고서 위치: {root}')
+    out(f'최근 요청 {min(len(rows), LIST_LIMIT)}건 (최근 {LOOK_BACK_DAYS + 1}일, 새것부터)'
+        + (f' · 읽지 못한 요약 줄 {unreadable}건' if unreadable else ''))
+    out(pad('번호', 5) + pad('요청 시각(한국)', 21) + pad('서버 처리', 11, True) + '  ' + pad('HTTP', 5)
+        + pad('상태', 12) + '팀/구분')
+    for index, row in enumerate(rows[:LIST_LIMIT], 1):
+        seconds = f'{row["seconds"]:,.1f}초' if row['seconds'] is not None else '-'
+        exists = '' if row['report'].is_file() else '  (JSON 아직 없음)'
+        out(pad(f'[{index}]', 5) + pad(row['when'].astimezone(KST).strftime('%m-%d %H:%M:%S'), 21)
+            + pad(seconds, 11, True) + '  ' + pad(str(row['http'] or '-'), 5) + pad(cut(row['status'], 11), 12)
+            + f'{row["team"]}/{row["component"]}{exists}')
+    if not rows:
+        out('요청이 없습니다. --root 위치와 날짜 폴더를 확인하세요.')
+    out(f'특정 요청 보고: {COMMAND} <번호>')
+
+
+def pick(root, choice):
+    rows, unreadable = recent_requests(root)
+    if not rows:
+        raise Stop(3, f'최근 {LOOK_BACK_DAYS + 1}일 안의 요청 보고서가 없습니다: {root}')
+    index = int(choice) if choice else 1
+    if not 1 <= index <= min(len(rows), LIST_LIMIT):
+        raise Stop(2, f'번호는 1~{min(len(rows), LIST_LIMIT)} 입니다. 목록: {COMMAND} list')
+    row = rows[index - 1]
+    if not row['report'].is_file():
+        raise Stop(3, f'요청 보고서 JSON이 아직 없습니다(응답 뒤 기록 중이거나 기록 실패): {row["report"]}\n'
+                      '  10~20초 뒤 다시 실행하세요. 계속 없으면 같은 이름의 .log 파일을 확인합니다.')
+    return row['report']
+
+
+def load(path):
+    try:
+        size = path.stat().st_size
+    except OSError as exc:
+        raise Stop(3, f'보고서를 읽지 못했습니다: {path} ({type(exc).__name__})')
+    if size > MAX_REPORT_BYTES:
+        raise Stop(3, f'보고서가 너무 큽니다({size:,} bytes): {path}')
+    opener = open
+    if path.suffix == '.gz':
+        import gzip
+        opener = gzip.open
+    try:
+        with opener(path, 'rt', encoding='utf-8') as source:
+            report = json.load(source)
+    except (OSError, ValueError) as exc:
+        raise Stop(3, f'보고서 JSON을 읽지 못했습니다: {path} ({type(exc).__name__})')
+    if not isinstance(report, dict) or not isinstance(report.get('service_events'), list):
+        raise Stop(3, f'요청 보고서 형식이 아닙니다(service_events 없음): {path}')
+    return report, size
+
+
+
+
+class Pages:
+    """Lines grouped into photo-sized pages; a page never exceeds PAGE_LINES (overflow is cut with a count)."""
+    def __init__(self, stamp_text):
+        self.stamp, self.pages = stamp_text, []
+
+    def page(self, title):
+        self.pages.append([f'━━━━ 사진 {len(self.pages) + 1}/{PAGES} · {title} · {self.stamp} ━━━━'])
+
+    def line(self, text=''):
+        self.pages[-1].append(cut(text, PAGE_WIDTH))
+
+    def wrap(self, text, first='  · ', rest='    '):
+        """A long sentence on up to three lines instead of cutting it."""
+        line, prefix, count = '', first, 0
+        for word in str(text).split(' '):
+            if line and width(prefix + line + ' ' + word) > PAGE_WIDTH:
+                self.pages[-1].append(prefix + line); prefix, line, count = rest, word, count + 1
+                if count == 2:
+                    break
+            else:
+                line = (line + ' ' + word) if line else word
+        self.pages[-1].append(cut(prefix + line, PAGE_WIDTH))
+
+    def lines(self):
+        for number, page in enumerate(self.pages, 1):
+            if len(page) > PAGE_LINES:
+                extra = len(page) - PAGE_LINES + 1
+                page[:] = page[:PAGE_LINES - 1] + [f'  … ({extra}줄 생략, 전체는 결과 파일 참고)']
+            yield number, page
+
+
+
+
+# ---------------------------------------------------------------- CPU 보고
+
+def short(frame):
+    text = str(frame or '?')
+    for prefix in ('semantic_runtime/', 'lawrag/'):
+        text = text.replace(prefix, '')
+    return text
+
+
+EXPLAIN = (
+    ('oracle_record_sqlite.py:Connection._load', '원장 전체 다시 만들기'),
+    ('oracle_record_sqlite.py:Connection._flush', '원장 변경분 찾기·올리기'),
+    ('oracle_record_sqlite.py:Connection._catalogue', '원장 DB 구조 목록 만들기'),
+    ('oracle_record_sqlite.py:', '원장 DB(메모리) 처리'),
+    ('oracle_agent_records.py:AgentRecords._stored_body', '원장 본문 합치기·해시'),
+    ('oracle_agent_records.py:AgentRecords.bodies', '원장 본문 받기·해시'),
+    ('oracle_agent_records.py:AgentRecords.commit', '원장 커밋(본문 압축·조각)'),
+    ('oracle_agent_records.py:AgentRecords.rows', '원장 행 목록 받기'),
+    ('oracle_agent_records.py:', '원장 SQL·결과 처리'),
+    ('semantic_runtime/progress.py:', '화면 진행 표시'),
+    ('progress.py:', '화면 진행 표시'),
+    ('oracle_dp', 'ORDS 요청·응답 처리'),
+    ('oracle_shared_cache', '게시 자료 캐시'),
+    ('oracle_query', 'Oracle 조회 결과 처리'),
+    ('law_navigation.py', '조사 메뉴·판단 스키마'),
+    ('journal_storage.py', '기록 저장 형식 변환'),
+    ('legal_agent/gateway.py', '모델 호출 준비·결과 검증'),
+    ('legal_agent/repository.py', '요청 기록 쓰기'),
+    ('pkg:jsonschema', '형식 검사(jsonschema)'),
+    ('std:json/', 'JSON 해석·만들기'),
+    ('pkg:httpx', 'HTTP 통신'), ('pkg:httpcore', 'HTTP 통신'), ('pkg:h11', 'HTTP 통신'),
+    ('std:ssl', 'HTTPS 암호화'), ('std:hashlib', '해시 계산'), ('std:zlib', '압축'),
+    ('std:sqlite3', 'SQLite'), ('std:copy', '객체 복사'), ('std:re', '정규식'),
+    ('std:threading.py', '스레드 대기·잠금'), ('std:selectors', '네트워크 대기'), ('std:asyncio', '비동기 처리'),
+    ('pkg:anyio', '작업 스레드 넘기기'), ('pkg:starlette', '웹 서버'), ('pkg:uvicorn', '웹 서버'),
+)
+
+
+def explain(frame):
+    text = str(frame or '')
+    return next((label for key, label in EXPLAIN if key in text), '')
+
+
+def group_label(name):
+    text = str(name or '?')
+    if '_poll_loop' in text:
+        return '화면 진행 표시'
+    if text.startswith('AnyIO worker'):
+        return '요청 처리(작업 스레드)'
+    if text == 'MainThread':
+        return '메인(웹 서버)'
+    if text.startswith('ThreadPoolExecutor'):
+        return '작업 풀'
+    if text.startswith('asyncio'):
+        return '비동기 작업'
+    return text
+
+
+def group_short(name):
+    label = group_label(name)
+    return {'화면 진행 표시': '진행표시', '요청 처리(작업 스레드)': '요청처리', '메인(웹 서버)': '메인'}.get(label, label)
+
+
+def model_ms(events):
+    open_calls, total = {}, 0.0
+    for when, row in events:
+        attempt = row.get('attempt_id')
+        if not attempt:
+            continue
+        if row.get('event') == 'model.attempt.started':
+            open_calls[attempt] = when
+        elif row.get('event') in ('model.attempt.received', 'model.attempt.failed') and attempt in open_calls:
+            total += (when - open_calls.pop(attempt)).total_seconds() * 1000
+    return total
+
+
+def gather(report):
+    events = []
+    for row in report['service_events']:
+        if isinstance(row, dict):
+            when = stamp(row.get('ts'))
+            if when is not None:
+                events.append((when, row))
+    events.sort(key=lambda item: item[0])
+    if not events:
+        raise Stop(3, '보고서에 시각이 있는 서비스 기록이 없습니다.')
+    summary = next((row for when, row in reversed(events) if row.get('event') == 'oracle.sql.summary'), None)
+    returning = [row for when, row in events if row.get('event') in ('request.returning', 'request.finished')]
+    total = num(returning[-1].get('duration_ms')) if returning else None
+    started = next((when for when, row in events if row.get('event') == 'request.started'), events[0][0])
+    if total is None:
+        total = (events[-1][0] - started).total_seconds() * 1000
+    return {'start': started, 'total_ms': total, 'model_ms': model_ms(events), 'summary': summary or {},
+            'profile': (summary or {}).get('cpu_profile')}
+
+
+def table_row(cells, widths, right=()):
+    return ('  ' + ' '.join(pad(cut(cell, size), size, index in right) for index, (cell, size) in enumerate(zip(cells, widths)))).rstrip()
+
+
+def render(path, size, report):
+    a = gather(report)
+    P = Pages(a['start'].astimezone(KST).strftime('%m-%d %H:%M:%S'))
+    s, p = a['summary'], a['profile']
+    total, model = a['total_ms'], a['model_ms']
+    sql = num(s.get('sql_ms')) or 0.0
+    P.page('요약 · 스레드별 CPU · 원장 다시 만들기 · 판정')
+    P.line(f'보고서: {cut(str(path), 88)}')
+    P.line('[A] 시간과 CPU')
+    P.line(f'  서버 처리 {sec(total)} = 모델 {sec(model)} + SQL {sec(sql)} + 그 외 {sec(max(0.0, total - model - sql))}'
+           f'   (SQL {s.get("sql_count", "-")}회)')
+    if not isinstance(p, dict):
+        P.line('  이 요청에는 CPU 측정이 없습니다. CPU 측정 코드(MAIN186C·MAIN188) 적용 전 요청이거나 GENOS_CPU_PROFILE=off 입니다.')
+        P.line('  MAIN188 적용 → 새 코드서빙 리비전 → 질문 1개 → 다시 list 로 번호 확인 후 실행하세요.')
+        return P
+    process, sampled = num(p.get('process_cpu_ms')) or 0.0, num(p.get('sampled_cpu_ms')) or 0.0
+    P.line(f'  프로세스 CPU {sec(process)} (서버 처리 시간의 {pct(process, total).strip()})'
+           f' · 스레드별로 잡은 CPU {sec(sampled)} · 못 잡은 CPU {sec(max(0.0, process - sampled))}')
+    P.line(f'  샘플 {p.get("ticks", 0):,}회({p.get("interval_ms", "?")}ms마다, 늦은 샘플 {p.get("late_ticks", 0):,})'
+           f' · CPU 읽기 {p.get("cpu_source", "?")} · 측정기 자체 CPU {sec(num(p.get("sampler_cpu_ms")) or 0)}')
+    P.line(f'  같은 시간에 처리된 요청 수(이 요청 포함) 최대 {p.get("concurrent_max", 1)}')
+    groups = [g for g in p.get('groups') or [] if isinstance(g, dict)]
+    P.line('[B] 스레드 묶음별 CPU (이 요청 동안 프로세스의 모든 스레드)')
+    widths = (24, 9, 7, 6, 40)
+    P.line(table_row(('묶음', 'CPU', '비율', '스레드', '스레드 이름'), widths, (1, 2, 3)))
+    for g in groups[:8]:
+        ms = num(g.get('cpu_ms')) or 0.0
+        P.line(table_row((group_label(g.get('group')), sec(ms), pct(ms, process), str(g.get('threads', '-')), g.get('group')),
+                         widths, (1, 2, 3)))
+    if not groups:
+        P.line('  (CPU를 쓴 스레드 기록 없음)')
+    hydrations = [h for h in p.get('hydrations') or [] if isinstance(h, dict)]
+    P.line('[C] 원장 다시 만들기 — 원장 DB를 열 때마다 Oracle 기록 전체를 메모리 DB로 다시 만드는 일')
+    widths = (18, 16, 6, 10, 8, 8, 8, 8)
+    P.line(table_row(('기록 파일', '스레드', '횟수', '행 합계', '최대 행', '본문 MB', 'CPU', '시간'), widths, (2, 3, 4, 5, 6, 7)))
+    for h in hydrations[:8]:
+        P.line(table_row((h.get('record'), group_label(h.get('group')), f'{h.get("count", 0):,}', f'{h.get("rows", 0):,}',
+                          f'{h.get("rows_max", 0):,}', f'{(h.get("bytes") or 0) / 1048576:,.1f}',
+                          sec(num(h.get('cpu_ms')) or 0), sec(num(h.get('wall_ms')) or 0)), widths, (2, 3, 4, 5, 6, 7)))
+    if not hydrations:
+        P.line('  (이 요청 동안 원장 다시 만들기 없음)')
+    hyd_cpu = sum(num(h.get('cpu_ms')) or 0.0 for h in hydrations)
+    hyd_n = sum(h.get('count') or 0 for h in hydrations)
+    P.line('[D] 판정')
+    poller = sum(num(g.get('cpu_ms')) or 0.0 for g in groups if '_poll_loop' in str(g.get('group')))
+    poll_hyd = sum(h.get('count') or 0 for h in hydrations if '_poll_loop' in str(h.get('group')))
+    if process:
+        P.wrap(f'화면 진행 표시 스레드 CPU {sec(poller)}({pct(poller, process).strip()}). '
+               + (f'이 스레드가 원장을 {poll_hyd:,}번 다시 만들었습니다(1초마다 요청 기록을 새로 엶).' if poll_hyd else '원장 다시 만들기 없음.'))
+        P.wrap(f'원장 다시 만들기 전체 {hyd_n:,}번, CPU {sec(hyd_cpu)}({pct(hyd_cpu, process).strip()}).'
+               + (' 열 때마다 전체를 다시 만드는 구조가 CPU를 크게 씁니다.' if hyd_cpu >= 0.15 * process else ''))
+        main = max((g for g in groups if '_poll_loop' not in str(g.get('group'))), key=lambda g: num(g.get('cpu_ms')) or 0, default=None)
+        if main is not None:
+            lines = [r for r in p.get('lines') or [] if isinstance(r, dict) and r.get('group') == main.get('group')
+                     and r.get('frame') != 'NO_OWN_FRAME']
+            if lines:
+                top = lines[0]
+                P.wrap(f'{group_label(main.get("group"))}에서 가장 많이 쓴 줄 {sec(num(top.get("cpu_ms")) or 0)}: '
+                       f'{short(top.get("frame"))} {explain(top.get("frame"))}')
+        missed = process - sampled
+        if missed > 0.2 * process:
+            P.wrap(f'못 잡은 CPU {sec(missed)}: 샘플 사이에 생겼다 끝난 스레드나 파이썬 밖 스레드의 몫입니다.')
+        if (p.get('concurrent_max') or 1) > 1:
+            P.wrap('이 시간 동안 다른 요청도 같이 처리됐습니다. 위 CPU에는 그 요청의 몫이 섞여 있습니다. '
+                   '가능하면 다른 질문이 없을 때 다시 재 주세요.')
+    P.page('함수별 CPU(그 안에서 부른 것 포함) · 상위 스레드 묶음 2개')
+    functions = [r for r in p.get('functions') or [] if isinstance(r, dict)]
+    shown = 0
+    for g in groups[:2]:
+        name = g.get('group')
+        gms = num(g.get('cpu_ms')) or 0.0
+        P.line(f'[{group_label(name)}] {name} · CPU {sec(gms)}')
+        rows = [r for r in functions if r.get('group') == name][:14]
+        for r in rows:
+            ms = num(r.get('cpu_ms')) or 0.0
+            P.line(table_row((short(r.get('frame')), sec(ms), pct(ms, gms), explain(r.get('frame'))), (52, 8, 6, 28), (1, 2)))
+            shown += 1
+        if not rows:
+            P.line('  (기록 없음)')
+    if not shown and not groups:
+        P.line('  (기록 없음)')
+    P.line('읽는 법: 위는 바깥 함수, 아래로 갈수록 안쪽입니다. 비율이 크게 줄어드는 곳이 갈라지는 지점입니다.')
+    P.page('코드 줄 · CPU를 쓰는 순간 실행 중이던 위치')
+    lines = [r for r in p.get('lines') or [] if isinstance(r, dict)]
+    P.line('[1] 맨 안쪽 우리 코드 줄(그 줄이 부른 라이브러리 시간 포함): 시간 · CPU 비율 · 스레드 · 위치')
+    for r in lines[:14]:
+        ms = num(r.get('cpu_ms')) or 0.0
+        P.line(table_row((sec(ms), pct(ms, process), group_short(r.get('group')), short(r.get('frame')), explain(r.get('frame'))),
+                         (7, 6, 8, 60, 12), (0, 1)))
+    leaves = [r for r in p.get('leaves') or [] if isinstance(r, dict)]
+    P.line('[2] 맨 안쪽 위치(라이브러리 포함)')
+    for r in leaves[:10]:
+        ms = num(r.get('cpu_ms')) or 0.0
+        P.line(table_row((sec(ms), pct(ms, process), group_short(r.get('group')), short(r.get('frame')), explain(r.get('frame'))),
+                         (7, 6, 8, 60, 12), (0, 1)))
+    paths = [r for r in p.get('paths') or [] if isinstance(r, dict)]
+    P.line('[3] 많이 쓴 호출 경로(바깥 → 안쪽, 우리 코드만, 마지막 4단계)')
+    merged = {}
+    for r in paths:
+        chain = ' > '.join(short(x).split(':', 1)[-1] for x in (r.get('path') or [])[-4:]) or '(우리 코드 없음)'
+        key = (group_label(r.get('group')), chain)
+        merged[key] = merged.get(key, 0.0) + (num(r.get('cpu_ms')) or 0.0)
+    for (group, chain), ms in sorted(merged.items(), key=lambda item: -item[1])[:4]:
+        P.wrap(f'{group} {sec(ms)}: {chain}')
+    return P
+
+
+PAGES = 3
+
+
+def main(argv):
+    root_arg, rest, only = None, [], None
+    items = list(argv)
+    while items:
+        item = items.pop(0)
+        if item == '--root':
+            if not items:
+                raise Stop(2, '--root 다음에 폴더를 주세요.')
+            root_arg = items.pop(0)
+        elif item == '--page':
+            if not items or not items[0].isdigit() or not 1 <= int(items[0]) <= PAGES:
+                raise Stop(2, f'--page 다음에 1~{PAGES} 숫자를 주세요.')
+            only = int(items.pop(0))
+        elif item in ('-h', '--help', 'help'):
+            print(__doc__)
+            return 0
+        else:
+            rest.append(item)
+
+    def out(text=''):
+        print(text, flush=True)
+
+    if rest and rest[0] == 'list':
+        root = report_root(root_arg)
+        rows, unreadable = recent_requests(root)
+        print_list(root, rows, unreadable, out)
+        return 0
+    if rest and (rest[0].endswith('.json') or rest[0].endswith('.json.gz') or '/' in rest[0]):
+        path = Path(rest[0]).expanduser()
+        if not path.is_file():
+            raise Stop(2, f'파일이 없습니다: {path}')
+    else:
+        if rest and not rest[0].isdigit():
+            raise Stop(2, f'알 수 없는 인자: {rest[0]}  (list / 번호 / 보고서.json 경로)')
+        path = pick(report_root(root_arg), rest[0] if rest else None)
+    report, size = load(path)
+    for number, page in render(path, size, report).lines():
+        if only and number != only:
+            continue
+        for line in page:
+            out(line)
+        out('')
+    return 0
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Stop as stop:
+        print('중단: ' + str(stop), file=sys.stderr)
+        sys.exit(stop.code)
+GENOS_CPU_REPORT_R2_PY
+CODE=${PIPESTATUS[0]}
+echo "저장: $SAVE"
+echo "종료=$CODE"
+exit "$CODE"

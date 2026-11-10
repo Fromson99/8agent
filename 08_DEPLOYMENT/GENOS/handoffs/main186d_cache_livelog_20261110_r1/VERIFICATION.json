@@ -1,0 +1,116 @@
+{
+  "package": "MAIN186D_FULL_20261110_R1.zip",
+  "zip_sha256": "504f33a2841eaf3221d42baa058cf47529f49f52c316030ac0acf23c794d3e21",
+  "base": {
+    "field_main": 186,
+    "release_id": "sql-breakdown-20261110-r1",
+    "base_zip_sha256": "8b9452fe0699686c83679b50a2fa45d02fc1a6c0b292a1815d5cd048f133e760"
+  },
+  "measurement_only": true,
+  "changed_from_main186": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+    "02_BACKEND/semantic_runtime/cpu_profile.py",
+    "02_BACKEND/semantic_runtime/oracle_query_cache.py",
+    "02_BACKEND/semantic_runtime/oracle_query_plans.py",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py",
+    "02_BACKEND/semantic_runtime/request_report.py"
+  ],
+  "products": {
+    "02_BACKEND/semantic_runtime/cpu_profile.py": "8e595dfc66cfacb48187bfa7c19c4b3b17aadee3a3e9fea3791da45f80675896",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py": "9f3d6f14eb0b2a073480569bc7371f2854b642bb90604dfcd18660cb25f4c6ea",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py": "9ff5385399bfe0fa902fcb6a5b79e93fcb443810369cc367748d5507adc7cc08",
+    "02_BACKEND/semantic_runtime/oracle_query_cache.py": "259d1808c06a2dba9b5bb6cee00d2922630d1b6801eeeac1038eebc20bc19816",
+    "02_BACKEND/semantic_runtime/request_report.py": "1a84d298db73a1795e12befb22a186df967b7f85e7759ce7ce292c0e1abf3224"
+  },
+  "sql_plans": {
+    "before": 646,
+    "after": 646,
+    "executable_identical": true
+  },
+  "engine_preflight": {
+    "engines": 30,
+    "files": 517,
+    "passed": true
+  },
+  "workflow_unchanged": true,
+  "checks": {
+    "unit_and_report": "test_cpu_profile.py 8 passed (sampler CPU attribution, idle not charged, off switch, report pages on Python 3.9/3.11/3.14)",
+    "real_local_oracle_question": {
+      "http": 200,
+      "sql": 897,
+      "request_cpu_ms": 1712,
+      "cpu_profile_in_summary": true,
+      "model": "scripted, 1 s per call",
+      "report_rendered": true
+    },
+    "hydration_on_real_local_oracle": {
+      "passed": 1
+    },
+    "regression_48_files": {
+      "main186c": {
+        "passed": 486,
+        "failed": 131,
+        "skipped": 1
+      },
+      "main186d_live_log_on": {
+        "passed": 486,
+        "failed": 131,
+        "skipped": 1
+      },
+      "changes_on": 0,
+      "main186d_default_off": {
+        "passed": 479,
+        "failed": 138,
+        "skipped": 1
+      },
+      "changes_off": 7,
+      "changes_off_are": "tests asserting .log/.trace.txt files exist"
+    },
+    "cache_binding": "test_query_cache_binding.py: MAIN186C 6002 manifest hashes ~23 s, MAIN186D 1 hash; binding changes still refused",
+    "install_isolated_main186_checkout": {
+      "passed": true,
+      "commands": 15
+    }
+  },
+  "not_checked": [
+    "field ORDS/GENOS run",
+    "oracle_scale_guard full run (no SQL change)",
+    "full 171-file regression",
+    "progress poller hydration in the full service.py path (covered by the direct hydration test only)"
+  ],
+  "overlap": "Run while ADR-1480 (another session, live model) was still rerunning; user said to proceed without waiting.",
+  "quality_certified": false,
+  "field_deployed": false,
+  "new_model_calls": 0
+}

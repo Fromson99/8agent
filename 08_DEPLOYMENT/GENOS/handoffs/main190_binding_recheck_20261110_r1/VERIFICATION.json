@@ -1,0 +1,55 @@
+{
+  "main_generation": 190,
+  "release_id": "binding-recheck-20261110-r1",
+  "release_manifest_sha256": "f190a06a626b640716712392a014637ba9a7f651b66ed85534564b80b00be731",
+  "replaces_field": "MAIN188 (cpu-query-speed-20261110-r1)",
+  "contains": [
+    "MAIN189 chat-records-20261110-r1",
+    "MAIN190 binding-recheck-20261110-r1"
+  ],
+  "main189_products": [
+    "02_BACKEND/semantic_runtime/workflow_evidence.py",
+    "02_BACKEND/semantic_runtime/session_identity.py",
+    "02_BACKEND/semantic_runtime/app.py",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+    "02_BACKEND/semantic_runtime/legal_agent/storage_admission.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py"
+  ],
+  "main190_products": [
+    "02_BACKEND/semantic_runtime/oracle_dp_io.py",
+    "02_BACKEND/semantic_runtime/oracle_query_store.py",
+    "02_BACKEND/semantic_runtime/oracle_query_fulltext.py",
+    "02_BACKEND/semantic_runtime/oracle_query_glossary.py"
+  ],
+  "sql_plans": "647 (unchanged)",
+  "workflow_file_changed": false,
+  "local_validation": {
+    "regression_280_files_vs_main189": {
+      "new_failures": 0,
+      "not_reproduced_alone": 2,
+      "fixed": 4,
+      "status": "PASSED"
+    },
+    "binding_recheck_tests": "4 passed on MAIN190, 4 failed on MAIN189 (full-text check: 1000 hashes -> 1)",
+    "oracle_scale_guard": "passed, max SQL per turn 418",
+    "one_question_local_oracle": "MAIN189 and MAIN190 same answer, 244 round trips each",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN188 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field effect",
+    "MAIN189 per-chat records on the field Oracle (other session; local tests only)"
+  ],
+  "package": {
+    "zip": "MAIN190_FULL_20261110_R1.zip",
+    "zip_sha256": "c88af45eaf75db1836210a5a4ec4452d5c2800697ca387e54ae3844bddd65c24",
+    "members": 557
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

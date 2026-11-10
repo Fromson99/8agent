@@ -1,0 +1,60 @@
+{
+  "main_generation": 192,
+  "release_id": "batched-records-20261110-r1",
+  "release_manifest_sha256": "a6686b74f7da60efce6b38c4b9ffc1b74a1fdf5dd03e29cea2397ccd097a08fb",
+  "replaces_field": "MAIN188 (applied) / MAIN190 / MAIN191 (mailed 1a1c444c7df59771)",
+  "contains": [
+    "MAIN189 chat-records-20261110-r1",
+    "MAIN190 binding-recheck-20261110-r1",
+    "MAIN191 deferred-records-20261110-r1",
+    "MAIN192 batched-records-20261110-r1"
+  ],
+  "main192_products": [
+    "02_BACKEND/semantic_runtime/oracle_agent_records.py",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py"
+  ],
+  "sql_plans": "647 (unchanged)",
+  "workflow_file_changed": false,
+  "local_validation": {
+    "regression_299_files_vs_main191": {
+      "new_failures": 0,
+      "not_reproduced_alone": 3,
+      "fixed": 1,
+      "status": "PASSED"
+    },
+    "one_question_local_oracle": {
+      "main191": {
+        "round_trips": 160,
+        "commits": 23,
+        "sql_ms": 544
+      },
+      "main192": {
+        "round_trips": 139,
+        "commits": 11,
+        "sql_ms": 301
+      },
+      "answer_identical": true
+    },
+    "deferred_unit_tests": "8 passed (one request-end Oracle call, failed/lost batch reconciled by receipts, rollback, in-process reader, second writer, failure, immediate mode, optional flush points)",
+    "concurrent_chats_oracle": "3 passed (two chats in parallel + follow-ups, same chat busy -> 409)",
+    "oracle_scale_guard": "passed, max SQL per turn 418 (guard runs outside a request scope: deferral not exercised there)",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN188 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "trade_off_accepted_by_user": "a crash/restart during a question loses that question's work since the last upload; the user asks again",
+  "not_verified": [
+    "field effect",
+    "live-model multiturn"
+  ],
+  "package": {
+    "zip": "MAIN192_FULL_20261110_R1.zip",
+    "zip_sha256": "2cd8dcc27147890cfaa42b16598b196ee45f9dbac348d62866cc2a2355c3060d",
+    "members": 557
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

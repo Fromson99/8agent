@@ -1,0 +1,194 @@
+{
+  "main_generation": 193,
+  "release_id": "memory-records-20261110-r1",
+  "candidate_not_selected_locally": true,
+  "local_selected_main": "batched-records-20261110-r1",
+  "staged_inventory_sha256": "b4f9042c52caf73d57c64a9c76be3687bc22c0ed5e048eec19548d64f1d2cb2c",
+  "sent_before_local_validation_finished": "user request 11-10 (field is deadlocked on MAIN191)",
+  "replaces_field": "MAIN191 (deadlock in the field 11-10 16:32) / MAIN192 (mailed 1a1c45a359d2161a, same deadlock code)",
+  "products": [
+    "02_BACKEND/semantic_runtime/memory_runtime.py",
+    "02_BACKEND/semantic_runtime/oracle_runtime_paths.py",
+    "02_BACKEND/semantic_runtime/runtime_sqlite.py",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py",
+    "02_BACKEND/semantic_runtime/request_summary.py",
+    "02_BACKEND/semantic_runtime/progress.py",
+    "02_BACKEND/semantic_runtime/legal_agent/journal_storage.py",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+    "02_BACKEND/semantic_runtime/legal_agent/publication.py",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+    "02_BACKEND/semantic_runtime/legal_agent/storage_admission.py",
+    "02_BACKEND/semantic_runtime/oracle_query.py",
+    "02_BACKEND/semantic_runtime/oracle_query_db.py",
+    "02_BACKEND/semantic_runtime/oracle_query_catalog.py",
+    "02_BACKEND/semantic_runtime/oracle_query_matcher.py",
+    "02_BACKEND/semantic_runtime/folder_navigation.py",
+    "02_BACKEND/semantic_runtime/document_aliases.py",
+    "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py (removed)",
+    "02_BACKEND/semantic_runtime/oracle_records_migration.py (removed)"
+  ],
+  "sql_plans": {
+    "plans_before": 647,
+    "plans_after": 644,
+    "plans_added": [],
+    "plans_removed": [
+      "2de1af62d3e0e06e6adfd1e4fadd38688b3698af274d4d4dad65036f0582444c",
+      "35fb87c98da4c1cffc60754a050f93fbf878b2eb0916c9cfbfb36280afcf6e11",
+      "7a9f19bf436a807d1a09ffe7d96e91d78c624f83afc35607af2c262f66b597c6"
+    ],
+    "plans_changed": [],
+    "executable_sql_identical": false,
+    "engines": 30,
+    "engine_files": 515
+  },
+  "workflow_file_changed": false,
+  "local_validation": {
+    "regression_vs_main192_partial": {
+      "status": "INCOMPLETE (local PC restarted 17:17 KST during the run; rerun in progress)",
+      "batches_finished": "42 of 57 (298 test files)",
+      "tests_compared_with_main192_baseline": 3320,
+      "same_outcome_passed": 2787,
+      "same_outcome_failed_existing": 522,
+      "fixed": 1,
+      "new_failures": [
+        {
+          "test": "test_concurrent_chats_oracle::test_same_chat_busy_is_409_not_500",
+          "message": "AssertionError: (200, \"{'answer': {'claims': [], 'generation_id': 'term-source-bb247ec93943c77630f1', 'id': 'answer:13a11ad64cb6459a8f...c-c"
+        },
+        {
+          "test": "test_read_judgment_api::test_read_judgment_api_retains_decisions_and_reuses_request[final_failed]",
+          "message": "assert (0 == 4)\n +  where 0 = len([])"
+        },
+        {
+          "test": "test_agent_record_lease_fastpath_oracle::test_journal_transaction_confirms_its_head_inside_the_lease",
+          "message": "AssertionError: []\nassert [] == ['lease_fast', 'commit']\n  \n  Right contains 2 more items, first extra item: 'lease_fast'\n  Use -v to get mo"
+        },
+        {
+          "test": "test_agent_record_lease_fastpath_oracle::test_runtime_file_write_is_two_round_trips_after_the_first",
+          "message": "AssertionError: []\nassert [] == ['lease_fast'...ad', 'commit']\n  \n  Right contains 3 more items, first extra item: 'lease_fast'\n  Use -v to "
+        },
+        {
+          "test": "test_genos_team_selection::test_current_generation_boot_and_team_search",
+          "message": "AssertionError: {'status': 503, 'body': {'request_id': 'f61981e4cf1242dbb3fc153026fed125', 'answer_status': 'failed', 'message': '현재 충분한 법률 "
+        },
+        {
+          "test": "test_genos_team_selection::test_genos_v5_environment_model_boots_real_app",
+          "message": "AssertionError: {'status': 503, 'body': {'request_id': 'b00e16a68ca34b2d96827d8a35b37e82', 'answer_status': 'failed', 'message': '현재 충분한 법률 "
+        }
+      ],
+      "new_failure_review": {
+        "intended_contract_change (runtime files no longer go through Oracle leases)": 2,
+        "pass alone on both MAIN192 and MAIN193 (batch-order effect)": 3,
+        "unverified: same chat busy 409 on local Oracle (got 200 once; local Oracle could not open afterwards)": 1
+      }
+    },
+    "record_round_trips_three_turns_local_oracle": {
+      "main192": [
+        139,
+        50,
+        50
+      ],
+      "main193": [
+        4,
+        2,
+        2
+      ],
+      "main193_restart_before_turn3": [
+        4,
+        2,
+        3
+      ],
+      "commits_main192": [
+        11,
+        2,
+        2
+      ],
+      "commits_main193": [
+        1,
+        1,
+        1
+      ],
+      "sql_main192": [
+        235,
+        1059
+      ],
+      "sql_main193": [
+        6,
+        132
+      ]
+    },
+    "document_list_walk_1650_rows_local_oracle": {
+      "main190": {
+        "seconds": 0.998,
+        "round_trips": 17,
+        "rows": 1650,
+        "limits": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "largest_response_bytes": 703264,
+        "oracle_ms": 969.3
+      },
+      "page_size_2mb_candidate": {
+        "seconds": 0.551,
+        "round_trips": 7,
+        "rows": 1650,
+        "limits": [
+          100,
+          300,
+          299,
+          299,
+          299,
+          299,
+          299
+        ],
+        "largest_response_bytes": 2109064,
+        "oracle_ms": 514.0
+      }
+    },
+    "memory_runtime_tests": "9 passed",
+    "snapshot_real_oracle": "1 passed",
+    "page_size_tests": "7 passed",
+    "installer": {
+      "base": "MAIN191 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_run_yet": [
+    "remaining 15 regression batches",
+    "Oracle scale guard",
+    "entry check",
+    "local MAIN selection"
+  ],
+  "known_risk": "each question re-saves the whole chat snapshot (compressed) as a new Oracle body; older snapshot bodies are not deleted",
+  "not_verified": [
+    "field effect",
+    "live-model multiturn",
+    "several serving replicas sharing chats",
+    "snapshot size of real questions"
+  ],
+  "package": {
+    "zip": "MAIN193_FULL_20261110_R1.zip",
+    "zip_sha256": "9ee24bb60a5e6126e09fd9a7a9e97dc2f566876021c57d079bf0d7655d8d88f4",
+    "members": 556
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

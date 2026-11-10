@@ -1,0 +1,48 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px"><pre style="font-family:inherit;white-space:pre-wrap">MAIN191 — 커밋(Oracle 저장) 줄이기 + 진행 표시 수정   (MAIN188·MAIN190 대체)
+함께 보냄: 측정 명령 — GENOS_CPU_REPORT_R2.txt(사진 3장), GENOS_ORACLE_REPORT_R4.txt(사진 5장), 이전과 같은 파일
+
+현재 로컬 MAIN: deferred-records-20261110-r1 / MAIN191. 현장이 MAIN188이든 MAIN190이든 이것 하나만 적용하면 됩니다(MAIN189·190 포함).
+워크플로우 파일은 그대로입니다. 꼭 넣을 환경변수 없음.
+
+0. 무엇이 바뀌나
+ MAIN191 — 질문 하나 안에서 Oracle 저장(커밋)을 필요한 순간에만
+  - 현장 R4(MAIN188, 173초): 커밋 249회·43.7초. 한 번에 약 130ms인데 거의 고정 비용이라(4KB 넘으면 크기와 무관) 횟수가 문제였습니다.
+  - 이제 질문 처리 중에는 기록을 메모리에 저장해 두고, Oracle에는 아래 때만 올립니다.
+      ① 모델에 보내기 직전(서버가 죽어도 같은 모델 호출을 다시 보내지 않게)
+      ② 대화·질문 처리 잠금을 풀기 직전, 연결을 닫을 때
+      ③ 질문이 끝날 때(멀티턴: 다음 질문이 이전 질문·답변을 봄)
+  - 화면 진행 표시: Oracle 대신 처리 중인 기록의 메모리 사본을 읽습니다(1초마다 Oracle에서 기록 전체를 다시 만들던 것 없음).
+  - 같은 대화에 앞 질문이 처리 중이면 지금처럼 409 "앞 질문을 아직 처리하고 있습니다".
+  - 잃는 것(확인하신 대로): 질문 처리 중 서버가 죽거나 재시작되면 그 질문의 마지막 저장 이후 작업이 사라집니다. 다시 물으면 됩니다.
+  - 예전 방식으로 되돌리기: 코드서빙 환경변수 GENOS_RECORD_COMMIT=immediate 후 재시작
+  - 함께 고친 기존 결함: 잠금이 잡힌 순서와 반대로 풀리지 않을 때(질문 세션 잠금이 대화 잠금보다 늦게 풀림) 이미 풀린 잠금이
+    다음 저장의 확인 목록에 다시 들어가 "잠금 잃음(ORA-20043)"으로 거절될 수 있던 것.
+ MAIN190 — 원문 확인 해시 반복 제거(현장 digest 16.7초), MAIN189 — 대화마다 별도 기록 DB(다른 세션)
+  답변·SQL 문장(계획 647)·DB 데이터는 바뀌지 않습니다(같은 질문 답변 동일 확인).
+
+1. 로컬 결과 (실제 로컬 Oracle, 같은 질문, 모의 모델 7회)
+  커밋 64 → 23회 · Oracle 왕복 244 → 160회 · 원장 SQL 시간 0.77 → 0.52초 · 답변 동일
+  현장 질문은 단계가 더 많아 줄어드는 폭이 더 클 것으로 봅니다(추정: 커밋 249 → 수십 회). 아래 측정으로 확인합니다.
+
+2. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN191_ONECLICK_R1.txt  → 완료 표시 MAIN191_ONECLICK_DONE, MAIN191_EXIT=0
+  확인·스테이징: bash MAIN191_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  기존 절차로 commit 후: bash MAIN191_ONECLICK_R1.txt gate-code → push → 새 코드서빙 리비전
+  시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+3. 측정 (같은 질문을 두 번 연속 — 두 번째가 평소 값)
+  ② bash ./GENOS_CPU_REPORT_R2.txt list → 두 요청 각각 bash ./GENOS_CPU_REPORT_R2.txt 번호 --page 1
+  ③ 두 요청 각각 bash ./GENOS_ORACLE_REPORT_R4.txt 번호 --page 1, 두 번째 요청은 --page 2 도
+  화면 진행 표시가 질문 중에 잘 갱신되는지도 봐 주세요. 이어서 후속 질문 한 번(멀티턴 확인)도 부탁드립니다.
+
+4. 원복: bash MAIN191_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- 회귀 299파일(멀티턴·워크플로우·재개·기록 포함) MAIN190 대비 새 실패 0, 고쳐진 7(새 시험).
+- 새 시험: 저장 미루기 6(저장 시점, 되돌리기, 진행 표시 읽기, 두 번째 쓰기 연결, 실패 시 저장, 예전 방식),
+  동시 대화 3(대화 두 개 동시 + 각각 후속 질문, 같은 대화 409) — 실제 로컬 Oracle.
+- Oracle 규모 점검 통과(최대 SQL 418; 이 점검은 요청 범위 밖이라 저장 미루기와 무관).
+- 진입 확인 17/17, MAIN190 롤백 보존. 설치기: MAIN188 격리 checkout 15개 명령 통과.
+- 하지 않은 것: 현장 실행, 실제 모델 멀티턴.
+상세: VERIFICATION.json / SHA256SUMS.txt
+</pre></body></html>

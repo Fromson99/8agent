@@ -1,0 +1,55 @@
+MAIN189 — 여러 사용자 동시 사용 오류 수정 (MAIN188 전체 포함, MAIN188 메일 대체)
+함께 보냄: 측정 명령 2개 — GENOS_CPU_REPORT_R2.txt(어느 코드가 CPU를 쓰는지, 사진 3장), GENOS_ORACLE_REPORT_R4.txt(시간·SQL 분해, 사진 5장)
+
+현장 오류(코드서빙 135, 11-10 03:57): 한 사람은 되는데 다른 사용자가 같이 쓰면
+  /v1/rag/ask 47.6초 뒤 HTTP 500 — BlockingIOError: Oracle record owner is active
+  (오류 줄 oracle_agent_records.py 408 → 현장 코드는 MAIN157~175 버전)
+
+원인
+  대화 기록(멀티턴 상태·조사 기록)을 모든 사용자가 Oracle 기록 하나(case-memory/cases-v4)에 같이 썼습니다.
+  쓸 때마다 그 기록 전체에 잠금 하나를 잡고, 그 사이 남이 바꿨으면 기록 전체를 다시 불러왔습니다.
+  다른 사람이 쓰는 중이면 최대 30초 기다리다 500이 났습니다.
+
+0. 무엇이 바뀌나 (MAIN188 대비 제품 7파일, 테이블·SQL 변경 없음, 워크플로우 파일 그대로)
+  1) 대화 기록을 채팅마다 따로 둠: case-memory/chats/<채팅 키>/ (같은 Agent 테이블, 묶는 키만 채팅별)
+     → 다른 채팅끼리 잠금을 같이 잡지 않음. 멀티턴(이어가기·이전 질문 고르기·같은 요청 재전송)은 같은 채팅 안이라 그대로.
+  2) 질문 시작 때 서비스 전체 공용 잠금(저장 용량 확인) 제거.
+  3) 질문마다 공용 기록 3개를 통째로 읽던 이전 기록 검사·팀 설정 읽기 생략(현장 수 초).
+  4) 같은 채팅에 앞 질문이 아직 처리 중이면 500 대신 409 안내:
+     "요청 상태가 변경되었거나 처리 중입니다. 최신 대화 상태를 확인해 주세요."
+  - 기존 공용 기록은 지우지 않고 그대로 둡니다. 적용 전에 시작한 대화를 이어 쓰면 이전 기록이 안 보일 수 있으니
+    적용 후에는 새 채팅으로 시작해 주세요.
+  - 채팅 간 경험·숏컷 재사용은 없습니다(안 쓰기로 함).
+  - 끄기(이전 공용 방식): 코드서빙 환경변수 GENOS_CHAT_RECORDS=off 후 재시작. 기본은 켜짐(DP=oracle일 때).
+  - MAIN188 내용(CPU·쿼리 속도 수정, 실시간 로그 기본 끔 등)이 모두 들어 있습니다.
+
+1. 로컬 결과 (실제 service.py 입구, 로컬 Oracle Agent 기록, 모의 모델)
+  | 시험                                   | MAIN188 (수정 전)          | MAIN189 |
+  | 다른 채팅이 쓰는 중에 질문              | 500 (현장과 같은 오류)      | 정상    |
+  | 두 채팅 동시 질문 + 같은 요청 다시 보냄  | 한 채팅 500                 | 둘 다 정상, 저장 답 재사용 |
+  | 같은 채팅에서 앞 질문 처리 중 다시 보냄  | -                           | 409 안내 |
+
+2. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN189_ONECLICK_R1.txt  → 완료 표시 MAIN189_ONECLICK_DONE, MAIN189_EXIT=0
+  확인·스테이징: bash MAIN189_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  기존 절차로 commit 후: bash MAIN189_ONECLICK_R1.txt gate-code → push → 새 코드서빙 리비전
+  시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+  현장이 MAIN175 이하·186C·188 중 무엇이든 이것 하나만 적용하면 됩니다. 꼭 넣을 환경변수 없음.
+
+3. 확인
+  ① 두 사람이 각자 새 채팅에서 동시에 질문 → 둘 다 답변, 컨테이너 로그에 BlockingIOError 없음
+  ② 속도·CPU (같은 TRANSFER 폴더, 읽기 전용):
+     bash ./GENOS_CPU_REPORT_R2.txt list → bash ./GENOS_CPU_REPORT_R2.txt 번호   (사진 3장)
+     bash ./GENOS_ORACLE_REPORT_R4.txt 번호   (사진 5장, 최소 사진 1·5)
+     위치가 기본과 다르면 끝에 --root /실제/GENOS_SHARED_LOG_DIR값 · 읽는 법: ORACLE_REPORT_GUIDE_R4.txt
+
+4. 원복: bash MAIN189_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+5. 검증 범위 (로컬, 현장 미실행)
+- 동시 사용 시험 3개: MAIN188 3개 실패(현장 오류 재현) → MAIN189 3개 통과.
+- 관련 회귀 113파일 MAIN188 대비 새 실패 0, 고쳐진 3(새 시험).
+- Oracle 규모 점검 통과(질문 실패 0, 한도 초과 0, 한 질문 최대 SQL 418 = MAIN188). SQL 계획 647 그대로.
+- 진입 확인 17/17, MAIN188 롤백 보존. 설치기: MAIN175 격리 checkout에서 15개 명령 통과.
+- 남은 것: 잠금 유지 시간(끊긴 요청의 잠금이 최대 약 32분 남음)은 다음 단계. 지금은 그 채팅 하나에만 영향(409).
+- 하지 않은 것: 현장 실행, 실제 모델·여러 실제 사용자 동시 사용.
+상세: VERIFICATION.json / SHA256SUMS.txt

@@ -1,0 +1,104 @@
+{
+  "package": "MAIN186C_FULL_20261110_R1.zip",
+  "zip_sha256": "0e70a43e9e50167d8b2e3fdc6728edca1b7dc4cfe7f6ee38c12fe94d30d7de49",
+  "base": {
+    "field_main": 186,
+    "release_id": "sql-breakdown-20261110-r1",
+    "base_zip_sha256": "8b9452fe0699686c83679b50a2fa45d02fc1a6c0b292a1815d5cd048f133e760"
+  },
+  "measurement_only": true,
+  "changed_from_main186": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+    "02_BACKEND/semantic_runtime/cpu_profile.py",
+    "02_BACKEND/semantic_runtime/oracle_query_plans.py",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py"
+  ],
+  "products": {
+    "02_BACKEND/semantic_runtime/cpu_profile.py": "8e595dfc66cfacb48187bfa7c19c4b3b17aadee3a3e9fea3791da45f80675896",
+    "02_BACKEND/semantic_runtime/oracle_query_service.py": "9f3d6f14eb0b2a073480569bc7371f2854b642bb90604dfcd18660cb25f4c6ea",
+    "02_BACKEND/semantic_runtime/oracle_record_sqlite.py": "9ff5385399bfe0fa902fcb6a5b79e93fcb443810369cc367748d5507adc7cc08"
+  },
+  "sql_plans": {
+    "before": 646,
+    "after": 646,
+    "executable_identical": true
+  },
+  "engine_preflight": {
+    "engines": 30,
+    "files": 517,
+    "passed": true
+  },
+  "workflow_unchanged": true,
+  "checks": {
+    "unit_and_report": "test_cpu_profile.py 8 passed (sampler CPU attribution, idle not charged, off switch, report pages on Python 3.9/3.11/3.14)",
+    "real_local_oracle_question": {
+      "http": 200,
+      "sql": 897,
+      "request_cpu_ms": 1225,
+      "cpu_profile_in_summary": true,
+      "model": "scripted, 1 s per call",
+      "report_rendered": true
+    },
+    "hydration_on_real_local_oracle": {
+      "passed": 1
+    },
+    "regression_23_files": {
+      "main186": {
+        "passed": 193,
+        "failed": 56,
+        "skipped": 1
+      },
+      "main186c": {
+        "passed": 193,
+        "failed": 56,
+        "skipped": 1
+      },
+      "outcome_changes": 0
+    },
+    "install_isolated_main186_checkout": {
+      "passed": true,
+      "commands": 15
+    }
+  },
+  "not_checked": [
+    "field ORDS/GENOS run",
+    "oracle_scale_guard full run (no SQL change)",
+    "full 171-file regression",
+    "progress poller hydration in the full service.py path (covered by the direct hydration test only)"
+  ],
+  "overlap": "Run while ADR-1480 (another session, live model) was still rerunning; user said to proceed without waiting.",
+  "quality_certified": false,
+  "field_deployed": false,
+  "new_model_calls": 0
+}

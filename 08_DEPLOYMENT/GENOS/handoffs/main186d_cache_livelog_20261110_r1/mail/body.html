@@ -1,0 +1,15 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6">
+<p><b>MAIN186D = MAIN186C + 현장 CPU 사진으로 찾은 두 가지 수정</b> (MAIN186C 대체)</p>
+<p><b>찾은 것</b> (11-10 13:26 CPU 사진)<br>
+1) 질문 처리 스레드 CPU 65.2초(41.5%)가 <code>oracle_dp_io.py:digest</code> 한 줄이었습니다. 요청 안 조회 캐시가 캐시를 쓸 때마다 릴리스 명세 전체를 다시 해시했습니다.<br>
+2) 실시간 로그 스레드가 1초마다 Oracle에서 요청 기록을 읽어 .log에 옮기는 데 23.7초를 썼습니다.</p>
+<p><b>수정</b><br>
+1) 명세 해시는 요청마다 한 번만 계산합니다. 릴리스·권한이 바뀌면 멈추는 보호는 그대로입니다(로컬: 확인 6천 번에 해시 6,002번·약 23초 → 1번).<br>
+2) 실시간 .log / .trace.txt / 읽기용 .txt를 기본으로 만들지 않습니다. 요청 보고서 JSON과 질문답변 목록은 남아 CPU·R4 보고 명령은 그대로 씁니다. 다시 켜기: <code>GENOS_LIVE_LOG=on</code><br>
+답변·SQL·DB 동작은 바뀌지 않습니다. CPU 측정은 그대로 들어 있습니다.</p>
+<p><b>적용</b> (TRANSFER 폴더에서, MAIN186이든 MAIN186C든 이것 하나만)<br>
+<code>bash MAIN186D_ONECLICK_R1.txt</code> → <code>MAIN186D_ONECLICK_DONE</code> → stage·commit → <code>gate-code</code> → push → 새 코드서빙 리비전</p>
+<p><b>확인</b>: 같은 질문 하나 → <code>bash ./GENOS_CPU_REPORT_R1.txt list</code> → <code>bash ./GENOS_CPU_REPORT_R1.txt 번호</code> 사진 3장 + <code>bash ./GENOS_ORACLE_REPORT_R4.txt 번호 --page 1</code></p>
+<p><b>원복</b>: <code>bash MAIN186D_ONECLICK_R1.txt undo --backup '출력된 백업 폴더'</code></p>
+<p><b>로컬 검증</b>: 캐시 확인 시험(수정 전후 비교, 보호 유지), 관련 회귀 48파일(실시간 로그 켜면 MAIN186C와 동일, 끄면 .log 파일을 보는 검사 7개만 바뀜), 실제 로컬 Oracle 한 질문 HTTP 200, MAIN186 사본 설치 15개 명령 통과. 현장 효과는 이번 사진으로 처음 확인합니다. 자세한 내용은 GUIDE.txt를 보세요.</p>
+</body></html>
