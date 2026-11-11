@@ -1,4 +1,8 @@
-"""Returned LLM output is literal and request-local; no model/network calls."""
+"""Returned LLM output is literal and request-local; no model/network calls.
+
+Since 2026-11-11 (LOG=on writes only the .log) the received output lives in the
+.log block itself; there is no .llm_raw.jsonl sidecar.
+"""
 import hashlib
 import json
 import sqlite3
@@ -30,7 +34,20 @@ def read(runtime, shared, run_id):
         handler.poll_journal()
         assert path.read_bytes() == first
     raw_path = path.with_suffix('.llm_raw.jsonl')
-    return first.decode('utf-8'), [json.loads(line) for line in raw_path.read_text().splitlines()], raw_path
+    assert not raw_path.exists()
+    output = first.decode('utf-8')
+    return output, raw_headers(output), raw_path
+
+
+def raw_headers(output):
+    """The JSON header of each MODEL RAW RESPONSE block (everything but the literal content)."""
+    decoder, rows, marker = json.JSONDecoder(), [], '=== MODEL RAW RESPONSE ===\n'
+    start = output.find(marker)
+    while start >= 0:
+        row, _ = decoder.raw_decode(output, start + len(marker))
+        rows.append(row)
+        start = output.find(marker, start + 1)
+    return rows
 
 
 def test_original_json_whitespace_long_content_and_call_lineage(tmp_path):
@@ -46,8 +63,6 @@ def test_original_json_whitespace_long_content_and_call_lineage(tmp_path):
     output, rows, raw_path = read(tmp_path / 'runtime', tmp_path / 'shared', run_id)
     assert original in output and corrected in output
     assert hashlib.sha256(original.encode()).hexdigest() in output
-    assert rows[0]['choices'][0]['content'] == original
-    assert rows[1]['received_body']['choices'][0]['message']['content'] == corrected
     assert [row['attempt_id'] for row in rows] == ['M1', 'M2']
     assert [row['logical_call_id'] for row in rows] == ['Lsame', 'Lsame']
     assert [row['schema_repair'] for row in rows] == [False, True]
@@ -55,7 +70,6 @@ def test_original_json_whitespace_long_content_and_call_lineage(tmp_path):
     assert not any(row['redaction_applied'] for row in rows)
     assert 'PRIVATE PROMPT' not in output and 'PRIVATE INPUT' not in output
     assert journal.read_bytes() == before
-    assert raw_path.stat().st_mode & 0o777 == 0o640
 
 
 @pytest.mark.parametrize('reply', [
@@ -74,19 +88,16 @@ def test_filter_refusal_non_json_and_all_tool_arguments_are_preserved(tmp_path, 
     run_id, _ = record(tmp_path / 'runtime', [reply])
     output, rows, _ = read(tmp_path / 'runtime', tmp_path / 'shared', run_id)
     assert len(rows) == 1 and rows[0]['http_status'] == reply['status_code']
-    assert rows[0]['received_body'] == reply.get('body_json')
     if reply.get('body_text'):
-        assert reply['body_text'] in output and rows[0]['body_text'] == reply['body_text']
+        assert reply['body_text'] in output
     elif reply['body_json'].get('guardrail_result'):
         assert 'content_filter' in output and 'message.refusal' in output
-        assert rows[0]['choices'][0]['content'] == ''
-        assert rows[0]['received_body']['unknown_guard_field'] == {'policy': 'fixture-policy'}
-    elif isinstance(rows[0]['choices'][0]['tool_calls'], list):
-        assert 'not json\nraw argument' in output
-        assert rows[0]['choices'][0]['tool_calls'] == reply['body_json']['choices'][0]['message']['tool_calls']
+        assert '정책상 답변을 제공할 수 없습니다.\n상세 사유' in output
+        assert rows[0]['guardrail_result'] == {'blocked': True}
+    elif isinstance(reply['body_json']['choices'][0]['message']['tool_calls'], list):
+        assert 'not json\nraw argument' in output and '{ "intent": "DRAFT" }' in output
     else:
         assert 'unusual provider reply' in output
-        assert rows[0]['choices'][0]['tool_calls'] == 17
 
 
 def test_credentials_are_masked_and_redaction_is_explicit(tmp_path, monkeypatch):
@@ -96,20 +107,12 @@ def test_credentials_are_masked_and_redaction_is_explicit(tmp_path, monkeypatch)
         'choices': [{'message': {'content': content}, 'finish_reason': 'stop'}]}}
     run_id, _ = record(tmp_path / 'runtime', [response])
     output, rows, _ = read(tmp_path / 'runtime', tmp_path / 'shared', run_id)
-    assert 'fixture-raw-secret' not in output and 'fixture-raw-secret' not in json.dumps(rows)
+    assert 'fixture-raw-secret' not in output
     assert rows[0]['redaction_applied'] is True
-    assert rows[0]['received_body']['api_key'] == '[REDACTED]'
-    assert rows[0]['choices'][0]['content'] == content.replace('fixture-raw-secret', '[REDACTED]')
+    assert content.replace('fixture-raw-secret', '[REDACTED]') in output
 
 
-def test_sidecar_write_failure_keeps_literal_live_block(tmp_path, monkeypatch):
-    import os
-    original_open = os.open
-    def fail_sidecar(path, *args, **kwargs):
-        if str(path).endswith('.llm_raw.jsonl'):
-            raise OSError('synthetic sidecar unavailable')
-        return original_open(path, *args, **kwargs)
-    monkeypatch.setattr(os, 'open', fail_sidecar)
+def test_received_output_stays_in_the_log_without_a_sidecar(tmp_path):
     content = '수신 응답\n원문'
     run_id, _ = record(tmp_path / 'runtime', [
         {'body_json': {'choices': [{'message': {'content': content}}]}}])
@@ -117,6 +120,6 @@ def test_sidecar_write_failure_keeps_literal_live_block(tmp_path, monkeypatch):
         handler.run_id = run_id
         handler.poll_journal()
     output = path.read_text()
-    assert content in output and 'raw_sidecar_status=UNAVAILABLE' in output
+    assert content in output and 'raw_sidecar_status' not in output
     assert 'TRACE READER ERROR' not in output
-    assert not path.with_suffix('.llm_raw.jsonl').exists()
+    assert sorted(p.name for p in path.parent.iterdir()) == [path.name]

@@ -1,0 +1,98 @@
+{
+  "main_generation": 203,
+  "release_id": "fts-search-units-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN202 (progress-report-20261111-r1)",
+  "replaces_sent": "MAIN202 (progress-report-20261111-r1, mailed 1a1c82f00459d100)",
+  "product_changes_since_main202": [
+    "02_BACKEND/semantic_runtime/oracle_query_fulltext.py (search groups AND, rarest-word candidates, exact text check, document frequency cache)",
+    "02_BACKEND/semantic_runtime/fulltext.py (SQLite expression: a term is an AND group; local experiments only)",
+    "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py (search_groups: model query = one group, article numbers and document names removed)",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py (SEARCH_BODY uses search_groups)",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py (preview words of a group)"
+  ],
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 389",
+  "local_validation": {
+    "oracle_reference": {
+      "Q1 문서 하나 안 검색(주관업무준칙): \"위임 범위\", \"전결권\"": {
+        "terms": [
+          "위임 범위",
+          "전결 \"전결권\""
+        ],
+        "units": 1,
+        "reference_units": 1,
+        "same": true,
+        "sql_seconds": 0.2
+      },
+      "Q2 문서 하나 안 검색(주관업무준칙): \"주관 업무\", \"1천억원 이상\"": {
+        "terms": [
+          "주관 업무",
+          "1 천억 이상 \"1천억원\""
+        ],
+        "units": 1,
+        "reference_units": 1,
+        "same": true,
+        "sql_seconds": 0.195
+      },
+      "Q3 전체 문서 첫 검색: \"신규 상품 판단 기준\", \"상품 전결권\"": {
+        "terms": [
+          "신규 상품 판단 기준",
+          "상품 전결 \"전결권\""
+        ],
+        "units": 1,
+        "reference_units": 1,
+        "same": true,
+        "sql_seconds": 0.209
+      },
+      "Q4 전체 문서 첫 검색: \"자기자본\", \"1천억원 이상\"": {
+        "terms": [
+          "자본 \"자기자본\"",
+          "1 천억 이상 \"1천억원\""
+        ],
+        "units": 197,
+        "reference_units": 197,
+        "same": true,
+        "sql_seconds": 0.294
+      },
+      "Q5 넓은 OR(낱말 하나씩)": {
+        "terms": [
+          "경우",
+          "규정 위반",
+          "자본 \"자기자본\""
+        ],
+        "units": 16158,
+        "reference_units": 16158,
+        "same": true,
+        "sql_seconds": 1.197
+      }
+    },
+    "regression": {
+      "files": 146,
+      "new_failures": 0,
+      "already_failing": 629
+    },
+    "oracle_scale_guard": "passed (question failures 0, over-limit reads 0, max SQL per turn 294)",
+    "entry_check": "17/17",
+    "installer": {
+      "base": "MAIN202 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field Oracle timing (FTS_CHECK_R2 pending)",
+    "live model run on Oracle",
+    "SQLite (local experiments) has no exact text check",
+    "raw-question fallback stays an OR of words"
+  ],
+  "package": {
+    "zip": "MAIN203_FULL_20261111_R1.zip",
+    "zip_sha256": "f74863a016409dee82fb9e68958aafd64358a4d094c837c549caa59bba7bb582",
+    "members": 561,
+    "workflow": "MAIN203_WORKFLOW.py",
+    "workflow_sha256": "356874fd225010dd8bead2001c145df9c884d5d5cd8bf50f81e8203b6f15efe2"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

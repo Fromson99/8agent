@@ -1,0 +1,71 @@
+{
+  "main_generation": 199,
+  "release_id": "metadata-clob-20261111-r1",
+  "selected_locally": true,
+  "replaces_sent": "MAIN198 (linked-documents-20261111-r2, mailed 1a1c7f8852ae68df)",
+  "field_error": "runtime.bootstrap.failed DPError READ_FAILED ORA-40478 at document_aliases.status -> oracle_query.document_values (HTTP 503, 2026-11-11T00:26Z)",
+  "cause": "JSON_QUERY(SOURCE_JSON,'$.document_metadata' RETURNING VARCHAR2(4000) ERROR ON ERROR); local data 1,491 of 1,545 documents exceed 4,000 bytes (max ~19 KB). Introduced in MAIN195; affects MAIN196, 197, 198.",
+  "product_changes_since_main198": [
+    "02_BACKEND/semantic_runtime/oracle_query.py (document_values reads RETURNING CLOB values 40 documents a page, whole up to 15,000 chars, longer values continued with a length check)",
+    "02_BACKEND/semantic_runtime/team_scope.py, document_aliases.py, navigation_match.py, folder_navigation.py (RETURNING VARCHAR2(4000) -> RETURNING CLOB)"
+  ],
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 388",
+  "local_validation": {
+    "real_oracle_real_metadata": {
+      "documents": 1547,
+      "over_4000_bytes": 1491,
+      "main198": {
+        "team_scope.py": "READ_FAILED: ORACLE_ERROR: ORA-40478",
+        "document_aliases.py": "READ_FAILED: ORACLE_ERROR: ORA-40478",
+        "navigation_match.py": "READ_FAILED: ORACLE_ERROR: ORA-40478",
+        "folder_navigation.py": "READ_FAILED: ORACLE_ERROR: ORA-40478"
+      },
+      "main199": {
+        "team_scope.py": {
+          "sql_calls": 39,
+          "seconds": 0.434,
+          "mismatched_values": 0
+        },
+        "document_aliases.py": {
+          "sql_calls": 39,
+          "seconds": 0.398,
+          "mismatched_values": 0
+        },
+        "navigation_match.py": {
+          "sql_calls": 39,
+          "seconds": 0.39,
+          "mismatched_values": 0
+        },
+        "folder_navigation.py": {
+          "sql_calls": 39,
+          "seconds": 2.104,
+          "mismatched_values": 0
+        }
+      }
+    },
+    "regression": {
+      "new_failures": 0,
+      "already_failing": 218,
+      "files": 99
+    },
+    "oracle_scale_guard": "pass (questions failed 0, over-limit reads 0, max 268 SQL per question, same as MAIN198)",
+    "entry_check": "17/17",
+    "installer": {
+      "base": "MAIN198 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field start time on ORDS (4 reads x about 40 SQL, once per process)",
+    "live model run"
+  ],
+  "package": {
+    "zip": "MAIN199_FULL_20261111_R1.zip",
+    "zip_sha256": "9ad1ece104931e368dbe4e31410fa9da5e21783fb5941f2823d98e2469b6014a",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

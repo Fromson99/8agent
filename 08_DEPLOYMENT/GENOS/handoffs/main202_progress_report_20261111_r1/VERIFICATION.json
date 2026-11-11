@@ -1,0 +1,46 @@
+{
+  "main_generation": 202,
+  "release_id": "progress-report-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN201 (nfs-log-20261111-r2)",
+  "replaces_sent": "MAIN201 (nfs-log-20261111-r2, mailed 1a1c821ecfd43f6f)",
+  "product_changes_since_main201": [
+    "02_BACKEND/semantic_runtime/legal_agent/progress_report.py (new: progress report for agent stops)",
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py (request handler: agent stop -> progress report instead of error)",
+    "02_BACKEND/semantic_runtime/legal_agent/errors.py (BudgetExhausted http_status 422)",
+    "02_BACKEND/semantic_runtime/legal_agent/{bounded_source_session,repository,output_contract}.py (report call phase: one attempt, no repair)",
+    "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py (judgment failure wording)",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py (error numbers only for 500/503)"
+  ],
+  "workflow_file_changed_since_field": true,
+  "sql_plans": "388 -> 388",
+  "local_validation": {
+    "new_contract_tests": "test_progress_report.py 20 passed (actual API, scripted model)",
+    "regression": {
+      "files": 112,
+      "new_failures": 0,
+      "already_failing": 600
+    },
+    "oracle_scale_guard": "passed (question failures 0, over-limit reads 0, max SQL per turn 268)",
+    "entry_check": "17/17",
+    "installer": {
+      "base": "MAIN201 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "live model run (Qwen or field model) of the progress report",
+    "progress report path with DP=oracle records (tested with local SQLite records)",
+    "cause of the field (500) screenshot f9ff7265…"
+  ],
+  "package": {
+    "zip": "MAIN202_FULL_20261111_R1.zip",
+    "zip_sha256": "ca34059a8d171c873c8082b39623666046bc9d9924d398285ae529b556d3cce4",
+    "members": 561,
+    "workflow": "MAIN202_WORKFLOW.py",
+    "workflow_sha256": "356874fd225010dd8bead2001c145df9c884d5d5cd8bf50f81e8203b6f15efe2"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

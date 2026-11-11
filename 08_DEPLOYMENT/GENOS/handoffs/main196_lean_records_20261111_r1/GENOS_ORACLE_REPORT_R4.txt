@@ -1,0 +1,978 @@
+#!/usr/bin/env bash
+# GENOS Oracle 병목 보고 R4 (2026-11-10, MAIN186) - 방금 질문에서 어떤 SQL이 느렸는지 사진 5장으로
+# 사진 5: SQL 시간 쪼개기(ORDS 빈 왕복·보낸 크기별 시간·SQL 중 CPU) — MAIN186 측정이 있는 요청만 채워짐
+#
+# 이 파일을 올린 TRANSFER 폴더에서 실행합니다(다른 폴더로 이동하지 않습니다).
+#   bash ./GENOS_ORACLE_REPORT_R4.txt list     최근 요청 목록(번호, 시각, 서버 처리 시간)
+#   bash ./GENOS_ORACLE_REPORT_R4.txt 2        목록의 2번 요청 보고(사진 1/5 ~ 5/5)
+#   bash ./GENOS_ORACLE_REPORT_R4.txt          가장 최근 요청 보고
+#   bash ./GENOS_ORACLE_REPORT_R4.txt sum      최근 요청 여러 건 합산(사진 1장)
+#   bash ./GENOS_ORACLE_REPORT_R4.txt 2 --page 3   사진 3/5 한 장만 다시
+# 요청 보고서 위치가 기본(/nfs-root/diamo/8-agent/rag-request-reports)과 다르면 끝에 --root /실제/GENOS_SHARED_LOG_DIR
+#
+# 읽기 전용: 코드서빙·코드·DB·모델·설정을 바꾸지 않고, Oracle에 접속하지 않습니다.
+# 질문·답변·원문·SQL 본문·바인드 값은 출력하지 않습니다(시각·시간·횟수·코드 위치·SQL 해시만).
+# 결과는 화면과 ./GENOS_ORACLE_REPORT_RESULTS/REPORT-날짜시각.txt 에 같이 남습니다.
+set -u
+OUT_DIR=./GENOS_ORACLE_REPORT_RESULTS
+mkdir -p "$OUT_DIR" || { echo "결과 폴더를 만들지 못했습니다: $OUT_DIR"; echo "종료=1"; exit 1; }
+SAVE="$OUT_DIR/REPORT-$(date +%Y%m%d-%H%M%S).txt"
+python3 -I - "$@" <<'GENOS_ORACLE_REPORT_R4_PY' 2>&1 | tee "$SAVE"
+"""GENOS Oracle 병목 보고 R4 — 요청 보고서(JSON)만 읽어 어떤 SQL이 느린지 사진 5장 분량으로 정리.
+
+R4(2026-11-10, MAIN186 측정): 사진 5 "SQL 시간 쪼개기" — ORDS 빈 왕복(SELECT 1 FROM DUAL), 보낸 크기 구간별 시간,
+SQL 도중 CPU(요청 스레드·프로세스 전체), 위치별 평균 보낸 크기와 빈 왕복 대비 초과 시간. DB 조회 권한 없이 GENOS 쪽에서 가린다.
+[A]에 요청 CPU(프로세스) 줄 추가. MAIN186 이전 보고서도 사진 1~4는 R3와 같고 사진 5에 "측정 없음"이 나온다.
+
+R3(2026-11-10, MAIN185): R2의 시간 분해에 더해 느린·실패 SQL 하나하나의 호출 위치(어느 코드가 무엇을 읽으려고 보냈는지),
+호출 위치별 합계·평균, 구간별 SQL, 최근 여러 요청 합산을 한국어 설명과 함께 보여 준다.
+출력은 "사진 n/5" 단위로 나뉘고 한 장은 40줄 이하.
+
+읽기 전용, 표준 라이브러리만. 서빙 코드 import·Oracle 접속·모델 호출 없음.
+질문·답변·원문·SQL 본문·바인드 값은 출력하지 않는다(시각·시간·횟수·코드 위치·해시만).
+
+  python3 -I oracle_report.py                 가장 최근 요청
+  python3 -I oracle_report.py list            최근 요청 목록(번호)
+  python3 -I oracle_report.py 2               목록의 2번
+  python3 -I oracle_report.py sum             최근 요청 여러 건 합산(어느 요청이 문제인지 모를 때, 사진 1장)
+  python3 -I oracle_report.py /경로/보고서.json
+  공통 옵션: --root <요청 보고서 상위 폴더>  (기본: GENOS_SHARED_LOG_DIR, 없으면 /nfs-root/diamo/8-agent/rag-request-reports)
+             --page N  해당 사진 한 장만 다시 출력
+"""
+import json
+import math
+import os
+import re
+import sys
+import unicodedata
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+VERSION = 'genos-oracle-report-20261110-r4'
+COMMAND = 'bash ./GENOS_ORACLE_REPORT_R4.txt'
+DEFAULT_ROOT = '/nfs-root/diamo/8-agent/rag-request-reports'
+KST = timezone(timedelta(hours=9))
+MAX_REPORT_BYTES = 1024 * 1024 * 1024
+MAX_ROW_BYTES = 4 * 1024 * 1024
+LIST_LIMIT = 12
+LOOK_BACK_DAYS = 3
+# Journal records that only bracket a model call; they say nothing about work done between calls.
+QUIET_KINDS = frozenset({'MODEL_VIEW', 'WIRE_PROJECTION', 'MODEL_OUTPUT_CONTRACT', 'MODEL_MINIMAL_OUTPUT_CONTRACT',
+                         'MODEL_CORRECTION_OWNER', 'ATTEMPT_RESERVED', 'ATTEMPT_SENT', 'ATTEMPT_FINISHED',
+                         'MODEL_OUTPUT_RECONSTRUCTED'})
+MODEL_END = ('model.call.finished', 'model.attempt.received', 'model.attempt.failed')
+OTHER_SKIP = ('step.', 'journal.transaction.timings', 'model.', 'oracle.sql')
+# Field SQL family (sha256[:12] of the statement as sent with the development mapping SIDDA/SIDDS).
+AGENT_FAMILIES = {
+    'c9260c333bac': '원장 상태 읽기', '90bb54eaee73': '원장 행 목록', 'b63daa8bea3f': '원장 행 목록(종류)',
+    '45fcce8d148e': '원장 행 읽기(영수증 확인 등)', '6f4d2267d3d6': '원장 본문 읽기', '98565f4a4cf1': '원장 본문 쓰기',
+    '24c879608b4a': '원장 커밋(MAIN175 이하)', 'd4b9ec9910e8': '원장 커밋+본문(MAIN176)', '4a11ac4db480': 'DB 시각(원장 잠금)',
+    'da6bb6937e51': '원장 잠금 획득', '3d5fb28197cf': '원장 잠금 해제', '2293e4bfa6a6': '원장 임시 잠금 삭제',
+    'dd56ac0e18de': '원장 용량 합계'}
+_SOURCE_PACKED = ('oracle_query_catalog.page:000cd17db605,005bb5bc1ae3,04f3ddfd9202,0bf5d47f1fee,13fd7ad5a291,213b1e995b44,2b5f3454eefe,53cacc6ccb38,7a29be6b9693,8c306eaa6759,922a9fb6a75e,92e731a0f09e,9ea4d0d42a4c,c6cfe44a1add,cae709c023d3,cd514e77eba7,db393d5ad590,ef059f6221e9,f35349854f8b,fe5d7d6b5663;oracle_query_db._pages:00269e70f729,00e469ccca97,00eb840a2625,015f65dd54ad,0193244bd6ec,0198490d450d,01b77223a919,01d77a92591f,02955808ebfb,02a4613c526d,02b3ac473719,0384b63c781a,03dfa7c4fbb6,0425935f9a35,046678c0b887,047163fe228e,0493128faa66,04a7bcdef0d7,058c5c413f3d,059f9e9aa565,05af07548d09,05d174c84232,05e5cb07221f,05f84301bf4f,069cf44088d5,06a6af51b452,06bb914c614d,06e3ccae9a74,06fc208c920c,071dd3a4701e,073b2236c104,07a6d89c68e3,07f77d582d55,07f92449df04,0860059efac6,08dc434928df,08e15899074c,09640343fc21,097902ada65e,098906e9cb26,09bb40363f2f,09e39837fd5d,09eec301d236,0a07a27127ae,0a58b9e69b9b,0abaf45a5c31,0b6791641a8b,0bad6c05dd7f,0c07c1fb3580,0c0bd16bebb7,0c303464f6f7,0c6becb6a70f,0c6fc1d64790,0cdafcb065b0,0d16e82b6655,0d1df7afc24e,0d56ae684e79,0d79ef3d931d,0efffd2af4fa,0f247ffe70e1,0f4ac4cd78ed,0f64395c4ee5,0fa099404458,0fa4d28b677f,0faf12fda34f,0fd533ed04ef,102a78d4f11c,10367e2add87,1068c7a1fa40,11850f343991,11ef9305b31b,12047f580264,12075238cf2a,12234efcaf1e,1348dac9fb75,13b46a6da0ea,13faadd68204,15060f6e7fa4,1578d3c199fc,15aef2d8e621,15e606d1259a,1642bd8e8eb3,164d37e94dad,1661c1c0a388,1669b7685170,16efcc4641ad,174f42386042,17799fe6c840,178f20f2a8f3,1790c45eff26,17a53f7bb011,17abad5d5971,184147204ae8,187035015f96,1924317d7b80,1931fc788226,19a2ba9fe5c5,19b122cbe622,1a080abf8c6a,1a185b5c3d54,1a49acdfa4db,1a7686cef037,1a769d1d6c04,1b1b6cb9f0ef,1b73a932d111,1bc2bf406a9b,1bd79fab7eb9,1c61725f592b,1ccef682c513,1d0f7ef4474f,1d20510bd8af,1d21c396bbe1,1df1da417f64,1e5df4feb6c3,1e7fc73ae405,1ec08fdcc819,1eff207c7ae1,1f7a30c95e1d,1f85635ddd71,1f94b50dd91c,1fdb7217bb64,2013618aac93,20159a280ba8,20b4bcaf9160,210c8d2c3299,21b62cdc12c4,21c101f41dd8,2215a8af8a8b,22c2eae825fe,23234b76a96b,241cfde06fb0,24dacd1ec66b,24dbc2d172bb,2544403ab72f,254754101454,259721bd45c0,26a480fa2767,26a9e04557a7,26c945547937,270743dad2a3,27373bd64667,27581d0057ea,277702a32ae1,27d8e68c59bf,27e2b9dadff3,2827747713b8,29db33f1c515,2a172a408025,2a17c4df487e,2ab3c10d13a8,2add87c8e6f4,2b458fb7f700,2ba1d7152b19,2bce1cdef452,2c01d0b5a8e9,2c2030b8d182,2c4b69883d67,2c9a0b5ea912,2ca609a27b25,2cdc285393b1,2d2781f0d187,2d6bcc00a65d,2de312fc7660,2e1be9867fcf,2e2ac28b9acf,2f1ca5a1fd7a,2f3fa3430a99,2f55a68266e3,2f6bdcf35d02,2f714a1d9590,2fbe3171d995,300e19569175,302dd397108a,3105ea3cb229,313bd29f115a,314029ffa74b,31bccb8deef7,330b99dd873b,33600d604c84,33adc2aa37f5,33bea74d148e,340f62e1750e,34aed56694a0,35004ed4bde9,352f0cc5e89c,35dc275a0f1e,36a6b3d8e8e1,36c6cd601847,36da450dba34,37a0a587a6b1,3817692783ee,38621f194aa8,38788dcd8121,38fee395d17c,392bf3b01b62,395822374f85,3978733ac9b5,3a22614b5c74,3a2c6464bda5,3a4a1d04eecf,3a86af6ad549,3aa546e5124d,3b4cca128f5d,3b7fdea9a135,3b838f7d25b2,3b855f03fc03,3c04d1c73b7f,3c1ef6610581,3c50b8227e36,3d05b6690535,3d31cadd131f,3d79a04e5b98,3d9833209cd9,3deeaf7a5a84,3e1450432c05,3e4014fc7014,3f1a898e0671,3f2447813ef9,3fa940b25c2f,40231b6df6f3,405bb79929ec,4084de73a557,4098cf0ef422,40ad7f46d866,40e9bc2837eb,413a8189d2e4,417bbb3b7c9e,41ace0036723,41ba4c1b18d5,41ce6c83c818,41d410d74c5f,41ea849ff1e4,41f6808e663b,41fd7527dc8c,421ea52cf106,42b21f8d42e0,42cf82f4568f,42ed739b77b1,4303e11658b7,431f8914ced0,439845dd3030,44aa44623b84,44b67603f886,44e9d55fa3e7,44f2530508a3,4522036bcbef,4553d24e0480,4591da50898c,45a72663c5f1,45aaa4c61823,45bb4df66bd6,460552f4f3bf,463230dcfd14,463fbc5119ce,464bd9608651,465147322e72,46beccf138f9,46dea2dbbbb4,46ecfb376665,4754108f9d43,4767b5ff28ad,47c8229ae0ea,47db25d41e92,47fc1c051f53,47fece5b8ee5,48424c5d5634,48fd1a36c941,48ff78ae67d6,495fe7045ad5,4979ca776b1f,499f935aaa6e,49ae004fe732,49ea53568ef0,49f7795ba67e,4a2282c2dc19,4ab4634b14d1,4af9b0451b94,4b0583e11a86,4c02cc904640,4cd6a627f506,4cd926f7061b,4ce9524731d0,4cf14656f493,4cf27d468833,4cfb3b664a03,4d76660fe07e,4de260125e76,4de47e8dc5da,4deaf3f5075f,4e2b1d0087cf,4e57870f9b82,4e5a2e300d8a,4e6c6478371b,4e7d1d7d2030,4e827dff98e2,4ee8ae001435,4f665b4d8bf3,4f68d2c0b627,4f7b39e6f340,4fbaa628c9ae,4fe7307d5a90,500ab7fb5ea2,5080231650a5,5099e3e71c4f,515f3681e239,51f76d543112,528bfb2cd037,529563aefa56,52bbba0204bd,52c7a4b79086,53a4685a5a8e,53a95771738e,53b4ea6093b9,544bf8723487,550af7c2b082,551d8beec9bd,55615f7685c1,55b4acfdeb42,56c685cbd5ba,56e2f3145467,573af36d9439,57c8302ec91d,57fbeafaa32b,58093984ca0d,58cb1726e473,58e769aa1170,590cbfe48e64,59a54434fdb3,59be50e475af,59d916728a62,59f3342bcd65,5a79f52791a6,5a7c754b04a3,5aa09cb1821b,5ac72b5d8eff,5b02bc462f94,5b3b31668f39,5b40de194b3d,5b937f5b3115,5be80d2c1df9,5c1d284415dc,5c2e40481fb1,5c694c702833,5cb186224549,5d193d41fc32,5d7d97858240,5de23e3e629c,5de9dcc956c0,5e0488ae9f87,5e0e6a9dcfd6,5e44a88262b9,5e76c311dda5,5f2a9a5317cd,5f3686a12e1b,5f418e37175a,5f49085ff331,5f54b1422897,5f9310c14ef7,5fe280d2926e,60568f3f47fe,60c21989631b,60c62112aaa3,60cc5436c210,60e86159e754,613a1559647e,61ce97ee7fa0,62a1e4374dde,62e1dac2a6da,6315b4b3dbaa,633b9d557376,637d297ad9ba,63ad6b060804,6406f1790c69,6427e4dadb69,6443d4a0961c,6465c517da52,65852bd59384,6588f4a9d533,665d9e280ac2,66be0d52d634,671ec8f30c3f,674f364d0afe,67f5063ba68e,67f6a7d9504a,6814fbc570c6,682f2a6d703e,688be83f5f66,693c1eddb5f8,69482592fd2f,69b536664386,6a5f767c6cc3,6b1ab75de271,6b4c6cbfd229,6b68e8126d25,6b9201445826,6c1a1bb87997,6c620cf8cc5b,6cbd4831bc05,6d6681b0c658,6d8e1bba5dfb,6d923f52d15c,6db377dcf63c,6deb365180eb,6e04b26739c8,6e38b4152f72,6e6eed8e1772,6e9d54be609f,6f4f14b6a882,6f63af66826b,6f6b11b962b1,6f752e910fb8,6fb470f71a35,709d4a01a9ea,715c86083936,71752c417c00,71873dc532ab,71883b31665b,71cdb2ba738f,71e201f3ee74,71ec9a93fe4b,725e464dcc87,72b1962ab7db,730633140c42,731fdaf0335e,7321e1692ff1,7339f6635ffd,738e2ccd3638,739c42d689a1,742e7282581c,7466b3ce3a59,746f40680253,747d9a767b54,74cc33cad2c7,74d02aab9f08,7560516cd2dc,75907b1efc06,7598032e8b05,761ed5a8d71f,7623175bde19,76a086699466,76fac888fffd,771e645e2f09,773a152fae22,7785e95c2ba7,784d0de3fb6e,7858a8bb60e8,785ab3965253,7860347a0190,788b011fd0c1,78f83c017b10,7900d7f036d6,7934e3d1fc3c,7968f2f57bdc,79a73608779c,79f5733ece48,7a131cc26185,7a2098bdb51b,7b1bfb639a8d,7b1e5df80002,7b3f147c9599,7c171ae2a0fc,7c54b1f75fd4,7cdb68f8a137,7d3140198967,7d651af8ffb2,7df7d8ac67b7,7e7585a6a36f,7e859a289683,7ecfbb85b0ed,7f0d0873c79f,7f728bc1d501,7f886c543876,80174418e886,80809b52d1e3,80d1a389d39a,80fe043ab9e1,810420af00df,814acee512f3,81b042052a27,81c32af84371,82429b76f24d,8296e01e2d0d,82d6313d88e9,83457c776506,8348e1899a9b,8396cfdc926c,83b0c9e03b92,8427d7366508,845e148861ec,846a07864b83,849f0e7ffadc,84ab57452edf,853c350e86dc,8595633740e5,85a8fd099bc5,860acc7a810c,865280630784,8658a7b0d920,86ce8c751258,86cfd8e74c33,871f41e231a3,8750a37fd4c5,877b0f8466ae,87ea4b5576f4,88a0d0947404,894fb04f4bab,8975ac0e269d,89b532dca30f,8a561fbfaa5b,8a9bcbcd0a09,8afff5be57fe,8bb9285da935,8c0ccaf44b04,8c9327bcea39,8d5b8c702143,8d95d6472404,8d98726577c0,8da5e83e83d5,8df1c8dd61a4,8df6d646504d,8dfd6deb94e8,8f75d101241e,8f834a42fdb1,8fa09c48c9be,8fd8c902d163,8fd9868562a3,8ffc0dc97779,90861e6beebb,917a580b37bc,9187c2b38844,923818297a02,925214d8ce6d,92801716c3cd,928df3b23a0c,92a01f291e73,92a1f2620b0e,92f8c1483caa,9303e19490cc,93561b8c2bcd,937d0892c4f9,937d1afb88ea,93b12eea7367,9412b69b21fa,943bd3219327,943ece4c6d7c,94604efc89dd,94c0e48a3946,94ef3560e8e9,950e65490abd,95bf9600556e,961d78f2ab4e,96468de3d3bd,967bc8fe967b,96e3c158ccfd,96f305fa8c7c,97b81473dc1e,97dbba3173df,984aa16ba6eb,98abd42ae4bb,98e4fd4cc77b,9911b9bb52ae,9952ad07cb1d,99decbe742a6,9a5527559add,9a6fe8da6dcd,9a7e287fed5c,9a8c3e07dfaa,9a8e4ca2a12e,9acb70a2d441,9c62032be9c8,9c7979079778,9ca2da4b3494,9cffac763e44,9d1f73a9848d,9e21f9ddd18b,9e48cf8f0d6d,9e58094063e7,9f1bc75754f0,9f3238f932f7,9f429d7f9f53,9f662fadd530,9f6a7af08c69,9f9256de775d,a002a24de331,a006a50971b9,a03c2b87363c,a04924a17a5d,a064ba56a802,a0fb488c585b,a12b8c853303,a14cb0544cf1,a153cd80cd6e,a166ec108b38,a168c376a775,a172cf12409e,a23896e80cc7,a2436d5b55fc,a31610b8ba9c,a347bd60802b,a35aaa7563de,a35f683c4a88,a35f7309b416,a36c33d04d4f,a3ed13fb07c9,a415d5958e71,a440f5a0ef2d,a44365275bb7,a4b4599e639f,a530fb2849e0,a562d6b7fae4,a5819fd6f9df,a58bbe77fd18,a5b5519695e4,a5bed5dc926f,a60ba8ff7704,a6a1eed5756a,a6e5520f0aeb,a730fea0b6b8,a74e324b60a5,a7e5817e3623,a7f04a4391fc,a7f1ee04c646,a872c34f2207,a87d32dbee64,a8b3439aebb4,a8cf4004002e,a8d74809e25e,a938ed669a80,a95315c56815,a98a34ef6382,a9b7415d80fd,aa389e1f2a80,ab346d5eaac4,ab7f1cd5645b,abc690549c24,abec22674add,ac01e1643405,ac1a38c10170,ace660978af4,ad256c5b0a3a,adf5aa3f58f4,ae9307544b8b,aea1a98f9a47,aecc91c7a4d8,af9b3736ffc7,afbed617ec5a,afe04ff2b7aa,b04067d2b3bc,b057402f629e,b0a9837dffa0,b10ae7043db3,b13df3376c64,b1506b3e0748,b15dbb104465,b16044411d7f,b174739406d9,b2409d09bb3c,b2abbb090e99,b33b156f20a0,b34d2fef9194,b38df317a69c,b3c624655bd2,b400496f52c5,b472a8fe5021,b521aba63d41,b530c0b400db,b56aa3f7756b,b57267295573,b5a922bd2507,b5f14e64ab26,b609edb8fec5,b6f3ca9e91dd,b6fe248c1eed,b71686bdff46,b79498e0dc1b,b8418cdaf289,b86819659afd,b8f632fc8aee,b929d7a294b5,b9a528679709,ba22d3e1f139,ba3b71a97ca5,ba7342da7029,ba876b7a8ec1,baeb028d0d4b,baed524fc58b,bbcf6b1cb359,bc4bafaddded,bcee87dd2209,bd7f1883f89d,bdc66f13f583,bdca0974f224,bdca28e10089,bdd5b4c369c4,bdf67685752d,be48901bff32,be9250d4d7fb,be98c46be2a9,bec9a312f19d,bed676277c38,bf136b516da5,bf280fb63d51,bf6feb036548,bfb8621ca63a,c04000980167,c06dfc6425c8,c0971504852b,c0d6035a99b9,c0e6fea0baa3,c15a5313b16b,c1c06f8fd2ac,c2404ca36dca,c28ef0a33380,c3112a44f1e3,c330de54167c,c367d292e208,c4262bb22896,c507eb83dc31,c5204f367f91,c546b848a0b0,c54fc4a53dbb,c56ce715be6b,c57b5b46a234,c5c72efca83f,c72d2d078667,c763d7d2d662,c76dc1e46ecf,c8791a983bac,c93c9faacec5,c956afd184e6,c9a370b39ce4,cb0b95deda52,cb12afdc4416,cb81320f82dc,cc07df37a3c7,ccf43e977b86,cd0f040a28d1,cd1ebf7a4f7e,cd2c6852da20,cd99f691ea0f,cdeb86f9b64d,ce02a3592cbc,ce06390bd374,ce7020c90b95,ce9ba2fd8e9b,d0ac664db668,d1246a6700c1,d21180c286f6,d23e0a51e3ab,d26b41dc94f0,d273b6288d8f,d275054d1e6e,d2d7371bd4e3,d2ee33f5f852,d311d5ac6072,d340b3c0a9a8,d3e6dca99c0b,d423a2de2448,d4384fa80738,d4433a4a642b,d4b998ba1b83,d4d9a5c7cb82,d508d8703831,d50982e44503,d50cea8f5f73,d5a91219a3c6,d6139aa2d3d9,d6c1ecdfaacd,d6dc1357d51b,d724c32cf1e6,d7328e661e36,d733753df106,d76652fb2f66,d767573e72cc,d7a451fdd0cd,d7d678298288,d80680a8d7d3,d8453b94d43c,d85019c5f1a2,d855d4327918,d90a84103676,d91a63aeabf0,d93361c4bf66,d9a9403d84d1,d9e18b1453f0,da2e5da57078,db0bfc80fe45,db12f32b82e7,db5b26eafc54,db5e0524e7a4,db72260635ae,dbdb38fbde2d,dc2d6a337a5c,dc453b597c8c,dcb38abed982,dcb75f3c9b2e,dcc19cc0c81c,dcd3b05e9ce8,dcd6bc8c6ea8,dd02d2f3899f,dd295ca2e3e3,dd59b55ae639,dd6d56ec0068,dd830eeb5a47,dd96ed79c386,dda25e10515e,ddbd342dc4c4,de2954ae02ab,de3a769679d3,de72834a225d,df00cc9457f8,df3cd86aa981,df5baf711ad1,df7394d1a3a5,df96a02258e5,dfce59517a53,e079010c0689,e0ee9fbd9ba6,e0f47c88d213,e0ff96120c69,e11d59976c53,e140d7d526f9,e1576b8f78a7,e18edb4d9566,e211f18b15cd,e21e15582b1c,e23c4fe3b1c9,e23c9d507cb3,e2756ffd94e7,e2b79a2d9d7e,e2c461193ecf,e2c865c5f044,e3ac57e6368d,e3e036a5087f,e3eb5c35ab48,e40f5e07c32e,e46e6bd8d4be,e4b5849de868,e568d2e24a36,e5b49b6e9004,e5fb6318b087,e5ff2e31b08e,e6a5e5bf949f,e6d2637ea968,e6d3eb00cdb7,e6e77b6d4558,e6f6dffc6a0e,e76b66fd038e,e7b3830a07d3,e7c0cef8039c,e7dc8f130598,e8259047e484,e844ee82d944,e8a6d40ea6ef,e8d33f8e43c9,e99d8a3feb3b,ea1547b8d02f,eaa104f3c1b5,eabd49a3c55a,eabef88e9785,eb2f8dd699e0,eb627b40d213,ebf58e488288,ec31367eb5dc,ec9451f2c738,ec9c83e92b9e,ecf4fbe2bc78,ed5ea59bf73f,edc114038381,ee12307a6d10,ee68fa5caec4,ee8f79457b1f,ef3aa75fc5ec,ef3f0bfeca25,ef485aec8dce,f00d3be17891,f028ab980418,f0529925209e,f064f922933f,f071330c56dd,f0dd0a03da81,f11f910aef66,f13005ba0625,f13f3035e8c9,f18a4dfb6fa8,f1b4f00ccd66,f2307907493d,f23a0dfaa3ea,f27affd7b469,f2ad655c0c48,f3119610dcac,f3179046be28,f323c65e3b42,f35683595ef4,f4a10b1734fb,f4d820b6cbc3,f5d674a67697,f5fb9d7e9064,f651a885182e,f6986b208b2e,f6b66bff4bdf,f6d8ca42d413,f733990ff362,f73f266bfb3b,f82cd7a45a4a,f83016c45d85,f84f0d2d3508,f8b5baf38d76,f8c262fd7e50,f8cb496b9e96,f8db16100f4b,f95cb95fda93,f97029d23041,f9dd0ef8b88c,f9f4efa297be,fa150a81e671,fa1ef2c53c02,fa2b721f6a8b,fae6cf5ab2d9,fafebf71a659,fb08d1638ed2,fbf039e8e983,fc46940fe557,fc7bdf257e31,fcb54e3d75c2,fce4ddc7f6ef,fd1a94478ce5,fd5bf9c63576,fd84ce3cbf22,fe84b7a764a9,ff5994cc1ed0,ff5ed89e2d85,ffccc7ec0047;oracle_query_fulltext._projection:2335d8b28882,4736f68124c7,4e1a2a87f296,a0f046f11aad;oracle_query_index.definition_summaries_for:a46bc47181fb;oracle_query_store.sources:6df1a1dfc647,77a7bd212cd5,a3f4656ccd50,c0581b99e21e,e519fc9c499f;vector_navigation.discover:0d43254c0726,3b93c0d94deb,c57adf32d850')
+SOURCE_FAMILIES = {h: label for part in _SOURCE_PACKED.split(';') for label, hashes in [part.split(':', 1)] for h in hashes.split(',')}
+SITE_NAMES = {'commit': '원장 커밋', '_parts': '원장 본문 읽기', 'bodies': '원장 본문 읽기', '_write_body_rows': '원장 본문 쓰기',
+              'put_bodies': '원장 본문 쓰기', 'lease': '원장 잠금', 'state': '원장 상태 읽기', 'rows': '원장 행 목록',
+              'exact': '원장 행 읽기', 'operation': '원장 영수증 확인', 'shared_lease': '원장 공유 잠금', 'allocated_bytes': '원장 용량'}
+AGENT_CALL_NAMES = {'commit': '커밋', 'body_write': '본문 쓰기', 'body_read': '본문 읽기', 'lease_acquire': '잠금 획득',
+                    'lease_release': '잠금 해제'}
+
+
+def family_name(family):
+    return AGENT_FAMILIES.get(family) or ('원문 조회 ' + SOURCE_FAMILIES[family] if family in SOURCE_FAMILIES else '')
+
+
+def site_name(site):
+    inner, _, outer = str(site).partition('<')
+    module, _, function = inner.rpartition('.')
+    label = SITE_NAMES.get(function) if module == 'oracle_agent_records' else None
+    text = (label + ' (' + function + ')') if label else inner
+    return text + ('  ← ' + outer if outer else '')
+
+
+class Stop(Exception):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
+def width(text):
+    return sum(2 if unicodedata.east_asian_width(ch) in 'WF' else 1 for ch in text)
+
+
+def pad(text, size, right=False):
+    text = str(text)
+    gap = max(0, size - width(text))
+    return (' ' * gap + text) if right else (text + ' ' * gap)
+
+
+def cut(text, size):
+    text = str(text)
+    if width(text) <= size:
+        return text
+    out = ''
+    for ch in text:
+        if width(out + ch) > size - 1:
+            break
+        out += ch
+    return out + '…'
+
+
+def sec(ms):
+    return f'{ms / 1000:,.1f}초'
+
+
+def pct(part, whole):
+    return f'{100 * part / whole:5.1f}%' if whole else '   - '
+
+
+def bar(part, whole, size=20):
+    if not whole:
+        return ''
+    filled = max(0, min(size, int(round(size * part / whole))))
+    return '#' * filled + '.' * (size - filled)
+
+
+def num(value):
+    return value if type(value) in (int, float) and math.isfinite(value) else None
+
+
+def stamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+# ---------------------------------------------------------------- 보고서 찾기
+
+def report_root(argument):
+    for value in (argument, os.environ.get('GENOS_SHARED_LOG_DIR', '').strip(), DEFAULT_ROOT):
+        if value:
+            root = Path(value).expanduser()
+            if root.is_dir():
+                return root
+            if value == argument:
+                raise Stop(2, f'요청 보고서 폴더가 없습니다: {root}')
+    raise Stop(2, '요청 보고서 폴더를 찾지 못했습니다. 코드서빙의 GENOS_SHARED_LOG_DIR 값을 --root 로 주세요.\n'
+                  f'  기본 위치 {DEFAULT_ROOT} 없음. 확인: ls -d /nfs-root/*/8-agent/rag-request-reports')
+
+
+def recent_requests(root):
+    today = datetime.now(KST).date()
+    rows, unreadable = [], 0
+    for back in range(LOOK_BACK_DAYS + 1):
+        day = root / (today - timedelta(days=back)).isoformat()
+        if not day.is_dir():
+            continue
+        seen = set()
+        for row_path in day.glob('*/*/_qa/*.row'):
+            try:
+                with row_path.open('rb') as source:
+                    raw = source.read(MAX_ROW_BYTES + 1)
+                if len(raw) > MAX_ROW_BYTES:
+                    raise ValueError
+                row = json.loads(raw)
+                when = stamp(row['requested_at'])
+                if when is None:
+                    raise ValueError
+                report = row_path.parent.parent / str(row.get('report') or '')
+                seen.add(report.name)
+                rows.append({'when': when, 'seconds': num(row.get('seconds')), 'team': str(row.get('team') or ''),
+                             'component': row_path.parent.parent.name, 'status': str(row.get('status') or ''),
+                             'http': row.get('http_status'), 'report': report})
+            except (OSError, ValueError, TypeError, KeyError):
+                unreadable += 1
+        # A request whose summary row was not written still has its JSON report.
+        for report in day.glob('*/*/*.json'):
+            if report.name in seen:
+                continue
+            try:
+                when = datetime.fromtimestamp(report.stat().st_mtime, timezone.utc)
+            except OSError:
+                continue
+            rows.append({'when': when, 'seconds': None, 'team': report.parent.parent.name,
+                         'component': report.parent.name, 'status': '요약 줄 없음(파일 시각)', 'http': None,
+                         'report': report})
+        if len(rows) >= LIST_LIMIT:
+            break
+    rows.sort(key=lambda r: r['when'], reverse=True)
+    return rows, unreadable
+
+
+def print_list(root, rows, unreadable, out):
+    out(f'요청 보고서 위치: {root}')
+    out(f'최근 요청 {min(len(rows), LIST_LIMIT)}건 (최근 {LOOK_BACK_DAYS + 1}일, 새것부터)'
+        + (f' · 읽지 못한 요약 줄 {unreadable}건' if unreadable else ''))
+    out(pad('번호', 5) + pad('요청 시각(한국)', 21) + pad('서버 처리', 11, True) + '  ' + pad('HTTP', 5)
+        + pad('상태', 12) + '팀/구분')
+    for index, row in enumerate(rows[:LIST_LIMIT], 1):
+        seconds = f'{row["seconds"]:,.1f}초' if row['seconds'] is not None else '-'
+        exists = '' if row['report'].is_file() else '  (JSON 아직 없음)'
+        out(pad(f'[{index}]', 5) + pad(row['when'].astimezone(KST).strftime('%m-%d %H:%M:%S'), 21)
+            + pad(seconds, 11, True) + '  ' + pad(str(row['http'] or '-'), 5) + pad(cut(row['status'], 11), 12)
+            + f'{row["team"]}/{row["component"]}{exists}')
+    if not rows:
+        out('요청이 없습니다. --root 위치와 날짜 폴더를 확인하세요.')
+    out(f'특정 요청 보고: {COMMAND} <번호>   ·   여러 요청 합산: {COMMAND} sum')
+
+
+def pick(root, choice):
+    rows, unreadable = recent_requests(root)
+    if not rows:
+        raise Stop(3, f'최근 {LOOK_BACK_DAYS + 1}일 안의 요청 보고서가 없습니다: {root}')
+    index = int(choice) if choice else 1
+    if not 1 <= index <= min(len(rows), LIST_LIMIT):
+        raise Stop(2, f'번호는 1~{min(len(rows), LIST_LIMIT)} 입니다. 목록: {COMMAND} list')
+    row = rows[index - 1]
+    if not row['report'].is_file():
+        raise Stop(3, f'요청 보고서 JSON이 아직 없습니다(응답 뒤 기록 중이거나 기록 실패): {row["report"]}\n'
+                      '  10~20초 뒤 다시 실행하세요. 계속 없으면 같은 이름의 .log 파일을 확인합니다.')
+    return row['report']
+
+
+def load(path):
+    try:
+        size = path.stat().st_size
+    except OSError as exc:
+        raise Stop(3, f'보고서를 읽지 못했습니다: {path} ({type(exc).__name__})')
+    if size > MAX_REPORT_BYTES:
+        raise Stop(3, f'보고서가 너무 큽니다({size:,} bytes): {path}')
+    opener = open
+    if path.suffix == '.gz':
+        import gzip
+        opener = gzip.open
+    try:
+        with opener(path, 'rt', encoding='utf-8') as source:
+            report = json.load(source)
+    except (OSError, ValueError) as exc:
+        raise Stop(3, f'보고서 JSON을 읽지 못했습니다: {path} ({type(exc).__name__})')
+    if not isinstance(report, dict) or not isinstance(report.get('service_events'), list):
+        raise Stop(3, f'요청 보고서 형식이 아닙니다(service_events 없음): {path}')
+    return report, size
+
+
+# ---------------------------------------------------------------- 분석
+
+def journal_events(journal):
+    """Every timeline record of the run journal and any child journals, with time and kind."""
+    found = []
+
+    def walk(node, depth):
+        if depth > 6:
+            return
+        if isinstance(node, dict):
+            timeline = node.get('timeline')
+            if isinstance(timeline, list):
+                for item in timeline:
+                    event = item.get('event') if isinstance(item, dict) else None
+                    if isinstance(event, dict):
+                        when = stamp(event.get('created_at'))
+                        if when is not None:
+                            found.append((when, str(event.get('kind') or '?')))
+            for key, value in node.items():
+                if key != 'timeline' and isinstance(value, (dict, list)) and key in ('children', 'child', 'journal'):
+                    walk(value, depth + 1)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value, depth + 1)
+
+    walk(journal, 0)
+    found.sort(key=lambda item: item[0])
+    return found
+
+
+SNAPSHOT_KEYS = ('sql_count_total', 'sql_ms_total', 'agent_ms_total', 'cpu_ms_total')
+
+
+def snapshot(row):
+    """Cumulative counters a MAIN176+ model event carries; None for older reports."""
+    if not isinstance(row, dict) or num(row.get('sql_count_total')) is None:
+        return None
+    return {k: num(row.get(k)) or 0.0 for k in SNAPSHOT_KEYS}
+
+
+def delta(before, after):
+    if before is None or after is None:
+        return None
+    return {k: max(0.0, after[k] - before[k]) for k in SNAPSHOT_KEYS}
+
+
+def analyse(report):
+    events = []
+    for row in report['service_events']:
+        if isinstance(row, dict):
+            when = stamp(row.get('ts'))
+            if when is not None:
+                events.append((when, row))
+    events.sort(key=lambda item: item[0])
+    if not events:
+        raise Stop(3, '보고서에 시각이 있는 서비스 기록이 없습니다.')
+    first = lambda name: next((row for when, row in events if row.get('event') == name), None)
+    started_row = first('request.started')
+    start = stamp(started_row['ts']) if started_row else events[0][0]
+    returning = [row for when, row in events if row.get('event') in ('request.returning', 'request.finished')]
+    total_ms = num(returning[-1].get('duration_ms')) if returning else None
+    if total_ms is None:
+        total_ms = (events[-1][0] - start).total_seconds() * 1000
+    end = start + timedelta(milliseconds=total_ms)
+
+    def offset(when):
+        return (when - start).total_seconds() * 1000
+
+    # Model calls: started → first end event of the same attempt.
+    calls, open_calls = [], {}
+    for when, row in events:
+        name, attempt = row.get('event'), row.get('attempt_id')
+        if not attempt:
+            continue
+        if name == 'model.attempt.started':
+            open_calls[attempt] = {'start': when, 'end': None, 'stage': row.get('source_stage') or row.get('phase') or '?',
+                                   'schema': row.get('schema') or '', 'attempt_no': row.get('attempt_no'),
+                                   'status': None, 'prompt_tokens': None, 'completion_tokens': None,
+                                   'snap_start': snapshot(row), 'snap_end': None}
+            calls.append(open_calls[attempt])
+        elif name in MODEL_END and attempt in open_calls:
+            call = open_calls[attempt]
+            if call['end'] is None or name != 'model.call.finished':
+                if call['end'] is None:
+                    call['end'] = when
+                if name in ('model.attempt.received', 'model.attempt.failed') and call['snap_end'] is None:
+                    call['snap_end'] = snapshot(row)
+                if name == 'model.attempt.received':
+                    call['status'] = row.get('http_status')
+                    call['prompt_tokens'] = num(row.get('prompt_tokens'))
+                    call['completion_tokens'] = num(row.get('completion_tokens'))
+                elif name == 'model.attempt.failed':
+                    call['status'] = row.get('error_type') or row.get('failure_kind') or 'failed'
+    for call in calls:
+        if call['end'] is None:
+            call['end'], call['status'] = end, call['status'] or '끝 기록 없음'
+    calls = [c for c in calls if c['end'] >= c['start']]
+    model_ms = sum((c['end'] - c['start']).total_seconds() * 1000 for c in calls)
+    metrics = next((row.get('execution_stats') for when, row in reversed(events)
+                    if row.get('event') == 'execution.metrics' and isinstance(row.get('execution_stats'), dict)), None)
+    ui_model_ms = num(metrics.get('llm_duration_ms')) if metrics else None
+
+    # Segments: G0, M1, G1, M2, ..., Gn.
+    segments, cursor = [], start
+    for index, call in enumerate(calls, 1):
+        if call['start'] > cursor:
+            segments.append({'kind': 'G', 'start': cursor, 'end': call['start'], 'before': calls[index - 2] if index > 1 else None,
+                             'after': call, 'number': index - 1})
+        segments.append({'kind': 'M', 'start': call['start'], 'end': call['end'], 'call': call, 'number': index})
+        cursor = max(cursor, call['end'])
+    if end > cursor:
+        segments.append({'kind': 'G', 'start': cursor, 'end': end, 'before': calls[-1] if calls else None,
+                         'after': None, 'number': len(calls)})
+    for segment in segments:
+        segment['ms'] = (segment['end'] - segment['start']).total_seconds() * 1000
+        segment.update(sql_slow=[0, 0.0], sql_debug=[0, 0.0], commits=[0, 0.0], steps=defaultdict(float),
+                       kinds=Counter(), others=Counter())
+
+    def segment_of(when):
+        for segment in segments:
+            if segment['start'] <= when <= segment['end']:
+                return segment
+        return None
+
+    sql_summary = next((row for when, row in reversed(events) if row.get('event') == 'oracle.sql.summary'), None)
+    end_snap = None
+    if sql_summary and num(sql_summary.get('agent_ms')) is not None:
+        end_snap = {'sql_count_total': num(sql_summary.get('sql_count')) or 0.0, 'sql_ms_total': num(sql_summary.get('sql_ms')) or 0.0,
+                    'agent_ms_total': num(sql_summary.get('agent_ms')) or 0.0, 'cpu_ms_total': num(sql_summary.get('request_cpu_ms')) or 0.0}
+    has_snaps = end_snap is not None or any(c['snap_start'] for c in calls)
+    zero = {k: 0.0 for k in SNAPSHOT_KEYS} if has_snaps else None
+    for segment in segments:
+        if segment['kind'] == 'M':
+            segment['delta'] = delta(segment['call']['snap_start'], segment['call']['snap_end'])
+        else:
+            before = segment['before']['snap_end'] if segment['before'] else zero
+            after = segment['after']['snap_start'] if segment['after'] else end_snap
+            segment['delta'] = delta(before, after)
+    log_ms = sum(num(row.get('previous_log_ms')) or 0.0 for when, row in events)
+    slow, debug_sql, failed_sql = [], [], []
+    commits = [0, 0.0, 0.0]
+    steps = {}
+    last_label = '요청 시작'
+    for when, row in events:
+        name = row.get('event') or '?'
+        segment = segment_of(when)
+        if name == 'oracle.sql.slow':
+            ms = num(row.get('duration_ms')) or 0.0
+            slow.append({'when': when, 'ms': ms, 'family': str(row.get('sql_family') or '?'),
+                         'write': bool(row.get('write')), 'segment': segment, 'context': last_label,
+                         'site': str(row.get('sql_site') or '')})
+            if segment:
+                segment['sql_slow'][0] += 1; segment['sql_slow'][1] += ms
+        elif name == 'oracle.sql':
+            status = row.get('status')
+            ms = num(row.get('duration_ms'))
+            if status == 'ACKNOWLEDGED' and ms is not None:
+                debug_sql.append({'when': when, 'ms': ms, 'family': str(row.get('sql_family') or '?'), 'segment': segment})
+                if segment:
+                    segment['sql_debug'][0] += 1; segment['sql_debug'][1] += ms
+            elif status not in ('STARTED', 'ACKNOWLEDGED'):
+                failed_sql.append({'when': when, 'status': str(status), 'family': str(row.get('sql_family') or '?'),
+                                   'ms': ms or 0.0, 'site': str(row.get('sql_site') or ''), 'segment': segment,
+                                   'error': str(row.get('error') or ''), 'context': last_label})
+        elif name == 'journal.transaction.timings':
+            ms = sum(num(row.get(k)) or 0.0 for k in ('begin_ms', 'body_ms', 'commit_ms'))
+            commits[0] += 1; commits[1] += ms; commits[2] += num(row.get('commit_ms')) or 0.0
+            if segment:
+                segment['commits'][0] += 1; segment['commits'][1] += ms
+        elif name in ('step.finished', 'step.failed'):
+            label = str(row.get('step') or '?')
+            ms = num(row.get('duration_ms')) or 0.0
+            item = steps.setdefault(label, [0, 0.0, 0.0, 0.0, 0])
+            item[0] += 1; item[1] += ms; item[2] = max(item[2], ms); item[3] += num(row.get('thread_cpu_ms')) or 0.0
+            item[4] += name == 'step.failed'
+            if segment:
+                segment['steps'][label] += ms
+        elif not name.startswith(OTHER_SKIP) and name not in ('request.started', 'request.returning', 'request.finished'):
+            if segment:
+                segment['others'][name] += 1
+        if name == 'step.started':
+            last_label = 'step ' + str(row.get('step') or '?') + ' 시작'
+        elif name in ('step.finished', 'step.failed'):
+            last_label = 'step ' + str(row.get('step') or '?') + ' 끝'
+        elif name not in ('oracle.sql', 'oracle.sql.slow', 'journal.transaction.timings'):
+            last_label = name
+
+    journal = journal_events(report.get('journal'))
+    for when, kind in journal:
+        segment = segment_of(when)
+        if segment and kind not in QUIET_KINDS:
+            segment['kinds'][kind] += 1
+
+    # Longest stretches with no record at all, outside model calls.
+    step_word = {'step.started': '시작', 'step.finished': '끝', 'step.failed': '실패'}
+    marks = [(when, f"{row.get('step')} {step_word[row.get('event')]}" if row.get('event') in step_word
+              else str(row.get('event'))) for when, row in events]
+    marks += [(when, 'journal:' + kind) for when, kind in journal]
+    for item in slow:
+        marks.append((item['when'] - timedelta(milliseconds=item['ms']), 'SQL ' + item['family'][:8] + ' 시작'))
+    marks.sort(key=lambda item: item[0])
+    quiet = []
+    for (a, label_a), (b, label_b) in zip(marks, marks[1:]):
+        if b <= a or a < start or b > end + timedelta(seconds=1):
+            continue
+        inside = sum(max(0.0, (min(b, c['end']) - max(a, c['start'])).total_seconds()) for c in calls)
+        span = (b - a).total_seconds() - inside
+        if span * 1000 >= 500:
+            quiet.append({'start': a, 'ms': span * 1000, 'before': label_a, 'after': label_b})
+    quiet.sort(key=lambda item: -item['ms'])
+
+    others = Counter()
+    for when, row in events:
+        name = row.get('event') or ''
+        if row.get('level') in ('WARNING', 'ERROR', 'CRITICAL') and name != 'oracle.sql':
+            others[name] += 1
+    release = next((row for when, row in events if row.get('event') == 'oracle.release.selected'), None)
+    return {'start': start, 'end': end, 'total_ms': total_ms, 'calls': calls, 'model_ms': model_ms,
+            'ui_model_ms': ui_model_ms, 'metrics': metrics, 'segments': segments, 'sql_summary': sql_summary,
+            'slow': slow, 'debug_sql': debug_sql, 'failed_sql': failed_sql, 'commits': commits, 'steps': steps,
+            'quiet': quiet, 'warnings': others, 'release': release, 'journal_count': len(journal), 'log_ms': log_ms,
+            'has_snaps': has_snaps,
+            'event_count': len(events), 'offset': offset}
+
+
+# ---------------------------------------------------------------- 출력
+
+
+
+def families(text):
+    out = []
+    for part in str(text or '').split('-'):
+        bits = part.split(':')
+        if len(bits) == 3 and bits[1].isdigit():
+            try:
+                out.append((bits[0], int(bits[1]), float(bits[2])))
+            except ValueError:
+                pass
+    return out
+
+
+# ---------------------------------------------------------------- R3: 호출 위치 설명
+# call_site() in oracle_query.py: 'inner<outer' — inner = the function that sent the SQL (first frame outside the transport),
+# outer = the first caller outside the oracle_* plumbing (what the request was trying to do).
+INNER = {
+    'oracle_query_db._pages': '공통 표 조회(100행씩)',
+    'oracle_query_db.execute': '공통 표 조회',
+    'oracle_query_native.query': '미리 준비한 SQL 계획 실행',
+    'oracle_query_native.prepare': 'SQL 계획 준비',
+    'oracle_query_catalog.page': '게시 목록 페이지',
+    'oracle_query_catalog.active': '현재 게시본 확인',
+    'oracle_query_fulltext._projection': '본문 검색 점수 계산',
+    'oracle_query_fulltext._page': '본문 검색 적중 페이지',
+    'oracle_query_fulltext.lengths': '본문 검색 문서 길이',
+    'oracle_query_glossary._lookup': '용어 사전 조회',
+    'oracle_query_index.definition_summaries_for': '정의 조문 요약 조회',
+    'oracle_query_vector.search': '벡터 유사도 검색',
+    'oracle_query_vector.publication': '벡터 게시본 확인',
+    'oracle_dp_assets.get_part': '게시 자료 조각 읽기',
+    'oracle_dp_assets.clob_text': '긴 본문(CLOB) 이어 읽기',
+    'oracle_dp_io.read_rows': '긴 본문(CLOB) 행 읽기',
+    'oracle_gold_ontology.fetchmany': '온톨로지 게시본 읽기',
+    'oracle_agent_records._parts': '원장 본문 읽기', 'oracle_agent_records.bodies': '원장 본문 읽기',
+    'oracle_agent_records.commit': '원장 커밋', 'oracle_agent_records.put_bodies': '원장 본문 쓰기',
+    'oracle_agent_records._write_body_rows': '원장 본문 쓰기', 'oracle_agent_records.lease': '원장 잠금',
+    'oracle_agent_records.shared_lease': '원장 공유 잠금', 'oracle_agent_records.state': '원장 상태 읽기',
+    'oracle_agent_records.rows': '원장 행 목록', 'oracle_agent_records.exact': '원장 행 읽기',
+    'oracle_agent_records.operation': '원장 영수증 확인', 'oracle_agent_records.allocated_bytes': '원장 용량',
+    'oracle_agent_records.preflight': '원장 표 구조 확인', 'oracle_development_mapping.preflight': '개발계 표 구조 확인',
+}
+OUTER = {
+    'structure_query': '조문 구조(편·장·절·조) 찾기', 'law_candidates': '첫 후보 조문 찾기', 'law_navigation': '원문 메뉴 만들기',
+    'guided_navigation': '가이드 조사(읽을 조문 고르기)', 'guided_answer': '답변 전 원문 읽기', 'unit_reading': '조문 원문 읽기',
+    'unit_relations': '조문 연결(인용·준용) 목록', 'connection_scope': '연결 조문 범위', 'citation_roles': '인용 관계 판정',
+    'query_scope': '질문 범위(문서·조문) 정하기', 'source_tools': '원문 확인(무결성)', 'memory_rag': '저장 근거 다시 확인',
+    'decision_projection': '읽기 후보 표시', 'read_candidate_pages': '읽기 후보 페이지', 'tool_availability': '도구 메뉴',
+    'definition_entry': '정의 조문 미리 읽기', 'declared_names': '약칭 목록 만들기', 'initial_vector': '첫 벡터 검색',
+    'vector_navigation': '벡터·하이브리드 첫 검색', 'fulltext': '본문 검색', 'unit_fulltext': '본문 검색(조문 단위)',
+    'term_agent': '용어 검색', 'term_index': '용어 색인', 'full_glossary': '용어 사전', 'document_agent': '문서 목록',
+    'navigation_match': '탐색 대조(원문 출처)', 'document_navigation': '문서 탐색', 'structure_navigation': '구조 탐색',
+    'repository': '대화·조사 기록 저장', 'corrected_memory': '대화 기억 저장', 'publication': '게시 잠금',
+    'case_repository': '사건 기록', 'shortcut_repository': '이어 가기 기록', 'knowledge_repository': '지식 기록',
+    'comparison_research_bridge': '문서 대사 하위 조사', 'workflow_rag': '워크플로우 RAG', 'workflow_execution': '워크플로우 실행',
+    'annex_files': '별표 파일', 'unified_publication': '저장 근거 묶음 확인', 'source_recall': '이전 원문 다시 찾기',
+    'ontology_context': '온톨로지 조회', 'stable_references': '참조 핸들', 'relations_tools': '연결 도구',
+    'oracle_query_service': '서빙 준비(게시본·채널 확인)', 'service': '서빙 진입', 'app': '서빙 진입',
+}
+
+
+def site_text(site, size=60):
+    """Raw '[보낸 함수<요청 쪽 함수]' first and never cut (we map it back to SQL at home), then the Korean meaning."""
+    site = str(site or '')
+    if not site or site in ('unknown', '?'):
+        return '위치 기록 없음'
+    raw = '[' + site + ']'
+    label = site_label(site)
+    room = size - width(raw) - 2
+    return raw + ('  ' + cut(label, room) if label != '-' and room >= 8 else '')
+
+
+def site_label(site):
+    site = str(site or '')
+    inner, _, outer = site.partition('<')
+    return ' · '.join(x for x in (OUTER.get(outer.split('.')[0]) if outer else OUTER.get(inner.split('.')[0]), INNER.get(inner)) if x) or '-'
+
+
+# ---------------------------------------------------------------- R3: 사진 단위 출력
+PAGE_LINES = 40
+PAGE_WIDTH = 100
+PAGES = 5
+
+
+class Pages:
+    """Lines grouped into photo-sized pages; a page never exceeds PAGE_LINES (overflow is cut with a count)."""
+    def __init__(self, stamp_text):
+        self.stamp, self.pages = stamp_text, []
+
+    def page(self, title):
+        self.pages.append([f'━━━━ 사진 {len(self.pages) + 1}/{PAGES} · {title} · {self.stamp} ━━━━'])
+
+    def line(self, text=''):
+        self.pages[-1].append(cut(text, PAGE_WIDTH))
+
+    def wrap(self, text, first='  · ', rest='    '):
+        """A long sentence on up to three lines instead of cutting it."""
+        line, prefix, count = '', first, 0
+        for word in str(text).split(' '):
+            if line and width(prefix + line + ' ' + word) > PAGE_WIDTH:
+                self.pages[-1].append(prefix + line); prefix, line, count = rest, word, count + 1
+                if count == 2:
+                    break
+            else:
+                line = (line + ' ' + word) if line else word
+        self.pages[-1].append(cut(prefix + line, PAGE_WIDTH))
+
+    def lines(self):
+        for number, page in enumerate(self.pages, 1):
+            if len(page) > PAGE_LINES:
+                extra = len(page) - PAGE_LINES + 1
+                page[:] = page[:PAGE_LINES - 1] + [f'  … ({extra}줄 생략, 전체는 결과 파일 참고)']
+            yield number, page
+
+
+def merged_sites(summary):
+    rows = summary.get('sql_sites') if summary and isinstance(summary.get('sql_sites'), list) else []
+    out = []
+    for row in rows:
+        if isinstance(row, dict):
+            out.append({'site': str(row.get('site') or ''), 'count': int(num(row.get('count')) or 0),
+                        'ms': float(num(row.get('ms')) or 0.0), 'writes': int(num(row.get('writes')) or 0),
+                        'bytes': num(row.get('bytes')), 'cpu_ms': num(row.get('cpu_ms')), 'rows': num(row.get('rows'))})
+    out.sort(key=lambda r: -r['ms'])
+    return out
+
+
+def seg_name(segment):
+    return f'{segment["kind"]}{segment["number"]}' if segment else '-'
+
+
+def render_r3(path, size, report, a):
+    total = a['total_ms'] or 0.0
+    offset = a['offset']
+    summary = a['sql_summary']
+    sql_ms = (num(summary.get('sql_ms')) or 0.0) if summary else 0.0
+    sql_n = int(num(summary.get('sql_count')) or 0) if summary else 0
+    model_ms = a['model_ms']
+    other_ms = max(0.0, total - model_ms - sql_ms)
+    sites = merged_sites(summary)
+    slow, failed = a['slow'], a['failed_sql']
+    slow_ms = sum(i['ms'] for i in slow)
+    agent_ms = sum(r['ms'] for r in sites if r['site'].startswith('oracle_agent_records.'))
+    result = report.get('result') if isinstance(report.get('result'), dict) else {}
+    P = Pages(a['start'].astimezone(KST).strftime('%m-%d %H:%M:%S'))
+
+    # 사진 1 — 요약·판정
+    P.page('요약과 판정')
+    P.line(f'GENOS Oracle 병목 보고 R4 ({VERSION})')
+    P.line(f'보고서 {cut(str(path), 78)} ({size / 1048576:,.1f}MB)')
+    release = a['release'] or {}
+    P.line(f'요청 {a["start"].astimezone(KST):%Y-%m-%d %H:%M:%S} KST · 팀 {report.get("team_id")} · HTTP {result.get("status", "-")}'
+           + (f' · 채널 {cut(str(release.get("query_channel")), 14)} · 캐시 {"켜짐" if release.get("serving_data_cache") else "꺼짐"}' if release else ''))
+    P.line('')
+    P.line(f'[A] 전체 {sec(total)}')
+    P.line('    ' + pad('모델 호출', 12) + pad(sec(model_ms), 10, True) + ' ' + pct(model_ms, total) + '  ' + bar(model_ms, total) + f'  {len(a["calls"])}회')
+    if summary:
+        P.line('    ' + pad('Oracle SQL', 12) + pad(sec(sql_ms), 10, True) + ' ' + pct(sql_ms, total) + '  ' + bar(sql_ms, total)
+               + f'  {sql_n:,}회 · 평균 {sql_ms / sql_n if sql_n else 0:,.0f}ms')
+    else:
+        P.line('    Oracle SQL 요약 줄(oracle.sql.summary) 없음 — MAIN167 이전 코드이거나 DP=oracle 아님')
+    P.line('    ' + pad('그 외', 12) + pad(sec(other_ms), 10, True) + ' ' + pct(other_ms, total) + '  ' + bar(other_ms, total) + '  계산·기록·대기')
+    request_cpu = num(summary.get('request_cpu_ms')) if summary else None
+    if request_cpu is not None:
+        sql_cpu = num(summary.get('sql_thread_cpu_ms'))
+        P.line(f'    요청 CPU(프로세스) {sec(request_cpu)} {pct(request_cpu, total).strip()}'
+               + (f' · SQL 중 {sec(sql_cpu)}' if sql_cpu is not None else '')
+               + (' → 그 외는 대부분 계산' if other_ms and request_cpu >= other_ms * 0.7 else
+                  ' → 그 외는 대부분 기다림(계산 아님)' if other_ms and request_cpu < other_ms * 0.3 else ''))
+    if summary:
+        P.line(f'    SQL: 가장 느린 1회 {sec(num(summary.get("sql_slowest_ms")) or 0)} · 실패 {int(num(summary.get("sql_failed_count")) or 0)} · '
+               f'쓰기 {int(num(summary.get("sql_write_count")) or 0):,} · 캐시 적중 {int(num(summary.get("sql_cache_hits")) or 0):,}/'
+               f'미적중 {int(num(summary.get("sql_cache_misses")) or 0):,}')
+        P.line(f'    하나씩 기록된 SQL: 느린 {len(slow)}개 {sec(slow_ms)} (SQL 시간의 {pct(slow_ms, sql_ms).strip()}) · 실패 {len(failed)}개'
+               + (f' · DEBUG {len(a["debug_sql"]):,}개' if a['debug_sql'] else ''))
+    P.line('')
+    P.line('[B] 판정')
+    verdicts = []
+    if failed:
+        worst = max(failed, key=lambda i: i['ms'])
+        verdicts.append(f'SQL 실패 {len(failed)}건 — 가장 긴 것 {sec(worst["ms"])} {worst["status"]}'
+                        + (f'({cut(worst["error"], 24)})' if worst['error'] else '') + f' → {site_label(worst["site"])}  (사진 3)')
+    if summary and total:
+        share = sql_ms / total
+        if slow and slow_ms >= sql_ms * 0.4:
+            top = max(slow, key=lambda i: i['ms'])
+            verdicts.append(f'무거운 SQL 몇 개가 원인: 느린 SQL {len(slow)}개가 SQL 시간의 {slow_ms / sql_ms * 100:.0f}%. '
+                            f'1위 {sec(top["ms"])} → {site_label(top["site"])}')
+        elif sql_n >= 300 and sql_ms and (sql_ms / sql_n) < 1000 and share >= 0.3:
+            busiest = max(sites, key=lambda r: r['count'], default=None)
+            verdicts.append(f'짧은 SQL을 아주 많이 보냄({sql_n:,}회 × 평균 {sql_ms / sql_n:,.0f}ms)'
+                            + (f'. 가장 많이 부른 곳 {busiest["count"]:,}회 → {site_label(busiest["site"])}' if busiest else ''))
+        verdicts.append(f'Oracle SQL이 전체의 {share * 100:.0f}%, 모델 {model_ms / total * 100:.0f}%, 그 외 {other_ms / total * 100:.0f}%')
+        if sites and sql_ms:
+            verdicts.append(f'원장 저장(대화·조사 기록) SQL {agent_ms / sql_ms * 100:.0f}% · 원문·검색 조회 {100 - agent_ms / sql_ms * 100:.0f}% (상위 위치 기준)')
+    biggest = max((s for s in a['segments'] if s['kind'] == 'G'), key=lambda s: s['ms'], default=None)
+    if biggest and total:
+        verdicts.append(f'가장 긴 모델 밖 구간 G{biggest["number"]} {sec(biggest["ms"])} ('
+                        + (biggest['before']['stage'] if biggest['before'] else '요청 시작') + ' → '
+                        + (biggest['after']['stage'] if biggest['after'] else '응답 반환') + ')  (사진 4)')
+    for v in verdicts or ['판정할 SQL 기록 없음']:
+        P.wrap(v)
+    P.line('')
+    P.line('[C] 시간 많이 쓴 SQL 위치 상위 5 (요청 전체 합계, 자세히는 사진 2)')
+    for rank, row in enumerate(sites[:5], 1):
+        P.line(f'  {rank}) ' + pad(sec(row['ms']), 9, True) + ' ' + pct(row['ms'], sql_ms) + pad(f'{row["count"]:,}회', 9, True)
+               + '  ' + f'평균 {row["ms"] / row["count"] if row["count"] else 0:,.0f}ms')
+        P.line('       ' + site_text(row['site'], 92))
+    if not sites:
+        tops = families(summary.get('sql_top')) if summary else []
+        for family, count, ms in tops:
+            P.line('  · ' + pad(family, 14) + pad(f'{count:,}회', 9, True) + pad(sec(ms), 10, True) + '  ' + cut(family_name(family), 40))
+        if not tops:
+            P.line('  위치 기록 없음(MAIN176 이전 코드)')
+    if summary and not slow and not a['debug_sql']:
+        P.line('')
+        P.line('  ※ 하나씩 기록된 느린 SQL이 없습니다. 더 자세히: GENOS_ORACLE_SQL_SLOW_MS=200 후 재시작·같은 질문 (GUIDE)')
+
+    # 사진 2 — 호출 위치별
+    P.page('SQL 호출 위치별 합계')
+    if sites:
+        P.line(f'위치 {int(num(summary.get("sql_site_count")) or len(sites))}곳 중 시간 상위 {min(12, len(sites))} '
+               '(위치 = 이 조회를 보낸 코드 [보낸 함수<요청 쪽 함수], 합계는 요청 전체)')
+        P.line('  순위   합계   SQL중   횟수     평균     최대 기록   쓰기')
+        slow_by_site = defaultdict(lambda: [0, 0.0])
+        for item in slow:
+            row = slow_by_site[item['site']]; row[0] += 1; row[1] = max(row[1], item['ms'])
+        for rank, row in enumerate(sites[:12], 1):
+            worst = slow_by_site.get(row['site'])
+            P.line(f'  {rank:>2}) ' + pad(sec(row['ms']), 8, True) + ' ' + pct(row['ms'], sql_ms) + pad(f'{row["count"]:,}회', 9, True)
+                   + pad(f'{row["ms"] / row["count"] if row["count"] else 0:,.0f}ms', 9, True)
+                   + pad(f'{sec(worst[1])}({worst[0]})' if worst else '-', 12, True) + pad(str(row['writes']), 6, True))
+            P.line('       ' + site_text(row['site'], 92))
+        covered = sum(r['ms'] for r in sites[:12])
+        P.line(f'  상위 {min(12, len(sites))}곳 합계 {sec(covered)} = SQL 시간의 {pct(covered, sql_ms).strip()}  (최대 기록 = 느린 SQL 줄 중 가장 긴 1회(개수))')
+    else:
+        P.line('호출 위치 기록 없음 — 현장 코드가 MAIN176 이전입니다(사진 3·4의 해시로 확인).')
+    tops = families(summary.get('sql_top')) if summary else []
+    if tops:
+        P.line('SQL 문장 종류(해시 앞 12자) 상위 3: ' + ' · '.join(f'{f} {n:,}회 {sec(ms)}' for f, n, ms in tops))
+    calls = summary.get('agent_calls') if summary and isinstance(summary.get('agent_calls'), list) else []
+    if calls:
+        P.line('원장 계층: ' + cut(' · '.join(f"{AGENT_CALL_NAMES.get(c.get('name'), c.get('name'))} {int(num(c.get('count')) or 0):,}회 "
+                                          f"{sec(num(c.get('ms')) or 0)}" for c in calls), 88))
+
+    # 사진 3 — 실패·느린 SQL 하나하나
+    P.page('실패·느린 SQL 하나하나')
+    if failed:
+        P.line(f'실패 SQL {len(failed)}개 (READ_FAILED=읽기 실패, ReadTimeout=ORDS 응답 기다리다 시간 초과)')
+        for item in sorted(failed, key=lambda i: -i['ms'])[:5]:
+            P.line(f'  ✕ +{offset(item["when"]) / 1000:,.1f}s ' + pad(sec(item['ms']), 8, True) + f'  {item["status"]}'
+                   + (f'({cut(item["error"], 30)})' if item['error'] else '') + f'  해시 {item["family"][:12]}  {seg_name(item["segment"])}')
+            P.line('       ' + site_text(item['site'], 92))
+        P.line('')
+    if slow:
+        threshold = min(i['ms'] for i in slow)
+        P.line(f'느린 SQL {len(slow)}개 합계 {sec(slow_ms)} (기록 기준 GENOS_ORACLE_SQL_SLOW_MS, 이번 기록 최소 {threshold:,.0f}ms) — 느린 순')
+        shown = 15 if not failed else 10
+        for rank, item in enumerate(sorted(slow, key=lambda i: -i['ms'])[:shown], 1):
+            P.line(f'  {rank:>2}) +{offset(item["when"]) / 1000:,.1f}s ' + pad(sec(item['ms']), 8, True)
+                   + ('  쓰기' if item['write'] else '  읽기') + f'  해시 {item["family"][:12]}  {seg_name(item["segment"])}'
+                   + '  직전: ' + cut(item['context'], 34))
+            P.line('       ' + site_text(item['site'], 92))
+        if len(slow) > shown:
+            P.line(f'  … 나머지 {len(slow) - shown}개 {sec(sum(i["ms"] for i in sorted(slow, key=lambda i: -i["ms"])[shown:]))} (사진 4 묶음에 포함)')
+    elif not failed:
+        P.line('하나씩 기록된 느린·실패 SQL이 없습니다.')
+        P.line('  지금 기준(기본 1초)보다 짧은 SQL이 여러 번 반복된 것입니다 → 사진 2의 "횟수"가 큰 위치가 원인입니다.')
+        P.line('  SQL마다 보려면: 코드서빙 환경변수 GENOS_ORACLE_SQL_SLOW_MS=200 (또는 100) → 재시작 → 같은 질문 → 이 명령 다시.')
+
+    # 사진 4 — 구간별·묶음
+    P.page('구간별 SQL과 느린 SQL 묶음')
+    gaps = [s for s in a['segments'] if s['kind'] == 'G']
+    def gap_sql(s):
+        d = s.get('delta')
+        return d['sql_ms_total'] if d else s['sql_slow'][1] + s['sql_debug'][1]
+    P.line('모델 호출 사이 구간(G) — SQL 시간 많은 순 상위 8   (+시작후 / 구간 길이 / 구간 안 SQL)')
+    for s in sorted(gaps, key=lambda s: -gap_sql(s))[:8]:
+        d = s.get('delta')
+        sql_part = (f'SQL {int(d["sql_count_total"]):,}회 {sec(d["sql_ms_total"])} · 원장 {sec(d["agent_ms_total"])}' if d
+                    else f'느린 SQL {s["sql_slow"][0]}개 {sec(s["sql_slow"][1])}')
+        P.line(f'  G{s["number"]:<3}' + pad(f'+{offset(s["start"]) / 1000:,.1f}s', 9, True) + pad(sec(s['ms']), 9, True) + '  ' + sql_part
+               + (f' · 느린 {s["sql_slow"][0]}개' if d and s['sql_slow'][0] else ''))
+        P.line('        ' + cut((s['before']['stage'] if s['before'] else '요청 시작') + ' → '
+                                + (s['after']['stage'] if s['after'] else '응답 반환'), 88))
+    P.line('')
+    grouped = defaultdict(lambda: [0, 0.0, 0.0])
+    for item in slow:
+        row = grouped[(item['family'][:12], item['site'])]; row[0] += 1; row[1] += item['ms']; row[2] = max(row[2], item['ms'])
+    if grouped:
+        P.line('느린 SQL을 같은 문장(해시)·같은 위치로 묶음 — 합계 상위 6')
+        for (family, site), (count, ms, worst) in sorted(grouped.items(), key=lambda kv: -kv[1][1])[:6]:
+            P.line(f'  해시 {family} ' + pad(f'{count}회', 5, True) + pad(sec(ms), 9, True) + f'  최대 {sec(worst)}  '
+                   + cut(family_name(family), 26))
+            P.line('       ' + site_text(site, 92))
+    debug = a['debug_sql']
+    if debug:
+        dgroup = defaultdict(lambda: [0, 0.0, 0.0])
+        for item in debug:
+            row = dgroup[item['family'][:12]]; row[0] += 1; row[1] += item['ms']; row[2] = max(row[2], item['ms'])
+        P.line(f'DEBUG로 기록된 SQL {len(debug):,}개 — 문장 종류별 합계 상위 5')
+        for family, (count, ms, worst) in sorted(dgroup.items(), key=lambda kv: -kv[1][1])[:5]:
+            P.line(f'  해시 {family} ' + pad(f'{count:,}회', 8, True) + pad(sec(ms), 9, True) + f'  최대 {worst:,.0f}ms  ' + cut(family_name(family), 30))
+    steps = sorted(a['steps'].items(), key=lambda item: -(item[1][1] - item[1][3]))[:4]
+    if steps:
+        P.line('기다린 시간(합계-CPU) 많은 단계 상위 4: ' + cut(' · '.join(f'{cut(n, 26)} {sec(max(ms - cpu, 0))}'
+                                                               for n, (c, ms, w, cpu, f) in steps), 60))
+    P.line('')
+    P.line('해시·[함수 이름]으로 받는 쪽에서 SQL 문장을 찾습니다(질문·답변·원문·SQL 본문 미출력).')
+    render_breakdown(P, summary, sites, sql_ms, sql_n)
+    return P
+
+
+def render_breakdown(P, summary, sites, sql_ms, sql_n):
+    """사진 5 — DB 권한 없이 GENOS 쪽에서 SQL 시간을 나눈다(MAIN186 측정 필드)."""
+    P.page('SQL 시간 쪼개기 (ORDS 왕복·보낸 크기·CPU)')
+    probe = summary.get('sql_probe') if summary and isinstance(summary.get('sql_probe'), dict) else None
+    buckets = summary.get('sql_size_buckets') if summary and isinstance(summary.get('sql_size_buckets'), list) else []
+    if not probe and not buckets:
+        P.line('이 요청 보고서에는 SQL 쪼개기 측정이 없습니다 — 현장 코드가 MAIN186 이전입니다.')
+        P.line('MAIN186 적용 후 같은 질문을 다시 하고 이 명령을 실행하면 이 사진이 채워집니다.')
+        return
+    base = None
+    if probe and int(num(probe.get('count')) or 0):
+        n = int(num(probe.get('count')) or 0); base = (num(probe.get('ms')) or 0.0) / n
+        P.line(f'[1] ORDS 빈 왕복 (SELECT 1 FROM DUAL, SQL {int(num(probe.get("every")) or 0):,}회마다 1번 · DB 일 거의 없음)')
+        P.line(f'    {n}회 · 평균 {base:,.1f}ms · 최소 {num(probe.get("min_ms")) or 0:,.1f}ms · 최대 {num(probe.get("max_ms")) or 0:,.1f}ms'
+               + (f' · 실패 {int(num(probe.get("failed")) or 0)}' if num(probe.get('failed')) else ''))
+        P.line('    = 네트워크 + ORDS + 연결 처리의 기본 비용. SQL 한 번은 최소 이만큼 걸립니다.')
+    else:
+        P.line('[1] ORDS 빈 왕복 측정 없음 (GENOS_ORACLE_SQL_PROBE_EVERY=0 이거나 SQL이 너무 적음)')
+    thread_cpu, process_cpu = num(summary.get('sql_thread_cpu_ms')), num(summary.get('sql_process_cpu_ms'))
+    if thread_cpu is not None and sql_ms:
+        P.line(f'[2] SQL 도중 CPU: 요청 스레드 {sec(thread_cpu)} = SQL {sec(sql_ms)}의 {pct(thread_cpu, sql_ms).strip()}'
+               + (f' · 프로세스 전체 {sec(process_cpu)}' if process_cpu is not None else ''))
+        P.line('    스레드 CPU = JSON 만들고 읽기, 나머지는 기다림(네트워크·ORDS·DB)')
+        P.line('    프로세스 전체가 스레드보다 훨씬 크면 그동안 다른 스레드가 CPU를 쓴 것')
+    P.line(f'[3] 보낸 크기별 (읽기·쓰기 따로, 평균 ms - 빈 왕복 = 그 크기에서 더 걸린 시간)')
+    P.line('    종류  크기         횟수      합계     평균   빈 왕복 초과   평균 보낸 크기')
+    for row in buckets:
+        if not isinstance(row, dict):
+            continue
+        n = int(num(row.get('count')) or 0); ms = num(row.get('ms')) or 0.0; size = num(row.get('bytes')) or 0
+        avg = ms / n if n else 0.0
+        P.line('    ' + pad('쓰기' if row.get('write') else '읽기', 6) + pad(str(row.get('size')), 10)
+               + pad(f'{n:,}회', 9, True) + pad(sec(ms), 9, True) + pad(f'{avg:,.0f}ms', 9, True)
+               + pad(f'{avg - base:+,.0f}ms' if base is not None else '-', 14, True) + pad(f'{size / n / 1024 if n else 0:,.1f}KB', 15, True))
+    P.line('[4] 위치별 (시간 상위 8) — 평균 보낸 크기·CPU와 빈 왕복 대비 초과')
+    P.line('    합계      횟수     평균   빈 왕복 초과  보낸 크기/회  CPU/회   받은 행/회')
+    for row in sites[:8]:
+        n = row['count'] or 1; avg = row['ms'] / n
+        size = row.get('bytes'); cpu = row.get('cpu_ms'); rows = row.get('rows')
+        P.line('  ' + pad(sec(row['ms']), 8, True) + pad(f'{row["count"]:,}회', 9, True) + pad(f'{avg:,.0f}ms', 8, True)
+               + pad(f'{avg - base:+,.0f}ms' if base is not None else '-', 13, True)
+               + pad(f'{size / n / 1024:,.1f}KB' if size is not None else '-', 13, True)
+               + pad(f'{cpu / n:,.1f}ms' if cpu is not None else '-', 9, True)
+               + pad(f'{rows / n:,.1f}' if rows is not None else '-', 11, True))
+        P.line('       ' + site_text(row['site'], 92))
+    P.line('[5] 판정')
+    verdicts = []
+    if base is not None and sql_n and sql_ms:
+        avg_all = sql_ms / sql_n
+        share = min(1.0, base * sql_n / sql_ms)
+        verdicts.append(f'SQL 평균 {avg_all:,.0f}ms 중 빈 왕복 {base:,.0f}ms → SQL 시간의 약 {share * 100:.0f}%({sec(base * sql_n)})는 '
+                        '왕복 자체(네트워크·ORDS)' + (' — 횟수를 줄이는 것이 가장 큼' if share >= 0.5 else ''))
+    writes = {str(r.get('size')): r for r in buckets if isinstance(r, dict) and r.get('write') and num(r.get('count'))}
+    small = writes.get('<4KB')
+    if small and base is not None:
+        avg_small = (num(small.get('ms')) or 0) / num(small.get('count'))
+        verdicts.append(f'작은 쓰기(<4KB)도 평균 {avg_small:,.0f}ms = 빈 왕복보다 {avg_small - base:,.0f}ms 더 → '
+                        + ('DB 쓰기·커밋 처리 자체가 느림(크기 탓 아님)' if avg_small - base >= max(30, base) else '쓰기 처리 비용은 작음'))
+    sized = [r for r in buckets if isinstance(r, dict) and r.get('write') and num(r.get('count'))]
+    if len(sized) >= 2:
+        first, last = sized[0], sized[-1]
+        a1 = num(first['ms']) / num(first['count']); a2 = num(last['ms']) / num(last['count'])
+        b1 = num(first['bytes']) / num(first['count']); b2 = num(last['bytes']) / num(last['count'])
+        if b2 > b1:
+            verdicts.append(f'큰 쓰기({last["size"]}, 평균 {b2 / 1024:,.1f}KB) {a2:,.0f}ms vs 작은 쓰기({b1 / 1024:,.1f}KB) {a1:,.0f}ms → '
+                            + ('크기가 커질수록 크게 느려짐. 큰 쓰기는 대부분 원장 커밋이라, 보낸 크기 탓인지 커밋 처리 탓인지는 '
+                               '[4]의 커밋 위치 평균 크기와 같이 봐야 함' if a2 >= a1 * 2 and a2 - a1 >= 30 else '크기 영향은 작음'))
+    if thread_cpu is not None and sql_ms:
+        verdicts.append(f'SQL 시간 중 이쪽 CPU {thread_cpu / sql_ms * 100:.0f}% → '
+                        + ('JSON 만들기·읽기 같은 GENOS 쪽 계산이 큼' if thread_cpu >= sql_ms * 0.3 else '대부분 응답 기다림(GENOS 계산 아님)'))
+    for v in verdicts or ['판정할 측정 없음']:
+        P.wrap(v)
+
+
+def render_sum(root, rows, out, limit=10):
+    """Several recent requests at once: when it is not clear which question was slow."""
+    loaded, skipped = [], 0
+    for row in rows[:limit]:
+        if not row['report'].is_file():
+            skipped += 1; continue
+        try:
+            report, size = load(row['report'])
+            loaded.append((row, report, analyse(report)))
+        except Stop:
+            skipped += 1
+    P = Pages(datetime.now(KST).strftime('%m-%d %H:%M'))
+    P.page('최근 요청 합산')
+    P.pages[-1][0] = P.pages[-1][0].replace(f'/{PAGES}', '/1')
+    P.line(f'GENOS Oracle 병목 보고 R4 ({VERSION}) · 위치 {cut(str(root), 60)}')
+    P.line(f'최근 요청 {len(loaded)}건 합산' + (f' (읽지 못함 {skipped})' if skipped else '') + ' — 번호는 list와 같음')
+    P.line('  번호 요청시각        전체     모델     SQL      SQL횟수   느린   실패  가장 느린 1회')
+    merged = defaultdict(lambda: [0, 0.0, 0])
+    for index, (row, report, a) in enumerate(loaded, 1):
+        s = a['sql_summary'] or {}
+        sql_ms = num(s.get('sql_ms')) or 0.0
+        P.line(f'  [{rows.index(row) + 1:>2}] {row["when"].astimezone(KST):%m-%d %H:%M:%S} ' + pad(sec(a['total_ms']), 8, True)
+               + pad(sec(a['model_ms']), 8, True) + pad(sec(sql_ms), 9, True) + pad(f'{int(num(s.get("sql_count")) or 0):,}', 9, True)
+               + pad(str(len(a['slow'])), 6, True) + pad(str(len(a['failed_sql'])), 6, True) + pad(sec(num(s.get('sql_slowest_ms')) or 0), 10, True))
+        for site in merged_sites(s):
+            m = merged[site['site']]; m[0] += site['count']; m[1] += site['ms']; m[2] += 1
+    whole = sum(v[1] for v in merged.values())
+    P.line('')
+    P.line('여러 요청에 걸쳐 시간 많이 쓴 SQL 위치 상위 10 (각 요청 상위 12곳 합)')
+    for rank, (site, (count, ms, requests)) in enumerate(sorted(merged.items(), key=lambda kv: -kv[1][1])[:10], 1):
+        P.line(f'  {rank:>2}) ' + pad(sec(ms), 9, True) + ' ' + pct(ms, whole) + pad(f'{count:,}회', 10, True) + pad(f'{requests}건', 6, True)
+               + pad(f'평균 {ms / count if count else 0:,.0f}ms', 12, True))
+        P.line('       ' + site_text(site, 92))
+    if not merged:
+        P.line('  위치 기록 없음(요약 줄 없음 또는 MAIN176 이전 코드)')
+    P.line(f'자세히: {COMMAND} <번호>  (느린 요청 1건을 사진 4장으로)')
+    for number, page in P.lines():
+        for line in page:
+            out(line)
+
+
+def main(argv):
+    root_arg, rest, only = None, [], None
+    items = list(argv)
+    while items:
+        item = items.pop(0)
+        if item == '--root':
+            if not items:
+                raise Stop(2, '--root 다음에 폴더를 주세요.')
+            root_arg = items.pop(0)
+        elif item == '--page':
+            if not items or not items[0].isdigit() or not 1 <= int(items[0]) <= PAGES:
+                raise Stop(2, f'--page 다음에 1~{PAGES} 숫자를 주세요.')
+            only = int(items.pop(0))
+        elif item in ('-h', '--help', 'help'):
+            print(__doc__)
+            return 0
+        else:
+            rest.append(item)
+
+    def out(text=''):
+        print(text, flush=True)
+
+    if rest and rest[0] == 'list':
+        root = report_root(root_arg)
+        rows, unreadable = recent_requests(root)
+        print_list(root, rows, unreadable, out)
+        return 0
+    if rest and rest[0] == 'sum':
+        root = report_root(root_arg)
+        rows, unreadable = recent_requests(root)
+        if not rows:
+            raise Stop(3, f'최근 {LOOK_BACK_DAYS + 1}일 안의 요청 보고서가 없습니다: {root}')
+        render_sum(root, rows, out)
+        return 0
+    if rest and (rest[0].endswith('.json') or rest[0].endswith('.json.gz') or '/' in rest[0]):
+        path = Path(rest[0]).expanduser()
+        if not path.is_file():
+            raise Stop(2, f'파일이 없습니다: {path}')
+    else:
+        if rest and not rest[0].isdigit():
+            raise Stop(2, f'알 수 없는 인자: {rest[0]}  (list / sum / 번호 / 보고서.json 경로)')
+        path = pick(report_root(root_arg), rest[0] if rest else None)
+    report, size = load(path)
+    pages = render_r3(path, size, report, analyse(report))
+    for number, page in pages.lines():
+        if only and number != only:
+            continue
+        for line in page:
+            out(line)
+        out('')
+    return 0
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Stop as stop:
+        print('중단: ' + str(stop), file=sys.stderr)
+        sys.exit(stop.code)
+GENOS_ORACLE_REPORT_R4_PY
+CODE=${PIPESTATUS[0]}
+echo "저장: $SAVE"
+echo "종료=$CODE"
+exit "$CODE"

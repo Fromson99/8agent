@@ -109,7 +109,8 @@ def test_new_question_drops_the_marker_copied_from_the_previous_turn(tree, tmp_p
     # The resolver copies the previous turn's "외규:" marker; the checker reads the plain request.
     transport, responses, (goals, events) = run(tree, tmp_path, {2: {'question': NEW,
         'resolve': [new_question('외규: ' + NEW, 'external')], 'check': checker('NEW_TOPIC', NEW)}})
-    assert responses[1].status_code >= 400 and transport.intents, responses[1].text
+    # The scripted INTENT stop is a model transport failure: an error before 2026-11-11, a progress report since.
+    assert transport.intents and (responses[1].status_code >= 400 or responses[1].json()['status'] == 'CLARIFY'), responses[1].text
     assert len(goals) == 2 and goals[1]['state']['task'] == NEW
     # Neither the marker nor the 외규 category of the previous turn is this request's configuration.
     assert goals[1]['state']['source_category'] == 'ALL'

@@ -1,0 +1,53 @@
+{
+  "main_generation": 200,
+  "release_id": "nfs-log-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN199 (metadata-clob-20261111-r1)",
+  "replaces_sent": "MAIN199 (metadata-clob-20261111-r1, mailed 1a1c80f29655e0f3)",
+  "request": "LOG=on -> per-request .log on NFS under /nfs-root/diamo/8-agent/rag-request-reports/<date>/<team>/legal_agent/, .log only",
+  "product_changes_since_main199": [
+    "02_BACKEND/semantic_runtime/request_report.py (LOG/GENOS_LOG/GENOS_LIVE_LOG=on turns the .log on; log_root(): GENOS_SHARED_LOG_DIR, else GENOS_LOG_DIR, else /nfs-root/diamo/8-agent/rag-request-reports; with the log on no .json/.txt/.trace.txt/.llm_raw.jsonl/_qa files; received model output stays in the .log block)",
+    "service.py (report root from request_report.log_root())"
+  ],
+  "log_off_behaviour": "unchanged from MAIN199 (with GENOS_SHARED_LOG_DIR set: JSON report + _qa row as before; without: nothing)",
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 388",
+  "local_validation": {
+    "actual_service_oracle_records_scripted_model": {
+      "LOG=on alone (default root)": [
+        "2026-11-11/unassigned/legal_agent/4773b38458424ebfa0e9e2fad674e41f-189a37c14c71.log"
+      ],
+      "LOG off": "json + _qa row only (as MAIN199)"
+    },
+    "regression": {
+      "files": 44,
+      "new_failures": 0,
+      "fixed": 11,
+      "already_failing": 150,
+      "tests_changed_to_the_new_contract": [
+        "05_TESTS/REGRESSION/core/test_genos_llm_raw_log.py (sidecar -> .log block)",
+        "05_TESTS/CONTRACTS/test_readable_process_trace.py (no .trace.txt)"
+      ],
+      "new_test": "05_TESTS/CONTRACTS/test_log_on_nfs_only.py"
+    },
+    "oracle_scale_guard": "pass (questions failed 0, over-limit reads 0, max 268 SQL per question, same as MAIN199)",
+    "entry_check": "17/17",
+    "installer": {
+      "base": "MAIN199 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field NFS mount and write permission for the code-serving user",
+    "live model run",
+    "per-second log polling CPU on the field"
+  ],
+  "package": {
+    "zip": "MAIN200_FULL_20261111_R1.zip",
+    "zip_sha256": "3bb72b1391c157171f87e29e6ef8ba9075b64c09fd64f42263e6bd79b065af57",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

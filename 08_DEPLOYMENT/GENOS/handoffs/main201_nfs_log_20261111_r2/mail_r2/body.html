@@ -1,0 +1,45 @@
+<html><body><pre style="font-family:monospace;font-size:13px">MAIN201 — LOG=on 이면 .log 와 CPU·Oracle 보고서 자료를 함께 저장 (MAIN200 대체)
+[R2 재발송] 내용(ZIP)은 R1과 같고, 설치 TXT만 MAIN201_ONECLICK_R2.txt 로 바뀌었습니다: bash 한 줄이 git 커밋·푸시까지 합니다.
+MAIN199(ORA-40478 수정)·MAIN200(LOG=on .log) 내용을 그대로 포함한 전체 코드입니다. 이 MAIN201만 적용하면 됩니다.
+워크플로우 파일은 그대로입니다.
+
+0. 무엇이 바뀌었나
+  코드서빙 환경변수에 LOG=on 을 넣으면 질문마다 아래 3개 파일이 생깁니다(같은 이름):
+    /nfs-root/diamo/8-agent/rag-request-reports/&lt;날짜&gt;/&lt;팀&gt;/legal_agent/&lt;요청ID&gt;-&lt;번호&gt;.log    ← 읽는 로그
+    /nfs-root/diamo/8-agent/rag-request-reports/&lt;날짜&gt;/&lt;팀&gt;/legal_agent/&lt;요청ID&gt;-&lt;번호&gt;.json   ← 보고서 자료
+    /nfs-root/diamo/8-agent/rag-request-reports/&lt;날짜&gt;/&lt;팀&gt;/legal_agent/_qa/&lt;요청ID&gt;-&lt;번호&gt;.row ← 보고서 목록
+  그래서 LOG=on 상태에서 GENOS_CPU_REPORT_R2 / GENOS_ORACLE_REPORT_R4 를 그대로 돌릴 수 있습니다.
+  (.txt·.trace.txt·.llm_raw.jsonl 은 계속 안 만듭니다. LOG 를 빼면 MAIN200과 같습니다.)
+  경로를 바꾸려면 GENOS_SHARED_LOG_DIR 에 절대경로(그 경로엔 Oracle 원본 보관 agent-raw-v1 도 기존처럼 생김).
+
+1. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN201_ONECLICK_R2.txt
+    → 코드 교체·검증 → (~/DEV에서) git add . → git commit → 코드 게이트(gate-code) → git push risk_team → git push financial_team
+    → 푸시할 때 Git 비밀번호를 한 번 묻습니다(아이디 TD8461 자동 입력, 두 번째 원격은 다시 안 물음).
+       안 묻게 하려면 먼저: export GENOS_GIT_PASSWORD='비밀번호'
+  완료 표시: MAIN201_GIT_DONE, MAIN201_ONECLICK_DONE, MAIN201_EXIT=0
+  이제 cd .. / git add . / git commit / git push 를 따로 칠 필요가 없습니다.
+  푸시가 실패하면(코드는 이미 반영·커밋됨) 같은 명령을 다시 치면 푸시만 다시 합니다.
+  커밋·푸시 없이 코드만: bash MAIN201_ONECLICK_R2.txt --no-git
+  남은 일: 새 코드서빙 리비전. 코드서빙 환경변수 LOG=on (나머지 그대로). 시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+  R1 TXT로 이미 적용했다면: R2 TXT를 그대로 실행해도 됩니다(코드는 ALREADY INSTALLED, 남은 커밋·푸시만 진행).
+
+2. 보고서 보기 (질문 몇 개 보낸 뒤, 보고서 TXT를 둔 폴더에서)
+  bash ./GENOS_CPU_REPORT_R2.txt list     → bash ./GENOS_CPU_REPORT_R2.txt &lt;번호&gt;     (사진 3장)
+  bash ./GENOS_ORACLE_REPORT_R4.txt list  → bash ./GENOS_ORACLE_REPORT_R4.txt &lt;번호&gt;  (사진 5장), 합산은 sum
+  로그: 위 날짜 폴더의 같은 이름 .log
+  .log 가 안 생기면 코드서빙 로그의 shared_live.failed error_type 을 알려 주세요(답변은 정상으로 나갑니다).
+
+3. 원복: bash MAIN201_ONECLICK_R2.txt undo --backup '출력된 백업 폴더 절대경로'
+
+4. 검증 범위 (로컬, 현장 미실행)
+  - 실제 service.py 입구 + 로컬 Oracle 기록 + 모의 모델, LOG=on 만: .log·.json·_qa 3개만 생김.
+  - 그 결과로 GENOS_CPU_REPORT_R2 (사진 3/3), GENOS_ORACLE_REPORT_R4 (사진 5/5) 정상 출력.
+  - 회귀 44파일 새 실패 0, 진입 확인 17/17.
+    Oracle 규모 점검은 생략(답변이 나간 뒤 보고서 쓰는 부분만 바뀜, Oracle SQL·질문 경로 변경 없음, SQL 계획 388 그대로).
+  - 설치기: MAIN200 격리 checkout에서 설치·재실행·stage·commit·코드/원문 세대 게이트·원복 15개 명령 통과.
+  - R2 커밋·푸시: MAIN200 격리 checkout + 로컬 원격 2개(risk_team, financial_team)로 기본 실행 시 커밋·두 곳 푸시,
+    재실행(커밋 없음·푸시 정상), 원격 없을 때 멈춤, --no-git, 비밀번호 환경변수 전달 확인(18개 명령 통과).
+  - 안 한 것: 현장 NFS 마운트·권한 확인, 실모델 실행, 현장 git 서버에 실제 푸시.
+  상세: VERIFICATION.json / SHA256SUMS.txt
+</pre></body></html>

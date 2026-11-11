@@ -10,7 +10,9 @@ from semantic_runtime.legal_agent.errors import BudgetExhausted
 def test_status_guidance_is_stable_and_private(status):
  v=adapter.views();raw={'error':'private','_gateway_status':status,'request_id':'case-1'}
  text=v.render(v.public_response(raw))
- assert f'({status})' in text and 'private' not in text
+ # Only a real server fault shows its number (user 2026-11-11).
+ assert (f'({status})' in text)==(status in (500,503)) and 'private' not in text
+ assert status in (500,503) or not any(f'({n})' in text for n in (401,403,409,413,429,502,504))
  assert text.startswith('현재 충분한 법률 검토를 하지 못했습니다.')
  if status in (401,403):assert '권한' in text
  if status==409:assert '처리 중' in text
@@ -19,7 +21,7 @@ def test_status_guidance_is_stable_and_private(status):
 def test_budget_notice_preserves_failed_state():
  v=adapter.views();out=v.public_failure('case-1',exc=BudgetExhausted('private budget'))
  assert out['answer_status']=='failed' and out['error_code']=='limit'
- assert '법률 쟁점을 나누어' in out['message'] and '(limit)' in out['message']
+ assert '법률 쟁점을 나누어' in out['message'] and '(limit)' not in out['message']
  assert v.public_response(v.public_response(out))==out
 
 @pytest.mark.parametrize('failure',['raise','envelope','malformed'])
@@ -35,7 +37,8 @@ def test_native_preflight_failure_never_calls_rag(monkeypatch,failure):
  out=asyncio.run(adapter.chat({'question':'모의 질문','request_id':'case-1'}))['data']
  assert out['answer_status']=='failed' and 'private' not in out['text']
  assert calls==['AD_PROBE']
- assert {'raise':'(timeout)','envelope':'(503)','malformed':'(502)'}[failure] in out['text']
+ assert ('(503)' in out['text'])==(failure=='envelope')
+ assert '(timeout)' not in out['text'] and '(502)' not in out['text']
 
 @pytest.mark.parametrize('route',['/chat','/json','/stream'])
 @pytest.mark.parametrize('malformed',[True,False])
@@ -67,7 +70,7 @@ def test_duplicate_active_request_is_409_without_dispatch(native):
    display=adapter.stream_display() if native else None))
  finally:stream_app._ACTIVE_REQUESTS.discard('case-1')
  assert response.status_code==409 and not calls
- assert '(409)' in response.body.decode() and '현재 충분한 법률 검토' in response.body.decode()
+ assert '(409)' not in response.body.decode() and '현재 충분한 법률 검토' in response.body.decode()
 
 @pytest.mark.parametrize('phase',['preflight','display'])
 def test_workflow_envelope_and_display_failures_finish_once(monkeypatch,phase):
@@ -85,9 +88,9 @@ def test_workflow_envelope_and_display_failures_finish_once(monkeypatch,phase):
 def test_invalid_backend_envelope_is_failed_not_no_sources(payload):
  v=adapter.views();out=v.unwrap(payload)
  assert out['answer_status']=='failed' and out['error_code']=='502'
- assert '(502)' in v.render(out)
+ assert '(502)' not in v.render(out)
 
 def test_ad_failure_is_sanitized_but_normal_admin_table_is_preserved():
  v=adapter.views();out=v._ad_result({'response_schema':'ad-mode-v1','answer_status':'error','text':'private','error':{'type':'TimeoutError','message':'private'}})
- assert out['answer_status']=='failed' and '(timeout)' in out['text'] and 'private' not in json.dumps(out)
+ assert out['answer_status']=='failed' and '(timeout)' not in out['text'] and 'private' not in json.dumps(out)
  assert v._ad_result({'response_schema':'ad-mode-v1','answer_status':'administration','text':'관리 목록'})['text']=='관리 목록'

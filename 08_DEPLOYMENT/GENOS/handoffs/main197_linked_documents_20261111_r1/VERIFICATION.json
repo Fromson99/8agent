@@ -1,0 +1,116 @@
+{
+  "main_generation": 197,
+  "release_id": "linked-documents-20261111-r1",
+  "selected_locally": true,
+  "adds_to_field": "MAIN196 (lean-records-20261111-r1, mailed 1a1c7a215fd53ba3)",
+  "product_changes": [
+    "02_BACKEND/semantic_runtime/legal_agent/linked_documents.py (new)",
+    "legal_agent/guided_navigation.py (+15 lines)",
+    "legal_agent/guided_answer.py (location hint field)",
+    "legal_agent/repository.py (one diagnostic event name)"
+  ],
+  "switch": "GENOS_DELEGATION_LINKS=off restores MAIN196 behaviour",
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 388 (no new SQL)",
+  "local_validation": {
+    "regression": {
+      "new_failures": 0,
+      "already_failing": 95,
+      "files": 34
+    },
+    "new_tests": {
+      "passed": 19,
+      "total": 19
+    },
+    "oracle_scale_guard": "pass (questions failed 0, over-limit reads 0, max 268 per question, same as MAIN196); guard data has no internal rules, so this feature's own Oracle SQL was not exercised",
+    "entry_check": "17/17",
+    "live_qwen_adr1485": {
+      "data": "photo-transcribed risk_team rules test generation (6 documents incl. 2 mock)",
+      "requests": [
+        {
+          "case_id": "q1-field",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 71.71806875500624,
+          "physical_calls": 8,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q1-field",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 107.38691890599875,
+          "physical_calls": 10,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q2-new-product",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 26.38755896800285,
+          "physical_calls": 4,
+          "unknown": false,
+          "claims": 2,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q2-new-product",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 48.595473192995996,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q3-terms",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 34.8709354859966,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": false
+        },
+        {
+          "case_id": "q3-terms",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 33.66429918000358,
+          "physical_calls": 7,
+          "unknown": false,
+          "claims": 1,
+          "needs_guidance": false
+        }
+      ]
+    },
+    "installer": {
+      "base": "MAIN196 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field effect on Gold",
+    "Oracle SQL count of this feature on real internal rules (estimate +10~20 per question that read an internal rule)",
+    "many questions / repeated runs (one run each)"
+  ],
+  "package": {
+    "zip": "MAIN197_FULL_20261111_R1.zip",
+    "zip_sha256": "f6b5ef2276dfcf477c1c3722944f645a135bbb6b28b1dda3a2c67b11dd3f6f3b",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,94 @@
+{
+  "main_generation": 196,
+  "release_id": "lean-records-20261111-r1",
+  "selected_locally": true,
+  "replaces_field": "MAIN193 (memory-records-20261110-r1, mailed 1a1c4e24dbf271fb)",
+  "includes_local": [
+    "193 warm-start-20261110-r1",
+    "194 main194-preload-20261110-r1",
+    "195 sqlite-removal-20261111-r1",
+    "196 lean-records-20261111-r1"
+  ],
+  "workflow_file_changed_since_field": false,
+  "local_validation": {
+    "regression": {
+      "20261111-sqlite-removal-main": {
+        "new_failures": 0,
+        "fixed": 97,
+        "already_failing": 708,
+        "files": 300
+      },
+      "20261111-lean-records-main": {
+        "new_failures": 0,
+        "fixed": 1,
+        "already_failing": 706,
+        "files": 300
+      }
+    },
+    "excluded_tests": "09_ARTIFACTS/AUDITS/20261111-sqlite-removal-main/excluded-tests.json (originals replaced by r2 copies; AD tests: AD mode not used)",
+    "oracle_scale_guard": "pass (questions failed 0, over-limit reads 0, 3,512 SQL 0 errors, max 268 per question)",
+    "entry_check": "17/17 (MAIN195 and MAIN196)",
+    "census_same_test_local_oracle_mock_model": {
+      "main194_candidate": {
+        "seconds": [
+          4.214,
+          1.822,
+          1.606
+        ],
+        "oracle_sql": [
+          89,
+          10,
+          7
+        ]
+      },
+      "main196": {
+        "seconds": [
+          2.129,
+          0.682,
+          0.668
+        ],
+        "cpu_seconds": [
+          1.625,
+          0.538,
+          0.529
+        ],
+        "oracle_sql": [
+          77,
+          10,
+          9
+        ]
+      },
+      "sqlite_statements_per_question": {
+        "main194_candidate": [
+          1776,
+          1719,
+          1723
+        ],
+        "main196": [
+          32,
+          0,
+          0
+        ]
+      }
+    },
+    "installer": {
+      "base": "MAIN193 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field effect",
+    "live-model multiturn",
+    "chats started on MAIN193 continuing on MAIN196 (start a new chat)",
+    "several serving replicas sharing chats",
+    "field BODY DELETE grant"
+  ],
+  "package": {
+    "zip": "MAIN196_FULL_20261111_R1.zip",
+    "zip_sha256": "0d270061cbdfe3e7f0eebfbe434701a47afc124992b16f57cf5099df7ce93407",
+    "members": 559
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

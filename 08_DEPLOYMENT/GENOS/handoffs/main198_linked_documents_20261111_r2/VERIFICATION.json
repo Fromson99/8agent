@@ -1,0 +1,136 @@
+{
+  "main_generation": 198,
+  "release_id": "linked-documents-20261111-r2",
+  "selected_locally": true,
+  "replaces_sent": "MAIN197 (linked-documents-20261111-r1, mailed 1a1c7ce8b0aed96b)",
+  "product_changes_since_main197": [
+    "02_BACKEND/semantic_runtime/legal_agent/linked_documents.py (staged article picks: title, body search, contents)"
+  ],
+  "switch": "GENOS_DELEGATION_LINKS=off restores MAIN196 behaviour (no delegation links at all)",
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 388 (no new SQL)",
+  "local_validation": {
+    "regression": {
+      "new_failures": 0,
+      "already_failing": 95,
+      "files": 35
+    },
+    "new_tests": {
+      "passed": 19,
+      "total": 19
+    },
+    "oracle_scale_guard": "pass (questions failed 0, over-limit reads 0, max 268 per question, same as MAIN196); guard data has no internal rules, so this feature's own Oracle SQL was not exercised",
+    "entry_check": "17/17",
+    "live_qwen_adr1486": {
+      "data": "photo-transcribed risk_team rules test generation (6 documents incl. 2 mock)",
+      "arms": "MAIN197 vs r6 (r7 narrows body-search words to question words; not re-run)",
+      "requests": [
+        {
+          "case_id": "q1-field",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 42.957877152002766,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q1-field",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 42.50149248499656,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q2-new-product",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 39.126326439996774,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q2-new-product",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 33.57282165700599,
+          "physical_calls": 5,
+          "unknown": false,
+          "claims": 4,
+          "needs_guidance": false
+        },
+        {
+          "case_id": "q3-terms",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 41.77388362700003,
+          "physical_calls": 6,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": false
+        },
+        {
+          "case_id": "q3-terms",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 23.97636801099725,
+          "physical_calls": 4,
+          "unknown": false,
+          "claims": 1,
+          "needs_guidance": true
+        },
+        {
+          "case_id": "q4-approval",
+          "arm": "baseline",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 34.96599179000623,
+          "physical_calls": 6,
+          "unknown": false,
+          "claims": 2,
+          "needs_guidance": false
+        },
+        {
+          "case_id": "q4-approval",
+          "arm": "candidate",
+          "returncode": 0,
+          "http_status": 200,
+          "seconds": 39.359153359997435,
+          "physical_calls": 6,
+          "unknown": false,
+          "claims": 3,
+          "needs_guidance": false
+        }
+      ]
+    },
+    "installer": {
+      "base": "MAIN197 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field effect on Gold",
+    "Oracle SQL count of this feature on real internal rules (estimate +10~20 per question that read an internal rule)",
+    "many questions / repeated runs (one run each)"
+  ],
+  "package": {
+    "zip": "MAIN198_FULL_20261111_R1.zip",
+    "zip_sha256": "c483c277509eb31a556b42285a8adbdea668fc2dfcbd58332016faa2fd908dca",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

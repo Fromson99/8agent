@@ -1,0 +1,45 @@
+{
+  "main_generation": 201,
+  "release_id": "nfs-log-20261111-r2",
+  "selected_locally": true,
+  "base": "MAIN200 (nfs-log-20261111-r1)",
+  "replaces_sent": "MAIN200 (nfs-log-20261111-r1, mailed 1a1c819cab1f0b68)",
+  "product_changes_since_main200": [
+    "02_BACKEND/semantic_runtime/request_report.py (LOG=on: after the .log blocks the same-named .json report and _qa row are written as with the log off)"
+  ],
+  "files_per_question_with_LOG_on": [
+    "<date>/<team>/legal_agent/<id>.log",
+    "<date>/<team>/legal_agent/<id>.json",
+    "<date>/<team>/legal_agent/_qa/<id>.row"
+  ],
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "388 -> 388",
+  "local_validation": {
+    "actual_service_oracle_records_scripted_model_LOG_on": ".log + .json + _qa row (same name), no other file",
+    "GENOS_CPU_REPORT_R2_on_that_output": "list + report 1 exit 0, photos 3/3",
+    "GENOS_ORACLE_REPORT_R4_on_that_output": "list + report 1 exit 0, photos 5/5",
+    "regression": {
+      "files": 44,
+      "new_failures": 0,
+      "already_failing": 148
+    },
+    "oracle_scale_guard": "skipped (user: not needed); report finalizer only, no Oracle SQL or question-path change",
+    "entry_check": "17/17",
+    "installer": {
+      "base": "MAIN200 checkout",
+      "commands": 15,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field NFS mount and write permission for the code-serving user",
+    "live model run"
+  ],
+  "package": {
+    "zip": "MAIN201_FULL_20261111_R1.zip",
+    "zip_sha256": "55c15db44ad280f441bd43a73a595914d59a6a4741fab55e245c12070efed852",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

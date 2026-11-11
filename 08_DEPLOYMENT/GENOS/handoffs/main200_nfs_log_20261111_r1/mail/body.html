@@ -1,0 +1,41 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px"><pre style="font-family:inherit;white-space:pre-wrap">MAIN200 — LOG=on 이면 질문마다 .log 파일을 NFS에 저장 (MAIN199 위, MAIN199 대체)
+MAIN199(서비스 시작 503 ORA-40478 수정) 내용을 그대로 포함한 전체 코드입니다. 이 MAIN200만 적용하면 됩니다.
+워크플로우 파일은 그대로입니다.
+
+0. 무엇이 바뀌었나
+  코드서빙 환경변수에 LOG=on 을 넣으면 질문마다 .log 파일 하나가 아래 위치에 생깁니다.
+    /nfs-root/diamo/8-agent/rag-request-reports/&lt;날짜 YYYY-MM-DD&gt;/&lt;팀&gt;/legal_agent/&lt;요청ID&gt;-&lt;번호&gt;.log
+  (팀이 없으면 unassigned 폴더) 예전에 찍던 로그 그대로입니다:
+    질문, 진행 이벤트(request.started·model.attempt.* 등), 모델 호출, 모델 원문 응답(그대로), 모델 응답 요약,
+    오류·traceback, 서비스 결과, 최종 답변.
+  LOG=on 일 때는 .log 만 만듭니다. .json·.txt·.trace.txt·.llm_raw.jsonl·_qa 는 만들지 않습니다.
+  LOG 를 빼거나 off 면 MAIN199와 똑같이 동작합니다.
+  경로를 바꾸고 싶으면 GENOS_SHARED_LOG_DIR(또는 GENOS_LOG_DIR)에 절대경로를 넣으면 그 아래에 같은 모양으로 씁니다.
+  (GENOS_SHARED_LOG_DIR 를 넣으면 그 경로에 Oracle 원본 보관 폴더 agent-raw-v1 도 기존처럼 생깁니다.
+   .log 만 원하면 LOG=on 만 넣고 GENOS_SHARED_LOG_DIR 는 빼 주세요.)
+  GENOS_LIVE_LOG=on 도 같은 뜻으로 받습니다. 새 SQL 없음(388개 그대로).
+
+1. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN200_ONECLICK_R1.txt  → 완료 표시 MAIN200_ONECLICK_DONE, MAIN200_EXIT=0
+  확인·스테이징: bash MAIN200_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  기존 절차대로 commit 후: bash MAIN200_ONECLICK_R1.txt gate-code → push → 새 코드서빙 리비전
+  코드서빙 환경변수에 LOG=on 추가 (나머지 환경변수 그대로)
+  시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+
+2. 확인 부탁
+  질문 하나 보낸 뒤 /nfs-root/diamo/8-agent/rag-request-reports/&lt;오늘 날짜&gt;/ 아래에 .log 가 생기는지.
+  안 생기면 코드서빙 로그에서 shared_live.failed 의 error_type 을 알려 주세요
+  (NFS 마운트가 아니거나 쓰기 권한이 없으면 답변은 정상으로 나가고 .log 만 안 생깁니다).
+
+3. 원복: bash MAIN200_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+4. 검증 범위 (로컬, 현장 미실행)
+  - 실제 service.py 입구 + 로컬 Oracle 기록 + 모의 모델로 질문 1개:
+    LOG=on 만 넣었을 때 기본 경로(시험에서는 임시 폴더) 아래 2026-11-11/unassigned/legal_agent/ 에 .log 1개만 생김,
+    LOG 끄면 MAIN199와 같은 파일(.json·_qa)만 생김.
+  - 회귀 44파일 새 실패 0(사이드카·trace 파일을 찾던 시험 2파일은 .log 기준으로 고침, 새 시험 1파일),
+    Oracle 규모 점검 통과(한 질문 최대 SQL 268), 진입 확인 17/17.
+  - 설치기: MAIN199 격리 checkout에서 설치·재실행·stage·commit·코드/원문 세대 게이트·원복 15개 명령 통과.
+  - 안 한 것: 현장 NFS 마운트·권한 확인, 실모델 실행, 현장에서 로그 켰을 때 CPU.
+  상세: VERIFICATION.json / SHA256SUMS.txt
+</pre></body></html>

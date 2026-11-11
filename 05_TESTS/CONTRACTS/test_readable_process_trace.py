@@ -62,34 +62,22 @@ def scenario(runtime):
 
 
 def test_all_events_wire_inputs_tools_usage_and_retries_append_once(tmp_path):
+    # Since 2026-11-11 the live log writes only the .log (no .trace.txt next to it).
     run, journal = scenario(tmp_path / 'runtime')
     before = journal.read_bytes()
     with rr.live_log(tmp_path / 'reports', 'readable', tmp_path / 'runtime') as (path, handler):
         handler.run_id = run
         handler.poll_journal()
-        trace = path.with_suffix('.trace.txt')
-        first = trace.read_bytes()
+        first = path.read_bytes()
         handler.poll_journal()
-        assert trace.read_bytes() == first
-        report_path = rr.write_report(tmp_path / 'reports', tmp_path / 'runtime',
-            request_id='readable', api_type='LEGAL_AGENT', request={'question': '승인 기준'},
-            result={'status': 200, 'body': {'run_id': run, 'answer': {'text': '최종 답변'}}},
-            events=[], live_log_path=path)
-        handler.process_trace.finish(json.loads(report_path.read_text()))
-        full = trace.read_text()
-        assert trace.read_bytes().startswith(first)
-        assert full.count('AGENT / 원장 #') == 10
-        assert full.count('LLM · ATTEMPT_SENT · M1') == 1
-        assert full.count('실제 LLM 입력 메시지 1 / 역할') == 2
-        assert full.count('검색 결과 중 전달 안 한 정보') == 1
-        assert '프롬프트에 들어간 정보 · view' in full and '수정 요청' in full
-        assert '| 원문을 확인하세요.\n| 없는 근거를 만들지 마세요.' in full
-        assert '확인한 응답\n| 다음 문단' in full
-        assert '평균 출력 토큰/초' in full and ': 10.0' in full
-        assert '입력 토큰: 100' in full and '누적 모델 사용량' in full
-        assert 'PUBLICATION_EXPORTED' in full and 'OUTPUT_SCHEMA_INVALID' in full
-        assert '최종 답변' in full
-        assert trace.stat().st_mode & 0o777 == 0o640
+        assert path.read_bytes() == first
+        assert handler.process_trace is None
+    text = path.read_text()
+    assert text.count('=== MODEL RAW RESPONSE ===') == 2 and text.count('=== MODEL CALL ===') == 2
+    assert '=== TOOL RESULT ===' in text and '=== AGENT OUTPUT SCHEMA INVALID ===' in text
+    assert '확인한 응답' in text
+    assert sorted(p.name for p in path.parent.iterdir()) == [path.name]
+    assert path.stat().st_mode & 0o777 == 0o640
     assert journal.read_bytes() == before
 
 
@@ -136,7 +124,8 @@ def test_repeated_error_has_one_full_traceback_in_old_and_new_logs(tmp_path):
             event.async_exc_type = 'TransportError'
             handler.emit(event)
         handler.write_detail('AGENT RUN FAILED', {'diagnostics': diagnostic})
-    for target in (path, path.with_suffix('.trace.txt')):
+    assert not path.with_suffix('.trace.txt').exists()
+    for target in (path,):
         text = target.read_text()
         assert text.count('Traceback (most recent call last):') == 1
         assert 'ERR-0001' in text and '모델 응답 대기 시간 초과' in text

@@ -1,0 +1,50 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px"><pre style="font-family:inherit;white-space:pre-wrap">MAIN197 — 내규가 이름만 넘긴 준칙·지침을 찾아 조문까지 읽기 (현장 MAIN196 위에 추가)
+현장 MAIN196에 아래 기능 하나만 더한 전체 코드입니다. 워크플로우 파일은 바뀌지 않았습니다(편집기 교체 불필요).
+
+0. 무엇이 바뀌나
+  현장 질문 "신규 상품 판단 기준·프로세스·전결권"에서 상품위원회운영지침만 읽고 "어느 준칙인지 알려 달라"고 되묻던 문제.
+  지침이 다른 내규를 번호·이름 없이 넘기기 때문("관련 준칙에서 정한 바에 따라", "세부 준칙에서 정한다")에 연결 색인이 없었습니다.
+  이제 답변 직전에 서버가:
+   - 이미 읽은 내규 원문에서 "관련 준칙", "세부 준칙", "상품 판매 및 사후관리 관련 준칙", "○○지침·○○시행세칙에 따라"를 찾고
+   - 이 질문이 볼 수 있는 내규 중 제목으로 대상 문서를 정하고(제목 일치, 또는 제목 낱말 — 예: "상품" → 상품관리준칙;
+     문서 이름 끝의 (YYYYMMDD) 판본 날짜는 떼고 비교, 판본이 여럿이면 최신)
+   - 그 위임 문장이 질문과 관련된 경우만(넘기는 사항에 질문 낱말이 있을 때) 대상 문서에서 제목이 맞는 조문을 읽습니다
+     (예: 상품관리준칙 제2-1조 신상품 판단 기준, 제2-2조 상품 판매 프로세스).
+  동점·약한 근거면 위치만 보여 주고 읽지 않습니다. 이 범위에 그런 이름의 문서가 없으면(예: 신규사업 심의위원회 지침) 기록만.
+  모델 호출 종류 추가 없음, 본문 검색 추가 없음, 새 SQL 없음(쿼리 계획 388개 그대로), DB 변경 없음.
+  검색 범위를 지침 하나로 좁힌 경우에도, 읽은 원문에 그 위임 문장이 실제로 있는지 다시 확인한 뒤 읽습니다.
+  처리 상세 로그 이벤트: DELEGATED_DOCUMENTS_RESOLVED(판정·이유), GUIDED_ANSWER_SERVER_READS(읽은 조문, 'delegated' 설명).
+
+1. 적용 전
+  할 것 없음. 환경변수 그대로(DP=oracle, GENOS_ORACLE_TABLE_MAPPING=gold, GENOS_ORACLE_GOLD_OWNER=SIDDS).
+  이 기능만 끄려면: GENOS_DELEGATION_LINKS=off (MAIN196과 같은 동작).
+
+2. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN197_ONECLICK_R1.txt  → 완료 표시 MAIN197_ONECLICK_DONE, MAIN197_EXIT=0
+  확인·스테이징: bash MAIN197_ONECLICK_R1.txt status / stage, git -C ~/DEV diff --cached --stat / --check
+  기존 절차대로 commit 후: bash MAIN197_ONECLICK_R1.txt gate-code → push → 새 코드서빙 리비전
+  시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+  MAIN196 채팅은 그대로 이어 갈 수 있습니다(저장 형식 변경 없음).
+
+3. 로컬 결과 (실제 Qwen, 사진으로 전사한 내규 시험 세트, 질문당 1회 — 정답률 아님)
+                               MAIN196                        MAIN197
+  현장 질문(신상품 기준·전결권)   지침만으로 답                  상품관리준칙 2-1·2-2조 읽고 기준·판매 프로세스 답
+  지침의 신상품 기준             "관련 준칙에 위임"까지          상품관리준칙 2-1조 내용으로 답
+  지침에 정의 없는 용어           지침 정의만                     위험관리기준시행세칙 1-4조만 읽고 정의 목록 답
+  6요청 모두 정상, 같은 요청 다시 보내도 모델 호출 추가 0.
+
+4. 확인 부탁 (같은 현장 질문으로)
+  답변 아래 처리 상세에 상품관리준칙 조문이 출처로 나오는지, 되묻기가 없어지는지.
+  bash ./GENOS_ORACLE_REPORT_R4.txt 번호 --page 1 로 그 질문의 SQL 수(MAIN196 대비 증가분) 사진 부탁드립니다.
+  코드서빙 로그의 DELEGATED_DOCUMENTS_RESOLVED 줄(어느 문서로 판정했는지)도 보면 좋습니다.
+
+5. 원복: bash MAIN197_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'   (또는 GENOS_DELEGATION_LINKS=off)
+
+6. 검증 범위 (로컬, 현장 미실행)
+  - 설치기: MAIN196 격리 checkout에서 설치·재실행·stage·commit·코드/원문 세대 게이트·원복 15개 명령 통과.
+  - 회귀 34파일: 새 실패 0. 새 시험 19/19.
+  - Oracle 규모 점검 통과(질문 실패 0, 한도 초과 0, 한 질문 최대 SQL 268, MAIN196과 같음). 진입 확인 17/17.
+  - 안 한 것: 현장 Gold 내규로 실행, 이 기능의 실제 Oracle SQL 수(점검 자료에 내규 없음, 추정 질문당 +10~20), 반복 실행.
+  - 남은 것: 질문 "신규 상품" ↔ 원문 "신상품" 검색 낱말 차이, 내규 판본 중복(지침 파일명 오타)은 이번 범위 밖.
+  상세: VERIFICATION.json / SHA256SUMS.txt
+</pre></body></html>

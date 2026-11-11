@@ -51,6 +51,11 @@ def isolate(code: Path) -> None:
     # The conftest's tool-path setup puts 06_TOOLS/COMMANDS first; the code tree goes back in front.
     import conftest  # noqa: F401  (05_TESTS/conftest.py)
     sys.path[:0] = [str(code / '02_BACKEND'), str(code)]
+    # Bind the workflow package to the tree now. Some test modules put the workspace 02_BACKEND in
+    # front of sys.path at import; a later first `import workflow` then took the workspace copy
+    # (2026-11-11, seen once the tree's workflow/repository.py differed from the workspace).
+    if (code / '02_BACKEND' / 'workflow' / '__init__.py').is_file():
+        importlib.import_module('workflow')
 
 
 def loaded_outside(code: Path) -> tuple[dict[str, str], list[str], list[str]]:
