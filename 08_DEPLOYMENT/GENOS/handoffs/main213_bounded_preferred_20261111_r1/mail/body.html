@@ -1,0 +1,6 @@
+<p><b>MAIN213</b> 전달본입니다(MAIN212 대체, MAIN212 전체 포함). 현장 사진의 500 오류 수정입니다.</p>
+<p><b>원인</b>: 질문에 이름이 나온 큰 문서(블록 1만 개 가까이)의 원문 블록을 "전문/목차" 판단에 쓰려고 통째로 읽다가 Oracle 1만 행 한도(<code>QUERY_SQL_RESULT_BUDGET</code>)에 걸렸습니다.</p>
+<p><b>① 수정</b>: 읽다가 예산을 넘는 순간 멈추고 목차 방식으로 갑니다(판단은 예전과 같음). <b>② 우회</b>: SQL 결과가 1만 행을 넘어도 오류 없이 계속 나눠 읽고, 로그에 <code>oracle.sql.large_result</code> 경고만 남깁니다(64MiB 초과만 멈춤).</p>
+<p><b>적용</b>: TRANSFER 폴더에 ZIP과 TXT를 두고 <code>bash MAIN213_ONECLICK_R1.txt</code> (ZIP은 미리 풀지 않음). 완료 표시 <code>MAIN213_ONECLICK_DONE</code>, <code>MAIN213_EXIT=0</code>. git commit·push까지 자동입니다. GENOS 워크플로우 파일은 바꾸지 않습니다.</p>
+<p>로컬 검증: 회귀 새 실패 0, 진입 17/17, MAIN212 격리 checkout 설치 22명령 통과. Oracle 규모 점검은 생략했습니다.</p>
+<p>TXT에 Git 비밀번호가 들어 있습니다. 다른 곳에 전달하지 말아 주세요.</p>

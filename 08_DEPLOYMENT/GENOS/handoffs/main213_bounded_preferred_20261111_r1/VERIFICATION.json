@@ -1,0 +1,39 @@
+{
+  "main_generation": 213,
+  "release_id": "bounded-preferred-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN212 (special-external-20261111-r1)",
+  "replaces_sent": "MAIN212 (1a1ca605cf33bc37)",
+  "changes": [
+    "preferred-blocks-bounded",
+    "sql-row-cap-bypass"
+  ],
+  "workflow_same_as_main212": true,
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression": {
+      "files": 12,
+      "new_failures": 0,
+      "fixed": 1
+    },
+    "oracle_scale_guard": "skipped (user instruction)",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN212 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "live model",
+    "oracle scale guard"
+  ],
+  "package": {
+    "zip": "MAIN213_FULL_20261111_R1.zip",
+    "zip_sha256": "72eed48f66f6600f43e3b859a7eeee547c86d1608f31d55b80a41fb7b326a333",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

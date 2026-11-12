@@ -1,0 +1,9 @@
+<p>화면 "LLM 호출·처리 시간" 표의 호출이 실제로 어떤 단계였는지, 출력량에 비례한 시간인지 대기가 의심되는지를 요청 보고서에서 뽑아 사진 2장으로 보여 줍니다.</p>
+<p><b>실행</b> (첨부를 올린 TRANSFER 폴더에서, 코드 적용·재시작 필요 없음)</p>
+<pre>bash ./GENOS_MODEL_WAIT_REPORT_R1.txt list
+bash ./GENOS_MODEL_WAIT_REPORT_R1.txt 2
+bash ./GENOS_MODEL_WAIT_REPORT_R1.txt 2 --page 2</pre>
+<p>list로 요청 번호를 확인한 뒤 해당 번호로 실행합니다. 번호 없이 실행하면 가장 최근 요청입니다. 요청 보고서 위치가 기본(/nfs-root/diamo/8-agent/rag-request-reports)과 다르면 끝에 <code>--root /실제/GENOS_SHARED_LOG_DIR</code>을 붙입니다.</p>
+<p><b>조건</b>: 코드서빙에 LOG=on(또는 GENOS_SHARED_LOG_DIR)이 켜져 있어 요청 보고서 .json이 있어야 합니다. 읽기 전용이며 Oracle·모델에 접속하지 않고, 질문·답변·원문은 출력하지 않습니다.</p>
+<p><b>찍어 주실 것</b>: 사진 1/2(호출 표), 사진 2/2(느린 호출 상세).</p>
+<p><b>한계</b>: 모델 서버 안의 대기열 시간은 로그에 없어 대기 여부는 출력 토큰과 시간으로 추정합니다. 현장 보고서로는 아직 실행하지 않았습니다. 판정 읽는 법은 GUIDE.txt에 있습니다.</p>

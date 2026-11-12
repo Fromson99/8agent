@@ -1,0 +1,23 @@
+MAIN215 — MAIN214 위 Oracle 호출 제한 60초 → 10분 (MAIN214 대체)
+MAIN214 전체(MAIN212·213 포함)를 포함한 코드입니다. 이 MAIN215만 적용하면 됩니다. GENOS 워크플로우 파일은 MAIN214와 같아서 편집기는 그대로 둡니다.
+
+0. 바뀐 것 (현장 11-11 12:24Z 대사: READ_SPECIAL_EXTERNAL 단계의 SQL이 60,058ms에서 READ_FAILED: ReadTimeout)
+  - 서빙이 ORDS(Oracle)에 보내는 SQL 한 번의 기다리는 시간을 60초 → 600초(10분)로 늘렸습니다(oracle_dp.py 한 곳).
+  - 바꾸려면 환경변수 GENOS_ORACLE_ORDS_TIMEOUT_SECONDS=초(정수). 넣지 않으면 600입니다.
+  - SQL 문장은 그대로입니다(계획 391). 느린 SQL 자체를 고친 것은 아닙니다 — 60초 넘게 걸리던 SQL이 이제 실패하지 않고 기다립니다.
+  ※ ORDS 서버 쪽에도 별도 시간 제한이 있으면 그 제한에서 다시 끊길 수 있습니다. 그때는 오류 문구가 ReadTimeout이 아닌 HTTP 오류로 바뀝니다.
+  ※ 질문 전체 제한(1800초)·모델 호출 제한(180초)은 그대로입니다.
+
+1. 적용 (TRANSFER 폴더에서, ZIP은 미리 풀지 않음)
+  bash MAIN215_ONECLICK_R1.txt  → 완료 표시 MAIN215_ONECLICK_DONE, MAIN215_EXIT=0 (코드 교체·검증 후 git add/commit/게이트/push까지, 비밀번호 입력 없음)
+  확인: bash MAIN215_ONECLICK_R1.txt status
+  워크플로우·환경변수 그대로. 시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+  이 TXT에 Git 비밀번호가 들어 있습니다. 다른 곳에 전달하지 말아 주세요.
+
+2. 원복: bash MAIN215_ONECLICK_R1.txt undo --backup '출력된 백업 폴더 절대경로'
+
+3. 검증 범위 (로컬, 현장 미실행)
+  - 회귀 12파일 새 실패 0(ORDS 연결 시험 기대값 60→600, 환경변수 시험 1개 추가), Oracle 규모 점검 통과, 진입 확인, SQL 계획 391 그대로.
+  - 설치기: MAIN214 격리 checkout에서 설치·재실행·commit·push·코드/원문 세대 게이트·원복 22개 명령 통과.
+  - 안 한 것: 현장 GENOS, 실제 ORDS 서버의 긴 SQL, 실제 모델. 어떤 SQL이 60초를 넘는지(sql_site)는 같은 요청의 .json 보고서로 확인이 필요합니다.
+  상세: VERIFICATION.json / SHA256SUMS.txt

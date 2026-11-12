@@ -1,0 +1,42 @@
+{
+  "main_generation": 211,
+  "release_id": "select-nowait-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN210 (server-links-20261111-r1)",
+  "replaces_sent": "MAIN210 (1a1c9fc136628df2)",
+  "changes": [
+    "relax-groups-select",
+    "preload-no-wait"
+  ],
+  "workflow_same_as_main210": true,
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression": {
+      "files": 37,
+      "new_failures": 0,
+      "fixed": 3
+    },
+    "oracle_scale_guard": {
+      "main210_S12": "READ_ONLY failure reproduced (HTTP 500)",
+      "main211_full": "passed"
+    },
+    "entry_checks": "see release activation",
+    "installer": {
+      "base": "MAIN210 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "live model",
+    "why the field preparation takes about 5 minutes"
+  ],
+  "package": {
+    "zip": "MAIN211_FULL_20261111_R1.zip",
+    "zip_sha256": "dfb1595bdf0ae81b0eed60084d8b6e0abd1f0d740b58505b4b7f28c380e8926c",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

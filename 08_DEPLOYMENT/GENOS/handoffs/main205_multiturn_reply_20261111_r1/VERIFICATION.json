@@ -1,0 +1,51 @@
+{
+  "main_generation": 205,
+  "release_id": "multiturn-reply-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN204 (sql-loops-20261111-r1)",
+  "replaces_sent": "MAIN204 R2 (1a1c8eea0a2fd108)",
+  "product_changes_since_main204": [
+    "legal_agent/corrected_memory.py",
+    "legal_agent/memory_methods.py",
+    "request_report.py"
+  ],
+  "workflow_file_changed_since_main204": false,
+  "sql_plans": "389 -> 389",
+  "local_validation": {
+    "regression": {
+      "files": 72,
+      "new_failures": 0
+    },
+    "oracle_scale_guard": "passed",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN204 checkout",
+      "commands": 22,
+      "passed": true,
+      "transfer_in_gitignore": {
+        "passed": true,
+        "run": "committed, gate passed, pushed both",
+        "committed_files": 597,
+        "transfer_committed": false
+      }
+    },
+    "live_qwen_public_documents": {
+      "adr_1489": "baseline reproduced the field text; partial (three resource stops)",
+      "adr_1490": "22 graded turns, 21 as expected, UNKNOWN 0, 293 calls",
+      "adr_1495": "S8 turn 4 same question 2 of 3; one ended with a scope clarification"
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "internal rules",
+    "full Oracle flow with a live model",
+    "answer quality (branch only)"
+  ],
+  "package": {
+    "zip": "MAIN205_FULL_20261111_R1.zip",
+    "zip_sha256": "b9bbd832aebb73ce1d1b3d40f95f9d80d5d6c6af2c117ef72ba8870f88e9ad46",
+    "members": 561
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

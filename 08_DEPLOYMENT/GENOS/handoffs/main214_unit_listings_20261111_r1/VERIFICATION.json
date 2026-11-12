@@ -1,0 +1,65 @@
+{
+  "main_generation": 214,
+  "release_id": "unit-listings-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN213 (bounded-preferred-20261111-r1)",
+  "replaces_sent": [
+    "MAIN213 (1a1ca7217c585d93)",
+    "MAIN212 (1a1ca605cf33bc37)"
+  ],
+  "changes": [
+    "unit-rows-shared",
+    "document-tree-shared",
+    "unit-listings-shared"
+  ],
+  "workflow_same_as_main213": true,
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression": {
+      "files": 72,
+      "new_failures": 0,
+      "fixed": 3
+    },
+    "oracle_scale_guard": "passed (pytest-guard-r4)",
+    "entry_checks": "17/17",
+    "big_document_local_oracle": {
+      "sql_total": {
+        "MAIN211": 2245,
+        "MAIN212": 3206,
+        "fix": 2226
+      },
+      "seconds_total_two_runs": {
+        "MAIN211": [
+          79.0,
+          90.9
+        ],
+        "MAIN212": [
+          100.3,
+          97.7
+        ],
+        "fix": [
+          64.4,
+          72.9
+        ]
+      },
+      "answers_identical_17_scenarios": true
+    },
+    "installer": {
+      "base": "MAIN213 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "live model",
+    "field CPU effect"
+  ],
+  "package": {
+    "zip": "MAIN214_FULL_20261111_R1.zip",
+    "zip_sha256": "28e1ea8cf2610af3a72a5708f3e18d85545addb6b262ef246782879908c38017",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

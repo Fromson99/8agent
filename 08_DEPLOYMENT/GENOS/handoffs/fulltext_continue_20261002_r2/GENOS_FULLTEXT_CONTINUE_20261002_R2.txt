@@ -19,7 +19,7 @@ import ast,hashlib,json,pathlib,sys,zipfile
 if sys.version_info<(3,11):raise SystemExit('Python3.11 or later required')
 p=pathlib.Path(sys.argv[1])
 with p.open('rb') as f:
- if hashlib.file_digest(f,'sha256').hexdigest()!='228c22beb247cc1a41b4b524ddd7eeb738e16867c5de92f01f8eb3eca67875a7':raise SystemExit('ZIP SHA mismatch')
+ if hashlib.file_digest(f,'sha256').hexdigest()!='7dda40781742b4286f4589aee24fbf76990ae43f40551753f690455a5fa1ae46':raise SystemExit('ZIP SHA mismatch')
 with zipfile.ZipFile(p) as z:
  m=json.loads(z.read('CODE_MANIFEST.json'))
  allowed={'genos_fulltext_continue.py','genos_reindex_logging.py','unit_fulltext_selected.py','GUIDE_UTF8.txt'}

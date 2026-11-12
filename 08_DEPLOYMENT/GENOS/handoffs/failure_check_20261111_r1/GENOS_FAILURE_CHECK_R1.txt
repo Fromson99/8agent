@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+# GENOS 요청 실패 원인 확인 R1 (2026-11-11) - 시간 초과한 Oracle SQL 위치와 모델 400 사유를 사진 1장으로
+#
+# 이 파일을 올린 TRANSFER 폴더에서 실행합니다(다른 폴더로 이동하지 않습니다).
+#   bash ./GENOS_FAILURE_CHECK_R1.txt                 11월 11일 대사 500 요청(6ca98162) 확인
+#   bash ./GENOS_FAILURE_CHECK_R1.txt 1a2b3c4d        다른 요청 확인(요청 번호 앞자리)
+# 요청 보고서 위치가 기본(/nfs-root/diamo/8-agent/rag-request-reports)과 다르면 끝에 --root /실제/위치
+#
+# 읽기 전용: 코드서빙·코드·DB·모델·설정을 바꾸지 않고, Oracle·모델에 접속하지 않습니다.
+# 질문·답변·원문·SQL 본문은 출력하지 않습니다.
+# 결과는 화면과 ./GENOS_FAILURE_CHECK_RESULTS/CHECK-날짜시각.txt 에 같이 남습니다.
+set -u
+OUT_DIR=./GENOS_FAILURE_CHECK_RESULTS
+mkdir -p "$OUT_DIR" || { echo "결과 폴더를 만들지 못했습니다: $OUT_DIR"; echo "종료=1"; exit 1; }
+SAVE="$OUT_DIR/CHECK-$(date +%Y%m%d-%H%M%S).txt"
+python3 -I - "$@" <<'GENOS_FAILURE_CHECK_R1_PY' 2>&1 | tee "$SAVE"
+"""요청 보고서(JSON, 없으면 .log)만 읽어 실패한 Oracle SQL 위치와 모델 HTTP 오류 사유를 정리한다."""
+import glob
+import json
+import os
+import re
+import sys
+
+DEFAULT_ID = '6ca98162'
+DEFAULT_ROOT = '/nfs-root/diamo/8-agent/rag-request-reports'
+FRAME = re.compile(r'File "(.*?)", line (\d+), in (\S+)')
+HINTS = {'context length': '입력 길이 초과', 'token limit': '입력 길이 초과', 'payload too large': '요청 크기 초과',
+         'json_schema': '응답 스키마 거절', 'response_format': '응답 스키마 거절',
+         'max_tokens': '출력 토큰 설정 거절', 'chat_template_kwargs': '모델 옵션 거절',
+         'enable_thinking': '모델 옵션 거절', 'rate limit': '요청 수 제한',
+         'authentication': '인증 실패', 'permission': '권한 거절'}
+
+
+def arguments(argv):
+    target, root, index = DEFAULT_ID, DEFAULT_ROOT, 0
+    while index < len(argv):
+        if argv[index] == '--root':
+            if index + 1 >= len(argv):
+                sys.exit('--root 뒤에 위치가 필요합니다')
+            root = argv[index + 1]
+            index += 2
+        else:
+            target = argv[index]
+            index += 1
+    if not re.fullmatch(r'[A-Za-z0-9_.:-]{4,160}', target):
+        sys.exit('요청 번호 앞자리는 4자 이상 영문·숫자로 입력하세요: ' + target)
+    return target, root
+
+
+def find(root, target, suffix):
+    found = glob.glob(os.path.join(glob.escape(root), '*', '*', '*', target + '*' + suffix))
+    if not found:
+        for folder, _, names in os.walk(root):
+            found.extend(os.path.join(folder, n) for n in names if n.startswith(target) and n.endswith(suffix))
+    return max(found, key=os.path.getmtime) if found else None
+
+
+def short(path):
+    return path.split('/02_BACKEND/', 1)[-1]
+
+
+def log_frames(path):
+    """.log의 마지막 READ_FAILED traceback에서 파일·줄·함수만 뽑는다."""
+    frames, saved = [], []
+    if not path:
+        return saved
+    with open(path, encoding='utf-8', errors='replace') as stream:
+        for line in stream:
+            if 'Traceback (most recent call last)' in line:
+                frames = []
+                continue
+            hit = FRAME.search(line)
+            if hit:
+                frames.append('%s:%s %s' % (short(hit.group(1)), hit.group(2), hit.group(3)))
+            elif 'READ_FAILED: ' in line and frames:
+                saved = frames
+    return saved
+
+
+def from_log(path):
+    print('요청 보고서 .json 이 없어 .log 로 확인합니다: ' + os.path.basename(path))
+    with open(path, encoding='utf-8', errors='replace') as stream:
+        for line in stream:
+            if 'model_http.failed' in line or 'status=READ_FAILED' in line:
+                print('  ' + ' '.join(k for k in line.split() if not k.startswith(('workflow_', 'attempt_id', 'request_id')))[:200])
+    frames = log_frames(path)
+    print('[SQL을 보낸 코드 경로]')
+    for frame in frames[-14:]:
+        print('  ' + frame)
+    print('사유 힌트는 .json 에만 있어 이 요청에서는 확인할 수 없습니다.')
+
+
+def value(row, key):
+    item = row.get(key)
+    return '-' if item in (None, '', []) else item
+
+
+def main():
+    target, root = arguments(sys.argv[1:])
+    print('GENOS 요청 실패 원인 확인 R1 | 요청 ' + target)
+    if not os.path.isdir(root):
+        print('요청 보고서 위치가 없습니다: ' + root + ' (끝에 --root /실제/위치)')
+        return 1
+    report, log = find(root, target, '.json'), find(root, target, '.log')
+    if not report:
+        if log:
+            from_log(log)
+            return 0
+        print('이 요청의 .json 과 .log 를 찾지 못했습니다. 코드서빙의 LOG=on 과 요청 번호를 확인하세요.')
+        return 1
+    with open(report, encoding='utf-8') as stream:
+        events = json.load(stream).get('service_events') or []
+    print('보고서: ' + os.path.basename(report))
+    returned = [e for e in events if e.get('event') == 'request.returning']
+    if returned:
+        print('요청 전체 처리 시간: %.1f초' % (float(returned[-1].get('duration_ms') or 0) / 1000))
+
+    models = [e for e in events if e.get('event') == 'model_http.failed']
+    print('\n[1] 모델 HTTP 실패 %d건' % len(models))
+    causes = []
+    for row in models:
+        print('  %s HTTP %s  %sms  응답 %s바이트' % (str(row.get('ts'))[11:19], value(row, 'http_status'),
+                                                  value(row, 'duration_ms'), value(row, 'response_bytes')))
+        print('    종류=%s  코드=%s  항목=%s  메시지 %s자' % (value(row, 'upstream_error_type'), value(row, 'upstream_error_code'),
+                                                      value(row, 'upstream_error_param'), value(row, 'upstream_message_chars')))
+        hints = row.get('upstream_error_hints') or []
+        print('    힌트=%s  검증 위치=%s' % (','.join(hints) or '-', value(row, 'validation_locations')))
+        causes.extend(HINTS[h] for h in hints if h in HINTS)
+    tokens = [e['prompt_tokens'] for e in events if isinstance(e.get('prompt_tokens'), int)]
+    if tokens:
+        print('  이 요청에서 기록된 가장 큰 입력: %d토큰' % max(tokens))
+
+    failed = [e for e in events if e.get('event') == 'oracle.sql' and e.get('status') in ('READ_FAILED', 'WRITE_UNCONFIRMED')]
+    print('\n[2] 실패한 Oracle SQL %d건' % len(failed))
+    for row in failed:
+        print('  %s %s  %sms  오류=%s  해시=%s' % (str(row.get('ts'))[11:19], row.get('status'), value(row, 'duration_ms'),
+                                               value(row, 'error'), value(row, 'sql_family')))
+        print('    보낸 코드: ' + str(value(row, 'sql_site')))
+    slow = sorted((e for e in events if e.get('event') == 'oracle.sql.slow'), key=lambda e: -float(e.get('duration_ms') or 0))
+    print('\n[3] 끝까지 돌았지만 느린 SQL %d건 (긴 순서 최대 6건)' % len(slow))
+    for row in slow[:6]:
+        print('  %8sms  %s  %s' % (value(row, 'duration_ms'), value(row, 'sql_family'), value(row, 'sql_site')))
+
+    summaries = [e for e in events if e.get('event') == 'oracle.sql.summary']
+    if summaries:
+        row = summaries[-1]
+        print('\n[4] 이 요청의 SQL 합계: %s회 %.1f초, 실패 %s회' % (value(row, 'sql_count'), float(row.get('sql_ms') or 0) / 1000, value(row, 'sql_failed_count')))
+        for site in (row.get('sql_sites') or [])[:6]:
+            print('  %6s회 %8sms  %s' % (site.get('count'), site.get('ms'), site.get('site')))
+
+    frames = log_frames(log)
+    if frames:
+        print('\n[5] 시간 초과 SQL을 보낸 코드 경로')
+        for frame in frames[-12:]:
+            print('  ' + frame)
+
+    print('\n[판정]')
+    sites = ' '.join(str(e.get('sql_site')) for e in failed) + ' ' + ' '.join(frames)
+    if not failed:
+        print('  Oracle SQL 실패 기록이 없습니다.')
+    elif 'oracle_query_fulltext' in sites:
+        print('  시간 초과 SQL = 본문 검색 SQL (oracle_query_fulltext)')
+    else:
+        print('  시간 초과 SQL = 본문 검색이 아닌 조회입니다. [2] [5] 의 위치를 확인하세요.')
+    if models:
+        print('  모델 400 사유 = ' + (', '.join(sorted(set(causes))) if causes else '힌트 없음. [1] 의 종류·코드·검증 위치를 확인하세요.'))
+    return 0
+
+
+try:
+    code = main()
+except SystemExit:
+    raise
+except Exception as error:
+    print('확인 중 오류: %s: %s' % (type(error).__name__, error))
+    code = 1
+print('종료=%s' % code)
+sys.exit(code)
+GENOS_FAILURE_CHECK_R1_PY
+status=${PIPESTATUS[0]}
+echo "결과 파일: $SAVE"
+exit "$status"

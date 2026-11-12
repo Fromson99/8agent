@@ -1,0 +1,45 @@
+{
+  "main_generation": 215,
+  "release_id": "ords-timeout-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN214 (unit-listings-20261111-r1)",
+  "replaces_sent": [
+    "MAIN214 (1a1ca1d698188cb)"
+  ],
+  "changes": [
+    "ords-timeout-600"
+  ],
+  "workflow_same_as_main214": true,
+  "sql_plans": "391 -> 391",
+  "ords_timeout_seconds": {
+    "before": 60,
+    "after": 600,
+    "env": "GENOS_ORACLE_ORDS_TIMEOUT_SECONDS"
+  },
+  "local_validation": {
+    "regression": {
+      "files": 12,
+      "new_failures": 0,
+      "fixed": 2
+    },
+    "oracle_scale_guard": "passed",
+    "installer": {
+      "base": "MAIN214 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field ORDS server-side limit",
+    "live model",
+    "which SQL exceeded 60 s"
+  ],
+  "package": {
+    "zip": "MAIN215_FULL_20261111_R1.zip",
+    "zip_sha256": "db41d663e1deb302ffe49240e1603ba4ed98fcb5dece528fc4c0b6bc9d80fb6c",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

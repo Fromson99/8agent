@@ -1,0 +1,54 @@
+{
+  "main_generation": 218,
+  "release_id": "clob-pieces-20261112-r1",
+  "selected_locally": true,
+  "base": "MAIN216 (term-scope-20261111-r1)",
+  "replaces_sent": [
+    "MAIN216 (1a1caddbf23f4054)"
+  ],
+  "includes_unsent": [
+    "MAIN217 reference-joins-20261112-r1"
+  ],
+  "changes": [
+    "reference-joins-indexed",
+    "clob-pieces-reads"
+  ],
+  "workflow_same_as_main216": true,
+  "sql_plans": "391 -> 386",
+  "local_validation": {
+    "regression": {
+      "files": 183,
+      "new_failures": 0
+    },
+    "oracle_scale_guard": "passed (max SQL 204)",
+    "big_reference_data": {
+      "scenarios_same_answers": 18,
+      "one_cpu_core": "passed"
+    },
+    "live_local_oracle_clob": {
+      "bytes": 85000,
+      "whole_string": "ORA-01460",
+      "pieces": 3,
+      "pieces_count": 5000
+    },
+    "installer": {
+      "base": "MAIN216 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size timing",
+    "concurrent questions",
+    "live model",
+    "field ORDS CLOB bind handling"
+  ],
+  "package": {
+    "zip": "MAIN218_FULL_20261112_R1.zip",
+    "zip_sha256": "f285291ece1ab72ad5c910c2091dba2de9c74177e445a72cad6e4f8679f07e20",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,42 @@
+{
+  "main_generation": "201B",
+  "release_id": "main201b-compare-locators-20261111-r1",
+  "selected_locally": false,
+  "base": "MAIN201 (nfs-log-20261111-r2)",
+  "changes": [
+    "compare-no-reference-locators"
+  ],
+  "changed_product_files": [
+    "02_BACKEND/semantic_runtime/comparison_research_bridge.py"
+  ],
+  "workflow_same_as_main201": true,
+  "sql_plans": "388 -> 388",
+  "local_validation": {
+    "tests": {
+      "files": 9,
+      "new_failures": 0,
+      "failed_to_passed": 3,
+      "baseline_result": "t201/result.json",
+      "candidate_result": "t201b/result.json"
+    },
+    "oracle_scale_guard": "skipped by user instruction",
+    "installer": {
+      "base": "MAIN201 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "live model",
+    "Oracle scale guard",
+    "which SQL timed out in the field request eaaae812 (sql_site)"
+  ],
+  "package": {
+    "zip": "MAIN201B_FULL_20261111_R1.zip",
+    "zip_sha256": "9c499eab7b88b45957a7ddd374b105ae64ed2cc70fa5141db4d019cc49dd967f",
+    "members": 560
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,6 @@
+<p><b>MAIN211</b> 전달본입니다(MAIN210 대체). 수정 2개입니다.</p>
+<p><b>① 질문 오류 수정</b>: MAIN210에서 여러 낱말 검색어가 나오면 <code>READ_ONLY: query accepts SELECT only</code>로 질문이 실패하던 문제입니다. 로컬 Oracle에서 같은 오류를 재현했고 수정본은 통과했습니다.</p>
+<p><b>② 시작 직후 질문 바로 처리</b>: 캐시를 올리는 동안 질문이 최대 5분 기다리던 것을 없앴습니다. 캐시는 백그라운드에서 계속 올라가고, 질문은 바로 시작해서 준비된 캐시부터 씁니다.</p>
+<p><b>적용</b>: TRANSFER 폴더에 ZIP과 TXT를 두고 <code>bash MAIN211_ONECLICK_R1.txt</code> (ZIP은 미리 풀지 않음). 완료 표시 <code>MAIN211_ONECLICK_DONE</code>, <code>MAIN211_EXIT=0</code>. git commit·push까지 자동입니다. 워크플로우는 바꾸지 않습니다.</p>
+<p><b>확인</b>: 새 리비전이 뜬 직후 질문해 보시고, 컨테이너 로그의 <code>request_path.preload</code> 한 줄 사진을 보내 주세요(캐시 준비 5분 원인 확인용).</p>
+<p>TXT에 Git 비밀번호가 들어 있습니다. 다른 곳에 전달하지 말아 주세요. 자세한 내용은 GUIDE.txt를 봐 주세요.</p>

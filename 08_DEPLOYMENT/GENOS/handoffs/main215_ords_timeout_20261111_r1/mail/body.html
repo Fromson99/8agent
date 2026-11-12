@@ -1,0 +1,7 @@
+<p><b>MAIN215</b> 전달본입니다(MAIN214 대체, MAIN214 전체 포함).</p>
+<p><b>원인</b>: 현장 대사 질문(12:24Z)의 외규 특례·예외 조문 읽기 단계에서 Oracle SQL 하나가 60,058ms 걸려 서빙의 ORDS 호출 제한 60초에 걸렸습니다(<code>READ_FAILED: ReadTimeout</code>).</p>
+<p><b>수정</b>: ORDS 호출 한 번의 제한을 <b>60초 → 600초(10분)</b>로 늘렸습니다. 환경변수 <code>GENOS_ORACLE_ORDS_TIMEOUT_SECONDS</code>(정수 초)로 바꿀 수 있고, 없으면 600입니다. SQL 문장은 그대로이며 느린 SQL 자체를 고친 것은 아닙니다.
+ORDS 서버 쪽에 따로 시간 제한이 있으면 그 제한에서 다시 끊길 수 있습니다(그때는 오류가 HTTP 오류로 바뀝니다).</p>
+<p><b>적용</b>: TRANSFER 폴더에 ZIP과 TXT를 두고 <code>bash MAIN215_ONECLICK_R1.txt</code> (ZIP은 미리 풀지 않음). 완료 표시 <code>MAIN215_ONECLICK_DONE</code>, <code>MAIN215_EXIT=0</code>. git commit·push까지 자동입니다. GENOS 워크플로우 파일은 바꾸지 않습니다.</p>
+<p>로컬 검증: 회귀 새 실패 0, Oracle 규모 점검 통과, MAIN214 격리 checkout 설치 22명령 통과. 현장 GENOS·실제 ORDS의 긴 SQL은 확인하지 못했습니다.</p>
+<p>TXT에 Git 비밀번호가 들어 있습니다. 다른 곳에 전달하지 말아 주세요.</p>

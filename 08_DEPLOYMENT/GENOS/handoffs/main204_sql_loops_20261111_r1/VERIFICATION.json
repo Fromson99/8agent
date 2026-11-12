@@ -1,0 +1,65 @@
+{
+  "main_generation": 204,
+  "release_id": "sql-loops-20261111-r1",
+  "selected_locally": true,
+  "selected_locally_note": "selected after the first mail; the ZIP manifest (same ZIP as R1) still says selected_locally=false",
+  "installer_r2": "R1 stopped at git add on the field because TRANSFER is in .gitignore; R2 excludes only paths git does not ignore. ZIP unchanged.",
+  "base": "MAIN203 (fts-search-units-20261111-r1)",
+  "replaces_sent": "MAIN203 (1a1c86baf208b02d)",
+  "product_changes_since_main203": [
+    "oracle_query_index.py (connection list from two keyed reads; term prefetch)",
+    "oracle_query_catalog.py (Records.page owner_ids)",
+    "oracle_query_matcher.py (children of many parents in one read)",
+    "oracle_query.py (block IDs from one per-document listing)",
+    "oracle_agent_records.py + legal_agent/storage_admission.py (storage measure reused 1 h, fresh measure before refusing)",
+    "legal_agent/unit_relations.py, guided_navigation.py, connection_scope.py, connected_exploration.py (callers)"
+  ],
+  "workflow_file_changed_since_field": false,
+  "sql_plans": "389 -> 389",
+  "local_validation": {
+    "references_real_oracle": {
+      "reference_rows": 15000,
+      "ends": 26233,
+      "checks": 180,
+      "difference_count": 0,
+      "old_seconds": 82.836,
+      "new_seconds": 9.769,
+      "old_sql": 180,
+      "new_sql": 378,
+      "prefetch_sql_for_60_anchors": 17
+    },
+    "regression": {
+      "files": 182,
+      "new_failures": 0,
+      "already_failing": 705
+    },
+    "oracle_scale_guard": "passed (question failures 0, over-limit reads 0, max SQL per turn 130; MAIN203 294)",
+    "installer": {
+      "base": "MAIN203 checkout",
+      "commands": 22,
+      "passed": true,
+      "transfer_in_gitignore_after_failed_r1": {
+        "passed": true,
+        "first_run_exit": 1,
+        "second_run": "committed, gate passed, pushed both",
+        "committed_files": 605,
+        "transfer_committed": false
+      }
+    },
+    "field_check_r3": "dry run on a real local Oracle fixture through an ORDS-shaped connection passed"
+  },
+  "not_verified": [
+    "field Oracle timing",
+    "field reference rows keyed by id (GENOS_FTS_CHECK_R3 prints it; without the key the old read stays)",
+    "live model run on Oracle",
+    "first body search (4.9 s) not changed, waiting for R3"
+  ],
+  "package": {
+    "zip": "MAIN204_FULL_20261111_R1.zip",
+    "zip_sha256": "a93cd71a58624a9d505f374b34f095a1db8bcb3aa66868429b1b5661b0bc1c97",
+    "members": 561,
+    "workflow_unchanged_since_main203": true
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

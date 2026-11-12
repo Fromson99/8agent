@@ -1,0 +1,213 @@
+{
+  "main_generation": 219,
+  "release_id": "failure-answers-20261112-r1",
+  "selected_locally": true,
+  "base": "MAIN218 (clob-pieces-20261112-r1)",
+  "replaces_sent": [
+    "MAIN218 (1a1cbc6a3192ae21)"
+  ],
+  "changes": [
+    "failure-answers (progress report for check/read/other faults, publication stage, failure point cards, point continuation)",
+    "plain user-facing failure and error texts (legal readers), developer STOPPED log block",
+    "workflow partial report",
+    "record values kept as text",
+    "source-reply-subset",
+    "compare-side-citations",
+    "compare-finalize-publish",
+    "answer-reentry-event",
+    "unknown-outcome-redelivery",
+    "delivered-blocks-merge",
+    "store-binding-recheck"
+  ],
+  "workflow_same_as_main218": false,
+  "workflow_file": "MAIN219_WORKFLOW.py",
+  "sql_plans": "386 -> 386",
+  "local_validation": {
+    "new_tests": {
+      "tests": 22,
+      "files": {
+        "05_TESTS/CONTRACTS/test_failure_answers.py": 20,
+        "05_TESTS/CONTRACTS/test_failure_answers_compare.py": 2
+      },
+      "outcome": "all passed",
+      "changed_existing": [
+        "05_TESTS/CONTRACTS/test_progress_report.py (2 tests: check failure now answers; unread link is a numbered point)",
+        "05_TESTS/CONTRACTS/test_comparison_sql_interrupt.py (other_sql: partial report instead of 500)",
+        "05_TESTS/CONTRACTS/test_unified_memory_recovery.py (publication disk failure: prepared answer returned, recovery still completes)",
+        "05_TESTS/CONTRACTS/test_read_judgment_api.py (flaky journal pick fixed; failed 2 of 3 on MAIN218 too)",
+        "05_TESTS/CONTRACTS/test_public_failure_guidance.py (new plain screen wording)",
+        "05_TESTS/CONTRACTS/test_review_explanation_actions.py (new plain review wording)",
+        "05_TESTS/CONTRACTS/test_workflow_review_followup.py (new plain review wording)"
+      ],
+      "guard_tool": "06_TOOLS/maintenance/oracle_scale_guard/test_guard_oracle.py: opt-in scenario F1",
+      "after_wording_change": {
+        "files": 9,
+        "tests_passed": 67,
+        "note": "run-new8/run-new9 on staged8, same product as staged9 except one sentence in progress_report"
+      }
+    },
+    "regression": {
+      "files": 300,
+      "new_failures": 0,
+      "code": "candidate before the wording change (staged7)"
+    },
+    "oracle_scale_guard": {
+      "scenarios": 18,
+      "sql_total": 754,
+      "baseline_sql_total": 754,
+      "per_scenario": {
+        "C1-comparison-selected-profile": {
+          "candidate": 204,
+          "base": 204
+        },
+        "S1-test-profile": {
+          "candidate": 21,
+          "base": 21
+        },
+        "S10-guided-search-word-article-number": {
+          "candidate": 21,
+          "base": 21
+        },
+        "S11-guided-search-word-named-article": {
+          "candidate": 38,
+          "base": 38
+        },
+        "S12-guided-multiword-groups": {
+          "candidate": 24,
+          "base": 24
+        },
+        "S2-guided-broad-continue": {
+          "candidate": 92,
+          "base": 92
+        },
+        "S3-guided-named-continue": {
+          "candidate": 23,
+          "base": 23
+        },
+        "S4-guided-ask-then-reenter": {
+          "candidate": 3,
+          "base": 3
+        },
+        "S5-guided-assess-reentry": {
+          "candidate": 3,
+          "base": 3
+        },
+        "S6-guided-action-limit": {
+          "candidate": 62,
+          "base": 62
+        },
+        "S7-guided-word-with-je-prefix": {
+          "candidate": 4,
+          "base": 4
+        },
+        "S8-guided-number-without-document": {
+          "candidate": 4,
+          "base": 4
+        },
+        "S9-guided-many-reads": {
+          "candidate": 3,
+          "base": 3
+        },
+        "V1-vector-guided-broad": {
+          "candidate": 232,
+          "base": 232
+        },
+        "V2-vector-guided-named": {
+          "candidate": 3,
+          "base": 3
+        },
+        "V3-vector-test-profile": {
+          "candidate": 3,
+          "base": 3
+        },
+        "V4-vector-search-word-named-article": {
+          "candidate": 8,
+          "base": 8
+        },
+        "V5-vector-multiword-groups": {
+          "candidate": 6,
+          "base": 6
+        }
+      },
+      "max_sql": 204,
+      "baseline_max_sql": 204,
+      "passed": true,
+      "f1_passed": true,
+      "request_failures": [],
+      "f1_request_failures": [],
+      "f1_status_codes": [
+        200,
+        200
+      ],
+      "f1_statuses": [
+        "CLARIFY",
+        "READY"
+      ],
+      "f1_turns": {
+        "1": {
+          "sql": 40,
+          "writes": 0,
+          "ms": 324.7,
+          "max_rows": 250
+        },
+        "2": {
+          "sql": 1,
+          "writes": 0,
+          "ms": 2.2,
+          "max_rows": 1
+        },
+        "None": {
+          "sql": 6,
+          "writes": 0,
+          "ms": 63.1,
+          "max_rows": 5
+        }
+      },
+      "s5_turns": {
+        "1": {
+          "sql": 41,
+          "writes": 0,
+          "ms": 326.4,
+          "max_rows": 250
+        },
+        "None": {
+          "sql": 6,
+          "writes": 0,
+          "ms": 62.1,
+          "max_rows": 5
+        }
+      },
+      "s5_passed": true,
+      "baseline": "09_ARTIFACTS/AUDITS/20261112-main217-full-experiments/guard-AG",
+      "f1_turn1_sql": 40,
+      "f1_turn2_sql": 1,
+      "f1_turn1_writes": 0,
+      "f1_turn2_writes": 0,
+      "code": "candidate before the wording change (staged7)"
+    },
+    "after_mail": [
+      "full regression on the final code",
+      "Oracle scale guard on the final code",
+      "local MAIN219 activation"
+    ],
+    "installer": {
+      "base": "MAIN218 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size timing",
+    "live model (resolver choosing a numbered point)",
+    "GENOS screen rendering"
+  ],
+  "package": {
+    "zip": "MAIN219_FULL_20261112_R1.zip",
+    "zip_sha256": "aa78664ce8830f9b6480a3efc2938c359e9d00e55f2ec553a7174559e782b5eb",
+    "members": 565,
+    "workflow_sha256": "3e132f11e73eae42a026d05ed878aa433f8c7a2ffcca9cb4262410c5d30f755b"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

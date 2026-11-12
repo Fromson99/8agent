@@ -1,0 +1,60 @@
+{
+  "main_generation": 210,
+  "release_id": "server-links-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN205 (multiturn-reply-20261111-r1)",
+  "replaces_sent": "MAIN205 (1a1c92dbec05e1af)",
+  "includes": [
+    "recorded-lists-20261111-r1 (206)",
+    "metadata-preload-page-20261111-r1 (207)",
+    "followup-locators-20261111-r1 (208)",
+    "coordinate-norecord-20261111-r1 (209)",
+    "server-links-20261111-r1 (210)"
+  ],
+  "workflow_file_changed_since_main205": true,
+  "workflow_file": "MAIN210_WORKFLOW.py",
+  "workflow_sha256": "58d44120a1f6a6b444c2b80d55bbc5187faf35d2d576a304b9ccf80e42b06818",
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression_main210": {
+      "files": 111,
+      "new_failures": 0
+    },
+    "oracle_scale_guard": {
+      "main207": "passed",
+      "main208": "passed",
+      "main209": "not run (user)",
+      "main210": "not run"
+    },
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN205 checkout",
+      "commands": 22,
+      "passed": true,
+      "transfer_in_gitignore": {
+        "passed": true,
+        "run": "committed, gate passed, pushed both",
+        "committed_files": 622,
+        "transfer_committed": false
+      }
+    },
+    "live_qwen_public_documents": {
+      "adr_1497_main209": "3 questions answered, once each",
+      "adr_1498_main210": "running when sent"
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "internal rules",
+    "full Oracle flow with a live model",
+    "answer quality",
+    "GENOS_COMPARE_GUIDED=on"
+  ],
+  "package": {
+    "zip": "MAIN210_FULL_20261111_R1.zip",
+    "zip_sha256": "015b7b5ba6b456c48899a30b231dfe5d503deaf6509ccba9ef33c2dab5d67a4f",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,45 @@
+{
+  "main_generation": 216,
+  "release_id": "term-scope-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN215 (ords-timeout-20261111-r1)",
+  "replaces_sent": [
+    "MAIN215 (1a1caa9b813f0aee)"
+  ],
+  "changes": [
+    "term-scope-indexed"
+  ],
+  "workflow_same_as_main215": true,
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression": {
+      "files": 27,
+      "new_failures": 0,
+      "fixed": 5
+    },
+    "oracle_scale_guard": "passed",
+    "local_gold_cases": {
+      "cases": 90,
+      "same_as_old_join": true,
+      "max_ms": 38.2,
+      "old_common_term_ms": 121048
+    },
+    "installer": {
+      "base": "MAIN215 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size timing",
+    "live model"
+  ],
+  "package": {
+    "zip": "MAIN216_FULL_20261111_R1.zip",
+    "zip_sha256": "27ad7651e7adb6e1e9b5e76d5b3e9ef067913848ce1e8b2a6f56c3d9a9d40312",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

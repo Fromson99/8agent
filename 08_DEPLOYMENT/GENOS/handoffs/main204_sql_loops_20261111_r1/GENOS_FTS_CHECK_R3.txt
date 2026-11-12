@@ -1,0 +1,200 @@
+set -eu
+"${PYTHON:-python3}" - "$@" <<'PY_GENOS_FTS_CHECK_R3'
+"""GENOS body-search check R3 (read only): where the two first-search SQL statements spend their time.
+
+Field 2026-11-11: rank_top_sources 2.6 s and _projection 2.3 s (one each per question). Runs the statements
+the serving code builds, cut at each step, through the same ORDS client as serving, and compares the old and
+new connection-list reads. SELECT only; no write, no model call. Prints no SQL text, bind value, row value or
+credential; the search words printed are the fixed test words below.
+"""
+import argparse, json, os, re, sys, time
+from pathlib import Path
+from types import SimpleNamespace
+
+SETS = [['신규 상품 판단 기준', '상품 전결권'], ['자기자본', '1천억원 이상'], ['주주총회 결의'], ['이사회 승인 기준']]
+STEPS = [('anchor_rows', '드문 낱말 행'), ('hits', '+나머지 낱말'), ('found', '+묶음 일치'), ('lengths', '조문 길이 행'), ('matches', '+점수 계산')]
+CAUSE = {'anchor_rows': '드문 낱말이 많은 행을 읽음(재색인 후보)', 'hits': '후보 조문의 나머지 낱말 읽기',
+         'found': '묶음 일치·원문 글자 확인', 'lengths': '조문 길이 행 읽기', 'matches': '점수 계산'}
+ANCHORS = 6
+
+
+def error_text(exc):
+    text = str(exc)
+    codes = sorted(set(re.findall(r'ORA-\d{5}', text)))
+    tags = sorted(set(re.findall(r'\b[A-Z][A-Z_]{5,}\b', text)))[:3]
+    return type(exc).__name__ + ' ' + ' '.join(codes or tags)
+
+
+def run(args, out, client=None):
+    root = args.code_root
+    if not (root / '02_BACKEND/semantic_runtime').is_dir():
+        out('코드 폴더를 찾지 못했습니다: ' + str(root) + ' (--code-root 로 지정)')
+        return 3
+    os.environ.setdefault('GENOS_ORACLE_TABLE_MAPPING', 'gold')
+    if os.environ['GENOS_ORACLE_TABLE_MAPPING'] == 'gold':
+        os.environ.setdefault('GENOS_ORACLE_GOLD_OWNER', 'SIDDS')
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    try:
+        from semantic_runtime.oracle_dp import client_from_environment
+        from semantic_runtime.oracle_query import Snapshot
+        from semantic_runtime.oracle_query_catalog import select_release
+        from semantic_runtime.oracle_query_db import Connection
+        from semantic_runtime.oracle_query_fulltext import UnitIndex
+        from semantic_runtime.oracle_query_index import Tools
+        from semantic_runtime.oracle_query_request import _request
+        from semantic_runtime.oracle_query_state import StateSQL
+        from semantic_runtime.legal_agent.law_candidates import search_groups
+    except ModuleNotFoundError as exc:
+        out('파이썬 패키지 없음: ' + str(exc.name) + ' → PYTHON=<서빙 python3 경로> bash 로 다시 실행')
+        return 7
+    try:
+        client = client or client_from_environment()
+    except Exception as exc:
+        out('ORDS 연결 정보를 읽지 못했습니다: ' + error_text(exc))
+        out('이 터미널에 서빙 리비전과 같은 ORACLE_ORDS_* 환경변수를 export 한 뒤 다시 실행해 주세요.')
+        return 4
+    sql = StateSQL(client, binding='genos-fts-check-r3', deadline=time.monotonic() + 900, max_calls=400)
+    release = os.environ.get('DP_QUERY_RELEASE_ID', '').strip() or None
+    channel = args.channel or os.environ.get('DP_QUERY_CHANNEL', '').strip() or (None if release else 'main')
+    try:
+        selected = select_release(sql, release_id=release, channel=channel)
+        manifest = selected['manifest']
+        snapshot = Snapshot.open(sql, manifest['source_release_id'])
+        allowed = set(snapshot.manifest['scope']['document_version_ids']) - snapshot.excluded
+        request = _request(sql, selected['release_id'], selected['revision'], snapshot, manifest, allowed)
+        index = UnitIndex(request)
+    except Exception as exc:
+        out('게시본을 열지 못했습니다: ' + error_text(exc))
+        return 6
+    stats = index.statistics
+    out('GENOS 본문 검색 검사 R3  채널 %s  문서 %d  단위 문서수 %s  낱말 총수 %s' % (channel or release[:12], len(allowed), stats.get('documents'), stats.get('tokens')))
+    out('시간은 초. 단계 시간은 그 단계까지의 누적, (+)는 앞 단계에서 늘어난 시간입니다.')
+    session = SimpleNamespace(matcher=None, scope=())
+    result = {'channel': channel, 'documents': len(allowed), 'sets': [], 'references': None}
+    anchors = []
+
+    def timed(call):
+        started = time.monotonic()
+        try:
+            value = call()
+            return value, round(time.monotonic() - started, 3), None
+        except Exception as exc:
+            return None, round(time.monotonic() - started, 3), error_text(exc)
+
+    for number, words in enumerate(args.set and [s.split('|') for s in args.set] or SETS, 1):
+        terms = search_groups(session, words)
+        record = {'set': number, 'words': words, 'steps': {}}
+        result['sets'].append(record)
+        out('')
+        out('[%d] %s' % (number, ' / '.join(words)))
+        try:
+            frequencies = index._frequencies(list(dict.fromkeys(w for term in terms for w in index_words(term))))
+            cte, binds = index._matches(terms, None, None)
+        except Exception as exc:
+            record['error'] = error_text(exc)
+            out('  준비 실패: ' + record['error'])
+            continue
+        record['frequencies'] = frequencies
+        out('  낱말별 조문 수: ' + ' · '.join('%s %s' % (w, format(n, ',')) for w, n in sorted(frequencies.items(), key=lambda x: x[1])))
+        if cte is None:
+            out('  결과 없음(사전에 없는 낱말)')
+            continue
+        previous = 0.0
+        for name, label in STEPS:
+            value, seconds, error = timed(lambda: sql.query('SELECT COUNT(*) AS N FROM (' + cte + 'SELECT 1 AS x FROM ' + name + ')', binds, limit=1)[0]['N'])
+            record['steps'][name] = {'seconds': seconds, 'rows': value, 'error': error}
+            if error:
+                out('  %-14s 실패 %s' % (label, error))
+                continue
+            delta = max(0.0, seconds - previous)
+            record['steps'][name]['delta'] = round(delta, 3)
+            out('  %-14s %7.2f (+%.2f)  %s행' % (label, seconds, delta, format(value, ',')))
+            previous = seconds
+        top, seconds, error = timed(lambda: index.rank_top_sources(None, list(terms), None, limit=200))
+        record['rank_top_sources'] = {'seconds': seconds, 'error': error, 'sources': None if error else len(top)}
+        out('  실제 상위 검색   %7.2f   %s' % (seconds, error or '조문 %d개' % len(top)))
+        again, repeat, error2 = timed(lambda: sql.query('SELECT COUNT(*) AS N FROM (' + cte + 'SELECT k FROM matches)', binds, limit=1)[0]['N'])
+        record['repeat'] = {'seconds': repeat, 'error': error2}
+        out('  같은 검색 다시  %7.2f   %s' % (repeat, error2 or '(캐시가 데워진 뒤)'))
+        projection, seconds, error = timed(lambda: index._projection(list(terms), None))
+        record['projection'] = {'seconds': seconds, 'error': error, 'units': None if error or projection is None else len(projection)}
+        out('  점수 묶음 조회  %7.2f   %s' % (seconds, error or ('단위 %d개' % len(projection) if projection is not None else '결과 큼(페이지 방식)')))
+        # A step counted alone can get a different plan from the whole statement: only steps no slower than it are compared.
+        whole = record['rank_top_sources']['seconds'] if not record['rank_top_sources']['error'] else None
+        usable = {n: s for n, s in record['steps'].items() if not s['error'] and (whole is None or s['seconds'] <= whole * 1.2 + 0.05)}
+        skipped = [n for n, s in record['steps'].items() if not s['error'] and n not in usable]
+        if usable:
+            slowest = max(usable, key=lambda n: usable[n].get('delta', 0))
+            record['slowest_step'] = slowest
+            out('  → 가장 오래 걸린 부분: ' + CAUSE[slowest])
+        if skipped:
+            record['steps_slower_than_whole'] = skipped
+            out('  ※ 전체 문장보다 오래 걸린 단계는 비교에서 뺐습니다: ' + ', '.join(dict(STEPS)[n] for n in skipped))
+        if not error and top:
+            anchors.extend(s for s in top[:ANCHORS] if s not in anchors)
+    out('')
+    out('[연결 목록] 예전(참조 표 전체) ↔ 지금(인덱스 2번)')
+    asset = next((v['asset'] for v in manifest['tables'].values() if v.get('table') == 'reference'), None)
+    if asset is None:
+        out('  이 게시본에 참조 표가 없습니다.')
+        return 0
+    tools = Tools(request, Connection(request, asset))
+    if not hasattr(tools, 'prefetch_references'):
+        out('  이 코드에는 새 조회가 없습니다(MAIN204 적용 후 다시 실행해 주세요).')
+        return 0
+    keyed = tools._references_keyed()
+    result['references'] = {'keyed': keyed, 'anchors': []}
+    out('  키 확인: ' + ('있음 — 새 조회 사용' if keyed else '없음 — 예전 조회 유지(이 결과를 알려 주세요)'))
+    if keyed:
+        same, old_total, new_total = 0, 0.0, 0.0
+        for anchor in anchors[:ANCHORS]:
+            for name in ('_reference_end_ids', '_reference_json'):
+                tools.__dict__.pop(name, None)
+            old, old_s, old_e = timed(lambda: tools._references_scan(anchor, '', None, 257))
+            new, new_s, new_e = timed(lambda: tools.references_from(anchor, '', None, 257))
+            ok = old_e is None and new_e is None and old == new
+            same += ok; old_total += old_s; new_total += new_s
+            result['references']['anchors'].append({'old_s': old_s, 'new_s': new_s, 'rows': None if old is None else len(old), 'same': ok, 'error': old_e or new_e})
+            out('  예전 %6.2f  지금 %6.2f  연결 %s개  %s' % (old_s, new_s, '-' if old is None else len(old), '같음' if ok else ('다름' if not (old_e or new_e) else (old_e or new_e))))
+        out('  합계 예전 %.2f초 → 지금 %.2f초, 결과 같음 %d/%d' % (old_total, new_total, same, min(len(anchors), ANCHORS)))
+    return 0
+
+
+def index_words(term):
+    from semantic_runtime.oracle_query_fulltext import EXACT, query_phrases
+    found = query_phrases([EXACT.sub(' ', term)])
+    return found[0] if found else ()
+
+
+def main(argv=None, client=None, here=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--code-root', type=Path)
+    parser.add_argument('--channel')
+    parser.add_argument('--set', action='append', help="검색어 묶음, 여러 묶음은 | 로: --set '자기자본|1천억원 이상'")
+    args = parser.parse_args(argv)
+    if args.code_root is None:
+        for candidate in (Path.home() / 'DEV', Path('/workspace')):
+            if (candidate / '02_BACKEND/semantic_runtime').is_dir():
+                args.code_root = candidate.resolve()
+                break
+        else:
+            args.code_root = Path.home() / 'DEV'
+    args.code_root = args.code_root.resolve()
+    lines = []
+
+    def out(text):
+        print(text, flush=True)
+        lines.append(text)
+
+    target = (here or Path.cwd()) / 'GENOS_FTS_CHECK_R3_RESULT.txt'
+    code = run(args, out, client)
+    target.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    print('저장: ' + str(target))
+    print('종료=' + str(code))
+    return code
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+PY_GENOS_FTS_CHECK_R3

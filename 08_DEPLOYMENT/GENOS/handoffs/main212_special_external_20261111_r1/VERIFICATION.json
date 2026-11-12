@@ -1,0 +1,46 @@
+{
+  "main_generation": 212,
+  "release_id": "special-external-20261111-r1",
+  "selected_locally": true,
+  "base": "MAIN211 (select-nowait-20261111-r1)",
+  "replaces_sent": "MAIN211 (1a1ca12a218e67f5)",
+  "changes": [
+    "server-links-r2",
+    "provider-reka",
+    "follow-optional-coords",
+    "compare-special-external",
+    "compare-manifest-docflow-r2",
+    "compare-manifest-basis-r2",
+    "compare-outline-view",
+    "unit-rows-shared",
+    "document-tree-shared"
+  ],
+  "workflow_same_as_main211": true,
+  "sql_plans": "391 -> 391",
+  "local_validation": {
+    "regression": {
+      "files": 163,
+      "new_failures": 0,
+      "fixed": 10
+    },
+    "oracle_scale_guard": "skipped (user instruction)",
+    "entry_checks": "17/17",
+    "installer": {
+      "base": "MAIN211 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "live model",
+    "oracle scale guard"
+  ],
+  "package": {
+    "zip": "MAIN212_FULL_20261111_R1.zip",
+    "zip_sha256": "1ad069862ffc7e51101680186658bcebd2cc242cac3618cee0a44a7ef02beeba",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

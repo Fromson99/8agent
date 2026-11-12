@@ -1,0 +1,5 @@
+<p><b>MAIN201B</b> 전달본입니다. MAIN201 코드에 수정 1개만 넣었습니다.</p>
+<p><b>수정</b>: 대사의 "항목별 내외규 검토"(ITEM_REVIEW)에서 <code>READ_FAILED: ReadTimeout</code>으로 500이 나던 문제입니다. 근거 조문마다 인용 연결을 찾던 SQL이 60초를 넘겨 끊겼고, 이 조회를 뺐습니다. 근거 조문 위치와 조사 단서는 그대로 넘깁니다.</p>
+<p><b>적용</b>: TRANSFER 폴더에 ZIP과 TXT를 두고 <code>bash MAIN201B_ONECLICK_R1.txt</code> (ZIP은 미리 풀지 않음). 완료 표시 <code>MAIN201B_ONECLICK_DONE</code>, <code>MAIN201B_EXIT=0</code>. git commit·push까지 자동입니다. 워크플로우는 바꾸지 않습니다.</p>
+<p><b>확인</b>: 같은 대사를 다시 돌려 주세요. 또 ReadTimeout이면 <code>bash ./GENOS_FAILURE_CHECK_R1.txt</code>로 SQL 위치를 찍어 보내 주세요.</p>
+<p>TXT에 Git 비밀번호가 들어 있습니다. 다른 곳에 전달하지 말아 주세요. 자세한 내용은 GUIDE.txt를 봐 주세요.</p>
