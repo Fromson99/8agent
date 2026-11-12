@@ -3,12 +3,12 @@
   "model": "qwen/qwen3.8-27b",
   "providers": [
     {
-      "tag": "parasail/fp8",
-      "name": "Parasail"
+      "tag": "reka/fp8",
+      "name": "Reka"
     },
     {
-      "tag": "near-ai/fp8",
-      "name": "Near AI"
+      "tag": "parasail/fp8",
+      "name": "Parasail"
     }
   ],
   "switch_http_status": [
@@ -24,12 +24,12 @@
   },
   "authorization": {
     "source": "user_message",
-    "text": "parasail로 바꿔봐봐",
-    "session_id": "01a18102-29c3-78b3-9b53-cc33aaca63e7",
-    "date": "2026-10-29",
-    "retained_rule": "Previously authorized known HTTP429 only, one switch to Near AI"
+    "text": "우리 지금 qwen 공급자 변경해봐",
+    "session_id": "b08e67e9-fe30-57e3-9d1e-341fc2504802",
+    "date": "2026-11-11",
+    "retained_rule": "Known HTTP429 only, one switch (now to Parasail)"
   },
-  "reason": "User requested Parasail primary after Chutes noncompletion diagnosis; speed/reliability improvement unverified.",
+  "reason": "ADR-1498/1499: Parasail returned 180-second blank responses (UNKNOWN 3 in 6 questions, inputs 31K-93K characters). Reka FP8 had UNKNOWN 0 over 239 calls in ADR-1370 (public 31). Reliability change unverified.",
   "previous_error": {
     "path": "04_EXPERIMENTS/ADR/ADR-1171-source-goal-execution-model-probe/artifacts/model-probe/qwen38/cm-001/1/raw/call-001-saved-next-action/response.json",
     "sha256": "b38398179ff37b2a2328a371c1500810f38fc20d7682627903fa3e4e88a11243"
@@ -39,7 +39,11 @@
     "sha256": "14e1753caab0335e07196ffc5a60526fe4bad69c7799e61fc317469df201ae0f"
   },
   "previous_policy": {
-    "path": "08_DEPLOYMENT/RELEASES/requirement-coverage-20261029-r1/code/00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json",
-    "sha256": "5756a4397dc9e1d3f74fd869b4fa288e63c7ad165d4fa0fc4484413abd4a9c9e"
+    "path": "08_DEPLOYMENT/RELEASES/server-links-20261111-r1/code/00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json",
+    "sha256": "27a54462c1a8fac7fb9bbdc80f906c289ec64dd97885835a37c7613b59f53862"
+  },
+  "endpoint_snapshot": {
+    "path": "09_ARTIFACTS/AUDITS/20261111-provider-reka/qwen-endpoints.json",
+    "sha256": "168ba7495d55c3e42402cd76e268ed1d1cd66bebdf5e0394b6097e734465dd4f"
   }
 }
