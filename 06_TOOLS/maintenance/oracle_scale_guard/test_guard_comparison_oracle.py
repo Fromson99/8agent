@@ -38,7 +38,9 @@ def structured_generation(tmp_path, term_glossary):
         for side, prefix in (('internal', 'fi'), ('external', 'fe')):
             did = f'{prefix}{i:02d}'
             docs.append((did, f'{"부속내규" if side == "internal" else "부속규정"}{i:02d}',
-                         [f'제{j+1}조(보고) 부속 {j} 승인 보고 문구.' for j in range(ARTICLES)]))
+                         [f'제{j+1}조(보고) 부속 {j} 승인 보고 문구.' + ''.join(
+                             f' 제{(j * 7 + k * 13) % ARTICLES + 1}조를 준용한다.' for k in range(guard.REFERENCES))
+                          + (' 모의승인규정 제1조에 따른다.' if guard.REFERENCES else '') for j in range(ARTICLES)]))
             categories[did] = side
     raw = source(tmp_path/'raw.sqlite', docs)
     with sqlite3.connect(raw) as db:
@@ -98,7 +100,14 @@ def test_guard_comparison(oracle, published, tmp_path, monkeypatch):
         from semantic_runtime.app import create_app
         from fastapi.testclient import TestClient
         _, store = guard.open_store(client, documents)
-        transport = concepts.Transport()
+        manifest = json.loads((guard.CODE/'02_BACKEND/workflow/risk_team_compare_workflow/manifest.json').read_text())
+        if manifest.get('comparison_flow') == 'general-questions-v1':
+            # 2026-11-12: each side is an ordinary question; this script also answers the ordinary-question stages.
+            spec = importlib.util.spec_from_file_location('guard_general_flow', ROOT/'05_TESTS/CONTRACTS/test_compare_general_flow.py')
+            general = importlib.util.module_from_spec(spec); spec.loader.exec_module(general)
+            transport = general.Both('PAIRED')
+        else:
+            transport = concepts.Transport()
         profile = selected_profile(); profile['model_binding'] = transport.binding
         runtime = tmp_path/'rt-comparison'
         principal = {'user_id': 'u', 'team_id': 'risk_team', 'document_ids': sorted(documents)}
@@ -118,7 +127,7 @@ def test_guard_comparison(oracle, published, tmp_path, monkeypatch):
         failures, crash = [], traceback.format_exc()[-3000:]
     sent = records.sql[before:]
     summary['scenarios'][name] = {'seconds': time.monotonic()-started, 'responses': responses, 'run_failures': failures,
-        'phases': [], 'crash': crash, 'sql_count': len(sent), 'sql_errors': [s for s in sent if s['error']],
+        'phases': list(getattr(transport, 'phases', [])) if 'transport' in dir() else [], 'crash': crash, 'sql_count': len(sent), 'sql_errors': [s for s in sent if s['error']],
         'max_rows_one_sql': max([s['rows'] or 0 for s in sent] or [0])}
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=1))
     records.scenario = None

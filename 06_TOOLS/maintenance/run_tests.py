@@ -20,6 +20,11 @@ The result JSON lists every test outcome; --compare prints tests whose outcome
 differs from an earlier result.  Exit status is 0 only when no test failed or
 errored and every batch finished.
 
+Each batch's pytest temp folder (tmp-NNN) is deleted as soon as the batch has
+finished and written its junit file; the junit, log and result.json keep the
+outcome.  Batches that timed out, crashed or wrote no junit keep their folder
+for inspection.  --keep-tmp keeps every folder.
+
 --code-root DIR runs the tests against an exact code tree (a release's code/ or
 a staged candidate) instead of the working tree: each worker is
 pytest_code_root.py, which imports the product packages from DIR.  The tree is
@@ -36,6 +41,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -157,6 +163,7 @@ def main():
     parser.add_argument('--code-root', type=Path, help='run against this exact code tree instead of the working tree')
     parser.add_argument('--no-baseline-save', action='store_true', help='with --code-root: do not store the results '
                         'as this tree\'s per-file baseline')
+    parser.add_argument('--keep-tmp', action='store_true', help='keep every batch\'s pytest temp folder (tmp-NNN)')
     args = parser.parse_args()
 
     files = list(args.files)
@@ -230,6 +237,10 @@ def main():
                 process.kill()
                 process.wait()
             log.close()
+            completed = (not timed_out and process.returncode in (0, 1, 5)
+                         and (output / f'batch-{index:03d}.xml').exists())
+            if completed and not args.keep_tmp:
+                shutil.rmtree(output / f'tmp-{index:03d}', ignore_errors=True)
             finished.append({'batch': index, 'files': batch_files, 'exit_code': process.returncode,
                              'seconds': round(time.monotonic() - begun, 2), 'timed_out': timed_out})
             del running[index]

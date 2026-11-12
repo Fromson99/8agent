@@ -37,6 +37,9 @@ import sweep as sweep_module
 FILLER_DOCUMENTS = int(os.environ.get('FILLER_DOCUMENTS', '3'))
 FILLER_ARTICLES = int(os.environ.get('FILLER_ARTICLES', '30'))
 BIG_DOC_ARTICLES = int(os.environ.get('BIG_DOC_ARTICLES', '60'))  # 제100조.. (+3 항 each) in 모의승인규정
+# 2026-11-12: articles citing other articles (same document and from the filler documents), so the
+# reference/reference_end rows are many (field: FOLLOW and comparison reference reads). 0 = none (default).
+REFERENCES = int(os.environ.get('GUARD_REFERENCES', '0'))
 FIRST_ARTICLE = 100  # many '제1..' surfaces, like the field's 2-character title groups
 # Field serving mapping: gold (dev and prod since 2026-11-10). development_g19_1 = old dev names, for comparison only.
 GUARD_MAPPING = os.environ.get('GUARD_MAPPING', 'gold')
@@ -59,7 +62,11 @@ NODES = [('0', None, 'kr_article', '제1조', 0, 6, '제1조'), ('1', '0', 'circ
 @pytest.fixture
 def structured_generation(tmp_path, term_glossary, monkeypatch):
     unit_transport(monkeypatch)
-    filler = [('f%02d' % i, '부록규정%02d' % i, ['부록 %d 문구.' % j for j in range(FILLER_ARTICLES)])
+    numbers = list(range(FIRST_ARTICLE, BIG_DOC_ARTICLES + FIRST_ARTICLE))
+    cited = lambda at, k: numbers[(at * 7 + k * 13) % len(numbers)]
+    filler = [('f%02d' % i, '부록규정%02d' % i, ['부록 %d 문구.' % j + ''.join(
+                   ' 모의승인규정 제%d조에 따른다.' % cited(i * FILLER_ARTICLES + j, k) for k in range(REFERENCES))
+                   for j in range(FILLER_ARTICLES)])
               for i in range(FILLER_DOCUMENTS)]
     texts, nodes = list(TREE), [(*n, '') for n in NODES]
     # Articles under chapters (장), like most field laws: a small one (same-section reading applies)
@@ -73,7 +80,8 @@ def structured_generation(tmp_path, term_glossary, monkeypatch):
         at = len(nodes); nodes.append(None)
         for i in members:
             k = len(texts)
-            texts += [f'제{i}조({title} 기준) {title} 승인 문구', f'① 제{i}조 첫째 항.', f'② 제{i}조 둘째 항.', f'③ 제{i}조 셋째 항.']
+            refs = ''.join(f' 제{cited(i, k)}조를 준용한다.' for k in range(REFERENCES))
+            texts += [f'제{i}조({title} 기준) {title} 승인 문구', f'① 제{i}조 첫째 항.{refs}', f'② 제{i}조 둘째 항.', f'③ 제{i}조 셋째 항.']
             nodes.append((str(k), str(head), 'kr_article', f'제{i}조', k, k+4, f'제{i}조', f'{title} 기준'))
             nodes += [(str(k+j), str(k), 'circled', '①②③'[j-1], k+j, k+j+1, f'제{i}조제{j}항', '') for j in (1, 2, 3)]
         nodes[at] = (str(head), None, 'kr_장', f'제{chapter}장', head, len(texts), f'제{chapter}장', f'제{chapter}장 {title}')
@@ -191,7 +199,14 @@ def oracle(tmp_path):
                 try:
                     with conn.cursor() as cur:
                         cur.setinputsizes(**{b['name']: types[b['data_type']] for b in json.get('binds', [])})
-                        cur.execute(json['statementText'], {b['name']: b['value'] for b in json.get('binds', [])})
+                        # A CLOB-typed value is bound as a string, as a JDBC setString would: over 32,767 bytes
+                        # the database refuses it (ORA-01460). The serving code sends long CLOBs in pieces
+                        # (oracle_dp_io.clob_pieces); GUARD_CLOB_AS_LOB=1 binds real LOBs instead.
+                        values = {b['name']: (conn.createlob(oracledb.DB_TYPE_CLOB, b['value'])
+                                              if os.environ.get('GUARD_CLOB_AS_LOB') == '1' and b['data_type'] == 'CLOB'
+                                              and isinstance(b['value'], str) and len(b['value'].encode()) > 32000
+                                              else b['value']) for b in json.get('binds', [])}
+                        cur.execute(json['statementText'], values)
                         if cur.description is None:
                             return {'items': [{'result': cur.rowcount}]}
                         columns = [c[0] for c in cur.description]
@@ -384,6 +399,18 @@ def scenario_guided(client, documents, tmp_path, *, question, scope, plan, turns
             decoded['command']['queries'] = words
             return cases.wire(decoded)
         transport.send_once = send_once
+    if plan.get('report'):
+        # The forced progress-report call of a stopped answer (F1): a fixed report.
+        before_report = transport.send_once
+
+        def send_once(*, body, ticket):
+            from api_fixture_integrated import decode
+            view = decode(json.loads(body['messages'][1]['content'])['view'])
+            if (view.get('source_stage') or view['phase']) == 'memory-progress-report':
+                return cases.wire({'found': '모의승인규정 제1조를 읽었습니다.', 'unclear': '판단 대조에서 멈췄습니다.',
+                                   'done': [], 'missing': [], 'decisions': ['다시 확인할까요?']})
+            return before_report(body=body, ticket=ticket)
+        transport.send_once = send_once
     runtime = tmp_path/('rt-'+RECORDS.scenario)
     profile = json.loads((CODE/'00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json').read_text())
     profile.update(model_binding=transport.binding, max_read_chars=10000)
@@ -420,6 +447,28 @@ def scenario_guided(client, documents, tmp_path, *, question, scope, plan, turns
         out.append({'status_code': r.status_code, 'status': body.get('status'), 'executed': body.get('executed'),
                     'method_id': body.get('method_id'), 'body': r.text[:1500]})
     return out, failures_of(runtime), [(x['turn'], x['phase']) for x in transport.log]
+
+
+def scenario_failure(client, documents, tmp_path, monkeypatch):
+    """F1 (2026-11-12): a check failure at ASSESS answers with a progress report and its failure points,
+    then "1번 다시 확인해 줘" re-enters the same question. Counts the SQL of a stopped answer and its follow-up."""
+    import guard_transport as guided
+    from semantic_runtime.legal_agent import guided_answer
+    from semantic_runtime.legal_agent.errors import ContractError
+    real, calls = guided_answer.assess, []
+
+    def assess(executor, *args, **kwargs):
+        calls.append(1)
+        if len(calls) == 1:
+            raise ContractError('guard: injected composition check failure')
+        return real(executor, *args, **kwargs)
+    monkeypatch.setattr(guided_answer, 'assess', assess)
+    try:
+        return scenario_guided(client, documents, tmp_path, question=guided.NAMED, scope='named', turns=2,
+            plan={'resolve': ('RESEARCH_REENTER', 'ASSESS'), 'relation': 'REVIEW', 'report': True},
+            follow_ups=['1번 다시 확인해 줘'])
+    finally:
+        monkeypatch.setattr(guided_answer, 'assess', real)
 
 
 def test_guard(oracle, published, tmp_path, monkeypatch):
@@ -489,12 +538,23 @@ def test_guard(oracle, published, tmp_path, monkeypatch):
                 scope='authorized', plan={**cont, 'queries': ['모의승인규정 제101조']}, turns=1)),
             ('V4-vector-search-word-named-article', lambda: scenario_guided(client, documents, tmp_path, question='모의승인규정 제101조 승인 기준은?',
                 scope='authorized', plan={**cont, 'queries': ['모의승인규정 제101조']}, turns=1)),
-            ('S9-guided-many-reads', lambda: scenario_guided(client, documents, tmp_path, question=guided.BROAD, scope='authorized',
+            # Multi-word search groups, one found together ('긴급 승인 예외') and one whose words sit in
+            # different units ('보고 원칙'): the group check SQL runs (field 2026-11-11 MAIN210: it began
+            # with WITH and the read-only gate refused it, READ_ONLY; every single-word scenario missed it).
+            ('S12-guided-multiword-groups', lambda: scenario_guided(client, documents, tmp_path, question=guided.BROAD,
+                scope='authorized', plan={**cont, 'queries': ['긴급 승인 예외', '보고 원칙']}, turns=1)),
+            ('V5-vector-multiword-groups', lambda: scenario_guided(client, documents, tmp_path, question=guided.BROAD,
+                scope='authorized', plan={**cont, 'queries': ['긴급 승인 예외', '보고 원칙']}, turns=1)),
+            ('S9-guided-many-reads',lambda: scenario_guided(client, documents, tmp_path, question=guided.BROAD, scope='authorized',
                 plan={**cont, 'reads': 6}, turns=2)),
+            # Opt-in only (GUARD_SCENARIOS=...,F1): code before MAIN219 answers this stop with 500.
+            ('F1-guided-check-failure-then-point', lambda: scenario_failure(client, documents, tmp_path, monkeypatch)),
         ]
         selected = os.environ.get('GUARD_SCENARIOS')
         for name, run in plans:
             if selected and name.split('-')[0] not in selected.split(','):
+                continue
+            if name.startswith('F') and not (selected and name.split('-')[0] in selected.split(',')):
                 continue
             RECORDS.scenario = name
             monkeypatch.setenv('GENOS_RAG_INITIAL_SEARCH', os.environ.get('ORACLE_GUARD_VECTOR_MODE', 'vector') if name.startswith('V') else 'keyword')

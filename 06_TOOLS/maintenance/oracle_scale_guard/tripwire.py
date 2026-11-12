@@ -181,4 +181,11 @@ def _bridge_record(records, payload, started, rows, error):
              **sql_features(statement, binds), 'site': records.site(3)}
     if error or entry['with_and_number']:
         entry['statement'] = statement[:4000]
+    # 2026-11-12: the first statement of each kind and the caller past the Oracle/cache layers, so a
+    # repeated statement (one per item) can be named.
+    seen = records.__dict__.setdefault('statement_texts', {})
+    if entry['sha'] not in seen:
+        seen[entry['sha']] = statement[:4000]
+        entry['statement'] = statement[:4000]
+    entry['caller'] = [f for f in records.site(12) if not f.split(':')[0].startswith(('oracle_', 'runtime_cache'))][:3]
     records.sql.append(entry)

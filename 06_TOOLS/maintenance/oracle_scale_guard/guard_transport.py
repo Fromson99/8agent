@@ -118,6 +118,8 @@ class Transport:
         if phase == 'source-law-initial-rerank':  # hybrid_rerank (2026-11-09): reverse the last two candidates to the top
             ids = schema['properties']['candidate_ids']['items']['enum']
             return wire({'reason': '모의 재정렬', 'candidate_ids': ids[-2:][::-1]})
+        if phase == 'source-law-recorded-lists':  # hybrid read nothing (2026-11-11): take the first vector row
+            return wire({'reason': '모의 선택', 'candidate_ids': [r['id'] for r in view['vector_search']][:1]})
         if phase == 'memory-present-focus':  # ANSWER_PRESENT part choice (2026-11-08): the whole answer
             return wire({'reason': '모의: 전체 다시 보기', 'scope': 'WHOLE', 'claim_ids': []})
         if 'open_questions' in schema.get('properties', {}):
