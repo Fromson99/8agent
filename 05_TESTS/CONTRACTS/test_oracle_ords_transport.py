@@ -111,8 +111,22 @@ def test_sdk_is_preserved_without_rest_or_changed_options(monkeypatch, endpoint)
     monkeypatch.setitem(sys.modules, 'genos.ords', sdk)
     client = oracle_dp.client_from_environment()
     assert client.schema_map
-    assert calls == [{'schema': 'b04', 'auth_key': ('test-id', 'test-secret'), 'timeout': 60, 'verify': True}]
+    assert calls == [{'schema': 'b04', 'auth_key': ('test-id', 'test-secret'), 'timeout': 600, 'verify': True}]
     assert not endpoint.calls  # SDK default URL remains untouched
+
+
+def test_ords_timeout_from_environment(monkeypatch, endpoint):
+    configured(monkeypatch, endpoint)
+    sdk = ModuleType('genos.ords')
+    calls = []
+    sdk.ORDSClient = lambda **kw: (calls.append(kw) or SimpleNamespace())
+    monkeypatch.setitem(sys.modules, 'genos.ords', sdk)
+    monkeypatch.setenv('GENOS_ORACLE_ORDS_TIMEOUT_SECONDS', '120')
+    oracle_dp.client_from_environment()
+    assert calls[-1]['timeout'] == 120
+    monkeypatch.setenv('GENOS_ORACLE_ORDS_TIMEOUT_SECONDS', 'ten')
+    with pytest.raises(DPError, match='GENOS_ORACLE_ORDS_TIMEOUT_SECONDS'):
+        oracle_dp.client_from_environment()
 
 
 def test_broken_sdk_dependency_does_not_fall_back(monkeypatch, endpoint):

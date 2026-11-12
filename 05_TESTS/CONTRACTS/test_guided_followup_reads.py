@@ -211,7 +211,7 @@ def test_answer_selected_read_is_read_in_the_same_request_and_answered_again(tre
     plan = {'actions': {1: [('LOCATE', '제1조제1항'), ('READ', '제1조제1항'), ('LOCATE', '제1조제2항'),
                             ('QUERY', '승인 보고')]}}
     transport, responses = run(tree, tmp_path, plan, turns=1,
-                               navigation={'guided_action_limit': 3, 'guided_answer_read_rounds': 6})
+                               navigation={'guided_action_limit': 3, 'guided_answer_read_rounds': 6, 'guided_answer_brief_rounds': False})
     assert responses[0].status_code == 200, responses[0].text
     answers = calls(transport, 1, 'answer')
     assert len(answers) == 2
@@ -521,12 +521,8 @@ def test_unread_notes_fold_many_rows_from_one_article_or_section():
                  'relation_text': '인용한 조문(정방향)', 'reason': '이미 설명한 통지 절차라서', 'judged_unneeded': True,
                  'reason_origin': 'MODEL', 'list_only': False})
     text, = ga.unread_paragraphs({'unread_connections': rows, 'unread_connection_total': len(rows) + 63})
-    lines = text.splitlines()
-    assert len([l for l in lines if l.startswith('- ')]) == 3 + 1 + 3 + 1 + 1 + 1
-    assert '- 제206조(「상법」과의 관계)에 연결된 다른 조문 27건(제304조, 제305조, 제306조, 제307조, 제308조 등)도 지금은 읽지 않았습니다.' in lines
-    assert '- 같은 절(제6절 자본금의 감소)의 다른 조문 2건(제442조, 제443조)도 지금은 읽지 않았습니다.' in lines
-    assert any(l.startswith('- 제438조(자본금 감소의 결의)에 연결된 제363조') for l in lines)
-    assert lines[-2] == '- 그 밖에 연결 조문 63건도 읽지 않았습니다.'
+    # 2026-11-11: 많은 목록은 본문이 아니라 화면 칸에서 줄인다(test_unread_card_and_hyphen_switch).
+    assert len(text.splitlines()) == 1 and str(len(rows) + 63) + '건' in text and '제301조' not in text
 
 
 class Rejecting(Scripted):

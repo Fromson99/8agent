@@ -211,7 +211,13 @@ def test_process_crash_recovers_joint_audit_transaction(tmp_path,term_glossary,a
     import os,subprocess,sys
     source=corpus(tmp_path/'source.sqlite',70);out=tmp_path/'crashed'
     script=tmp_path/'crash.py'
-    script.write_text('import sys,os\nsys.path.insert(0,'+repr(str(ROOT/'02_BACKEND'))+')\n'
+    # The crashed build runs the same modules as this process (a code-root test run loads the code under
+    # test, not the working tree): same semantic_runtime directory and lawrag package paths.
+    import lawrag
+    from semantic_runtime import term_index as loaded
+    paths={name:list(sys.modules[name].__path__) for name in ('lawrag','lawrag.pipeline','lawrag.core','lawrag.research') if name in sys.modules}
+    script.write_text('import sys,os,importlib\nsys.path[:0]='+repr([str(Path(loaded.__file__).resolve().parents[1]),str(ROOT/'02_BACKEND')])+'\n'
+        'for name,path in '+repr(paths)+'.items():importlib.import_module(name).__path__[:]=path\n'
         'from semantic_runtime import term_index\nfrom lawrag.pipeline.term_generation import build_generation\n'
         'def progress(**kw):\n'
         '    if kw.get("task")=="document-navigation" and kw.get("completed")==65:os._exit(91)\n'

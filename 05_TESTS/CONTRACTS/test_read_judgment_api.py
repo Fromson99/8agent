@@ -280,10 +280,16 @@ def test_read_judgment_api_retains_decisions_and_reuses_request(tmp_path, term_g
             assert again.status_code==200 and again.json()['answer']==result['answer'] and len(transport.calls)==count
             assert len([p for p in transport.calls if p.startswith('memory-assess')])==2
             from semantic_runtime.legal_agent import read_judgment as rj
-            journal=next(tmp_path.glob('90_RUNTIME/semantic/legal-agent/runs/*/*/journal.sqlite'))
-            with sqlite3.connect(journal) as db:
-                events=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='READ_JUDGMENT_RECORDED'")]
-                assert len(events)==4 and sum(len(e['changes']) for e in events)==2
+            # The resend opens its own (empty) journal too; read the first request's journal, not whichever the
+            # directory listing returns first (the old next(glob) failed 2 of 3 runs on MAIN218 as well).
+            found=[]
+            for journal in tmp_path.glob('90_RUNTIME/semantic/legal-agent/runs/*/*/journal.sqlite'):
+                with sqlite3.connect(journal) as db:
+                    rows=[json.loads(v) for v, in db.execute("SELECT payload_json FROM event WHERE kind='READ_JUDGMENT_RECORDED'")]
+                if rows:found.append(rows)
+            assert len(found)==1
+            events=found[0]
+            assert len(events)==4 and sum(len(e['changes']) for e in events)==2
             app.state.pipeline.store.close()
             return
         assert response.status_code == 200, response.text

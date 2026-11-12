@@ -83,17 +83,29 @@ def test_single_side_final_paragraph_does_not_borrow_other_side_from_stale_table
     assert '모의내규' in result['answer']['text']
 
 
-@pytest.mark.parametrize('defect',['hash','quote','source','published'])
+@pytest.mark.parametrize('defect',['hash','quote','source'])
 def test_final_display_never_bypasses_original_binding(defect):
     state, body, by = example()
     value=state['finalization']['value']
     if defect=='quote':value['paragraphs'][0]['citations'][0]['quote']='없는 원문'
     if defect=='source':value['paragraphs'][0]['citations'][0]['evidence']='outside'
-    if defect=='published':body['evidence_refs'].remove('route-1')
     if defect=='hash':value['paragraphs'][0]['text']='변조'
     else:state['finalization']['value_hash']=digest(value)
     with pytest.raises((ValueError,WorkflowError)):
         finalize.apply(state,body,by)
+
+
+def test_final_answer_publishes_a_cited_read_original_left_out_of_the_report():
+    # ADR-1503/1504: this case ended with 409 and no answer. The cited original is a verified
+    # read original (exact quote), so its card is published with the answer instead.
+    state, body, by = example()
+    body['evidence_refs'].remove('route-1')
+    cards=body['assembly']['term_agent']['source_bundle']['sources']
+    cards[:]=[c for c in cards if c['selection_id']!='route-1']
+    result=finalize.apply(state,body,by)
+    assert 'route-1' in result['evidence_refs'] and result['final_answer_published_sources']==['route-1']
+    card=next(c for c in result['assembly']['term_agent']['source_bundle']['sources'] if c['selection_id']=='route-1')
+    assert card['excerpt']==by['route-1']['text'] and card['side']==by['route-1']['side']
 
 
 def test_group_many_fragments_by_document_keep_all_literal_quotes_and_distinct_versions():

@@ -164,7 +164,8 @@ def test_naive_continue_resumes_investigation_with_previous_offer(tree, tmp_path
     assert control[:4] == ['source-request-route', 'memory-resolve-related', 'memory-resolve', 'memory-command-check']
 
 
-def test_guided_answer_waits_for_one_connection_lookup_after_reading(tree, tmp_path):
+def test_guided_answer_waits_for_one_connection_lookup_after_reading(tree, tmp_path, monkeypatch):
+    monkeypatch.setenv('GENOS_SERVER_FOLLOW', 'off')  # the model's own lookup; the server lookup is test_server_links
     plan = {'resolve': ('RESEARCH_CONTINUE', 'SELECT'), 'relation': 'CONTINUE'}
     transport, responses, last = run(tree, tmp_path, question=BROAD, scope='authorized', plan=plan, turns=1)
     assert responses[0].status_code == 200, responses[0].text
@@ -287,8 +288,8 @@ def directory_with(rows):
 
 def test_chain_reads_forward_and_rule_changing_pairs_only_within_caps():
     from semantic_runtime.legal_agent import connection_scope as cs
-    rows = [('OUTGOING', roles.BORROWS)] * 8 + [('INCOMING', roles.BORROWS)] * 20 + [('INCOMING', roles.MUTATIS)] * 3 + \
-           [('INCOMING', roles.SPECIFIES), ('INCOMING', roles.EXCEPTION), ('INCOMING', roles.SPECIFIES), ('INCOMING', roles.SPECIFIES)]
+    rows = [('OUTGOING', roles.BORROWS)] * (cs.CHAIN_LIMITS['outgoing'] + 2) + [('INCOMING', roles.BORROWS)] * 20 + [('INCOMING', roles.MUTATIS)] * 3 + \
+           [('INCOMING', roles.SPECIFIES), ('INCOMING', roles.EXCEPTION)] + [('INCOMING', roles.SPECIFIES)] * cs.CHAIN_LIMITS['pair_incoming']
     chosen = cs.chain_rows(directory_with(rows), forward_only=False)
     outgoing = [r for r in chosen if r['outgoing']]; incoming = [r for r in chosen if not r['outgoing']]
     assert len(outgoing) == cs.CHAIN_LIMITS['outgoing'] and len(incoming) == cs.CHAIN_LIMITS['pair_incoming']
@@ -341,7 +342,7 @@ def test_character_budget_leaves_pair_as_card(context_probe, monkeypatch):
     inv.policy.update(selected_connection_scope=True)
     for g in directory['groups']:
         for c in g['connections']: c['citation_role'] = roles.SPECIFIES
-    monkeypatch.setattr(av, 'sequence_cost', lambda *a: (12001, 1))
+    monkeypatch.setattr(av, 'sequence_cost', lambda *a: (cs.CHAIN_LIMITS['chars'] + 1, 1))
     assert cs.acquire_role_chain(inv, scope, directory) == [] and f.calls == []
     row = next(iter(inv.p['role_chain_directories'].values()))
     assert row['skipped'][0]['reason'] == 'ROLE_CHAIN_CHARACTER_LIMIT'
@@ -484,12 +485,8 @@ def test_guided_answer_notes_unread_links_in_the_requested_sentence_form():
     rows = ga.unread_reply(unread['entries'], [{'unread_ref': 'U1', 'reason': '종류주식을 발행한 회사에만 해당하는 준용 규정이라서'}])
     assert rows[0]['reason_origin'] == 'MODEL_NOTE' and rows[1]['reason_origin'] == 'SYSTEM_RULE'
     text = ga.unread_paragraphs({'unread_connections': rows, 'unread_connection_total': 3})[0]
-    assert text.startswith('확인하지 않은 연결 조문')
-    assert ('같은 절(제5절 정관의 변경)에 있는 제436조(준용규정): 지금은 종류주식을 발행한 회사에만 해당하는 '
-            '준용 규정이라서 읽을 필요가 없다고 판단했습니다.') in text
-    assert '제433조(정관변경의 방법)에 연결된 제435조(종류주주총회) — 규칙을 구체화하는 조문(역방향): 지금은 ' in text
-    assert '아직 읽지 않았습니다.' in text
-    assert '제434조(정관변경의 특별결의)에 연결된 조문 중 이 조문을 준용하는 조문 1건(제437조)' in text
+    # 2026-11-11: 목록은 화면의 "미확인 조문" 칸으로만 간다. 본문에는 건수 한 줄.
+    assert text.startswith('확인하지 않은 연결 조문 3건') and '제436조' not in text
     assert text.endswith('필요하면 말씀해 주세요. 해당 조문을 이어서 읽겠습니다.')
     with pytest.raises(Exception):
         ga.verify({'open_questions': [], 'answer_points': [], 'unread_notes': [{'unread_ref': 'U3', 'reason': 'r'}]},
@@ -517,7 +514,8 @@ def test_workflow_folds_unread_articles_under_their_origin_like_sources():
                              'unread_connections': rows, 'unread_connection_total': 3}}}}
     html = w._unread_cards(body)
     assert '미확인 조문 · 3건' in html and html.count('data-genos-unread="true"') == 3
-    assert '제433조(정관변경의 방법) → 제436조(준용규정) · 같은 절의 조문' in html
+    assert '제436조(준용규정)</summary>' in html and '같은 절(제5절 정관의 변경)에 있는 제436조(준용규정)' in html
+    assert '제433조(정관변경의 방법)에 연결된 제435조(종류주주총회) — 규칙을 구체화하는 조문(역방향)' in html
     assert '답변 근거로 쓰지 않은 원문 (앞부분)' in html.split('data-genos-unread="true"')[1]
     assert '<script>' not in html and '&lt;script&gt;' in html and '&#91;링크&#93;' in html
     rendered = w.render(body)

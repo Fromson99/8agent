@@ -262,12 +262,12 @@ def test_reviewer_paraphrase_of_an_unchanged_task_does_not_refuse_a_continue():
     annotated = {'valid': True, 'reason': '대기 요청 제24조를 1번 질문에서 확인', 'request_relation': 'CONTINUE',
                  'requested_task': task + ' (제24조 관련 확인)'}
     mm.validate_transition(command, transition, annotated)   # accepted: the purpose did not change
-    # A purpose change still has to match exactly.
+    # 2026-11-11: an approving reviewer's own wording of a changed purpose is not compared letter by letter.
     changed = {**transition, 'after': {**transition['after'], 'task': '외규: 위험관리위원회 구성 요건'}, 'changed_fields': ['task']}
     revise = {'method_id': 'PURPOSE_REVISE', 'target': 'G1', 'stage': 'INTENT', 'task': '외규: 위험관리위원회 구성 요건'}
-    with pytest.raises(output.OutputContractError, match='not reflected'):
-        mm.validate_transition(revise, changed, {'valid': True, 'reason': '구성', 'request_relation': 'FOLLOWUP', 'requested_task': '외규: 위험관리위원회 설치 의무'})
-    mm.validate_transition(revise, changed, {'valid': True, 'reason': '구성', 'request_relation': 'FOLLOWUP', 'requested_task': '외규: 위험관리위원회 구성 요건'})
+    assert mm.validate_transition(revise, changed, {'valid': True, 'reason': '구성', 'request_relation': 'FOLLOWUP', 'requested_task': '외규: 위험관리위원회를 어떻게 구성하는지'}) is None
+    with pytest.raises(output.OutputContractError):
+        mm.validate_transition(revise, changed, {'valid': False, 'reason': '다른 목적', 'request_relation': 'FOLLOWUP', 'requested_task': '외규: 위험관리위원회 설치 의무'})
 
 
 def test_guided_navigation_prompt_says_background_answers_are_not_originals():

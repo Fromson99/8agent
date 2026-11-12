@@ -391,7 +391,7 @@ def test_genos_review_contract_render_and_action_passthrough():
     body={'assembly':{'term_agent':{'review_explanation':view}}}
     assert w._review_explanation_text(body)==''
     text=w._review_explanation_text(body,diagnostics=True)
-    assert '최종 주장·필요·원문의 연결 검증' in text and '검토 다시 하기' in text
+    assert '읽은 조문과 답 문장이 맞는지 마지막 확인' in text and '검토 다시 하기' in text
     altered=deepcopy(view);altered['items'][0]['reason']='<script>attack()</script>'
     assert w._review_explanation_text({'assembly':{'term_agent':{'review_explanation':altered}}})==''
     altered.pop('content_sha256');altered=review.seal(altered)

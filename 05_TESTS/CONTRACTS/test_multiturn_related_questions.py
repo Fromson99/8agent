@@ -198,9 +198,12 @@ def test_guidance_for_an_unanswered_question_continues_it_with_a_same_purpose_re
     mm.validate_transition(command_, transition, review)
     import pytest
     from semantic_runtime.legal_agent import output_contract as output
-    with pytest.raises(output.OutputContractError):   # a changed purpose is not a same-question continuation
+    # 2026-11-11: adding what the user said to the purpose is still the same question when the reviewer approves.
+    assert mm.validate_transition(command_, {'before': before, 'after': {**after, 'task': '파생상품 거래 승인 기구'}},
+                                  {**review, 'requested_task': '파생상품 거래 승인 기구'}) is None
+    with pytest.raises(output.OutputContractError):   # a new topic on the old question is still refused
         mm.validate_transition(command_, {'before': before, 'after': {**after, 'task': '다른 목적'}},
-                               {**review, 'requested_task': '다른 목적'})
+                               {**review, 'request_relation': 'NEW_TOPIC', 'requested_task': '다른 목적'})
 
 
 def test_question_list_says_whether_the_answer_was_found_and_what_it_left_open():

@@ -128,4 +128,6 @@ def test_concept_stage_note_keeps_its_timing_in_the_report(tmp_path, tree):
         response = client.post('/v1/rag/ask', json=selected.BODY)
         assert response.status_code == 200, response.text
         notes = response.json()['unresolved']
-        assert concepts.STAGE_NOTE + '외규 원문이 아직 확보되지 않음' in notes and '외규 원문이 아직 확보되지 않음' not in notes
+        # 2026-11-11 compare-linked-reads-r2: once items are reviewed the concept-stage note is dropped from the
+        # screen (the same gap is stated by the item review); the raw note never appears without its stage mark.
+        assert not any(n.startswith(concepts.STAGE_NOTE) for n in notes) and '외규 원문이 아직 확보되지 않음' not in notes

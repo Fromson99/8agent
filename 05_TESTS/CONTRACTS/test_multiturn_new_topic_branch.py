@@ -129,13 +129,12 @@ def test_checker_paraphrase_of_a_verbatim_new_question_is_not_a_conflict(tree, t
     assert len(transport.checks) == 1, 'accepted on the first proposal; no repair round'
 
 
-def test_a_paraphrased_follow_up_task_is_still_checked(tree, tmp_path):
-    # Only the user's own request text is exempt; a model-written purpose must still match the review.
+def test_an_approved_follow_up_is_not_refused_for_the_reviewers_wording(tree, tmp_path):
+    # 2026-11-11: two models write the purpose in their own words; valid=true is the review's answer.
     revise = lambda t, v: command('PURPOSE_REVISE', target=t.target, stage='INTENT', task='승인 예외의 범위')
     transport, responses, (goals, _) = run(tree, tmp_path, {2: {'question': NEW,
         'resolve': [revise], 'check': checker('FOLLOWUP', '긴급 승인 예외 기준')}})
-    assert responses[1].status_code == 200 and responses[1].json()['status'] == 'CLARIFY'
-    assert len(transport.checks) == 2 and not transport.intents
+    assert len(transport.checks) == 1 and transport.intents and goals[0]['state']['task'] == '승인 예외의 범위'
 
 
 def disagreement(tree, tmp_path, third):

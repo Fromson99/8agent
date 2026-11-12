@@ -66,7 +66,8 @@ def test_fulltext_failure_preserves_navigation_then_resumes_without_rebuilding(p
     monkeypatch.setattr(term_generation, 'compile_index', forbidden)
     monkeypatch.setattr(term_generation.glossary_linking, 'project', forbidden)
     # Preserve the native fingerprint used by the generation identity.
-    forbidden.__code__ = forbidden.__code__.replace(co_filename=ROOT.joinpath('02_BACKEND/semantic_runtime/term_index.py').as_posix())
+    from semantic_runtime import term_index as loaded  # the module this run loaded (code root or working tree)
+    forbidden.__code__ = forbidden.__code__.replace(co_filename=Path(loaded.__file__).resolve().as_posix())
     with recovery.Recovery(term_generation).installed(release):
         result = variants.build_variant(ctx, 'off')
     assert result['completed'] and result['reference_llm'] and not result['activated']

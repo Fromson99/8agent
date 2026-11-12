@@ -17,7 +17,9 @@ from test_research_resolution_consumers import load
 tree = fixture.tree
 
 
-@pytest.mark.parametrize('mode', ['review', 'request', 'final_read', 'early_interrupt', 'other_sql', 'integrity', 'publication'])
+# 2026-11-11: comparison locators no longer send the reference join (field 60 s timeout), so the modes that
+# interrupt that join have nothing to interrupt. Only the mode that interrupts another SQL remains.
+@pytest.mark.parametrize('mode', ['other_sql'])
 def test_reference_sql_deadline_returns_saved_sources_through_service(tmp_path, tree, monkeypatch, mode):
     app, _ = fixture.fixture.application(tmp_path, tree)
     transport = fixture.Transport(fixture.Clock(), 'normal')
@@ -76,6 +78,20 @@ def test_reference_sql_deadline_returns_saved_sources_through_service(tmp_path, 
     events = []
     with capture(fixture.BODY['request_id'], events.append):
         result = asyncio.run(service.service({}, request))
+    if mode == 'other_sql':
+        # 2026-11-12 contract change (user: "검사에서 실패했다고 죽지말고"): an SQL failure inside the comparison
+        # ends with what was read and where it stopped (partial report), no longer 500 / failed state.
+        assert result['status'] == 200, result
+        body = result['body']
+        assert body['response_schema'] == 'workflow-result-v1' and body['status'] in ('partial', 'failed'), body
+        # 2026-11-12 (user: "정확히 어디서 못 읽었는지"): the stop card names the stage it stopped in.
+        stops = [p for p in body.get('failure_points', []) if p['kind'] == 'STOP']
+        assert stops and stops[0]['no'] == 1 and stops[0]['title'] == '조문을 불러오는 중 시스템 조회가 실패함', body.get('failure_points')
+        assert stops[0]['stage'] != '조문 찾기·읽기' and '단계에서 멈췄습니다' in stops[0]['detail'], stops
+        calls = len(transport.calls)
+        again = asyncio.run(service.service({}, request))
+        assert again['status'] == 200 and again['body']['answer'] == body['answer'] and len(transport.calls) == calls
+        return
     if mode in ('early_interrupt', 'other_sql', 'integrity', 'publication'):
         assert result['status'] == 500, result
         assert not events

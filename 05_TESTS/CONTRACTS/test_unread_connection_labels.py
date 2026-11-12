@@ -63,9 +63,7 @@ def test_other_document_targets_carry_the_document_name_and_paragraph_units_merg
     # A target in a document the answer did read keeps the short label.
     same = inv_with([chain('s제435조', 'd', '제435조', ['2'])], evidence=[('s제433조', ['0'])], names=names)
     assert [r['target_label'] for r in cs.unread_connections(same)['entries']] == ['제435조(종류주주총회)']
-    text, = ga.unread_paragraphs({'unread_connections': ga.unread_reply(rows, []), 'unread_connection_total': len(rows)})
-    assert '이 조문을 준용하는 조문 1건(「주식회사 등의 외부감사에 관한 법률 시행령」 제9조)' in text
-    assert '제9조, 제9조' not in text
+    assert [r['target_label'] for r in ga.unread_reply(rows, [])] == labels  # 항 단위 중복 없이 한 줄씩(화면 칸에 그대로)
 
 
 def test_chapter_siblings_are_named_same_chapter():
@@ -89,8 +87,7 @@ def test_chapter_siblings_are_named_same_chapter():
     row, = cs.unread_connections(inv_with([skip], evidence=[('s제433조', ['0'])]))['entries']
     assert row['relation_text'] == '같은 장의 조문' and row['section_level'] == '장'
     assert row['reason'].startswith('같은 장 조문이지만 앞부분에 장 제목의 핵심 표현') and '같은 절' not in row['reason']
-    text, = ga.unread_paragraphs({'unread_connections': ga.unread_reply([row], []), 'unread_connection_total': 1})
-    assert '- 같은 장(제4장 내부통제 및 위험관리 등)에 있는 제436조(준용규정)' in text and '같은 절' not in text
+    assert ga.unread_reply([row], [])[0]['section_level'] == '장'
 
 
 def test_rows_saved_before_the_level_field_read_it_from_the_heading():
@@ -99,6 +96,5 @@ def test_rows_saved_before_the_level_field_read_it_from_the_heading():
     old = [{'from_label': '제26조(신규상장 의무보유)', 'target_label': '제1조(목적)', 'relation': 'SAME_SECTION', 'section': '제1장 통 칙',
             'relation_text': '같은 절의 조문', 'reason': '규정의 목적을 명시한 조항이라서', 'judged_unneeded': True,
             'reason_origin': 'MODEL_NOTE', 'list_only': False}]
-    text, = ga.unread_paragraphs({'unread_connections': old, 'unread_connection_total': 1})
-    assert '- 같은 장(제1장 통 칙)에 있는 제1조(목적)' in text
+    assert ga.section_level(old[0]) == '장'
     assert ga.section_level({'section': '제5절 정관의 변경'}) == '절' and ga.section_level({}) == '절'

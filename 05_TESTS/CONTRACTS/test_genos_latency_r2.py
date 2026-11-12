@@ -31,11 +31,16 @@ def test_catalogue_shared_across_connections_without_repeated_document_sql(team_
 
 
 @pytest.mark.parametrize('file',['store.sqlite','manifest.json'])
-def test_changed_source_cannot_use_ready_catalogue(team_generation,file):
+def test_changed_source_cannot_use_ready_catalogue(team_generation,file,monkeypatch):
+    # ADR-1504: the file-system proof of the local store runs at most once a second (as the Oracle store,
+    # MAIN190); a changed file is refused within that second.
+    from semantic_runtime import oracle_dp_io
+    clock=[1000.0];monkeypatch.setattr(oracle_dp_io.time,'monotonic',lambda:clock[0])
     with closing(Store(team_generation)) as store:
         team_scope.prepared_catalogue(store)
         path=team_generation/file;s=path.stat()
         os.utime(path,ns=(s.st_atime_ns,s.st_mtime_ns+1000000))
+        clock[0]+=1.0
         with pytest.raises(ValueError,match='changed'):team_scope.prepared_catalogue(store)
 
 

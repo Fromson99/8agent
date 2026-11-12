@@ -97,7 +97,9 @@ def test_accepted_publication_recovery_requires_current_case_guard(unified,monke
     original=publication.export
     def interrupted(repo,runs):raise OSError('injected publication disk failure')
     monkeypatch.setattr(publication,'export',interrupted)
-    with pytest.raises(OSError):send(request_id='disk')
+    # 2026-11-12 contract change: the prepared answer is returned (marked not fully published) instead of an error;
+    # the prepared publication is still completed by the recovery below.
+    first=ok(send(request_id='disk'));assert first.get('publication_completed') is False
     monkeypatch.setattr(publication,'export',original)
     pipeline=client.app.state.pipeline
     recovered=publication.recover(runtime/'legal-agent'/'runs',runtime/'runs',

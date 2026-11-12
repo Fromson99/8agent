@@ -46,8 +46,8 @@ def test_actual_v6_api_failure_preserves_status_code_and_no_extra_calls(unified,
     body = response.json()
     assert body['answer_status'] == 'failed' and body.get('error_code') == marker
     if marker == 'timeout':
-        assert body['message'].startswith('모델 응답을 확인하지 못해 처리를 중단했습니다.')
-        assert '자동으로 재전송하지 않습니다' in body['message']
+        assert body['message'].startswith('답을 만드는 AI가 정해진 시간 안에 응답하지 않아 멈췄습니다.')
+        assert '지금까지 확인한 내용은 저장되어 있습니다' in body['message']
     else:
         assert body['message'].startswith('현재 충분한 법률 검토를 하지 못했습니다.')
     assert 'private' not in response.text and 'answer' not in body
@@ -63,9 +63,9 @@ def test_actual_v6_api_failure_preserves_status_code_and_no_extra_calls(unified,
     if marker in ('500', '503'):
         assert f'({marker})' in text
     elif marker:
-        assert f'({marker})' not in text and '모델 응답을 확인하지 못해' in text
+        assert f'({marker})' not in text and 'AI가 정해진 시간 안에 응답하지 않아' in text
     else:
-        assert '원문 조사·검토가 완료되지 않았습니다.' in text
+        assert '답에 필요한 조문 확인이 끝나지 않았습니다.' in text
     if marker:
         assert '질문해 주세요' not in text
 
@@ -101,9 +101,9 @@ def test_workflow_backend_keeps_marker_and_bound_display(monkeypatch, tmp_path, 
     if marker == '503':
         assert '(503)' in display['text']
     elif marker:
-        assert f'({marker})' not in display['text'] and '모델 응답을 확인하지 못해' in display['text']
+        assert f'({marker})' not in display['text'] and 'AI가 정해진 시간 안에 응답하지 않아' in display['text']
     else:
-        assert '원문 조사·검토가 완료되지 않았습니다.' in display['text']
+        assert '답에 필요한 조문 확인이 끝나지 않았습니다.' in display['text']
 
 
 @pytest.mark.parametrize('phase', ['preflight', 'request'])
@@ -153,7 +153,7 @@ def test_native_chat_failure_after_delta_stays_failed(monkeypatch, tmp_path, mod
         assert '작성 중인 미완료 문장' in response.text
     else:
         result = response.json()['data']
-    assert result['answer_status'] == 'failed' and '(timeout)' not in result['text'] and '모델 응답을 확인하지 못해' in result['text']
+    assert result['answer_status'] == 'failed' and '(timeout)' not in result['text'] and 'AI가 정해진 시간 안에 응답하지 않아' in result['text']
     assert '작성 중인 미완료 문장' not in result['text']
     assert 'private' not in response.text and len(calls) == 1
 

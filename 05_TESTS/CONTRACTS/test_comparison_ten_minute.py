@@ -27,8 +27,12 @@ class Clock:
 
 
 class Transport(fixture.Transport):
-    def __init__(self,clock,mode):
+    def __init__(self,clock,mode,policy):
         super().__init__();self.clock=clock;self.mode=mode;self.calls=[];self.final_calls=0
+        # 2026-11-12: the synthetic times follow the selected workflow policy (was 600 s fixed): just past the
+        # investigation cutoff, inside the publication reserve, and past the whole deadline.
+        wall,final,publication=policy['wall_seconds'],policy['finalization_seconds'],policy['publication_seconds']
+        self.after_investigation=wall-final+1;self.in_publication=wall-publication+1;self.after_deadline=wall+1
 
     def send_once(self,*,body,ticket):
         view=json.loads(body['messages'][1]['content'])['view']
@@ -37,7 +41,7 @@ class Transport(fixture.Transport):
         if stage=='workflow-finalize':
             self.final_calls+=1
             if self.mode=='final_timeout':
-                self.clock.elapsed=571
+                self.clock.elapsed=self.in_publication
                 raise TransportError('synthetic final timeout',unknown=True,retryable=True)
             refs=[{'citation_id':s['citation_options'][0]['citation_id']} for s in view['sources']]
             if self.mode=='bad_final' or self.mode=='corrected_final' and self.final_calls==1:
@@ -45,10 +49,10 @@ class Transport(fixture.Transport):
             return wire({'paragraphs':[{'text':'확보한 원문에서는 승인 후 보고하도록 정하고 있습니다.','citations':refs}],
                          'unresolved':['예외 적용 범위는 확인하지 못했습니다.']})
         if self.mode=='child_timeout' and stage.startswith('source-law-sources-') and view.get('workflow_task',{}).get('source_category')=='external':
-            self.clock.elapsed=481
+            self.clock.elapsed=self.after_investigation
             raise TransportError('synthetic investigation timeout after read',unknown=True)
         result=super().send_once(body=body,ticket=ticket)
-        if stage=='workflow-items' and self.mode!='normal':self.clock.elapsed=601 if self.mode=='hard_deadline' else 481
+        if stage=='workflow-items' and self.mode!='normal':self.clock.elapsed=self.after_deadline if self.mode=='hard_deadline' else self.after_investigation
         if self.mode=='budget' and stage.startswith('source-law-sources-') and view.get('workflow_task',{}).get('source_category')=='external':
             parent=execution._parent.get()
             parent['work'].db.execute('UPDATE budget SET model_reserved=model_limit-finalization_reserve')
@@ -65,7 +69,8 @@ def application(tmp_path,tree,monkeypatch,mode):
         if left<=0:raise DeadlineExceeded('synthetic elapsed request deadline')
         return left
     monkeypatch.setattr(RequestContext,'remaining',remaining)
-    t=Transport(clock,mode);app.state.pipeline.term_agent.transport=t
+    policy=app.state.workflow_runtime.registry.resolve('risk_team_compare_workflow',None,'risk_team').manifest['execution_policy']
+    t=Transport(clock,mode,policy);app.state.pipeline.term_agent.transport=t;t.policy=policy
     return app,t,clock
 
 
@@ -96,13 +101,14 @@ def test_service_deadline_budget_final_failure_and_saved_answer(tmp_path,tree,mo
             assert body['finalization']['status']=='COMPLETE',body
             assert '확보한 원문에서는 승인 후 보고' in body['answer']['text']
         else:assert body['finalization']['status']=='SAVED_EVIDENCE_ONLY'
-        if mode not in ('budget','hard_deadline'):assert 0<t.calls[index][1]<=90,t.calls
+        if mode not in ('budget','hard_deadline'):assert 0<t.calls[index][1]<=t.policy['finalization_seconds']-t.policy['publication_seconds'],t.calls
     journal=app.state.workflow_runtime.root/body['run_id']/'journal.sqlite'
     with sqlite3.connect(journal) as db:
         start,end=db.execute('SELECT started_at,deadline_at FROM run').fetchone()
-        assert 599<= (datetime.fromisoformat(end)-datetime.fromisoformat(start)).total_seconds()<=600
+        wall=t.policy['wall_seconds']
+        assert wall-1<= (datetime.fromisoformat(end)-datetime.fromisoformat(start)).total_seconds()<=wall
         budget=db.execute('SELECT model_limit,finalization_reserve,model_reserved FROM budget').fetchone()
-        assert budget[0:2]==(24,4) and budget[2]<=24
+        assert budget[0:2]==(t.policy['max_model_attempts'],t.policy['finalization_reserve']) and budget[2]<=budget[0]
     calls=len(t.calls)
     saved=asyncio.run(service.service({}, {'API_TYPE':'WORKFLOW_STATUS','run_id':body['run_id'],'session_id':'s'}))
     again=asyncio.run(service.service({}, request))

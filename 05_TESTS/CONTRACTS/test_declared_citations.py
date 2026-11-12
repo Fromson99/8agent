@@ -93,8 +93,9 @@ def test_navigation_connection_menu_offers_the_declared_target(declared):
 
 
 
-def test_question_comparison_locators_include_the_declared_target(declared):
-    """Partial comparison (질문 대사): the read internal article offers the cited external article."""
+def test_question_comparison_locators_offer_only_read_units(declared):
+    """Partial comparison (질문 대사): locators offer the read article itself; since 2026-11-11 they no longer
+    query the reference join (field 60 s timeout). The cited external article stays reachable through follow_reference."""
     from semantic_runtime.workflow_bridge import SourcePort
     from semantic_runtime.comparison_research_bridge import locators
     s = declared.source          # the workflow's source tools (SourceSession)
@@ -102,8 +103,7 @@ def test_question_comparison_locators_include_the_declared_target(declared):
     result = s.execute({'tool': 'read_node', 'args': {'node': s.node('inside', src['unit_id'], src['id']), 'cursor': None}, 'reason': '내규 원문 읽기'})
     evidence = [s.repo.evidence(i) for i in result['evidence_ids']]
     found = locators(SourcePort(s), evidence)
-    targets = [v for v in found.values() if v['document_id'] == 'd']
-    assert targets and targets[0]['coordinate'] == '제3조' and targets[0]['origin_evidence_id'] == evidence[0]['evidence_id'], found
+    assert found and all(v['document_id'] == 'inside' and v['reference_id'] is None for v in found.values()), found
     # The reference tool returns the same completed reference, with the declared name.
     refs = s.execute({'tool': 'follow_reference', 'args': {'evidence_id': evidence[0]['evidence_id'], 'direction': 'outgoing', 'cursor': None},
                       'reason': '내규가 적은 외규 확인'})['items']

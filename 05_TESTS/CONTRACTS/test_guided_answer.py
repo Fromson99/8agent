@@ -21,8 +21,9 @@ def value(open=True):
             'question':'해당 거래 금액은 얼마인가요?'}] if open else []}
 
 class Journal:
-    def __init__(self):self.states={};self.events=[]
+    def __init__(self):self.states={};self.events=[];self.db=S(find=lambda *a,**k:[])
     def event(self,k,v):self.events.append((k,deepcopy(v)))
+    def evidence(self):return []
     def output_decision_state(self,k):return self.states.get(k)
     def output_decision_event(self,v):self.states[v['decision_key']]=deepcopy(v)
 

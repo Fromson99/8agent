@@ -38,9 +38,9 @@ def test_source_only_asks_conversationally_and_keeps_closed_exact_originals():
     assert '검토 다시 하기' not in public
     assert text.index('설명해 주시겠어요?') < text.index('GENOS_SOURCES_START')
     for diagnostic in ('답변 검토에서 실패한 부분', '아직 확인하지 못한 내용',
-                       '실제 답변의 근거로 연결되지 않은 구간', 'AI 판단'):
+                       '실제 답 문장에는 쓰이지 않은 부분', 'AI 판단'):
         assert diagnostic not in text
-    assert '실제 답변의 근거로 연결되지 않은 구간' in w._review_explanation_text(response, diagnostics=True)
+    assert '실제 답 문장에는 쓰이지 않은 부분' in w._review_explanation_text(response, diagnostics=True)
     assert not dom.select('details[open]')
     assert len(dom.select('[data-source-text]')) == 1
     assert dom.select_one('[data-source-text]').get_text() == response['assembly']['context'][0]['text']

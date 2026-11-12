@@ -141,6 +141,8 @@ def test_document_unit_listing_uses_published_count_budget_and_request_memo(monk
         for n in range(12):
             yield {'document_id': 'big', 'unit_id': str(n), 'unit': {'parent': None}}
     monkeypatch.setattr(qm, 'pages', pages)
+    # Request-only memo (process listing off); the shared listing is test_unit_listings_shared.py.
+    monkeypatch.setenv('GENOS_ORACLE_SHARED_CACHE', 'off')
     units = qm.Units(SimpleNamespace(sources=SimpleNamespace(allowed=frozenset({'big'}))))
     assert len(list(units.for_document('big'))) == 12 and listed == [10000]
     assert len(list(units.for_document('big'))) == 12 and listed == [10000]  # memo, no second listing

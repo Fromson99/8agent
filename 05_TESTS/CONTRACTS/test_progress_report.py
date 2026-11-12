@@ -64,6 +64,19 @@ def serve(tree, tmp_path, transport, stop, monkeypatch, *, requests=1):
     return responses, status
 
 
+def serve_real(tree, tmp_path, transport):
+    """The real answer stage; the caller decides what the guided answer does."""
+    gen, idx = tree
+    profile = json.loads((ROOT / '00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json').read_text())
+    profile.update(model_binding=transport.binding, max_read_chars=10000)
+    app = create_app(tmp_path, gen, contracts_root=ROOT, provider=object(), implementation='legal-agent-unified-v6',
+        legal_agent_profile=profile, legal_agent_transport=transport, runtime_root=tmp_path / 'runtime',
+        memory_identity=lambda _: {'user_id': 'u', 'team_id': 'risk_team', 'document_ids': ['d', 'other']})
+    app.state.pipeline.term_agent.unit_fulltext = idx
+    with TestClient(app, raise_server_exceptions=False) as api:
+        return api.post('/v1/rag/ask', json={'session_id': 's', 'request_id': '1', 'question': NAMED})
+
+
 def pending(executor):
     return InvestigationPending('질문에 답할 근거가 충분히 확인되지 않았습니다.', stage='ASSESS',
                                 diagnostics={'cause_codes': ['NO_SUPPORTED_CLAIMS']})
@@ -94,8 +107,8 @@ def shown(response):
     return v.render(v.public_response(response.json(), status=response.status_code))
 
 
-@pytest.mark.parametrize('stop,kind,note', [(pending, 'REVIEW_INCOMPLETE', '원문 조사·검토를 끝내지 못해'),
-                                            (exhausted, 'LIMIT', '검토 한도'),
+@pytest.mark.parametrize('stop,kind,note', [(pending, 'REVIEW_INCOMPLETE', '필요한 조문을 다 확인하지 못해'),
+                                            (exhausted, 'LIMIT', '조사 분량'),
                                             (unresolved, 'JUDGMENT_CONFLICT', '판단하기 어려운 지점입니다'),
                                             (rejected, 'JUDGMENT_CONFLICT', '판단하기 어려운 지점입니다')])
 def test_agent_stop_answers_with_one_forced_report_and_asks_how_to_go_on(tree, tmp_path, monkeypatch, stop, kind, note):
@@ -114,7 +127,7 @@ def test_agent_stop_answers_with_one_forced_report_and_asks_how_to_go_on(tree, t
     assert len(transport.reports) == 1, 'exactly one forced call'
     view = transport.reports[0]['view']
     assert view['question'] == NAMED and view['originals'], 'the model sees the originals this request read'
-    assert view['stop']['stage'] == '근거 검토'
+    assert view['stop']['stage'] == '읽은 조문으로 판단'
     assert view['drafts'] and all(d['stage'] == '조사 판단' for d in view['drafts']), 'the agent\'s own judgments so far'
     assert view['rejections'][0]['reason']
     assert view['connections'] == [] and '**이어서 확인할 수 있는 연결' not in text, 'this fixture has no unread link'
@@ -153,13 +166,15 @@ def test_a_model_that_did_not_answer_is_not_called_again(tree, tmp_path, monkeyp
     assert status == ['COMPLETE']
 
 
-def test_a_server_fault_stays_500_without_a_report(tree, tmp_path, monkeypatch):
+def test_a_check_failure_after_reading_answers_with_a_report(tree, tmp_path, monkeypatch):
+    # 2026-11-12 contract change (user: "검사에서 실패했다고 죽지말고"): until MAIN218 this was a 500 with no report.
     transport = Reporting()
     (response,), status = serve(tree, tmp_path, transport, lambda e: ContractError('stored evidence hash mismatch'), monkeypatch)
-    assert response.status_code == 500
-    assert transport.reports == []
-    assert status == ['FAILED']
-    assert '(500)' in shown(response)
+    assert response.status_code == 200, response.text
+    assert response.json()['answer']['text'].startswith(pr.NOTES['CHECK_FAILED'])
+    assert len(transport.reports) == 1
+    assert status == ['COMPLETE']
+    assert '(500)' not in shown(response)
 
 
 def test_server_report_lists_the_unconfirmed_draft_judgments():
@@ -186,7 +201,8 @@ def test_a_saved_unread_link_reaches_the_report_and_the_screen(tree, tmp_path, m
                                     'relation': link['relation_text'], 'why_not_read': link['reason']}]
     assert '연결을 따라가 볼까요' in transport.reports[0]['system']
     text = response.json()['answer']['text']
-    assert '- 모의승인규정 제1조(승인) → 모의승인규정 제2조(예외) (예외를 정한 조문)' in text
+    # 2026-11-12: the unread link is a numbered failure point the next turn can name.
+    assert '2. [이어진 조문] 읽으려다 건너뜀 — 모의승인규정 제2조(예외)' in text
 
 
 def test_unread_links_are_listed_and_offered_as_the_next_step():
