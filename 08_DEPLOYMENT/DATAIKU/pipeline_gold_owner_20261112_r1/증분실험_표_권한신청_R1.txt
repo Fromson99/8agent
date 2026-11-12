@@ -1,0 +1,67 @@
+개발계 증분 실험 — 만들 표 · 필요한 권한 · SQL  (2026-11-12, R1)
+
+목적: 개발계 SIDDS에 Gold와 같은 구조의 빈 시험 복사본 13표를 만들어 증분 처리를 실험한다.
+      지금 서빙 중인 Gold(SIDDS.IDD_B003_LGL_*)와 데이터는 건드리지 않는다. 데이터 복사 없음.
+
+------------------------------------------------------------------------
+1. 만들 표 — 소유자 SIDDS, 13개 (정의는 운영 Gold IDD_B003과 같고 이름 앞부분만 TST_)
+------------------------------------------------------------------------
+  표 이름                        한글 이름            PK 인덱스(자동)              추가 인덱스
+  SIDDS.TST_B003_LGL_DOC_VER     문서판본내역         X0_TST_B003_LGL_DOC_VER      -
+  SIDDS.TST_B003_LGL_DOC_UNIT    문서구조내역         X0_TST_B003_LGL_DOC_UNIT     X1_TST_B003_LGL_DOC_UNIT
+  SIDDS.TST_B003_LGL_DOC_BLK     문서본문내역         X0_TST_B003_LGL_DOC_BLK      X1_TST_B003_LGL_DOC_BLK
+  SIDDS.TST_B003_LGL_SRC_POST    원문게시내역         X0_TST_B003_LGL_SRC_POST     X1_TST_B003_LGL_SRC_POST
+  SIDDS.TST_B003_LGL_SRCH_POST   조회게시내역         X0_TST_B003_LGL_SRCH_POST    -
+  SIDDS.TST_B003_LGL_SRCH_ROW    검색관계내역         X0_TST_B003_LGL_SRCH_ROW     X1~X4_TST_B003_LGL_SRCH_ROW
+  SIDDS.TST_B003_LGL_SRCH_CHNL   조회채널내역         X0_TST_B003_LGL_SRCH_CHNL    -
+  SIDDS.TST_B003_LGL_ONTL_POST   온톨로지게시내역     X0_TST_B003_LGL_ONTL_POST    X1_TST_B003_LGL_ONTL_POST
+  SIDDS.TST_B003_LGL_ONTL_HEAD   온톨로지선택내역     X0_TST_B003_LGL_ONTL_HEAD    X1_TST_B003_LGL_ONTL_HEAD
+  SIDDS.TST_B003_LGL_ONTL_ANC    원문지식연결내역     X0_TST_B003_LGL_ONTL_ANC     X1_TST_B003_LGL_ONTL_ANC
+  SIDDS.TST_B003_LGL_VCTR_POST   벡터게시내역         X0_TST_B003_LGL_VCTR_POST    -
+  SIDDS.TST_B003_LGL_VCTR_ITEM   원문구간벡터내역     X0_TST_B003_LGL_VCTR_ITEM    X1_TST_B003_LGL_VCTR_ITEM
+  SIDDS.TST_B003_LGL_VCTR_HEAD   벡터게시선택내역     X0_TST_B003_LGL_VCTR_HEAD    -
+  합계: 표 13 · PK 13 · 추가 인덱스 11 = SQL 24문장 (CREATE_TEST_COPY_SIDDS_R1.txt)
+  인덱스 이름(X0~X4_<표>)은 적재기가 이 이름으로 찾으므로 바꾸지 않는다.
+  온톨로지 3표는 증분이 쓰지 않지만 적재기가 13표 구조를 모두 검사해서 같이 만든다.
+  저장 공간: 작은 기준 세대(문서 10개 이하)·세대 3개 유지면 약 1GB 이내(추정, 문서 1개 검색 행 8,698 기준).
+
+------------------------------------------------------------------------
+2. 필요한 권한
+------------------------------------------------------------------------
+  (가) 표 만들기 — 둘 중 하나
+       · SIDDS 소유자(또는 DBA)가 CREATE_TEST_COPY_SIDDS_R1.txt를 실행  ← 권장
+       · Dataiku 계정 PIDD2APP이 직접 만들려면 CREATE ANY TABLE, CREATE ANY INDEX (범위가 넓어 보통 안 줌)
+       · SIDDS 테이블스페이스 여유 약 1GB
+
+  (나) Dataiku 계정 PIDD2APP (AIDP 연결, 03_LOAD·증분 셀이 쓰는 계정)
+       · 시험 복사본 13표: SELECT, INSERT, UPDATE, DELETE
+           INSERT  03_LOAD가 세대를 넣음
+           UPDATE  증분이 main 채널을 새 세대로 바꿈
+           DELETE  증분이 옛 세대를 지움(지금 + 이전 2개만 남김)
+       · SIDDA.LGL_PIPE_RESULT_A: DELETE 추가 (SELECT는 이미 있음) — 증분이 적재 끝난 결과 조각을 지움
+       → GRANT_TEST_COPY_SIDDS_R1.txt (14문장, SIDDS 소유자·SIDDA 소유자 또는 DBA가 실행)
+
+  (다) GENOS ORDS 계정(개발계 BAIP04APP): 바뀌는 것 없음
+       · SIDDA.LGL_PIPE_RESULT_A SELECT, INSERT — 11-09 개발계에서 02단계 통과로 확인된 상태
+
+------------------------------------------------------------------------
+3. Agent 표 — 새로 만들 필요 없음, 이미 있는 것을 그대로 쓴다
+------------------------------------------------------------------------
+  · GENOS는 결과를 SIDDA.LGL_PIPE_RESULT_A 한 곳에만 쓴다(코드에 고정). 시험용 Agent 표를 따로 만들어도 GENOS가 쓰지 않는다.
+  · 증분은 작업 번호(JOB_ID)마다 따로 쓰고, 적재가 끝나면 자기 작업 행만 지운다 — 다른 작업과 섞이지 않는다.
+  · 서빙 기록 표(LGL_AGT_RUN_A·REC_A·BODY_A, LGL_EXEC_ST_A)는 질문 처리용이라 증분과 무관.
+  · 필요한 것은 위 (나)의 DELETE 권한 하나.
+
+------------------------------------------------------------------------
+4. 실행 순서 (Dataiku SQL 노트북, [번호] 한 개씩 별도 Query, 문장 끝 ; 없음)
+------------------------------------------------------------------------
+  1. CREATE_TEST_COPY_SIDDS_R1.txt  T01~T24   표·인덱스 만들기
+  2. GRANT_TEST_COPY_SIDDS_R1.txt   G01~G14   권한
+  3. CHECK_TEST_COPY_SIDDS_R1.txt   Q01~Q07   확인: Q02에 시험 복사본 13 + SIDDA 5 = 18행, Q03~Q05 0행,
+                                              Q06에 13표 DELETE,INSERT,SELECT,UPDATE + LGL_PIPE_RESULT_A DELETE,SELECT
+  4. GUIDE.txt 3장 "개발계 실험 순서" 5번부터 (기준 세대 적재 → MAIN_CHANNEL_TEST_COPY_R1 → 증분 셀)
+  5. 끝나면 DROP_TEST_COPY_SIDDS_R1.txt D01~D13 (TST_ 표만 지움)
+  나중에 실제 개발계 Gold에 증분을 붙일 때만: GRANT_GOLD_INCREMENT_SIDDS_R1.txt (IDD_B003 13표 같은 권한)
+
+로컬 확인: 로컬 Oracle 임시 계정 3개(SIDDS·SIDDA·PIDD2APP 대역)로 1~3번을 그대로 실행 — 13표 차이 0,
+권한 14건, PIDD2APP으로 넣기·바꾸기·지우기 통과. 증분 실험 전체도 시험 복사본에서 통과(GUIDE 4장).

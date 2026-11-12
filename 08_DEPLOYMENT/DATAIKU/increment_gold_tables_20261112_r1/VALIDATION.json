@@ -1,0 +1,13 @@
+{
+ "date": "2026-11-12",
+ "revision": "R2 (replaces R1 sent 1a1cdbe5d85ddf82)",
+ "scope": "increment Gold 3 tables (RGLT_DOC, RGLT_VER, ARTC_CMPR), 29 columns, domains and sizes limited to the existing RAG Gold registration (R20 sheet 17)",
+ "checks": {
+  "domain_catalog": "build.py re-extracts domains/sizes from R20 and requires every new column inside them (ID 50/100, 값 100, 내용 CLOB/3000, 명 100/2250, 번호 NUMBER(30,0), 여부 VARCHAR2(1), 일시 TIMESTAMP(6) WITH TIME ZONE)",
+  "local_oracle": "verify_local.py PASS: dev and prod SQL as delivered, 3 tables, 0 column/key diffs, grants, Korean 740-char names, SHA-256, enforcement date KST, prod DELETE denied",
+  "workbook_vs_design": "0 diffs"
+ },
+ "user_feedback": "\"규정문서 코드에 varchar2(100)이 없어 — 기존 골드에 있던 도메인 이름·크기 선택지로 싹 바꿔줘\"",
+ "code": "increment R2 code does not write these tables yet",
+ "field_db_changed": false
+}

@@ -99,7 +99,11 @@ class R6Runner:
             raise Stop("FLOW_PROJECT_MISMATCH: R6 설치 프로젝트와 다른 프로젝트")
         ids = dict(cfg["folders"], input=cfg["INPUT_FOLDER_ID"], support=cfg["SUPPORT_FOLDER_ID"])
         folders = {k: dataiku.Folder(v) for k, v in ids.items() if v}
-        paths = Path(cfg["WORK_DIR"]) / "agent-layer-zip-r6" / project / cfg["ENVIRONMENT"] / trial
+        import flow_runtime as fr
+        if hasattr(fr, "trial_paths"):                     # R7부터: 수신 파이프라인과 같은 작업 폴더
+            paths = fr.trial_paths(cfg, project, trial)
+        else:
+            paths = Path(cfg["WORK_DIR"]) / "agent-layer-zip-r6" / project / cfg["ENVIRONMENT"] / trial
         paths.mkdir(parents=True, exist_ok=True, mode=0o700)
         return cfg, paths, folders
 
@@ -131,9 +135,16 @@ class R6Runner:
         return fr.read(folders["wait"], trial + "/ready.json")["intent"]["job"]
 
     def report(self, trial: str, zip_name: str, zip_sha: str) -> dict:
+        import dataiku
         import flow_runtime as fr
         _, _, folders = self._ctx(trial, zip_name, zip_sha)
-        return fr.read(folders["load"], trial + "/report.json")
+        name = "report.json"
+        try:                                                # R7부터: 시험 복사본 적재 결과는 이름이 따로
+            from gold_owner import report_name, resolve
+            name = report_name(resolve(dataiku.get_custom_variables()))
+        except ImportError:
+            pass
+        return fr.read(folders["load"], trial + "/" + name)
 
 
 # ------------------------------------------------------------------ 실행기
@@ -398,7 +409,7 @@ class Flow:
         for op in ("submit", "wait", "load"):
             self.r6.step(op, trial, name, digest)
         report = self.r6.report(trial, name, digest)
-        if not report.get("checks") or report.get("status") not in ("DEV_LOADED", "PROD_LOADED"):
+        if not report.get("checks") or report.get("status") not in ("GOLD_LOADED", "DEV_LOADED", "PROD_LOADED"):
             raise Stop(f"LOAD_NOT_VERIFIED: {report.get('status')}")
         job = self.r6.job(trial, name, digest)
         self._cleanup_job(trial, job)

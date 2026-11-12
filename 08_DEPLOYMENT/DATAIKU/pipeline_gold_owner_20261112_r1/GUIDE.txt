@@ -1,0 +1,147 @@
+수신 파이프라인 R7 · Gold 소유자를 변수로 · 표 설계 · 증분 실험 — 2026-11-12
+
+========================================================================
+0. 한눈에
+========================================================================
+- Gold 소유자는 이제 코드가 아니라 변수로 정한다. 개발계 SIDDS, 운영 SIDDG. 표 이름은 둘 다 IDD_B003_LGL_*.
+    코드서빙(질문 처리)   환경변수 GENOS_ORACLE_GOLD_OWNER=SIDDS|SIDDG  (+ GENOS_ORACLE_TABLE_MAPPING=gold) — 이미 있던 것, 변경 없음
+    Dataiku 파이프라인    프로젝트 변수 LGL_GOLD_OWNER=SIDDS|SIDDG       — 이번에 추가 (R7)
+    증분 셀              같은 프로젝트 변수 LGL_GOLD_OWNER                 — 이번에 변경 (R2)
+    시험 복사본 실험 때만  프로젝트 변수 LGL_GOLD_TABLE_PREFIX=TST_B003_LGL_
+- GENOS 파이프라인 코드서빙은 바꾸지 않았다(R6 리비전 그대로). Dataiku 쪽만 새로 설치.
+- 옛 개발계 이름(LGL_G19_*_S_1, DEV_1)으로 적재하는 경로는 없앴다.
+
+========================================================================
+1. 플로우가 이렇게 되어 있나 — "S3 → GENOS 구조화·색인 → Oracle Agent → Gold 승격"
+========================================================================
+대체로 그렇다. 코드로 확인한 실제 순서:
+
+  [Dataiku 01_SUBMIT]  S3(관리 폴더)의 원문 ZIP을 바이트 그대로 GENOS로 조각 전송, 비동기 작업 시작
+  [GENOS]              구조화(build-data-stages structure) → 용어집 연결(document-release prepare)
+                       → 본문 검색 색인(reindex, fulltext) → 결과 세대를 result.zip으로 묶음
+                       → ORDS로 SIDDA.LGL_PIPE_RESULT_A 에 72KB 조각으로 INSERT, 마지막에 0번 '완료' 행
+  [Dataiku 02_WAIT]    SIDDA 완료 행 확인 (GENOS가 꺼져 있어도 됨)
+  [Dataiku 03_LOAD]    SIDDA 조각을 이어 붙여 해시 확인 → Gold 행으로 변환 → 원문·검색 적재 → 게시
+                       → 벡터 임베딩(Dataiku 모델 연결 openai:genos-embedding:embedding-kure-v1) → 벡터 적재 → 건수 재조회
+
+다른 점 두 가지 (말씀하신 그림과 차이):
+  a. 벡터 임베딩은 GENOS가 아니라 Dataiku 03_LOAD에서 한다(같은 GENOS 임베딩 모델을 Dataiku 연결로 부름).
+     → 2026-11-12 사용자 결정: 임베딩은 Dataiku 그대로.
+  b. Agent 층에는 '행'이 아니라 처리 결과 묶음(ZIP 조각)이 들어간다. Gold 행으로 펼치는 것은 03_LOAD.
+     (검색 행이 전체 기준 약 6,097만 행이라 GENOS→ORDS로 행을 하나씩 넣으면 매우 느림. 묶음 전달이 맞다고 본다.)
+  c. 03_LOAD는 새 세대를 Gold에 넣고 자기 채널(g19_…)만 만든다. 서빙 채널(main) 교체·벡터 머리 연결은
+     증분 activate(또는 수동 SQL)가 한다 — 적재만으로 서빙이 바뀌지 않는다.
+
+현장 진행 기록: 11-06 GENOS 계정 권한 오류(ORA-00942) → 11-09 개발계 TEST_LEAGAL에서 02까지 통과(증분 안내 기록).
+03_LOAD 현장 실행 기록은 없다. 11-10 이전에는 개발계 표 이름이 옛 이름이라 03이 돌 수 없었다.
+
+========================================================================
+2. Oracle 표 — 다 만들어져 있나 / 설계
+========================================================================
+필요한 표 (자세한 컬럼·키는 테이블_설계_R1.md):
+  Agent 층   SIDDA.LGL_PIPE_RESULT_A                 GENOS 결과 조각
+  Gold 13표   <소유자>.IDD_B003_LGL_*                  문서판본·구조·본문, 원문/조회 게시, 검색 행, 채널, 온톨로지 3, 벡터 3
+  (서빙 기록 SIDDA.LGL_AGT_*_A·LGL_EXEC_ST_A 4표는 질문 처리용, 파이프라인은 안 씀)
+  증분은 새 표 없음 (관리 폴더 JSON)
+
+기록상 현황 (현장 확인은 CHECK_TABLES로):
+  개발계  Gold 13표 SIDDS.IDD_B003_LGL_* 있음 — 11-10 옛 표 이름을 바꿔 만든 것(17/0/0), 데이터도 그대로.
+          SIDDA.LGL_PIPE_RESULT_A 있음 — 11-06 Dataiku 데이터셋으로 확인(0행).
+  운영    Gold 13표 SIDDG.IDD_B003_LGL_* 있음 — 메타 등록 → DBA 생성, 11-05 적재·11-09 R7f에서 6,097만 검색 행 확인.
+          SIDDA.LGL_PIPE_RESULT_A 는 확인한 기록 없음 (운영에 R6/R7을 놓은 적 없음).
+  → "골드 테이블은 안 만들었다"는 기록과 다르다. 혹시 다른 스키마(예: 개발계에 SIDDG)를 말한 것이면
+    CREATE_GOLD_TABLES_SIDDG_R1.txt가 그대로 쓰는 DDL이다(소유자만 바꿔 tables.py로 다시 만들 수 있음).
+
+파일
+  CHECK_TABLES_SIDDS_R1.txt / CHECK_TABLES_SIDDG_R1.txt  읽기 전용 확인 7개. Q02 18행, Q03~Q05 0행이면 다 맞음.
+                                                     Q06·Q07은 접속 계정(PIDD2APP) 권한 목록.
+  CREATE_GOLD_TABLES_SIDDG_R1.txt   Gold 13표+인덱스 24문장 (DBA 요청용, 운영 등록 정의와 같음)
+  CREATE_AGENT_STAGE_R1.txt         Agent 중간표 1문장 (운영에 없으면)
+  테이블_설계_R1.md                  표 목록·쓰는 곳/읽는 곳·권한·컬럼(한글 논리명)·키
+
+필요한 권한
+  GENOS ORDS 계정   SIDDA.LGL_PIPE_RESULT_A SELECT, INSERT
+  Dataiku 계정      SIDDA.LGL_PIPE_RESULT_A SELECT, DELETE / Gold 13표 SELECT, INSERT, DELETE
+                    / SRCH_CHNL UPDATE(증분), SRCH_ROW·VCTR_ITEM·VCTR_HEAD·SRCH_CHNL UPDATE(R7f)
+  운영 쓰기 권한은 PROD_DELETE_CHECK_R1.txt(증분 R1 폴더)로 행 변경 없이 확인할 수 있다.
+
+========================================================================
+3. 증분 처리 — 어떻게 도나, 실험은 어떻게
+========================================================================
+도는 방식 (새 표 없음, 사람 승인 없음):
+  decide    떨어진 파일 → 바뀐 파일만 작은 파이프라인 실행으로 구조화 → 지금 서빙 세대(main 채널이 가리키는 Gold)와
+            조문 단위 비교 → 반영 / 보류(조문 급감·대량 삭제·변경률 50% 초과·별표 소실·시행일 문제) / 시행일 대기
+  publish   지난 원문 ZIP에서 반영 문서만 바꾼 전체 원문 ZIP → 파이프라인 전체(GENOS→Agent→Gold) → 새 세대
+            (서빙은 아직 그대로)
+  activate  벡터 머리 연결 + main 채널을 새 세대로 (한 번에) → 업데이트 기록(최근 3개) → 옛 세대 정리(지금+이전 2개만)
+            → 적재 끝난 Agent 조각 삭제
+  rollback  최근 업데이트를 되돌림 (이전 세대가 남아 있으면 채널만, 지워졌으면 옛 원문으로 다시 게시)
+
+실험은 표를 복사해서 — 맞다. 다만 데이터까지 복사할 필요는 없다:
+  - 구조만 같은 빈 시험 복사본 13표(TST_B003_LGL_*)를 만들고, 작은 기준 세대(문서 몇 개)를 파이프라인으로 넣는다.
+  - 6,097만 행을 복사하면 공간·시간만 들고, 증분이 비교하는 대상은 '시험 복사본의 main 채널이 가리키는 세대'라
+    작은 세대로 충분하다. 원래 Gold(IDD_B003)와 서빙은 실험 내내 그대로다.
+  - 시험 복사본은 같은 SIDDS에 이름만 다르게 둔다(사용자: SIDDS에 만들 수 있음, 권한 신청).
+    만들 표·필요한 권한·SQL은 증분실험_표_권한신청_R1.txt. Agent 표는 새로 만들지 않고 기존 SIDDA.LGL_PIPE_RESULT_A를 쓴다.
+
+개발계 실험 순서 (TEST_LEAGAL 프로젝트)
+  1. 프로젝트 변수: LGL_GOLD_OWNER = SIDDS
+  2. SQL 노트북: CHECK_TABLES_SIDDS_R1.txt Q01~Q07 → Q02 18행, Q03~Q05 0행 확인
+  3. 코드 폴더에 DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip 올리고, Python 노트북에서 DATAIKU_SETUP_R7.txt 한 셀
+     (CODE_FOLDER_ID, 원문 ZIP 이름·해시, 실제 지원 ZIP 이름) → FLOW_INSTALLED LGL_AGENT_R7_PROD_RUN_ALL
+     프로젝트 변수 AGENT_PIPELINE_URL / AGENT_PIPELINE_TOKEN 은 지금 R6 GENOS 리비전 값 그대로.
+  4. SQL 노트북: CREATE_TEST_COPY_SIDDS_R1.txt T01~T24 → GRANT_TEST_COPY_SIDDS_R1.txt G01~G14
+     → CHECK_TEST_COPY_SIDDS_R1.txt Q01~Q07 (Q02 18행, Q03~Q05 0행)
+  5. 프로젝트 변수: LGL_GOLD_TABLE_PREFIX = TST_B003_LGL_, AGENT_FLOW_TRIAL = inc-base-001
+     작은 기준 원문 ZIP(문서 몇 개)으로 RUN_ALL → 03 결과 폴더 inc-base-001/report-tst_b003_lgl.json, checks=true
+  6. SQL 노트북: MAIN_CHANNEL_TEST_COPY_R1.txt M01~M04 → main 이 기준 세대를 가리킴
+  7. 증분 셀: DATAIKU_INCREMENT_R2.txt (코드 폴더에 INCREMENT_CODE_R2.zip). CHANNEL='main',
+     BASE_DATA_ZIP_NAME=5번 원문 ZIP, ACTION 'check' → 'decide' → 'publish' → 'activate', 되돌리기 'rollback'
+  8. 끝나면: 프로젝트 변수 LGL_GOLD_TABLE_PREFIX 지우기 → DROP_TEST_COPY_SIDDS_R1.txt D01~D13
+  주의: 5번 변수가 남아 있으면 이후 적재도 시험 복사본으로 간다. 시작 로그 첫 줄 GOLD_TARGET 으로 대상 확인.
+
+실제 개발계 Gold에 증분을 붙일 때(실험 뒤)
+  - MAIN_CHANNEL_SIDDS_R1.txt 로 main 채널을 만들고(지금 g19_7c1f… 와 같은 세대), 코드서빙 DP_QUERY_CHANNEL=main
+  - 지금 세대를 만든 원문 ZIP(기준 원문)이 R7 입력 폴더에 있어야 한다.
+
+========================================================================
+4. 로컬 검증 (로컬 Oracle 23.26.3 전용 컨테이너, 끝나고 삭제)
+========================================================================
+- R7 끝까지 (verify_r7.py → local_checks/verify_r7_validation.json): 29항목 PASS.
+  실제 GENOS 작업자가 예시 법령 1건을 구조화·색인 → ORDS 대역으로 실제 Oracle SIDDA 중간표에 조각 저장 → 03_LOAD.
+  R6 점검 항목 전부 + 변수 없으면 설치 거절 / 레시피에 소유자 없음 / LGL_GOLD_OWNER로 Gold 적재(문서1·단위290·블록356·검색8,698·벡터65)
+  / 같은 Agent 결과를 변수만 바꿔 시험 복사본에 적재, 원래 표 그대로 / 같은 trial에서 소유자를 바꾸면 쓰기 전에 멈춤
+  / 전달한 CREATE DDL·CHECK SQL을 그대로 실행(Gold 13·중간표 차이 0).
+- 증분 시험 복사본 (06_TOOLS/maintenance/check_increment_gold_copy_oracle.py → local_checks/increment_gold_copy.json): PASS.
+  실제 Gold 제약 그대로의 표, 전달 SQL 그대로(CREATE_GOLD·CREATE_TEST_COPY·MAIN_CHANNEL·DROP_TEST_COPY).
+  1일 반영 2·보류 1(잘린 규정), 2·3일 뒤 세대 3개만, 되돌리기 채널·채널·다시 만들기, 원래 Gold 행 해시 처음과 같음.
+  GENOS 구조화·03 적재는 실제 구조화 결과로 만든 대역.
+  이 실험에서 결함 1개 발견·수정: 증분 publish가 R7의 적재 완료 상태(GOLD_LOADED)를 몰라 멈춤.
+- MAIN_CHANNEL_TEST_COPY_R1 M02: g19_ 1개면 추가, 2개 이상·이미 main이면 0행, '_' 문자 그대로 비교 — 로컬 확인.
+- 계약 시험 05_TESTS/CONTRACTS/test_pipeline_gold_owner.py 5 + 기존 증분 37 = 42 통과.
+
+========================================================================
+5. 운영 Gold 메타 등록 엑셀 R20
+========================================================================
+법률에이전트_B003_골드테이블_메타등록_R20.xlsx (07_DOCS/REFERENCE/REPORTS/DATAIKU_GOLD_TABLE_APPLICATION_20261112_R20)
+  - R19(10-30 최종 신청 형식)를 서식 그대로 두고 현재 정의로 바꿈: 표·인덱스 IDD_B03_→IDD_B003_, 컬럼명 5곳
+    (RGSN_ASTM, RFRN_DTA_HASH_VALU, RFRN_DTA_CTNT, CHAN_NO×3), 규정문서ID 50→100(6곳), 본문단위ID 50→100,
+    부가정보미지정여부 CHAR(1)→VARCHAR2(1). 데이터 값이 바뀌는 변경 없음.
+  - 더한 시트(이전 규칙: 활용테이블목록·Bizmeta·등록 대상·표준용어/도메인): 14 활용테이블목록, 15 Bizmeta,
+    16 메타등록대상, 17 표준용어·도메인(약어=단어), 18 R19 대비 변경, 19 신청 화면 대조, 20 DDL.
+  - 확인: 13표 60컬럼 이름·순서·타입·필수·기본값·PK·인덱스가 gold_b003_r5.json(운영 적재기 R5·서버 매핑)과 차이 0,
+    한글 속성명이 11-04 신청 작업함 화면 전사와 모두 같음.
+  - 11-04 작업함과 다른 곳 2개(19 시트): 등록일시 타입(화면 TIMESTAMP·기본값 없음 / R20 TIMESTAMP(6) WITH TIME ZONE·SYSTIMESTAMP,
+    둘 다 동작), 인덱스 LOCAL 표시(비파티션 표에는 불가 — 파티션 탭 확인). 신청 전에 하나로 정할 것.
+  - 17 시트의 표준단어 나누기는 R14 단어 사전 기준 — 메타마이너 표준사전 조회로 최종 확인. 임베딩벡터(EMBD_VCTR)는
+    도메인 접미어가 없어 '확인 필요'.
+
+========================================================================
+6. 확인 못 한 것
+========================================================================
+- 현장 Dataiku에서 R7 설치·실행, 실제 GENOS 리비전·실제 임베딩·실제 지원 ZIP.
+- 개발계 PIDD2APP 권한(CHECK Q06·Q07로 확인), 운영 SIDDA.LGL_PIPE_RESULT_A 존재.
+- 전체 원문 재구조화·재적재 시간(증분 publish가 변경 있는 날마다 전체를 다시 돈다).
+- 운영 실행. 메일 발송 안 함.
+
+파일 해시: SHA256SUMS.txt

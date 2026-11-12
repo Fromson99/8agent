@@ -1,9 +1,10 @@
 """Dataiku Python 노트북·레시피 한 셀에서 부르는 진입점 — PARAMS → 실행기 → ACTION.
 
-R6 코드(flow_runtime 등)는 셀의 R6 BOOTSTRAP이 먼저 불러 둔다. 설정(GENOS 주소·Agent 연결·입력/지원 폴더·
-WORK_DIR)은 설치된 R6 레시피 코드에서 읽어 같은 값을 쓴다. 대상만 바꾼다:
-  TARGET='DEV_1' → 개발계 실버 SIDDS.LGL_G19_*_S_1 (R6 ENVIRONMENT='DEV')
-  TARGET='GOLD'  → 운영 Gold GOLD_OWNER(SIDDG).IDD_B003_LGL_* (R6 ENVIRONMENT='PROD')
+수신 파이프라인 코드(flow_runtime 등)는 셀의 BOOTSTRAP이 먼저 불러 둔다. 설정(GENOS 주소·Agent 연결·입력/지원
+폴더·WORK_DIR)은 설치된 레시피 코드에서 읽어 같은 값을 쓴다.
+대상 Gold는 03_LOAD와 같은 프로젝트 변수로 정한다(개발계·운영 표 이름이 같고 소유자만 다름):
+  LGL_GOLD_OWNER         필수. 개발계 SIDDS, 운영 SIDDG
+  LGL_GOLD_TABLE_PREFIX  선택. 기본 IDD_B003_LGL_. 시험 복사본(TST_B003_LGL_ 등)에서 실험할 때만
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ def _latest_run(store) -> str:
 
 def build(params: dict):
     import dataiku
+    from gold_owner import resolve
     from prod_config import target
 
     from .dataiku_flow import Flow, Params, R6Runner, r6_cfg_from_recipe
@@ -28,16 +30,15 @@ def build(params: dict):
     from .release_ops import DataikuSql, Names
 
     project = dataiku.api_client().get_default_project()
-    cfg = r6_cfg_from_recipe(project, params.get("R6_RECIPE") or "LGL_AGENT_R6_PROD_02_WAIT_AGENT")
-    mode = params.get("TARGET", "DEV_1")
-    if mode not in ("DEV_1", "GOLD"):
-        raise ValueError("TARGET은 DEV_1 또는 GOLD")
-    overrides = {"ENVIRONMENT": "DEV" if mode == "DEV_1" else "PROD"}
-    if mode == "GOLD":
-        overrides["GOLD_OWNER"] = params.get("GOLD_OWNER") or "SIDDG"
+    cfg = r6_cfg_from_recipe(project, params.get("R6_RECIPE") or "LGL_AGENT_R7_PROD_02_WAIT_AGENT")
+    if params.get("TARGET") or params.get("GOLD_OWNER"):
+        raise ValueError("TARGET·GOLD_OWNER는 더 쓰지 않는다 — 프로젝트 변수 LGL_GOLD_OWNER(개발계 SIDDS, 운영 SIDDG)로 정한다")
+    gold = resolve(dataiku.get_custom_variables())
+    print("GOLD_TARGET", gold["GOLD_OWNER"] + "." + gold["TABLE_PREFIX"] + "*", flush=True)
+    overrides = {}
     if params.get("SUPPORT_ZIP_NAME"):
         overrides["SUPPORT_ZIP_NAME"] = params["SUPPORT_ZIP_NAME"]
-    names = Names(target({"TARGET_MODE": mode, "GOLD_OWNER": overrides.get("GOLD_OWNER", cfg.get("GOLD_OWNER", "SIDDS"))}))
+    names = Names(target({"TARGET_MODE": "GOLD", **gold}))
     for key in ("DROP_FOLDER_ID", "STATE_FOLDER_ID"):
         if not params.get(key):
             raise ValueError(key + "_REQUIRED")

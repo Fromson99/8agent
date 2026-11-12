@@ -1,5 +1,12 @@
 # 적재기 고칠 때 볼 것 — 개발계 표 이름이 운영 Gold와 같아짐 (2026-11-10)
 
+> **2026-11-12 진행:** 수신 파이프라인(S3 원문 ZIP → GENOS → SIDDA → Gold)은 **R7로 Gold 이름 적재 완료(로컬 검증)** —
+> [pipeline_gold_owner_20261112_r1/GUIDE.txt](pipeline_gold_owner_20261112_r1/GUIDE.txt). 소유자는 Dataiku 프로젝트 변수
+> `LGL_GOLD_OWNER`(개발계 SIDDS, 운영 SIDDG), 시험 복사본은 `LGL_GOLD_TABLE_PREFIX=TST_B003_LGL_`. DEV_1(옛 이름) 경로 삭제.
+> 증분 셀 R2도 같은 변수(TARGET 없음), main 채널 SQL은 `MAIN_CHANNEL_SIDDS_R1.txt`(CHAN_NO). 표 확인 `CHECK_TABLES_SIDDS/SIDDG_R1.txt`.
+> 아래 목록 중 `gold_fresh_1_*`·`gold_vector_*`·`vector_head_*`(개발계 전용 옛 이름 적재기)는 R7로 대체 — 고치지 않는다.
+> 현장 설치·실행은 아직.
+
 사용자 결정(2026-11-10): 개발계 스키마를 운영 Gold와 **표 이름까지 똑같이** 맞춘다. 새 표를 만들지 않고 기존 표 이름·컬럼만 바꾼다.
 소유자는 그대로(Gold 13표 `SIDDS`, Agent 4표 `SIDDA`). 운영은 `SIDDG`(Gold) / `SIDDA`(Agent). 운영 표는 파티션 아님.
 **개발계 표 변경은 2026-11-10 20:31 현장 적용 완료(결과 17/0/0) — 개발계 DB는 이제 새 이름뿐이다.** 적재기는 이 변경과 따로, **나중에** 고친다(사용자 지시). 고치기 전에는 개발계 적재 셀을 돌리지 않는다(옛 이름을 찾아 실패). 고칠 때 아래를 기준으로 한다.

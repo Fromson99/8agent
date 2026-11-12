@@ -1,0 +1,33 @@
+<html><body style="font-family:'Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.6">
+<h3>증분 처리용 추가 Gold 3표 R2 — 기존 Gold 도메인·크기로 맞춤 (R1 대체, 2026-11-12)</h3>
+<p>앞 메일 R1(코드·일자·순번·비율 도메인, VARCHAR2(30)·(8) 등)은 쓰지 마시고 이 R2를 쓰세요. 새 컬럼은 <b>기존 RAG Gold 등록본에 실제로 쓰인 도메인과 크기 안에서만</b> 골랐습니다.</p>
+<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px">
+<tr style="background:#17365D;color:#fff"><th>도메인</th><th>쓸 수 있는 크기 (기존 Gold 기록)</th></tr>
+<tr><td>ID</td><td>VARCHAR2(50), VARCHAR2(100)</td></tr><tr><td>값</td><td>VARCHAR2(100)</td></tr>
+<tr><td>내용</td><td>CLOB, VARCHAR2(3000)</td></tr><tr><td>명</td><td>VARCHAR2(100), VARCHAR2(2250)</td></tr>
+<tr><td>번호</td><td>NUMBER(30,0)</td></tr><tr><td>여부</td><td>VARCHAR2(1)</td></tr><tr><td>일시</td><td>TIMESTAMP(6) WITH TIME ZONE</td></tr>
+</table>
+<h4>R1 → R2</h4>
+<ul>
+<li>규정문서코드 VARCHAR2(100) → <b>원천문서ID</b> SRC_DOC_ID VARCHAR2(100) (ID)</li>
+<li>원천구분코드 → <b>원천유형값</b> SRC_TYPE_VALU VARCHAR2(100) (값, 기존 '조회자료유형값'과 같은 방식) · 버전상태코드 → <b>버전상태값</b> · 변경유형코드 → <b>변경유형값</b></li>
+<li>공포일자·시행시작일자 VARCHAR2(8) → <b>공포일시·시행일시</b> TIMESTAMP (그날 0시). 공포번호는 문자(예: 제2025-12호)라 번호 도메인에 못 넣어 버전부가정보내용 JSON으로</li>
+<li>비교순번 NUMBER(10,0) → <b>비교번호</b> NUMBER(30,0) · 원천파일명 2000 → 2250</li>
+<li>유사비율 NUMBER(5,4) → <b>비교부가정보내용</b> CLOB(JSON)</li>
+<li>새 표준단어 후보 20 → 13개 (원천·활성·파일·공포·시행·상태·대체·비교·기준·이전·이후·조문·키)</li>
+</ul>
+<h4>그대로인 것</h4>
+<ul>
+<li>표 3개: IDD_B003_LGL_RGLT_DOC 규정문서내역 · IDD_B003_LGL_RGLT_VER 규정판본내역 · IDD_B003_LGL_ARTC_CMPR 조문비교내역 (29컬럼, 추가 인덱스 1)</li>
+<li>개발계 SIDDS: 첨부 3 생성(4문장) → 4 권한(PIDD2APP SELECT·INSERT·UPDATE·DELETE) → 5 확인. 운영 SIDDG는 첨부 6~8 (권한은 SELECT·INSERT·UPDATE).</li>
+<li>Agent 표는 새로 만들지 않음. 기존 RAG Gold 13표는 추가 신청 없음.</li>
+<li>로컬 Oracle에서 개발계·운영 SQL을 그대로 실행해 확인(차이 0, 권한, 한글 740자·해시·시행일시 저장). 엑셀 07 시트에 도메인별 선택지와 기존 사용 예를 정리.</li>
+</ul>
+<h4>첨부</h4>
+<ol>
+<li>법률에이전트_B003_증분Gold_메타등록_R2.xlsx</li><li>GUIDE.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDS_R2.txt</li><li>GRANT_INCREMENT_GOLD_SIDDS_R2.txt</li><li>CHECK_INCREMENT_GOLD_SIDDS_R2.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDG_R2.txt</li><li>GRANT_INCREMENT_GOLD_SIDDG_R2.txt</li><li>CHECK_INCREMENT_GOLD_SIDDG_R2.txt</li>
+<li>SHA256SUMS.txt</li>
+</ol>
+</body></html>

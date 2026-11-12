@@ -1,0 +1,27 @@
+<html><body style="font-family:'Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.6">
+<h3>증분 처리용 추가 Gold 3표 — 메타 등록 엑셀 · 개발계 생성 SQL · 권한 (2026-11-12, 앞 메일 보완)</h3>
+<p>기존 RAG Gold 13표는 그대로이고 추가 신청이 없습니다. <b>새로 신청할 Gold는 아래 3표</b>입니다. 자세한 내용은 첨부 2 GUIDE.txt.</p>
+<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px">
+<tr style="background:#17365D;color:#fff"><th>표</th><th>한글 이름</th><th>1행</th><th>왜 필요한가</th></tr>
+<tr><td>IDD_B003_LGL_RGLT_DOC</td><td>규정문서내역</td><td>문서 하나 (7컬럼)</td><td>Gold 원문 표의 문서ID는 판본마다 바뀜 — 판본과 무관한 문서코드(LAW:법령ID 등)와 지금 서빙 판본</td></tr>
+<tr><td>IDD_B003_LGL_RGLT_VER</td><td>규정판본내역</td><td>들어온 원문 파일 하나 (13컬럼)</td><td>공포·시행일, 반영/보류/시행일 대기/되돌림 상태, 반영된 Gold 세대</td></tr>
+<tr><td>IDD_B003_LGL_ARTC_CMPR</td><td>조문비교내역</td><td>바뀐 조문 하나 (11컬럼)</td><td>신구조문 대비 — Gold 옛 세대를 지운 뒤에도 무엇이 바뀌었는지 남김</td></tr>
+</table>
+<ul>
+<li>운영: 첨부 1 메타 등록 엑셀(RAG Gold 신청 때와 같은 R19/R20 형식, 표별 시트·Bizmeta·표준용어·DDL). 새 표준단어 후보 20개는 05 시트.</li>
+<li>개발계 SIDDS (같은 이름): 첨부 3 생성 SQL 4문장(표 3 + 인덱스 1) → 첨부 4 권한 → 첨부 5 확인(Q01 3행, Q02·Q03 0행).
+ <ul><li>표 만들기: SIDDS 소유자 또는 DBA 실행 (Dataiku 계정이 직접 만들려면 CREATE ANY TABLE · CREATE ANY INDEX)</li>
+ <li>Dataiku 계정 PIDD2APP: 3표 SELECT, INSERT, UPDATE, DELETE (운영은 SELECT, INSERT, UPDATE — 첨부 7)</li></ul></li>
+<li><b>Agent 표는 새로 만들지 않습니다.</b> GENOS 결과는 기존 SIDDA.LGL_PIPE_RESULT_A, 증분 실행 기록·되돌리기용 옛 파일은 Dataiku 관리 폴더(S3) 그대로.</li>
+<li>앞 메일의 시험 복사본 TST_B003_LGL_* 13표는 개발계 실험용(등록 대상 아님). 실제 개발계 Gold로 바로 시험하면 안 만들어도 됩니다.</li>
+<li>지금 증분 코드는 이 3표에 아직 쓰지 않습니다(관리 폴더 JSON). 개발계에 표가 생기면 기록을 표에도 쓰도록 바꿉니다.</li>
+<li>로컬 Oracle에서 개발계·운영 SQL 두 벌을 그대로 실행해 확인(표·컬럼·인덱스 차이 0, 권한, 한글·해시 값 저장). 현장 생성·메타 신청은 아직.</li>
+</ul>
+<h4>첨부</h4>
+<ol>
+<li>법률에이전트_B003_증분Gold_메타등록_R1.xlsx</li><li>GUIDE.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDS_R1.txt</li><li>GRANT_INCREMENT_GOLD_SIDDS_R1.txt</li><li>CHECK_INCREMENT_GOLD_SIDDS_R1.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDG_R1.txt</li><li>GRANT_INCREMENT_GOLD_SIDDG_R1.txt</li><li>CHECK_INCREMENT_GOLD_SIDDG_R1.txt</li>
+<li>SHA256SUMS.txt</li>
+</ol>
+</body></html>

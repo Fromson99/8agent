@@ -1,0 +1,316 @@
+{
+ "RGLT_DOC": {
+  "logical": "규정문서내역",
+  "kind": "MASTER",
+  "definition": "법령·행정규칙·내규 문서를 판본과 무관하게 하나로 묶는 문서 목록을 관리하는 엔티티이다. 한 건은 문서 하나이며 판본이 바뀌어도 원천문서ID는 그대로다. Gold 원문 표의 규정문서ID는 판본마다 바뀌므로 이 ID로 판본 이력을 잇는다.",
+  "process": "증분 판단 때 들어온 원문에서 법령ID·행정규칙ID 또는 정식 문서명으로 원천문서ID를 정해 없으면 추가하고, 반영·되돌리기 때 활성버전ID를 바꾼다.",
+  "source": "떨어진 원문 파일(법제처 XML·내규 docx) → GENOS 구조화 결과의 문서 머리 정보",
+  "when": "증분 판단·반영 시 (일 배치 예정, 시각 미정)",
+  "columns": [
+   {
+    "name": "SRC_DOC_ID",
+    "logical": "원천문서ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "원천에서 부여한, 판본이 바뀌어도 그대로인 문서 식별값이다. LAW:<법령ID> / ADMRUL:<행정규칙ID> / INTERNAL:<정식 문서명 해시 앞 16자리>.",
+    "korean": "N"
+   },
+   {
+    "name": "RGLT_DOC_NAME",
+    "logical": "규정문서명",
+    "type": "VARCHAR2(2250 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "문서의 정식 이름이다. 최신 판본의 이름으로 갱신한다.",
+    "korean": "Y"
+   },
+   {
+    "name": "SRC_TYPE_VALU",
+    "logical": "원천유형값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "문서 출처 유형이다. LAW(법령) / ADMRUL(행정규칙) / INTERNAL(내규).",
+    "korean": "N"
+   },
+   {
+    "name": "ACTV_VER_ID",
+    "logical": "활성버전ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "지금 서빙 중인 판본의 규정버전ID다. 반영·되돌리기 때 바뀐다. 아직 반영 전이면 비어 있다.",
+    "korean": "N"
+   },
+   {
+    "name": "DOC_ADDN_IFMN_CTNT",
+    "logical": "문서부가정보내용",
+    "type": "CLOB",
+    "required": false,
+    "default": null,
+    "definition": "같은 문서가 들어 있는 팀 폴더 경로, 별칭 등 부가정보 JSON이다.",
+    "korean": "Y"
+   },
+   {
+    "name": "RGSN_ASTM",
+    "logical": "등록일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": true,
+    "default": "SYSTIMESTAMP",
+    "definition": "행을 처음 기록한 시각이다. 기본값으로 저장 시각을 넣는다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "CHAN_ASTM",
+    "logical": "변경일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": true,
+    "default": "SYSTIMESTAMP",
+    "definition": "이 행을 마지막으로 바꾼 시각이다(활성 판본 변경 등).",
+    "korean": "해당 없음"
+   }
+  ],
+  "primary_key": [
+   "SRC_DOC_ID"
+  ],
+  "indexes": []
+ },
+ "RGLT_VER": {
+  "logical": "규정판본내역",
+  "kind": "HISTORY",
+  "definition": "문서의 판본(원문 파일 하나)마다 공포·시행 시점, 증분 판단 결과, 반영된 Gold 세대를 관리하는 엔티티이다. 한 건은 들어온 원문 파일 하나이며 원본 해시가 같으면 같은 판본이다. 반영되지 않은 보류·시행일 대기 판본도 남긴다.",
+  "process": "떨어진 파일의 원본 해시로 판본 행을 만들고, 조문 비교·판정 결과를 상태로 기록한다. 반영되면 Gold 세대 ID와 활성일시를, 다음 판본이 들어오거나 되돌리면 대체일시를 채운다.",
+  "source": "떨어진 원문 파일 · 증분 판단(decide) · Gold 적재 결과(03_LOAD)",
+  "when": "증분 판단·반영·되돌리기 시",
+  "columns": [
+   {
+    "name": "RGLT_VER_ID",
+    "logical": "규정버전ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "판본 식별값으로 원본 파일의 SHA-256 해시(64자리)를 쓴다.",
+    "korean": "N"
+   },
+   {
+    "name": "SRC_DOC_ID",
+    "logical": "원천문서ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "이 판본이 속한 문서의 원천문서ID다.",
+    "korean": "N"
+   },
+   {
+    "name": "RGLT_DOC_ID",
+    "logical": "규정문서ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "Gold 원문 표(문서판본내역 등)의 규정문서ID다. 원문 해시 앞 16자리로 Gold 적재 뒤 채운다.",
+    "korean": "N"
+   },
+   {
+    "name": "SRC_FILE_NAME",
+    "logical": "원천파일명",
+    "type": "VARCHAR2(2250 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "들어온 원문 파일의 이름이다(폴더 경로 제외).",
+    "korean": "Y"
+   },
+   {
+    "name": "PRMG_ASTM",
+    "logical": "공포일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": false,
+    "default": null,
+    "definition": "공포·발령 일자다. 날짜만 있으므로 그날 0시(한국시간)로 넣는다. 공포번호는 버전부가정보내용에 둔다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "ENFC_ASTM",
+    "logical": "시행일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": false,
+    "default": null,
+    "definition": "문서 시행일이다. 마지막 부칙에서 읽어 그날 0시(한국시간)로 넣는다. 못 읽으면 비우고 보류한다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "VER_STTS_VALU",
+    "logical": "버전상태값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "APPLIED(반영) / WAIT_EFFECTIVE(시행일 대기) / HOLD(보류) / SUPERSEDED(다음 판본으로 대체) / ROLLED_BACK(되돌림).",
+    "korean": "N"
+   },
+   {
+    "name": "RFRN_POST_HASH_VALU",
+    "logical": "조회게시해시값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "이 판본을 처음 반영한 Gold 세대(검색 게시)의 조회게시해시값이다.",
+    "korean": "N"
+   },
+   {
+    "name": "VER_ADDN_IFMN_CTNT",
+    "logical": "버전부가정보내용",
+    "type": "CLOB",
+    "required": false,
+    "default": null,
+    "definition": "공포번호, 판정 사유·경고, 조문 변경 건수 등 판단 결과 JSON이다.",
+    "korean": "Y"
+   },
+   {
+    "name": "RGSN_ASTM",
+    "logical": "등록일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": true,
+    "default": "SYSTIMESTAMP",
+    "definition": "행을 처음 기록한 시각이다. 기본값으로 저장 시각을 넣는다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "ACTV_ASTM",
+    "logical": "활성일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": false,
+    "default": null,
+    "definition": "이 판본이 서빙에 반영된 시각이다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "SPSD_ASTM",
+    "logical": "대체일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": false,
+    "default": null,
+    "definition": "다음 판본으로 바뀌었거나 되돌린 시각이다.",
+    "korean": "해당 없음"
+   }
+  ],
+  "primary_key": [
+   "RGLT_VER_ID"
+  ],
+  "indexes": [
+   [
+    "SRC_DOC_ID"
+   ]
+  ],
+  "index_names": [
+   "규정판본내역문서별조회"
+  ],
+  "index_uses": [
+   "문서 하나의 판본 이력을 조회한다(문서당 판본 수 건 — 순서는 등록일시로 정렬)."
+  ]
+ },
+ "ARTC_CMPR": {
+  "logical": "조문비교내역",
+  "kind": "HISTORY",
+  "definition": "새 판본을 반영할 때 이전 판본과 조문 단위로 비교한 결과(신구조문 대비표)를 관리하는 엔티티이다. 한 건은 바뀐 조문 하나(신설·삭제·개정·이동)이며 변경 없는 조문은 남기지 않는다. 옛 Gold 세대를 지운 뒤에도 무엇이 바뀌었는지 조회할 수 있게 조문 내용을 보존한다.",
+  "process": "증분 판단에서 이전 판본(Gold 지금 세대)과 새 구조화 결과를 조문 계보로 맞춰 변경 유형·유사도를 계산하고, 바뀐 조문만 번호를 붙여 적재한다.",
+  "source": "증분 판단(decide)의 조문 비교 결과",
+  "when": "증분 판단 시",
+  "columns": [
+   {
+    "name": "RGLT_VER_ID",
+    "logical": "규정버전ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "비교한 새 판본의 규정버전ID다.",
+    "korean": "N"
+   },
+   {
+    "name": "CMPR_NO",
+    "logical": "비교번호",
+    "type": "NUMBER(30,0)",
+    "required": true,
+    "default": null,
+    "definition": "한 판본 안에서 바뀐 조문에 붙인 1부터의 번호다.",
+    "korean": "해당 없음"
+   },
+   {
+    "name": "BASE_VER_ID",
+    "logical": "기준버전ID",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "비교 기준이 된 이전 판본의 규정버전ID다. 처음 들어온 문서면 비어 있다.",
+    "korean": "N"
+   },
+   {
+    "name": "CHAN_TYPE_VALU",
+    "logical": "변경유형값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": true,
+    "default": null,
+    "definition": "ADD(신설) / DELETE(삭제) / AMEND(개정) / MOVE(이동) / MOVE_AMEND(이동·개정) / REF_ONLY(인용 번호만 변경).",
+    "korean": "N"
+   },
+   {
+    "name": "BFR_ARTC_KEY_VALU",
+    "logical": "이전조문키값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "이전 판본의 조문 위치다(예: 제26조, 제2조의2, 부칙). 신설이면 비어 있다.",
+    "korean": "Y"
+   },
+   {
+    "name": "AFTR_ARTC_KEY_VALU",
+    "logical": "이후조문키값",
+    "type": "VARCHAR2(100 BYTE)",
+    "required": false,
+    "default": null,
+    "definition": "새 판본의 조문 위치다. 삭제면 비어 있다.",
+    "korean": "Y"
+   },
+   {
+    "name": "BFR_ARTC_CTNT",
+    "logical": "이전조문내용",
+    "type": "CLOB",
+    "required": false,
+    "default": null,
+    "definition": "이전 판본의 조문 본문이다.",
+    "korean": "Y"
+   },
+   {
+    "name": "AFTR_ARTC_CTNT",
+    "logical": "이후조문내용",
+    "type": "CLOB",
+    "required": false,
+    "default": null,
+    "definition": "새 판본의 조문 본문이다.",
+    "korean": "Y"
+   },
+   {
+    "name": "CMPR_ADDN_IFMN_CTNT",
+    "logical": "비교부가정보내용",
+    "type": "CLOB",
+    "required": false,
+    "default": null,
+    "definition": "본문 유사도(0~1), 조문별 시행일(부칙 예외) 등 비교 부가정보 JSON이다.",
+    "korean": "Y"
+   },
+   {
+    "name": "RGSN_ASTM",
+    "logical": "등록일시",
+    "type": "TIMESTAMP(6) WITH TIME ZONE",
+    "required": true,
+    "default": "SYSTIMESTAMP",
+    "definition": "행을 처음 기록한 시각이다. 기본값으로 저장 시각을 넣는다.",
+    "korean": "해당 없음"
+   }
+  ],
+  "primary_key": [
+   "RGLT_VER_ID",
+   "CMPR_NO"
+  ],
+  "indexes": []
+ }
+}

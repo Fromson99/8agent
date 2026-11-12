@@ -1,0 +1,25 @@
+B003 골드 메타 등록 R20 (2026-11-12) — 운영 메타 등록용 정의서
+
+사용자 지시: "골드는 운영계에 등록하려면 메타등록해야 하는데 이거 스키마 등록해야 해. 우리 이전에 했던 규칙이랑 이런 걸로 새롭게 등록해야 하니까 엑셀표로".
+
+파일: 법률에이전트_B003_골드테이블_메타등록_R20.xlsx (생성기 build_r20.py)
+기준: 00_SYSTEM/ORACLE/gold_b003_r5.json (운영 적재기 R5·서버 매핑·11-04 신청 작업함과 같은 정의)
+형식: R19(2026-10-30 최종 신청)의 시트·서식 그대로 + 이전 규칙(07_DOCS/REFERENCE/ARCHITECTURE/DATAIKU_GOLD_METADATA_20261022/TABLE_SCHEMA_WORKBOOK.md,
+      GOLD_AUTHORING_GUIDE_20261028.md)의 활용테이블목록·Bizmeta·등록 대상·표준용어/도메인 시트 추가.
+
+R19 대비 변경 (데이터 값 변경 없음)
+  표·인덱스 이름 IDD_B03_ → IDD_B003_ / RGLT_DOC_ID 50→100 BYTE (6표) / VCTR_ITEM.BODY_UNIT_ID 50→100
+  DOC_BLK.ADDN_IFMN_UN_APPN_YN CHAR(1)→VARCHAR2(1) / RGSN_AITM→RGSN_ASTM / SRCH_DATA_HASH_VALU·SRCH_DATA_CTNT→RFRN_DTA_*
+  CHAN_ORD→CHAN_NO (SRCH_CHNL·ONTL_HEAD·VCTR_HEAD)
+
+검증 (build 후 다시 읽어 대조)
+  13표 60컬럼 이름·순서·타입·필수·기본값·PK, PK·추가 인덱스 11개 이름·컬럼: gold_b003_r5.json과 차이 0 (표별 시트·00_전체_한시트 모두)
+  한글 속성명: 11-04 신청 작업함 화면 전사(09_ARTIFACTS/AUDITS/20261106-gold-first-deployment-schema)와 60개 모두 같음
+  수식 없음. 표준단어 나누기 미확정 1곳(EMBD_VCTR, 도메인 접미어 없음)
+
+신청 전에 정할 것 (19_신청화면대조 시트)
+  1. 등록일시(RGSN_ASTM): 작업함 화면은 TIMESTAMP·기본값 없음, R20은 TIMESTAMP(6) WITH TIME ZONE·SYSTIMESTAMP — 둘 다 코드는 동작
+  2. 작업함 화면의 인덱스 partitioned=LOCAL 표시 — 비파티션 표에는 만들 수 없음, 파티션 탭 확인
+  3. 표준단어(17 시트)는 메타마이너 표준사전 조회로 최종 확인
+
+메타 등록·DBA 생성·운영 반영은 하지 않았다(정의서 작성만).

@@ -1,0 +1,39 @@
+{
+ "date": "2026-11-12",
+ "scope": "Dataiku 수신 파이프라인 R7(Gold 소유자 프로젝트 변수) + 증분 R2 + 표 확인·생성 SQL; GENOS 서버 코드 R6 그대로",
+ "parents": {
+  "flow": "agent_layer_zip_20261105_r6/DATAIKU_ZIP_AGENT_GOLD_FLOW_R6.zip 5201fb6d85eb627849187a8224325105a33e365bf5b97b7669833872aa4d7e39",
+  "genos_server": "agent_layer_zip_20261105_r6/GENOS_AGENT_ZIP_R6.zip (unchanged)",
+  "increment": "02_BACKEND/lawrag/increment (working code, 3 files changed)"
+ },
+ "checks": {
+  "contract_tests": "05_TESTS/CONTRACTS/test_pipeline_gold_owner.py 5 + increment 37 = 42 passed",
+  "r7_end_to_end": "PASS",
+  "r7_end_to_end_checks": 29,
+  "increment_gold_copy": "PASS",
+  "main_channel_test_copy_sql": "PASS (one g19_ row inserts; two rows / existing main 0 rows; underscore escaped)",
+  "grant_and_test_copy_check_sql": "PASS (local Oracle temp owners for SIDDS/SIDDA/PIDD2APP: CREATE_TEST_COPY 24 + GRANT 14 + CHECK_TEST_COPY Q02 test-copy 13 zero diff, Q06 14 grants, insert/update/delete as grantee)",
+  "meta_registration_workbook_R20": "13 tables 60 columns, PK and 11 indexes equal gold_b003_r5.json; 60 logical names equal 11-04 registration screen transcription"
+ },
+ "found_and_fixed": [
+  "increment publish rejected R7 status GOLD_LOADED (accepted only DEV_LOADED/PROD_LOADED)",
+  "same trial loaded to a second target would conflict on report.json after loading -> per-prefix report name, owner change stops before writes"
+ ],
+ "oracle": "local Oracle Free 23 dedicated container a8-agent-zip-r7 (removed after run) + a8-legal-mapped temp user for channel SQL",
+ "not_verified": [
+  "field Dataiku install/run",
+  "real GENOS revision, real embedding, real support ZIP",
+  "dev PIDD2APP privileges / SIDDS CREATE TABLE",
+  "prod SIDDA.LGL_PIPE_RESULT_A",
+  "full-corpus re-structure time"
+ ],
+ "mail": "not sent",
+ "main_release_changed": false,
+ "field_db_changed": false,
+ "user_decisions_20261112": [
+  "embedding stays in Dataiku",
+  "increment experiment tables are created in dev SIDDS (privilege request)",
+  "Agent tables: reuse existing SIDDA.LGL_PIPE_RESULT_A",
+  "prod Gold needs metadata registration -> R20 workbook"
+ ]
+}

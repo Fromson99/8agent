@@ -1,0 +1,60 @@
+<html><body style="font-family:'Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.6">
+<h3>수신 파이프라인 R7 · 증분 실험 표/권한 · Gold 메타 등록 R20 (2026-11-12)</h3>
+<p>현장 설치·실행 전 자료입니다. 로컬 Oracle에서만 검증했습니다. 자세한 순서는 첨부 8 <b>GUIDE.txt</b>.</p>
+
+<h4>1. 증분 실험 표 — 개발계 SIDDS (첨부 1~6)</h4>
+<ul>
+<li>만들 표: <b>SIDDS.TST_B003_LGL_*</b> 13개 (운영 Gold와 같은 정의, 이름 앞부분만 TST_) + PK 13 · 추가 인덱스 11 = SQL 24문장 (첨부 2). 데이터 복사 없음, 지금 서빙 중인 Gold(IDD_B003)는 그대로.</li>
+<li>필요한 권한 (첨부 1에 정리, GRANT SQL 첨부 3):
+ <ul>
+ <li>표 만들기: SIDDS 소유자(또는 DBA)가 첨부 2 실행 권장. Dataiku 계정이 직접 만들려면 CREATE ANY TABLE · CREATE ANY INDEX. 공간 약 1GB 이내(추정).</li>
+ <li>Dataiku 계정 PIDD2APP: 시험 복사본 13표 <b>SELECT, INSERT, UPDATE, DELETE</b></li>
+ <li>SIDDA.LGL_PIPE_RESULT_A: PIDD2APP <b>DELETE</b> 추가 (SELECT는 있음)</li>
+ <li>GENOS ORDS 계정(BAIP04APP): 변경 없음</li>
+ </ul></li>
+<li><b>Agent 표는 새로 만들 필요 없음</b> — 이미 있는 SIDDA.LGL_PIPE_RESULT_A를 그대로 씁니다. GENOS는 이 표에만 결과를 쓰고(코드 고정), 증분은 자기 작업 번호 행만 지웁니다. 필요한 건 위 DELETE 권한 하나.</li>
+<li>순서: 첨부 2(만들기) → 3(권한) → 4(확인: Q02 18행, Q03~Q05 0행) → GUIDE 3장 실험 → 5(main 채널) → 증분 셀 → 끝나면 6(지우기).</li>
+</ul>
+
+<h4>2. 운영 Gold 메타 등록 엑셀 R20 (첨부 7)</h4>
+<ul>
+<li>10-30 R19 최종 신청 형식 그대로 + 이전 규칙의 활용테이블목록 · Bizmeta · 메타등록대상 · 표준용어/도메인 시트 추가.</li>
+<li>R19 대비: 표·인덱스 IDD_B03_→IDD_B003_, 컬럼명 5곳(RGSN_ASTM, RFRN_DTA_HASH_VALU, RFRN_DTA_CTNT, CHAN_NO×3), 규정문서ID 50→100, 본문단위ID 50→100, 부가정보미지정여부 CHAR(1)→VARCHAR2(1). 데이터 값이 바뀌는 변경 없음.</li>
+<li>확인: 13표 60컬럼·PK·인덱스 11개가 운영 적재기 정의와 차이 0, 한글 속성명 60개가 11-04 신청 작업함 화면과 모두 같음.</li>
+<li>신청 전에 정할 것 2개(19 시트): 등록일시 타입(작업함 TIMESTAMP·기본값 없음 / R20 TIMESTAMP(6) WITH TIME ZONE·SYSTIMESTAMP, 둘 다 동작), 작업함 인덱스의 LOCAL 표시(비파티션 표에는 불가).</li>
+</ul>
+
+<h4>3. 수신 파이프라인 R7 — Gold 소유자를 변수로 (첨부 9~12)</h4>
+<ul>
+<li>S3 원문 ZIP → GENOS 구조화·색인 → SIDDA.LGL_PIPE_RESULT_A → Dataiku 03_LOAD → Gold. 임베딩은 Dataiku 그대로.</li>
+<li>Dataiku 프로젝트 변수 <b>LGL_GOLD_OWNER</b> = 개발계 SIDDS / 운영 SIDDG (필수, 03_LOAD 실행 때마다 읽음). 시험 복사본 실험 때만 <b>LGL_GOLD_TABLE_PREFIX=TST_B003_LGL_</b>.</li>
+<li>코드서빙은 기존 환경변수 GENOS_ORACLE_GOLD_OWNER(SIDDS/SIDDG) 그대로. GENOS 파이프라인 코드는 R6 그대로라 재배포 없음.</li>
+<li>설치: 코드 폴더에 첨부 9 업로드 → Python 노트북에 첨부 10 한 셀. 증분은 첨부 11 업로드 → 첨부 12 셀.</li>
+</ul>
+
+<h4>4. 표 확인·그 밖 SQL (첨부 13~19)</h4>
+<ul>
+<li>13 CHECK_TABLES_SIDDS / 14 CHECK_TABLES_SIDDG: 파이프라인 표 18개 확인(읽기 전용)</li>
+<li>15 MAIN_CHANNEL_SIDDS: 실제 개발계 Gold에 증분을 붙일 때 main 채널 · 16 GRANT_GOLD_INCREMENT_SIDDS: 그때 필요한 권한(지금은 불필요)</li>
+<li>17 CREATE_GOLD_TABLES_SIDDG (DBA 요청용 DDL) · 18 CREATE_AGENT_STAGE (운영에 중간표가 없을 때) · 19 테이블 설계서</li>
+</ul>
+<p>SQL은 Dataiku SQL 노트북에서 [번호] 한 개씩 별도 Query로, 문장 끝 ; 없이 실행합니다.</p>
+
+<h4>로컬 검증</h4>
+<ul>
+<li>R7 처음부터 끝까지 29항목 통과(실제 GENOS 처리 과정 + 로컬 Oracle, 같은 Agent 결과를 시험 복사본에 적재하고 원래 표 불변).</li>
+<li>증분 실험을 시험 복사본에서 통과(반영 2·보류 1, 세대 3개 유지, 되돌리기 3번, 원래 Gold 불변). 이때 결함 1개 발견·수정.</li>
+<li>첨부 2·3·4를 임시 계정으로 그대로 실행: 13표 차이 0, 권한 14건, 넣기·바꾸기·지우기 확인.</li>
+<li>현장 Dataiku·실제 임베딩·전체 재적재 시간은 미확인.</li>
+</ul>
+
+<h4>첨부</h4>
+<ol>
+<li>증분실험_표_권한신청_R1.txt</li><li>CREATE_TEST_COPY_SIDDS_R1.txt</li><li>GRANT_TEST_COPY_SIDDS_R1.txt</li>
+<li>CHECK_TEST_COPY_SIDDS_R1.txt</li><li>MAIN_CHANNEL_TEST_COPY_R1.txt</li><li>DROP_TEST_COPY_SIDDS_R1.txt</li>
+<li>법률에이전트_B003_골드테이블_메타등록_R20.xlsx</li><li>GUIDE.txt</li>
+<li>DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip</li><li>DATAIKU_SETUP_R7.txt</li><li>INCREMENT_CODE_R2.zip</li><li>DATAIKU_INCREMENT_R2.txt</li>
+<li>CHECK_TABLES_SIDDS_R1.txt</li><li>CHECK_TABLES_SIDDG_R1.txt</li><li>MAIN_CHANNEL_SIDDS_R1.txt</li><li>GRANT_GOLD_INCREMENT_SIDDS_R1.txt</li>
+<li>CREATE_GOLD_TABLES_SIDDG_R1.txt</li><li>CREATE_AGENT_STAGE_R1.txt</li><li>테이블_설계_R1.md</li><li>SHA256SUMS.txt</li>
+</ol>
+</body></html>

@@ -1,12 +1,12 @@
-"""Gold(개발계 실버 G19) 세대 읽기 · 활성화 · 옛 세대 정리 · Agent 결과 정리.
+"""Gold(개발계 SIDDS·운영 SIDDG, 같은 IDD_B003 표) 세대 읽기 · 활성화 · 옛 세대 정리 · Agent 결과 정리.
 
 새 표 없이 기존 13표만 쓴다. 세대 하나 = 검색 게시(query release) 하나:
   SRCH_CHNL(채널) → SRCH_POST(검색 게시 JSON: status·source_release_id·dataset_version)
   → SRC_POST(원문 게시) → DOC_VER/DOC_UNIT/DOC_BLK(데이터셋 판본별 문서·구조·본문)
   SRCH_ROW(검색 행, 검색 게시별) · VCTR_HEAD(검색 게시 → 벡터 게시) · VCTR_POST/VCTR_ITEM(벡터 게시별)
 
-표·컬럼 이름은 R6 적재기와 같은 대상 정의(prod_config.target)를 쓴다 — 개발계 DEV_1
-(SIDDS.LGL_G19_*_S_1), 운영 GOLD(SIDDG.IDD_B003_LGL_*). 이름이 어긋날 수 없다.
+표·컬럼 이름은 수신 파이프라인 적재기와 같은 대상 정의(prod_config.target, GOLD)를 쓴다 — 개발계 SIDDS·운영 SIDDG의
+IDD_B003_LGL_* (소유자는 프로젝트 변수 LGL_GOLD_OWNER). 이름이 어긋날 수 없다.
 
 DB는 두 함수만 쓴다: query(sql) → [{대문자 컬럼: 값}], write(plsql 블록) → 한 트랜잭션 COMMIT.
 SQL 안의 값은 해시·ID·채널명뿐이라 영숫자 검사 뒤 문자열 리터럴로 넣는다 (원문 텍스트 0).

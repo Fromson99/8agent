@@ -1,0 +1,98 @@
+운영계 Gold 서빙 환경변수 점검 — MAIN218(clob-pieces-20261112-r1) 코드 기준, 2026-11-12
+코드에서 실제로 읽는 이름만 적었습니다. 값(토큰·비밀번호)은 넣지 않았습니다.
+설정은 코드서빙/워크플로우 리비전 환경 설정에 저장 → 새 리비전(새 프로세스)으로 적용. 터미널 export로는 안 바뀝니다.
+
+==================================================================
+A. 코드서빙 — 꼭 넣어야 하는 것 (없으면 시작 안 되거나 질문 실패)
+==================================================================
+DP=oracle
+GENOS_ORACLE_TABLE_MAPPING=gold
+    기본값이 mapped라서 안 넣으면 Gold 표를 안 봅니다.
+GENOS_ORACLE_GOLD_OWNER=SIDDG
+    운영 Gold 13표(IDD_B003_LGL_*) 소유자. 대문자. 비우면 "gold requires GENOS_ORACLE_GOLD_OWNER".
+    (개발계는 SIDDS — 이 값만 개발계와 다름. 11-09 운영 실행 때 SIDDG 사용 확인)
+ORACLE_ORDS_SCHEMA=<운영 ORDS 별칭>
+ORACLE_ORDS_CLIENT_ID=<운영 OAuth ID>
+ORACLE_ORDS_CLIENT_SECRET=<운영 OAuth 비밀값>
+    셋 중 하나라도 없으면 "DP_CONFIG: missing ...". 개발계 값을 그대로 쓰지 않습니다.
+    ORDS 별칭은 표 소유자(SIDDG)와 다른 값입니다.
+DP_QUERY_CHANNEL=g19_252f50906fa00e444b543cec
+    운영 SRCH_CHNL의 채널 이름(11-09 운영 사진 기준). 비우면 코드가 'main' 채널을 찾는데
+    운영에는 main이 없어서 시작에 실패합니다. DP_QUERY_RELEASE_ID와 둘 중 하나만.
+
+답변 모델(내부 LLM)
+SEMANTIC_LLM_BACKEND=genos
+    코드 기본값이 anthropic이라 반드시 명시.
+GENOS_BASE_URL=<운영 GENOS 플랫폼 주소>
+GENOS_LLM_SERVING_ID=<운영 답변 모델 서빙 ID>
+GENOS_LLM_KEY=<운영 답변 모델 키>
+    (대신 GENOS_LLM_URL=<모델 서빙 주소> + GENOS_LLM_KEY 방식도 가능. URL이 있으면 BASE_URL/SERVING_ID보다 우선)
+GENOS_LLM_MODEL=<모델 ID>   — 선택. /models에 모델이 하나면 비워도 자동으로 찾음.
+
+임베딩(초기 검색에 벡터를 쓸 때 필수)
+GENOS_EMBED_ID=<운영 임베딩 서빙 ID>
+GENOS_EMBED_TOKEN=<운영 임베딩 서빙 토큰>
+    주소는 GENOS_BASE_URL을 같이 씀. 운영 Gold 벡터(11-09 기준 140,182행)를 적재할 때 쓴 것과
+    같은 임베딩 모델이어야 함(차원이 다르면 질문 실패).
+GENOS_EMBED_TENANT_ID=<값>  — 운영 게이트웨이가 요구할 때만.
+GENOS_RAG_INITIAL_SEARCH=hybrid
+    권장(MAIN182 이후 현장 기준). 기본 auto = 벡터만(벡터 게시가 없으면 본문 검색).
+    hybrid/vector로 두면 운영에 벡터 게시가 없을 때 질문이 실패하므로 벡터 적재 확인 후 사용.
+    임베딩을 못 쓰는 상황이면 keyword.
+
+==================================================================
+B. 코드서빙 — 안 넣어도 되는 것 (기본값 그대로 두기)
+==================================================================
+GENOS_RAG_IMPLEMENTATION           기본 legal-agent-unified-v6
+ORACLE_ORDS_BASE_URL               GENOS ORDS SDK가 있으면 생략. 개발계에서 넣었다면 운영 주소로 바꾸기
+GENOS_ORACLE_ORDS_TIMEOUT_SECONDS  기본 600(10분)
+GENOS_ORACLE_SHARED_CACHE          기본 on, _MIB 기본 512
+GENOS_MAX_ACTIVE_QUESTIONS         기본 6 (넘으면 대기 후 자동 실행)
+GENOS_PRELOAD_WAIT_SECONDS         기본 0 (준비 중에도 바로 질문 처리)
+GENOS_MEMORY_RUNTIME_MIB           기본 1024
+GENOS_MEMORY_CHAT_TTL_SECONDS      기본 7200(2시간)
+GENOS_ORACLE_AGENT_NAMESPACE       기본 genos-rag
+GENOS_RAG_WALL_SECONDS             기본 1800초
+GENOS_RAG_ONTOLOGY_ENABLED         미설정 = 꺼짐
+GENOS_RUNTIME_DIR                  Oracle 모드에서는 기록 이름표일 뿐(폴더 아님). 비워 두기
+GENOS_EMBED_PROFILE_SHA256 / GENOS_EMBED_MODEL   생략(게시된 벡터 프로필 자동 사용)
+GENOS_GATEWAY_API_PREFIX           기본 none
+
+로그(선택)
+LOG=on + GENOS_SHARED_LOG_DIR=<운영 NFS 경로>
+    운영에 NFS가 마운트돼 있을 때만. 없으면 둘 다 비워 둠. 로그 쓰기 실패는 답변에 영향 없음.
+    로그 폴더가 GENOS_RUNTIME_DIR를 포함하면 시작 오류(AGENT_ROOT_OVERLAP).
+
+==================================================================
+C. 코드서빙 — 개발계·예전 설정에서 남아 있으면 지울 것
+==================================================================
+GENOS_GENERATION, GENOS_DATA_ROOT, DP_RELEASE_ID, DP_CACHE_DIR   NFS/SQLite 시절 값. Oracle 모드에선 데이터 선택에 안 씀
+GENOS_ORACLE_TABLE_MAPPING=development_g19_1 / mapped            gold로 교체
+LEGAL_AGENT_PROFILE, LEGAL_AGENT_PROFILE_SHA256                  Oracle 경로에선 안 읽음
+GENOS_RAG_MAX_OUTPUT_TOKENS, GENOS_MEMORY_SIGNING_KEY            MAIN218 코드에서 안 읽음
+
+==================================================================
+D. 워크플로우(Python 단계) — 앱마다(B03·B05) 리비전 설정
+==================================================================
+GENOS_BASE_URL=<운영 GENOS 플랫폼 주소>
+GENOS_CODESERVING_ID=<운영 RAG 코드서빙 ID>     (답변 모델 서빙 ID와 다른 값)
+GENOS_CODESERVING_TOKEN=<운영 코드서빙 키>       (없으면 GENOS_CODE_KEY를 읽음)
+TEAM_ID=risk_team                                B05. 형식은 xxx_team. 대사·문서 대사는 팀이 없으면 거절
+    B03은 지금 쓰는 값 그대로(팀 없이 쓰면 TEAM_ID 자체를 빼기, 빈 값이면 오류).
+GENOS_CODESERVING_TIMEOUT_SECONDS  기본 2100 — 그대로
+GENOS_RAG_PROGRESS_UI              기본 socketio — 그대로
+워크플로우 파일은 MAIN216부터 같음. 편집기 저장은 코드 push와 별개.
+
+==================================================================
+E. 환경변수로는 못 바꾸는 것 — DB 쪽에서 맞아야 함
+==================================================================
+1. Agent 기록 4표 소유자는 코드에 SIDDA로 고정(gold 모드):
+   SIDDA.LGL_AGT_RUN_A / LGL_AGT_REC_A / LGL_AGT_BODY_A / LGL_EXEC_ST_A
+   11-09 운영 시작 때 Gold 13표·Agent 4표 구조 검사는 통과(그 다음 판본 선택에서 멈춤) → 표는 보임.
+   쓰기 권한(INSERT/UPDATE/DELETE)은 미확인. BODY DELETE가 없으면 옛 저장본 정리만 경고 후 중단.
+   운영 Agent 소유자가 SIDDA가 아니면 코드 수정이 필요합니다.
+2. Gold 판본 선택(SEARCH_SELECTION): 11-09 QUERY_SELECTION 503의 원인. R7f 보완 레시피 실행 결과(현장)
+   확인 전이면 같은 503이 납니다.
+3. Gold 벡터 머리(VCTR_HEAD)가 지금 채널의 검색 게시와 연결돼 있어야 vector/hybrid가 동작.
+
+시작 명령은 그대로: python3 08_DEPLOYMENT/GENOS/start_sse.py (포트는 플랫폼 PORT 등 기존 값)

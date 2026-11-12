@@ -1,0 +1,71 @@
+{
+ "oracle": "23.26.3.0.0",
+ "gold_before": {
+  "DOC_VER": 3,
+  "DOC_UNIT": 6280,
+  "DOC_BLK": 8159,
+  "SRC_POST": 1,
+  "SRCH_POST": 1,
+  "SRCH_ROW": 6,
+  "SRCH_CHNL": 2,
+  "ONTL_POST": 0,
+  "ONTL_HEAD": 0,
+  "ONTL_ANC": 0,
+  "VCTR_POST": 1,
+  "VCTR_ITEM": 3,
+  "VCTR_HEAD": 0
+ },
+ "test_copy_created_empty_and_passes_loader_preflight": 24,
+ "privilege_check_on_copy": [
+  "DELETE DOC_VER",
+  "DELETE DOC_UNIT",
+  "DELETE DOC_BLK",
+  "DELETE SRC_POST",
+  "DELETE SRCH_POST",
+  "DELETE SRCH_ROW",
+  "DELETE SRCH_CHNL",
+  "DELETE VCTR_POST",
+  "DELETE VCTR_ITEM",
+  "DELETE VCTR_HEAD",
+  "UPDATE SRCH_CHNL",
+  "INSERT VCTR_HEAD",
+  "DELETE AGENT"
+ ],
+ "d1_summary": {
+  "HOLD": 1,
+  "APPROVED": 2
+ },
+ "d2_prune": {
+  "keep": [
+   "9ce24b5248f3fed385ad68ccc9e1fdf8f43d1e3f5d952948e6eebeebaea1297e",
+   "b3858e23425c1ee8b0c00629ab21c3b6f106f39fe1e61c45543240ca07cb1953",
+   "f29bc2fb64d608de0e22291031852ce7df04b08db15369063e90d33cff303bdb"
+  ],
+  "removed": [],
+  "protected": [],
+  "complete": true
+ },
+ "d3_prune": {
+  "keep": [
+   "61283a0a4c709eca4abde2650fdc273d5c0d77facb3a91787b9df53e6542531a",
+   "9ce24b5248f3fed385ad68ccc9e1fdf8f43d1e3f5d952948e6eebeebaea1297e",
+   "b3858e23425c1ee8b0c00629ab21c3b6f106f39fe1e61c45543240ca07cb1953"
+  ],
+  "removed": [
+   "f29bc2fb64d608de"
+  ],
+  "protected": [],
+  "complete": true
+ },
+ "copy_keeps_three_generations": true,
+ "copy_rollback_three_steps": [
+  "CHANNEL",
+  "CHANNEL",
+  "REBUILD"
+ ],
+ "r6_calls": 18,
+ "original_gold_unchanged_during_experiment": true,
+ "drop_test_copy_leaves_gold": true,
+ "result": "PASS",
+ "temporary_user_dropped": "A8_INCG_D09E08B6"
+}

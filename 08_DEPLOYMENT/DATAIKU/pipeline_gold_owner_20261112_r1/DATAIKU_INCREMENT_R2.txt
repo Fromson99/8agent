@@ -1,0 +1,28 @@
+# 증분 처리 R2 — Dataiku Python 노트북 한 셀 (수신 파이프라인 R7을 설치한 같은 프로젝트)
+# CODE_FOLDER_ID 폴더에 DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip 과 INCREMENT_CODE_R2.zip 를 둡니다.
+# 대상 Gold는 프로젝트 변수 LGL_GOLD_OWNER(개발계 SIDDS, 운영 SIDDG)와
+# LGL_GOLD_TABLE_PREFIX(시험 복사본일 때만, 예 TST_B003_LGL_)로 정합니다. 03_LOAD와 같은 변수입니다.
+# ACTION 순서: 'check' → 'status' → 'decide' → 'publish' → 'activate'   (또는 'run' 한 번에)
+#              되돌리기 'rollback', 남은 정리 이어서 'cleanup'
+PARAMS = {
+    'CODE_FOLDER_ID': '',            # R6 코드 ZIP과 증분 코드 ZIP이 있는 관리 폴더 ID
+    'DROP_FOLDER_ID': '',            # 처리된 파일이 떨어지는 폴더 ID
+    'STATE_FOLDER_ID': '',           # 증분 상태·기록 JSON을 둘 새 관리 폴더 ID (비어 있는 폴더)
+    'R6_RECIPE': 'LGL_AGENT_R7_PROD_02_WAIT_AGENT',   # 설정을 읽을 수신 파이프라인 레시피 이름
+    'CHANNEL': 'main',               # 서빙이 읽는 채널 (g19_ 이름은 거절 — GUIDE 2번)
+    'BASE_DATA_ZIP_NAME': '',        # 첫 실행: 지금 세대를 만든 원문 ZIP 이름 (R6 입력 폴더 안)
+    'BASE_DOCUMENT_PREFIX': '',      # 또는 R6 입력 폴더의 낱개 원문 파일 접두 (그 아래 external/…·internal/…)
+    'SUPPORT_ZIP_NAME': '',          # 실제 지원 ZIP 이름 (빈 값이면 R6 설치값 — 예시 지원 ZIP은 예시 원문 전용)
+    'ACTION': 'check',
+    'RUN': '',                       # publish/activate: 비우면 가장 최근 decide
+    'HOLD_ON_STRONG': True,          # 강한 경고(조문 급감·대량 삭제 등)는 보류
+    'RETRY_HOLD': False,             # True면 보류됐던 파일도 다시 판단
+    'PRUNE_BATCH': 50000,            # 옛 세대 삭제 묶음 크기
+    'TODAY': '',                     # 시험용 기준일 YYYYMMDD (비우면 오늘 KST)
+}
+BOOTSTRAP = "import hashlib\nimport io\nimport json\nfrom pathlib import Path, PurePosixPath\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\nZIP_NAME = 'DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip'\nZIP_SHA256 = 'd69a6ae3e097858b9c45bdff10e009f32b28290b48ab27b230e71057882929d2'\n\n\ndef open_package():\n    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])\n    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]\n    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)\n    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)\n    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')\n    root = Path(_code_dir.name)\n    root.mkdir(exist_ok=True)\n    with zipfile.ZipFile(io.BytesIO(raw)) as z:\n        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))\n        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:\n            raise ValueError('CODE_ZIP_MEMBERS')\n        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if p.is_absolute() or '..' in p.parts or '\\\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):\n                raise ValueError('CODE_ZIP_PATH')\n            dest = root.joinpath(*p.parts)\n            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')\n            content = z.read(item)\n            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:\n                raise ValueError('CODE_FILE_HASH')\n            if dest.exists():\n                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')\n            else:\n                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)\n    sys.path.insert(0,str(root))\n    return root\n\n\n_code_dir = tempfile.TemporaryDirectory(prefix='agent-flow-code-')\nFLOW_PACKAGE = open_package()\n"
+exec(BOOTSTRAP)
+INCREMENT_BOOTSTRAP = "import hashlib, io, json, stat, sys, tempfile, zipfile\nfrom pathlib import Path, PurePosixPath\nimport dataiku\nINC_ZIP_NAME = 'INCREMENT_CODE_R2.zip'\nINC_ZIP_SHA256 = 'a4b80c190f33f016acbe8d424992e44d575d7351fbe8e2dda7e1951039e90a89'\ndef _open_increment():\n    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])\n    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == INC_ZIP_NAME]\n    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:' + INC_ZIP_NAME)\n    with folder.get_download_stream(names[0]) as stream: raw = stream.read(8*1024**2+1)\n    if len(raw) > 8*1024**2 or hashlib.sha256(raw).hexdigest() != INC_ZIP_SHA256: raise ValueError('INCREMENT_CODE_ZIP_HASH')\n    root = Path(_inc_dir.name)\n    with zipfile.ZipFile(io.BytesIO(raw)) as z:\n        manifest = json.loads(z.read('INCREMENT_MANIFEST.json'))\n        if set(z.namelist()) != set(manifest['files']) | {'INCREMENT_MANIFEST.json'}: raise ValueError('INCREMENT_CODE_MEMBERS')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if p.is_absolute() or '..' in p.parts or item.is_dir() or stat.S_ISLNK(item.external_attr >> 16): raise ValueError('INCREMENT_CODE_PATH')\n            content = z.read(item)\n            if item.filename != 'INCREMENT_MANIFEST.json' and hashlib.sha256(content).hexdigest() != manifest['files'][item.filename]:\n                raise ValueError('INCREMENT_CODE_FILE_HASH')\n            dest = root.joinpath(*p.parts); dest.parent.mkdir(parents=True, exist_ok=True); dest.write_bytes(content)\n    sys.path.insert(0, str(root))\n_inc_dir = tempfile.TemporaryDirectory(prefix='increment-code-')\n_open_increment()\n"
+exec(INCREMENT_BOOTSTRAP)
+from lawinc.dataiku_cell import main
+RESULT = main(PARAMS)
