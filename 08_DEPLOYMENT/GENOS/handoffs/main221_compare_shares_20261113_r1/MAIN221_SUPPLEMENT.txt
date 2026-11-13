@@ -1,0 +1,18 @@
+MAIN221 보충 안내 — 워크플로우 편집기 교체 여부 (앞 메일 GUIDE의 "교체 불필요" 정정)
+
+앞 MAIN221 메일(SENT 1a1d18288732adb8)의 GUIDE에 "워크플로우 편집기 Python 파일은 MAIN220와 같습니다(교체 불필요)"라고 적었습니다.
+이 문장은 MAIN220을 이미 적용한 경우에만 맞습니다.
+
+1. MAIN220을 적용하지 않고 MAIN219에서 바로 MAIN221로 오는 경우 (MAIN221이 MAIN220 메일을 대체하므로 이 경우가 많습니다)
+   → 워크플로우 편집기 Python 단계를 첨부한 MAIN221_WORKFLOW.py 내용으로 교체해 주세요.
+   교체하지 않으면 답 끝에 "아래에 번호와 함께 정리했습니다" 문장은 나오는데 근거로 쓰지 않은 원문 카드·번호 붙은 카드가 보이지 않습니다.
+   MAIN221_WORKFLOW.py는 MAIN220_WORKFLOW.py와 같은 파일입니다(같은 바이트).
+
+2. MAIN220을 이미 적용하고 편집기도 교체한 경우 → 편집기 교체 불필요(같은 파일).
+
+워크플로우 환경변수(없으면 기본값, MAIN220부터): GENOS_UNREAD_CARD_LIMIT(비우거나 0 = 미확인 조문 카드 전부, N = 앞의 N개),
+GENOS_UNUSED_SOURCE_CARDS(on 기본 / off = 근거로 안 쓴 원문 카드 숨김).
+
+코드 적용은 앞 메일 그대로: TRANSFER 폴더에서 bash MAIN221_ONECLICK_R1.txt (MAIN219·MAIN220 어느 쪽에서도 됨).
+로컬 확인: MAIN219 상태의 격리 checkout과 MAIN220 상태의 격리 checkout 모두에서 설치·재실행·commit·push·게이트·원복 22개 명령 통과.
+원복 때 워크플로우 편집기는 원래 쓰던 파일(MAIN219 또는 MAIN220)로 되돌려 주세요.

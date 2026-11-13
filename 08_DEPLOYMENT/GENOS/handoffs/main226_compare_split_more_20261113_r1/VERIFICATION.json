@@ -1,0 +1,49 @@
+{
+  "main_generation": 226,
+  "release_id": "compare-split-more-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN225 (compare-unpaired-fold-20261113-r1)",
+  "replaces_sent": [
+    "MAIN225 (1a1d22a417b1110f)"
+  ],
+  "changes": [
+    "question 대사: one SPLIT model call writes each side's ordinary question; with no usable answer each side gets the message as written",
+    "follow-up after a 대사: the same call decides MORE vs NEW; MORE keeps the earlier run's side answers and originals, asks only the asked side(s) (internal also asks external), then makes the table again from pairing on; numbered \"N번 다시\" unchanged",
+    "report: side answers first; \"대사표\" group opens to the summary and item cards, each card opens to its table; unpaired externals without a question word in the title go to a bottom set-aside group in the unused-source form"
+  ],
+  "changed_product_files": [
+    "02_BACKEND/workflow/risk_team_compare_workflow/task_board.py",
+    "02_BACKEND/workflow/risk_team_compare_workflow/retrieval.py",
+    "02_BACKEND/workflow/risk_team_compare_workflow/concept_report.py",
+    "02_BACKEND/semantic_runtime/progress.py",
+    "three workflow manifests (version, file hash)"
+  ],
+  "workflow_file": "MAIN226_WORKFLOW.py",
+  "workflow_same_as_main220_225": true,
+  "workflow_same_as_main219": false,
+  "sql_plans": "386 -> 386",
+  "local_validation": {
+    "user_instruction": "skip checks",
+    "release_tool_required_test": "5 files, 38 passed, new failures 0",
+    "entry_checks": "17/17",
+    "regression": null,
+    "oracle_scale_guard": null,
+    "installer": null,
+    "live_model": null
+  },
+  "not_verified": [
+    "full regression",
+    "Oracle scale guard",
+    "installer on an isolated checkout",
+    "real model run",
+    "field GENOS screen (two-level fold)"
+  ],
+  "package": {
+    "zip": "MAIN226_FULL_20261113_R1.zip",
+    "zip_sha256": "a33b63229d49d739336deb52886a7d9c8c6eae05627959ea76fd1a5eb7c80065",
+    "members": 565,
+    "workflow_sha256": "f5fd1d4871fe17b4ba57f793e45c34e817aab331e7d6b61b8e650d9125a3bced"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

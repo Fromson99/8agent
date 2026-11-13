@@ -1,0 +1,45 @@
+{
+  "main_generation": 222,
+  "release_id": "compare-pairing-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN221 (compare-shares-20261113-r1)",
+  "replaces_sent": [
+    "MAIN221 (1a1d18288732adb8, supplement 1a1d18556fd9bca9)",
+    "MAIN220 (1a1d0c66aeda77de)"
+  ],
+  "changes": [
+    "compare pairing r12: prefer the external article that directly governs the row; a later pairing packet may add external quotes to a row an earlier packet made (status checked on merged quotes)"
+  ],
+  "changed_product_files": [
+    "02_BACKEND/workflow/risk_team_compare_workflow/concepts.py",
+    "three workflow manifests (version, file hash)"
+  ],
+  "workflow_file": "MAIN222_WORKFLOW.py",
+  "workflow_same_as_main220_221": true,
+  "workflow_same_as_main219": false,
+  "sql_plans": "386 -> 386",
+  "local_validation": {
+    "user_instruction": "no experiment, no checks",
+    "release_tool_required_test": "test_compare_pairing_input.py 14 passed",
+    "entry_checks": "17/17",
+    "live_model": null,
+    "regression": null,
+    "oracle_scale_guard": null,
+    "installer": null
+  },
+  "not_verified": [
+    "real model run of this change",
+    "full regression",
+    "Oracle scale guard",
+    "installer on an isolated checkout",
+    "field GENOS"
+  ],
+  "package": {
+    "zip": "MAIN222_FULL_20261113_R1.zip",
+    "zip_sha256": "c18f0f9aa728f625f271a7aa24ca8bfe199f5eff2be6ccd7b838512f3f3c17c4",
+    "members": 565,
+    "workflow_sha256": "f5fd1d4871fe17b4ba57f793e45c34e817aab331e7d6b61b8e650d9125a3bced"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

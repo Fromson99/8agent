@@ -1,0 +1,67 @@
+{
+  "main_generation": 221,
+  "release_id": "compare-shares-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN220 (followup-cards-20261113-r1)",
+  "replaces_sent": [
+    "MAIN220 (1a1d0c66aeda77de)"
+  ],
+  "changes": [
+    "compare-general-flow r7..r11: question 대사 call shares (60 / item 16 / compare+report >= 12 / 60% time), review limit ends only that item, unpaired external articles as 외규만 rows, kept rows of rejected pairing packets, basis errors by class name, follow-up reads kept once, evidence check reuses document and completeness per source, input-limit stop named for legal users"
+  ],
+  "workflow_same_as_main220": true,
+  "sql_plans": "386 -> 386",
+  "compare_flow_switch": "GENOS_COMPARE_FLOW=legacy",
+  "local_validation": {
+    "compare_tests_passed": 44,
+    "new_tests": 8,
+    "legacy_regression": {
+      "files": 52,
+      "new_failures": 0,
+      "fixed": 16,
+      "same_failures": 183,
+      "status": "PASSED"
+    },
+    "shared_tests_outcome_changes_vs_previous_candidate": 0,
+    "oracle_scale_guard": {
+      "passed": true,
+      "max_sql": 417,
+      "request_failures": 0
+    },
+    "live_model": {
+      "adr": "ADR-1524-compare-r11-followup-reads-qwen",
+      "cases": 3,
+      "stops": 0,
+      "comparison_rows": {
+        "cmp-liquidity": 4,
+        "cmp-soundness": 10,
+        "cmp-riskcommittee": 6
+      },
+      "targets": "6/6",
+      "physical_calls": 152,
+      "unknown": 0,
+      "duplicate_extra_calls": 0,
+      "single_run": true,
+      "legal_quality_reviewed": false
+    },
+    "installer": {
+      "base": "MAIN220 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size timing",
+    "internal model",
+    "GENOS screen rendering",
+    "legal quality of verdicts"
+  ],
+  "package": {
+    "zip": "MAIN221_FULL_20261113_R1.zip",
+    "zip_sha256": "1113b283db549d4603b68813ff75f46bfa65541cd83e487041e51c4aa1aa2048",
+    "members": 565
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

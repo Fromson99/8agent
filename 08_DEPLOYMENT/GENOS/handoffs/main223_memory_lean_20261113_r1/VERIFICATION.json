@@ -1,0 +1,65 @@
+{
+  "main_generation": 223,
+  "release_id": "memory-lean-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN222 (compare-pairing-20261113-r1)",
+  "replaces_sent": [
+    "MAIN222 (1a1d1ecee1e407f5)"
+  ],
+  "changes": [
+    "connection directory lists above 2,000 connections kept in request memory only (receipt keeps summary + hash)",
+    "local run journal records held weakly (released after the request); chat records kept"
+  ],
+  "workflow_same_as_main222": true,
+  "workflow_file": "MAIN223_WORKFLOW.py",
+  "sql_plans": "386 -> 386",
+  "local_validation": {
+    "memory_replay": {
+      "case": "RISK-EDGE-018 x3 in one process, saved ADR-1522 outputs, no model",
+      "retained_GiB_before": [
+        3.743,
+        4.566,
+        5.371
+      ],
+      "retained_GiB_after": [
+        3.133,
+        3.312,
+        3.486
+      ],
+      "peak_GiB_before": 6.395,
+      "peak_GiB_after": 3.891
+    },
+    "regression": {
+      "files": 138,
+      "new_failures": 0,
+      "fixed": 0,
+      "same_failures": 471,
+      "status": "PASSED"
+    },
+    "oracle_scale_guard": {
+      "turns": 23,
+      "sql_total": 967,
+      "max_sql": 417,
+      "request_failures": 0
+    },
+    "installer": {
+      "base": "MAIN219 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size memory",
+    "internal model",
+    "new live model run"
+  ],
+  "package": {
+    "zip": "MAIN223_FULL_20261113_R1.zip",
+    "zip_sha256": "321d42681cd6023ff025d000a09865ab5ff75ab335719b1502f074d5f0088632",
+    "members": 565,
+    "workflow_sha256": "f5fd1d4871fe17b4ba57f793e45c34e817aab331e7d6b61b8e650d9125a3bced"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

@@ -1,0 +1,92 @@
+{
+  "main_generation": 225,
+  "release_id": "compare-unpaired-fold-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN224 (memory-budget-ellipsis-20261113-r1)",
+  "replaces_sent": [
+    "MAIN224 (1a1d20e6c873e0a2)",
+    "MAIN223 (1a1d205b10117932)"
+  ],
+  "changes": [
+    "question 대사: all \"외규만 — 짝 미정\" rows folded into one section under the table; rows whose heading holds a question subject word (3+ letters, request words excluded) listed above the fold and first; no row or quote dropped",
+    "ordinary answer: a requested article read only in part is named by document name (not storage path) with plain words, and the answer offers to read on instead of asking the user for the document; the user is asked only when the answer could not find a source"
+  ],
+  "changed_product_files": [
+    "02_BACKEND/workflow/risk_team_compare_workflow/concept_report.py",
+    "02_BACKEND/semantic_runtime/legal_agent/structure_selection.py",
+    "02_BACKEND/semantic_runtime/legal_agent/guided_answer.py",
+    "three workflow manifests (version, file hash)"
+  ],
+  "workflow_file": "MAIN225_WORKFLOW.py",
+  "workflow_same_as_main220_224": true,
+  "workflow_same_as_main219": false,
+  "sql_plans": "386 -> 386",
+  "local_validation": {
+    "new_tests": "05_TESTS/CONTRACTS/test_compare_unpaired_fold.py 4 passed (MAIN224: 4 failed)",
+    "regression": {
+      "files": 45,
+      "new_failures": 0,
+      "fixed": 4,
+      "already_failing": 27,
+      "record": "09_ARTIFACTS/AUDITS/20261113-compare-general-flow-r13/regression-compare.json"
+    },
+    "oracle_scale_guard": "PASSED, question failures 0, max SQL per question 417 (MAIN224 417)",
+    "entry_checks": "17/17",
+    "installer": "isolated MAIN219 checkout, 22 commands passed",
+    "rerender_adr1524": {
+      "cmp-liquidity": {
+        "question": "유동성비율 관련한 외부규정과 내부 규정은 어떻게 되나요?",
+        "question_words": [
+          "유동성비율"
+        ],
+        "table_rows": 12,
+        "unpaired_rows": 9,
+        "related": [],
+        "visible_chars_before": 49245,
+        "visible_chars_after": 16925
+      },
+      "cmp-riskcommittee": {
+        "question": "위험관리위원회의 구성과 운영에 관한 외부규정과 내부규정을 비교해줘",
+        "question_words": [
+          "위험관리위원회"
+        ],
+        "table_rows": 9,
+        "unpaired_rows": 34,
+        "related": [
+          "외규만 — 금융회사 지배구조 감독규정 제8조 위험관리위원회의 심의ㆍ의결",
+          "외규만 — 금융회사의 지배구조에 관한 법률 제21조 위험관리위원회"
+        ],
+        "visible_chars_before": 129598,
+        "visible_chars_after": 15094
+      },
+      "cmp-soundness": {
+        "question": "건전성비율(순자본비율 등) 관련 외부규정과 내부규정을 비교해줘",
+        "question_words": [
+          "건전성비율",
+          "순자본비율"
+        ],
+        "table_rows": 12,
+        "unpaired_rows": 17,
+        "related": [
+          "외규만 — 금융투자업규정 제3-62조 순자본비율 등 산정의 특례",
+          "외규만 — 금융투자업규정시행세칙 제3-20조의6 종합투자계좌 수탁금의 운용자산에 대한 순자본비율 산정 특례"
+        ],
+        "visible_chars_before": 115158,
+        "visible_chars_after": 21437
+      }
+    },
+    "live_model": null
+  },
+  "not_verified": [
+    "real model run of this change",
+    "field GENOS screen"
+  ],
+  "package": {
+    "zip": "MAIN225_FULL_20261113_R1.zip",
+    "zip_sha256": "4fbff611a0490b75ae0a2a93181a88546b2607a1741d692cbf78745605f68abb",
+    "members": 565,
+    "workflow_sha256": "f5fd1d4871fe17b4ba57f793e45c34e817aab331e7d6b61b8e650d9125a3bced"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}

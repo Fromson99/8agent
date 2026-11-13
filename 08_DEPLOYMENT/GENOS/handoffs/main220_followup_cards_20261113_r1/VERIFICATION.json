@@ -1,0 +1,78 @@
+{
+  "main_generation": 220,
+  "release_id": "followup-cards-20261113-r1",
+  "selected_locally": true,
+  "base": "MAIN219 (failure-answers-20261112-r1)",
+  "replaces_sent": [
+    "MAIN219 (1a1cd25a372bccdd)"
+  ],
+  "changes": [
+    "answer-reads-followup (unused-source cards with reasons, numbered follow-up reads, all unread cards, answer body sentence, delegated terms, question-named reads, menu title reads)",
+    "entry-quote-span (quote marks/spacing only; legal-user entry message)",
+    "paren-abbreviation (corpus \"term(ABBR)\" query expansion)"
+  ],
+  "workflow_same_as_main219": false,
+  "workflow_file": "MAIN220_WORKFLOW.py",
+  "sql_plans": "386 -> 386",
+  "workflow_settings": {
+    "GENOS_UNREAD_CARD_LIMIT": "empty/0 = all (default), N = first N",
+    "GENOS_UNUSED_SOURCE_CARDS": "on (default) / off"
+  },
+  "local_validation": {
+    "new_tests": 10,
+    "regression": {
+      "files": 137,
+      "new_failures": 0,
+      "fixed": 10,
+      "same_failures": 471,
+      "status": "PASSED"
+    },
+    "oracle_scale_guard": {
+      "turns": 23,
+      "sql_total": 754,
+      "max_sql": 204,
+      "request_failures": 0
+    },
+    "live_model": {
+      "adr": "ADR-1522-candidate-cm51-edge20-accuracy",
+      "cm": {
+        "cases": 51,
+        "required_total": 98,
+        "required_acquired": 80,
+        "required_cited": 65,
+        "unknown_calls": 0
+      },
+      "edge_review": {
+        "정답": 8,
+        "판단보류": 2,
+        "답없음": 5,
+        "오답": 3,
+        "부분": 2
+      },
+      "single_run": true
+    },
+    "installer": {
+      "base": "MAIN219 checkout",
+      "commands": 22,
+      "passed": true
+    }
+  },
+  "not_verified": [
+    "field GENOS",
+    "field-size timing",
+    "internal model",
+    "GENOS screen rendering"
+  ],
+  "known_issues": [
+    "ellipsis quotes still stop the first step",
+    "large-document connection directory memory (~5GB/request)"
+  ],
+  "package": {
+    "zip": "MAIN220_FULL_20261113_R1.zip",
+    "zip_sha256": "6e39653201c026ae71cadfb2b8c93f08084e3d65ada340dd33d8c5022bff2225",
+    "members": 565,
+    "workflow_sha256": "f5fd1d4871fe17b4ba57f793e45c34e817aab331e7d6b61b8e650d9125a3bced"
+  },
+  "field_deployed": false,
+  "quality_certified": false
+}
