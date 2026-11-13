@@ -407,9 +407,11 @@ class GemmaExperimentClient(QwenExperimentClient):
 
 
 class Qwen38ExperimentClient(GemmaExperimentClient):
-    """Default Qwen3.8 Parasail FP8 experiment route; no provider fallback."""
+    """Default Qwen3.8 experiment route. With fallback_policy (00_SYSTEM/EXPERIMENT_PROVIDER_FALLBACK.json) a provider
+    that gives no usable answer is replaced by the next one for the same request (provider_fallback.py, user
+    2026-11-12); without it, no provider fallback (earlier behaviour)."""
     def __init__(self, root, output, *, max_calls=24, max_output_tokens=None,
-                 transport=None, schema_in_prompt=False, max_repairs=0, provider_policy=None):
+                 transport=None, schema_in_prompt=False, max_repairs=0, provider_policy=None, fallback_policy=None):
         self.root=Path(root).resolve();self.output=Path(output)
         policy=load_policy(self.root)
         route={'only':['parasail/fp8'],'order':['parasail/fp8'],
@@ -437,6 +439,35 @@ class Qwen38ExperimentClient(GemmaExperimentClient):
             (self.root/'00_SYSTEM/EXPERIMENT_MODEL_POLICY.json').read_bytes()).hexdigest()
 
         self._configure_provider_policy(provider_policy)
+        self.fallback_policy=None
+        if fallback_policy is not None:
+            from .provider_fallback import load_policy as load_fallback
+            self.fallback_policy,self.fallback_policy_hash=load_fallback(fallback_policy)
+            self._write(self.output/'fallback-policy.json',{'source_path':str(fallback_policy),
+                'sha256':self.fallback_policy_hash,'policy':self.fallback_policy})
+
+    def _fallback_completions(self, body, *, phase, timeout_seconds):
+        from .provider_fallback import send_with_fallback
+        class _Errors:
+            class TransportError(ExperimentTransportError):
+                def __init__(self, message, *, retryable=False, unknown=True, response=None):
+                    super().__init__(message, retryable=retryable, unknown=unknown);self.response=response
+            class BudgetExhausted(ExperimentCallError):
+                def __init__(self, message):super().__init__('model_call_budget_exhausted')
+        if not isinstance(body,dict) or body.get('model')!=self.model:raise ValueError('Request model differs from pinned proxy model')
+        if 'provider' in body:raise ValueError('Fallback provider routing is client-owned')
+        if 'reasoning' in body and body['reasoning']!={'effort':'none'}:raise ValueError('Request reasoning setting differs from pinned proxy policy')
+        payload=copy.deepcopy(body);payload.pop('stream',None);_apply_output_policy(payload,self.proxy)
+        timeout=max(.001,min(180,float(timeout_seconds)));start=time.monotonic()
+        envelope=send_with_fallback(self,body=payload,ticket={'deadline':start+timeout,'remaining_seconds':timeout,'attempt_id':phase},
+            phase=phase,error_module=_Errors,request_encoder=lambda b:b,policy=self.fallback_policy,policy_sha256=self.fallback_policy_hash)
+        raw=envelope['body_json'];usage=raw.get('usage') or {}
+        self.usage.append({'call':self.calls,'phase':phase,'provider':'openrouter','upstream_provider':raw.get('provider'),
+            'model':raw.get('model'),'seconds':round(time.monotonic()-start,3),'input_tokens':usage.get('prompt_tokens'),
+            'output_tokens':usage.get('completion_tokens'),'thinking_tokens':0,'total_tokens':usage.get('total_tokens'),
+            'cost_usd':usage.get('cost'),'usage':usage,'fallback_attempts':len(envelope['fallback_attempts'])})
+        self._write(self.output/'usage.json',self.usage)
+        return envelope
 
     def _configure_provider_policy(self, selected):
         self.provider_policy_path = Path(selected) if selected is not None else self.root/'00_SYSTEM/EXPERIMENT_PROVIDER_ROUTING.json'
@@ -461,6 +492,8 @@ class Qwen38ExperimentClient(GemmaExperimentClient):
         self.proxy['allowed_upstream_providers']=[provider['name']]
 
     def chat_completions(self, body, *, phase='generate', timeout_seconds=180):
+        if getattr(self,'fallback_policy',None):
+            return self._fallback_completions(body,phase=phase,timeout_seconds=timeout_seconds)
         if self.provider_policy is None:
             return super().chat_completions(body,phase=phase,timeout_seconds=timeout_seconds)
         if 'provider' in body:raise ValueError('Scoped provider selection requires client-owned routing')
@@ -485,7 +518,7 @@ class Qwen38ExperimentClient(GemmaExperimentClient):
                 self._write(self.output/'provider-switches.json',self.provider_switches)
 
     def _call(self,messages,schema,phase):
-        if self.provider_policy is None:return super()._call(messages,schema,phase)
+        if self.provider_policy is None and not getattr(self,'fallback_policy',None):return super()._call(messages,schema,phase)
         body={'model':self.model,'messages':messages,'temperature':self.proxy['temperature'],
             'response_format':{'type':'json_schema','json_schema':{'name':'output','strict':True,'schema':_schema_for_api(schema)}}}
         raw=self.chat_completions(body,phase=phase)

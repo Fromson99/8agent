@@ -1,0 +1,113 @@
+{
+  "schema_version": "qwen38-provider-fallback-v1",
+  "model": "qwen/qwen3.8-27b",
+  "providers": [
+    {
+      "tag": "near-ai/fp8",
+      "name": "Near AI"
+    },
+    {
+      "tag": "coreweave/fp8",
+      "name": "CoreWeave"
+    },
+    {
+      "tag": "chutes/fp8",
+      "name": "Chutes"
+    },
+    {
+      "tag": "reka/fp8",
+      "name": "Reka"
+    },
+    {
+      "tag": "parasail/fp8",
+      "name": "Parasail"
+    }
+  ],
+  "stream": true,
+  "per_call_seconds": 180,
+  "first_nonblank_seconds": 60,
+  "nonblank_stall_seconds": 60,
+  "min_attempt_seconds": 10,
+  "switch_on": [
+    "any HTTP status other than 200",
+    "transport error",
+    "stream error chunk",
+    "no non-blank content within first_nonblank_seconds",
+    "only blank content (runaway newlines) for nonblank_stall_seconds",
+    "attempt time used up",
+    "finish other than stop",
+    "empty answer",
+    "reasoning output",
+    "provider or model echo differs"
+  ],
+  "no_switch": [
+    "a complete answer whose JSON does not fit the schema (model output; the product repair path decides)"
+  ],
+  "reasoning": {
+    "effort": "none"
+  },
+  "model_fallback": false,
+  "output_cap": null,
+  "selection": {
+    "adr": "ADR-1512",
+    "rule": "providers passing all 4 probe requests, by fewest failures then median time to first non-blank content (Near AI, CoreWeave, Chutes); Reka and Parasail added 4th/5th on the user request for 4-5 providers: they passed 3 of 4 and failed only the stored request on which both wrote runaway newlines (the case this fallback catches). DeepInfra and Cloudflare were not added: their long answers did not finish in 180 s (slow output).",
+    "thresholds": "first non-blank 60 s = min(60, max(30, 3 x 54.057 s largest first non-blank among passing requests: Chutes long answer)); stall 60 s as frozen in ADR-1512",
+    "probe": {
+      "Near AI": {
+        "fails": 0,
+        "t2_hang_passed": true,
+        "median_first_nonblank_s": 3.852,
+        "max_first_nonblank_s": 6.587,
+        "total_seconds": 52.2
+      },
+      "CoreWeave": {
+        "fails": 0,
+        "t2_hang_passed": true,
+        "median_first_nonblank_s": 4.014,
+        "max_first_nonblank_s": 6.413,
+        "total_seconds": 114.3
+      },
+      "Chutes": {
+        "fails": 0,
+        "t2_hang_passed": true,
+        "median_first_nonblank_s": 7.185,
+        "max_first_nonblank_s": 54.057,
+        "total_seconds": 178.0
+      },
+      "Parasail": {
+        "fails": 1,
+        "t2_hang_passed": false,
+        "median_first_nonblank_s": 2.622,
+        "max_first_nonblank_s": 3.899,
+        "total_seconds": 283.8
+      },
+      "Reka": {
+        "fails": 1,
+        "t2_hang_passed": false,
+        "median_first_nonblank_s": 3.55,
+        "max_first_nonblank_s": 5.467,
+        "total_seconds": 296.2
+      },
+      "DeepInfra": {
+        "fails": 2,
+        "t2_hang_passed": true,
+        "median_first_nonblank_s": 3.421,
+        "max_first_nonblank_s": 5.672,
+        "total_seconds": 369.8
+      },
+      "Cloudflare": {
+        "fails": 2,
+        "t2_hang_passed": true,
+        "median_first_nonblank_s": 7.463,
+        "max_first_nonblank_s": 9.731,
+        "total_seconds": 402.0
+      }
+    }
+  },
+  "authorization": {
+    "source": "user_message",
+    "date": "2026-11-12",
+    "text": "공급자의 문제처럼 답이 없다거나 하면 공급자 다르게해서 질문날리게해(이거 다음 실험할때도 그렇게해 기억해놔) / 한 4~5개 정도 선정해놔서 문제 생기면 교체하게 공급자에 문제 없는지 검토 미리해서 유명한 공급자만 선별해서 갈아끼워서 바로 질문할수 있께 해줘"
+  },
+  "scope": "experiment runners only (lawrag.research.provider_fallback.send_with_fallback); product GENOS/local MAIN unchanged"
+}
