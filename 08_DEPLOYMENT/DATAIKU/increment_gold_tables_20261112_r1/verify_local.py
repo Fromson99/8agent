@@ -26,21 +26,21 @@ def main():
         try:
             for sfx in ('SIDDS', 'SIDDG'):
                 with oracledb.connect(user=S, password=pw, dsn=DSN) as cs:
-                    for q in stmts(f'CREATE_INCREMENT_GOLD_{sfx}_R2.txt', sfx).values(): cs.cursor().execute(q)
-                    for q in stmts(f'GRANT_INCREMENT_GOLD_{sfx}_R2.txt', sfx).values(): cs.cursor().execute(q)
+                    for q in stmts(f'CREATE_INCREMENT_GOLD_{sfx}_R3.txt', sfx).values(): cs.cursor().execute(q)
+                    for q in stmts(f'GRANT_INCREMENT_GOLD_{sfx}_R3.txt', sfx).values(): cs.cursor().execute(q)
                 with oracledb.connect(user=P, password=pw, dsn=DSN) as cp:
-                    cur = cp.cursor(); chk = stmts(f'CHECK_INCREMENT_GOLD_{sfx}_R2.txt', sfx)
+                    cur = cp.cursor(); chk = stmts(f'CHECK_INCREMENT_GOLD_{sfx}_R3.txt', sfx)
                     for k in chk:
                         cur.execute(chk[k]); res[sfx + k] = cur.fetchall()
                     sha = hashlib.sha256(b'x').hexdigest()
-                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_RGLT_DOC (SRC_DOC_ID,RGLT_DOC_NAME,SRC_TYPE_VALU) VALUES ('LAW:012345',:n,'LAW')", n=('금융회사의 지배구조에 관한 법률 시행령' * 30)[:740])
-                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_RGLT_VER (RGLT_VER_ID,SRC_DOC_ID,RGLT_DOC_ID,SRC_FILE_NAME,PRMG_ASTM,ENFC_ASTM,VER_STTS_VALU,VER_ADDN_IFMN_CTNT) "
+                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_RGLT_DOC (ORIG_DOC_ID,RGLT_DOC_NAME,ORIG_TYPE_VALU) VALUES ('LAW:012345',:n,'LAW')", n=('금융회사의 지배구조에 관한 법률 시행령' * 30)[:740])
+                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_RGLT_VER (RGLT_VER_ID,ORIG_DOC_ID,RGLT_DOC_ID,ORIG_FILE_NAME,OFNN_ASTM,ENFR_ASTM,VER_STAS_VALU,VER_ADDN_IFMN_CTNT) "
                                 f"VALUES (:v,'LAW:012345',:d,:f,TIMESTAMP '2025-10-01 00:00:00 Asia/Seoul',TIMESTAMP '2026-01-01 00:00:00 Asia/Seoul','APPLIED','{{\"promulgation_no\":\"제2025-12호\"}}')",
                                 v=sha, d=sha[:16], f=('금융회사의 지배구조에 관한 법률 본문' * 30)[:740] + '.xml')
-                    cur.execute(f"UPDATE {S}.IDD_B003_LGL_RGLT_DOC SET ACTV_VER_ID=:v, CHAN_ASTM=SYSTIMESTAMP", v=sha)
-                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_ARTC_CMPR (RGLT_VER_ID,CMPR_NO,CHAN_TYPE_VALU,BFR_ARTC_KEY_VALU,AFTR_ARTC_KEY_VALU,BFR_ARTC_CTNT,AFTR_ARTC_CTNT,CMPR_ADDN_IFMN_CTNT) "
+                    cur.execute(f"UPDATE {S}.IDD_B003_LGL_RGLT_DOC SET ATIV_VER_ID=:v, CHAN_ASTM=SYSTIMESTAMP", v=sha)
+                    cur.execute(f"INSERT INTO {S}.IDD_B003_LGL_ARTC_CMPR (RGLT_VER_ID,CMPR_NO,CHAN_TYPE_VALU,TRNF_CTNT_KEY_ID,AFTE_CTNT_KEY_ID,TRNF_CTNT,AFTE_CTNT,CMPR_ADDN_IFMN_CTNT) "
                                 f"VALUES (:v,1,'AMEND','제26조','제26조','이전','이후','{{\"similarity\":0.8732}}')", v=sha)
-                    cur.execute(f"SELECT TO_CHAR(ENFC_ASTM AT TIME ZONE 'Asia/Seoul','YYYYMMDD') FROM {S}.IDD_B003_LGL_RGLT_VER"); res[sfx + 'enfc'] = cur.fetchone()[0]
+                    cur.execute(f"SELECT TO_CHAR(ENFR_ASTM AT TIME ZONE 'Asia/Seoul','YYYYMMDD') FROM {S}.IDD_B003_LGL_RGLT_VER"); res[sfx + 'enfc'] = cur.fetchone()[0]
                     try:
                         cur.execute(f"DELETE FROM {S}.IDD_B003_LGL_ARTC_CMPR"); res[sfx + 'del'] = 'allowed'
                     except oracledb.DatabaseError as e:
@@ -56,8 +56,8 @@ def main():
                     'grants': [r[1] for r in res[sfx + 'Q04']], 'enforcement_date': res[sfx + 'enfc'], 'delete': res[sfx + 'del']}
         assert out[sfx]['tables'] == 3 and not out[sfx]['column_diffs'] and not out[sfx]['key_diffs'] and len(out[sfx]['grants']) == 3
     assert out['SIDDS']['delete'] == 'allowed' and out['SIDDG']['delete'] != 'allowed'
-    wb = openpyxl.load_workbook(HERE / '법률에이전트_B003_증분Gold_메타등록_R2.xlsx')
-    D = json.loads((HERE / 'INCREMENT_GOLD_DESIGN_R2.json').read_text())
+    wb = openpyxl.load_workbook(HERE / '법률에이전트_B003_증분Gold_메타등록_R3.xlsx')
+    D = json.loads((HERE / 'INCREMENT_GOLD_DESIGN_R3.json').read_text())
     diffs = 0
     for key, sheet in zip(['RGLT_DOC', 'RGLT_VER', 'ARTC_CMPR'], ['01_규정문서', '02_규정판본', '03_조문비교']):
         rows = list(wb[sheet].iter_rows(values_only=True)); i = next(i for i, r in enumerate(rows) if r[0] == '논리명') + 1

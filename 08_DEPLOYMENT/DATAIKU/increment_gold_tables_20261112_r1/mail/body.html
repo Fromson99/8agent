@@ -1,33 +1,32 @@
 <html><body style="font-family:'Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.6">
-<h3>증분 처리용 추가 Gold 3표 R2 — 기존 Gold 도메인·크기로 맞춤 (R1 대체, 2026-11-12)</h3>
-<p>앞 메일 R1(코드·일자·순번·비율 도메인, VARCHAR2(30)·(8) 등)은 쓰지 마시고 이 R2를 쓰세요. 새 컬럼은 <b>기존 RAG Gold 등록본에 실제로 쓰인 도메인과 크기 안에서만</b> 골랐습니다.</p>
+<h3>증분 처리용 추가 Gold 3표 R3 — 11-12 표준(용어) 신청 이름 반영 (R2 대체)</h3>
+<p>11-12에 신청하신 표준(용어) 18건의 물리명·논리명을 그대로 반영했습니다. <b>타입·길이·필수·기본값·PK·인덱스는 R2와 같고 이름만 15곳 바뀌었습니다.</b> R2 파일은 쓰지 마시고 R3를 쓰세요.</p>
 <table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px">
-<tr style="background:#17365D;color:#fff"><th>도메인</th><th>쓸 수 있는 크기 (기존 Gold 기록)</th></tr>
-<tr><td>ID</td><td>VARCHAR2(50), VARCHAR2(100)</td></tr><tr><td>값</td><td>VARCHAR2(100)</td></tr>
-<tr><td>내용</td><td>CLOB, VARCHAR2(3000)</td></tr><tr><td>명</td><td>VARCHAR2(100), VARCHAR2(2250)</td></tr>
-<tr><td>번호</td><td>NUMBER(30,0)</td></tr><tr><td>여부</td><td>VARCHAR2(1)</td></tr><tr><td>일시</td><td>TIMESTAMP(6) WITH TIME ZONE</td></tr>
+<tr style="background:#17365D;color:#fff"><th>표</th><th>R2</th><th>R3 (신청 이름)</th></tr>
+<tr><td>규정문서·규정판본</td><td>SRC_DOC_ID</td><td>원천문서ID ORIG_DOC_ID (PK·인덱스)</td></tr>
+<tr><td>규정문서</td><td>ACTV_VER_ID</td><td>활성버전ID ATIV_VER_ID</td></tr>
+<tr><td>규정문서</td><td>SRC_TYPE_VALU</td><td>원천유형값 ORIG_TYPE_VALU ※</td></tr>
+<tr><td>규정판본</td><td>SRC_FILE_NAME</td><td>원천파일명 ORIG_FILE_NAME</td></tr>
+<tr><td>규정판본</td><td>공포일시 PRMG_ASTM</td><td>공표일시 OFNN_ASTM</td></tr>
+<tr><td>규정판본</td><td>ENFC_ASTM</td><td>시행일시 ENFR_ASTM</td></tr>
+<tr><td>규정판본</td><td>VER_STTS_VALU</td><td>버전상태값 VER_STAS_VALU</td></tr>
+<tr><td>규정판본</td><td>ACTV_ASTM / SPSD_ASTM</td><td>활성일시 ATIV_ASTM / 대체일시 SBTT_ASTM</td></tr>
+<tr><td>조문비교</td><td>BASE_VER_ID</td><td>기준버전ID STNR_VER_ID</td></tr>
+<tr><td>조문비교</td><td>이전/이후조문키값 BFR/AFTR_ARTC_KEY_VALU</td><td>이전/이후내용키ID TRNF/AFTE_CTNT_KEY_ID (VARCHAR2(100) 그대로)</td></tr>
+<tr><td>조문비교</td><td>이전/이후조문내용 BFR/AFTR_ARTC_CTNT</td><td>이전/이후내용 TRNF/AFTE_CTNT (CLOB 그대로)</td></tr>
 </table>
-<h4>R1 → R2</h4>
+<p>그대로: 규정버전ID RGLT_VER_ID · 버전부가정보내용 · 비교번호 CMPR_NO · 변경유형값 CHAN_TYPE_VALU · 비교부가정보내용(신청 18건에 포함), 규정문서명·규정문서ID·조회게시해시값·문서부가정보내용·등록일시(기존 Gold 용어).</p>
+<p><b>※ 신청 목록에 없는 2개</b> — 표준사전에 이미 있는지 확인해 주세요: 원천유형값 <b>ORIG_TYPE_VALU</b>(원천=ORIG로 맞춤), 변경일시 <b>CHAN_ASTM</b>(규정문서내역의 마지막 변경 시각). 없으면 같이 신청이 필요합니다.</p>
 <ul>
-<li>규정문서코드 VARCHAR2(100) → <b>원천문서ID</b> SRC_DOC_ID VARCHAR2(100) (ID)</li>
-<li>원천구분코드 → <b>원천유형값</b> SRC_TYPE_VALU VARCHAR2(100) (값, 기존 '조회자료유형값'과 같은 방식) · 버전상태코드 → <b>버전상태값</b> · 변경유형코드 → <b>변경유형값</b></li>
-<li>공포일자·시행시작일자 VARCHAR2(8) → <b>공포일시·시행일시</b> TIMESTAMP (그날 0시). 공포번호는 문자(예: 제2025-12호)라 번호 도메인에 못 넣어 버전부가정보내용 JSON으로</li>
-<li>비교순번 NUMBER(10,0) → <b>비교번호</b> NUMBER(30,0) · 원천파일명 2000 → 2250</li>
-<li>유사비율 NUMBER(5,4) → <b>비교부가정보내용</b> CLOB(JSON)</li>
-<li>새 표준단어 후보 20 → 13개 (원천·활성·파일·공포·시행·상태·대체·비교·기준·이전·이후·조문·키)</li>
-</ul>
-<h4>그대로인 것</h4>
-<ul>
-<li>표 3개: IDD_B003_LGL_RGLT_DOC 규정문서내역 · IDD_B003_LGL_RGLT_VER 규정판본내역 · IDD_B003_LGL_ARTC_CMPR 조문비교내역 (29컬럼, 추가 인덱스 1)</li>
-<li>개발계 SIDDS: 첨부 3 생성(4문장) → 4 권한(PIDD2APP SELECT·INSERT·UPDATE·DELETE) → 5 확인. 운영 SIDDG는 첨부 6~8 (권한은 SELECT·INSERT·UPDATE).</li>
-<li>Agent 표는 새로 만들지 않음. 기존 RAG Gold 13표는 추가 신청 없음.</li>
-<li>로컬 Oracle에서 개발계·운영 SQL을 그대로 실행해 확인(차이 0, 권한, 한글 740자·해시·시행일시 저장). 엑셀 07 시트에 도메인별 선택지와 기존 사용 예를 정리.</li>
+<li>개발계 SIDDS: 첨부 3 생성(4문장) → 4 권한(PIDD2APP SELECT·INSERT·UPDATE·DELETE) → 5 확인(Q01 3행, Q02·Q03 0행). 운영 SIDDG는 첨부 6~8.</li>
+<li>엑셀 05 시트 '용어 상태'에 컬럼마다 기존 Gold 용어 / 11-12 신청(결재 대기) / 신청 목록에 없음을 표시했습니다.</li>
+<li>로컬 Oracle에서 개발계·운영 SQL을 그대로 실행해 확인(차이 0, 권한, 한글·해시·시행일시 저장).</li>
 </ul>
 <h4>첨부</h4>
 <ol>
-<li>법률에이전트_B003_증분Gold_메타등록_R2.xlsx</li><li>GUIDE.txt</li>
-<li>CREATE_INCREMENT_GOLD_SIDDS_R2.txt</li><li>GRANT_INCREMENT_GOLD_SIDDS_R2.txt</li><li>CHECK_INCREMENT_GOLD_SIDDS_R2.txt</li>
-<li>CREATE_INCREMENT_GOLD_SIDDG_R2.txt</li><li>GRANT_INCREMENT_GOLD_SIDDG_R2.txt</li><li>CHECK_INCREMENT_GOLD_SIDDG_R2.txt</li>
+<li>법률에이전트_B003_증분Gold_메타등록_R3.xlsx</li><li>GUIDE.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDS_R3.txt</li><li>GRANT_INCREMENT_GOLD_SIDDS_R3.txt</li><li>CHECK_INCREMENT_GOLD_SIDDS_R3.txt</li>
+<li>CREATE_INCREMENT_GOLD_SIDDG_R3.txt</li><li>GRANT_INCREMENT_GOLD_SIDDG_R3.txt</li><li>CHECK_INCREMENT_GOLD_SIDDG_R3.txt</li>
 <li>SHA256SUMS.txt</li>
 </ol>
 </body></html>

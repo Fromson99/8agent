@@ -1,0 +1,12 @@
+-- 증분 처리용 추가 Gold 3표 R3 (2026-11-12, 11-12 메타 신청 이름 반영 — 타입은 R2와 같음). Dataiku SQL 노트북에서 [번호] 한 개씩 별도 Query로, 문장 끝 ; 없이.
+-- 기존 RAG Gold 13표(IDD_B003_LGL_DOC_VER …)는 건드리지 않는다. 표 정의는 개발계·운영 같음, 소유자만 다름.
+-- 운영. 이력 표라 지우지 않는다 — SELECT, INSERT, UPDATE만.
+
+-- [G01] IDD_B003_LGL_RGLT_DOC 읽기·쓰기
+GRANT SELECT, INSERT, UPDATE ON SIDDG.IDD_B003_LGL_RGLT_DOC TO PIDD2APP
+
+-- [G02] IDD_B003_LGL_RGLT_VER 읽기·쓰기
+GRANT SELECT, INSERT, UPDATE ON SIDDG.IDD_B003_LGL_RGLT_VER TO PIDD2APP
+
+-- [G03] IDD_B003_LGL_ARTC_CMPR 읽기·쓰기
+GRANT SELECT, INSERT, UPDATE ON SIDDG.IDD_B003_LGL_ARTC_CMPR TO PIDD2APP
