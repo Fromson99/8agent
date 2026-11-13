@@ -1,0 +1,22 @@
+개발계 증분 준비 점검 R1 (2026-11-13) — 읽기 전용
+
+목적
+  새 방식(행 번호 내용 기준·Gold에는 바뀐 부분만·바뀐 문서만 구조화)을 개발계에 넣기 전에
+  지금 개발계 Gold에 무엇이 있는지 확인한다. 표·행을 바꾸지 않는다(SELECT만).
+
+실행
+  Dataiku SQL 노트북(AIDP 연결), DEV_INCREMENT_PREP_CHECK_R1.txt 의 [P01]~[P11]를 한 개씩 별도 Query로 RUN.
+  P07~P09는 DBA 뷰라 PIDD2APP에 권한이 없으면 ORA-00942 → 세 문장을 DBA에게 실행 요청.
+
+결과로 보는 것
+  P01 지금 서빙이 보는 채널 이름 — 새 세대는 다른 이름(r8_test)으로만 연결하고 이 채널은 손대지 않는다
+  P02 세대 형식 — 바뀐 문서 합치기 조건: GEN_SCHEMA=term-source-generation-v2, NAV_SCHEMA=term-navigation-index-v7,
+      SCOPE_CONTRACT=N. GENERATION_ID로 어느 구조화 세대(ZIP)로 적재했는지 확인. SEARCH_SELECTION=N이면 판본 선택 보완 필요
+  P03·P04·P06 세대별 행 수 — 새 세대 하나가 더 들어갈 크기 가늠
+  P07~P09 쓰는 공간·남은 공간·한도 — 새 세대 하나(P03의 현재 세대 행 수만큼) 더 들어갈 여유가 있어야 함
+  P10·P11 Dataiku 계정 권한 — 새 세대 적재 SELECT·INSERT, 채널 교체 UPDATE, 옛 세대 정리 DELETE, 통계 갱신 ANALYZE ANY
+      (11-12 CHECK_TABLES_SIDDS_R1의 Q06·Q07과 같은 문장)
+
+로컬 확인 (local_check.json)
+  같은 문장을 소유자만 바꿔 로컬 Gold(A8_GR12_CM1208)에서 실행: P01~P06·P10·P11 통과(읽기 계정), P07~P09는 읽기·소유자 계정에서
+  ORA-00942, 관리자 계정에서 통과.

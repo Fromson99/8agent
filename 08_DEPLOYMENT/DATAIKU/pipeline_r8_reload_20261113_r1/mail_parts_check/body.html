@@ -1,0 +1,30 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<p><b>LGL_R8_PARTS 업로드 404(NoSuchBucket) 확인용 셀</b>입니다. 읽기만 하고 아무것도 쓰거나 지우지 않습니다.</p>
+<p>LEGAL_RAG_R8 Python 노트북 새 셀에 아래(첨부 R8_PARTS_CHECK_R1.txt와 같음)를 붙여 실행하고, 출력 사진을 보내 주세요. 업로드가 끝난 뒤 실행하면 됩니다.</p>
+<pre style="background:#f4f6f8;padding:10px;font-size:13px"># R8 재적재 - LGL_R8_PARTS 조각·버킷 확인 (읽기만 함, 아무것도 쓰거나 지우지 않음)
+# Python 노트북 새 셀에 그대로 붙여 실행 -&gt; 출력 사진 회신
+import dataiku
+for n in [&#x27;LGL_R8_CODE&#x27;, &#x27;LGL_R8_PARTS&#x27;]:
+    print(n, dataiku.Folder(n).get_info().get(&#x27;accessInfo&#x27;))
+f = dataiku.Folder(&#x27;LGL_R8_PARTS&#x27;)
+ps = sorted(f.list_paths_in_partition())
+print(&#x27;파일 수&#x27;, len(ps))
+total = 0
+for p in ps:
+    s = f.get_path_details(p).get(&#x27;size&#x27;)
+    total += s or 0
+    print(p, s)
+print(&#x27;합계 바이트&#x27;, total)
+names = {p.lstrip(&#x27;/&#x27;) for p in ps}
+want = &#x27;genos-rag-data-20261007T002029Z-7c0b050f.zip.part%06d&#x27;
+print(&#x27;빠진 조각&#x27;, [want % i for i in range(34) if want % i not in names])
+print(&#x27;빠진 sha 파일&#x27;, [n for n in (&#x27;ORIGINAL.sha256&#x27;, &#x27;PARTS.sha256&#x27;) if n not in names])
+</pre>
+<p><b>보는 것</b></p>
+<ul>
+<li>첫 두 줄: LGL_R8_CODE와 LGL_R8_PARTS가 실제로 쓰는 버킷·경로(bucket 값이 같은지)</li>
+<li>파일 수·크기: 있어야 할 것은 36개 = 조각 part000000~part000033(각 약 46.73 MB, 마지막만 작을 수 있음) + ORIGINAL.sha256 + PARTS.sha256</li>
+<li>빠진 조각 / 빠진 sha 파일: 둘 다 [] 이면 RUN_ALL 실행. 빠진 게 있으면 그것만 다시 업로드</li>
+</ul>
+<p>빠진 조각을 다시 올려도 계속 같은 오류가 나면, 업로드 대신 S3에 이미 있는 34조각(11-04 때 것)을 읽기 전용으로 쓰는 방법으로 가겠습니다. 그때는 조각이 있는 예전 폴더의 Settings 화면(연결 이름·경로) 사진도 같이 보내 주세요.</p>
+</body></html>

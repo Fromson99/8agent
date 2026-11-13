@@ -1,0 +1,42 @@
+R8 재적재 R4 정정 — "설치 셀이 멈출 때" 대처 (2026-11-13)
+대상: R4 메일 SENT 1a1d35c381de5b77 의 본문 표와 첨부 R8_RELOAD_GUIDE_R4.txt 17~18행
+ZIP·설치 셀·기본 순서는 바뀌지 않음. 이 두 줄만 고친다.
+
+왜 고치나
+  개발계 OBS 폴더 Settings > Storage 화면에는 Bucket 칸이 없다
+  (Type "Amazon S3" / S3 connection "OBS" / Path in bucket 세 줄뿐).
+  그래서 "Settings에서 Bucket 값을 넣는다"는 화면에서 할 수 없다.
+  원인: 설치 셀이 코드로 만든 폴더에는 Dataiku API(create_managed_folder)가 연결 이름과
+  경로 "/${projectKey}/${odbId}"만 넣고 버킷은 넣지 않는다 → 연결 기본 버킷 AIDP-YNY-DEV-BUC-SRI 로 가서 404.
+  화면에서 만든 폴더(LGL_R8_CODE)는 연결 기본값이 같이 들어가서 열린다.
+  R4 셀은 LGL_R8_CODE가 실제로 쓰는 버킷·경로를 읽어 폴더에 넣으므로 기본 순서는 그대로 쓴다.
+
+새 프로젝트는 필요 없음 — 지금 LEGAL_RAG_R8 에서 그대로
+  1) LGL_R8_PARTS 에 진행 중인 업로드 취소
+  2) LGL_R8_CODE 에 DATAIKU_ZIP_R8_RELOAD_R4.zip 업로드 (R3 ZIP은 둬도 됨)
+  3) 같은 노트북에 DATAIKU_SETUP_R8_RELOAD_R4.txt 전체 붙여 실행
+     → FOLDER_STORAGE_SET 5줄, RECIPE_UPDATED 4줄이면 성공
+  4) LGL_R8_PARTS 새로고침 — 빨간 오류 없으면 조각 34개 + ORIGINAL.sha256 + PARTS.sha256 업로드,
+     LGL_R8_CODE 에 SEARCH_SELECTION_GENERATION.json 업로드
+  5) Scenarios > LGL_R8_RELOAD_RUN_ALL > RUN
+
+멈출 때 (고친 표)
+  CODE_FOLDER_BUCKET_UNKNOWN
+     노트북 새 셀:  import dataiku; print(dataiku.Folder('LGL_R8_CODE').get_info()['accessInfo'])
+     출력의 bucket 값을 설치 셀 PARAMS 의 "BUCKET" 칸에 넣고 다시 실행.
+     출력에 bucket 이 없으면 그 출력 사진을 보내기.
+
+  FOLDER_STORAGE_SAVE_UNCONFIRMED <폴더>  또는  FOLDER_STILL_UNREACHABLE <폴더>
+     이 연결이 폴더별 버킷 값을 쓰지 않는 경우. 화면으로 만든 폴더는 열리므로 화면으로 다시 만든다.
+       a) Flow 에서 레시피 4개(LGL_R8_RELOAD_01_RESTORE ~ 04_STATS)와 시나리오 LGL_R8_RELOAD_RUN_ALL 삭제
+       b) 열리지 않는 폴더 5개 삭제: LGL_R8_PARTS, LGL_R8_RELOAD_01_RESTORE_OUT, LGL_R8_RELOAD_02_CHECK_OUT,
+          LGL_R8_RELOAD_03_LOAD_OUT, LGL_R8_RELOAD_04_STATS_OUT
+       c) + ADD ITEM > Folder > Store into OBS 로 위 5개를 같은 이름으로 다시 만들기 (LGL_R8_CODE 만들 때와 같은 방법)
+       d) R4 설치 셀 다시 실행 — 이름으로 폴더를 찾고, 열리는 폴더는 설정을 건드리지 않으며,
+          레시피 4개·시나리오를 새로 만든다
+       e) 위 4)~5) 진행
+
+  CODE_FOLDER_UNREACHABLE
+     LGL_R8_CODE 자체가 안 열림 — PARAMS 의 CODE_FOLDER_ID 철자 확인.
+
+멈추면 셀 출력 사진을 보내 주세요.

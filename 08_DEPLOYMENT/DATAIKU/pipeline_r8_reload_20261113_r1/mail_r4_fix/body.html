@@ -1,0 +1,30 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<p><b>R8 재적재 R4 정정</b> — 앞서 보낸 R4 메일(SENT 1a1d35c381de5b77)의 <b>"설치 셀이 멈출 때" 표 두 줄</b>만 고칩니다. ZIP·설치 셀·기본 순서는 그대로 쓰세요.</p>
+
+<h3>왜 고치나</h3>
+<p>개발계 OBS 폴더 Settings &gt; Storage 화면에는 <b>Bucket 칸이 없습니다</b>(Type / S3 connection / Path in bucket 세 줄뿐). 그래서 R4 메일의 "Settings에서 Bucket 값을 넣는다"는 화면에서 할 수 없습니다.<br>
+원인: 설치 셀이 코드로 만든 폴더에는 Dataiku API가 연결 이름과 경로 <code>/${projectKey}/${odbId}</code>만 넣고 버킷은 넣지 않아, 연결 기본 버킷 AIDP-YNY-DEV-BUC-SRI로 가서 404가 납니다. 화면에서 만든 LGL_R8_CODE는 연결 기본값이 같이 들어가 열립니다. R4 셀은 LGL_R8_CODE가 실제로 쓰는 버킷·경로를 읽어 넣으므로 기본 순서는 그대로입니다.</p>
+
+<h3>새 프로젝트는 필요 없음 — 지금 LEGAL_RAG_R8에서 그대로</h3>
+<ol>
+<li>LGL_R8_PARTS에 진행 중인 업로드 취소</li>
+<li>LGL_R8_CODE에 <b>DATAIKU_ZIP_R8_RELOAD_R4.zip</b> 업로드 (R3 ZIP은 둬도 됨)</li>
+<li>같은 노트북에 <b>DATAIKU_SETUP_R8_RELOAD_R4.txt</b> 전체 붙여 실행 → <code>FOLDER_STORAGE_SET</code> 5줄, <code>RECIPE_UPDATED</code> 4줄이면 성공</li>
+<li>LGL_R8_PARTS 새로고침 — 빨간 오류가 없으면 조각 34개 + ORIGINAL.sha256 + PARTS.sha256 업로드, LGL_R8_CODE에 SEARCH_SELECTION_GENERATION.json 업로드</li>
+<li>Scenarios &gt; LGL_R8_RELOAD_RUN_ALL &gt; RUN</li>
+</ol>
+
+<h3>멈출 때 (고친 표)</h3>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5">
+<tr style="background:#eef2f7"><th>멈춘 이름</th><th>할 일</th></tr>
+<tr><td>CODE_FOLDER_BUCKET_UNKNOWN</td><td>노트북 새 셀에서 <code>import dataiku; print(dataiku.Folder('LGL_R8_CODE').get_info()['accessInfo'])</code> 실행 → 출력의 bucket 값을 설치 셀 PARAMS의 <b>"BUCKET"</b> 칸에 넣고 다시 실행. 출력에 bucket이 없으면 그 출력 사진을 보내 주세요.</td></tr>
+<tr><td>FOLDER_STORAGE_SAVE_UNCONFIRMED &lt;폴더&gt;<br>또는 FOLDER_STILL_UNREACHABLE &lt;폴더&gt;</td><td>이 연결이 폴더별 버킷 값을 쓰지 않는 경우입니다. 화면으로 다시 만듭니다.<br>
+a) Flow에서 레시피 4개(LGL_R8_RELOAD_01_RESTORE ~ 04_STATS)와 시나리오 LGL_R8_RELOAD_RUN_ALL 삭제<br>
+b) 열리지 않는 폴더 5개 삭제: LGL_R8_PARTS, LGL_R8_RELOAD_01_RESTORE_OUT ~ 04_STATS_OUT<br>
+c) + ADD ITEM &gt; Folder &gt; Store into OBS로 같은 이름 5개 다시 만들기 (LGL_R8_CODE 만들 때와 같은 방법)<br>
+d) R4 설치 셀 다시 실행 — 이름으로 폴더를 찾고, 열리는 폴더는 설정을 건드리지 않으며, 레시피·시나리오를 새로 만듭니다<br>
+e) 위 4~5번 진행</td></tr>
+<tr><td>CODE_FOLDER_UNREACHABLE</td><td>LGL_R8_CODE 자체가 안 열림 — PARAMS의 CODE_FOLDER_ID 철자 확인</td></tr>
+</table>
+<p>같은 내용을 첨부 R8_RELOAD_R4_FIX.txt에도 넣었습니다. 멈추면 셀 출력 사진을 보내 주세요.</p>
+</body></html>

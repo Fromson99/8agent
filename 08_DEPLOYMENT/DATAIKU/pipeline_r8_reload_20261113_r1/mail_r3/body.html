@@ -1,0 +1,36 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<p><b>R8 재적재 Flow R3</b> — 새 프로젝트에서 처음부터 하는 판입니다. 앞서 보낸 R1(SENT 1a1d30a7bfc9d680) 대신 이것을 쓰세요(ZIP·설치 셀 모두 바뀜).<br>
+R2: 조각을 OBS 폴더에 올려도 설치됨 / R3: 설치 셀이 폴더 이름으로 동작, 조각 폴더가 없으면 OBS에 만들어 줌.</p>
+
+<h3>1. 새 프로젝트 진행 순서 (개발계)</h3>
+<ol>
+<li><b>새 프로젝트</b> 만들기 (예: LEGAL_RAG_R8). 기존 LEGAL_RAG 프로젝트·Flow·서빙 채널은 그대로.</li>
+<li>프로젝트 변수(Settings &gt; Variables): <b>LGL_GOLD_OWNER = "SIDDS"</b></li>
+<li>Flow &gt; + ADD ITEM &gt; Folder: Label <b>LGL_R8_CODE</b>, Store into <b>OBS</b> &gt; CREATE → <b>DATAIKU_ZIP_R8_RELOAD.zip</b> 업로드</li>
+<li>Notebooks &gt; 새 Python 노트북 &gt; 셀 하나에 <b>DATAIKU_SETUP_R8_RELOAD.txt</b> 전체 붙여 넣고 실행 — 기본값 그대로면 고칠 칸 없음<br>
+ → <code>INPUT_FOLDER_CREATED LGL_R8_PARTS</code> (OBS에 조각 폴더 생성), <code>FLOW_INSTALLED LGL_R8_RELOAD_RUN_ALL</code></li>
+<li><b>LGL_R8_PARTS</b>에 구조화 세대 ZIP 조각 업로드: genos-rag-data-20261007T002029Z-7c0b050f.zip.part000000 ~ part000033, ORIGINAL.sha256, PARTS.sha256 — 폴더 맨 위에, 압축 풀지 말고 이름 그대로 (11-04 때 파일과 같은 것)</li>
+<li>판본 선택 정보: <b>LGL_R8_CODE</b>에 <b>SEARCH_SELECTION_GENERATION.json</b> 업로드 (NFS 세대 옆 SEARCH_SELECTION/generation.json, 운영 R7f 때 올린 파일과 같은 것). 세대가 다르면 멈추므로 잘못 넣을 위험 없음.</li>
+<li>Scenarios &gt; <b>LGL_R8_RELOAD_RUN_ALL</b> &gt; RUN (버튼 한 번: 01 조각 합치기·풀기 → 02 DB·표·권한 점검 → 03 Gold 적재·대조 → 04 통계)</li>
+<li>04_STATS가 PRIVILEGE_REQUIRED로 멈추면 로그의 dba_statements를 DBA에 요청(또는 PIDD2APP에 ANALYZE ANY) 후 04만 다시 RUN</li>
+</ol>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>폴더</th><th>넣는 것</th><th>만드는 사람</th></tr><tr><td>LGL_R8_CODE (OBS)</td><td>코드 ZIP, SEARCH_SELECTION_GENERATION.json</td><td>직접 (3번)</td></tr><tr><td>LGL_R8_PARTS (OBS)</td><td>데이터 조각 34개 + ORIGINAL.sha256 + PARTS.sha256</td><td>설치 셀이 만듦 (4번), 업로드만 직접</td></tr><tr><td>LGL_R8_RELOAD_0N_*_OUT ×4 (OBS)</td><td>실행 기록(자동)</td><td>설치 셀이 만듦</td></tr></table>
+<p>조각 이름·개수가 다르면 설치 셀의 EXPECTED_ARCHIVE / EXPECTED_PARTS만, 연결·계정이 다르면 TARGET_CONNECTION / EXPECTED_DB_USER만 고칩니다. 조각이 이미 다른 폴더(S3 포함)에 있으면 INPUT_FOLDER_ID에 그 폴더 이름·ID를 넣어도 됩니다(읽기만).</p>
+
+<h3>2. 필요한 권한·공간</h3>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>계정</th><th>대상</th><th>권한</th><th>비고</th></tr><tr><td>PIDD2APP</td><td>SIDDS.IDD_B003_LGL_* Gold 13표</td><td>SELECT, INSERT</td><td>재적재에는 UPDATE·DELETE 불필요</td></tr><tr><td>PIDD2APP</td><td>통계 갱신</td><td>ANALYZE ANY</td><td>없으면 DBA가 dba_statements 실행</td></tr><tr><td>SIDDS</td><td>테이블스페이스</td><td>새 세대 하나 분량</td><td>지금 세대 검색 행 수(점검 SQL P03)만큼 더</td></tr></table>
+
+<h3>3. 다 돌고 나서</h3>
+<p>LGL_R8_RELOAD_03_LOAD_OUT/reload-001/load.json 의 <b>channel</b>(g19_…)이 새 세대입니다. <b>지금 서빙 채널은 그대로</b>입니다. 시험 코드서빙에 <code>DP_QUERY_CHANNEL=&lt;그 채널&gt;</code>만 다르게 주고 같은 질문 비교 → 괜찮으면 서빙 채널 전환(되돌리기도 한 줄). 이전 세대는 확인 끝날 때까지 두세요.</p>
+
+<h3>4. 사전 점검 (읽기만)</h3>
+<p>DEV_INCREMENT_PREP_CHECK_R1.txt 의 [P01]~[P11]을 SQL 노트북에서 하나씩 RUN — 결과 사진 보내 주세요(P01 채널, P02 세대 형식, P10·P11 권한, P07~P09 공간은 DBA 권한 필요).</p>
+
+<h3>5. 로컬 확인</h3>
+<ul>
+<li>빈 새 프로젝트 가정, 전용 Oracle + Dataiku 대역(S3 읽기 전용, OBS 쓰기)으로 이 설치 셀 그대로 실행 → <b>15항목 통과</b>: 소유자 변수 없으면 설치 거부, 조각 폴더 OBS 자동 생성, 기존 채널 그대로, 적재 후 행 수·게시 내용 다시 읽어 대조, 통계 권한 없으면 DBA 문장 출력 후 멈춤, 다른 세대 판본 선택 거부, S3 입력이어도 쓰기 0.</li>
+<li>재사용 측정: 공통 문서 행이 같은 번호·내용인 비율 <b>16% → 89%</b> (다음 단계 증분에서 안 바뀐 문서 행 재사용 근거).</li>
+<li>확인 못 한 것: 현장 Dataiku·OBS·임베딩·34조각 실제 시간, 새 세대를 현재 서빙 코드로 읽어 같은 답인지(다음 단계), 바뀐 문서만 적재(다음 단계).</li>
+</ul>
+<p>첨부: R8 Flow ZIP·설치 셀·안내·검증·해시(R3), 개발계 점검 SQL·안내, 설계 문서.</p>
+</body></html>

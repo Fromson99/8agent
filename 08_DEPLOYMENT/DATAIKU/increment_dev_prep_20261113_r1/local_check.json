@@ -1,0 +1,236 @@
+[
+ {
+  "key": "P01",
+  "ok": true,
+  "seconds": 0.0,
+  "columns": [
+   "RFRN_CHNL_NAME",
+   "RFRN_POST_HASH_VALU",
+   "CHAN_NO"
+  ],
+  "rows": [
+   [
+    "cm-r12",
+    "983415dd8d28478644da41635924d6525f573a457f63e50e07c6a092de787598",
+    "1"
+   ],
+   [
+    "cm-r12-engine",
+    "6b667b5bf14741efeed326eb6076b5a2caa1404610bc17d0ed0486dc60d00079",
+    "1"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "key": "P02",
+  "ok": true,
+  "seconds": 0.03,
+  "columns": [
+   "RFRN_POST_HASH_VALU",
+   "PROJECTION",
+   "GENERATION_ID",
+   "GEN_SCHEMA",
+   "DOCS",
+   "APPENDED",
+   "SEARCH_SELECTION",
+   "NAV_SCHEMA",
+   "SCOPE_CONTRACT",
+   "GLOSSARY_SHA",
+   "FT_GRANULARITY",
+   "TOKENIZER",
+   "TOKENIZER_VERSION",
+   "MANIFEST_CHARS"
+  ],
+  "rows": [
+   [
+    "6b667b5bf14741efeed326eb6076b5a2caa1404610bc17d0ed0486dc60d00079",
+    "r12-engine-extension-v1",
+    "term-metadata-733fc8666b5bb1d23e11",
+    "term-source-generation-v2",
+    "1547",
+    "Y",
+    "Y",
+    "term-navigation-index-v7",
+    "N",
+    "3743a65d7ddd0dc09bd9545cf3823d98452e86418ebd08c70ee0b9c8237b2b38",
+    "stored-own-block-owner",
+    "pecab",
+    "1.0.8",
+    "117615"
+   ],
+   [
+    "983415dd8d28478644da41635924d6525f573a457f63e50e07c6a092de787598",
+    "r12-scoped-source-navigation-fts-v1",
+    "term-metadata-733fc8666b5bb1d23e11",
+    "term-source-generation-v2",
+    "1547",
+    "Y",
+    "N",
+    "None",
+    "N",
+    "None",
+    "stored-own-block-owner",
+    "pecab",
+    "1.0.8",
+    "1481430"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "key": "P03",
+  "ok": true,
+  "seconds": 0.33,
+  "columns": [
+   "RFRN_POST_HASH_VALU",
+   "ROWS_N"
+  ],
+  "rows": [
+   [
+    "6b667b5bf14741efeed326eb6076b5a2caa1404610bc17d0ed0486dc60d00079",
+    "1050337"
+   ],
+   [
+    "983415dd8d28478644da41635924d6525f573a457f63e50e07c6a092de787598",
+    "3344267"
+   ]
+  ],
+  "row_count": 2
+ },
+ {
+  "key": "P04",
+  "ok": true,
+  "seconds": 0.0,
+  "columns": [
+   "DTLS_HASH_VALU",
+   "DOCS"
+  ],
+  "rows": [
+   [
+    "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "21"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "key": "P05",
+  "ok": true,
+  "seconds": 0.0,
+  "columns": [
+   "BODY_POST_HASH_VALU",
+   "DTLS_HASH_VALU",
+   "RGSN_ASTM"
+  ],
+  "rows": [
+   [
+    "bc8806cef7e2d5dc3d46d6b2ed822a0006887716b83e46d84b7a11d6206ec29e",
+    "d4d1d8b4266a075ad430fa150cac3fe024d1ccfa7d5bde4fbb2840c14d309d9d",
+    "2026-10-29 10:53:03.326746"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "key": "P06",
+  "ok": true,
+  "seconds": 0.0,
+  "columns": [
+   "RFRN_POST_HASH_VALU",
+   "VCTR_POST_ID",
+   "CHAN_NO",
+   "VECTORS"
+  ],
+  "rows": [
+   [
+    "983415dd8d28478644da41635924d6525f573a457f63e50e07c6a092de787598",
+    "7399394f55149943054cc60d0fd178de54b3ecf1e6429e5532883df4e0dca305",
+    "3",
+    "16085"
+   ]
+  ],
+  "row_count": 1
+ },
+ {
+  "key": "P07",
+  "ok": false,
+  "seconds": 0.0,
+  "error": "ORA-00942: table or view \"SYS\".\"DBA_SEGMENTS\" does not exist"
+ },
+ {
+  "key": "P08",
+  "ok": false,
+  "seconds": 0.0,
+  "error": "ORA-00942: table or view \"SYS\".\"DBA_FREE_SPACE\" does not exist"
+ },
+ {
+  "key": "P09",
+  "ok": false,
+  "seconds": 0.0,
+  "error": "ORA-00942: table or view \"SYS\".\"DBA_TS_QUOTAS\" does not exist"
+ },
+ {
+  "key": "P10",
+  "ok": true,
+  "seconds": 0.09,
+  "columns": [
+   "TABLE_SCHEMA",
+   "TABLE_NAME",
+   "PRIVILEGES"
+  ],
+  "rows": [
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_DOC_BLK",
+    "SELECT"
+   ],
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_DOC_UNIT",
+    "SELECT"
+   ],
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_DOC_VER",
+    "SELECT"
+   ],
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_ONTL_ANC",
+    "SELECT"
+   ],
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_ONTL_HEAD",
+    "SELECT"
+   ],
+   [
+    "A8_GR12_CM1208",
+    "IDD_B003_LGL_ONTL_POST",
+    "SELECT"
+   ]
+  ],
+  "row_count": 13
+ },
+ {
+  "key": "P11",
+  "ok": true,
+  "seconds": 0.02,
+  "columns": [
+   "PRIVILEGE"
+  ],
+  "rows": [],
+  "row_count": 0
+ },
+ {
+  "keys": [
+   "P07",
+   "P08",
+   "P09"
+  ],
+  "ok": true,
+  "account": "local SYSDBA (container a8-legal-mapped-20261023, FREEPDB1)",
+  "note": "읽기 계정·소유자 계정은 ORA-00942 (DBA 뷰 권한 없음) — 개발계도 PIDD2APP이면 같을 것, DBA 요청"
+ }
+]

@@ -1,0 +1,141 @@
+{
+ "package": "DATAIKU_ZIP_R8_RELOAD_R5.zip",
+ "package_sha256": "f42594f5041534c7ded98f7b245bf624dde6a4801df556427b181cef172ae182",
+ "parent": {
+  "zip": "pipeline_gold_owner_20261112_r1/DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip",
+  "sha256": "d69a6ae3e097858b9c45bdff10e009f32b28290b48ab27b230e71057882929d2"
+ },
+ "local_verify": {
+  "status": "PASS",
+  "checks": [
+   "archive_parts_built_from_declared_generation_files",
+   "delivered_CREATE_GOLD_DDL_13_tables_select_insert_only",
+   "install_refused_without_LGL_GOLD_OWNER",
+   "install_refuses_input_folder_as_write_folder",
+   "R3_cell_folders_list_ok_but_write_404_same_bucket_like_field",
+   "R4_cell_reproduces_field_no_fix_upload_still_404",
+   "R5_cell_same_kernel_drops_old_modules_fixes_5_folder_paths_writes_ok_updates_recipes",
+   "exact_setup_cell_installs_4_recipes_disabled_scenario_outputs_on_OBS_repeatable",
+   "existing_main_channel_untouched_after_load",
+   "restore_check_load_GOLD_rows_and_publications_verified_by_loader_readback",
+   "stats_stop_with_DBA_statements_then_gather_after_grant",
+   "content_row_keys_unique_per_kind_counts_equal_manifest_selection_present",
+   "changed_install_values_refused_on_existing_recipes",
+   "selection_file_on_OBS_other_generation_refused_same_generation_same_release",
+   "missing_selection_stops_then_copied_from_channel_same_release_no_duplicate_load",
+   "existing_parts_on_readonly_S3_input_install_restore_check_ok",
+   "R5_new_parts_folder_created_with_code_folder_path_and_writable",
+   "S3_input_never_written_receipts_only_on_OBS_no_probe_left"
+  ],
+  "runs": "run1~5 실패 기록은 09_ARTIFACTS/AUDITS/20261113-r8-row-identity/verify-run*.log (검증 도구 대역 2·시험 선택 파일 1·실제 결함 1: 새 프로세스 엔진 경로)"
+ },
+ "row_reuse": {
+  "r7": {
+   "rows_A": 1996978,
+   "rows_B": 900569,
+   "common_document_rows": {
+    "rows": 2059,
+    "same_id_and_content": 336,
+    "ratio": 0.1632
+   },
+   "no_document_rows": {
+    "rows": 1573495,
+    "same_id_and_content": 874917,
+    "ratio": 0.556
+   },
+   "common_document_not_reused_by_kind": [
+    [
+     "asset_6caff629b985.unit_fts_posting",
+     1290
+    ],
+    [
+     "source.integrity",
+     164
+    ],
+    [
+     "asset_6caff629b985.unit",
+     79
+    ],
+    [
+     "asset_6caff629b985.unit_fts_length",
+     79
+    ],
+    [
+     "asset_360d9a1355ee.definition",
+     24
+    ],
+    [
+     "native.definition_summary",
+     24
+    ],
+    [
+     "asset_360d9a1355ee.reference",
+     21
+    ],
+    [
+     "asset_360d9a1355ee.reference_payload",
+     21
+    ],
+    [
+     "asset_360d9a1355ee.source",
+     10
+    ],
+    [
+     "asset_360d9a1355ee.source_literal",
+     10
+    ],
+    [
+     "asset_360d9a1355ee.document_frame",
+     1
+    ]
+   ]
+  },
+  "r8": {
+   "rows_A": 1996978,
+   "rows_B": 900569,
+   "common_document_rows": {
+    "rows": 2059,
+    "same_id_and_content": 1839,
+    "ratio": 0.8932
+   },
+   "no_document_rows": {
+    "rows": 1573495,
+    "same_id_and_content": 881128,
+    "ratio": 0.56
+   },
+   "common_document_not_reused_by_kind": [
+    [
+     "source.integrity",
+     164
+    ],
+    [
+     "asset_360d9a1355ee.definition",
+     24
+    ],
+    [
+     "native.definition_summary",
+     24
+    ],
+    [
+     "asset_360d9a1355ee.reference",
+     4
+    ],
+    [
+     "asset_360d9a1355ee.reference_payload",
+     4
+    ]
+   ]
+  }
+ },
+ "not_verified": [
+  "현장 Dataiku/OBS/S3/임베딩",
+  "실제 34조각 크기·시간",
+  "MAIN226 서빙으로 새 세대 읽기",
+  "증분(바뀐 문서만) 적재",
+  "현장 Dataiku에서 폴더 params.path를 API로 저장·작은 파일 쓰기/지우기(upload_data·delete_path)가 그대로 되는지, 운영 OBS도 /dataiku/ 밑에만 쓰기인지"
+ ],
+ "mail": "R5 not sent",
+ "revision": "R5 — 원인 정정: 버킷은 같고(AIDP-YNY-DEV-BUC-SRI) 설치기가 만든 폴더 경로에 /dataiku/가 없어 쓰기 404(11-13 확인 셀). 쓰는 폴더마다 쓰기·지우기로 확인하고 막힌 빈 폴더는 코드 폴더 경로 규칙으로 변경, 셀 앞에서 이전 판 모듈 제거(커널 재시작 불필요). R4 SENT 1a1d35c381de5b77(버킷 오진)·R3 SENT 1a1d32d9aa0d158c 대체.",
+ "setup_cell": "DATAIKU_SETUP_R8_RELOAD_R5.txt",
+ "setup_cell_sha256": "685a54ff47037a38ef75fc874a3719af7f0b8394e874889bb6488688da7f9cc4"
+}

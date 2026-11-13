@@ -1,0 +1,138 @@
+{
+ "package": "DATAIKU_ZIP_R8_RELOAD_R4.zip",
+ "package_sha256": "7342fc04d8c1d42f07a3293457f1d0aed1619b0fca657542d1612b1feac02854",
+ "parent": {
+  "zip": "pipeline_gold_owner_20261112_r1/DATAIKU_ZIP_AGENT_GOLD_FLOW_R7.zip",
+  "sha256": "d69a6ae3e097858b9c45bdff10e009f32b28290b48ab27b230e71057882929d2"
+ },
+ "local_verify": {
+  "status": "PASS",
+  "checks": [
+   "archive_parts_built_from_declared_generation_files",
+   "delivered_CREATE_GOLD_DDL_13_tables_select_insert_only",
+   "install_refused_without_LGL_GOLD_OWNER",
+   "install_refuses_input_folder_as_write_folder",
+   "R3_cell_reproduces_field_S3_404_on_5_created_folders",
+   "R4_cell_rerun_repairs_5_folders_to_code_bucket_and_updates_R3_recipes",
+   "exact_setup_cell_installs_4_recipes_disabled_scenario_outputs_on_OBS_repeatable",
+   "existing_main_channel_untouched_after_load",
+   "restore_check_load_GOLD_rows_and_publications_verified_by_loader_readback",
+   "stats_stop_with_DBA_statements_then_gather_after_grant",
+   "content_row_keys_unique_per_kind_counts_equal_manifest_selection_present",
+   "changed_install_values_refused_on_existing_recipes",
+   "selection_file_on_OBS_other_generation_refused_same_generation_same_release",
+   "missing_selection_stops_then_copied_from_channel_same_release_no_duplicate_load",
+   "existing_parts_on_readonly_S3_input_install_restore_check_ok",
+   "R4_new_parts_folder_created_with_code_folder_bucket_and_reachable",
+   "S3_input_never_written_receipts_only_on_OBS"
+  ],
+  "runs": "run1~5 실패 기록은 09_ARTIFACTS/AUDITS/20261113-r8-row-identity/verify-run*.log (검증 도구 대역 2·시험 선택 파일 1·실제 결함 1: 새 프로세스 엔진 경로)"
+ },
+ "row_reuse": {
+  "r7": {
+   "rows_A": 1996978,
+   "rows_B": 900569,
+   "common_document_rows": {
+    "rows": 2059,
+    "same_id_and_content": 336,
+    "ratio": 0.1632
+   },
+   "no_document_rows": {
+    "rows": 1573495,
+    "same_id_and_content": 874917,
+    "ratio": 0.556
+   },
+   "common_document_not_reused_by_kind": [
+    [
+     "asset_6caff629b985.unit_fts_posting",
+     1290
+    ],
+    [
+     "source.integrity",
+     164
+    ],
+    [
+     "asset_6caff629b985.unit",
+     79
+    ],
+    [
+     "asset_6caff629b985.unit_fts_length",
+     79
+    ],
+    [
+     "asset_360d9a1355ee.definition",
+     24
+    ],
+    [
+     "native.definition_summary",
+     24
+    ],
+    [
+     "asset_360d9a1355ee.reference",
+     21
+    ],
+    [
+     "asset_360d9a1355ee.reference_payload",
+     21
+    ],
+    [
+     "asset_360d9a1355ee.source",
+     10
+    ],
+    [
+     "asset_360d9a1355ee.source_literal",
+     10
+    ],
+    [
+     "asset_360d9a1355ee.document_frame",
+     1
+    ]
+   ]
+  },
+  "r8": {
+   "rows_A": 1996978,
+   "rows_B": 900569,
+   "common_document_rows": {
+    "rows": 2059,
+    "same_id_and_content": 1839,
+    "ratio": 0.8932
+   },
+   "no_document_rows": {
+    "rows": 1573495,
+    "same_id_and_content": 881128,
+    "ratio": 0.56
+   },
+   "common_document_not_reused_by_kind": [
+    [
+     "source.integrity",
+     164
+    ],
+    [
+     "asset_360d9a1355ee.definition",
+     24
+    ],
+    [
+     "native.definition_summary",
+     24
+    ],
+    [
+     "asset_360d9a1355ee.reference",
+     4
+    ],
+    [
+     "asset_360d9a1355ee.reference_payload",
+     4
+    ]
+   ]
+  }
+ },
+ "not_verified": [
+  "현장 Dataiku/OBS/S3/임베딩",
+  "실제 34조각 크기·시간",
+  "MAIN226 서빙으로 새 세대 읽기",
+  "증분(바뀐 문서만) 적재",
+  "현장 Dataiku S3형 폴더 설정 키(bucket·path)와 get_info accessInfo — 11-05 R6 S3 복구 셀과 같은 키, 현장 미확인"
+ ],
+ "mail": "R4 not sent",
+ "revision": "R4 — 설치가 만드는 폴더에 코드 폴더의 실제 버킷·경로 규칙(11-13 개발계 S3 404 NoSuchBucket AIDP-YNY-DEV-BUC-SRI), 열리지 않는 폴더 고침·이전 판 레시피 갱신. R3 SENT 1a1d32d9aa0d158c·R1 SENT 1a1d30a7bfc9d680 대체."
+}

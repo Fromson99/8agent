@@ -1,0 +1,58 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<p>배치 파이프라인(원문 ZIP → GENOS 구조화·색인 → SIDDA 중간표 → Dataiku 03_LOAD → Gold, 매일 증분)을 돌리는 데 필요한 표 생성 SQL, 표 이름, 권한입니다.<br>
+첨부 SQL 5개는 11-12에 보낸 파일(수신 파이프라인 R7 메일, 증분 Gold 3표 R3 메일)과 <b>바이트가 같습니다</b>. 다시 모아서 보냅니다.</p>
+
+<h3>1. 표 이름과 생성 SQL</h3>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>구분</th><th>표 이름</th><th>한글 이름</th><th>개발계</th><th>운영</th><th>생성 SQL (첨부)</th></tr>
+<tr><td>새로 만들 표<br>증분 기록 Gold 3표</td><td>IDD_B003_LGL_RGLT_DOC<br>IDD_B003_LGL_RGLT_VER<br>IDD_B003_LGL_ARTC_CMPR</td><td>규정문서내역<br>규정판본내역<br>조문비교내역</td><td>SIDDS에 새로 만듦</td><td>SIDDG — 메타 승인 뒤 DBA 생성</td><td>CREATE_INCREMENT_GOLD_SIDDS_R3.txt [C01~C04]<br>CREATE_INCREMENT_GOLD_SIDDG_R3.txt [C01~C04]</td></tr>
+<tr><td>새로 만들 표<br>증분 실험용 시험 복사본 13표</td><td>SIDDS.TST_B003_LGL_* 13개<br>(아래 13표 목록과 같은 이름 뒷부분)</td><td>Gold 13표와 같은 구조, 데이터 0</td><td>SIDDS — 증분 실험할 때만</td><td>만들지 않음</td><td>CREATE_TEST_COPY_SIDDS_R1.txt [T01~T24]</td></tr>
+<tr><td>이미 있음 (없을 때만 생성)<br>Agent 중간표</td><td>SIDDA.LGL_PIPE_RESULT_A</td><td>GENOS 처리 결과 조각</td><td>있음 (11-06 확인, 0행)</td><td>확인한 기록 없음 → 없으면 생성</td><td>CREATE_AGENT_STAGE_R1.txt [A01]</td></tr>
+<tr><td>이미 있음 (없을 때만 생성)<br>RAG Gold 13표</td><td>&lt;소유자&gt;.IDD_B003_LGL_* 13개</td><td>아래 13표 목록</td><td>SIDDS 있음 (11-10 이름 변경 완료)</td><td>SIDDG 있음 (적재 완료)</td><td>CREATE_GOLD_TABLES_SIDDG_R1.txt [G01~G24] — 참고용, 이미 있으면 실행 안 함</td></tr></table>
+<p style="font-size:12px">· 인덱스 이름 X0~X4_&lt;표&gt;는 적재기가 이 이름으로 찾으므로 바꾸지 마세요.<br>
+· 공간: 시험 복사본은 약 1GB 이내(추정, 작은 기준 세대·세대 3개 유지), 증분 3표는 작음(문서 약 2,121행 + 판본·바뀐 조문).<br>
+· 서빙 기록 표(SIDDA.LGL_AGT_RUN_A·REC_A·BODY_A, LGL_EXEC_ST_A)는 질문 처리용이라 배치에는 필요 없습니다.</p>
+
+<h4>Gold 13표 / 시험 복사본 13표 목록</h4>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>번호</th><th>이름 뒷부분</th><th>Gold 표 (개발계 SIDDS / 운영 SIDDG)</th><th>시험 복사본 (개발계 SIDDS만)</th><th>한글 이름</th></tr>
+<tr><td>1</td><td>DOC_VER</td><td>IDD_B003_LGL_DOC_VER</td><td>TST_B003_LGL_DOC_VER</td><td>문서판본내역</td></tr>
+<tr><td>2</td><td>DOC_UNIT</td><td>IDD_B003_LGL_DOC_UNIT</td><td>TST_B003_LGL_DOC_UNIT</td><td>문서구조내역</td></tr>
+<tr><td>3</td><td>DOC_BLK</td><td>IDD_B003_LGL_DOC_BLK</td><td>TST_B003_LGL_DOC_BLK</td><td>문서본문내역</td></tr>
+<tr><td>4</td><td>SRC_POST</td><td>IDD_B003_LGL_SRC_POST</td><td>TST_B003_LGL_SRC_POST</td><td>원문게시내역</td></tr>
+<tr><td>5</td><td>SRCH_POST</td><td>IDD_B003_LGL_SRCH_POST</td><td>TST_B003_LGL_SRCH_POST</td><td>조회게시내역</td></tr>
+<tr><td>6</td><td>SRCH_ROW</td><td>IDD_B003_LGL_SRCH_ROW</td><td>TST_B003_LGL_SRCH_ROW</td><td>검색관계내역</td></tr>
+<tr><td>7</td><td>SRCH_CHNL</td><td>IDD_B003_LGL_SRCH_CHNL</td><td>TST_B003_LGL_SRCH_CHNL</td><td>조회채널내역</td></tr>
+<tr><td>8</td><td>ONTL_POST</td><td>IDD_B003_LGL_ONTL_POST</td><td>TST_B003_LGL_ONTL_POST</td><td>온톨로지게시내역</td></tr>
+<tr><td>9</td><td>ONTL_HEAD</td><td>IDD_B003_LGL_ONTL_HEAD</td><td>TST_B003_LGL_ONTL_HEAD</td><td>온톨로지선택내역</td></tr>
+<tr><td>10</td><td>ONTL_ANC</td><td>IDD_B003_LGL_ONTL_ANC</td><td>TST_B003_LGL_ONTL_ANC</td><td>원문지식연결내역</td></tr>
+<tr><td>11</td><td>VCTR_POST</td><td>IDD_B003_LGL_VCTR_POST</td><td>TST_B003_LGL_VCTR_POST</td><td>벡터게시내역</td></tr>
+<tr><td>12</td><td>VCTR_ITEM</td><td>IDD_B003_LGL_VCTR_ITEM</td><td>TST_B003_LGL_VCTR_ITEM</td><td>원문구간벡터내역</td></tr>
+<tr><td>13</td><td>VCTR_HEAD</td><td>IDD_B003_LGL_VCTR_HEAD</td><td>TST_B003_LGL_VCTR_HEAD</td><td>벡터게시선택내역</td></tr></table>
+
+<h3>2. 권한</h3>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>환경</th><th>계정</th><th>대상 표</th><th>권한</th><th>왜 필요한가</th><th>지금 상태</th></tr>
+<tr><td>개발계</td><td>SIDDS 소유자 또는 DBA</td><td>새로 만들 표 (증분 3표, 시험 복사본 13표)</td><td>표·인덱스 만들기 (위 SQL 실행)</td><td>Dataiku 계정(PIDD2APP)은 다른 스키마에 표를 만들 권한이 없음</td><td>—</td></tr>
+<tr><td>개발계</td><td>GENOS ORDS 계정 BAIP04APP</td><td>SIDDA.LGL_PIPE_RESULT_A</td><td>SELECT, INSERT</td><td>GENOS가 구조화·색인 결과를 조각으로 저장</td><td>있음 (11-09 02단계 통과로 확인)</td></tr>
+<tr><td>개발계</td><td>Dataiku 계정 PIDD2APP</td><td>SIDDA.LGL_PIPE_RESULT_A</td><td>SELECT, <b>DELETE</b></td><td>02·03이 결과를 읽음 / 증분이 적재 끝난 조각을 지움</td><td>SELECT 있음, <b>DELETE 신청</b></td></tr>
+<tr><td>개발계</td><td>Dataiku 계정 PIDD2APP</td><td>SIDDS.IDD_B003_LGL_RGLT_DOC · RGLT_VER · ARTC_CMPR</td><td>SELECT, INSERT, UPDATE, DELETE</td><td>증분 판단·반영·되돌리기 기록 (DELETE는 개발계 실험 재실행 정리용)</td><td><b>신청</b></td></tr>
+<tr><td>개발계</td><td>Dataiku 계정 PIDD2APP</td><td>SIDDS.TST_B003_LGL_* 13표</td><td>SELECT, INSERT, UPDATE, DELETE</td><td>INSERT: 03_LOAD 적재 / UPDATE: 증분이 main 채널 교체 / DELETE: 옛 세대 정리(지금+이전 2개만)</td><td><b>신청</b> (실험할 때만)</td></tr>
+<tr><td>개발계</td><td>Dataiku 계정 PIDD2APP</td><td>SIDDS.IDD_B003_LGL_* Gold 13표</td><td>SELECT, INSERT, UPDATE, DELETE</td><td>실험이 끝나고 실제 개발계 Gold에 적재·증분을 붙일 때</td><td>나중 (지금 실험에는 불필요)</td></tr>
+<tr><td>운영</td><td>GENOS ORDS 계정</td><td>SIDDA.LGL_PIPE_RESULT_A</td><td>SELECT, INSERT</td><td>GENOS 결과 조각 저장</td><td>확인 기록 없음</td></tr>
+<tr><td>운영</td><td>Dataiku 연결 계정</td><td>SIDDA.LGL_PIPE_RESULT_A</td><td>SELECT, DELETE</td><td>결과 읽기 / 적재 끝난 조각 삭제</td><td>확인 기록 없음</td></tr>
+<tr><td>운영</td><td>Dataiku 연결 계정</td><td>SIDDG.IDD_B003_LGL_* Gold 13표</td><td>SELECT, INSERT, UPDATE, DELETE</td><td>INSERT: 03_LOAD / UPDATE: SRCH_CHNL(증분 채널 교체)·SRCH_ROW·VCTR_ITEM·VCTR_HEAD(판본 선택 보완) / DELETE: 옛 세대 정리</td><td>DELETE는 PROD_DELETE_CHECK_R1.txt로 행 변경 없이 확인 가능</td></tr>
+<tr><td>운영</td><td>Dataiku 연결 계정</td><td>SIDDG.IDD_B003_LGL_RGLT_DOC · RGLT_VER · ARTC_CMPR</td><td>SELECT, INSERT, UPDATE</td><td>증분 기록 (이력이라 DELETE 없음)</td><td>메타 승인·생성 뒤</td></tr></table>
+
+<h3>3. 실행 순서 (개발계, Dataiku SQL 노트북)</h3>
+<ol>
+<li>CREATE_INCREMENT_GOLD_SIDDS_R3.txt [C01]~[C04] — 증분 3표</li>
+<li>(증분 실험할 때만) CREATE_TEST_COPY_SIDDS_R1.txt [T01]~[T24] — 시험 복사본 13표</li>
+<li>위 권한 표의 '신청' 항목 GRANT (SIDDS·SIDDA 소유자 또는 DBA)</li>
+<li>확인은 11-12 메일의 CHECK_INCREMENT_GOLD_SIDDS_R3.txt, CHECK_TEST_COPY_SIDDS_R1.txt</li>
+</ol>
+<p>[번호] 하나씩 별도 Query로, 문장 끝 ; 없음, 버튼은 RUN(RUN SELECTION 아님).<br>
+운영은 메타 승인 뒤 CREATE_INCREMENT_GOLD_SIDDG_R3.txt(DBA). 운영에 SIDDA.LGL_PIPE_RESULT_A가 없으면 CREATE_AGENT_STAGE_R1.txt.</p>
+
+<h3>4. 참고</h3>
+<p>· Dataiku 프로젝트 변수: LGL_GOLD_OWNER = SIDDS(개발계) / SIDDG(운영). 시험 복사본 실험 때만 LGL_GOLD_TABLE_PREFIX = TST_B003_LGL_ (끝나면 지우기).<br>
+· 지금 증분 코드(R2)는 증분 3표에 아직 기록하지 않습니다(기록은 관리 폴더 JSON). 표가 생기면 기록 쓰기와 처음 한 번 채우기를 붙입니다.<br>
+· 현장 실행·권한 상태는 이 메일로 바뀌지 않았습니다. 위 '지금 상태'는 기록 기준입니다.</p>
+</body></html>

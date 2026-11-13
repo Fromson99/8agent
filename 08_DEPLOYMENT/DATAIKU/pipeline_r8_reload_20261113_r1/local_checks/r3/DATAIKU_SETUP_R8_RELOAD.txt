@@ -1,0 +1,24 @@
+# R8 재적재 설치 셀 — 구조화 세대 ZIP 조각 → 새 행 번호로 Gold에 새 세대 (S3는 쓰지 않음).
+# 새 프로젝트: 변수 LGL_GOLD_OWNER(개발계 "SIDDS", 운영 "SIDDG") → OBS 폴더 LGL_R8_CODE 에 이 ZIP 업로드 →
+# 이 셀을 Python 노트북에 그대로 붙여 실행(조각 폴더 LGL_R8_PARTS 가 없으면 OBS에 만들어 줌) →
+# LGL_R8_PARTS 에 조각·ORIGINAL.sha256·PARTS.sha256 업로드 → Scenarios > LGL_R8_RELOAD_RUN_ALL > RUN.
+# 조각 이름·개수가 다르면 EXPECTED_ARCHIVE / EXPECTED_PARTS 를 고칩니다. 지금 서빙 채널은 바뀌지 않습니다.
+PARAMS = {
+ "CODE_FOLDER_ID": "LGL_R8_CODE",
+ "INPUT_FOLDER_ID": "LGL_R8_PARTS",
+ "WRITE_FOLDER_ID": "",
+ "EXPECTED_ARCHIVE": "genos-rag-data-20261007T002029Z-7c0b050f.zip",
+ "EXPECTED_PARTS": 34,
+ "ORIGINAL_SHA_FILE": "",
+ "PARTS_SHA_FILE": "",
+ "SELECTION_CHANNEL": "",
+ "TARGET_CONNECTION": "AIDP",
+ "EXPECTED_DB_USER": "PIDD2APP",
+ "EMBED_MODEL": "openai:genos-embedding:embedding-kure-v1",
+ "EMBED_DIMENSIONS": 1024,
+ "STATS_DEGREE": 4
+}
+BOOTSTRAP = "import hashlib\nimport io\nimport json\nfrom pathlib import Path, PurePosixPath\nimport stat\nimport sys\nimport tempfile\nimport zipfile\nimport dataiku\n\nZIP_NAME = 'DATAIKU_ZIP_R8_RELOAD.zip'\nZIP_SHA256 = '09d4d2d0b6499e1f76ec816c19bdfe1e53c01bff265361f9ac630a9504814af4'\n\n\ndef open_package():\n    folder = dataiku.Folder(PARAMS['CODE_FOLDER_ID'])\n    names = [p for p in folder.list_paths_in_partition() if PurePosixPath(p).name == ZIP_NAME]\n    if len(names) != 1: raise ValueError('UPLOAD_ONE_CODE_ZIP:'+ZIP_NAME)\n    with folder.get_download_stream(names[0]) as stream: raw = stream.read(16*1024**2+1)\n    if len(raw)>16*1024**2 or hashlib.sha256(raw).hexdigest()!=ZIP_SHA256: raise ValueError('CODE_ZIP_HASH')\n    root = Path(_code_dir.name)\n    root.mkdir(exist_ok=True)\n    with zipfile.ZipFile(io.BytesIO(raw)) as z:\n        names = z.namelist(); manifest = json.loads(z.read('FLOW_MANIFEST.json'))\n        if len(names)!=len(set(names)) or set(names)!=set(manifest['files'])|{'FLOW_MANIFEST.json'}:\n            raise ValueError('CODE_ZIP_MEMBERS')\n        if sum(i.file_size for i in z.infolist())>32*1024**2: raise ValueError('CODE_ZIP_SIZE')\n        for item in z.infolist():\n            p = PurePosixPath(item.filename)\n            if p.is_absolute() or '..' in p.parts or '\\\\' in item.filename or item.is_dir() or stat.S_ISLNK(item.external_attr>>16):\n                raise ValueError('CODE_ZIP_PATH')\n            dest = root.joinpath(*p.parts)\n            if dest.is_symlink() or root.resolve() not in dest.resolve().parents: raise ValueError('CODE_PATH_ESCAPE')\n            content = z.read(item)\n            if item.filename!='FLOW_MANIFEST.json' and hashlib.sha256(content).hexdigest()!=manifest['files'][item.filename]:\n                raise ValueError('CODE_FILE_HASH')\n            if dest.exists():\n                if dest.read_bytes()!=content: raise ValueError('EXTRACTED_CODE_CHANGED')\n            else:\n                dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(content)\n    sys.path.insert(0,str(root))\n    return root\n\n\n_code_dir = tempfile.TemporaryDirectory(prefix='agent-flow-code-')\nFLOW_PACKAGE = open_package()\n"
+exec(BOOTSTRAP)
+from reload_install import install_reload
+cfg = install_reload(PARAMS, BOOTSTRAP)

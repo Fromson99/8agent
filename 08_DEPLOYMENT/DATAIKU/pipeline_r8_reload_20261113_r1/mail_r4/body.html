@@ -1,0 +1,34 @@
+<html><body style="font-family:'Malgun Gothic',sans-serif;font-size:14px">
+<p><b>R8 재적재 Flow R4</b> — 개발계 LEGAL_RAG_R8의 <b>LGL_R8_PARTS 업로드 오류(S3 404 NoSuchBucket, 버킷 'AIDP-YNY-DEV-BUC-SRI')</b>를 고친 판입니다. 앞서 보낸 R3(SENT 1a1d32d9aa0d158c) 대신 이것을 쓰세요(ZIP·설치 셀 모두 바뀜).</p>
+
+<h3>1. 원인</h3>
+<p>R3 설치 셀이 코드로 만든 폴더(LGL_R8_PARTS, 결과 폴더 4개)에 버킷을 따로 넣지 않아 <b>연결의 기본 버킷(AIDP-YNY-DEV-BUC-SRI)</b>이 들어갔습니다. 그 버킷이 없거나 권한이 없어 열 때·올릴 때 404가 납니다. 화면에서 직접 만든 LGL_R8_CODE는 실제 버킷이라 정상입니다.<br>
+<b>R4</b>: 새로 만드는 폴더와 열리지 않는 폴더에 <b>LGL_R8_CODE와 같은 버킷·경로 규칙(${projectKey}/${odbId})</b>을 넣고, 저장 뒤 다시 열어 확인합니다. 이미 열리는 폴더는 건드리지 않습니다. R3가 만든 레시피 4개는 R4 코드로 바꿉니다.</p>
+
+<h3>2. 지금 LEGAL_RAG_R8에서 할 일 (R3 설치된 상태 그대로)</h3>
+<ol>
+<li><b>LGL_R8_CODE</b>에 <b>DATAIKU_ZIP_R8_RELOAD_R4.zip</b> 업로드 (R3 ZIP은 지우지 않아도 됨)</li>
+<li>Python 노트북 셀에 <b>DATAIKU_SETUP_R8_RELOAD_R4.txt</b> 전체 붙여 넣고 실행 — 고칠 칸 없음<br>
+ → <code>FOLDER_STORAGE_SET … (열리지 않던 폴더 고침)</code> 5줄, <code>RECIPE_UPDATED</code> 4줄, <code>FLOW_INSTALLED LGL_R8_RELOAD_RUN_ALL</code></li>
+<li><b>LGL_R8_PARTS</b> 새로고침 — 빨간 오류가 없어야 합니다. 아까 실패한 업로드는 다시: 조각 34개(part000000~part000033) + ORIGINAL.sha256 + PARTS.sha256</li>
+<li><b>LGL_R8_CODE</b>에 <b>SEARCH_SELECTION_GENERATION.json</b> 업로드 (아직 안 했으면)</li>
+<li>Scenarios &gt; <b>LGL_R8_RELOAD_RUN_ALL</b> &gt; RUN</li>
+</ol>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>설치 셀이 멈출 때</th><th>할 일</th></tr>
+<tr><td>CODE_FOLDER_BUCKET_UNKNOWN</td><td>LGL_R8_CODE &gt; Settings의 Bucket 값을 설치 셀 PARAMS의 <b>BUCKET</b> 칸에 넣고 다시 실행</td></tr>
+<tr><td>FOLDER_STILL_UNREACHABLE &lt;폴더&gt;</td><td>그 폴더 &gt; Settings에서 Bucket을 LGL_R8_CODE와 같게 직접 저장 후 셀 다시 실행</td></tr>
+<tr><td>CODE_FOLDER_UNREACHABLE</td><td>LGL_R8_CODE 자체가 안 열림 — 폴더 이름(CODE_FOLDER_ID) 확인</td></tr></table>
+<p>새 프로젝트에서 처음부터 하는 순서는 R3와 같고(변수 LGL_GOLD_OWNER → LGL_R8_CODE 만들고 ZIP 업로드 → 설치 셀 → 조각 업로드 → RUN), 파일 이름만 R4입니다. 안내 TXT 1장에 있습니다.</p>
+
+<h3>3. 필요한 권한·공간 (R3와 같음)</h3>
+<table style="border-collapse:collapse;font-size:13px" border="1" cellpadding="5"><tr style="background:#eef2f7"><th>계정</th><th>대상</th><th>권한</th><th>비고</th></tr><tr><td>PIDD2APP</td><td>SIDDS.IDD_B003_LGL_* Gold 13표</td><td>SELECT, INSERT</td><td>재적재에는 UPDATE·DELETE 불필요</td></tr><tr><td>PIDD2APP</td><td>통계 갱신</td><td>ANALYZE ANY</td><td>없으면 DBA가 로그의 dba_statements 실행</td></tr><tr><td>SIDDS</td><td>테이블스페이스</td><td>새 세대 하나 분량</td><td>지금 세대 검색 행 수(점검 SQL P03)만큼 더</td></tr><tr><td>Dataiku 사용자</td><td>LGL_R8_CODE 버킷</td><td>읽기·쓰기</td><td>결과 폴더·조각 폴더가 같은 버킷을 씀. S3 원본은 읽기만</td></tr></table>
+
+<h3>4. 로컬 확인 (전용 Oracle + Dataiku 대역, 17항목 통과)</h3>
+<ul>
+<li>폴더 대역을 현장처럼 만듦: 코드로 만든 폴더는 연결 기본 버킷 → 404. <b>보낸 R3 셀로 설치하면 폴더 5개 404가 그대로 재현</b> → 같은 프로젝트에서 <b>R4 셀을 다시 실행하면 5개를 코드 폴더 버킷으로 고치고 레시피 4개를 R4로 바꿈</b> → 그다음 조각 복원·점검·Gold 적재·통계까지 통과.</li>
+<li>두 번째 실행은 폴더 설정을 다시 저장하지 않음, 조각 폴더를 새로 만들어도 코드 폴더 버킷으로 열림, S3 입력은 쓰기 0, 기존 서빙 채널 그대로.</li>
+<li>R3의 나머지 확인(소유자 변수 없으면 거부, 다른 세대 판본 선택 거부, 통계 권한 없으면 DBA 문장 출력 후 멈춤, 내용 기준 행 번호)은 그대로 통과.</li>
+<li>확인 못 한 것: 현장 Dataiku S3형 폴더 설정의 실제 키(bucket·path) — 11-05 R6 S3 복구 셀과 같은 키를 썼지만 현장에서는 처음입니다. 현장 34조각 실제 시간, 새 세대를 현재 서빙 코드로 읽어 같은 답인지(다음 단계).</li>
+</ul>
+<p>첨부: R8 Flow ZIP·설치 셀·안내·검증·해시(R4). 개발계 점검 SQL·설계 문서는 R3 메일 것 그대로입니다.</p>
+</body></html>

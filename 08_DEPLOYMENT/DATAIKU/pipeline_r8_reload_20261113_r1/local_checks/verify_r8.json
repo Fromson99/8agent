@@ -1,0 +1,130 @@
+{
+ "status": "PASS",
+ "checks": [
+  "archive_parts_built_from_declared_generation_files",
+  "delivered_CREATE_GOLD_DDL_13_tables_select_insert_only",
+  "install_refused_without_LGL_GOLD_OWNER",
+  "install_refuses_input_folder_as_write_folder",
+  "R3_cell_folders_list_ok_but_write_404_same_bucket_like_field",
+  "R4_cell_reproduces_field_no_fix_upload_still_404",
+  "R5_cell_same_kernel_drops_old_modules_fixes_5_folder_paths_writes_ok_updates_recipes",
+  "exact_setup_cell_installs_4_recipes_disabled_scenario_outputs_on_OBS_repeatable",
+  "existing_main_channel_untouched_after_load",
+  "restore_check_load_GOLD_rows_and_publications_verified_by_loader_readback",
+  "stats_stop_with_DBA_statements_then_gather_after_grant",
+  "content_row_keys_unique_per_kind_counts_equal_manifest_selection_present",
+  "changed_install_values_refused_on_existing_recipes",
+  "selection_file_on_OBS_other_generation_refused_same_generation_same_release",
+  "missing_selection_stops_then_copied_from_channel_same_release_no_duplicate_load",
+  "existing_parts_on_readonly_S3_input_install_restore_check_ok",
+  "R5_new_parts_folder_created_with_code_folder_path_and_writable",
+  "S3_input_never_written_receipts_only_on_OBS_no_probe_left"
+ ],
+ "diagnostics": {
+  "parts": {
+   "with_selection": {
+    "parts": 1,
+    "archive_sha256": "d83e6452b87984db6c546afb319af2077aac5ed23fe3d94d5720e0d1027a38ac",
+    "selection": true
+   },
+   "without_selection": {
+    "parts": 1,
+    "archive_sha256": "4fc3477ca2c811ed6d3f03838ee9c5e37f7a090363bbffe7b06af0246d8d2d5b",
+    "selection": false
+   }
+  },
+  "seconds": {
+   "LGL_R8_RELOAD_01_RESTORE": 0.2,
+   "LGL_R8_RELOAD_02_CHECK": 12.0,
+   "LGL_R8_RELOAD_03_LOAD": 8.7,
+   "LGL_R8_RELOAD_04_STATS": 2.0
+  },
+  "loaded": {
+   "channel": "g19_16d7ba8fa113a703cc85785d",
+   "counts": {
+    "DOC_BLK": 356,
+    "DOC_UNIT": 290,
+    "DOC_VER": 1,
+    "SRCH_ROW": 8698,
+    "VCTR_ITEM": 65
+   },
+   "gold_owner": "SIDDS",
+   "next": "04_STATS 뒤 시험 서빙 DP_QUERY_CHANNEL=g19_16d7ba8fa113a703cc85785d 로 비교",
+   "query_release_id": "16d7ba8fa113a703cc85785df19830f0f0c62a9faf3b07b56667f3c75f5574a7",
+   "row_key": "v2-content",
+   "selection": {
+    "source": "archive"
+   },
+   "serving_switched": false,
+   "source_release_id": "005dc990c7e84c4e6192565d54e36c370ad7a6f8049532854de8d2a83523577e",
+   "status": "GOLD_LOADED_NOT_SERVING",
+   "table_prefix": "IDD_B003_LGL_",
+   "vector_publication_id": "d658b992c9854fa1c78b47e3247e3a388e08aa4b8932c3c3698391cd193b5202"
+  },
+  "stops": [
+   {
+    "recipe": "LGL_R8_RELOAD_04_STATS",
+    "stop": "PRIVILEGE_REQUIRED: PIDD2APP 계정에 ANALYZE ANY가 없습니다. 로그의 dba_statements를 DBA에 요청한 뒤 새 세대 채널로 바꾸세요(통계 없이 바꾸면 느린 실행 계획 위험)."
+   }
+  ],
+  "kinds": {
+   "asset_6caff629b985.unit": 290,
+   "asset_200aceb217e0.surface": 1,
+   "asset_360d9a1355ee.document_frame": 1,
+   "asset_360d9a1355ee.navigation_checkpoint": 72,
+   "asset_6caff629b985.unit_fts_length": 290,
+   "asset_6caff629b985.unit_fts_posting": 4549,
+   "native.block_literal": 356,
+   "asset_360d9a1355ee.reference_body": 112,
+   "asset_360d9a1355ee.reference_target": 196,
+   "asset_6caff629b985.unit_fts_stats": 1,
+   "asset_f1dade67d8cd.label": 3,
+   "asset_f1dade67d8cd.words_content": 3,
+   "asset_f1dade67d8cd.words_length": 3,
+   "asset_f1dade67d8cd.words_posting": 4,
+   "asset_f1dade67d8cd.words_stats": 1,
+   "source.integrity": 647,
+   "asset_360d9a1355ee.reference_end": 321,
+   "asset_360d9a1355ee.reference_witness_count": 119,
+   "native.member": 92,
+   "native.source": 65,
+   "native.structure_proof": 1,
+   "native.surface": 343,
+   "asset_360d9a1355ee.source": 65,
+   "asset_360d9a1355ee.source_literal": 65,
+   "asset_360d9a1355ee.reference_payload": 177,
+   "asset_360d9a1355ee.reference": 177,
+   "asset_360d9a1355ee.source_unit_map": 225,
+   "asset_360d9a1355ee.term": 1,
+   "asset_360d9a1355ee.term_surface": 2,
+   "asset_3d348a88919e.node": 1,
+   "asset_5240c1157c4d.classification": 1,
+   "asset_5240c1157c4d.corpus_document": 1,
+   "asset_5240c1157c4d.entry": 1,
+   "asset_5240c1157c4d.meta": 1,
+   "asset_5240c1157c4d.source_request": 1,
+   "asset_5240c1157c4d.surface": 2,
+   "native.coordinate": 215,
+   "native.unit": 290,
+   "source.schema": 3
+  },
+  "writes": [
+   ".lgl_r8_write_check",
+   "/.verify_probe",
+   "ORIGINAL.sha256",
+   "PARTS.sha256",
+   "r8-test-data.zip.part000000",
+   "reload-001/check.json",
+   "reload-001/load.json",
+   "reload-001/restore.json",
+   "reload-001/stats.json",
+   "reload-chan/check.json",
+   "reload-chan/restore.json",
+   "reload-nosel/check.json",
+   "reload-nosel/restore.json",
+   "reload-s3/check.json",
+   "reload-s3/restore.json"
+  ],
+  "embedding_calls": 5
+ }
+}

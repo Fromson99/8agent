@@ -1,0 +1,18 @@
+# R8 재적재 - LGL_R8_PARTS 조각·버킷 확인 (읽기만 함, 아무것도 쓰거나 지우지 않음)
+# Python 노트북 새 셀에 그대로 붙여 실행 -> 출력 사진 회신
+import dataiku
+for n in ['LGL_R8_CODE', 'LGL_R8_PARTS']:
+    print(n, dataiku.Folder(n).get_info().get('accessInfo'))
+f = dataiku.Folder('LGL_R8_PARTS')
+ps = sorted(f.list_paths_in_partition())
+print('파일 수', len(ps))
+total = 0
+for p in ps:
+    s = f.get_path_details(p).get('size')
+    total += s or 0
+    print(p, s)
+print('합계 바이트', total)
+names = {p.lstrip('/') for p in ps}
+want = 'genos-rag-data-20261007T002029Z-7c0b050f.zip.part%06d'
+print('빠진 조각', [want % i for i in range(34) if want % i not in names])
+print('빠진 sha 파일', [n for n in ('ORIGINAL.sha256', 'PARTS.sha256') if n not in names])
