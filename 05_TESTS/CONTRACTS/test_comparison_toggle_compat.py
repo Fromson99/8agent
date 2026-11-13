@@ -17,12 +17,18 @@ class Disclosures(HTMLParser):
     def __init__(self):
         super().__init__()
         self.stack = []
+        self.kinds = []
         self.parents = []
+        self.nested = []
         self.summaries = []
 
     def handle_starttag(self, tag, attrs):
         if tag == 'details':
             self.parents.append(tuple(self.stack))
+            names = {k for k, _ in attrs if k.startswith('data-genos-compare-')}
+            if self.stack:
+                self.nested.append((tuple(self.stack), self.kinds[-1] if self.kinds else set(), names))
+            self.kinds.append(names)
             assert 'open' not in dict(attrs)
         if tag == 'summary':
             self.summaries.append(tuple(self.stack))
@@ -32,6 +38,8 @@ class Disclosures(HTMLParser):
     def handle_endtag(self, tag):
         assert self.stack and self.stack[-1] == tag, (tag, self.stack)
         self.stack.pop()
+        if tag == 'details':
+            self.kinds.pop()
 
 
 @pytest.mark.parametrize('marker', ['(C25)', '(C42, C99)', '( C91 ; C36 )',
@@ -60,12 +68,15 @@ def test_disclosures_use_general_question_graph_block_structure(final_answer):
     if not final_answer:
         table.pop('final_answer')
     # Every literal coordinate, version boundary and quote remains inside a
-    # visible cell when opened; no disclosure is nested inside another or a td.
+    # visible cell when opened; no disclosure is inside a table cell or a one-line wrapper. r14 (user 2026-11-13):
+    # the only nesting is an item card inside the 대사표 (or set-aside) group, the ordinary answer's source-card pattern.
     raw = concept_report.render(table)
     rendered = MarkdownIt('commonmark', {'html': True}).render(views()._for_markdown(raw))
     parsed = Disclosures(); parsed.feed(rendered)
-    assert parsed.parents and all(parent == () for parent in parsed.parents)
-    assert all(parent == ('details',) for parent in parsed.summaries)
+    assert parsed.parents and all(parent == () or parent == ('details', 'div') for parent in parsed.parents)
+    assert parsed.nested and all(outer & {'data-genos-compare-table', 'data-genos-compare-unused'} and
+                                 inner == {'data-genos-compare-item'} for _, outer, inner in parsed.nested), parsed.nested
+    assert all(parent[-1:] == ('details',) for parent in parsed.summaries)
     assert not parsed.stack
     graph = views()._judgment_graph_html({'html': '<p>그래프</p>'})
     opening = re.search(r'(<details[^>]*>\n<summary[^>]*><strong>)', graph).group(1)

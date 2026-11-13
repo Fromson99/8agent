@@ -27,11 +27,14 @@ WORKFLOW = {'workflow-concepts', 'workflow-items', 'workflow-compare', 'workflow
 class Both(points.Script):
     """Ordinary-question stages go to the guided-question script; comparison stages to the comparison script.
 
-    pair: the row status the pairing returns ('PAIRED' | 'INTERNAL_ONLY' | 'EXTERNAL_ONLY')."""
+    pair: the row status the pairing returns ('PAIRED' | 'INTERNAL_ONLY' | 'EXTERNAL_ONLY').
+    split: the question split (r14) as a function of its view; default asks each side the message as written."""
 
-    def __init__(self, pair='PAIRED', mode='normal'):
+    def __init__(self, pair='PAIRED', mode='normal', split=None):
         super().__init__(mode)
         self.pair = pair
+        self.split = split or (lambda view: {'relation': 'NEW', 'internal_question': view['question'],
+                                             'external_question': view['question'], 'reason': '새 대사'})
         self.general = guided.Transport(BODY['question'], 'authorized', {'reads': 4, 'resolve': ('CASE_START', 'NONE'),
                                                                         'relation': 'NEW_TOPIC'})
         self.phases = []
@@ -42,6 +45,9 @@ class Both(points.Script):
         view = decode(json.loads(body['messages'][1]['content'])['view'])
         stage = view.get('source_stage') or view['phase']
         self.phases.append(stage)
+        if stage == 'workflow-split':
+            self.seen.append((stage, deepcopy(view)))
+            return wire(self.split(view))
         if stage == 'workflow-concepts':
             self.seen.append((stage, deepcopy(view)))
             inside = [s for s in view['sources'] if s.get('side') == 'internal']
@@ -109,7 +115,9 @@ def test_both_sides_are_ordinary_questions_and_rows_are_pairs(tmp_path, tree):
     assert row['internal'] and row['external'] and row['opinions'], row
     pairing = next(v for s, v in transport.seen if s == 'workflow-concepts')
     assert {s['side'] for s in pairing['sources']} == {'internal', 'external'} and pairing['team_facts']
-    assert '내규 쪽 답' in value['answer']['text'] and '외규 쪽 답' in value['answer']['text']
+    text = value['answer']['text']
+    # r14: each side's ordinary answer first, then the 대사표 that opens to its explanation and items.
+    assert text.index('내규에서 찾은 내용') < text.index('외규에서 찾은 내용') < text.index('대사표 · 1개 항목'), text
     assert again['answer'] == value['answer']
 
 
@@ -179,4 +187,97 @@ def test_general_flow_silent_item_review_skips_and_a_second_silence_stops_with_a
     # Item review is skipped once (no compare row needs it); the run still ends with the table and named points.
     assert value['comparison_table']['rows'] and value['status'] == 'partial'
     assert any('AI가 응답하지 않았습니다' in p['detail'] for p in value['failure_points']), value['failure_points']
-    assert '내규 쪽 답' in value['answer']['text']
+    assert '내규에서 찾은 내용' in value['answer']['text']
+
+
+# r14 (user 2026-11-13): "젤 앞에 내규로 할 질문 외규로 할 질문을 쪼개는 llm을 하나 넣자 … 멀티턴할때 일반 질문에서
+# 못찾은거 알려줘 이렇게 하면 그거 더 찾아서 나머지는 그대로 두고 대사표 다시 만드는거지 … 추가로 찾은거에 내규였으면
+# 외규쪽 찾는건 하고 대사표는 다시 쓰게".
+def asked_sides(value):
+    return {side: value['rag_results'][side]['question'] for side in ('internal', 'external')}
+
+
+def test_each_side_is_asked_the_question_the_split_wrote(tmp_path, tree):
+    split = lambda view: {'relation': 'NEW', 'internal_question': '승인 기준 관련 내용 찾아줘',
+                          'external_question': '승인 기준 관련 내용 찾아줘', 'reason': '비교 표현을 빼고 주제만'}
+    transport = Both('PAIRED', split=split)
+    app, value, again = run(tmp_path, tree, transport)
+    phases = transport.phases
+    assert phases.count('workflow-split') == 1 and phases.index('workflow-split') < phases.index('request-entry'), phases
+    view = next(v for s, v in transport.seen if s == 'workflow-split')
+    assert view['question'] == value['comparison_table']['question'] and 'previous' not in view
+    for side, question in asked_sides(value).items():
+        assert '승인 기준 관련 내용 찾아줘' in question and BODY['question'] not in question, (side, question)
+    # The comparison is still about the user's question.
+    assert value['comparison_table']['question'] in BODY['question']
+    assert again['answer'] == value['answer']
+
+
+def test_a_split_with_no_usable_answer_asks_each_side_the_message_as_written(tmp_path, tree):
+    transport = Both('PAIRED', split=lambda view: {'relation': 'NEW', 'internal_question': '승인 기준', 'external_question': '',
+                                                   'reason': '한쪽만'})
+    app, value, again = run(tmp_path, tree, transport)
+    assert transport.phases.count('workflow-split') == 2  # the first answer and its one correction
+    for side, question in asked_sides(value).items():
+        assert value['comparison_table']['question'] in question, (side, question)
+    assert value['comparison_table']['rows']
+
+
+def more(question_internal, question_external):
+    def split(view):
+        if view.get('previous'):
+            return {'relation': 'MORE', 'internal_question': question_internal, 'external_question': question_external,
+                    'reason': '직전 대사에서 못 찾은 내용을 더 찾으라는 말'}
+        return {'relation': 'NEW', 'internal_question': view['question'], 'external_question': view['question'], 'reason': '새 대사'}
+    return split
+
+
+def test_find_more_asks_only_that_side_keeps_the_first_answers_and_makes_the_table_again(tmp_path, tree):
+    transport = Both('PAIRED', split=more('', '외규의 승인 후 보고 기한 찾아줘'))
+    app = points.application(tmp_path, tree, transport)
+    with TestClient(app) as client:
+        first = client.post('/v1/rag/ask', json=BODY).json()
+        mark = len(transport.phases)
+        second = client.post('/v1/rag/ask', json={**BODY, 'request_id': 'r2', 'question': '대사: 못 찾은 보고 기한 더 찾아줘'}).json()
+    used = transport.phases[mark:]
+    view = [v for s, v in transport.seen if s == 'workflow-split'][-1]
+    assert view['previous']['question'] == first['comparison_table']['question'] and view['previous']['rows'], view['previous']
+    # Only the external side searches again (one ordinary question), then the table is made again.
+    assert used.count('request-entry') == 1 and 'workflow-concepts' in used and 'workflow-items' in used, used
+    assert '외규의 승인 후 보고 기한 찾아줘' in second['rag_results']['external']['question']
+    assert second['continuation']['mode'] == 'MORE' and second['continuation']['of'] == first['run_id']
+    assert second['comparison_table']['question'] == first['comparison_table']['question']
+    answers = second['comparison_table']['side_answers']
+    assert [a['purpose'] for a in answers['external']][:2] == ['QUESTION', 'MORE'], answers['external']
+    assert answers['internal'][0] == first['comparison_table']['side_answers']['internal'][0]
+    text = second['answer']['text']
+    assert '이전 대사에 이어 요청하신 내용을 더 찾아 대사표를 다시 만들었습니다' in text
+    assert '추가로 찾은 질문: 외규의 승인 후 보고 기한 찾아줘' in text
+    assert text.index('외규에서 찾은 내용') < text.index('대사표 · ')
+    # What the first 대사 read on the internal side is still used: the rebuilt row cites it.
+    assert second['comparison_table']['rows'][0]['internal'], second['comparison_table']['rows']
+
+
+def test_find_more_on_the_internal_side_also_searches_the_external_side(tmp_path, tree):
+    transport = Both('PAIRED', split=more('내규의 승인 후 보고 기한 찾아줘', ''))
+    app = points.application(tmp_path, tree, transport)
+    with TestClient(app) as client:
+        client.post('/v1/rag/ask', json=BODY)
+        mark = len(transport.phases)
+        second = client.post('/v1/rag/ask', json={**BODY, 'request_id': 'r2', 'question': '대사: 내규에서 보고 기한도 찾아줘'}).json()
+    used = transport.phases[mark:]
+    assert used.count('request-entry') == 2, used
+    for side in ('internal', 'external'):
+        assert '내규의 승인 후 보고 기한 찾아줘' in second['rag_results'][side]['question'], side
+    assert second['continuation']['asked'] == {'internal': '내규의 승인 후 보고 기한 찾아줘', 'external': '내규의 승인 후 보고 기한 찾아줘'}
+
+
+def test_a_new_topic_after_a_comparison_is_a_new_comparison(tmp_path, tree):
+    def split(view):
+        return {'relation': 'NEW', 'internal_question': '위원회 구성 찾아줘', 'external_question': '위원회 구성 찾아줘', 'reason': '다른 주제'}
+    transport = Both('PAIRED', split=split)
+    app = points.application(tmp_path, tree, transport)
+    with TestClient(app) as client:
+        client.post('/v1/rag/ask', json=BODY)
+        second = client.post('/v1/rag/ask', json={**BODY, 'request_id': 'r2', 'question': '대사: 위원회 구성은 어떻게 되나요?'}).json()
+    assert 'continuation' not in second and second['comparison_table']['question'].startswith('위원회 구성')

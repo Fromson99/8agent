@@ -51,6 +51,16 @@ def test_quoted_document_label_moves_to_the_title(monkeypatch):
 
 
 def test_cards_are_limited_per_origin_and_in_total(monkeypatch):
+    if hasattr(workflow(), '_unread_card_limit'):
+        # 2026-11-12 user: every unread card by default; GENOS_UNREAD_CARD_LIMIT=N caps them.
+        rows = [row(i, origin='출발'+str(i % 5)) for i in range(40)]
+        monkeypatch.delenv('GENOS_UNREAD_CARD_LIMIT', raising=False)
+        html = cards(monkeypatch, rows, 40)
+        assert html.count('data-genos-unread="true"') == 40 and '미확인 조문 · 40건' in html and '그 밖에' not in html
+        monkeypatch.setenv('GENOS_UNREAD_CARD_LIMIT', '10')
+        html = cards(monkeypatch, rows, 40)
+        assert html.count('data-genos-unread="true"') == 10 and '그 밖에 30건' in html
+        return
     rows = [row(i, origin='출발'+str(i % 5)) for i in range(40)]
     html = cards(monkeypatch, rows, 40)
     assert html.count('data-genos-unread="true"') == 10 and '미확인 조문 · 10건' in html and '그 밖에 30건' in html

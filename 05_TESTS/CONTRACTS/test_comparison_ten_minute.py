@@ -185,7 +185,9 @@ def test_lower_operator_limits_and_other_workflow_budget_are_preserved(tmp_path)
     assert 71<service.phase_context(context).remaining()<=72
     assert 84<service.phase_context(context,final=True).remaining()<=85.5
     work=service.journal(tmp_path/'new.sqlite',context)
-    assert work.budget()['model_limit']==5
+    # User 2026-11-12 ("대사만 설정값 우선", ADR-1519): the workflow's own model-call limit is used even above the
+    # service default; the lower operator time limit above is still kept.
+    assert work.budget()['model_limit']==24
     assert work.budget()['finalization_reserve']==4
     work.close()
     other=service.context(request,{'generation_id':'g'},'b'*32,tmp_path/'other.sqlite')

@@ -104,7 +104,9 @@ def test_server_reads_take_lower_rules_and_cited_question_titled_articles():
     assert g.server_read_rows(reads, {'L1'})[0][0] == 'CITED'
 
 
-def test_assess_merges_reads_up_to_four_and_does_not_force_a_location_twice():
+def test_assess_merges_reads_up_to_four_and_does_not_force_a_location_twice(monkeypatch):
+    # The 2026-11-12 menu-title read (GENOS_MENU_TITLE_READS) adds its own row; this case checks the merge without it.
+    monkeypatch.setenv('GENOS_MENU_TITLE_READS', 'off')
     locations = [loc(1, '시행령 · 제11조의3', specifies=['법 · 제16조의3']),
                  loc(2, '규정 · 제13조(상장주선인의 의무)', cited_by=['시행세칙 제9조'], matched_terms=['상장주선인']),
                  loc(3, '규정 · 제14조', vector_rank=2, matched_terms=['상장주선인']),
